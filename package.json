@@ -1,0 +1,15 @@
+{
+  "name": "home-2025",
+  "version": "1.0.0",
+  "private": true,
+  "description": "个人网站 monorepo",
+  "scripts": {
+    "dev": "pnpm -r dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
