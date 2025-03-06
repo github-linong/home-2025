@@ -3,6 +3,11 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
+
+const CesiumKML = dynamic(() => import('@/components/demos/CesiumKML'), {
+  ssr: false,
+})
 
 export default function ProjectsPage() {
   const [isStorybookRunning, setIsStorybookRunning] = useState(false)
@@ -17,6 +22,15 @@ export default function ProjectsPage() {
       url: 'http://localhost:6006',
       cover: '/images/storybook-cover.png', // 需要添加封面图
       tags: ['Storybook', 'Components', 'UI'],
+    },
+    {
+      id: 'cesium-kml',
+      title: 'Cesium KML 导出演示',
+      description: '使用 Cesium.js 构建的 KML 导出功能演示',
+      type: 'iframe',
+      url: '/demos/ExportKML.html',
+      cover: '/images/cesium-demo-cover.png', // 需要添加封面图
+      tags: ['Cesium', '3D', 'KML'],
     },
     {
       id: 'demo-counter',
@@ -38,8 +52,8 @@ export default function ProjectsPage() {
   ]
 
   useEffect(() => {
-    // 检查 Storybook 是否在运行
-    fetch('http://localhost:6006')
+    // 检查 Storybook 是否运行
+    fetch('http://localhost:6006/iframe.html?id=Components-Button--primary')
       .then(() => setIsStorybookRunning(true))
       .catch(() => setIsStorybookRunning(false))
   }, [])
@@ -53,7 +67,7 @@ export default function ProjectsPage() {
             {/* 可以添加筛选按钮等 */}
           </div>
         </div>
-
+        
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {projects.map((project) => (
             <Link 
