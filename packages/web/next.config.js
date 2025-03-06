@@ -10,6 +10,12 @@ const nextConfig = {
         port: '',
         pathname: '/7.x/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'www.lilnong.top',
+        port: '',
+        pathname: '/static/img/**',
+      },
     ],
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
