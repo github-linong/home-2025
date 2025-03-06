@@ -1,9 +1,11 @@
 import NextAuth, { DefaultSession } from 'next-auth'
 import Email from 'next-auth/providers/email'
+import Credentials from 'next-auth/providers/credentials'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import { PrismaClient } from '@prisma/client'
 import { createTransport } from 'nodemailer'
 import { SocksProxyAgent } from 'socks-proxy-agent'
+import { compare, hash } from 'bcryptjs'
 
 // 扩展 Session 类型以包含 id
 declare module 'next-auth' {
@@ -32,6 +34,38 @@ const handler = NextAuth({
   debug: true,
   adapter: PrismaAdapter(prisma) as any,
   providers: [
+    Credentials({
+      name: 'Credentials',
+      credentials: {
+        email: { label: "邮箱", type: "email" },
+        password: { label: "密码", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('请输入邮箱和密码')
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email }
+        })
+
+        if (!user || !user.password) {
+          throw new Error('用户不存在或未设置密码')
+        }
+
+        const isValid = await compare(credentials.password, user.password)
+        if (!isValid) {
+          throw new Error('密码错误')
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        }
+      }
+    }),
     Email({
       server: {
         host: process.env.EMAIL_SERVER_HOST,
@@ -82,18 +116,18 @@ const handler = NextAuth({
     verifyRequest: '/auth/verify-request',
   },
   session: {
-    strategy: 'database'
+    strategy: 'jwt'  // 改为 JWT 策略，因为 Credentials provider 只支持 JWT
   },
   callbacks: {
-    async session({ session, user }) {
+    async session({ session, token }) {
       if (session?.user) {
-        session.user.id = user.id
+        session.user.id = token.sub as string
         // 如果用户没有头像，生成一个
         if (!session.user.image) {
           const avatar = generateAvatar(session.user.email || '')
           // 更新数据库中的用户头像
           await prisma.user.update({
-            where: { id: user.id },
+            where: { id: token.sub as string },
             data: { image: avatar }
           })
           session.user.image = avatar

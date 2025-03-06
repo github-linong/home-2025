@@ -5,12 +5,13 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 
-export function Header() {
+export default function Header() {
   const { data: session, status } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
+    // 当状态不是 loading 时，添加一个小延迟再显示内容
     if (status !== 'loading') {
       const timer = setTimeout(() => {
         setIsVisible(true)
@@ -25,27 +26,13 @@ export function Header() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white shadow z-50">
+    <header className="bg-white shadow">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex items-center space-x-8">
+          <div className="flex">
             <Link href="/" className="flex-shrink-0 flex items-center">
               <span className="text-xl font-bold text-indigo-600">Home</span>
             </Link>
-            <div className="hidden md:flex items-center space-x-4">
-              <Link href="/" className="text-gray-600 hover:text-gray-900">
-                首页
-              </Link>
-              <Link href="/blog" className="text-gray-600 hover:text-gray-900">
-                博客
-              </Link>
-              <Link href="/projects" className="text-gray-600 hover:text-gray-900">
-                项目
-              </Link>
-              <Link href="/about" className="text-gray-600 hover:text-gray-900">
-                关于
-              </Link>
-            </div>
           </div>
 
           <div className="flex items-center">
