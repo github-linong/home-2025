@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "contentlayer build",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@auth/core": "0.18.0",
@@ -14,26 +17,53 @@
     "@home-2025/shared": "workspace:*",
     "@home-2025/ui": "workspace:*",
     "@prisma/client": "^6.4.1",
+    "@tailwindcss/typography": "^0.5.16",
     "bcryptjs": "^3.0.2",
+    "contentlayer": "^0.3.4",
+    "date-fns": "^4.1.0",
     "next": "14.1.0",
     "next-auth": "4.24.5",
+    "next-contentlayer": "^0.3.4",
     "nodemailer": "^6.10.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^3.2.5",
+    "@storybook/addon-essentials": "^8.6.4",
+    "@storybook/addon-onboarding": "^8.6.4",
+    "@storybook/blocks": "^8.6.4",
+    "@storybook/builder-vite": "^8.6.4",
+    "@storybook/experimental-addon-test": "^8.6.4",
+    "@storybook/experimental-nextjs-vite": "8.6.4",
+    "@storybook/nextjs": "^8.6.4",
+    "@storybook/react": "^8.6.4",
+    "@storybook/test": "^8.6.4",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.11.0",
     "@types/nodemailer": "^6.4.17",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@vitest/browser": "^3.0.7",
+    "@vitest/coverage-v8": "^3.0.7",
     "autoprefixer": "^10.4.0",
+    "clsx": "^2.1.0",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.1.0",
+    "eslint-plugin-storybook": "^0.11.4",
+    "playwright": "^1.50.1",
     "postcss": "^8.4.0",
     "prisma": "^6.4.1",
     "socks-proxy-agent": "^8.0.5",
+    "storybook": "^8.6.4",
+    "tailwind-merge": "^2.2.0",
     "tailwindcss": "^3.4.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "vitest": "^3.0.7"
+  },
+  "eslintConfig": {
+    "extends": [
+      "plugin:storybook/recommended"
+    ]
   }
 }

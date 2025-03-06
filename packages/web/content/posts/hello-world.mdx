@@ -1,0 +1,53 @@
+---
+title: Hello World
+date: 2024-03-14
+description: 欢迎来到我的博客！这是第一篇文章，我将分享为什么选择使用 Next.js + Contentlayer + MDX 来构建这个博客。
+tags: ['Next.js', 'Contentlayer', 'MDX', 'React']
+---
+
+# 为什么选择这个博客解决方案？
+
+在选择博客解决方案时，我考虑了以下几个关键因素：
+
+1. **性能** - Next.js 的静态生成功能确保了博客页面的快速加载
+2. **开发体验** - MDX 让我可以在 Markdown 中使用 React 组件
+3. **可维护性** - Contentlayer 提供了类型安全和优秀的开发体验
+4. **灵活性** - 完全可定制化的解决方案，可以根据需求进行扩展
+
+## 代码示例
+
+这是一个简单的 TypeScript 代码示例：
+
+```typescript
+interface Post {
+  title: string;
+  date: Date;
+  content: string;
+}
+
+function formatPost(post: Post): string {
+  return `${post.title} - ${post.date.toLocaleDateString()}`;
+}
+```
+
+## 使用自定义 React 组件
+
+MDX 允许我们在 Markdown 中使用 React 组件，这非常强大：
+
+```jsx
+import { Alert } from '@/components/ui/alert'
+
+<Alert>
+  这是一个自定义的 Alert 组件
+</Alert>
+```
+
+## 未来计划
+
+1. 添加评论功能
+2. 优化搜索体验
+3. 支持国际化
+4. 添加深色模式
+5. 集成统计功能
+
+感谢阅读我的第一篇博客文章！ 

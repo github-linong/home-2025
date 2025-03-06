@@ -2,6 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 防止滚动条跳动 */
+@layer base {
+  html {
+    overflow-y: scroll;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #CBD5E0 transparent;
+  }
+
+  /* Chrome, Edge, Safari */
+  *::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: #CBD5E0;
+    border-radius: 4px;
+    border: 2px solid transparent;
+  }
+}
+
+/* 暗色模式下的滚动条样式 */
+@media (prefers-color-scheme: dark) {
+  * {
+    scrollbar-color: #4A5568 transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: #4A5568;
+  }
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-rgb: 255, 255, 255;

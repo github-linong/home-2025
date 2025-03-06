@@ -1,3 +1,5 @@
+const { withContentlayer } = require('next-contentlayer')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -5,6 +7,7 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'api.dicebear.com',
+        port: '',
         pathname: '/7.x/**',
       },
     ],
@@ -13,4 +16,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig 
+module.exports = withContentlayer(nextConfig) 

@@ -1,12 +1,14 @@
-'use client'
-
-import { Inter } from 'next/font/google'
-import { SessionProvider } from 'next-auth/react'
-import { Header } from '@/components/layout/Header'
-import { Footer } from '@/components/layout/Footer'
 import './globals.css'
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import { ClientLayout } from '@/components/layout/ClientLayout'
 
 const inter = Inter({ subsets: ['latin'] })
+
+export const metadata: Metadata = {
+  title: 'Home 2025',
+  description: '未来智能家居解决方案',
+}
 
 export default function RootLayout({
   children,
@@ -14,17 +16,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="zh">
+    <html lang="zh-CN">
       <body className={inter.className}>
-        <SessionProvider>
-          <div className="min-h-screen flex flex-col">
-            <Header />
-            <main className="flex-1 pt-16">
-              {children}
-            </main>
-            <Footer />
-          </div>
-        </SessionProvider>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   )
