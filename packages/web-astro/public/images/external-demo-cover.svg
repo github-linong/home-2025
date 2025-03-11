@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="450" viewBox="0 0 800 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="450" fill="#6B7280"/>
+  <rect x="250" y="100" width="300" height="200" rx="8" fill="white"/>
+  <rect x="270" y="120" width="260" height="160" rx="4" fill="#E5E7EB"/>
+  <path d="M350 200L400 160L450 200L400 240L350 200Z" fill="#4B5563"/>
+  <text x="400" y="380" text-anchor="middle" font-family="Arial" font-size="48" fill="white">External Demo</text>
+</svg> 

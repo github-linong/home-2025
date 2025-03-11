@@ -14,7 +14,7 @@ module.exports = {
                 NODE_ENV: 'production',
                 PORT: 3000,
             },
-            pre_setup: 'pnpm install'
+            pre_setup: 'npm install -g pnpm && pnpm install'
         },
         {
             name: 'home-2025-prod',
@@ -27,7 +27,7 @@ module.exports = {
                 NODE_ENV: 'production',
                 PORT: 3000,
             },
-            pre_setup: 'pnpm install && pnpm build'
+            pre_setup: 'npm install -g pnpm && pnpm install && pnpm build'
         },
     ],
 }; 

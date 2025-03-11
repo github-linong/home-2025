@@ -1,0 +1,107 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { Image } from 'astro:assets';
+
+const projects = [
+  {
+    id: 'storybook',
+    title: '组件库',
+    description: '使用 Storybook 构建的组件库展示',
+    type: 'storybook',
+    url: 'http://localhost:6006',
+    cover: '/images/storybook-cover.svg',
+    tags: ['Storybook', 'Components', 'UI'],
+  },
+  {
+    id: 'cesium-kml',
+    title: 'Cesium KML 导出演示',
+    description: '使用 Cesium.js 构建的 KML 导出功能演示',
+    type: 'iframe',
+    url: '/demos/ExportKML.html',
+    cover: '/images/cesium-demo-cover.svg',
+    tags: ['Cesium', '3D', 'KML'],
+  },
+  {
+    id: 'demo-counter',
+    title: '计数器 Demo',
+    description: '使用 React + TypeScript 构建的简单计数器示例',
+    type: 'demo',
+    cover: '/images/counter-demo-cover.svg',
+    tags: ['React', 'TypeScript', 'Demo'],
+  },
+  {
+    id: 'external-demo',
+    title: '外部项目展示',
+    description: '通过 iframe 加载的外部项目示例',
+    type: 'iframe',
+    url: 'https://example.com/demo',
+    cover: '/images/external-demo-cover.svg',
+    tags: ['External', 'iframe'],
+  },
+];
+---
+
+<Layout title="项目展示 - Home 2025">
+  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100">项目展示</h1>
+        <div class="flex gap-4">
+          {/* 可以添加筛选按钮等 */}
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {projects.map((project) => (
+          <a 
+            href={`/projects/${project.id}`}
+            class="group bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
+          >
+            <div class="relative bg-gray-200 dark:bg-gray-700" style="aspect-ratio: 16/9;">
+              {project.cover ? (
+                <img
+                  src={project.cover}
+                  alt={project.title}
+                  class="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <div class="absolute inset-0 flex items-center justify-center text-gray-400 dark:text-gray-500">
+                  <svg class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              )}
+            </div>
+            <div class="p-6 h-[180px] relative">
+              <div class="group/title relative">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 truncate">
+                  {project.title}
+                </h2>
+                <div class="opacity-0 group-hover/title:opacity-100 transition-opacity absolute left-0 top-full mt-1 p-2 bg-gray-900 dark:bg-gray-700 text-white text-sm rounded-md shadow-lg z-20 pointer-events-none whitespace-normal max-w-xs">
+                  {project.title}
+                </div>
+              </div>
+              <div class="group/desc relative">
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-300 overflow-hidden line-clamp-2">
+                  {project.description}
+                </p>
+                <div class="opacity-0 group-hover/desc:opacity-100 transition-opacity absolute left-0 top-full mt-1 p-2 bg-gray-900 dark:bg-gray-700 text-white text-sm rounded-md shadow-lg z-20 pointer-events-none whitespace-normal max-w-xs">
+                  {project.description}
+                </div>
+              </div>
+              <div class="absolute bottom-6 left-6 right-6 flex flex-wrap gap-2">
+                {project.tags?.map((tag) => (
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
+</Layout> 

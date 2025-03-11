@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="450" viewBox="0 0 800 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="450" fill="#2F3C7E"/>
+  <circle cx="400" cy="225" r="100" fill="#4B61DD" stroke="white" stroke-width="4"/>
+  <path d="M400 175L425 250H375L400 175Z" fill="white"/>
+  <path d="M350 225L425 225" stroke="white" stroke-width="4"/>
+  <path d="M400 175L400 275" stroke="white" stroke-width="4"/>
+  <text x="400" y="380" text-anchor="middle" font-family="Arial" font-size="48" fill="white">Cesium KML Export</text>
+</svg> 
