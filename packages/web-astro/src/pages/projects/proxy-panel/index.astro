@@ -1,12 +1,12 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 
-const testUrl =
+const defaultUrl =
     "https://cors-www.lilnong.top/static/html/img-resize-merge-upload-config.html";
 const iframeUrls = {
-    queryUrl: `/projects/iframe/?url=${encodeURIComponent(testUrl)}`,
-    pathUrl: `/projects/iframe/${encodeURIComponent(testUrl)}`,
-    hashUrl: `/projects/iframe/#${encodeURIComponent(testUrl)}`,
+    queryUrl: `/projects/iframe/?url=${encodeURIComponent(defaultUrl)}`,
+    pathUrl: `/projects/iframe/${encodeURIComponent(defaultUrl)}`,
+    hashUrl: `/projects/iframe/#${encodeURIComponent(defaultUrl)}`,
 };
 ---
 
@@ -61,7 +61,7 @@ const iframeUrls = {
                             >
                             <code
                                 class="flex-1 text-sm bg-gray-100 dark:bg-gray-700 rounded px-2 py-1"
-                                >{testUrl}</code
+                                >{defaultUrl}</code
                             >
                         </div>
                         <div class="flex items-center space-x-2">
@@ -210,8 +210,49 @@ const iframeUrls = {
 </Layout>
 
 <script>
+    const STORAGE_KEY = "proxy-panel-url";
+
+    // 初始化页面
+    document.addEventListener("DOMContentLoaded", () => {
+        // 从 localStorage 获取保存的 URL
+        const savedUrl = localStorage.getItem(STORAGE_KEY);
+
+        // 如果有保存的 URL，更新页面上的 URL 显示和 iframe
+        if (savedUrl) {
+            // 更新 URL 输入框
+            const input = document.getElementById(
+                "test-url",
+            ) as HTMLInputElement;
+            if (input) {
+                input.value = savedUrl;
+            }
+
+            // 更新 URL 展示区域
+            const urls = generateUrls(savedUrl);
+            updateGeneratedUrls(urls);
+
+            // 更新原始 URL 显示
+            const originalUrlCode = document.querySelector(
+                ".flex-1.text-sm.bg-gray-100.dark\\:bg-gray-700.rounded.px-2.py-1",
+            );
+            if (originalUrlCode) {
+                originalUrlCode.textContent = savedUrl;
+            }
+
+            // 更新 iframe 的 src
+            const iframes = document.querySelectorAll("iframe");
+            if (iframes.length >= 3) {
+                iframes[0].src = urls.queryUrl;
+                iframes[1].src = urls.pathUrl;
+                iframes[2].src = urls.hashUrl;
+            }
+        }
+    });
+
     function generateUrls(inputUrl: string) {
         const encoded = encodeURIComponent(inputUrl);
+        // 保存到 localStorage
+        localStorage.setItem(STORAGE_KEY, inputUrl);
         return {
             queryUrl: `/projects/iframe/?url=${encoded}`,
             pathUrl: `/projects/iframe/${encoded}`,
