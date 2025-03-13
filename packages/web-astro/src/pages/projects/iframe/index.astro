@@ -1,0 +1,178 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import {
+    isAllowedDomain,
+    getDomainFromUrl,
+} from "../../../config/allowedDomains";
+
+// 设置为服务端渲染模式
+export const prerender = false;
+
+// 获取目标 URL 的函数，按优先级处理不同的 URL 形式
+function getTargetUrl(request: Request) {
+    try {
+        // 1. 优先从 URL 参数中获取
+        const url = new URL(request.url);
+        const urlParam = url.searchParams.get("url");
+        if (urlParam) {
+            const decodedUrl = decodeURIComponent(urlParam);
+            if (isAllowedDomain(decodedUrl)) {
+                return {
+                    url: decodedUrl,
+                    domain: getDomainFromUrl(decodedUrl),
+                };
+            }
+        }
+    } catch (e) {
+        console.error("Error parsing URL:", e);
+    }
+    return null;
+}
+
+const urlInfo = getTargetUrl(Astro.request);
+---
+
+<Layout
+    title={urlInfo
+        ? `${urlInfo.domain} - 外部页面展示 - Home 2025`
+        : "外部页面展示 - Home 2025"}
+>
+    <div
+        class="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800"
+    >
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <div
+                class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden"
+            >
+                <div
+                    class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"
+                >
+                    <div class="flex items-center space-x-4">
+                        <a
+                            href="/projects"
+                            class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                        >
+                            <svg
+                                class="w-6 h-6"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                        </a>
+                        <h1
+                            class="text-xl font-semibold text-gray-900 dark:text-white truncate"
+                            id="domain-title"
+                        >
+                            {urlInfo ? urlInfo.domain : "加载中..."}
+                        </h1>
+                    </div>
+                    <a
+                        href={urlInfo?.url || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
+                        id="open-new-tab"
+                    >
+                        <span class="sr-only">在新窗口打开</span>
+                        <svg
+                            class="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                            ></path>
+                        </svg>
+                    </a>
+                </div>
+                <div class="relative w-full" style="height: calc(100vh);">
+                    <iframe
+                        src={urlInfo?.url || ""}
+                        class="absolute inset-0 w-full h-full border-0 px-2 py-2"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        loading="lazy"
+                        sandbox="allow-scripts allow-same-origin allow-forms"
+                        id="content-iframe"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    // 从 URL 中获取域名
+    function getDomainFromUrl(url: string): string {
+        return new URL(url).hostname;
+    }
+
+    // 从 hash 中获取 URL 并验证
+    async function validateAndLoadUrl(url: string) {
+        try {
+            // 验证 URL 格式
+            const domain = getDomainFromUrl(url);
+
+            // 更新页面标题和链接
+            document.title = `${domain} - 外部页面展示 - Home 2025`;
+            const domainTitle = document.getElementById("domain-title");
+            if (domainTitle) {
+                domainTitle.textContent = domain;
+            }
+
+            const openNewTab = document.getElementById(
+                "open-new-tab",
+            ) as HTMLAnchorElement;
+            if (openNewTab) {
+                openNewTab.href = url;
+            }
+
+            // 设置 iframe src
+            const iframe = document.getElementById(
+                "content-iframe",
+            ) as HTMLIFrameElement;
+            if (iframe) {
+                iframe.src = url;
+            }
+        } catch (e) {
+            console.error("Invalid URL:", e);
+            window.location.href = "/404";
+        }
+    }
+
+    // 检查是否需要处理 hash
+    const iframe = document.getElementById(
+        "content-iframe",
+    ) as HTMLIFrameElement;
+    if (
+        (!iframe.src ||
+            iframe.src === window.location.href ||
+            iframe.src === window.location.origin + window.location.pathname) &&
+        window.location.hash
+    ) {
+        const url = decodeURIComponent(window.location.hash.slice(1));
+        validateAndLoadUrl(url);
+    }
+
+    // 监听 hash 变化
+    window.addEventListener("hashchange", () => {
+        if (window.location.hash) {
+            const url = decodeURIComponent(window.location.hash.slice(1));
+            validateAndLoadUrl(url);
+        }
+    });
+</script>
+
+<style>
+    iframe {
+        background: transparent;
+    }
+</style>

@@ -1,0 +1,304 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+
+const testUrl =
+    "https://cors-www.lilnong.top/static/html/img-resize-merge-upload-config.html";
+const iframeUrls = {
+    queryUrl: `/projects/iframe/?url=${encodeURIComponent(testUrl)}`,
+    pathUrl: `/projects/iframe/${encodeURIComponent(testUrl)}`,
+    hashUrl: `/projects/iframe/#${encodeURIComponent(testUrl)}`,
+};
+---
+
+<Layout title="代理面板 - Home 2025">
+    <div
+        class="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800"
+    >
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <div class="space-y-4">
+                <!-- 标题和返回按钮 -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <a
+                            href="/projects"
+                            class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                        >
+                            <svg
+                                class="w-6 h-6"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                        </a>
+                        <h1
+                            class="text-2xl font-bold text-gray-900 dark:text-white"
+                        >
+                            代理面板
+                        </h1>
+                    </div>
+                </div>
+
+                <!-- URL 展示区域 -->
+                <div
+                    class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 space-y-4"
+                >
+                    <h2
+                        class="text-lg font-semibold text-gray-900 dark:text-white"
+                    >
+                        测试 URL
+                    </h2>
+                    <div class="space-y-2">
+                        <div class="flex items-center space-x-2">
+                            <span
+                                class="text-sm font-medium text-gray-500 dark:text-gray-400 w-24"
+                                >原始 URL：</span
+                            >
+                            <code
+                                class="flex-1 text-sm bg-gray-100 dark:bg-gray-700 rounded px-2 py-1"
+                                >{testUrl}</code
+                            >
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span
+                                class="text-sm font-medium text-gray-500 dark:text-gray-400 w-24"
+                                >Query 形式：</span
+                            >
+                            <code
+                                class="flex-1 text-sm bg-gray-100 dark:bg-gray-700 rounded px-2 py-1"
+                                >{iframeUrls.queryUrl}</code
+                            >
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span
+                                class="text-sm font-medium text-gray-500 dark:text-gray-400 w-24"
+                                >Path 形式：</span
+                            >
+                            <code
+                                class="flex-1 text-sm bg-gray-100 dark:bg-gray-700 rounded px-2 py-1"
+                                >{iframeUrls.pathUrl}</code
+                            >
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span
+                                class="text-sm font-medium text-gray-500 dark:text-gray-400 w-24"
+                                >Hash 形式：</span
+                            >
+                            <code
+                                class="flex-1 text-sm bg-gray-100 dark:bg-gray-700 rounded px-2 py-1"
+                                >{iframeUrls.hashUrl}</code
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- iframe 展示区域 -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <!-- Query 参数形式 -->
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden"
+                    >
+                        <div
+                            class="p-4 border-b border-gray-200 dark:border-gray-700"
+                        >
+                            <h3
+                                class="text-lg font-semibold text-gray-900 dark:text-white"
+                            >
+                                Query 参数形式
+                            </h3>
+                        </div>
+                        <div class="relative" style="height: 400px;">
+                            <iframe
+                                src={iframeUrls.queryUrl}
+                                class="absolute inset-0 w-full h-full"
+                                loading="lazy"></iframe>
+                        </div>
+                    </div>
+
+                    <!-- Path 参数形式 -->
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden"
+                    >
+                        <div
+                            class="p-4 border-b border-gray-200 dark:border-gray-700"
+                        >
+                            <h3
+                                class="text-lg font-semibold text-gray-900 dark:text-white"
+                            >
+                                Path 参数形式
+                            </h3>
+                        </div>
+                        <div class="relative" style="height: 400px;">
+                            <iframe
+                                src={iframeUrls.pathUrl}
+                                class="absolute inset-0 w-full h-full"
+                                loading="lazy"></iframe>
+                        </div>
+                    </div>
+
+                    <!-- Hash 形式 -->
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden"
+                    >
+                        <div
+                            class="p-4 border-b border-gray-200 dark:border-gray-700"
+                        >
+                            <h3
+                                class="text-lg font-semibold text-gray-900 dark:text-white"
+                            >
+                                Hash 形式
+                            </h3>
+                        </div>
+                        <div class="relative" style="height: 400px;">
+                            <iframe
+                                src={iframeUrls.hashUrl}
+                                class="absolute inset-0 w-full h-full"
+                                loading="lazy"></iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- URL 测试工具 -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <h2
+                        class="text-lg font-semibold text-gray-900 dark:text-white mb-4"
+                    >
+                        URL 测试工具
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label
+                                for="test-url"
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                            >
+                                输入要测试的 URL
+                            </label>
+                            <input
+                                type="url"
+                                id="test-url"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                                placeholder="https://example.com"
+                            />
+                        </div>
+                        <div class="flex space-x-4">
+                            <button
+                                id="generate-urls"
+                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            >
+                                生成 URL
+                            </button>
+                            <button
+                                id="copy-urls"
+                                class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                            >
+                                复制所有 URL
+                            </button>
+                        </div>
+                        <div id="generated-urls" class="space-y-2 hidden">
+                            <!-- 生成的 URL 将在这里显示 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    function generateUrls(inputUrl: string) {
+        const encoded = encodeURIComponent(inputUrl);
+        return {
+            queryUrl: `/projects/iframe/?url=${encoded}`,
+            pathUrl: `/projects/iframe/${encoded}`,
+            hashUrl: `/projects/iframe/#${encoded}`,
+        };
+    }
+
+    function updateGeneratedUrls(urls: Record<string, string>) {
+        const container = document.getElementById("generated-urls");
+        if (!container) return;
+
+        container.innerHTML = Object.entries(urls)
+            .map(
+                ([type, url]) => `
+        <div class="flex items-center space-x-2">
+          <span class="text-sm font-medium text-gray-500 dark:text-gray-400 w-24">${type}：</span>
+          <code class="flex-1 text-sm bg-gray-100 dark:bg-gray-700 rounded px-2 py-1">${url}</code>
+          <button
+            class="copy-button px-2 py-1 text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
+            data-url="${url}"
+          >
+            复制
+          </button>
+        </div>
+      `,
+            )
+            .join("");
+
+        container.classList.remove("hidden");
+
+        // 添加复制按钮事件监听
+        document.querySelectorAll(".copy-button").forEach((button) => {
+            button.addEventListener("click", async (e) => {
+                const url = (e.currentTarget as HTMLButtonElement).dataset.url;
+                if (url) {
+                    await navigator.clipboard.writeText(url);
+                    (e.currentTarget as HTMLButtonElement).textContent =
+                        "已复制！";
+                    setTimeout(() => {
+                        (e.currentTarget as HTMLButtonElement).textContent =
+                            "复制";
+                    }, 2000);
+                }
+            });
+        });
+    }
+
+    // 生成 URL 按钮点击事件
+    document.getElementById("generate-urls")?.addEventListener("click", () => {
+        const input = document.getElementById("test-url") as HTMLInputElement;
+        if (input.value) {
+            const urls = generateUrls(input.value);
+            updateGeneratedUrls(urls);
+        }
+    });
+
+    // 复制所有 URL 按钮点击事件
+    document
+        .getElementById("copy-urls")
+        ?.addEventListener("click", async () => {
+            const container = document.getElementById("generated-urls");
+            if (!container) return;
+
+            const urls = Array.from(container.querySelectorAll("code"))
+                .map((code) => code.textContent)
+                .filter(Boolean)
+                .join("\n");
+
+            if (urls) {
+                await navigator.clipboard.writeText(urls);
+                const button = document.getElementById("copy-urls");
+                if (button) {
+                    button.textContent = "已复制！";
+                    setTimeout(() => {
+                        button.textContent = "复制所有 URL";
+                    }, 2000);
+                }
+            }
+        });
+</script>
+
+<style>
+    input[type="url"] {
+        @apply dark:bg-gray-700 dark:border-gray-600 dark:text-white;
+    }
+
+    button {
+        @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+</style>
