@@ -8,6 +8,11 @@ const iframeUrls = {
     pathUrl: `/projects/iframe/${encodeURIComponent(defaultUrl)}`,
     hashUrl: `/projects/iframe/#${encodeURIComponent(defaultUrl)}`,
 };
+const serverProxyUrls = {
+    queryUrl: `/projects/astro-server-proxy/?url=${encodeURIComponent(defaultUrl)}`,
+    pathUrl: `/projects/astro-server-proxy/${encodeURIComponent(defaultUrl)}`,
+    hashUrl: `/projects/astro-server-proxy/#${encodeURIComponent(defaultUrl)}`,
+};
 ---
 
 <Layout title="代理面板 - Home 2025">
@@ -98,8 +103,8 @@ const iframeUrls = {
                 </div>
 
                 <!-- iframe 展示区域 -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <!-- Query 参数形式 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- iframe 代理 - Query 形式 -->
                     <div
                         class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden"
                     >
@@ -109,10 +114,10 @@ const iframeUrls = {
                             <h3
                                 class="text-lg font-semibold text-gray-900 dark:text-white"
                             >
-                                Query 参数形式
+                                iframe 代理 - Query
                             </h3>
                         </div>
-                        <div class="relative" style="height: 400px;">
+                        <div class="relative" style="height: 300px;">
                             <iframe
                                 src={iframeUrls.queryUrl}
                                 class="absolute inset-0 w-full h-full"
@@ -120,7 +125,7 @@ const iframeUrls = {
                         </div>
                     </div>
 
-                    <!-- Path 参数形式 -->
+                    <!-- iframe 代理 - Path 形式 -->
                     <div
                         class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden"
                     >
@@ -130,10 +135,10 @@ const iframeUrls = {
                             <h3
                                 class="text-lg font-semibold text-gray-900 dark:text-white"
                             >
-                                Path 参数形式
+                                iframe 代理 - Path
                             </h3>
                         </div>
-                        <div class="relative" style="height: 400px;">
+                        <div class="relative" style="height: 300px;">
                             <iframe
                                 src={iframeUrls.pathUrl}
                                 class="absolute inset-0 w-full h-full"
@@ -141,7 +146,7 @@ const iframeUrls = {
                         </div>
                     </div>
 
-                    <!-- Hash 形式 -->
+                    <!-- iframe 代理 - Hash 形式 -->
                     <div
                         class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden"
                     >
@@ -151,12 +156,75 @@ const iframeUrls = {
                             <h3
                                 class="text-lg font-semibold text-gray-900 dark:text-white"
                             >
-                                Hash 形式
+                                iframe 代理 - Hash
                             </h3>
                         </div>
-                        <div class="relative" style="height: 400px;">
+                        <div class="relative" style="height: 300px;">
                             <iframe
                                 src={iframeUrls.hashUrl}
+                                class="absolute inset-0 w-full h-full"
+                                loading="lazy"></iframe>
+                        </div>
+                    </div>
+
+                    <!-- 服务器代理 - Query 形式 -->
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden"
+                    >
+                        <div
+                            class="p-4 border-b border-gray-200 dark:border-gray-700"
+                        >
+                            <h3
+                                class="text-lg font-semibold text-gray-900 dark:text-white"
+                            >
+                                服务器代理 - Query
+                            </h3>
+                        </div>
+                        <div class="relative" style="height: 300px;">
+                            <iframe
+                                src={serverProxyUrls.queryUrl}
+                                class="absolute inset-0 w-full h-full"
+                                loading="lazy"></iframe>
+                        </div>
+                    </div>
+
+                    <!-- 服务器代理 - Path 形式 -->
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden"
+                    >
+                        <div
+                            class="p-4 border-b border-gray-200 dark:border-gray-700"
+                        >
+                            <h3
+                                class="text-lg font-semibold text-gray-900 dark:text-white"
+                            >
+                                服务器代理 - Path
+                            </h3>
+                        </div>
+                        <div class="relative" style="height: 300px;">
+                            <iframe
+                                src={serverProxyUrls.pathUrl}
+                                class="absolute inset-0 w-full h-full"
+                                loading="lazy"></iframe>
+                        </div>
+                    </div>
+
+                    <!-- 服务器代理 - Hash 形式 -->
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden"
+                    >
+                        <div
+                            class="p-4 border-b border-gray-200 dark:border-gray-700"
+                        >
+                            <h3
+                                class="text-lg font-semibold text-gray-900 dark:text-white"
+                            >
+                                服务器代理 - Hash
+                            </h3>
+                        </div>
+                        <div class="relative" style="height: 300px;">
+                            <iframe
+                                src={serverProxyUrls.hashUrl}
                                 class="absolute inset-0 w-full h-full"
                                 loading="lazy"></iframe>
                         </div>
@@ -241,10 +309,13 @@ const iframeUrls = {
 
             // 更新 iframe 的 src
             const iframes = document.querySelectorAll("iframe");
-            if (iframes.length >= 3) {
-                iframes[0].src = urls.queryUrl;
-                iframes[1].src = urls.pathUrl;
-                iframes[2].src = urls.hashUrl;
+            if (iframes.length >= 6) {
+                iframes[0].src = urls.iframeQueryUrl;
+                iframes[1].src = urls.iframePathUrl;
+                iframes[2].src = urls.iframeHashUrl;
+                iframes[3].src = urls.serverQueryUrl;
+                iframes[4].src = urls.serverPathUrl;
+                iframes[5].src = urls.serverHashUrl;
             }
         }
     });
@@ -254,9 +325,12 @@ const iframeUrls = {
         // 保存到 localStorage
         localStorage.setItem(STORAGE_KEY, inputUrl);
         return {
-            queryUrl: `/projects/iframe/?url=${encoded}`,
-            pathUrl: `/projects/iframe/${encoded}`,
-            hashUrl: `/projects/iframe/#${encoded}`,
+            iframeQueryUrl: `/projects/iframe/?url=${encoded}`,
+            iframePathUrl: `/projects/iframe/${encoded}`,
+            iframeHashUrl: `/projects/iframe/#${encoded}`,
+            serverQueryUrl: `/projects/astro-server-proxy/?url=${encoded}`,
+            serverPathUrl: `/projects/astro-server-proxy/${encoded}`,
+            serverHashUrl: `/projects/astro-server-proxy/#${encoded}`,
         };
     }
 
@@ -264,23 +338,56 @@ const iframeUrls = {
         const container = document.getElementById("generated-urls");
         if (!container) return;
 
-        container.innerHTML = Object.entries(urls)
-            .map(
-                ([type, url]) => `
-        <div class="flex items-center space-x-2">
-          <span class="text-sm font-medium text-gray-500 dark:text-gray-400 w-24">${type}：</span>
-          <code class="flex-1 text-sm bg-gray-100 dark:bg-gray-700 rounded px-2 py-1">${url}</code>
-          <button
-            class="copy-button px-2 py-1 text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
-            data-url="${url}"
-          >
-            复制
-          </button>
-        </div>
-      `,
-            )
-            .join("");
+        // 创建 iframe 代理和服务器代理的分组
+        const iframeGroup = document.createElement("div");
+        iframeGroup.className = "mb-4";
+        iframeGroup.innerHTML = `
+            <h4 class="text-md font-medium text-gray-900 dark:text-white mb-2">iframe 代理</h4>
+            <div class="space-y-2">
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400 w-24">Query 形式：</span>
+                    <code class="flex-1 text-sm bg-gray-100 dark:bg-gray-700 rounded px-2 py-1">${urls.iframeQueryUrl}</code>
+                    <button class="copy-button px-2 py-1 text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400" data-url="${urls.iframeQueryUrl}">复制</button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400 w-24">Path 形式：</span>
+                    <code class="flex-1 text-sm bg-gray-100 dark:bg-gray-700 rounded px-2 py-1">${urls.iframePathUrl}</code>
+                    <button class="copy-button px-2 py-1 text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400" data-url="${urls.iframePathUrl}">复制</button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400 w-24">Hash 形式：</span>
+                    <code class="flex-1 text-sm bg-gray-100 dark:bg-gray-700 rounded px-2 py-1">${urls.iframeHashUrl}</code>
+                    <button class="copy-button px-2 py-1 text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400" data-url="${urls.iframeHashUrl}">复制</button>
+                </div>
+            </div>
+        `;
 
+        const serverGroup = document.createElement("div");
+        serverGroup.innerHTML = `
+            <h4 class="text-md font-medium text-gray-900 dark:text-white mb-2">服务器代理</h4>
+            <div class="space-y-2">
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400 w-24">Query 形式：</span>
+                    <code class="flex-1 text-sm bg-gray-100 dark:bg-gray-700 rounded px-2 py-1">${urls.serverQueryUrl}</code>
+                    <button class="copy-button px-2 py-1 text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400" data-url="${urls.serverQueryUrl}">复制</button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400 w-24">Path 形式：</span>
+                    <code class="flex-1 text-sm bg-gray-100 dark:bg-gray-700 rounded px-2 py-1">${urls.serverPathUrl}</code>
+                    <button class="copy-button px-2 py-1 text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400" data-url="${urls.serverPathUrl}">复制</button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400 w-24">Hash 形式：</span>
+                    <code class="flex-1 text-sm bg-gray-100 dark:bg-gray-700 rounded px-2 py-1">${urls.serverHashUrl}</code>
+                    <button class="copy-button px-2 py-1 text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400" data-url="${urls.serverHashUrl}">复制</button>
+                </div>
+            </div>
+        `;
+
+        // 清空容器并添加分组
+        container.innerHTML = "";
+        container.appendChild(iframeGroup);
+        container.appendChild(serverGroup);
         container.classList.remove("hidden");
 
         // 添加复制按钮事件监听
@@ -306,6 +413,17 @@ const iframeUrls = {
         if (input.value) {
             const urls = generateUrls(input.value);
             updateGeneratedUrls(urls);
+
+            // 更新 iframe 的 src
+            const iframes = document.querySelectorAll("iframe");
+            if (iframes.length >= 6) {
+                iframes[0].src = urls.iframeQueryUrl;
+                iframes[1].src = urls.iframePathUrl;
+                iframes[2].src = urls.iframeHashUrl;
+                iframes[3].src = urls.serverQueryUrl;
+                iframes[4].src = urls.serverPathUrl;
+                iframes[5].src = urls.serverHashUrl;
+            }
         }
     });
 
