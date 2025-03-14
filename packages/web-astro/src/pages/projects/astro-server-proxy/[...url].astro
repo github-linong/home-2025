@@ -12,23 +12,41 @@ export const prerender = false;
 function getTargetUrl(params: Record<string, string | undefined>) {
     try {
         if (params.url) {
-            const decodedUrl = decodeURIComponent(params.url);
-            if (isAllowedDomain(decodedUrl)) {
-                return {
-                    url: decodedUrl,
-                    domain: getDomainFromUrl(decodedUrl),
-                };
+            try {
+                // 尝试解码路径参数
+                const decodedUrl = decodeURIComponent(params.url);
+                
+                // 确保有协议前缀
+                let fullUrl = decodedUrl;
+                if (!decodedUrl.startsWith('http://') && !decodedUrl.startsWith('https://')) {
+                    fullUrl = `https://${decodedUrl}`;
+                }
+                
+                // 验证 URL 和域名
+                if (isAllowedDomain(fullUrl)) {
+                    console.log("Valid URL from path parameter:", fullUrl);
+                    return {
+                        url: fullUrl,
+                        domain: getDomainFromUrl(fullUrl),
+                    };
+                } else {
+                    console.log("Domain not allowed:", fullUrl);
+                }
+            } catch (e) {
+                console.error("Error parsing path URL:", params.url, e);
             }
+        } else {
+            console.log("No path URL parameter found");
         }
     } catch (e) {
-        console.error("Error parsing URL:", e);
+        console.error("Error in getTargetUrl:", e);
     }
     return null;
 }
 
 // 获取代理 URL
 function getProxyUrl(url: string) {
-    return `/api/proxy/${encodeURIComponent(url)}`;
+    return `/api/astro-server-proxy/${encodeURIComponent(url)}`;
 }
 
 const urlInfo = getTargetUrl(Astro.params);

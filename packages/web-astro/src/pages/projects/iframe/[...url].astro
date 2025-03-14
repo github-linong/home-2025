@@ -4,9 +4,17 @@ import {
   isAllowedDomain,
   getDomainFromUrl,
 } from "../../../config/allowedDomains";
+import { getRelativePath } from "../../../utils/path";
 
 // 设置为服务端渲染模式
 export const prerender = false;
+
+// 获取绝对路径
+function getAbsolutePath(from: string, to: string): string {
+  const relativePath = getRelativePath(from, to);
+  const baseUrl = Astro.url.origin;
+  return new URL(relativePath, new URL(from, baseUrl)).pathname;
+}
 
 // 获取目标 URL 的函数，按优先级处理不同的 URL 形式
 function getTargetUrl(
@@ -18,25 +26,47 @@ function getTargetUrl(
     const url = new URL(request.url);
     const urlParam = url.searchParams.get("url");
     if (urlParam) {
-      const decodedUrl = decodeURIComponent(urlParam);
-      if (isAllowedDomain(decodedUrl)) {
-        return { url: decodedUrl, domain: getDomainFromUrl(decodedUrl) };
+      try {
+        const decodedUrl = decodeURIComponent(urlParam);
+        if (isAllowedDomain(decodedUrl)) {
+          return { url: decodedUrl, domain: getDomainFromUrl(decodedUrl) };
+        }
+      } catch (e) {
+        console.error("Error decoding URL parameter:", e);
       }
     }
 
     // 2. 其次从路径参数中获取
     const { url: pathUrl } = params;
     if (pathUrl) {
-      const decodedUrl = decodeURIComponent(pathUrl);
-      if (isAllowedDomain(decodedUrl)) {
-        return { url: decodedUrl, domain: getDomainFromUrl(decodedUrl) };
+      try {
+        // 尝试解码路径参数
+        const decodedUrl = decodeURIComponent(pathUrl);
+        
+        // 确保有协议前缀
+        let fullUrl = decodedUrl;
+        if (!decodedUrl.startsWith('http://') && !decodedUrl.startsWith('https://')) {
+          fullUrl = `https://${decodedUrl}`;
+        }
+        
+        // 验证 URL 和域名
+        if (isAllowedDomain(fullUrl)) {
+          console.log("Valid URL from path parameter:", fullUrl);
+          return { url: fullUrl, domain: getDomainFromUrl(fullUrl) };
+        } else {
+          console.log("Domain not allowed:", fullUrl);
+        }
+      } catch (e) {
+        console.error("Error parsing path URL:", pathUrl, e);
       }
+    } else {
+      console.log("No path URL parameter found");
     }
 
     // 3. 如果都没有，返回 null，让客户端处理 hash
     return null;
   } catch (e) {
-    console.error("Error parsing URL:", e);
+    console.error("Error in getTargetUrl:", e);
     return null;
   }
 }
@@ -61,7 +91,7 @@ const urlInfo = getTargetUrl(Astro.request, Astro.params);
         >
           <div class="flex items-center space-x-4">
             <a
-              href="/projects"
+              href={getAbsolutePath(Astro.url.pathname, "/projects")}
               class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
             >
               <svg
@@ -124,7 +154,44 @@ const urlInfo = getTargetUrl(Astro.request, Astro.params);
 <script>
   // 从 URL 中获取域名
   function getDomainFromUrl(url: string): string {
-    return new URL(url).hostname;
+    try {
+      return new URL(url).hostname;
+    } catch (e) {
+      console.error("Invalid URL:", e);
+      return "";
+    }
+  }
+
+  // 获取相对路径的函数
+  function getRelativePath(from: string, to: string): string {
+    // 移除开头的斜杠
+    from = from.replace(/^\//, '');
+    to = to.replace(/^\//, '');
+    
+    // 分割路径
+    const fromParts = from.split('/').filter(Boolean);
+    const toParts = to.split('/').filter(Boolean);
+    
+    // 计算共同前缀长度
+    let i = 0;
+    while (i < fromParts.length && i < toParts.length && fromParts[i] === toParts[i]) {
+        i++;
+    }
+    
+    // 构建相对路径
+    const upCount = fromParts.length - i - 1; // 减 1 是因为当前页面名称不计入
+    const relativePath = upCount > 0 
+        ? Array(upCount).fill('..').join('/') + '/' + toParts.slice(i).join('/')
+        : './' + toParts.slice(i).join('/');
+        
+    return relativePath || './';
+  }
+  
+  // 获取绝对路径的函数
+  function getAbsolutePath(from: string, to: string): string {
+    const relativePath = getRelativePath(from, to);
+    const baseUrl = window.location.origin;
+    return new URL(relativePath, new URL(from, baseUrl)).pathname;
   }
 
   // 从 hash 中获取 URL 并验证
@@ -132,6 +199,7 @@ const urlInfo = getTargetUrl(Astro.request, Astro.params);
     try {
       // 验证 URL 格式
       const domain = getDomainFromUrl(url);
+      if (!domain) return;
 
       // 更新页面标题和链接
       document.title = `${domain} - 外部页面展示 - Home 2025`;
@@ -156,7 +224,10 @@ const urlInfo = getTargetUrl(Astro.request, Astro.params);
       }
     } catch (e) {
       console.error("Invalid URL:", e);
-      window.location.href = "/404";
+      // 使用相对路径重定向到 404 页面
+      const currentPath = window.location.pathname;
+      const relativeTo404 = getAbsolutePath(currentPath, "/404");
+      window.location.href = relativeTo404;
     }
   }
 

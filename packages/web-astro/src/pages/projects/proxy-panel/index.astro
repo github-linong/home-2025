@@ -1,8 +1,20 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
+import { getRelativePath } from "../../../utils/path";
 
 const defaultUrl =
     "https://cors-www.lilnong.top/static/html/img-resize-merge-upload-config.html";
+
+// 计算绝对路径
+function getAbsolutePath(from: string, to: string): string {
+    const relativePath = getRelativePath(from, to);
+    const baseUrl = Astro.url.origin;
+    return new URL(relativePath, new URL(from, baseUrl)).pathname;
+}
+
+const iframeBasePath = getAbsolutePath(Astro.url.pathname, "/projects/iframe");
+const serverProxyBasePath = getAbsolutePath(Astro.url.pathname, "/projects/astro-server-proxy");
+
 const iframeUrls = {
     queryUrl: `/projects/iframe/?url=${encodeURIComponent(defaultUrl)}`,
     pathUrl: `/projects/iframe/${encodeURIComponent(defaultUrl)}`,
@@ -278,6 +290,31 @@ const serverProxyUrls = {
 </Layout>
 
 <script>
+    // 获取相对路径的函数
+    function getRelativePath(from: string, to: string): string {
+        // 移除开头的斜杠
+        from = from.replace(/^\//, '');
+        to = to.replace(/^\//, '');
+        
+        // 分割路径
+        const fromParts = from.split('/').filter(Boolean);
+        const toParts = to.split('/').filter(Boolean);
+        
+        // 计算共同前缀长度
+        let i = 0;
+        while (i < fromParts.length && i < toParts.length && fromParts[i] === toParts[i]) {
+            i++;
+        }
+        
+        // 构建相对路径
+        const upCount = fromParts.length - i - 1; // 减 1 是因为当前页面名称不计入
+        const relativePath = upCount > 0 
+            ? Array(upCount).fill('..').join('/') + '/' + toParts.slice(i).join('/')
+            : './' + toParts.slice(i).join('/');
+            
+        return relativePath || './';
+    }
+
     const STORAGE_KEY = "proxy-panel-url";
 
     // 初始化页面
@@ -324,6 +361,7 @@ const serverProxyUrls = {
         const encoded = encodeURIComponent(inputUrl);
         // 保存到 localStorage
         localStorage.setItem(STORAGE_KEY, inputUrl);
+        
         return {
             iframeQueryUrl: `/projects/iframe/?url=${encoded}`,
             iframePathUrl: `/projects/iframe/${encoded}`,

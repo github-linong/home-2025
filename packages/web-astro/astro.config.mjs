@@ -15,6 +15,7 @@ export default defineConfig({
         mode: 'standalone',
     }),
     site: 'https://home-2025.lilnong.top',
+    base: './',
     compressHTML: true,
     build: {
         inlineStylesheets: 'auto',

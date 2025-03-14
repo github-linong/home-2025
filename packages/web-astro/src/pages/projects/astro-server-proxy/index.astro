@@ -1,9 +1,17 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import { isAllowedDomain, getDomainFromUrl } from "../../../config/allowedDomains";
+import { getRelativePath } from "../../../utils/path";
 
 // 设置为服务端渲染模式
 export const prerender = false;
+
+// 获取绝对路径
+function getAbsolutePath(from: string, to: string): string {
+  const relativePath = getRelativePath(from, to);
+  const baseUrl = Astro.url.origin;
+  return new URL(relativePath, new URL(from, baseUrl)).pathname;
+}
 
 // 获取目标 URL 的函数，从 URL 参数中获取
 function getTargetUrl(request: Request) {
@@ -28,7 +36,9 @@ function getTargetUrl(request: Request) {
 
 // 获取代理 URL
 function getProxyUrl(url: string) {
-  return `/api/proxy/${encodeURIComponent(url)}`;
+  const currentPath = Astro.url.pathname;
+  const relativeToApi = getAbsolutePath(currentPath, "/astro-server-proxy");
+  return `${relativeToApi}/${encodeURIComponent(url)}`;
 }
 
 const urlInfo = getTargetUrl(Astro.request);
@@ -46,7 +56,7 @@ const proxyUrl = urlInfo ? getProxyUrl(urlInfo.url) : "";
         <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <div class="flex items-center space-x-4">
             <a
-              href="/projects"
+              href={getAbsolutePath(Astro.url.pathname, "/projects")}
               class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
             >
               <svg
@@ -120,7 +130,7 @@ const proxyUrl = urlInfo ? getProxyUrl(urlInfo.url) : "";
                   <li>• Hash 方式：<code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">/projects/astro-server-proxy/#https://example.com</code></li>
                 </ul>
                 <a
-                  href="/projects/proxy-panel"
+                  href={getAbsolutePath(Astro.url.pathname, "/projects/proxy-panel")}
                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   前往代理面板
@@ -143,6 +153,38 @@ const proxyUrl = urlInfo ? getProxyUrl(urlInfo.url) : "";
       console.error("Invalid URL:", e);
       return "";
     }
+  }
+
+  // 获取相对路径的函数
+  function getRelativePath(from: string, to: string): string {
+    // 移除开头的斜杠
+    from = from.replace(/^\//, '');
+    to = to.replace(/^\//, '');
+    
+    // 分割路径
+    const fromParts = from.split('/').filter(Boolean);
+    const toParts = to.split('/').filter(Boolean);
+    
+    // 计算共同前缀长度
+    let i = 0;
+    while (i < fromParts.length && i < toParts.length && fromParts[i] === toParts[i]) {
+        i++;
+    }
+    
+    // 构建相对路径
+    const upCount = fromParts.length - i - 1; // 减 1 是因为当前页面名称不计入
+    const relativePath = upCount > 0 
+        ? Array(upCount).fill('..').join('/') + '/' + toParts.slice(i).join('/')
+        : './' + toParts.slice(i).join('/');
+        
+    return relativePath || './';
+  }
+  
+  // 获取绝对路径的函数
+  function getAbsolutePath(from: string, to: string): string {
+    const relativePath = getRelativePath(from, to);
+    const baseUrl = window.location.origin;
+    return new URL(relativePath, new URL(from, baseUrl)).pathname;
   }
 
   // 从 hash 中获取 URL 并验证
@@ -196,7 +238,9 @@ const proxyUrl = urlInfo ? getProxyUrl(urlInfo.url) : "";
       }
 
       // 创建代理 URL
-      const proxyUrl = `/api/proxy/${encodeURIComponent(url)}`;
+      const currentPath = window.location.pathname;
+      const relativeToApi = getAbsolutePath(currentPath, "/astro-server-proxy");
+      const proxyUrl = `${relativeToApi}/${encodeURIComponent(url)}`;
 
       // 获取内容容器
       const contentContainer = document.querySelector('.relative.w-full');
