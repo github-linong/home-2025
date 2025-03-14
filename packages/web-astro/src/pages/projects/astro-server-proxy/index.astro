@@ -3,9 +3,6 @@ import Layout from "../../../layouts/Layout.astro";
 import { isAllowedDomain, getDomainFromUrl } from "../../../config/allowedDomains";
 import { getRelativePath } from "../../../utils/path";
 
-// 设置为服务端渲染模式
-export const prerender = false;
-
 // 获取绝对路径
 function getAbsolutePath(from: string, to: string): string {
   const relativePath = getRelativePath(from, to);
@@ -37,7 +34,7 @@ function getTargetUrl(request: Request) {
 // 获取代理 URL
 function getProxyUrl(url: string) {
   const currentPath = Astro.url.pathname;
-  const relativeToApi = getAbsolutePath(currentPath, "/astro-server-proxy");
+  const relativeToApi = getAbsolutePath(currentPath, "/api/astro-server-proxy");
   return `${relativeToApi}/${encodeURIComponent(url)}`;
 }
 

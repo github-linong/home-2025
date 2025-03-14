@@ -1,6 +1,11 @@
 import type { APIRoute } from 'astro';
 import { isAllowedDomain } from '../../../config/allowedDomains';
 
+// 添加 getStaticPaths 函数以支持静态部署
+export function getStaticPaths() {
+    return [];
+}
+
 export const GET: APIRoute = async ({ params, request }) => {
     try {
         // 从路径参数中获取 URL

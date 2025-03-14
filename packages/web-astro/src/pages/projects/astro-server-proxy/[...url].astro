@@ -5,8 +5,10 @@ import {
     getDomainFromUrl,
 } from "../../../config/allowedDomains";
 
-// 设置为服务端渲染模式
-export const prerender = false;
+// 添加 getStaticPaths 函数以支持静态部署
+export function getStaticPaths() {
+    return [];
+}
 
 // 获取目标 URL 的函数，从路径参数中获取
 function getTargetUrl(params: Record<string, string | undefined>) {
