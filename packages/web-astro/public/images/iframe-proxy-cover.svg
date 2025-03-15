@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="450" viewBox="0 0 800 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- 背景 -->
+    <rect width="800" height="450" fill="#F3F4F6"/>
+    
+    <!-- 主窗口 -->
+    <rect x="150" y="75" width="500" height="300" rx="12" fill="#FFFFFF" stroke="#4F46E5" stroke-width="2"/>
+    
+    <!-- 窗口标题栏 -->
+    <rect x="150" y="75" width="500" height="40" rx="12" fill="#4F46E5"/>
+    <circle cx="180" cy="95" r="6" fill="#EF4444"/>
+    <circle cx="205" cy="95" r="6" fill="#FCD34D"/>
+    <circle cx="230" cy="95" r="6" fill="#10B981"/>
+    
+    <!-- iframe 内容 -->
+    <rect x="170" y="135" width="460" height="220" rx="8" fill="#E0E7FF"/>
+    
+    <!-- URL 栏 -->
+    <rect x="200" y="155" width="400" height="30" rx="6" fill="#FFFFFF" stroke="#4F46E5" stroke-width="2"/>
+    <text x="220" y="176" font-family="Arial" font-size="14" fill="#6B7280">https://example.com</text>
+    
+    <!-- 内容示意 -->
+    <rect x="200" y="205" width="400" height="20" rx="4" fill="#F3F4F6"/>
+    <rect x="200" y="235" width="300" height="20" rx="4" fill="#F3F4F6"/>
+    <rect x="200" y="265" width="350" height="20" rx="4" fill="#F3F4F6"/>
+    <rect x="200" y="295" width="250" height="20" rx="4" fill="#F3F4F6"/>
+    
+    <!-- 标题 -->
+    <text x="400" y="400" font-family="Arial" font-size="24" fill="#4F46E5" text-anchor="middle" font-weight="bold">iframe 代理</text>
+</svg> 

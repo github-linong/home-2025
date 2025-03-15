@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="450" viewBox="0 0 800 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- 背景 -->
+    <rect width="800" height="450" fill="#F3F4F6"/>
+    
+    <!-- 客户端 -->
+    <rect x="100" y="175" width="160" height="100" rx="12" fill="#FFFFFF" stroke="#4F46E5" stroke-width="2"/>
+    <text x="180" y="225" font-family="Arial" font-size="16" fill="#4F46E5" text-anchor="middle">客户端</text>
+    
+    <!-- 代理服务器 -->
+    <rect x="320" y="175" width="160" height="100" rx="12" fill="#FFFFFF" stroke="#4F46E5" stroke-width="2"/>
+    <text x="400" y="225" font-family="Arial" font-size="16" fill="#4F46E5" text-anchor="middle">代理服务器</text>
+    
+    <!-- 目标服务器 -->
+    <rect x="540" y="175" width="160" height="100" rx="12" fill="#FFFFFF" stroke="#4F46E5" stroke-width="2"/>
+    <text x="620" y="225" font-family="Arial" font-size="16" fill="#4F46E5" text-anchor="middle">目标服务器</text>
+    
+    <!-- 连接线 -->
+    <path d="M260 225 H320" stroke="#4F46E5" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <path d="M480 225 H540" stroke="#4F46E5" stroke-width="2" marker-end="url(#arrowhead)"/>
+    
+    <!-- 箭头标记 -->
+    <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#4F46E5"/>
+        </marker>
+    </defs>
+    
+    <!-- 标题 -->
+    <text x="400" y="350" font-family="Arial" font-size="24" fill="#4F46E5" text-anchor="middle" font-weight="bold">服务器代理</text>
+</svg> 
