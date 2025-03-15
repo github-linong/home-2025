@@ -46,13 +46,7 @@ function getTargetUrl(params: Record<string, string | undefined>) {
     return null;
 }
 
-// 获取代理 URL
-function getProxyUrl(url: string) {
-    return `/api/astro-server-proxy/${encodeURIComponent(url)}`;
-}
-
 const urlInfo = getTargetUrl(Astro.params);
-const proxyUrl = urlInfo ? getProxyUrl(urlInfo.url) : "";
 
 // 如果没有有效的 URL，重定向到主页面
 if (!urlInfo) {
@@ -127,18 +121,114 @@ if (!urlInfo) {
                         class="absolute inset-0 w-full h-full px-2 py-2 overflow-auto"
                         id="proxy-content"
                     >
-                        <iframe
-                            src={proxyUrl}
-                            class="w-full h-full border-0"
-                            sandbox="allow-scripts allow-same-origin allow-forms"
-                            loading="lazy"
-                            id="proxy-iframe"></iframe>
+                        <div id="loading" class="flex items-center justify-center h-full">
+                            <div class="text-center">
+                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+                                <p class="mt-4 text-gray-600 dark:text-gray-400">正在加载...</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </Layout>
+
+<script>
+    // 从 URL 中获取域名
+    function getDomainFromUrl(url: string): string {
+        try {
+            return new URL(url).hostname;
+        } catch (e) {
+            console.error("Invalid URL:", e);
+            return "";
+        }
+    }
+
+    // 获取当前页面的 URL 参数
+    function getCurrentUrl(): string | null {
+        const pathParts = window.location.pathname.split('/');
+        const lastPart = pathParts[pathParts.length - 1];
+        if (lastPart) {
+            try {
+                return decodeURIComponent(lastPart);
+            } catch (e) {
+                console.error("Error decoding URL:", e);
+            }
+        }
+        return null;
+    }
+
+    // 加载并显示内容
+    async function loadContent(url: string) {
+        try {
+            const proxyContent = document.getElementById('proxy-content');
+            if (!proxyContent) return;
+
+            // 显示加载状态
+            proxyContent.innerHTML = `
+                <div class="flex items-center justify-center h-full">
+                    <div class="text-center">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+                        <p class="mt-4 text-gray-600 dark:text-gray-400">正在加载...</p>
+                    </div>
+                </div>
+            `;
+
+            // 使用 CORS 代理服务
+            const corsProxyUrl = `https://cors-www.lilnong.top/${url}`;
+            
+            try {
+                const response = await fetch(corsProxyUrl);
+                const contentType = response.headers.get('content-type');
+                
+                if (contentType?.includes('text/html')) {
+                    const html = await response.text();
+                    proxyContent.innerHTML = `
+                        <iframe
+                            srcdoc="${html.replace(/"/g, '&quot;')}"
+                            class="w-full h-full border-0"
+                            sandbox="allow-scripts allow-same-origin allow-forms"
+                            loading="lazy"
+                        ></iframe>
+                    `;
+                } else {
+                    // 对于非 HTML 内容，直接在新窗口打开
+                    window.open(corsProxyUrl, '_blank');
+                    proxyContent.innerHTML = `
+                        <div class="flex items-center justify-center h-full">
+                            <div class="text-center">
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    此类型的内容已在新窗口中打开
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                proxyContent.innerHTML = `
+                    <div class="flex items-center justify-center h-full">
+                        <div class="text-center">
+                            <p class="text-red-600 dark:text-red-400">
+                                加载失败：${error.message}
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
+        } catch (e) {
+            console.error("Error loading content:", e);
+        }
+    }
+
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', () => {
+        const url = getCurrentUrl();
+        if (url) {
+            loadContent(url);
+        }
+    });
+</script>
 
 <style>
     iframe {

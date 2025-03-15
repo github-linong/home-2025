@@ -31,15 +31,7 @@ function getTargetUrl(request: Request) {
   return null;
 }
 
-// 获取代理 URL
-function getProxyUrl(url: string) {
-  const currentPath = Astro.url.pathname;
-  const relativeToApi = getAbsolutePath(currentPath, "/api/astro-server-proxy");
-  return `${relativeToApi}/${encodeURIComponent(url)}`;
-}
-
 const urlInfo = getTargetUrl(Astro.request);
-const proxyUrl = urlInfo ? getProxyUrl(urlInfo.url) : "";
 ---
 
 <Layout
@@ -104,13 +96,12 @@ const proxyUrl = urlInfo ? getProxyUrl(urlInfo.url) : "";
         <div class="relative w-full" style="height: calc(100vh - 120px);">
           {urlInfo ? (
             <div class="absolute inset-0 w-full h-full px-2 py-2 overflow-auto" id="proxy-content">
-              <iframe 
-                src={proxyUrl} 
-                class="w-full h-full border-0"
-                sandbox="allow-scripts allow-same-origin allow-forms"
-                loading="lazy"
-                id="proxy-iframe"
-              ></iframe>
+              <div id="loading" class="flex items-center justify-center h-full">
+                <div class="text-center">
+                  <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+                  <p class="mt-4 text-gray-600 dark:text-gray-400">正在加载...</p>
+                </div>
+              </div>
             </div>
           ) : (
             <div class="flex items-center justify-center h-full">
@@ -184,120 +175,79 @@ const proxyUrl = urlInfo ? getProxyUrl(urlInfo.url) : "";
     return new URL(relativePath, new URL(from, baseUrl)).pathname;
   }
 
-  // 从 hash 中获取 URL 并验证
-  async function validateAndLoadUrl(url: string) {
+  // 加载并显示内容
+  async function loadContent(url: string) {
     try {
-      // 验证 URL 格式
-      const domain = getDomainFromUrl(url);
-      if (!domain) return;
+      const proxyContent = document.getElementById('proxy-content');
+      if (!proxyContent) return;
 
-      // 更新页面标题和链接
-      document.title = `${domain} - 服务器代理 - Home 2025`;
-      const domainTitle = document.getElementById("domain-title");
-      if (domainTitle) {
-        domainTitle.textContent = domain;
-      }
+      // 显示加载状态
+      proxyContent.innerHTML = `
+        <div class="flex items-center justify-center h-full">
+          <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+            <p class="mt-4 text-gray-600 dark:text-gray-400">正在加载...</p>
+          </div>
+        </div>
+      `;
 
-      const openNewTab = document.getElementById(
-        "open-new-tab",
-      ) as HTMLAnchorElement;
-      if (openNewTab) {
-        openNewTab.href = url;
-        openNewTab.style.display = "block";
-      } else {
-        // 如果按钮不存在，创建一个
-        const titleContainer = domainTitle?.parentElement?.parentElement;
-        if (titleContainer) {
-          const newButton = document.createElement("a");
-          newButton.href = url;
-          newButton.target = "_blank";
-          newButton.rel = "noopener noreferrer";
-          newButton.className = "text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300";
-          newButton.id = "open-new-tab";
-          newButton.innerHTML = `
-            <span class="sr-only">在新窗口打开</span>
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-              ></path>
-            </svg>
-          `;
-          titleContainer.appendChild(newButton);
-        }
-      }
-
-      // 创建代理 URL
-      const currentPath = window.location.pathname;
-      const relativeToApi = getAbsolutePath(currentPath, "/astro-server-proxy");
-      const proxyUrl = `${relativeToApi}/${encodeURIComponent(url)}`;
-
-      // 获取内容容器
-      const contentContainer = document.querySelector('.relative.w-full');
-      if (!contentContainer) return;
-
-      // 检查是否有空白提示内容
-      const emptyPrompt = contentContainer.querySelector('.flex.items-center.justify-center.h-full');
+      // 使用 CORS 代理服务
+      const corsProxyUrl = `https://cors-www.lilnong.top/${url}`;
       
-      if (emptyPrompt) {
-        // 如果有空白提示，替换为 iframe
-        contentContainer.innerHTML = `
-          <div class="absolute inset-0 w-full h-full px-2 py-2 overflow-auto" id="proxy-content">
-            <iframe 
-              src="${proxyUrl}" 
+      try {
+        const response = await fetch(corsProxyUrl);
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType?.includes('text/html')) {
+          const html = await response.text();
+          proxyContent.innerHTML = `
+            <iframe
+              srcdoc="${html.replace(/"/g, '&quot;')}"
               class="w-full h-full border-0"
               sandbox="allow-scripts allow-same-origin allow-forms"
               loading="lazy"
-              id="proxy-iframe"
             ></iframe>
+          `;
+        } else {
+          // 对于非 HTML 内容，直接在新窗口打开
+          window.open(corsProxyUrl, '_blank');
+          proxyContent.innerHTML = `
+            <div class="flex items-center justify-center h-full">
+              <div class="text-center">
+                <p class="text-gray-600 dark:text-gray-400">
+                  此类型的内容已在新窗口中打开
+                </p>
+              </div>
+            </div>
+          `;
+        }
+      } catch (error) {
+        proxyContent.innerHTML = `
+          <div class="flex items-center justify-center h-full">
+            <div class="text-center">
+              <p class="text-red-600 dark:text-red-400">
+                加载失败：${error.message}
+              </p>
+            </div>
           </div>
         `;
-      } else {
-        // 如果已经有内容，检查是否有 iframe
-        const iframe = document.getElementById(
-          "proxy-iframe",
-        ) as HTMLIFrameElement;
-        
-        if (iframe) {
-          iframe.src = proxyUrl;
-        } else {
-          // 如果 iframe 不存在，创建一个
-          const proxyContent = document.getElementById("proxy-content");
-          if (proxyContent) {
-            proxyContent.innerHTML = `
-              <iframe 
-                src="${proxyUrl}" 
-                class="w-full h-full border-0"
-                sandbox="allow-scripts allow-same-origin allow-forms"
-                loading="lazy"
-                id="proxy-iframe"
-              ></iframe>
-            `;
-          }
-        }
       }
     } catch (e) {
-      console.error("Invalid URL:", e);
+      console.error("Error loading content:", e);
     }
   }
 
   // 检查是否需要处理 hash
   document.addEventListener("DOMContentLoaded", () => {
-    // 检查当前 iframe 是否为空
-    const iframe = document.getElementById("proxy-iframe") as HTMLIFrameElement;
-    const emptyPrompt = document.querySelector('.flex.items-center.justify-center.h-full');
-    
-    // 如果没有 iframe 或 iframe 为空，并且有 hash，则处理 hash
-    if (((!iframe || !iframe.src || iframe.src === window.location.href) || emptyPrompt) && window.location.hash) {
+    // 检查当前 URL 参数
+    const urlParam = new URLSearchParams(window.location.search).get('url');
+    if (urlParam) {
+      loadContent(urlParam);
+    }
+    // 检查 hash
+    else if (window.location.hash) {
       const url = decodeURIComponent(window.location.hash.slice(1));
-      validateAndLoadUrl(url);
+      loadContent(url);
     }
   });
 
@@ -305,7 +255,7 @@ const proxyUrl = urlInfo ? getProxyUrl(urlInfo.url) : "";
   window.addEventListener("hashchange", () => {
     if (window.location.hash) {
       const url = decodeURIComponent(window.location.hash.slice(1));
-      validateAndLoadUrl(url);
+      loadContent(url);
     }
   });
 </script>
