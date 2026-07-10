@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import NewsletterSignup from "../components/NewsletterSignup.astro";
 import { profile } from "../data/profile";
 
 const sf = profile.segmentfault;
@@ -79,6 +80,9 @@ const sf = profile.segmentfault;
     </ul>
 
     <h2>写作与分享</h2>
+    <div class="not-prose mb-6">
+      <NewsletterSignup />
+    </div>
     <ul>
       {profile.themes.map((t) => <li>{t}</li>)}
     </ul>

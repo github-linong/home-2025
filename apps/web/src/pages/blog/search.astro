@@ -1,0 +1,294 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+import { buildBlogSearchIndex, buildTagCounts } from "../../lib/buildBlogSearchIndex";
+
+const posts = await getCollection("blog");
+const searchIndex = buildBlogSearchIndex(posts);
+const tagCounts = buildTagCounts(posts);
+---
+
+<BaseLayout title="搜索博客" sideBarActiveItemID="search">
+  <div class="not-prose blog-search" data-pagefind-ignore>
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold">搜索博客</h1>
+      <p class="mt-2 text-base-content/70">
+        共 {searchIndex.length} 篇文章，{tagCounts.length} 个标签。支持全文搜索与标签组合筛选。
+      </p>
+    </div>
+
+    <form id="search-form" class="mb-4 flex flex-col gap-3 sm:flex-row" role="search">
+      <label class="input input-bordered flex grow items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
+        </svg>
+        <input
+          id="search-input"
+          name="q"
+          type="search"
+          class="grow bg-transparent outline-none"
+          placeholder="搜索标题、摘要、正文、标签…"
+          autocomplete="off"
+        />
+      </label>
+      <button type="submit" class="btn btn-primary">搜索</button>
+      <button type="button" id="search-clear" class="btn btn-ghost">清除</button>
+    </form>
+
+    <div class="mb-6">
+      <div class="mb-2 text-sm font-medium text-base-content/60">按标签筛选</div>
+      <div id="tag-filters" class="flex flex-wrap gap-2"></div>
+    </div>
+
+    <p id="search-status" class="mb-2 hidden text-xs text-base-content/50"></p>
+    <p id="search-summary" class="mb-4 text-sm text-base-content/60"></p>
+
+    <ul id="search-results" class="space-y-0"></ul>
+
+    <div id="search-empty" class="hidden rounded-lg border border-base-300 bg-base-200/50 p-6 text-center text-base-content/70">
+      没有匹配的文章，试试其他关键词或标签。
+    </div>
+  </div>
+</BaseLayout>
+
+<script define:vars={{ searchIndex, tagCounts }}>
+  const form = document.getElementById("search-form");
+  const input = document.getElementById("search-input");
+  const clearBtn = document.getElementById("search-clear");
+  const tagFilters = document.getElementById("tag-filters");
+  const resultsEl = document.getElementById("search-results");
+  const summaryEl = document.getElementById("search-summary");
+  const statusEl = document.getElementById("search-status");
+  const emptyEl = document.getElementById("search-empty");
+
+  let activeTag = "";
+  let pagefindReady = false;
+  let pagefindApi = null;
+
+  function normalize(text) {
+    return String(text || "").toLowerCase().trim();
+  }
+
+  function getParams() {
+    return new URLSearchParams(window.location.search);
+  }
+
+  function syncUrl(q, tag) {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (tag) params.set("tag", tag);
+    const query = params.toString();
+    const next = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+    window.history.replaceState({}, "", next);
+  }
+
+  async function initPagefind() {
+    if (pagefindReady) return pagefindApi;
+    try {
+      const mod = await import("/pagefind/pagefind.js");
+      pagefindApi = await mod.pagefind;
+      pagefindReady = true;
+      statusEl.classList.add("hidden");
+      return pagefindApi;
+    } catch {
+      pagefindReady = false;
+      statusEl.textContent = "全文索引未就绪，当前仅搜索标题与摘要（请先 npm run build）。";
+      statusEl.classList.remove("hidden");
+      return null;
+    }
+  }
+
+  function filterMetadata(q, tag) {
+    const keyword = normalize(q);
+    let items = searchIndex;
+
+    if (tag) {
+      items = items.filter((item) => item.tags.includes(tag));
+    }
+
+    if (keyword) {
+      items = items.filter((item) => {
+        const haystack = [item.title, item.description, item.badge, ...(item.tags || [])]
+          .filter(Boolean)
+          .map(normalize)
+          .join(" ");
+        return haystack.includes(keyword);
+      });
+    }
+
+    return items;
+  }
+
+  function renderTagFilters() {
+    tagFilters.innerHTML = "";
+    const allBtn = document.createElement("button");
+    allBtn.type = "button";
+    allBtn.className = `badge badge-lg cursor-pointer ${activeTag ? "badge-outline" : "badge-primary"}`;
+    allBtn.textContent = "全部";
+    allBtn.addEventListener("click", () => {
+      activeTag = "";
+      runSearch();
+    });
+    tagFilters.appendChild(allBtn);
+
+    for (const { tag, count } of tagCounts) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `badge badge-lg cursor-pointer ${activeTag === tag ? "badge-primary" : "badge-outline"}`;
+      btn.textContent = `${tag} (${count})`;
+      btn.addEventListener("click", () => {
+        activeTag = activeTag === tag ? "" : tag;
+        runSearch();
+      });
+      tagFilters.appendChild(btn);
+    }
+  }
+
+  function escapeHtml(text) {
+    return String(text)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function renderResults(items, q, tag, mode) {
+    resultsEl.innerHTML = "";
+
+    const parts = [];
+    if (q) parts.push(`关键词「${q}」`);
+    if (tag) parts.push(`标签「${tag}」`);
+    const modeLabel = mode === "pagefind" ? "全文" : "标题/摘要";
+    summaryEl.textContent = parts.length
+      ? `${parts.join(" · ")} — 找到 ${items.length} 篇（${modeLabel}）`
+      : q
+        ? `找到 ${items.length} 篇（${modeLabel}）`
+        : tag
+          ? `标签「${tag}」— ${items.length} 篇`
+          : `输入关键词开始全文搜索`;
+
+    if (items.length === 0) {
+      emptyEl.classList.remove("hidden");
+      return;
+    }
+
+    emptyEl.classList.add("hidden");
+
+    for (const item of items) {
+      const li = document.createElement("li");
+      li.className = "border-b border-base-300 py-4 last:border-b-0";
+
+      const meta = [];
+      if (item.badge) meta.push(`<span class="badge badge-secondary badge-sm">${escapeHtml(item.badge)}</span>`);
+      if (item.kind === "answer") meta.push(`<span class="badge badge-outline badge-sm">问答</span>`);
+      if (item.source === "segmentfault") meta.push(`<span class="badge badge-ghost badge-sm">思否</span>`);
+      const tagHtml = (item.tags || [])
+        .map((t) => `<a href="/blog/tag/${encodeURIComponent(t)}" class="badge badge-ghost badge-sm no-underline">${escapeHtml(t)}</a>`)
+        .join(" ");
+
+      li.innerHTML = `
+        <a href="${escapeHtml(item.url)}" class="block no-underline hover:opacity-90">
+          <h2 class="text-lg font-semibold leading-snug text-base-content">${escapeHtml(item.title)}</h2>
+          <p class="mt-1 text-sm text-base-content/70 line-clamp-3">${escapeHtml(item.excerpt || item.description || "")}</p>
+          <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-base-content/50">
+            ${item.pubDate ? `<time>${new Date(item.pubDate).toLocaleDateString("zh-CN")}</time>` : ""}
+            ${meta.join(" ")}
+          </div>
+          ${tagHtml ? `<div class="mt-2 flex flex-wrap gap-1">${tagHtml}</div>` : ""}
+        </a>
+      `;
+      resultsEl.appendChild(li);
+    }
+  }
+
+  function metadataByUrl(url) {
+    const normalized = url.endsWith("/") ? url : `${url}/`;
+    return searchIndex.find((item) => item.url === normalized || item.url === url);
+  }
+
+  async function searchWithPagefind(q, tag) {
+    const api = await initPagefind();
+    if (!api) return null;
+
+    const options = {};
+    if (tag) options.filters = { tag };
+
+    const response = q ? await api.search(q, options) : null;
+
+    if (!q && tag) {
+      return filterMetadata("", tag).map((item) => ({
+        ...item,
+        excerpt: item.description,
+      }));
+    }
+
+    if (!response) return [];
+
+    const items = [];
+    for (const result of response.results) {
+      const data = await result.data();
+      const url = data.url.replace(location.origin, "");
+      const meta = metadataByUrl(url);
+      items.push({
+        title: data.meta?.title || meta?.title || url,
+        description: meta?.description || "",
+        excerpt: data.excerpt || meta?.description || "",
+        tags: meta?.tags || [],
+        badge: meta?.badge,
+        kind: data.meta?.kind || meta?.kind,
+        source: data.meta?.source || meta?.source,
+        url,
+        pubDate: meta?.pubDate,
+      });
+    }
+    return items;
+  }
+
+  async function runSearch() {
+    const q = input.value.trim();
+    syncUrl(q, activeTag);
+    renderTagFilters();
+
+    if (!q && !activeTag) {
+      renderResults([], q, activeTag, "pagefind");
+      return;
+    }
+
+    const pagefindItems = await searchWithPagefind(q, activeTag);
+    if (pagefindItems !== null && (q || pagefindReady)) {
+      renderResults(pagefindItems, q, activeTag, pagefindReady ? "pagefind" : "metadata");
+      return;
+    }
+
+    renderResults(filterMetadata(q, activeTag).map((item) => ({
+      ...item,
+      excerpt: item.description,
+    })), q, activeTag, "metadata");
+  }
+
+  const params = getParams();
+  input.value = params.get("q") || "";
+  activeTag = params.get("tag") || "";
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    runSearch();
+  });
+
+  clearBtn.addEventListener("click", () => {
+    input.value = "";
+    activeTag = "";
+    runSearch();
+  });
+
+  let debounceTimer;
+  input.addEventListener("input", () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(runSearch, 250);
+  });
+
+  initPagefind().finally(() => {
+    renderTagFilters();
+    runSearch();
+  });
+</script>

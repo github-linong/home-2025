@@ -1,0 +1,59 @@
+---
+export interface Props {
+  slug: string;
+  kind?: string;
+  source?: string;
+  answerId?: string;
+}
+
+const { slug, kind = "article", source = "site", answerId } = Astro.props;
+---
+
+<script
+  is:inline
+  define:vars={{ slug, kind, source, answerId }}
+>
+  (function () {
+    if (typeof gtag !== "function") return;
+
+    gtag("event", "article_view", {
+      article_slug: slug,
+      content_kind: kind,
+      content_source: source,
+      answer_id: answerId || undefined,
+    });
+
+    const milestones = [25, 50, 75, 90];
+    const fired = new Set();
+
+    function getScrollPercent() {
+      const doc = document.documentElement;
+      const scrollTop = window.scrollY || doc.scrollTop;
+      const height = doc.scrollHeight - doc.clientHeight;
+      if (height <= 0) return 100;
+      return Math.min(100, Math.round((scrollTop / height) * 100));
+    }
+
+    function onScroll() {
+      const percent = getScrollPercent();
+      for (const milestone of milestones) {
+        if (percent >= milestone && !fired.has(milestone)) {
+          fired.add(milestone);
+          gtag("event", "article_read_progress", {
+            article_slug: slug,
+            content_kind: kind,
+            content_source: source,
+            answer_id: answerId || undefined,
+            percent_scrolled: milestone,
+          });
+        }
+      }
+      if (fired.size === milestones.length) {
+        window.removeEventListener("scroll", onScroll, { passive: true });
+      }
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  })();
+</script>

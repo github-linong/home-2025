@@ -20,6 +20,7 @@ interface Props {
 
 const { entry } = Astro.props;
 const post: BlogSchema = entry.data;
+const slug = createSlug(post.title, entry.slug);
 
 let qaData = null;
 if (post.kind === "answer" && post.answerId) {
@@ -41,11 +42,14 @@ const { Content } = await entry.render();
   badge={post.badge}
   tags={post.tags}
   sourceUrl={post.sourceUrl}
+  source={post.source}
   kind={post.kind}
   votes={post.votes}
   accepted={post.accepted}
   questionUrl={post.questionUrl}
+  answerId={post.answerId}
   qaData={qaData}
+  slug={slug}
 >
   {!qaData && <Content />}
 </PostLayout>

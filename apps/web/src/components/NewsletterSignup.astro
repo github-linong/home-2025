@@ -1,0 +1,20 @@
+---
+import { NEWSLETTER_CONFIG } from "../config";
+
+const { rssUrl, emailSignupUrl, description } = NEWSLETTER_CONFIG;
+---
+
+<section class="not-prose rounded-lg border border-base-300 bg-base-200/40 p-5" aria-label="Subscribe">
+  <h2 class="text-lg font-semibold">订阅更新</h2>
+  <p class="mt-2 text-sm text-base-content/70">{description}</p>
+  <div class="mt-4 flex flex-wrap gap-2">
+    <a href={rssUrl} class="btn btn-primary btn-sm" target="_blank" rel="noreferrer">
+      RSS 订阅
+    </a>
+  {emailSignupUrl && (
+    <a href={emailSignupUrl} class="btn btn-outline btn-sm" target="_blank" rel="noreferrer">
+      邮件订阅
+    </a>
+  )}
+  </div>
+</section>

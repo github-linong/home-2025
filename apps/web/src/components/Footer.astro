@@ -4,7 +4,7 @@ import { profile } from "../data/profile";
 const today = new Date();
 ---
 
-<footer class="footer footer-center block mb-5 pt-10 text-sm opacity-80">
+<footer class="footer footer-center block mb-5 pt-10 text-sm opacity-80" data-pagefind-ignore>
   <div class="pb-1">&copy; {today.getFullYear()} {profile.name}</div>
   <div class="pb-1">
     <a href={`mailto:${profile.contact.email}`}>{profile.contact.email}</a>

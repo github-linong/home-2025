@@ -1,0 +1,41 @@
+---
+import { GISCUS_CONFIG } from "../config";
+
+const { enabled, repo, repoId, category, categoryId, mapping, reactions, theme } = GISCUS_CONFIG;
+const showGiscus = enabled && repo && repoId && category && categoryId;
+---
+
+<section class="not-prose mt-12 border-t border-base-300 pt-8" aria-label="Comments">
+  <h2 class="text-xl font-semibold mb-4">评论</h2>
+
+  {showGiscus ? (
+    <>
+      <div class="giscus" />
+      <script
+        src="https://giscus.app/client.js"
+        data-repo={repo}
+        data-repo-id={repoId}
+        data-category={category}
+        data-category-id={categoryId}
+        data-mapping={mapping}
+        data-strict="0"
+        data-reactions-enabled={reactions}
+        data-emit-metadata="0"
+        data-input-position="top"
+        data-theme={theme}
+        data-lang="zh-CN"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async
+      />
+    </>
+  ) : (
+    <p class="text-sm text-base-content/70">
+      评论功能即将开放。你也可以通过
+      <a href="mailto:linong@lilnong.top" class="link">邮件</a>
+      或
+      <a href="https://github.com/github-linong/home-2025/issues" class="link" target="_blank" rel="noreferrer">GitHub Issue</a>
+      反馈。
+    </p>
+  )}
+</section>

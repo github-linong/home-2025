@@ -1,6 +1,6 @@
 {
   "name": "astrofy",
-  "description": "Astrofy is a free and open-source template for your Personal Portfolio Website built with Astro and TailwindCSS. Create in minutes a website with Blog, CV, Project Section, Store and RSS Feed.",
+  "description": "李侬个人站 — Astro 静态博客、项目展示与思否归档",
   "type": "module",
   "version": "3.0.0",
   "private": true,
@@ -24,6 +24,7 @@
     "tailwindcss": "^3.3.5"
   },
   "devDependencies": {
-    "@tailwindcss/typography": "^0.5.10"
+    "@tailwindcss/typography": "^0.5.10",
+    "pagefind": "^1.3.0"
   }
 }

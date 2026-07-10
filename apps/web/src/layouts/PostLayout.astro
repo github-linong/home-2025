@@ -3,12 +3,15 @@ import { type BlogSchema } from "../content/config";
 import BaseLayout from "./BaseLayout.astro";
 import QADisplay from "../components/QADisplay.astro";
 import type { QaData } from "../components/QADisplay.astro";
+import BlogAnalytics from "../components/BlogAnalytics.astro";
+import Comments from "../components/Comments.astro";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { Image } from "astro:assets";
 
 export interface Props extends BlogSchema {
   qaData?: QaData | null;
+  slug: string;
 }
 
 const {
@@ -20,21 +23,34 @@ const {
   badge,
   tags = [],
   sourceUrl,
+  source,
   kind = "article",
   votes,
   accepted,
   questionUrl,
+  answerId,
   qaData,
+  slug,
 } = Astro.props;
 dayjs.extend(localizedFormat);
 const displayDate = dayjs(pubDate).format("ll");
 const isAnswer = kind === "answer";
 const showQa = isAnswer && qaData;
+const contentSource = source ?? (sourceUrl ? "segmentfault" : "site");
 ---
 
 <BaseLayout title={title} description={description} image={heroImage}, ogType="article">
   <main class="md:flex md:justify-center">
-    <article class="prose prose-lg max-w-[750px] prose-img:mx-auto">
+    <article class="prose prose-lg max-w-[750px] prose-img:mx-auto" data-pagefind-body>
+      <span data-pagefind-meta="title" class="hidden">{title}</span>
+      <span data-pagefind-meta="description" class="hidden">{description}</span>
+      <span data-pagefind-meta="kind" class="hidden">{kind}</span>
+      <span data-pagefind-meta="source" class="hidden">{contentSource}</span>
+      {badge && <span data-pagefind-meta="badge" class="hidden">{badge}</span>}
+      {tags.map((tag) => (
+        <span data-pagefind-filter={`tag:${tag}`} class="hidden" />
+      ))}
+
       {heroImage && <Image width={750} height={422} format="webp" src={heroImage} alt={title} class="w-full mb-6" />}
 
       {showQa ? (
@@ -93,5 +109,11 @@ const showQa = isAnswer && qaData;
         </>
       )}
     </article>
+
+    <div class="max-w-[750px] mx-auto">
+      <Comments />
+    </div>
   </main>
+
+  <BlogAnalytics slug={slug} kind={kind} source={contentSource} answerId={answerId} />
 </BaseLayout>
