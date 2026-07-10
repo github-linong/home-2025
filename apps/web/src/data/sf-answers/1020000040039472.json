@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000040039472",
+  "questionId": "1010000040034773",
+  "questionOriginal": "Vue a标签如何携带请求头？",
+  "answerOriginal": "没办法。 如果后端非要 header 带 token，那么你就使用 ajax 去接收，然后类型改成 blob，然后去下载这个资源。",
+  "questionOptimized": "### 问题概述\n在 Vue 项目中，希望用 `<a>` 标签直接下载一个需要携带自定义请求头（如 `Authorization` token）才能访问的资源，但 `<a>` 标签本身无法设置请求头。\n\n### 涉及技术\nHTML `<a>` 标签、AJAX/`fetch`、Blob 下载\n\n### 期望结果\n找到一种能携带自定义请求头并触发文件下载的方式。",
+  "answerOptimized": "### 解答思路\n`<a href=\"...\">` 发起的是浏览器原生请求，无法附加自定义请求头。如果后端要求必须通过请求头传递 token，就不能直接用 `<a>` 标签下载，而要先用 AJAX/`fetch` 携带请求头去请求资源，拿到二进制数据（`Blob`）后再触发下载。\n\n### 示例代码\n```js\nasync function downloadWithAuth(url, token, filename) {\n  const res = await fetch(url, {\n    headers: {\n      Authorization: `Bearer ${token}`,\n    },\n  });\n  const blob = await res.blob();\n\n  const link = document.createElement('a');\n  link.href = URL.createObjectURL(blob);\n  link.download = filename;\n  link.click();\n  URL.revokeObjectURL(link.href);\n}\n```\n\n### 详细说明\n- 第一步：用 `fetch`（或 `axios`）发起请求，在 `headers` 里带上需要的 `Authorization`/token。\n- 第二步：把响应体以 `blob` 类型接收，得到文件的二进制数据。\n- 第三步：用 `URL.createObjectURL(blob)` 生成一个临时的本地 URL，赋给动态创建的 `<a>` 标签的 `href`，并设置 `download` 属性，再调用 `click()` 触发浏览器下载。\n- 下载完成后建议调用 `URL.revokeObjectURL` 释放内存。\n\n### 小结\n原生 `<a>` 标签无法携带请求头，涉及鉴权的下载场景需要先用 AJAX 请求资源并转为 `Blob`，再用临时 `<a>` 标签触发下载。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:53:32.807Z",
+  "llmModel": "cursor-agent"
+}

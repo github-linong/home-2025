@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000045117384",
+  "questionId": "1010000045114757",
+  "questionOriginal": "父元素使用flex子元素width失效？",
+  "answerOriginal": "https://jsfiddle.net/lilnong1/186crkvo/2/ 极端情况下就是会变形。如果不想变形可以 flex: none加了 flex: none 之后就不会自动缩放了",
+  "questionOptimized": "### 问题概述\n父元素设置了 `display: flex` 之后，子元素设置的 `width` 似乎不生效（被自动缩放/压缩了），想了解原因及解决方式。\n\n### 涉及技术（如有）\n- CSS Flex 布局的 `flex-shrink` / `flex-grow` 默认行为\n\n### 期望结果\n让子元素的 `width` 按照设置值生效，不被 Flex 布局自动压缩变形。\n",
+  "answerOptimized": "### 解答思路\nFlex 子项默认具有 `flex-shrink: 1`，当空间不足时会被压缩，看起来就像设置的 `width` 失效；给子元素加上 `flex: none`（即 `flex-grow: 0; flex-shrink: 0; flex-basis: auto`），禁止其在极端情况下被拉伸/压缩即可解决。\n\n### 详细说明\n- 在空间充足的情况下，子元素设置的 `width` 一般能正常显示；但当父容器空间不足（极端情况）时，Flex 布局会依据子项的 `flex-shrink` 权重自动压缩子元素宽度，让所有子项适配容器宽度，这就是宽度看起来失效的原因。\n- 加上 `flex: none` 后，子元素不再参与自动伸缩（既不会被拉伸变大，也不会被压缩变小），会严格按照设置的 `width` 展示，即使父容器空间不够也不会自动缩放变形。\n- 可以参考这个在线示例查看效果对比：[jsfiddle 演示](https://jsfiddle.net/lilnong1/186crkvo/2/)。\n\n### 小结\nFlex 子元素的 `width` 在空间不足时会被默认的伸缩行为覆盖，如果希望宽度严格生效、不被压缩变形，给对应子元素加上 `flex: none` 即可。\n",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:58:51.368Z",
+  "llmModel": "cursor-agent"
+}

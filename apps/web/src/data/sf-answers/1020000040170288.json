@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000040170288",
+  "questionId": "1010000040170242",
+  "questionOriginal": "js如何判断图片是否已加载",
+  "answerOriginal": "2021-06-13 图片有个 onload 事件，触发就表示图片已加载。还有个 onerror 事件，触发就代表图片加载失败，一般会在 onerror 事件里面补一个错误图片。",
+  "questionOptimized": "### 问题概述\n如何用 JavaScript 判断一张图片是否已经加载完成（或加载失败）？\n\n### 涉及技术\n`HTMLImageElement`、`onload`/`onerror` 事件\n\n### 期望结果\n得到判断图片加载状态的可靠方法。",
+  "answerOptimized": "### 解答思路\n`<img>` 元素本身提供了 `onload` 和 `onerror` 两个事件：加载成功触发 `onload`，加载失败（地址错误、网络异常等）触发 `onerror`。\n\n### 示例代码\n```js\nconst img = new Image();\nimg.onload = () => {\n  console.log('图片加载成功');\n};\nimg.onerror = () => {\n  console.log('图片加载失败，展示兜底图');\n  img.src = '/fallback.png';\n};\nimg.src = 'https://example.com/pic.jpg';\n```\n\n也可以用 `complete` 属性判断图片是否已经加载完成（同步检查，无需等待事件）：\n```js\nif (img.complete) {\n  console.log('图片已经加载完成（或已缓存）');\n}\n```\n\n### 详细说明\n- `onload`：图片资源成功获取并解码完成后触发，是最常用的“加载完成”判断方式。\n- `onerror`：图片请求失败（404、跨域、网络问题等）时触发，通常会在这里设置一张兜底图片。\n- `img.complete`：布尔值，表示浏览器是否已经处理完这张图片（成功或失败都算），适合做同步的即时检查，比如图片已经命中浏览器缓存、`onload` 事件不会再触发的场景。\n\n### 小结\n判断图片加载状态优先使用 `onload`/`onerror` 事件；如果需要同步判断是否已经加载完成，可以配合 `img.complete` 属性。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:53:32.807Z",
+  "llmModel": "cursor-agent"
+}

@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000013335248",
+  "questionId": "1010000013334052",
+  "questionOriginal": "怎么用js获取ul下的li标签",
+  "answerOriginal": "document.querySelectorAll('#uu>li')",
+  "questionOptimized": "### 问题概述\n提问者想用 JavaScript 获取某个 `<ul>` 元素下所有直接子元素 `<li>` 标签。\n\n### 涉及技术\nJavaScript、DOM 选择器\n\n### 期望结果\n得到一段可直接使用的代码，能准确选中 `ul` 下的 `li` 标签列表。",
+  "answerOptimized": "### 解答思路\n使用 `document.querySelectorAll` 配合 CSS 子选择器 `>`，可以精确获取某个元素下的直接子元素。\n\n### 示例代码\n```js\ndocument.querySelectorAll('#uu>li');\n```\n\n### 详细说明\n`#uu>li` 是一个 CSS 子选择器，表示“id 为 `uu` 的元素下的直接子级 `li` 标签”，不会选中嵌套在更深层级（比如 `li` 内部又套了一层 `ul>li`）的元素。`querySelectorAll` 会返回一个 `NodeList`，包含所有匹配的 `li` 元素，可以用 `for` 循环或 `Array.from(...).forEach()` 进一步遍历处理。如果只需要第一个匹配项，可以改用 `querySelector`。\n\n### 小结\n获取某个 `ul` 下的所有 `li`，用 `document.querySelectorAll('#uu>li')` 即可；子选择器 `>` 能保证只取直接子元素，避免误选中嵌套结构里的同名标签。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:46:54Z",
+  "llmModel": "cursor-agent"
+}

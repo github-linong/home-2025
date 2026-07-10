@@ -1,48 +1,97 @@
 ---
 import { type BlogSchema } from "../content/config";
 import BaseLayout from "./BaseLayout.astro";
+import QADisplay from "../components/QADisplay.astro";
+import type { QaData } from "../components/QADisplay.astro";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
-
-export interface Props extends BlogSchema {}
-
-const { title, description, pubDate, updatedDate, heroImage, badge, tags = [], sourceUrl } = Astro.props;
-dayjs.extend(localizedFormat);
-const displayDate = dayjs(pubDate).format("ll")
 import { Image } from "astro:assets";
+
+export interface Props extends BlogSchema {
+  qaData?: QaData | null;
+}
+
+const {
+  title,
+  description,
+  pubDate,
+  updatedDate,
+  heroImage,
+  badge,
+  tags = [],
+  sourceUrl,
+  kind = "article",
+  votes,
+  accepted,
+  questionUrl,
+  qaData,
+} = Astro.props;
+dayjs.extend(localizedFormat);
+const displayDate = dayjs(pubDate).format("ll");
+const isAnswer = kind === "answer";
+const showQa = isAnswer && qaData;
 ---
 
 <BaseLayout title={title} description={description} image={heroImage}, ogType="article">
   <main class="md:flex md:justify-center">
     <article class="prose prose-lg max-w-[750px] prose-img:mx-auto">
       {heroImage && <Image width={750} height={422} format="webp" src={heroImage} alt={title} class="w-full mb-6" />}
-      <h1 class="title my-2 text-4xl font-bold">{title}</h1>
-      {pubDate && <time>{displayDate}</time>}
-      <br />
-      {badge && <div class="badge badge-secondary my-1">{badge}</div>}
-      {
-        tags &&
-          tags.map((tag) => (
+
+      {showQa ? (
+        <>
+          <h1 class="title my-2 text-3xl font-bold leading-snug">{title}</h1>
+          {pubDate && <time class="text-sm text-base-content/60">{displayDate}</time>}
+          {tags.length > 0 && (
+            <div class="not-prose my-3">
+              {tags.map((tag) => (
+                <a href={`/blog/tag/${tag}`} class="badge badge-outline ml-0 mr-2 no-underline">
+                  {tag}
+                </a>
+              ))}
+            </div>
+          )}
+          <div class="divider my-4"></div>
+          <QADisplay
+            data={qaData}
+            title={title}
+            votes={votes}
+            accepted={accepted}
+            questionUrl={questionUrl}
+            sourceUrl={sourceUrl}
+          />
+        </>
+      ) : isAnswer ? (
+        <>
+          <h1 class="title my-2 text-3xl font-bold">{title}</h1>
+          {pubDate && <time class="text-sm text-base-content/60">{displayDate}</time>}
+          <div class="divider my-4"></div>
+          <slot />
+        </>
+      ) : (
+        <>
+          <h1 class="title my-2 text-4xl font-bold">{title}</h1>
+          {pubDate && <time class="text-sm text-base-content/60">{displayDate}</time>}
+          <br />
+          {badge && <div class="badge badge-secondary my-1">{badge}</div>}
+          {tags.map((tag) => (
             <a href={`/blog/tag/${tag}`} class="badge badge-outline ml-2 no-underline">
               {tag}
             </a>
-          ))
-      }
-      {
-        updatedDate && (
-          <div>
-            {" "}
-            Last updated on <time>{updatedDate}</time>{" "}
-          </div>
-        )
-      }
-      <div class="divider my-2"></div>
-      {sourceUrl && (
-        <p class="not-prose text-sm opacity-70">
-          转载自 <a href={sourceUrl} target="_blank" rel="noreferrer">SegmentFault</a>
-        </p>
+          ))}
+          {updatedDate && (
+            <div>
+              Last updated on <time>{updatedDate}</time>
+            </div>
+          )}
+          <div class="divider my-2"></div>
+          {sourceUrl && (
+            <p class="not-prose text-sm opacity-70">
+              转载自 <a href={sourceUrl} target="_blank" rel="noreferrer">SegmentFault</a>
+            </p>
+          )}
+          <slot />
+        </>
       )}
-      <slot />
     </article>
   </main>
 </BaseLayout>

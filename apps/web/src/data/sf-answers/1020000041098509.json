@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000041098509",
+  "questionId": "1010000041098399",
+  "questionOriginal": "vue内使用window.open疑问",
+  "answerOriginal": "2021-12-10 window.opener 是指向打开者。frame = window.open , frame 是指向被打开者。通信可以 stroage 、 postMessage 。方案一：",
+  "questionOptimized": "### 问题概述\n在 Vue 项目里用 `window.open` 打开一个新窗口/标签页后，如何在两个窗口之间进行通信？`window.opener` 和 `window.open` 返回值各自指向谁？\n\n### 涉及技术\n`window.open`、`window.opener`、`postMessage`、`localStorage`\n\n### 期望结果\n理清两个窗口引用关系，并得到可行的跨窗口通信方案。",
+  "answerOptimized": "### 解答思路\n先理清引用关系：`const frame = window.open(url)` 中，`frame` 是**打开者**（原窗口）持有的**新窗口的引用**；而在**新窗口**内部，`window.opener` 则是指向**打开它的那个原窗口**的引用。有了双向引用后，就可以通过 `postMessage` 或共享的 `storage` 事件进行通信。\n\n### 示例代码\n方案一：`postMessage`（推荐，双向、实时）\n```js\n// 原窗口打开新窗口\nconst frame = window.open('https://example.com');\nframe.postMessage({ type: 'hello' }, 'https://example.com');\n\n// 新窗口监听消息，并可以回传给 opener\nwindow.addEventListener('message', (e) => {\n  console.log('收到消息:', e.data);\n  window.opener?.postMessage({ type: 'reply' }, e.origin);\n});\n```\n\n方案二：`localStorage` + `storage` 事件（适合同源、简单状态同步）\n```js\n// 任一窗口写入\nlocalStorage.setItem('sync-key', JSON.stringify({ value: 1 }));\n\n// 另一个窗口监听变化\nwindow.addEventListener('storage', (e) => {\n  if (e.key === 'sync-key') {\n    console.log('数据变化:', JSON.parse(e.newValue));\n  }\n});\n```\n\n### 详细说明\n- `postMessage` 的优势是不要求同源，且事件驱动、实时，通信双方都可以互相发送消息，是跨窗口/跨域通信的标准方式；使用时务必校验 `event.origin`，避免被恶意页面利用。\n- `storage` 事件只有在**同源**下才生效，并且只会在“其他”窗口触发（当前窗口自己写入不会触发自身的 `storage` 事件），适合做简单的状态广播。\n- 在 Vue 组件中使用时，记得在组件销毁时移除事件监听，避免内存泄漏。\n\n### 小结\n`window.open` 返回值指向新窗口，`window.opener` 指向打开者；两者之间的通信推荐用 `postMessage`，同源场景下也可以用 `localStorage` + `storage` 事件做简单同步。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:53:32.807Z",
+  "llmModel": "cursor-agent"
+}

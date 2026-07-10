@@ -3,6 +3,8 @@ import { CollectionEntry, getCollection } from "astro:content";
 import { BlogSchema } from "../../content/config";
 import PostLayout from "../../layouts/PostLayout.astro";
 import createSlug from "../../lib/createSlug";
+import fs from "node:fs";
+import path from "node:path";
 
 export async function getStaticPaths() {
   const postEntries = await getCollection("blog");
@@ -18,6 +20,15 @@ interface Props {
 
 const { entry } = Astro.props;
 const post: BlogSchema = entry.data;
+
+let qaData = null;
+if (post.kind === "answer" && post.answerId) {
+  const qaPath = path.join(process.cwd(), "src/data/sf-answers", `${post.answerId}.json`);
+  if (fs.existsSync(qaPath)) {
+    qaData = JSON.parse(fs.readFileSync(qaPath, "utf8"));
+  }
+}
+
 const { Content } = await entry.render();
 ---
 
@@ -30,6 +41,11 @@ const { Content } = await entry.render();
   badge={post.badge}
   tags={post.tags}
   sourceUrl={post.sourceUrl}
+  kind={post.kind}
+  votes={post.votes}
+  accepted={post.accepted}
+  questionUrl={post.questionUrl}
+  qaData={qaData}
 >
-  <Content />
+  {!qaData && <Content />}
 </PostLayout>

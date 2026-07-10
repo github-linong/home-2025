@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000040681338",
+  "questionId": "1010000040681322",
+  "questionOriginal": "前端遇到formData的请求参数怎么传？",
+  "answerOriginal": "2021-09-14 new FormData() 然后就是 append 咯。fm 就放在之前 body 或者 data 的位置",
+  "questionOptimized": "### 问题概述\n前端在需要以 `FormData` 格式传递请求参数（比如上传文件、混合表单字段）时，具体应该怎么构造和发送？\n\n### 涉及技术\n`FormData`、`fetch`/`axios`\n\n### 期望结果\n掌握用 `FormData` 组装并发送请求参数的写法。",
+  "answerOptimized": "### 解答思路\n用 `new FormData()` 创建一个表单数据对象，通过 `append` 方法逐个添加字段（包括普通字段和文件），然后把这个 `FormData` 实例作为请求体传给 `fetch` 或 `axios` 原来放 `body`/`data` 的位置即可。\n\n### 示例代码\n```js\nconst fm = new FormData();\nfm.append('username', 'linong');\nfm.append('avatar', fileInput.files[0]);\n\n// fetch\nfetch('/api/upload', {\n  method: 'POST',\n  body: fm,\n});\n\n// axios\naxios.post('/api/upload', fm);\n```\n\n### 详细说明\n- 使用 `FormData` 时**不需要**手动设置 `Content-Type`，浏览器会自动生成带 `boundary` 的 `multipart/form-data` 类型请求头；手动设置反而可能因为缺少正确的 `boundary` 导致后端解析失败。\n- `append` 可以多次调用同一个 key，此时会形成多值字段（后端按数组接收，类似普通表单的多选）。\n- 如果字段值是文件对象（`File`/`Blob`），直接 `append` 即可，`FormData` 会按二进制文件处理。\n\n### 小结\n`FormData` 的用法就是「创建 -> append 逐个字段 -> 作为 body 传给请求」，浏览器会自动处理好 `multipart/form-data` 的请求头。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:53:32.807Z",
+  "llmModel": "cursor-agent"
+}

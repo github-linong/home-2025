@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000044688788",
+  "questionId": "1010000044688586",
+  "questionOriginal": "前端到底怎样来操作或者说设置缓存？",
+  "answerOriginal": "缓存分多种，他们说的是 http 缓存，那看来不是你要的。楼上有个评论说了 Service Workers，这个是 http 前的一个缓存地，除了能拦截 http，也能接收一些 message 。再往前说，就是 webSql、DB、localStorage、cookie 这些本地缓存了，也可以理解为持久化缓存。再往前说，就是直接内存缓存了以上就是和前端相关所有缓存了",
+  "questionOptimized": "### 问题概述\n想全面了解前端可以使用哪些缓存方式，以及它们各自的特点和适用场景。\n\n### 涉及技术（如有）\n- HTTP 缓存\n- Service Worker\n- WebSQL / IndexedDB / localStorage / Cookie\n- 内存缓存\n\n### 期望结果\n梳理出前端从网络层到内存层的完整缓存体系。\n",
+  "answerOptimized": "### 解答思路\n按数据流经的层级，从外到内梳理前端可用的缓存手段：HTTP 缓存 → Service Worker → 本地持久化存储 → 内存缓存。\n\n### 详细说明\n- **HTTP 缓存**：由浏览器根据响应头（如 `Cache-Control`、`ETag`）自动处理，是最外层、最常见的缓存方式，适合静态资源。\n- **Service Worker**：位于 HTTP 缓存之前的一层缓存机制，可以拦截所有的网络请求（`fetch`），实现更灵活的缓存策略（比如离线可用、自定义缓存命中规则），同时它还能接收 `message` 事件，与页面进行通信。\n- **本地持久化存储**：包括 WebSQL、IndexedDB、`localStorage`、`Cookie` 等，这些数据会持久化保存在本地，刷新页面甚至重启浏览器后依然存在，适合存储用户配置、离线数据等。\n- **内存缓存**：最底层的缓存方式，直接把数据保存在 JS 运行时的内存变量中（比如模块级变量、状态管理库的 store），刷新页面即失效，适合存储当前会话内的临时数据，读写速度最快。\n\n### 小结\n前端缓存大致可以分为四个层级：HTTP 缓存（浏览器自动）、Service Worker（可编程的网络层缓存）、本地持久化存储（WebSQL/IndexedDB/localStorage/Cookie）、内存缓存（运行时变量）。根据数据的持久性需求和访问速度要求，选择合适的层级组合使用。\n",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:58:51.368Z",
+  "llmModel": "cursor-agent"
+}

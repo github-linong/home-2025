@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000039257496",
+  "questionId": "1010000039254617",
+  "questionOriginal": "如何获取动态子元素相对父元素的偏移量",
+  "answerOriginal": "父级relative，子级absolute，然后子级设置left和top即可",
+  "questionOptimized": "### 问题概述\n如何获取一个动态生成的子元素相对于其父元素的偏移量（子元素相对父元素的 top/left 位置）？\n\n### 涉及技术\nCSS 定位（`position: relative` / `absolute`）、DOM 布局\n\n### 期望结果\n能够准确计算/读取子元素相对父元素的偏移量，便于后续做定位或坐标计算。",
+  "answerOptimized": "### 解答思路\n让父元素成为“定位上下文”，子元素基于该上下文进行绝对定位，从而可以直接通过 `left`/`top` 或 `offsetLeft`/`offsetTop` 获得偏移量。\n\n### 示例代码\n```css\n.parent {\n  position: relative;\n}\n.child {\n  position: absolute;\n  left: 0;\n  top: 0;\n}\n```\n\n```js\nconst offsetLeft = child.offsetLeft;\nconst offsetTop = child.offsetTop;\n```\n\n### 详细说明\n- 父元素设置 `position: relative`，会创建一个新的定位上下文（但不脱离文档流）。\n- 子元素设置 `position: absolute` 后，`left`/`top` 就是相对于最近的已定位（`position` 非 `static`）祖先元素计算的，也就是这里的父元素。\n- 即便子元素本身不需要绝对定位展示，只要父元素是定位元素，`offsetLeft`/`offsetTop` 依然是相对父元素的偏移量，可以直接读取使用。\n\n### 小结\n给父元素加 `relative`，是获取动态子元素相对父元素偏移量最简单直接的方式。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:53:32.807Z",
+  "llmModel": "cursor-agent"
+}

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>量子密信 · 请求监测看板</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.14/lib/theme-chalk/index.css">
+    <style>
+        html,
+        body,
+        #app {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            background: #0b1220;
+            color: #e8eefc;
+        }
+
+        .header-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e8eefc;
+            letter-spacing: 0.5px;
+        }
+
+        .subtle {
+            color: #9aa4c7;
+        }
+
+        .kpi-card .value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .kpi-card .label {
+            font-size: 12px;
+            color: #9aa4c7;
+        }
+
+        .panel {
+            background: #121a2b;
+            border: 1px solid #1e2a44;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            color: #c7d2fe;
+            margin: 0 0 6px;
+        }
+
+        .chart {
+            width: 100%;
+            height: 220px;
+        }
+
+        .logs {
+            height: 240px;
+            overflow: auto;
+            background: #0f172a;
+            border: 1px solid #1e2a44;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .log-item {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 12px;
+            padding: 6px 0;
+            border-bottom: 1px dashed #1f2a44;
+        }
+
+        .log-ok {
+            color: #9ae6b4;
+        }
+
+        .log-err {
+            color: #feb2b2;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .toolbar .el-input,
+        .toolbar .el-select {
+            width: 200px;
+        }
+
+        .spacer {
+            flex: 1 1 auto;
+        }
+
+        .el-card {
+            background: #121a2b;
+            border-color: #1e2a44;
+        }
+
+        .el-table {
+            background: #121a2b;
+            color: #e8eefc;
+        }
+
+        .el-table th,
+        .el-table tr {
+            background: #0f172a;
+        }
+
+        .el-table--enable-row-hover .el-table__body tr:hover>td {
+            background: #16213a;
+        }
+
+        .footer-hint {
+            color: #6b7280;
+            font-size: 12px;
+            text-align: right;
+            padding-top: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <el-container style="height: 100%">
+            <el-header height="56px"
+                style="background:#0f172a; border-bottom:1px solid #1e2a44; display:flex; align-items:center; padding: 0 16px;">
+                <div class="toolbar">
+                    <div class="header-title">量子密信 · 请求监测</div>
+                    <el-radio-group v-model="filters.rangeKey" size="mini" @change="handleRangeChange">
+                        <el-radio-button label="15m">近15分钟</el-radio-button>
+                        <el-radio-button label="1h">近1小时</el-radio-button>
+                        <el-radio-button label="6h">近6小时</el-radio-button>
+                        <el-radio-button label="24h">近24小时</el-radio-button>
+                    </el-radio-group>
+                    <el-select v-model="filters.selectedNodes" multiple collapse-tags placeholder="选择节点" size="mini"
+                        @change="applyFilters">
+                        <el-option v-for="n in allNodes" :key="n" :label="n" :value="n"></el-option>
+                    </el-select>
+                    <el-select v-model="filters.status" placeholder="状态" size="mini" @change="applyFilters">
+                        <el-option label="All" value="all"></el-option>
+                        <el-option label="OK" value="ok"></el-option>
+                        <el-option label="Error" value="error"></el-option>
+                    </el-select>
+                    <el-input v-model="filters.endpointQuery" placeholder="Search endpoint" clearable size="mini"
+                        @input="applyFilters"></el-input>
+                    <div class="spacer"></div>
+                    <el-switch v-model="autoRefresh" active-text="Auto Refresh" @change="toggleAutoRefresh"></el-switch>
+                    <el-button type="primary" size="mini" @click="manualRefresh">Refresh</el-button>
+                </div>
+            </el-header>
+            <el-main style="padding: 12px 12px 8px 12px;">
+                <el-row :gutter="12">
+                    <el-col :span="24">
+                        <el-row :gutter="12">
+                            <el-col :span="4">
+                                <el-card class="kpi-card" shadow="hover">
+                                    <div class="label">Requests</div>
+                                    <div class="value">{{ formatNumber(kpis.totalRequests) }}</div>
+                                </el-card>
+                            </el-col>
+                            <el-col :span="5">
+                                <el-card class="kpi-card" shadow="hover">
+                                    <div class="label">Success Rate</div>
+                                    <div class="value">{{ kpis.successRate.toFixed(2) }}%</div>
+                                </el-card>
+                            </el-col>
+                            <el-col :span="5">
+                                <el-card class="kpi-card" shadow="hover">
+                                    <div class="label">Avg Latency</div>
+                                    <div class="value">{{ Math.round(kpis.avgLatencyMs) }} ms</div>
+                                </el-card>
+                            </el-col>
+                            <el-col :span="5">
+                                <el-card class="kpi-card" shadow="hover">
+                                    <div class="label">Errors</div>
+                                    <div class="value">{{ formatNumber(kpis.errorCount) }}</div>
+                                </el-card>
+                            </el-col>
+                            <el-col :span="5">
+                                <el-card class="kpi-card" shadow="hover">
+                                    <div class="label">Active Nodes</div>
+                                    <div class="value">{{ kpis.activeNodes }}</div>
+                                </el-card>
+                            </el-col>
+                        </el-row>
+                    </el-col>
+                </el-row>
+
+                <el-row :gutter="8" style="margin-top:8px;">
+                    <el-col :span="10">
+                        <div class="panel">
+                            <h3 class="panel-title">Requests Trend</h3>
+                            <div id="chartTrend" class="chart"></div>
+                        </div>
+                    </el-col>
+                    <el-col :span="7">
+                        <div class="panel">
+                            <h3 class="panel-title">Status Distribution</h3>
+                            <div id="chartStatus" class="chart"></div>
+                        </div>
+                    </el-col>
+                    <el-col :span="7">
+                        <div class="panel">
+                            <h3 class="panel-title">Latency Histogram</h3>
+                            <div id="chartLatency" class="chart"></div>
+                        </div>
+                    </el-col>
+                </el-row>
+
+                <el-row :gutter="8" style="margin-top:8px;">
+                    <el-col :span="12">
+                        <div class="panel">
+                            <h3 class="panel-title">Top Endpoints</h3>
+                            <el-table :data="topEndpoints" size="mini" border height="260"
+                                :default-sort="{prop: 'count', order: 'descending'}">
+                                <el-table-column prop="endpoint" label="Endpoint" min-width="160"></el-table-column>
+                                <el-table-column prop="count" label="Requests" width="110" sortable></el-table-column>
+                                <el-table-column prop="successRate" label="Success" width="100"
+                                    :formatter="(r)=>r.successRate.toFixed(1)+'%'"></el-table-column>
+                                <el-table-column prop="avgLatency" label="Avg Latency" width="120"
+                                    :formatter="(r)=>Math.round(r.avgLatency)+' ms'"></el-table-column>
+                                <el-table-column prop="p95" label="p95" width="90"
+                                    :formatter="(r)=>Math.round(r.p95)+' ms'"></el-table-column>
+                            </el-table>
+                        </div>
+                    </el-col>
+                    <el-col :span="12">
+                        <div class="panel">
+                            <h3 class="panel-title">Real-time Logs</h3>
+                            <div class="logs">
+                                <div v-for="(log, idx) in logs" :key="idx" class="log-item"
+                                    :class="log.ok ? 'log-ok':'log-err'">
+                                    [{{ log.time }}] node={{ log.node }} method={{ log.method }} endpoint={{
+                                    log.endpoint }} status={{ log.ok ? 'OK':'ERR' }} latency={{
+                                    Math.round(log.latencyMs) }}ms
+                                </div>
+                            </div>
+                            <div class="footer-hint subtle">Showing last {{ logs.length }} events</div>
+                        </div>
+                    </el-col>
+                </el-row>
+            </el-main>
+        </el-container>
+    </div>
+
+    <script src="https://unpkg.com/vue@2.7.16/dist/vue.js"></script>
+    <script src="https://unpkg.com/echarts@5.5.0/dist/echarts.min.js"></script>
+    <script src="https://unpkg.com/element-ui@2.15.14/lib/index.js"></script>
+    <script>
+        (function () {
+            var app = new Vue({
+                el: '#app',
+                data: function () {
+                    return {
+                        autoRefresh: true,
+                        refreshIntervalMs: 2000,
+                        refreshTimer: null,
+                        filters: {
+                            rangeKey: '1h',
+                            selectedNodes: [],
+                            status: 'all',
+                            endpointQuery: ''
+                        },
+                        allNodes: ['qnode-a', 'qnode-b', 'qnode-c', 'qnode-d'],
+                        allEndpoints: ['/quantum/handshake', '/quantum/key-exchange', '/quantum/verify', '/quantum/ping', '/quantum/decode'],
+                        chart: { trend: null, status: null, latency: null },
+                        series: { timestamps: [], total: [], ok: [], err: [], latency: [] },
+                        kpis: { totalRequests: 0, successRate: 0, avgLatencyMs: 0, errorCount: 0, activeNodes: 0 },
+                        topEndpoints: [],
+                        logs: []
+                    };
+                },
+                methods: {
+                    formatNumber: function (n) {
+                        if (n == null) return '0';
+                        return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                    },
+                    nowHHMMSS: function () {
+                        var d = new Date();
+                        var p = function (x) { return x < 10 ? '0' + x : '' + x; };
+                        return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+                    },
+                    rangeSpec: function (key) {
+                        if (key === '15m') return { minutes: 15, stepSec: 15 };
+                        if (key === '1h') return { minutes: 60, stepSec: 60 };
+                        if (key === '6h') return { minutes: 360, stepSec: 300 };
+                        return { minutes: 1440, stepSec: 600 };
+                    },
+                    initCharts: function () {
+                        this.chart.trend = echarts.init(document.getElementById('chartTrend'));
+                        this.chart.status = echarts.init(document.getElementById('chartStatus'));
+                        this.chart.latency = echarts.init(document.getElementById('chartLatency'));
+
+                        var axisStyle = { color: '#9aa4c7' };
+                        this.chart.trend.setOption({
+                            grid: { left: 40, right: 20, top: 20, bottom: 30 },
+                            tooltip: { trigger: 'axis' },
+                            legend: { data: ['Total', 'OK', 'Error'], textStyle: { color: '#c7d2fe' } },
+                            xAxis: { type: 'category', data: [], axisLabel: axisStyle, axisLine: { lineStyle: { color: '#334155' } } },
+                            yAxis: { type: 'value', axisLabel: axisStyle, splitLine: { lineStyle: { color: '#1f2a44' } } },
+                            series: [
+                                { name: 'Total', type: 'line', smooth: true, showSymbol: false, data: [], lineStyle: { width: 2 } },
+                                { name: 'OK', type: 'line', smooth: true, showSymbol: false, data: [], lineStyle: { width: 2 } },
+                                { name: 'Error', type: 'bar', data: [], barWidth: 8 }
+                            ]
+                        });
+
+                        this.chart.status.setOption({
+                            tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+                            legend: { bottom: 0, textStyle: { color: '#c7d2fe' } },
+                            series: [
+                                {
+                                    type: 'pie', radius: ['40%', '70%'],
+                                    itemStyle: { borderRadius: 6, borderColor: '#0f172a', borderWidth: 2 },
+                                    label: { color: '#c7d2fe' },
+                                    data: []
+                                }
+                            ]
+                        });
+
+                        this.chart.latency.setOption({
+                            grid: { left: 40, right: 20, top: 20, bottom: 30 },
+                            tooltip: { trigger: 'axis' },
+                            xAxis: {
+                                type: 'category', data: ['<5ms', '5-10', '10-20', '20-50', '50-100', '100-200', '200-500', '>500'],
+                                axisLabel: axisStyle, axisLine: { lineStyle: { color: '#334155' } }
+                            },
+                            yAxis: { type: 'value', axisLabel: axisStyle, splitLine: { lineStyle: { color: '#1f2a44' } } },
+                            series: [{ type: 'bar', data: [] }]
+                        });
+                    },
+                    seedData: function () {
+                        var spec = this.rangeSpec(this.filters.rangeKey);
+                        var now = Date.now();
+                        var step = spec.stepSec * 1000;
+                        var points = Math.max(2, Math.floor(spec.minutes * 60 * 1000 / step));
+                        var timestamps = [];
+                        var total = [], ok = [], err = [];
+                        var latencyBuckets = new Array(8).fill(0);
+
+                        for (var i = points - 1; i >= 0; i--) {
+                            var t = new Date(now - i * step);
+                            var hh = (t.getHours() + '').padStart(2, '0');
+                            var mm = (t.getMinutes() + '').padStart(2, '0');
+                            timestamps.push(hh + ':' + mm);
+                            var base = 120 + Math.round(80 * Math.sin((now / 60000 + i) * 0.15));
+                            var noise = Math.round((Math.random() - 0.5) * 40);
+                            var tot = Math.max(0, base + noise);
+                            var er = Math.round(tot * (0.02 + Math.random() * 0.03));
+                            total.push(tot);
+                            err.push(er);
+                            ok.push(Math.max(0, tot - er));
+                            this.bumpLatency(latencyBuckets, tot);
+                        }
+
+                        this.series.timestamps = timestamps;
+                        this.series.total = total;
+                        this.series.ok = ok;
+                        this.series.err = err;
+                        this.series.latency = latencyBuckets;
+
+                        this.refreshCharts();
+                        this.recomputeKPIs();
+                        this.refreshTopEndpoints();
+                        this.bootstrapLogs();
+                    },
+                    bumpLatency: function (buckets, count) {
+                        var remain = count;
+                        for (var i = 0; i < buckets.length; i++) {
+                            var share = Math.max(0, Math.round(remain * (0.2 - i * 0.02) + (Math.random() - 0.5) * 10));
+                            buckets[i] += Math.max(0, share);
+                            remain -= share;
+                        }
+                        if (remain > 0) buckets[buckets.length - 1] += remain;
+                    },
+                    tick: function () {
+                        var ts = this.series.timestamps;
+                        if (!ts.length) return;
+                        var lastLabel = ts[ts.length - 1];
+                        var now = new Date();
+                        var hh = (now.getHours() + '').padStart(2, '0');
+                        var mm = (now.getMinutes() + '').padStart(2, '0');
+                        var newLabel = hh + ':' + mm;
+                        if (newLabel === lastLabel) newLabel = hh + ':' + mm; // keep same minute label; acts as rolling window
+                        var base = 120 + Math.round(80 * Math.sin(Date.now() / 60000 * 0.15));
+                        var noise = Math.round((Math.random() - 0.5) * 40);
+                        var tot = Math.max(0, base + noise);
+                        var er = Math.round(tot * (0.02 + Math.random() * 0.03));
+                        var ok = Math.max(0, tot - er);
+
+                        this.series.timestamps.push(newLabel);
+                        this.series.total.push(tot);
+                        this.series.ok.push(ok);
+                        this.series.err.push(er);
+                        if (this.series.timestamps.length > 1200) {
+                            this.series.timestamps.shift();
+                            this.series.total.shift();
+                            this.series.ok.shift();
+                            this.series.err.shift();
+                        }
+                        var b = this.series.latency.slice();
+                        this.bumpLatency(b, tot);
+                        this.series.latency = b.map(function (x) { return Math.round(x * 0.95); });
+
+                        this.pushLogSample();
+                        this.refreshCharts();
+                        this.recomputeKPIs();
+                        this.refreshTopEndpoints();
+                    },
+                    refreshCharts: function () {
+                        if (!this.chart.trend) return;
+                        this.chart.trend.setOption({
+                            xAxis: { data: this.series.timestamps },
+                            series: [
+                                { data: this.series.total },
+                                { data: this.series.ok },
+                                { data: this.series.err }
+                            ]
+                        });
+                        this.chart.status.setOption({
+                            series: [{
+                                data: [
+                                    { name: 'OK', value: this.sum(this.series.ok) },
+                                    { name: 'Error', value: this.sum(this.series.err) }
+                                ]
+                            }]
+                        });
+                        this.chart.latency.setOption({ series: [{ data: this.series.latency }] });
+                    },
+                    sum: function (arr) { return arr.reduce(function (a, b) { return a + b; }, 0); },
+                    recomputeKPIs: function () {
+                        var total = this.sum(this.series.total);
+                        var ok = this.sum(this.series.ok);
+                        var err = this.sum(this.series.err);
+                        var avgLatency = 40 + Math.random() * 20;
+                        this.kpis.totalRequests = total;
+                        this.kpis.successRate = total > 0 ? (ok * 100 / total) : 0;
+                        this.kpis.avgLatencyMs = avgLatency;
+                        this.kpis.errorCount = err;
+                        this.kpis.activeNodes = this.activeNodeCount();
+                    },
+                    activeNodeCount: function () {
+                        if (this.filters.selectedNodes && this.filters.selectedNodes.length) return this.filters.selectedNodes.length;
+                        return this.allNodes.length;
+                    },
+                    refreshTopEndpoints: function () {
+                        var self = this;
+                        var list = this.allEndpoints.map(function (ep) {
+                            var base = 300 + Math.round(Math.random() * 400);
+                            var errRate = 0.02 + Math.random() * 0.05;
+                            var count = base * (self.filters.rangeKey === '15m' ? 1 : self.filters.rangeKey === '1h' ? 4 : self.filters.rangeKey === '6h' ? 12 : 20);
+                            var errors = Math.round(count * errRate);
+                            var ok = Math.max(0, count - errors);
+                            return {
+                                endpoint: ep,
+                                count: count,
+                                successRate: count > 0 ? ok * 100 / count : 0,
+                                avgLatency: 35 + Math.random() * 40,
+                                p95: 60 + Math.random() * 120
+                            };
+                        });
+                        if (this.filters.endpointQuery) {
+                            var q = this.filters.endpointQuery.toLowerCase();
+                            list = list.filter(function (x) { return x.endpoint.toLowerCase().indexOf(q) >= 0; });
+                        }
+                        if (this.filters.status === 'ok') list = list.filter(function (x) { return x.successRate >= 99; });
+                        if (this.filters.status === 'error') list = list.filter(function (x) { return x.successRate < 99; });
+                        this.topEndpoints = list.sort(function (a, b) { return b.count - a.count; }).slice(0, 10);
+                    },
+                    bootstrapLogs: function () {
+                        var arr = [];
+                        for (var i = 0; i < 50; i++) {
+                            arr.push(this.makeLog());
+                        }
+                        this.logs = arr;
+                    },
+                    pushLogSample: function () {
+                        this.logs.unshift(this.makeLog());
+                        if (this.logs.length > 200) this.logs.pop();
+                    },
+                    makeLog: function () {
+                        var ok = Math.random() > 0.04;
+                        var node = this.pick(this.filters.selectedNodes.length ? this.filters.selectedNodes : this.allNodes);
+                        var ep = this.pick(this.allEndpoints);
+                        var methods = ['POST', 'GET'];
+                        return {
+                            time: this.nowHHMMSS(),
+                            node: node,
+                            method: this.pick(methods),
+                            endpoint: ep,
+                            ok: ok,
+                            latencyMs: ok ? 20 + Math.random() * 80 : 100 + Math.random() * 300
+                        };
+                    },
+                    pick: function (arr) { return arr[Math.floor(Math.random() * arr.length)]; },
+                    handleRangeChange: function () {
+                        this.seedData();
+                    },
+                    applyFilters: function () {
+                        this.refreshTopEndpoints();
+                    },
+                    toggleAutoRefresh: function () {
+                        if (this.autoRefresh) this.startTimer(); else this.stopTimer();
+                    },
+                    manualRefresh: function () {
+                        this.tick();
+                    },
+                    startTimer: function () {
+                        this.stopTimer();
+                        var self = this;
+                        this.refreshTimer = setInterval(function () { self.tick(); }, this.refreshIntervalMs);
+                    },
+                    stopTimer: function () { if (this.refreshTimer) { clearInterval(this.refreshTimer); this.refreshTimer = null; } },
+                    onResize: function () {
+                        if (this.chart.trend) this.chart.trend.resize();
+                        if (this.chart.status) this.chart.status.resize();
+                        if (this.chart.latency) this.chart.latency.resize();
+                    },
+                    selfTest: function () {
+                        var ok = this.sum(this.series.ok);
+                        var err = this.sum(this.series.err);
+                        var tot = this.sum(this.series.total);
+                        var passed = tot >= ok + err - 1 && tot <= ok + err + 1;
+                        console.log('[self-test] totals consistent:', passed, { tot: tot, ok: ok, err: err });
+                        return passed;
+                    }
+                },
+                mounted: function () {
+                    this.initCharts();
+                    this.seedData();
+                    this.startTimer();
+                    window.addEventListener('resize', this.onResize);
+                    setTimeout(this.selfTest, 500);
+                },
+                beforeDestroy: function () {
+                    this.stopTimer();
+                    window.removeEventListener('resize', this.onResize);
+                }
+            });
+        })();
+    </script>
+</body>
+
+</html>

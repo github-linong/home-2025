@@ -1,0 +1,123 @@
+---
+import { renderMarkdown } from "../lib/renderMarkdown";
+
+export interface QaData {
+  questionOriginal: string;
+  answerOriginal: string;
+  questionOptimized: string;
+  answerOptimized: string;
+}
+
+interface Props {
+  data: QaData;
+  title: string;
+  votes?: number;
+  accepted?: boolean;
+  questionUrl?: string;
+  sourceUrl?: string;
+}
+
+const { data, title, votes, accepted, questionUrl, sourceUrl } = Astro.props;
+const uid = `qa-${Math.random().toString(36).slice(2, 9)}`;
+
+const questionOriginalHtml = renderMarkdown(data.questionOriginal || title);
+const questionOptimizedHtml = renderMarkdown(data.questionOptimized);
+const answerOriginalHtml = renderMarkdown(data.answerOriginal);
+const answerOptimizedHtml = renderMarkdown(data.answerOptimized);
+const hasQuestionAi = Boolean(data.questionOptimized?.trim());
+const hasAnswerAi = Boolean(data.answerOptimized?.trim());
+---
+
+<div class="not-prose qa-display">
+  <div class="mb-6 flex flex-wrap items-center gap-2">
+    <span class="badge badge-secondary">思否</span>
+    <span class="badge badge-outline">问答</span>
+    {accepted && <span class="badge badge-success">已采纳</span>}
+    {votes != null && votes > 0 && <span class="badge badge-ghost">👍 {votes}</span>}
+    <span class="badge badge-ghost opacity-70">{hasQuestionAi || hasAnswerAi ? "含 AI 优化版" : "待 AI 优化"}</span>
+  </div>
+
+  <section class="mb-8 rounded-xl border border-base-300 overflow-hidden">
+    <div class="border-b border-base-300 bg-base-200/50 px-4 py-3">
+      <h2 class="m-0 text-lg font-semibold">问题</h2>
+    </div>
+    <div class="p-4">
+      <input type="radio" id={`${uid}-q-orig`} name={`${uid}-q`} class="qa-tab-input" checked hidden />
+      {hasQuestionAi && <input type="radio" id={`${uid}-q-ai`} name={`${uid}-q`} class="qa-tab-input" hidden />}
+      <div class="qa-tab-labels mb-4 flex gap-2">
+        <label for={`${uid}-q-orig`} class="qa-tab-label">原始问题</label>
+        {hasQuestionAi && <label for={`${uid}-q-ai`} class="qa-tab-label qa-tab-label-ai">AI 优化</label>}
+      </div>
+      <div class="qa-panel qa-panel-q-orig rounded-lg border border-base-300 bg-base-100 p-4">
+        <div class="prose prose-sm max-w-none" set:html={questionOriginalHtml} />
+        {questionUrl && (
+          <p class="mt-4 mb-0 text-sm">
+            <a href={questionUrl} target="_blank" rel="noreferrer" class="link link-primary">
+              在 SegmentFault 查看原问题 →
+            </a>
+          </p>
+        )}
+      </div>
+      {hasQuestionAi && (
+        <div class="qa-panel qa-panel-q-ai rounded-lg border border-primary/30 bg-primary/5 p-4">
+          <p class="mb-3 text-xs text-base-content/50">由大模型辅助整理，保留原意，优化结构与可读性。</p>
+          <div class="prose prose-sm max-w-none" set:html={questionOptimizedHtml} />
+        </div>
+      )}
+    </div>
+  </section>
+
+  <section class="mb-4 rounded-xl border border-base-300 overflow-hidden">
+    <div class="border-b border-base-300 bg-base-200/50 px-4 py-3">
+      <h2 class="m-0 text-lg font-semibold">回答</h2>
+    </div>
+    <div class="p-4 space-y-4">
+      <div class="rounded-lg border border-base-300 bg-base-200/30 p-4">
+        <p class="mb-3 text-xs font-medium uppercase tracking-wide text-base-content/50">原始回答</p>
+        <div class="prose prose-sm max-w-none" set:html={answerOriginalHtml} />
+      </div>
+      {hasAnswerAi && (
+        <div class="rounded-lg border border-primary/30 bg-primary/5 p-4">
+          <p class="mb-3 text-xs font-medium uppercase tracking-wide text-primary/70">AI 优化 · 回答整理</p>
+          <div class="prose prose-sm max-w-none" set:html={answerOptimizedHtml} />
+          <p class="mt-3 mb-0 text-xs text-base-content/50">由大模型辅助整理，保留原意，补充结构与代码格式。</p>
+        </div>
+      )}
+    </div>
+  </section>
+
+  {sourceUrl && (
+    <p class="text-sm opacity-70">
+      回答转载自 <a href={sourceUrl} target="_blank" rel="noreferrer" class="link">SegmentFault</a>
+    </p>
+  )}
+</div>
+
+<style>
+  .qa-tab-label {
+    cursor: pointer;
+    padding: 0.4rem 0.9rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid oklch(var(--bc) / 0.15);
+    background: oklch(var(--b1));
+    transition: all 0.15s ease;
+  }
+  .qa-tab-input[id$="-q-orig"]:checked ~ .qa-tab-labels label[for$="-q-orig"] {
+    background: oklch(var(--b2));
+    font-weight: 600;
+  }
+  .qa-tab-input[id$="-q-ai"]:checked ~ .qa-tab-labels label[for$="-q-ai"] {
+    background: oklch(var(--p) / 0.15);
+    color: oklch(var(--p));
+    font-weight: 600;
+    border-color: oklch(var(--p) / 0.3);
+  }
+  .qa-panel {
+    display: none;
+  }
+  .qa-tab-input[id$="-q-orig"]:checked ~ .qa-panel-q-orig,
+  .qa-tab-input[id$="-q-ai"]:checked ~ .qa-panel-q-ai {
+    display: block;
+  }
+</style>

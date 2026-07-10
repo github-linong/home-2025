@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000040170303",
+  "questionId": "1010000040170190",
+  "questionOriginal": "uniapp代理跨域无效",
+  "answerOriginal": "肯定不行，如果你只希望开发环境可以使用那么你 url:'/api/areas_v2/bound/geojson?code=100000', + devServer.proxy 是可以的。但是往往我们的会部署在服务器上，这个时候其实是没有这个代理服务的。一般是使用 nginx 之类的去做代理。接下来就是看一下你为什么开发环境没有出来。host 就应该显示 localhost，因为本质来讲，他就是请求你的 node 服务，然后 node 服务再去请求 ali。以此来绕过跨域限制。看上去你配置的也没问题，你可以改一下 \"target\" : \"https://geo.datav.aliyun.com\",  为 \"target\" : \"https://www.lilnong.top/cors/sf-1010000040170190\", 。接口会返回你请求的地址，然后你可以确认一下你代理之后的请求是否正确。",
+  "questionOptimized": "### 问题概述\n在 uniapp 项目中配置了开发环境代理（`devServer.proxy`）来解决跨域问题，但代理没有生效。\n\n### 涉及技术\nuniapp、webpack `devServer.proxy`、Nginx 反向代理\n\n### 期望结果\n让开发环境的跨域代理正常工作，并了解生产环境该如何处理跨域。",
+  "answerOptimized": "### 解答思路\n`devServer.proxy` **只在本地开发服务器下生效**，本质上是本地 Node 服务帮你转发请求，从而绕开浏览器的跨域限制；打包上线之后，代码是静态文件，没有这个开发服务器在跑，代理自然失效。所以要先确认「代理无效」到底发生在开发环境还是生产环境。\n\n### 详细说明\n- **开发环境**：如果配置类似\n  ```js\n  devServer: {\n    proxy: {\n      '/api': {\n        target: 'https://geo.datav.aliyun.com',\n        changeOrigin: true,\n      },\n    },\n  },\n  ```\n  请求路径写成 `/api/areas_v2/bound/geojson?code=100000`，理论上应该生效。如果没生效，先检查浏览器请求的 `Host` 是否显示为 `localhost`——如果是，说明请求确实先打到了本地 Node 服务再转发；如果 `Host` 直接就是目标域名，说明代理配置没有被真正应用（可能是路径前缀不匹配，或代理配置层级放错了）。\n- **生产环境**：静态资源部署后不存在开发代理服务，跨域问题需要用 Nginx（或其他反向代理网关）在服务器层做代理转发。\n- **排查建议**：可以先把 `target` 换成一个自己完全可控、明确知道行为的接口，确认代理链路本身是否通畅，再排查目标接口是否有特殊限制（如校验 `Referer`、`Origin`）。\n\n### 小结\n`devServer.proxy` 只是开发期方案，上线后必须依赖 Nginx 等服务端代理来解决跨域；排查时先确认问题出在开发环境还是生产环境。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:53:32.807Z",
+  "llmModel": "cursor-agent"
+}

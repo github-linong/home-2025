@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000008692844",
+  "questionId": "1010000008688262",
+  "questionOriginal": "跨域上传文件没有带上目标域的cookie如何解决？",
+  "answerOriginal": "2017-03-15\n\n有代码吗？withCredentials\n\n这个参数改成true",
+  "questionOptimized": "### 问题概述\n在跨域场景下上传文件时，请求没有携带目标域的 Cookie，导致依赖 Cookie 做身份校验的接口无法正常识别用户。\n\n### 涉及技术\nJavaScript、Ajax/XHR、CORS\n\n### 期望结果\n了解如何让跨域请求正确携带目标域的 Cookie。",
+  "answerOptimized": "### 解答思路\n跨域请求默认不会携带 Cookie，需要显式开启凭证（credentials）选项，并配合服务端的 CORS 响应头才能生效。\n\n### 示例代码\n```js\nvar xhr = new XMLHttpRequest();\nxhr.open(\"POST\", \"https://target-domain.com/upload\", true);\nxhr.withCredentials = true; // 关键：允许携带跨域 Cookie\nxhr.send(formData);\n```\n\n### 详细说明\n浏览器出于安全考虑，跨域 Ajax 请求默认不会带上目标站点的 Cookie。要解决这个问题，需要把请求对象的 `withCredentials` 设置为 `true`（如果用的是 `fetch`，对应的是 `credentials: 'include'`）。同时，服务端也必须配合：`Access-Control-Allow-Credentials` 需设为 `true`，且 `Access-Control-Allow-Origin` 不能是通配符 `*`，必须是具体的域名，否则浏览器仍会拦截响应。\n\n### 小结\n跨域请求想带上 Cookie，前端要开启 `withCredentials`（或 `fetch` 的 `credentials: 'include'`），后端要正确设置 CORS 响应头，两者缺一不可。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:46:54Z",
+  "llmModel": "cursor-agent"
+}

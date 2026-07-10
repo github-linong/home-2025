@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000022157030",
+  "questionId": "1010000022156955",
+  "questionOriginal": "h5 啥办法能在安卓手机浏览器下 点击按钮下载图片吗",
+  "answerOriginal": "把资源地址放a标签上。然后服务端设置下载头。",
+  "questionOptimized": "### 问题概述\n\n提问者希望在 H5 页面中，让安卓手机浏览器用户点击按钮后能够下载图片，而不是直接在浏览器内打开/预览图片。\n\n### 涉及技术\n\nHTML、HTTP\n\n### 期望结果\n\n希望找到一种在移动端（尤其安卓浏览器）兼容性较好的图片下载触发方式。",
+  "answerOptimized": "### 解答思路\n\n将图片资源地址放在 `<a>` 标签的 `href` 上，并让服务端为该资源响应设置下载相关的响应头，是移动端触发下载兼容性较好的做法。\n\n### 示例代码\n\n```html\n<a href=\"https://example.com/pic.jpg\">点击下载图片</a>\n```\n\n```\nContent-Disposition: attachment; filename=pic.jpg\n```\n\n### 详细说明\n\n- 单纯依赖前端 `<a download>` 属性在部分安卓浏览器（尤其是内置 WebView 或某些国产浏览器）上兼容性并不理想，很多情况下点击后依然是直接打开图片而非下载。\n- 更稳妥的方式是把图片地址放到 `<a>` 标签的 `href` 中，同时让服务端针对该资源的响应设置 `Content-Disposition: attachment` 响应头，明确告诉浏览器这是一个需要下载保存的附件，而不是可直接展示的内容。\n- 这种方式将下载行为的决定权交给服务端响应头，减少了对前端属性和不同浏览器实现差异的依赖，因此在安卓各类浏览器上的兼容性更好。\n\n### 小结\n\n移动端触发图片下载，比起依赖前端 `download` 属性，更推荐让服务端为资源响应设置 `Content-Disposition: attachment` 响应头，兼容性更有保障。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:44:09.000Z",
+  "llmModel": "cursor-agent"
+}

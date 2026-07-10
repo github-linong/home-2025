@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000022419976",
+  "questionId": "1010000022419742",
+  "questionOriginal": "element怎么找到取消勾选的行数据呢？",
+  "answerOriginal": "正好上午写了个类似的demo。\n\nhttps://www.lilnong.top/stati...\n\n<el-table\n\nref=\"multipleTable\"\n\n:data=\"tableData\"\n\ntooltip-effect=\"dark\"\n\nstyle=\"width: 100%\"\n\n@select=\"handleSelect\">\n\nhandleSelect(list, item){\n\nconsole.log('handleSelect', arguments, list.includes(item))\n\n},\n\nhandleSelect 回调第一个参数是所有选中的，第二个参数是单击的。所以判断一下是否存在即可。",
+  "questionOptimized": "### 问题概述\n\n提问者在使用 Element UI 的 `el-table` 多选表格时，希望获取「刚被取消勾选」的那一行数据，而不仅仅是当前所有选中的行。\n\n### 涉及技术\n\nVue、Element UI（el-table）\n\n### 期望结果\n\n希望通过 `el-table` 的选择相关事件，准确判断某一行是被勾选还是被取消勾选。",
+  "answerOptimized": "### 解答思路\n\n`el-table` 的 `select` 事件在单击某一行的选择框时触发，回调会同时提供「当前所有已选中的行」和「本次被点击的那一行」，通过判断这一行是否还存在于当前选中列表中，就能区分是勾选还是取消勾选。\n\n### 示例代码\n\n```html\n<el-table\n  ref=\"multipleTable\"\n  :data=\"tableData\"\n  tooltip-effect=\"dark\"\n  style=\"width: 100%\"\n  @select=\"handleSelect\">\n</el-table>\n```\n\n```js\nhandleSelect(selection, row) {\n  const isSelected = selection.includes(row);\n  console.log('handleSelect', selection, isSelected);\n  // isSelected 为 false 时，row 就是被取消勾选的那一行\n}\n```\n\n### 详细说明\n\n`el-table` 的 `select` 事件回调参数含义是：\n\n- 第一个参数（`selection`）：触发事件后，表格当前**所有已勾选**的行组成的数组。\n- 第二个参数（`row`）：本次**被单击操作**（勾选或取消勾选）的那一行数据。\n\n因此只需要判断 `selection.includes(row)`：如果结果为 `true`，说明这一行刚被勾选进 `selection`；如果为 `false`，说明这一行虽然被点击了，但已经不在 `selection` 里了，也就是刚被取消勾选。\n\n### 小结\n\n利用 `el-table` 的 `select` 事件回调中「已选列表」与「本次操作行」两个参数做一次 `includes` 判断，即可准确识别出用户是勾选还是取消勾选了某一行。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:44:09.000Z",
+  "llmModel": "cursor-agent"
+}

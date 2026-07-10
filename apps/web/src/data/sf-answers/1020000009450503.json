@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000009450503",
+  "questionId": "1010000009449966",
+  "questionOriginal": "chrome触发click事件会选中旁边的文字",
+  "answerOriginal": "user-select:none你给他加上这个样式你试试",
+  "questionOptimized": "### 问题概述\n在 Chrome 浏览器中，点击某个元素触发 `click` 事件时，会意外选中该元素旁边的文字。\n\n### 涉及技术\nCSS、浏览器兼容性\n\n### 期望结果\n找到一种 CSS 方案，避免点击操作导致周围文字被意外选中。",
+  "answerOptimized": "### 解答思路\n这种现象通常是浏览器默认的文本选择行为被触发（比如快速点击、拖动式点击），可以通过 CSS 禁止该元素及其周边内容被选中来解决。\n\n### 示例代码\n```css\n.no-select {\n  user-select: none;\n}\n```\n\n### 详细说明\n给触发点击的元素（或其外层容器）加上 `user-select: none`，可以阻止用户在该区域内通过鼠标操作选中文本，从而避免点击时“顺带”选中旁边文字的问题。如果需要兼容旧版浏览器，可以补充 `-webkit-user-select`、`-moz-user-select`、`-ms-user-select` 等前缀属性。\n\n### 小结\n点击时误选中旁边文字，本质是浏览器默认的文本选择行为，加上 `user-select: none` 即可屏蔽该行为。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:46:54Z",
+  "llmModel": "cursor-agent"
+}

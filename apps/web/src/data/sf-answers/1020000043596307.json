@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000043596307",
+  "questionId": "1010000043595367",
+  "questionOriginal": "是否有现成的开源组件可以直接使用呢？",
+  "answerOriginal": "2023-03-29 同上 flex 布局就行<div class=\"box\">\n\n<div class=\"header\">\n\n</div>\n\n<div class=\"content\">\n\n<div class=\"left\"></div>\n\n<div class=\"panel\"></div>\n\n<div class=\"right\"></div>\n\n</div>\n\n</div>\n\n<style>\n\n.box{height: 100vh;display: flex;flex-direction: column;}\n\n.header{height: 40px;}\n\n.content{display: flex;overflow:hidden;flex: auto;}\n\n.left,.right{flex: 0 0 200px;}\n\n.panel{flex: auto;}\n\n</style>\n\n<style>\n\n*{padding:0;margin:0;}\n\ndiv{\n\nbackground: rgba(240,230,12,.1);\n\nborder: 1px solid #f00;\n\n}\n\n</style>本文参与了SegmentFault 思否面试闯关挑战赛，欢迎正在阅读的你也加入。",
+  "questionOptimized": "### 问题概述\n针对一个「头部 + 左右侧栏 + 中间内容区」的经典页面布局，询问是否有现成的开源组件可以直接使用。\n\n### 涉及技术（如有）\n- CSS Flex 布局\n\n### 期望结果\n获得一个可直接复用的布局实现方案。\n",
+  "answerOptimized": "### 解答思路\n这种上头部、下方三栏（左固定宽、中间自适应、右固定宽）的布局，用原生 Flex 布局就可以直接实现，不必依赖额外的开源组件。\n\n### 示例代码（如有代码）\n```html\n<div class=\"box\">\n  <div class=\"header\"></div>\n  <div class=\"content\">\n    <div class=\"left\"></div>\n    <div class=\"panel\"></div>\n    <div class=\"right\"></div>\n  </div>\n</div>\n```\n\n```css\n.box {\n  height: 100vh;\n  display: flex;\n  flex-direction: column;\n}\n.header {\n  height: 40px;\n}\n.content {\n  display: flex;\n  overflow: hidden;\n  flex: auto;\n}\n.left,\n.right {\n  flex: 0 0 200px;\n}\n.panel {\n  flex: auto;\n}\n```\n\n### 详细说明\n- 外层 `.box` 用 `flex-direction: column` 将头部和内容区上下排列，头部固定高度 `40px`。\n- `.content` 内部再用一层默认的水平 Flex 布局：`.left` 和 `.right` 用 `flex: 0 0 200px` 固定宽度不参与伸缩，中间 `.panel` 用 `flex: auto` 自动填充剩余空间。\n- `.content` 设置 `overflow: hidden`，避免内部子元素内容溢出撑开整体布局。\n\n### 小结\n这类经典三栏布局无需引入第三方组件，用 Flex 的 `flex-direction: column` 嵌套 `flex: 0 0 固定宽度` / `flex: auto` 组合即可实现，代码简单且兼容性好。\n",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:58:51.368Z",
+  "llmModel": "cursor-agent"
+}

@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000022591593",
+  "questionId": "1010000022590985",
+  "questionOriginal": "Promise连续then与setTimeout的执行顺序？",
+  "answerOriginal": "event loop\n\n微任务队列清空了，然后再去看宏任务",
+  "questionOptimized": "### 问题概述\n\n提问者想了解在同一段代码中，连续多个 `Promise.then` 与 `setTimeout` 混合使用时，各个回调的具体执行顺序是怎样的。\n\n### 涉及技术\n\nJavaScript、Event Loop、微任务/宏任务\n\n### 期望结果\n\n希望理解 Event Loop 中微任务（microtask）与宏任务（macrotask）的调度规则，从而能推断出任意组合下的执行顺序。",
+  "answerOptimized": "### 解答思路\n\n执行顺序由 JavaScript 的事件循环（Event Loop）机制决定：每执行完一个宏任务后，会先把当前微任务队列中的所有任务清空执行完，然后才会去取下一个宏任务继续执行；`Promise.then` 的回调属于微任务，`setTimeout` 的回调属于宏任务。\n\n### 详细说明\n\nEvent Loop 的调度顺序可以概括为：\n\n1. 执行当前的同步代码（这本身也是一个宏任务）。\n2. 同步代码执行完毕后，立即检查微任务队列，将其中所有任务**依次执行完**（包括在执行过程中新产生的微任务，也会在本轮被继续处理）。\n3. 微任务队列清空后，才会从宏任务队列中取出下一个宏任务（如 `setTimeout` 回调）执行。\n4. 重复步骤 2、3，形成循环。\n\n因此，无论代码中写了多少个连续的 `.then()`，只要它们都是在同一轮同步代码执行期间被注册的微任务，都会**先于**任何 `setTimeout` 回调执行——即使这些 `then` 是层层嵌套或链式调用产生的，也会在当前微任务队列清空阶段被逐一处理完，`setTimeout` 无论延时设置得多短，其回调都只能等到微任务队列清空后才有机会被调度执行。\n\n### 小结\n\n判断执行顺序的关键规则是：**同步代码 → 清空所有微任务（含 Promise.then）→ 再执行一个宏任务（如 setTimeout）**，如此循环；microtask 永远优先于 macrotask。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:44:09.000Z",
+  "llmModel": "cursor-agent"
+}

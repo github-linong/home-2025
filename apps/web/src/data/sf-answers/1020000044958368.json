@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000044958368",
+  "questionId": "1010000044956547",
+  "questionOriginal": "如何在 Element UI 的 el-tree 组件中防止点击 radio/checkbox 触发节点折叠？",
+  "answerOriginal": "试试 @click.native.stop 组件的方法有可能是 $emit 出来的，所以试试直接处理原始时间阻止冒泡。还可以增加一个父级节点 div ，然后在 div 上阻止冒泡",
+  "questionOptimized": "### 问题概述\n在 Element UI 的 `el-tree` 组件中，点击节点内的 `radio` / `checkbox` 时会意外触发父级节点的展开/折叠，希望阻止这种冒泡行为。\n\n### 涉及技术（如有）\n- Vue 事件修饰符（`.native`、`.stop`）\n- 事件冒泡与阻止冒泡\n\n### 期望结果\n点击 `radio`/`checkbox` 时只触发自身逻辑，不再触发节点的展开/折叠。\n",
+  "answerOptimized": "### 解答思路\n节点折叠的点击事件很可能绑定在原生 DOM 事件上，通过给 `radio`/`checkbox` 添加 `@click.native.stop` 阻止事件冒泡到父级节点，是最直接的处理方式；如果组件内部通过 `$emit` 触发折叠逻辑而非依赖原生事件冒泡，则需要针对原始事件本身来阻止冒泡。\n\n### 示例代码（如有代码）\n```html\n<el-checkbox @click.native.stop>...</el-checkbox>\n```\n\n### 详细说明\n- **优先尝试 `@click.native.stop`**：由于 `radio`/`checkbox` 大多是普通表单组件，事件是原生 DOM 事件，加上 `.native` 修饰符可以监听到组件根节点上的原生点击事件，再用 `.stop` 阻止其向上冒泡到触发折叠逻辑的父级节点。\n- **组件内部通过 `$emit` 触发折叠**：如果节点折叠逻辑不是监听 DOM 冒泡、而是组件内部对原生事件做处理后再 `$emit` 出来的，`.native.stop` 可能不生效，这时需要直接在原生事件回调里调用 `event.stopPropagation()` 阻止冒泡，而不是依赖 Vue 的事件修饰符。\n- **兜底方案：包一层容器 `div`**：如果上述方式都不方便处理，可以在 `radio`/`checkbox` 外面额外包一层 `div`，在这个 `div` 上绑定点击事件并调用 `stopPropagation()`，从而彻底切断事件向上传播到节点行的路径。\n\n### 小结\n优先尝试 `@click.native.stop` 阻止原生事件冒泡；如果节点折叠逻辑是组件内部通过 `$emit` 触发的，需要直接处理原生事件并调用 `stopPropagation()`；实在无法生效时，可以用额外包裹一层 `div` 并阻止冒泡作为兜底方案。\n",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:58:51.368Z",
+  "llmModel": "cursor-agent"
+}

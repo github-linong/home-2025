@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000009047107",
+  "questionId": "1010000009046813",
+  "questionOriginal": "javascript 函数声明提升，函数体是否会一起被提升？",
+  "answerOriginal": "if代表着条件判断，编译的时候应该是不会去执行代码，只会检查语法词法分析。你可以尝试换浏览器，或者启用严格模式做一下测试，有可能会有意想不到的事情发生哦~\n\n1.变量提升，函数优先，就是 var a = 1;function fun(){};中var a;和function fun(){}会提升上去，提升到作用域的顶层。2.同样提升了。函数表达式不会，因为他是 var fun = function(){};这种，只会提升var fun;3.第二段，其实可以用下面的方法解释\n\nvar func;\n\nconsole.log(func)\n\nif(true){\n\nfunc=function func() {\n\nconsole.log('11');\n\n};\n\n}else{\n\nfunc=function func() {\n\nconsole.log('22');\n\n};\n\n}\n\nfunc(); // 11",
+  "questionOptimized": "### 问题概述\n提问者想知道 JavaScript 中的函数声明提升（Hoisting）是否会把整个函数体也一起提升，尤其是在 `if` 语句块内声明函数时的表现。\n\n### 涉及技术\nJavaScript、变量提升（Hoisting）、严格模式\n\n### 期望结果\n理解函数声明和函数表达式在提升行为上的区别，以及在条件语句块内声明函数时可能出现的浏览器差异。",
+  "answerOptimized": "### 解答思路\nJavaScript 引擎在代码执行前会先做语法/词法分析，此时会把变量声明和函数声明“提升”到作用域顶部；函数声明（`function fn(){}`）会连同函数体一起提升，而函数表达式（`var fn = function(){}`）只会提升变量名 `fn`，赋值部分不会提升。\n\n### 示例代码\n```js\nvar func;\nconsole.log(func); // undefined\n\nif (true) {\n  func = function () {\n    console.log('11');\n  };\n} else {\n  func = function () {\n    console.log('22');\n  };\n}\n\nfunc(); // 11\n```\n\n### 详细说明\n- `if` 只是条件判断语句，浏览器在编译阶段只做语法检查，不会提前执行分支逻辑。\n- 变量提升规律是“函数优先”：`var a = 1; function fn(){}` 这类代码里，`var a;` 和 `function fn(){}` 都会被提升到作用域顶层，且函数声明的提升优先级高于同名的 `var` 变量声明。\n- 函数表达式（`var fn = function(){}`）只提升 `var fn;` 这一行，赋值语句仍在原来的位置执行，因此在赋值之前调用会得到 `undefined` 而不是函数体。\n- 在 `if/else` 块内声明函数（非表达式形式）的提升行为，不同浏览器、是否开启严格模式下表现可能不一致，建议实际测试或改用函数表达式规避歧义。\n\n### 小结\n函数声明会整体提升（包括函数体），函数表达式只提升变量名；在条件块内使用函数声明容易出现浏览器兼容性问题，实践中更推荐使用函数表达式并提前用 `var` 声明变量以获得确定的行为。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:46:54Z",
+  "llmModel": "cursor-agent"
+}

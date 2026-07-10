@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000044750097",
+  "questionId": "1010000044749629",
+  "questionOriginal": "使用post请求获取的视频文件流，js如何转成视频文件并下载？",
+  "answerOriginal": "使用 responseData: 'blob' 这样可以在 ajax 的回调里面就收到 blob，然后用 URL.createObjectURL 转为 bloburl，放在 a 标签用 download 属性触发下载。但是这个的缺点就是不支持移动端，且不支持后台下载需要页面一直开着所以一般我们会直接通过 form target 来触发浏览器的默认下载来下载资源。这种方案的缺点是不能携带 headers。所以这里一般会改成临时授权 url 来解决。这样就能实现一个安全的，支持移动端的，支持后台下载的下载功能。",
+  "questionOptimized": "### 问题概述\n后端通过 POST 请求返回视频文件流，前端希望用 JS 将其转换为可下载的视频文件，需要一个兼顾移动端和后台下载的完整方案。\n\n### 涉及技术（如有）\n- Ajax/XHR `responseType: 'blob'`\n- `URL.createObjectURL`\n- `<a download>` 属性\n- `<form target>` 触发下载\n- 临时授权 URL\n\n### 期望结果\n得到一个安全、支持移动端、支持后台下载的文件下载实现方案。\n",
+  "answerOptimized": "### 解答思路\n先了解两种常见方案各自的优缺点，再结合临时授权 URL 弥补它们的短板，最终得到一个兼顾安全性、移动端兼容性和后台下载能力的方案。\n\n### 详细说明\n- **方案一：Blob + `createObjectURL`**\n  1. 请求时设置 `responseType: 'blob'`，在 Ajax 回调里直接拿到 `Blob` 对象；\n  2. 用 `URL.createObjectURL(blob)` 生成一个临时的 blob URL；\n  3. 创建一个 `<a>` 标签，设置 `href` 为该 blob URL，并设置 `download` 属性触发浏览器下载。\n  - **缺点**：不支持移动端（部分移动浏览器对 blob URL 下载支持不佳），且必须保持页面一直打开才能完成下载，不支持真正的后台下载。\n- **方案二：`<form target>` 触发浏览器默认下载**\n  - 直接构造一个表单并提交（或跳转到下载地址），利用浏览器原生的下载能力，天然支持移动端和后台下载。\n  - **缺点**：无法携带自定义请求头（headers），因此不能直接用于需要鉴权 header 的接口。\n- **解决 headers 限制：改用临时授权 URL**\n  - 后端提供一个接口，先用正常的鉴权请求（可带 headers）换取一个临时授权下载链接（通常带有效期短的 token 作为 URL 参数）；\n  - 前端拿到这个临时 URL 后，直接通过方案二（`<form target>` 或跳转）下载，因为鉴权信息已经内嵌在 URL 中，不再需要 headers。\n\n### 小结\n纯前端 Blob 方案适合桌面端、页面常驻的场景，但移动端兼容性和后台下载能力不足；改用 `<form target>` + 临时授权 URL 的组合方案，既能绕开无法携带 headers 的限制，又能获得移动端友好、支持后台下载的完整下载体验，是更通用的做法。\n",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:58:51.368Z",
+  "llmModel": "cursor-agent"
+}

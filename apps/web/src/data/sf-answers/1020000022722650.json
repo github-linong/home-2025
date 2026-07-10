@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000022722650",
+  "questionId": "1010000022718409",
+  "questionOriginal": "使用axios下载blob文件，文件过大时超时",
+  "answerOriginal": "2020-05-23\n\n超时问题有两种\n\n前端设置了 timeout，不设置即可\n\n服务端断开了链接，服务端把时间改长点\n\n进度的问题，前端发请求是有两个进度的，都可以监听用于显示\n\n上传进度 前端培训-中级阶段（21）- xhr2、FormData（2019-10-17期） demo - http://www.lilnong.top/static/html/bug-test-img-upload-cut.html\n\n下载进度 前端培训-初级阶段-场景实战（2019-06-06）-下载文件&下载进度\n\naxios 中的进度回调\n\n// `onUploadProgress` 允许为上传处理进度事件\n\nonUploadProgress: function (progressEvent) {\n\n// 对原生进度事件的处理\n\n},\n\n// `onDownloadProgress` 允许为下载处理进度事件\n\nonDownloadProgress: function (progressEvent) {\n\n// 对原生进度事件的处理\n\n},",
+  "questionOptimized": "### 问题概述\n\n提问者使用 axios 下载 blob 类型的大文件时遇到了超时问题，希望了解超时的可能原因，同时也关心如何在下载过程中展示进度。\n\n### 涉及技术\n\nJavaScript、axios、Blob、HTTP\n\n### 期望结果\n\n希望定位大文件下载超时的根本原因并解决，同时获得展示上传/下载进度的实现方式。",
+  "answerOptimized": "### 解答思路\n\n超时问题通常来自两个方向：前端自己设置了过短的 `timeout` 限制，或服务端主动断开了长时间未完成的连接。针对下载进度展示，axios 本身提供了 `onUploadProgress` 和 `onDownloadProgress` 两个回调，可以直接监听原生的进度事件。\n\n### 示例代码\n\n```js\naxios.get(url, {\n  responseType: 'blob',\n  // onUploadProgress 允许为上传处理进度事件\n  onUploadProgress: function (progressEvent) {\n    // 对原生进度事件的处理\n  },\n  // onDownloadProgress 允许为下载处理进度事件\n  onDownloadProgress: function (progressEvent) {\n    // 对原生进度事件的处理\n  },\n});\n```\n\n### 详细说明\n\n超时问题的两种常见成因及对应处理方式：\n\n1. **前端设置了 `timeout`**：axios 请求配置中如果显式设置了 `timeout`（毫秒），一旦请求耗时超过该值就会被主动中断并抛出超时错误。对于大文件下载场景，可以直接不设置 `timeout`（或设置一个足够大的值），避免因下载耗时较长而被误判为超时。\n2. **服务端主动断开连接**：如果服务端本身设置了较短的连接保持时间，长时间未完成的请求会被服务端断开，这种情况需要调整服务端的超时/连接保持时长配置，前端无法单方面解决。\n\n关于进度展示，axios 提供了两个进度相关的回调配置：\n\n- `onUploadProgress`：用于监听上传过程的原生进度事件，适合文件上传场景。\n- `onDownloadProgress`：用于监听下载过程的原生进度事件，适合文件下载场景（如本问题中的 blob 下载）。\n\n两者的回调参数都是原生的 `ProgressEvent`，可以从中读取 `loaded`、`total` 等字段来计算并展示具体的百分比进度。\n\n### 小结\n\n大文件下载超时，优先检查前端 `timeout` 配置是否过短，其次考虑服务端连接保持时间；下载/上传进度展示则可以直接使用 axios 内置的 `onDownloadProgress`/`onUploadProgress` 回调。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:44:09.000Z",
+  "llmModel": "cursor-agent"
+}

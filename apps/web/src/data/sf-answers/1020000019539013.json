@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000019539013",
+  "questionId": "1010000019538848",
+  "questionOriginal": "a 标签的href属性里面是一个以.mp4结尾的http连接， 点击a 标签 下载， 但是现在直接打开了？",
+  "answerOriginal": "headers 增加 Content-Disposition:attachment;filename=a.mp4;\n\na 标签增加 download",
+  "questionOptimized": "### 问题概述\n\n提问者的 `<a>` 标签 href 指向一个以 .mp4 结尾的资源链接，期望点击后触发下载，但实际点击后浏览器直接打开（播放）了该视频，而不是下载。\n\n### 涉及技术\n\nHTML、HTTP\n\n### 期望结果\n\n希望点击链接时浏览器执行「下载」动作，而不是在页面内直接打开/播放视频。",
+  "answerOptimized": "### 解答思路\n\n浏览器是否下载文件，除了看前端 `<a>` 标签本身的属性，还会参考服务端响应头。可以从两方面入手：给 `<a>` 标签加 `download` 属性，同时让服务端返回 `Content-Disposition: attachment` 响应头。\n\n### 示例代码\n\n```html\n<a href=\"a.mp4\" download>下载视频</a>\n```\n\n```\nContent-Disposition: attachment; filename=a.mp4;\n```\n\n### 详细说明\n\n- `<a>` 标签的 `download` 属性可以提示浏览器将链接资源保存到本地，而不是导航打开，但该属性只在同源资源下必然生效，跨域资源浏览器可能仍会忽略。\n- 更可靠的方式是让服务端在响应头中设置 `Content-Disposition: attachment; filename=xxx.mp4`，这会明确告诉浏览器该响应应作为附件下载，而不是当作可播放的内容直接渲染，这种方式对同源、跨域都生效。\n- 两者可以同时使用：`download` 提升同源场景下的体验，`Content-Disposition` 从服务端层面保证下载行为的一致性。\n\n### 小结\n\n要让 mp4 链接点击后触发下载而非直接播放，最稳妥的做法是服务端设置 `Content-Disposition: attachment` 响应头，前端可配合 `<a download>` 属性一起使用。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:44:09.000Z",
+  "llmModel": "cursor-agent"
+}

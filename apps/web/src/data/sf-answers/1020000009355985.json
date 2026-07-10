@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000009355985",
+  "questionId": "1010000009355954",
+  "questionOriginal": "怎么实现文字在一行内显示，超过字数用...代替？",
+  "answerOriginal": "2017-05-10\n\noverflow:hidden;white-space:nowrap;text-overflow:ellipsis;\n\noverflow:hidden:超出隐藏\n\nwhite-space:nowrap:强制不换行\n\ntext-overflow:ellipsis:超出省略号代替;\n\n传送门，去看看",
+  "questionOptimized": "### 问题概述\n提问者希望实现单行文本溢出时自动截断并显示省略号（`...`）的效果。\n\n### 涉及技术\nCSS\n\n### 期望结果\n获得可直接使用的 CSS 方案，让超长文本在一行内显示并用省略号代替被截断的部分。",
+  "answerOptimized": "### 解答思路\n单行文本省略号效果可以用三条 CSS 属性组合实现：隐藏溢出内容、禁止换行、用省略号替代溢出部分。\n\n### 示例代码\n```css\n.ellipsis {\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n}\n```\n\n### 详细说明\n- `overflow: hidden`：超出容器宽度的内容直接隐藏。\n- `white-space: nowrap`：强制文本不换行，保证内容始终在一行显示。\n- `text-overflow: ellipsis`：对于因 `overflow: hidden` 而被裁剪的文本，用省略号 `...` 代替。\n\n三者需要配合使用才能生效，且元素本身通常还需要设置固定宽度（或 `max-width`）才能让溢出判断成立。\n\n### 小结\n单行文本溢出省略号是前端非常高频的样式需求，`overflow: hidden` + `white-space: nowrap` + `text-overflow: ellipsis` 三件套即可解决，多行省略则需要额外的 `-webkit-line-clamp` 等方案。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:46:54Z",
+  "llmModel": "cursor-agent"
+}

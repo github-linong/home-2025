@@ -1,7 +1,8 @@
 ---
-const { title, img, desc, url, badge, tags, target = "_blank" } = Astro.props;
+const { title, img, desc, url, badge, tags, target = "_blank", kind, votes, accepted } = Astro.props;
 import { Image } from "astro:assets";
 const tag_url = url.split("/").slice(0, -1).join("/") + "/tag";
+const isAnswer = kind === "answer";
 ---
 
 <div
@@ -23,10 +24,18 @@ const tag_url = url.split("/").slice(0, -1).join("/") + "/tag";
       }
       <div class="grow w-full">
         <h1 class="text-xl font-bold">
+          {isAnswer && <span class="text-base-content/50 font-normal text-sm block mb-1">Q</span>}
           {title}
           {badge && <div class="badge badge-secondary mx-2">{badge}</div>}
+          {isAnswer && accepted && <div class="badge badge-success mx-1">已采纳</div>}
+          {isAnswer && votes != null && votes > 0 && (
+            <div class="badge badge-ghost mx-1">👍 {votes}</div>
+          )}
         </h1>
-        <p class="py-1 text-1xl">{desc}</p>
+        <p class={`py-1 text-1xl ${isAnswer ? "text-base-content/80 line-clamp-3" : ""}`}>
+          {isAnswer && <span class="text-base-content/50 font-medium">A · </span>}
+          {desc}
+        </p>
         <div class="card-actions justify-end">
           {
             tags &&

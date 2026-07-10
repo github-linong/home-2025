@@ -12,7 +12,9 @@
     "build": "npm run build:web && npm run build:api",
     "preview:web": "npm run preview --prefix apps/web",
     "crawl:sf": "node scripts/crawl-sf.mjs",
-    "crawl:sf:discover": "node scripts/crawl-sf.mjs --discover"
+    "crawl:sf:discover": "node scripts/crawl-sf.mjs --discover",
+    "import:sf-answers": "node scripts/import-sf-answers.mjs",
+    "optimize:sf-answers": "node scripts/optimize-sf-answers-llm.mjs"
   },
   "engines": {
     "node": ">=22.0.0"

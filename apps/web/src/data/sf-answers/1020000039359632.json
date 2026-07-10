@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000039359632",
+  "questionId": "1010000039359551",
+  "questionOriginal": "CSS如何实现局部光照效果？",
+  "answerOriginal": "2021-03-07 之前写过一个类似的效果。通过 box-shadow 来实现的。但是那个效果和你这个不太像，我那个把文字也盖住了。考虑可以通过给文字加层级来实现。JS效果之《获取鼠标所在区域的容器，区域外都遮罩半透明》",
+  "questionOptimized": "### 问题概述\n希望用 CSS 实现类似“局部光照/聚光灯”的视觉效果：鼠标移动到某个区域时该区域被点亮，其余区域变暗。\n\n### 涉及技术\nCSS `box-shadow`、`z-index` 层级、JS 鼠标事件\n\n### 期望结果\n得到一种可交互的局部光照效果实现方案或思路。",
+  "answerOptimized": "### 解答思路\n局部光照效果通常不是靠单一 CSS 属性直接实现，而是组合使用「遮罩层 + 鼠标位置计算 + 层级控制」：\n1. 用一个覆盖全区域的半透明遮罩模拟“变暗”的背景；\n2. 通过 JS 监听鼠标位置，动态调整光照容器的位置；\n3. 如果只需要简单的聚光效果，也可以用 `box-shadow` 配合定位元素实现发光边界。\n\n### 示例代码\n```css\n.light {\n  position: absolute;\n  width: 200px;\n  height: 200px;\n  border-radius: 50%;\n  box-shadow: 0 0 60px 40px rgba(255, 255, 255, 0.8);\n  pointer-events: none;\n}\n```\n\n```js\ndocument.addEventListener('mousemove', (e) => {\n  light.style.left = `${e.clientX}px`;\n  light.style.top = `${e.clientY}px`;\n});\n```\n\n### 详细说明\n- 若需求是「鼠标覆盖区域变亮、其余区域变暗」，注意 `box-shadow` 方案会连文字一起盖住；若不希望遮住文字，需要调整层级（`z-index`）把文字放在遮罩之上。\n- 更精确的做法是用 JS 实时获取鼠标所在的容器区域，只对区域外的部分加半透明遮罩，区域内保持正常显示，避免遮住不该遮住的内容。\n\n### 小结\n纯 CSS 很难完美还原局部光照效果，通常需要结合 JS 动态计算鼠标位置和区域，再用 `box-shadow` 或遮罩层配合层级控制来实现。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:53:32.807Z",
+  "llmModel": "cursor-agent"
+}

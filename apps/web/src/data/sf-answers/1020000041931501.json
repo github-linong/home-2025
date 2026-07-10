@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000041931501",
+  "questionId": "1010000041931067",
+  "questionOriginal": "有了 websocket 还需要普通 http 连接么?",
+  "answerOriginal": "可以完全基于 websocket。但是abort 需要你自己实现了，success 和 error 也需要你自己实现的了。timeout 也需要你自己实现了等等很多东西都无了。昂，对了，鉴权也是一个其他的方式。已参与了 SegmentFault 思否社区 10 周年「问答」打卡 ，欢迎正在阅读的你也加入。",
+  "questionOptimized": "### 问题概述\n如果项目里已经使用了 WebSocket，是否还需要保留普通的 HTTP 请求？可以完全用 WebSocket 替代 HTTP 吗？\n\n### 涉及技术\nWebSocket、HTTP、请求生命周期管理（超时、取消、鉴权）\n\n### 期望结果\n了解全面转向 WebSocket 需要额外自己实现哪些能力，从而判断是否值得替代 HTTP。",
+  "answerOptimized": "### 解答思路\n技术上完全可以只用 WebSocket 来传递数据，不再依赖普通 HTTP 请求；但 HTTP 生态（`fetch`/`XMLHttpRequest`）已经内置了大量“开箱即用”的能力，如果全部换成 WebSocket，这些能力都需要自己在应用层重新实现一遍。\n\n### 详细说明\n从 HTTP 切换到纯 WebSocket 需要自行补齐的能力包括：\n\n- **请求取消（abort）**：HTTP 有 `AbortController` 原生支持，WebSocket 上没有对应“取消某一次请求”的语义，需要自己设计一套「请求 ID + 取消通知」协议。\n- **成功/失败回调（success/error）**：HTTP 请求天然有状态码、Promise resolve/reject；WebSocket 是长连接、多路复用的消息通道，需要自己给每条消息编号、约定响应结构，才能对应到具体某次“请求”的成功或失败。\n- **超时（timeout）**：HTTP 客户端库通常内置超时机制；WebSocket 需要自己起定时器，在约定时间内没有收到对应响应就判定超时。\n- **鉴权方式不同**：HTTP 可以方便地在每次请求的 Header 里带 token；WebSocket 通常只能在建立连接时传一次鉴权信息，之后的鉴权状态维护、断线重连后的重新鉴权都需要额外设计。\n\n### 小结\n纯技术上 WebSocket 可以取代 HTTP，但 HTTP 及其客户端生态已经帮你实现了取消、超时、状态码等一整套请求生命周期管理，全面切换到 WebSocket 意味着这些能力都要自己重新造轮子，需要综合评估投入产出比。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:53:32.807Z",
+  "llmModel": "cursor-agent"
+}

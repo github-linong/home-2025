@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000040005124",
+  "questionId": "1010000040005103",
+  "questionOriginal": "Vue对象赋值问题",
+  "answerOriginal": "obj1 = {a:1,b:2,c:3,d:4}\n\nobj2 = {b:0,c:0};\n\nObject.keys(obj2).forEach(key=>obj2[key]=obj1[key])通过编程解决呗。lodash 库也有对应的方法。",
+  "questionOptimized": "### 问题概述\n有两个对象 `obj1` 和 `obj2`，希望把 `obj1` 中与 `obj2` **相同字段名**的值赋给 `obj2`（按 `obj2` 已有的键去 `obj1` 里取值覆盖），而不是简单的对象合并。\n\n### 涉及技术\nJavaScript 对象操作、`Object.keys`、（可选）Lodash\n\n### 期望结果\n得到一种按指定键从另一个对象取值赋值的写法。",
+  "answerOptimized": "### 解答思路\n遍历 `obj2` 自身的键，用同名键去 `obj1` 中取值，逐一赋值覆盖即可。\n\n### 示例代码\n```js\nconst obj1 = { a: 1, b: 2, c: 3, d: 4 };\nconst obj2 = { b: 0, c: 0 };\n\nObject.keys(obj2).forEach((key) => {\n  obj2[key] = obj1[key];\n});\n\nconsole.log(obj2); // { b: 2, c: 3 }\n```\n\n用 Lodash 也可以更简洁地实现类似效果：\n```js\nimport _ from 'lodash';\n\nconst result = _.pick(obj1, Object.keys(obj2));\n// result: { b: 2, c: 3 }\n```\n\n### 详细说明\n- 关键是遍历顺序：以 `obj2` 的键为基准，而不是 `obj1`，这样才能保证只更新 `obj2` 已有的字段，其余字段（`obj1` 里的 `a`、`d`）不会被带进来。\n- 如果不需要保留 `obj2` 原有引用，只是想拿到一个新对象，`lodash` 的 `_.pick(obj1, keys)` 会更直观：从 `obj1` 中挑出指定键组成新对象。\n\n### 小结\n按指定键做“选择性赋值”，核心思路是「以目标对象的键为遍历基准」，原生 `Object.keys().forEach()` 或 `lodash` 的 `pick` 都能实现。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:53:32.807Z",
+  "llmModel": "cursor-agent"
+}

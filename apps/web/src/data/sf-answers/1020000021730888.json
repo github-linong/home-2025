@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000021730888",
+  "questionId": "1010000021726117",
+  "questionOriginal": "H5页面视频封面图片的问题",
+  "answerOriginal": "解决方案。\n\n不动程序，把封面图改了他，比如一些 cdn 支持裁图功能。基本上没啥工作量\n\n既然你都用 img 标签替换了。那你 background-image 不就得了？背景图你总会改裁图规则吧。\n\n方案2说了背景图。其实img也可以改裁图规则 object-fit\n\nhttps://developer.mozilla.org/zh-CN/docs/Web/CSS/object-fit",
+  "questionOptimized": "### 问题概述\n\n提问者在处理 H5 页面中视频封面图（poster）的显示问题，可能遇到封面图裁剪比例与容器不匹配、或替换封面图方案选择的困扰。\n\n### 涉及技术\n\nHTML、CSS、CDN 图片处理\n\n### 期望结果\n\n希望找到一种改动量小、且能灵活控制封面图裁剪/填充方式的解决方案。",
+  "answerOptimized": "### 解答思路\n\n针对封面图裁剪问题，提供了三种递进的方案：优先用 CDN 的裁图能力在图片源头处理；如果已经改用 `<img>` 标签展示封面，可以考虑用 `background-image` 承载；或者直接给 `<img>` 使用 CSS 的 `object-fit` 属性来控制裁剪填充规则。\n\n### 详细说明\n\n1. **不改动程序结构，直接用 CDN 裁图**：很多图片 CDN 支持通过 URL 参数动态裁剪、缩放图片，无需修改前端代码即可让封面图按需展示，改动成本最低。\n2. **用 background-image 替代 img 标签**：如果已经用 `<img>` 展示了封面，那么用 `background-image` 配合 `background-size: cover` 等属性同样可以灵活控制裁剪规则，效果与方案 1 类似。\n3. **用 CSS object-fit 控制 img 的裁剪方式**：即使继续使用 `<img>` 标签，也可以通过 [`object-fit`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/object-fit)（如 `object-fit: cover`）来控制图片在固定容器内的填充/裁剪方式，无需切换到背景图方案。\n\n三种方案可以根据现有代码结构和改动成本灵活选择，效果上是等价的。\n\n### 小结\n\n处理视频封面图的裁剪显示问题，可以优先用 CDN 裁图能力从源头解决；若需要在前端控制，`background-image` 与 `<img>` 的 `object-fit` 属性都能实现类似 `cover`/`contain` 的裁剪填充效果。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:44:09.000Z",
+  "llmModel": "cursor-agent"
+}

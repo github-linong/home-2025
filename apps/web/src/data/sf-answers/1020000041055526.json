@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000041055526",
+  "questionId": "1010000041055521",
+  "questionOriginal": "多个域名指向一个nginx如何区分请求来自哪个域名？",
+  "answerOriginal": "2021-12-02 为啥会是 path。server_name 不是干这个事情的嘛？server {\n\nlisten       80;\n\nserver_name  test1.linong.dev;\n\n}\n\nserver {\n\nlisten       80;\n\nserver_name  test2.linong.dev;\n\n}",
+  "questionOptimized": "### 问题概述\n多个域名都指向同一台 Nginx 服务器，如何在 Nginx 配置层面区分请求具体来自哪个域名，并分别处理？\n\n### 涉及技术\nNginx、虚拟主机（Server Block）、`server_name`\n\n### 期望结果\n得到通过域名区分请求并分别配置的方案，而不是误以为要靠 URL 路径来区分。",
+  "answerOptimized": "### 解答思路\n区分不同域名的请求本来就是 Nginx `server_name` 指令的职责，不需要（也不应该）通过 URL 路径来区分——只要为每个域名单独配置一个 `server {}` 块即可，Nginx 会根据请求头中的 `Host` 自动匹配对应的 `server_name`，路由到相应的配置块。\n\n### 示例代码\n```nginx\nserver {\n  listen       80;\n  server_name  test1.linong.dev;\n\n  location / {\n    proxy_pass http://backend1;\n  }\n}\n\nserver {\n  listen       80;\n  server_name  test2.linong.dev;\n\n  location / {\n    proxy_pass http://backend2;\n  }\n}\n```\n\n### 详细说明\n- Nginx 在同一个 `listen` 端口上可以配置多个 `server {}` 块，每个块通过 `server_name` 声明自己负责哪个域名。\n- 当请求到达时，Nginx 会读取 HTTP 请求头中的 `Host` 字段，与各个 `server_name` 做匹配，命中哪个块就用哪个块的配置（`location`、`proxy_pass`、根目录等）处理请求。\n- 因此不需要在应用层通过 path 前缀去区分域名——让每个域名各自拥有独立、清晰的配置块，也更方便维护。\n\n### 小结\n多域名共用一台 Nginx 时，直接为每个域名建一个 `server {}` 块，用 `server_name` 区分即可，不需要借助 URL 路径来实现域名区分。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:53:32.807Z",
+  "llmModel": "cursor-agent"
+}

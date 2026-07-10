@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000039771216",
+  "questionId": "1010000039768955",
+  "questionOriginal": "Chrome怎么阻止JS删除DOM内容？",
+  "answerOriginal": "实现不了。那么考虑考虑其他的手段，比如说clone一份。然后去重之类的操作。MutationObserver 能监听改变",
+  "questionOptimized": "### 问题概述\n能否通过某种方式阻止页面上的 JS 脚本删除指定的 DOM 内容（例如防止脚本/插件篡改页面）？\n\n### 涉及技术\nDOM、MutationObserver\n\n### 期望结果\n寻找阻止或至少监控 DOM 被删除/篡改的方法。",
+  "answerOptimized": "### 解答思路\n浏览器层面无法真正“禁止”任意 JS 修改 DOM——只要脚本能拿到节点引用，就可以对其进行任意操作，这是浏览器开放能力决定的，无法从根本上阻止。可行的思路是转为**监听 + 恢复**，而不是**阻止**。\n\n### 详细说明\n- 直接阻止：做不到，任何运行在页面上下文中的脚本理论上都能操作 DOM。\n- 可行的替代方案：\n  1. **备份 + 恢复**：提前 `cloneNode` 备份关键 DOM 结构，一旦发现被删除/篡改，就用备份的克隆节点还原。\n  2. **实时监听**：使用 `MutationObserver` 监听目标节点及其子树的变化，一旦检测到节点被移除，就触发回调进行处理（告警、恢复、去重等）。\n\n### 示例代码\n```js\nconst observer = new MutationObserver((mutations) => {\n  for (const mutation of mutations) {\n    if (mutation.removedNodes.length > 0) {\n      console.warn('检测到节点被移除:', mutation.removedNodes);\n      // 这里可以做恢复逻辑，例如重新插入备份的克隆节点\n    }\n  }\n});\n\nobserver.observe(document.body, { childList: true, subtree: true });\n```\n\n### 小结\n无法从根本上“禁止”JS 删除 DOM，但可以通过 `MutationObserver` 实时监听变化，结合提前克隆备份的节点，在检测到删除后进行恢复或告警。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:53:32.807Z",
+  "llmModel": "cursor-agent"
+}

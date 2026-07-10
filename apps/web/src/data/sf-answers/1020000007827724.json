@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000007827724",
+  "questionId": "1010000007827033",
+  "questionOriginal": "var nums = [1,8,9,3],num = nums.push(6);console.log(num);",
+  "answerOriginal": "push返回的是个数",
+  "questionOptimized": "### 问题概述\n给定代码 `var nums = [1,8,9,3], num = nums.push(6); console.log(num);`，提问者想知道 `console.log(num)` 最终会输出什么，以及为什么。\n\n### 涉及技术\nJavaScript、Array\n\n### 期望结果\n理解 `Array.prototype.push()` 方法的返回值规则。",
+  "answerOptimized": "### 解答思路\n`Array.prototype.push()` 的返回值不是新增的元素，而是执行 `push` 之后数组的最新长度。\n\n### 示例代码\n```js\nvar nums = [1, 8, 9, 3];\nvar num = nums.push(6);\nconsole.log(num); // 5\nconsole.log(nums); // [1, 8, 9, 3, 6]\n```\n\n### 详细说明\n`push` 会把参数追加到数组末尾并原地修改数组本身，返回值是追加后数组的 `length`。本例中 `nums` 原有 4 个元素，`push(6)` 之后变为 5 个元素，所以 `num` 的值是 `5`，而不是被追加的元素 `6` 或数组本身。\n\n### 小结\n`push()` 返回的是新数组的长度，不是新元素或数组，这一点在链式操作或依赖返回值做逻辑判断时要特别注意。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:46:54Z",
+  "llmModel": "cursor-agent"
+}

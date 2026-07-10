@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000039890277",
+  "questionId": "1010000039886160",
+  "questionOriginal": "css hover状态图片卡闪",
+  "answerOriginal": "为什么会闪？因为第二张图片加载需要时间，所以会闪。那么解决的方向就是让第二张图片不需要加载、提前加载第二张图片雪碧图，把两张图放在同一个url上面，通过坐标控制显示。图片预加载，可以使用js。也可以给他在css上加载出来，background支持多张图片哟。已参与了 SegmentFault 思否「问答」打卡，欢迎正在阅读的你也加入。",
+  "questionOptimized": "### 问题概述\n使用 CSS `:hover` 切换图片时，第二张图片在鼠标悬停的瞬间会有明显的闪烁/卡顿。\n\n### 涉及技术\nCSS `:hover`、图片预加载、CSS Sprite（雪碧图）\n\n### 期望结果\n消除 hover 切换图片时的闪烁问题。",
+  "answerOptimized": "### 解答思路\n闪烁的根本原因是第二张图片在 hover 触发时才开始加载，加载耗时导致画面出现空白/延迟。解决方向就是让第二张图片**提前加载好**，而不是等到 hover 时才加载。\n\n### 详细说明\n常见的三种解决方式：\n\n1. **CSS Sprite（雪碧图）**：把两张图拼接成一张图，通过 `background-position` 控制显示哪部分，避免加载第二张单独的图片。\n2. **多背景图 + 提前设置**：`background` 支持同时设置多张图片，可以让两张图在页面加载时就一起请求，hover 时只是切换显示层级/坐标，不产生额外的网络请求。\n3. **JS 预加载**：用 `Image` 对象提前把第二张图加载到浏览器缓存里，hover 时直接从缓存读取，不再有加载延迟。\n\n### 示例代码\n```css\n.icon {\n  width: 32px;\n  height: 32px;\n  background-image: url('sprite.png');\n  background-position: 0 0;\n}\n.icon:hover {\n  background-position: 0 -32px;\n}\n```\n\n```js\nconst preload = new Image();\npreload.src = 'hover.png';\n```\n\n### 小结\nHover 闪烁本质是“图片没提前加载好”，解决思路都是围绕「提前加载」展开：雪碧图、多背景图或 JS 预加载三选一即可。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:53:32.807Z",
+  "llmModel": "cursor-agent"
+}

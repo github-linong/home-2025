@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000043005520",
+  "questionId": "1010000043005416",
+  "questionOriginal": "求一段 javaScript 正则表达式？",
+  "answerOriginal": "楼上牛逼加 🍗 我给个 split 加 new Set 吧 new Set(str.split(/[^a-z]/i))我多一个是因为有个空数据",
+  "questionOptimized": "### 问题概述\n需要一段正则表达式，配合字符串处理，从一段文本中提取出所有由字母组成的“单词”，并去重。\n\n### 涉及技术\n正则表达式、`String.prototype.split`、`Set`\n\n### 期望结果\n得到一个能正确分割并去重字母单词的实现，同时注意分割后可能出现的空字符串。",
+  "answerOptimized": "### 解答思路\n用正则 `/[^a-z]/i` 匹配所有「非字母」字符作为分隔符对字符串进行切割，得到一个单词数组，再用 `Set` 去重；需要注意如果原字符串以非字母字符开头/结尾，或包含连续的非字母字符，`split` 结果里会出现空字符串，需要额外过滤。\n\n### 示例代码\n```js\nconst str = 'Hello, world! Hello world.';\n\nconst words = new Set(str.split(/[^a-z]/i));\nconsole.log(words);\n// 注意：其中可能包含一个空字符串 ''，因为标点符号被当作分隔符处理\n\n// 更严谨的写法：过滤掉空字符串\nconst cleanWords = new Set(\n  str.split(/[^a-z]/i).filter((w) => w.length > 0)\n);\nconsole.log(cleanWords);\n```\n\n### 详细说明\n- `/[^a-z]/i`：`[^a-z]` 表示「不是小写字母 a-z 的任意字符」，加上 `i` 标志忽略大小写，所以实际匹配的是「非英文字母」的所有字符（空格、标点、数字等）。\n- `split` 按这个正则切割字符串后，会把所有非字母的片段当作分隔符去掉，剩下的都是连续字母组成的“单词”。\n- 由于文本中标点/空格经常连续出现（或出现在开头结尾），`split` 结果数组里几乎一定会混入空字符串 `''`；用 `Set` 去重时这个空字符串也会被当作一个（唯一的）成员保留下来，如果不想要，需要 `filter` 掉。\n\n### 小结\n用 `split(/[^a-z]/i)` 可以快速把文本切分成单词数组，再用 `Set` 去重；但要留意分割结果中混入的空字符串，视需求决定是否需要 `filter` 掉。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:53:32.807Z",
+  "llmModel": "cursor-agent"
+}

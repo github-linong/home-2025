@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000047538912",
+  "questionId": "1010000047528652",
+  "questionOriginal": "使用 async await  调用接口时，报错，Error: Unsuccessful HTTP response？",
+  "answerOriginal": "await + callback 这用法。。。也没见 apiSysUserUpdateInfoPost 的定义目前看上去像是 callApi 里面处理的时候失败了，打日志查吧。",
+  "questionOptimized": "### 问题概述\n使用 `async/await` 调用接口时报错 `Error: Unsuccessful HTTP response`，想定位具体的报错原因。\n\n### 涉及技术（如有）\n- `async/await` 与回调混用\n- HTTP 请求错误排查\n\n### 期望结果\n定位报错的具体来源，明确是接口调用封装内部的问题还是使用方式的问题。\n",
+  "answerOptimized": "### 解答思路\n从提供的代码片段看，`await` 与回调（callback）混用的写法比较少见，且没有看到 `apiSysUserUpdateInfoPost` 这个方法的具体定义；报错信息 `Unsuccessful HTTP response` 更像是底层封装的请求方法（`callApi`）内部处理失败时抛出的，需要打印日志进一步定位。\n\n### 详细说明\n- **写法上的疑点**：`await` 通常用于等待一个 Promise，如果同时还传入了 callback 参数（`await + callback`）用法，说明这个 API 封装可能既支持回调风格又支持 Promise 风格，两种混用容易导致理解和排查上的困惑，建议先确认这个接口封装（如 `apiSysUserUpdateInfoPost`）的具体实现，明确它是否真的返回 Promise、以及回调参数的实际作用。\n- **报错来源定位**：从报错信息 `Unsuccessful HTTP response` 来看，这不像是浏览器/Node 原生的网络异常提示，更像是项目里统一封装的 `callApi` 方法在处理响应时，判断到某种非成功状态后主动抛出的自定义错误。\n- **下一步排查建议**：\n  1. 找到 `callApi`（或类似的统一请求封装）源码，确认在什么条件下会抛出 `Unsuccessful HTTP response`（比如 HTTP 状态码非 2xx、业务 code 校验失败等）；\n  2. 在调用处和 `callApi` 内部关键位置打印日志（请求参数、响应状态码、响应体），复现问题时观察具体是哪一步判断失败；\n  3. 确认 `apiSysUserUpdateInfoPost` 的定义，弄清楚它内部是否正确处理/转发了错误信息。\n\n### 小结\n该报错大概率来自项目自定义的请求封装（`callApi`）在校验响应状态时主动抛出的错误，而不是网络层面的原生异常。建议先梳理清楚接口封装方法的实际实现（尤其是 `await` 与 callback 混用部分），再通过打印日志定位具体是哪个响应状态触发了这个错误提示。\n",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:58:51.368Z",
+  "llmModel": "cursor-agent"
+}

@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000013518365",
+  "questionId": "1010000013517874",
+  "questionOriginal": "定时器对时间间隔的改变，如何实现？定时器启动后，是不是无法改变这个间隔时间",
+  "answerOriginal": "setTimeout的递归使用\n\nspeed = 5000\n\nfunction fun(){\n\nsetTimeout(fun, speed-= 1000)\n\n}\n\nsetTimeout(fun, speed)",
+  "questionOptimized": "### 问题概述\n提问者想知道，一个已经启动的定时器能否动态改变它的时间间隔；如果 `setInterval` 启动后间隔就固定了，是否有办法实现“间隔时间可变”的定时器。\n\n### 涉及技术\nJavaScript、setTimeout、setInterval\n\n### 期望结果\n获得一种可以动态调整触发间隔的定时器实现方式。",
+  "answerOptimized": "### 解答思路\n`setInterval` 一旦启动，间隔时间确实无法再动态修改；但可以换用 `setTimeout` 递归调用自身的方式实现定时器，每次调用时都可以重新传入一个新的（可变的）延时值，从而实现“间隔时间可变”的效果。\n\n### 示例代码\n```js\nvar speed = 5000;\n\nfunction fun() {\n  setTimeout(fun, (speed -= 1000));\n}\n\nsetTimeout(fun, speed);\n```\n\n### 详细说明\n和 `setInterval` 一次设定、后续无法更改间隔不同，`setTimeout` 每次都是“单次”的定时调用。把要执行的逻辑放进一个函数里，在函数体内部再次调用 `setTimeout(fun, 新的间隔)`，就能在每一轮定时器触发时，动态计算并传入不同的延时时间。示例中每次调用都把 `speed` 减少 1000ms，实现了“越往后触发越快”的效果；同理也可以根据业务需要把间隔时间改为递增，或者依据其他条件动态计算。\n\n### 小结\n需要“可变间隔”的定时器时，不要用 `setInterval`，改用 `setTimeout` 递归调用自身，每次重新传入新的延时值即可灵活控制下一次触发的时间间隔。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:46:54Z",
+  "llmModel": "cursor-agent"
+}

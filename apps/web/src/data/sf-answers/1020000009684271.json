@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000009684271",
+  "questionId": "1010000009683363",
+  "questionOriginal": "一个js面试题",
+  "answerOriginal": "setTimeout是延时执行，但是他其实是不准确的。后面的毫秒数代表着他在多少毫秒后会进入执行队列里面。如果你前面有一个占用了非常多时间的运算。setTimeout就会延时特别久。他只在当前队列执行完之后，才尝试执行。\n\nfor (var i = 0; i < 5; i++) {\n\n//延迟执行\n\nsetTimeout(function() {\n\nconsole.log(new Date, i);\n\n}, 1000);\n\n}\n\nconsole.log(new Date, i);\n\nalert(\"我们用alert挂起一下程序，你等待两三秒再确定\");\n\n//执行到这里，这个队列才算是执行完了。然后才会尝试执行你的settimeout延时的程序，看看是不是可以调用了。不信你看看时间",
+  "questionOptimized": "### 问题概述\n这是一道关于 `setTimeout` 执行时机的 JavaScript 面试题，代码在 `for` 循环中多次调用 `setTimeout`，并在循环结束后又用 `alert` 阻塞了程序，提问者想理解最终的输出顺序和背后原理。\n\n### 涉及技术\nJavaScript、事件循环（Event Loop）、setTimeout\n\n### 期望结果\n理解 `setTimeout` 的延时并不代表“精确到点执行”，而是“最早可以进入执行队列的时间”，并搞清楚同步代码、`alert` 阻塞和异步回调之间的执行顺序关系。",
+  "answerOptimized": "### 解答思路\n`setTimeout` 设置的毫秒数并不是“精确的执行时间”，而是“多久之后可以被放入任务队列等待执行”；只有当前同步代码（包括被 `alert` 阻塞的那段）全部执行完毕，JS 引擎才会去看队列里有没有到时间的回调可以执行。\n\n### 示例代码\n```js\nfor (var i = 0; i < 5; i++) {\n  // 延迟执行\n  setTimeout(function () {\n    console.log(new Date(), i);\n  }, 1000);\n}\n\nconsole.log(new Date(), i);\n\nalert(\"我们用 alert 挂起一下程序，你等待两三秒再确定\");\n// 执行到这里，这个同步队列才算是执行完了。\n// 然后才会尝试执行 setTimeout 延时的回调，看看是否已经到时间可以调用了。\n```\n\n### 详细说明\n- 循环体内的 `setTimeout` 只是把回调“预约”进任务队列，1000ms 后到期，但到期并不代表立刻执行，而是“有资格被执行”。\n- `console.log(new Date, i)`（循环外）会在循环结束后立刻同步执行，此时 `i` 已经是 `5`。\n- `alert` 会阻塞主线程，只要弹窗没被关闭，JS 引擎就无法去处理任务队列，哪怕 `setTimeout` 的 1000ms 早就到了。\n- 等 `alert` 被确认关闭、同步代码执行完毕后，引擎才会依次把队列中已到期的 5 个 `setTimeout` 回调拿出来执行，此时它们打印的时间会明显晚于“预约”时的时间，而 `i` 的值则和闭包捕获的变量有关（`var` 声明下 5 次回调共享同一个 `i`，此时都已经变成 `5`）。\n\n### 小结\n`setTimeout` 只保证“不早于”指定时间执行，真正的执行时机还要看主线程何时空闲；如果主线程被同步代码或 `alert` 阻塞，异步回调只能排队等待，这正是 JS 单线程 + 事件循环模型的核心体现。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:46:54Z",
+  "llmModel": "cursor-agent"
+}

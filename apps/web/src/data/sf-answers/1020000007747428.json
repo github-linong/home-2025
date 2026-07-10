@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000007747428",
+  "questionId": "1010000007747323",
+  "questionOriginal": "如何判断构造函数被实例化了几次",
+  "answerOriginal": "2016-12-09 就是判断你的代码执行了几次么。做一个计数不就解决了",
+  "questionOptimized": "### 问题概述\n提问者想知道如何统计一个构造函数（class 或普通函数）在代码运行过程中被 `new` 实例化了多少次。\n\n### 涉及技术\nJavaScript\n\n### 期望结果\n得到一种可靠的计数方案，能够准确记录某个构造函数被实例化的次数。",
+  "answerOptimized": "### 解答思路\n本质上就是统计“这段构造代码被执行了几次”，最简单可靠的方式是给构造函数增加一个计数器，每次实例化时自增。\n\n### 示例代码\n```js\nfunction Person(name) {\n  Person.count = (Person.count || 0) + 1;\n  this.name = name;\n}\n\nnew Person(\"a\");\nnew Person(\"b\");\nconsole.log(Person.count); // 2\n```\n\n### 详细说明\n把计数器挂在构造函数自身的静态属性上（如 `Person.count`），每次 `new Person()` 执行时在构造函数体内自增。这样计数与实例的生命周期无关，即使实例被销毁，计数值依然准确保留了“历史实例化次数”。\n\n### 小结\n判断构造函数被实例化的次数，核心思路就是“计数”：在构造函数内部维护一个静态计数器，每次执行 `new` 时自增即可。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:46:54Z",
+  "llmModel": "cursor-agent"
+}

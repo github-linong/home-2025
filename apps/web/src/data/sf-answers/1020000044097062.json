@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000044097062",
+  "questionId": "1010000044080031",
+  "questionOriginal": "Typescript 如何展示更为具体的信息，或者直接把类型计算的信息展示出来？",
+  "answerOriginal": "type Prettify<T> = {\n\n[K in keyof T]: T[K];\n\n} & {};解决方案来自光哥和他的小册",
+  "questionOptimized": "### 问题概述\nTypeScript 在做类型运算（比如交叉类型、映射类型）后，鼠标悬浮查看类型时经常只显示原始的类型表达式，而不是计算展开后的具体结构，希望有办法让 IDE 直接展示计算后的完整类型信息。\n\n### 涉及技术（如有）\n- TypeScript 映射类型（Mapped Types）\n- 类型展开技巧（Prettify trick）\n\n### 期望结果\n得到一个通用的工具类型，让复杂类型在 IDE 中以展开后的具体结构显示，方便阅读。\n",
+  "answerOptimized": "### 解答思路\n使用一个「空对象交叉」的技巧：对类型做一次映射类型（`{ [K in keyof T]: T[K] }`），再和 `{}` 做交叉类型，可以让 TypeScript / IDE 把类型展开显示成具体的键值结构，而不是原始的类型别名或运算表达式。\n\n### 示例代码（如有代码）\n```ts\ntype Prettify<T> = {\n  [K in keyof T]: T[K];\n} & {};\n\n// 使用方式\ntype A = { a: string } & { b: number };\ntype B = Prettify<A>;\n// 悬浮查看 B 时会直接展示为 { a: string; b: number }\n// 而不是 A & { b: number } 这种未展开的表达式\n```\n\n### 详细说明\n- 映射类型 `{ [K in keyof T]: T[K] }` 会逐个字段重新构造类型，这个过程本身会触发 TypeScript 对类型进行求值展开。\n- 与空对象 `{}` 做交叉类型，主要是为了不改变类型的实际结构（`T & {}` 等价于 `T`），单纯利用交叉类型的书写方式让编辑器在悬浮提示（hover）时以展开后的对象结构显示，而不是保留原始的类型运算表达式。\n- 这个技巧常用于排查复杂的联合类型、交叉类型、泛型推导结果，方便直观地看到最终字段结构。（该实现来自光哥及其小册。）\n\n### 小结\n`Prettify<T>` 是一个常见的 TypeScript 小技巧，通过映射类型 + 与 `{}` 交叉，让 IDE 展示出类型运算后的具体结构，便于调试和阅读复杂类型。\n",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:58:51.368Z",
+  "llmModel": "cursor-agent"
+}

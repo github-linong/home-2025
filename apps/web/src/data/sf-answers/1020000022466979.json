@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000022466979",
+  "questionId": "1010000022466765",
+  "questionOriginal": "push(array)和push([...array])二者有何区别？",
+  "answerOriginal": "res.push(path) 等于把 path 的引用，追加到了数组里面。所以如果path被改变了，res里面的也会改变。\n\nres.push([...path]),这里等于把 path 的内容拿出来，重新构建了一个数组。然后追加。这里重点是切断了引用关系。相同的办法有深浅拷贝、concat、JSON.parse(JSON.stringify)",
+  "questionOptimized": "### 问题概述\n\n提问者想了解 `res.push(path)` 与 `res.push([...path])` 这两种写法在向数组中追加元素时的本质区别，尤其是在 `path` 后续会被修改的场景下会产生什么不同的结果。\n\n### 涉及技术\n\nJavaScript、数组、引用类型、浅拷贝/深拷贝\n\n### 期望结果\n\n希望明确两种写法在「引用关系」上的差异，以及为什么某些场景下需要断开引用。",
+  "answerOptimized": "### 解答思路\n\n`res.push(path)` 直接把 `path` 这个数组的引用存入 `res`，之后如果 `path` 本身被修改，`res` 里存的内容也会跟着变；而 `res.push([...path])` 通过展开语法先复制出一个全新数组再存入 `res`，从而切断了与原 `path` 的引用关系，后续修改 `path` 不会影响已经存入 `res` 的数据。\n\n### 示例代码\n\n```js\nlet path = [1, 2, 3];\nlet res = [];\n\nres.push(path);       // 存入的是 path 的引用\npath.push(4);\nconsole.log(res);     // [[1, 2, 3, 4]]  —— res 中的数据被联动修改了\n\nlet res2 = [];\nres2.push([...path]); // 存入的是一份新拷贝，切断了引用\npath.push(5);\nconsole.log(res2);    // [[1, 2, 3, 4]] —— 不受后续修改影响\n```\n\n### 详细说明\n\nJavaScript 中数组、对象属于引用类型：变量存储的是指向堆内存中数据的引用，而不是数据本身。当直接 `push(path)` 时，`res` 数组里存的元素与外部的 `path` 变量指向同一块内存，二者是「同步」的——只要通过任意一个引用修改了数据，另一处读取到的都是修改后的结果。\n\n而 `[...path]`（数组展开语法）会创建一个新的数组，并把 `path` 中每个元素逐一复制到新数组中，这个过程相当于一次浅拷贝，`res2.push([...path])` 存入的是这个新数组的引用，与原 `path` 已经是两个独立的内存对象，互不影响。\n\n需要注意的是，这种切断引用的方式属于**浅拷贝**：如果数组元素本身也是对象/数组（嵌套引用类型），拷贝后的新数组内部元素仍然与原数组共享引用。要实现更彻底的隔离，可以使用其他等价的深/浅拷贝手段，例如 `concat()`、`Array.prototype.slice()`，或对于深拷贝场景使用 `JSON.parse(JSON.stringify(path))`。\n\n### 小结\n\n`push(array)` 追加的是原数组的引用，后续修改会互相影响；`push([...array])` 通过展开语法完成一次浅拷贝，切断了引用关系，是否需要切断引用取决于业务上是否希望共享同一份数据。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:44:09.000Z",
+  "llmModel": "cursor-agent"
+}

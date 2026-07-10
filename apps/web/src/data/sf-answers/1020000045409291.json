@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000045409291",
+  "questionId": "1010000045400178",
+  "questionOriginal": "如何在JavaScript中仅保留JSON结构中的最后200个最末级子节点？",
+  "answerOriginal": "先认为你是树状结构，遍历的话采用先序遍历存放结果用链表做一个队列，够200就先进先出这样的结果应该就是最末级的子节点列表了",
+  "questionOptimized": "### 问题概述\n给定一个树状的 JSON 结构，希望只保留其中最后 200 个末级子节点（叶子节点），需要一个遍历和筛选的实现思路。\n\n### 涉及技术（如有）\n- 树的遍历（先序遍历）\n- 队列（先进先出，固定容量）\n\n### 期望结果\n得到一个能筛选出树结构中最后 200 个叶子节点的算法思路。\n",
+  "answerOptimized": "### 解答思路\n把 JSON 当作树状结构，用先序遍历依次访问所有叶子节点，并用一个固定容量为 200 的队列保存结果：每当叶子节点数量超过 200，就把最早进入队列的节点移除（先进先出），遍历结束后队列里剩下的就是最后 200 个叶子节点。\n\n### 示例代码（如有代码）\n```js\nfunction lastNLeaves(root, n = 200) {\n  const queue = [];\n\n  function traverse(node) {\n    const children = node.children || [];\n    if (children.length === 0) {\n      queue.push(node);\n      if (queue.length > n) queue.shift(); // 超出容量，移除最早的节点\n      return;\n    }\n    for (const child of children) {\n      traverse(child);\n    }\n  }\n\n  traverse(root);\n  return queue;\n}\n```\n\n### 详细说明\n- **先序遍历**：按照「根 → 子节点」的顺序递归访问树，保证叶子节点被访问到的顺序与其在树结构中的先后顺序一致。\n- **判断叶子节点**：没有 `children`（或 `children` 为空数组）的节点即为末级子节点。\n- **固定容量队列**：用数组模拟队列，每访问到一个叶子节点就入队（`push`），一旦长度超过 200，就移除队首元素（`shift`），这样队列始终维持最近访问到的 200 个叶子节点，遍历结束后即为所需结果。\n- 如果树的规模很大，用 `shift()` 频繁移除队首元素会有一定的性能开销（数组整体前移），可以考虑用双端队列或环形缓冲区（ring buffer）进行性能优化，但对于常规数据规模，这种写法已经足够简单直观。\n\n### 小结\n思路的核心是先序遍历树 + 固定容量的先进先出队列：用队列自然地维护「最近 N 个」的语义，遍历完成后队列内容即为所需的最后 200 个叶子节点，实现简单且易于理解。\n",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:58:51.368Z",
+  "llmModel": "cursor-agent"
+}

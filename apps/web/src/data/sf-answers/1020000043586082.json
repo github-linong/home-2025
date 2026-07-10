@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000043586082",
+  "questionId": "1010000043583253",
+  "questionOriginal": "多条相同input 输入框 jquery 失去焦点事件如何获取？",
+  "answerOriginal": "focusout 是支持冒泡的。所以你可以用事件委托，直接绑在共同的父级上。blur 是不支持冒泡的，所以必须先有 dom，然后针对 input 绑定事件。你为了区分可以再 parentNode 里面 findIndex 一下，然后会有一个下标。也可以判断当前 input 是否有 data-id，有的话就读，没有的话就给个 uuid，这样也可以标识出来。本文参与了SegmentFault 思否面试闯关挑战赛，欢迎正在阅读的你也加入。",
+  "questionOptimized": "### 问题概述\n页面中有多个结构相同的 `input` 输入框，希望用 jQuery 统一处理它们的失去焦点事件，并能区分具体是哪一个输入框触发的。\n\n### 涉及技术（如有）\n- jQuery 事件绑定\n- `focusout` / `blur` 事件冒泡机制\n- 事件委托\n\n### 期望结果\n用较少的代码统一监听多个同类输入框的失焦事件，并能准确识别触发事件的具体元素。\n",
+  "answerOptimized": "### 解答思路\n关键在于 `focusout` 和 `blur` 的冒泡差异：`focusout` 支持事件冒泡，可以用事件委托统一绑定在父级容器上；`blur` 不支持冒泡，必须在每个 `input` 上单独绑定。\n\n### 示例代码（如有代码）\n```js\n// focusout 支持冒泡，直接委托给父级容器\n$('.parent').on('focusout', 'input', function () {\n  // this 即当前失焦的 input\n});\n```\n\n### 详细说明\n- **用 `focusout` 做事件委托**：因为 `focusout` 支持冒泡，可以直接把事件绑定在这些 `input` 的共同父级容器上，减少绑定次数。\n- **用 `blur` 则必须逐个绑定**：由于不支持冒泡，需要等 DOM 渲染完成后，对每个 `input` 单独绑定 `blur` 事件。\n- **区分具体是哪个输入框**：\n  - 可以在事件回调里用类似 `$(this).parent().find('input').index(this)` 的方式，在父级容器内查找当前元素的下标；\n  - 也可以给每个 `input` 提前设置 `data-id` 属性，事件触发时优先读取 `data-id`；如果没有设置，就临时生成一个 `uuid` 并写回 `data-id`，作为唯一标识。\n\n### 小结\n多个同类输入框的失焦处理，优先选用支持冒泡的 `focusout` 做事件委托，绑定更少、性能更好；如果必须用 `blur`，则需逐个绑定。区分具体元素时，可以用下标或 `data-id`（配合 `uuid` 兜底）来标识。\n",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:58:51.368Z",
+  "llmModel": "cursor-agent"
+}

@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000044735787",
+  "questionId": "1010000044734692",
+  "questionOriginal": "WebSocket在医学领域实时数据获取与波形图绘制方案？",
+  "answerOriginal": "2024-03-22 波形不是折线图吗？我记得 echarts 就有个动态数据的折线图呀https://echarts.apache.org/examples/zh/editor.html?c=dynamic-...",
+  "questionOptimized": "### 问题概述\n在医学领域场景中，需要通过 WebSocket 获取实时数据并绘制波形图，询问有哪些可行的绘制方案。\n\n### 涉及技术（如有）\n- WebSocket 实时数据传输\n- ECharts 动态数据可视化\n\n### 期望结果\n获得一个可用于实时波形展示的图表方案参考。\n",
+  "answerOptimized": "### 解答思路\n医学场景中的波形图在实现上通常就是一种实时更新的折线图，可以直接复用 ECharts 提供的动态数据折线图方案，配合 WebSocket 推送的数据不断追加/滚动更新即可。\n\n### 详细说明\n- ECharts 官方提供了动态数据折线图示例，展示了如何随时间推移持续追加新数据点、并让图表平滑滚动更新，参见：[ECharts 动态数据示例](https://echarts.apache.org/examples/zh/editor.html?c=dynamic-data)。\n- 结合 WebSocket：每次 WebSocket 收到新的数据帧，就调用 ECharts 实例的 `setOption`（或增量更新 API）把新数据点追加到系列（series）中，并结合定时移除过旧的数据点，实现类似心电图那种滚动波形的效果。\n- 由于医学数据通常对实时性和刷新频率要求较高，建议控制单次渲染的数据点数量，避免频繁全量 `setOption` 造成性能问题，尽量使用增量更新的方式。\n\n### 小结\n医学实时波形图本质上可以用 ECharts 的动态折线图能力实现：WebSocket 负责持续推送数据，ECharts 负责增量渲染和滚动展示，实现成本和性能压力都不高。\n",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:58:51.368Z",
+  "llmModel": "cursor-agent"
+}

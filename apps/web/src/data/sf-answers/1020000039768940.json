@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000039768940",
+  "questionId": "1010000039767025",
+  "questionOriginal": "VUE中，动态添加的文本框如何实现数据实时双向绑定？",
+  "answerOriginal": "denkloge13更新于 2021-04-13 <el-input style=\"width: 120px\" v-model=\"item.price\"/>这里绑定的是 price， 你 this.goodsPrice.push(item); 的看上去是 {value: '选项1',label: '黄金糕'}。这样的 price 是无法被监测到的，而且因为你是直接push的原对象，所以导致goodsPrice 里面的也被改变了。所以你应该把原对象拷贝一下，然后把price字段也加上11111111111selectChange(item){\n\nthis.goodsPrice.push({...item,price:0});\n\n}",
+  "questionOptimized": "### 问题概述\n在 Vue 中动态添加一个文本框（`<el-input v-model=\"item.price\">`），发现新增的文本框和 `v-model` 绑定的数据无法实时双向同步。\n\n### 涉及技术\nVue 响应式系统、`v-model`、数组 `push`\n\n### 期望结果\n让动态添加的输入框和数据实现正常的双向绑定。",
+  "answerOptimized": "### 解答思路\n问题的根源不是 `v-model`，而是新 push 进数组的对象里根本没有 `price` 字段，并且直接 push 了原始对象的引用，导致数据被意外污染。\n\n### 示例代码\n```js\nselectChange(item) {\n  // 错误写法：直接 push 原对象引用，且缺少 price 字段\n  // this.goodsPrice.push(item);\n\n  // 正确写法：拷贝一份对象，并补上需要双向绑定的字段\n  this.goodsPrice.push({ ...item, price: 0 });\n}\n```\n\n```html\n<el-input style=\"width: 120px\" v-model=\"item.price\" />\n```\n\n### 详细说明\n- 原来的 `item` 对象结构大致是 `{ value: '选项1', label: '黄金糕' }`，里面并没有 `price` 字段，所以 `v-model=\"item.price\"` 自然监测不到任何变化。\n- 直接 `this.goodsPrice.push(item)` 又把原始对象的引用推入了数组，之后对 `item.price` 的修改会同时影响原始数据源，产生难以排查的“数据串了”问题。\n- 解决方式是用扩展运算符 `{...item, price: 0}` 拷贝出一个新对象，并显式补上 `price` 字段，这样新对象才是响应式且互相独立的，`v-model` 才能正常工作。\n\n### 小结\n遇到动态添加的表单项无法双向绑定，先检查：1）绑定字段是否真实存在于数据对象上；2）是否误用了原始对象的引用而不是拷贝。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:53:32.807Z",
+  "llmModel": "cursor-agent"
+}

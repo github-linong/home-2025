@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000042001470",
+  "questionId": "1010000041994863",
+  "questionOriginal": "为什么拖动过程中border-radius的圆角会消失",
+  "answerOriginal": "2022-06-18 楼上怎么没放自己的文章呢？如何自定义 drag 样式。还好我前几天看过 🐶function dragstart_handler(ev) {\n\nvar img = new Image();\n\nimg.src = 'example.jpg';\n\nimg.width = 50;//无效\n\nimg.height = 50;\n\nev.dataTransfer.setDragImage(img, 0, 0);\n\n}文章内部用 setDragImage 来显示的效果。使用文章内部的办法，可以自定义样式。已参与了 SegmentFault 思否社区 10 周年「问答」打卡 ，欢迎正在阅读的你也加入。",
+  "questionOptimized": "### 问题概述\n使用 HTML5 拖拽（Drag and Drop）功能时，拖动过程中显示的元素预览图，其原本设置的 `border-radius` 圆角样式会消失，变成了直角矩形截图，怎么解决？\n\n### 涉及技术\nHTML5 Drag and Drop、`dragstart` 事件、`DataTransfer.setDragImage`\n\n### 期望结果\n让拖拽过程中显示的预览图保留自定义样式（如圆角）。",
+  "answerOptimized": "### 解答思路\n浏览器默认的拖拽预览图是对被拖拽元素做的一次「快照截图」，通常只保留矩形边界，不会完整还原所有 CSS 效果（如圆角、阴影等）。要自定义拖拽时显示的图像，需要在 `dragstart` 事件里手动调用 `DataTransfer.setDragImage()`，传入自己想展示的图片/元素。\n\n### 示例代码\n```js\nfunction dragstart_handler(ev) {\n  const img = new Image();\n  img.src = 'example.jpg';\n  // 注意：width/height 在这里设置通常不会生效\n  img.width = 50;\n  img.height = 50;\n\n  ev.dataTransfer.setDragImage(img, 0, 0);\n}\n\nelement.addEventListener('dragstart', dragstart_handler);\n```\n\n### 详细说明\n- `setDragImage(image, xOffset, yOffset)` 可以传入 `<img>`、`<canvas>` 甚至是任意 DOM 元素作为拖拽时跟随鼠标显示的图像，`xOffset`/`yOffset` 用来指定鼠标相对该图像的锚点位置。\n- 如果想要圆角效果保留，最直接的方式是提前准备好一张已经带圆角效果的图片（比如用 `canvas` 提前把元素绘制成带圆角蒙版的图片），再传给 `setDragImage`，而不是依赖浏览器对原始 DOM 元素做自动截图。\n- 也可以传入一个隐藏的、样式与原元素一致（包括圆角）的克隆 DOM 节点作为拖拽图像，效果会比图片更灵活。\n\n### 小结\n浏览器默认生成的拖拽预览图不会完整保留 `border-radius` 等样式，需要在 `dragstart` 事件中通过 `setDragImage` 手动指定一张自定义的（已经处理好圆角效果的）图像或元素来解决。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:53:32.807Z",
+  "llmModel": "cursor-agent"
+}

@@ -36,6 +36,9 @@ const { page } = Astro.props;
               target="_self"
               badge={post.data.badge}
               tags={post.data.tags}
+              kind={post.data.kind}
+              votes={post.data.votes}
+              accepted={post.data.accepted}
             />
             <div class="divider my-0" />
           </>

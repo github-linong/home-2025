@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000018954580",
+  "questionId": "1010000018951630",
+  "questionOriginal": "for循环等待image onload事件的返回",
+  "answerOriginal": "async function a(){\n\nfor (let i = 0; i< 4; i++) {\n\nlet img = new Image()\n\nimg.src = 'https://avatar-static.segmentfault.com/381/684/3816849164-5989a84b6952b_big64'//example.png'\n\nvar promise = new Promise((reslove)=>{\n\nimg.onload = async function(){\n\nconsole.log(1);\n\nreslove();\n\n}\n\n})\n\nawait promise\n\nconsole.log(2)\n\n}\n\n}\n\na()",
+  "questionOptimized": "### 问题概述\n\n提问者在 for 循环中为每次迭代创建一个 Image 并监听 onload 事件，希望通过 async/await 让循环「等待」图片加载完成后再进入下一次迭代，但对目前写法是否正确、行为如何存在疑问。\n\n### 涉及技术\n\nJavaScript、Promise、async/await\n\n### 期望结果\n\n希望确认在 for 循环内使用 Promise + await 等待 img.onload 触发的写法是否可行，以及每次循环是否会等待图片真正加载完成才继续执行。",
+  "answerOptimized": "### 解答思路\n\n这种写法是可行的：在循环体内创建 Promise，将 resolve 放到 img.onload 回调中，再用 await 阻塞循环，直到图片加载完成后 Promise 被 resolve，循环才会进入下一次迭代。\n\n### 示例代码\n\n```js\nasync function a() {\n  for (let i = 0; i < 4; i++) {\n    let img = new Image();\n    img.src = 'https://avatar-static.segmentfault.com/381/684/3816849164-5989a84b6952b_big64';\n\n    var promise = new Promise((resolve) => {\n      img.onload = async function () {\n        console.log(1);\n        resolve();\n      };\n    });\n\n    await promise;\n    console.log(2);\n  }\n}\n\na();\n```\n\n### 详细说明\n\n每次循环都会新建一个 Image 对象和对应的 Promise：图片开始加载后，`await promise` 会挂起当前循环体的执行，直到 `img.onload` 触发并调用 `resolve()`。由于 `await` 只会阻塞当前 `async` 函数的执行流，不会阻塞主线程，所以页面依然可以响应其他事件；同时因为 Promise 是在循环体内逐次创建的，每一轮都要等上一张图片加载完毕才会进入下一轮，实现了「串行等待」的效果。\n\n### 小结\n\n在 for 循环中结合 Promise 与 await，可以让每次迭代都等待图片 onload 触发后才继续，是实现「串行加载图片」的常见写法。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:44:09.000Z",
+  "llmModel": "cursor-agent"
+}

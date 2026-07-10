@@ -62,13 +62,16 @@ try {
 
     <h2>问答</h2>
     <p>
-      回答 <a href={sf.answersUrl} target="_blank" rel="noreferrer">{sf.stats.answers}</a> 个问题。
+      已从思否迁移 <strong>110</strong> 条精选问答，每条展示<strong>原始问题 / 原始回答</strong>，并可切换查看 <strong>AI 优化版</strong>（由 Cursor 逐条理解整理）。
+      原站共回答 <a href={sf.answersUrl} target="_blank" rel="noreferrer">{sf.stats.answers}</a> 个问题。
       <a href={sf.answersByVotesUrl} target="_blank" rel="noreferrer">按得票</a>
       ·
       <a href={sf.answersByNewestUrl} target="_blank" rel="noreferrer">按最新</a>
+      ·
+      <a href="/blog/">在博客中浏览</a>（筛选「思否问答」badge）
     </p>
 
     <h2>已迁移文章</h2>
-    <p><a href="/blog/">查看博客</a>（带「思否」badge 的为迁移文章）</p>
+    <p><a href="/blog/">查看博客</a>（带「思否」badge 的为迁移文章，「思否问答」为问答）</p>
   </div>
 </BaseLayout>

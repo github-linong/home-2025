@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000018228846",
+  "questionId": "1010000018225246",
+  "questionOriginal": "如何将高度自适应toast的border-radius设置为高度的一半？",
+  "answerOriginal": "设置一个极大值就好了border-radius:999999px; demo",
+  "questionOptimized": "### 问题概述\n\n提问者希望实现一个高度自适应的 toast 组件，效果是圆角（border-radius）始终等于高度的一半，从而呈现「胶囊」形状。但由于高度不固定，无法预先写死具体的 px 数值。\n\n### 涉及技术\n\nCSS\n\n### 期望结果\n\n无需 JS 计算高度，仅用 CSS 就能让 border-radius 始终等于元素高度的一半，形成胶囊形状。",
+  "answerOptimized": "### 解答思路\n\n不需要精确计算高度的一半，只要把 border-radius 设置成一个足够大的数值（远超过元素实际高度），浏览器会自动把它截断到「高度的一半」，效果等同于胶囊形状。\n\n### 示例代码\n\n```css\n.toast {\n  border-radius: 999999px;\n}\n```\n\n### 详细说明\n\nCSS 规范中，border-radius 的圆角半径存在一个隐式上限：当水平或垂直方向的半径之和超过对应边长时，浏览器会按比例缩小圆角，使其不超过边框的一半。因此只要设置一个极大值（如 999999px），无论元素高度如何变化，圆角都会被自动约束为「高度的一半」，无需 JS 动态计算。\n\n### 小结\n\n利用 CSS border-radius 的自动截断特性，设置一个远大于实际尺寸的圆角值，即可让自适应高度的元素始终呈现胶囊形状。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:44:09.000Z",
+  "llmModel": "cursor-agent"
+}

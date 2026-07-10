@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000013617994",
+  "questionId": "1010000013615221",
+  "questionOriginal": "vue获取url参数一直是null",
+  "answerOriginal": "2018-03-09\n\n应该获取hash你获取search了",
+  "questionOptimized": "### 问题概述\n提问者在 Vue 项目中获取 URL 参数时，结果始终是 `null`，怀疑是获取参数的方式用错了。\n\n### 涉及技术\nVue、Vue Router、URL 解析\n\n### 期望结果\n理解为什么获取到的参数是 `null`，并得到正确获取 URL 参数的方式。",
+  "answerOptimized": "### 解答思路\n问题的根源在于路由模式和参数获取方式不匹配：如果项目使用的是 hash 模式路由（`#` 开头），实际参数是拼接在 `location.hash` 里的，而提问者却用 `location.search` 去获取，自然拿不到值，一直是 `null`。\n\n### 详细说明\n- Vue Router 默认（或常见配置）使用 hash 模式，URL 形如 `http://example.com/#/page?id=1`，此时 `?id=1` 是 `hash` 部分（`#/page?id=1`）的一部分，`location.search` 拿到的只是 `#` 前面的查询字符串（大多数情况下是空的），所以取不到参数。\n- 正确的做法是从 `location.hash` 中解析出 `?` 之后的部分，或者在 Vue 组件里直接使用 `this.$route.query`（对应 `?xxx=xxx` 的参数）或 `this.$route.params`（对应路由路径中的动态段），由 Vue Router 帮你处理好 hash/history 模式的差异，而不必手动解析 `location`。\n\n### 小结\n在 hash 模式的路由下，URL 参数藏在 `location.hash` 而不是 `location.search` 里；在 Vue 项目中更推荐直接使用 `this.$route.query` / `this.$route.params` 获取参数，避免手动解析带来的模式混淆问题。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:46:54Z",
+  "llmModel": "cursor-agent"
+}

@@ -12,6 +12,11 @@ const blogSchema = z.object({
     }).optional(),
     source: z.enum(['site', 'segmentfault']).optional(),
     sourceUrl: z.string().url().optional(),
+    kind: z.enum(['article', 'answer']).default('article'),
+    answerId: z.string().optional(),
+    votes: z.number().int().nonnegative().optional(),
+    accepted: z.boolean().optional(),
+    questionUrl: z.string().url().optional(),
 });
 
 const demoSchema = z.object({

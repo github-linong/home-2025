@@ -1,0 +1,11 @@
+{
+  "answerId": "1020000024500734",
+  "questionId": "1010000024434776",
+  "questionOriginal": "react如何实现预加载图片，首页提前加载全部图片，并显示进度条。",
+  "answerOriginal": "2020-09-18 搞个数组把所有img标签记上，然后遍历去new Image() onload 就 ++。可以自己整理，也可以通过工具，比如说gulp，批量跑一下，然后输出一个js['https://www.lilnong.top/static/img/avator/avator-0.jpg','https://www.lilnong.top/static/img/avator/avator-1.jpg'].forEach((v,idx,arr)=>{\n\nvar img = new Image();\n\nimg.src = v;\n\nimg.onload = ()=>{\n\narr.successLength = (arr.successLength || 0)+1;\n\nconsole.log(`进度：${arr.successLength/arr.length}`)\n\n}\n\n})",
+  "questionOptimized": "### 问题概述\n\n提问者希望在 React 项目首页实现图片预加载功能：提前把页面需要用到的所有图片加载完毕，并在加载过程中显示实时进度条。\n\n### 涉及技术\n\nReact、JavaScript、Image 预加载\n\n### 期望结果\n\n希望获得一种统计加载进度、并能在所有图片加载完成后进行下一步操作（如展示进度条到 100% 或隐藏加载动画）的实现方式。",
+  "answerOptimized": "### 解答思路\n\n核心思路是：把所有需要预加载的图片地址放进一个数组，遍历数组为每个地址创建一个 `Image` 对象并触发加载，在每张图片的 `onload` 回调中把已完成计数加 1，用「已完成数量 / 总数量」计算出当前进度百分比，驱动进度条更新。\n\n### 示例代码\n\n```js\nconst urls = [\n  'https://www.lilnong.top/static/img/avator/avator-0.jpg',\n  'https://www.lilnong.top/static/img/avator/avator-1.jpg',\n  // ...更多图片地址\n];\n\nurls.forEach((v, idx, arr) => {\n  const img = new Image();\n  img.src = v;\n  img.onload = () => {\n    arr.successLength = (arr.successLength || 0) + 1;\n    console.log(`进度：${arr.successLength / arr.length}`);\n  };\n});\n```\n\n### 详细说明\n\n在 React 组件中使用这个思路时，一般会结合组件状态来驱动界面更新：\n\n- 在 `useEffect`（或类组件的生命周期）中，遍历图片地址数组，为每个地址创建一个 `new Image()` 并设置其 `src` 触发加载。\n- 每张图片加载完成（`onload` 触发）时，将已完成的计数器加 1，并调用 `setState`（或对应的状态更新函数）把「已完成数量 / 总数量」这个比例更新到组件状态中，用于渲染进度条。\n- 图片地址列表可以手动维护，也可以借助构建工具（如 gulp）在构建阶段自动扫描并生成，避免手写遗漏。\n- 当计数器等于总数量时，即代表全部图片加载完成，可以在此时触发「隐藏加载态」「进入首页」等后续逻辑。\n\n需要注意的是，`onload` 只在加载成功时触发，如果担心个别图片加载失败导致进度卡住，实际使用中建议再监听 `onerror`，将失败的图片也计入已完成数量，避免进度条无法到达 100%。\n\n### 小结\n\n预加载图片进度条的实现本质上就是「用 `Image.onload` 统计已完成数量」，结合 React 状态更新驱动进度条 UI；生产环境中建议同时监听 `onerror`，避免因个别资源加载失败导致进度无法完成。",
+  "optimizedBy": "cursor",
+  "optimizedAt": "2026-07-10T12:44:09.000Z",
+  "llmModel": "cursor-agent"
+}
