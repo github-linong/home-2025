@@ -1,0 +1,80 @@
+---
+import { CollectionEntry, getCollection } from "astro:content";
+import { DemoSchema } from "../../content/config";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import createSlug from "../../lib/createSlug";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("demos");
+  return entries.map((entry) => ({
+    params: { slug: createSlug(entry.data.title, entry.slug) },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<"demos">;
+}
+
+const { entry } = Astro.props;
+const demo: DemoSchema = entry.data;
+const { Content } = await entry.render();
+
+const typeLabels: Record<string, string> = {
+  web: "Web",
+  desktop: "Desktop",
+  cli: "CLI",
+  external: "External",
+  embed: "Embed",
+};
+---
+
+<BaseLayout title={demo.title} sideBarActiveItemID="demos">
+  <article class="prose max-w-none">
+    <div class="not-prose mb-6">
+      <a href="/demos" class="link link-hover text-sm">← All demos</a>
+      <h1 class="text-4xl font-bold mt-2">{demo.title}</h1>
+      <p class="text-lg opacity-80 mt-2">{demo.description}</p>
+      <div class="flex flex-wrap gap-2 mt-4">
+        <span class="badge badge-primary">{typeLabels[demo.type] ?? demo.type}</span>
+        {demo.badge && <span class="badge badge-secondary">{demo.badge}</span>}
+        {
+          demo.tags?.map((tag) => (
+            <span class="badge badge-outline">{tag}</span>
+          ))
+        }
+      </div>
+      <div class="flex flex-wrap gap-3 mt-6">
+        {
+          demo.demoUrl && (
+            <a class="btn btn-primary" href={demo.demoUrl} target="_blank" rel="noreferrer">
+              Open demo
+            </a>
+          )
+        }
+        {
+          demo.repoUrl && (
+            <a class="btn btn-outline" href={demo.repoUrl} target="_blank" rel="noreferrer">
+              Repository
+            </a>
+          )
+        }
+      </div>
+    </div>
+
+    {
+      demo.type === "web" && demo.demoUrl && (
+        <div class="not-prose my-8">
+          <div class="text-sm font-semibold mb-2">Live preview</div>
+          <iframe
+            src={demo.demoUrl}
+            title={demo.title}
+            class="w-full h-[420px] rounded-lg border border-base-300 bg-base-100"
+            loading="lazy"></iframe>
+        </div>
+      )
+    }
+
+    <Content />
+  </article>
+</BaseLayout>

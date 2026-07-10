@@ -1,0 +1,152 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { profile } from "../data/profile";
+
+const sf = profile.segmentfault;
+---
+
+<BaseLayout title="关于" sideBarActiveItemID="about">
+  <div class="prose max-w-none">
+    <h1>关于 {profile.name}</h1>
+    <div class="not-prose mb-6">
+      <img
+        src={profile.avatar.local}
+        alt={`${profile.name} 头像`}
+        class="mask mask-circle w-28 h-28 object-cover"
+        width="112"
+        height="112"
+      />
+    </div>
+    <p class="text-lg opacity-90">{profile.subtitle}</p>
+    <p>
+      这里是 <strong>{profile.name}</strong>（{profile.username}）的个人站。
+      {profile.tagline}
+    </p>
+
+    {profile.bio.map((paragraph) => <p>{paragraph}</p>)}
+
+    <blockquote>
+      <p><em>{profile.motto}</em> — 先读清楚、再查证、再回答。</p>
+    </blockquote>
+
+    <h2>社区足迹</h2>
+    <p>
+      自 <strong>{profile.location.joinedAt}</strong> 加入 SegmentFault，常驻
+      <strong>{profile.location.city}</strong>。思否主页累计浏览约
+      <strong>{sf.stats.views}</strong>，获赞 <strong>{sf.stats.upvotes}</strong>，粉丝
+      <strong>{sf.stats.followers}</strong>。
+    </p>
+    <ul>
+      <li>
+        <a href={sf.articlesUrl} target="_blank" rel="noreferrer">文章 {sf.stats.articles}</a>
+      </li>
+      <li>
+        <a href={sf.answersUrl} target="_blank" rel="noreferrer">回答 {sf.stats.answers}</a>
+      </li>
+      <li>
+        <a href={sf.profileUrl} target="_blank" rel="noreferrer">提问 {sf.stats.questions}</a>
+      </li>
+    </ul>
+
+    <h3>勋章与标签</h3>
+    <p>
+      {sf.badges.map((b) => (
+        <span class="badge badge-outline mr-1 mb-1">{b}</span>
+      ))}
+      {sf.tags.map((t) => (
+        <span class="badge badge-ghost mr-1 mb-1">{t}</span>
+      ))}
+    </p>
+
+    <h2>我在哪里</h2>
+    <ul>
+      <li><a href={profile.site}>lilnong.top</a> — 本站（博客、Demo）</li>
+      <li>
+        <a href={sf.profileUrl} target="_blank" rel="noreferrer">SegmentFault @linong</a>
+        — 文章与问答主阵地
+      </li>
+      <li>
+        <a href={sf.blogUrl} target="_blank" rel="noreferrer">javascript-lNong 博客</a>
+      </li>
+      <li>
+        <a href={profile.links.github} target="_blank" rel="noreferrer">GitHub</a>
+      </li>
+    </ul>
+
+    <h2>擅长方向</h2>
+    <ul>
+      {profile.expertise.map((item) => <li>{item}</li>)}
+    </ul>
+
+    <h2>写作与分享</h2>
+    <ul>
+      {profile.themes.map((t) => <li>{t}</li>)}
+    </ul>
+
+    <h3>系列专栏</h3>
+    <ul>
+      {profile.series.map((s) => (
+        <li>
+          <strong>{s.name}</strong> — {s.description}
+        </li>
+      ))}
+    </ul>
+    <p>
+      思否 <strong>164</strong> 篇文章已迁移至本站，
+      <a href="/archive/segmentfault">查看归档进度</a>。
+    </p>
+
+    <h2>问答精选（得票 Top）</h2>
+    <p>
+      在思否回答了 <strong>{sf.stats.answers}</strong> 个问题，下面是得票较高的一些回答。
+      <a href={sf.answersByVotesUrl} target="_blank" rel="noreferrer">按得票查看全部 →</a>
+    </p>
+    <ol>
+      {profile.featuredAnswers.map((a) => (
+        <li>
+          <a href={a.url} target="_blank" rel="noreferrer">{a.title}</a>
+          {" "}
+          <span class="opacity-70">
+            · {a.votes} 票{a.accepted ? " · 已采纳" : ""}
+          </span>
+        </li>
+      ))}
+    </ol>
+
+    <h2>联系</h2>
+    <ul>
+      <li>
+        邮箱：<a href={`mailto:${profile.contact.email}`}>{profile.contact.email}</a>
+      </li>
+      <li>
+        微信：<strong>{profile.contact.wechat}</strong>（{profile.contact.wechatNote}）
+      </li>
+      <li>公众号：<strong>{profile.contact.wechatPublicAccount}</strong></li>
+    </ul>
+    <div class="not-prose my-6">
+      <img
+        src={profile.contact.wechatQrCode}
+        alt="微信公众号与微信二维码"
+        class="max-w-full rounded-lg border border-base-300"
+        width="700"
+        height="200"
+        loading="lazy"
+      />
+      <p class="text-sm opacity-70 mt-2">
+        扫码关注公众号「{profile.contact.wechatPublicAccount}」，或添加微信 {profile.contact.wechat}。
+      </p>
+    </div>
+
+    <h2>站点栏目</h2>
+    <ul>
+      <li><a href="/blog/">博客</a> — 本站文章 + <a href="/archive/segmentfault">思否归档</a></li>
+      <li><a href="/demos">项目展示</a></li>
+    </ul>
+
+    <h2>技术栈（本站）</h2>
+    <ul>
+      <li>Astrofy（Astro + Tailwind + DaisyUI）静态站</li>
+      <li>内容 Git 管理 · Hono API（登录预留）</li>
+    </ul>
+  </div>
+</BaseLayout>

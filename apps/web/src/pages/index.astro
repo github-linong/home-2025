@@ -1,0 +1,48 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import HorizontalCard from "../components/HorizontalCard.astro";
+import { getCollection } from "astro:content";
+import createSlug from "../lib/createSlug";
+import { SITE_AUTHOR, SITE_TAGLINE, SITE_SUBTITLE } from "../config";
+
+const posts = (await getCollection("blog")).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+const lastPosts = posts.slice(0, 5);
+---
+
+<BaseLayout sideBarActiveItemID="home">
+  <div class="pb-12 mt-5">
+    <div class="text-5xl font-bold">{SITE_AUTHOR}</div>
+    <div class="text-3xl py-3 font-bold">{SITE_TAGLINE}</div>
+    <div class="py-2">
+      <p class="text-lg">{SITE_SUBTITLE}</p>
+    </div>
+  </div>
+
+  <div>
+    <div class="text-3xl w-full font-bold mb-5">✍️ 最新文章</div>
+  </div>
+
+  {
+    lastPosts.length === 0 ? (
+      <p class="opacity-70">暂无文章。</p>
+    ) : (
+      lastPosts.map((post) => (
+        <>
+          <HorizontalCard
+            title={post.data.title}
+            img={post.data.heroImage}
+            desc={post.data.description}
+            url={"/blog/" + createSlug(post.data.title, post.slug)}
+            target="_self"
+            badge={post.data.badge}
+            tags={post.data.tags}
+          />
+          <div class="divider my-0" />
+        </>
+      ))
+    )
+  }
+</BaseLayout>

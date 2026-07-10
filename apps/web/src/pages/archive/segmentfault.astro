@@ -1,0 +1,74 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { profile } from "../../data/profile";
+import fs from "node:fs";
+import path from "node:path";
+
+const sf = profile.segmentfault;
+const statePath = path.join(process.cwd(), "../../scripts/sf-crawl-state.json");
+let crawlStats = { done: 0, total: sf.stats.articles, note: "" };
+try {
+  const state = JSON.parse(fs.readFileSync(statePath, "utf8"));
+  crawlStats = {
+    done: state.articles.filter((a: { crawled: boolean }) => a.crawled).length,
+    total: state.articles.length,
+    note: "",
+  };
+} catch {
+  crawlStats.note = "运行 node scripts/crawl-sf.mjs 开始爬取";
+}
+---
+
+<BaseLayout title="思否文章归档" sideBarActiveItemID="about">
+  <div class="prose max-w-none">
+    <h1>SegmentFault 文章归档</h1>
+    <p>
+      从 <a href={sf.articlesUrl} target="_blank" rel="noreferrer">思否 linong</a>
+      迁移到本站。共 <strong>{sf.stats.articles}</strong> 篇，已爬取
+      <strong>{crawlStats.done}/{crawlStats.total}</strong>。
+    </p>
+    {crawlStats.note && <p><em>{crawlStats.note}</em></p>}
+
+    <h2>关于我</h2>
+    <p>详见 <a href="/about">关于页</a>。以下为思否侧数据摘要：</p>
+    <ul>
+      <li><strong>名字</strong>：{profile.name}（{profile.username}）</li>
+      <li><strong>定位</strong>：{profile.tagline}</li>
+      <li><strong>Slogan</strong>：{profile.motto}</li>
+      <li><strong>城市</strong>：{profile.location.city} · 加入 {profile.location.joinedAt}</li>
+      <li>
+        <strong>思否</strong>：文章 {sf.stats.articles} · 回答 {sf.stats.answers} · 提问
+        {sf.stats.questions} · 获赞 {sf.stats.upvotes} · 浏览 {sf.stats.views}
+      </li>
+      <li><strong>博客标签</strong>：{sf.tags.join("、")}</li>
+    </ul>
+
+    <h3>勋章</h3>
+    <p>{sf.badges.join(" · ")}</p>
+
+    <h2>常写主题</h2>
+    <ul>
+      {profile.themes.map((t) => <li>{t}</li>)}
+    </ul>
+
+    <h2>系列专栏</h2>
+    <ul>
+      {profile.series.map((s) => (
+        <li>
+          <strong>{s.name}</strong> — {s.description}
+        </li>
+      ))}
+    </ul>
+
+    <h2>问答</h2>
+    <p>
+      回答 <a href={sf.answersUrl} target="_blank" rel="noreferrer">{sf.stats.answers}</a> 个问题。
+      <a href={sf.answersByVotesUrl} target="_blank" rel="noreferrer">按得票</a>
+      ·
+      <a href={sf.answersByNewestUrl} target="_blank" rel="noreferrer">按最新</a>
+    </p>
+
+    <h2>已迁移文章</h2>
+    <p><a href="/blog/">查看博客</a>（带「思否」badge 的为迁移文章）</p>
+  </div>
+</BaseLayout>
