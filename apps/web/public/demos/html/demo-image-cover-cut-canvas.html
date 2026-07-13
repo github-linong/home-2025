@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+</head>
+<body>
+	<style type="text/css">
+		.viewport-warp{
+			position: relative;
+		}
+		.viewport{
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100px;
+			height: 100px;
+			border: 1px solid #f00;
+			box-sizing: border-box;
+			cursor: move;
+		}
+		.viewport-opt{
+			position: absolute;width:10px;height:10px;background: #f00;
+		}
+		.viewport-tl{
+			position: absolute;top:-5px;left:-5px;cursor: nw-resize;
+		}
+		.viewport-tr{
+			position: absolute;top:-5px;right:-5px;cursor: ne-resize;
+		}
+		.viewport-bl{
+			position: absolute;bottom:-5px;left:-5px;cursor: ne-resize;
+		}
+		.viewport-br{
+			position: absolute;bottom:-5px;right:-5px;cursor: nw-resize;
+		}
+	</style>
+	<div id="app">
+		<div class="viewport-warp">
+			<!-- <img src="/static/img/Koala.jpg" class="viewport-image"> -->
+			<canvas class="viewport-image"></canvas>
+			<div class="viewport">
+				<div class="viewport-opt viewport-tl"></div>
+				<div class="viewport-opt viewport-tr"></div>
+				<div class="viewport-opt viewport-bl"></div>
+				<div class="viewport-opt viewport-br"></div>
+			</div>
+		</div>
+		<div class="viewport-view">
+			<canvas class="viewport-image-100" width="100" height="100"></canvas>
+			<canvas class="viewport-image-200" width="200" height="200"></canvas>
+			<canvas class="viewport-image-300" width="300" height="300"></canvas>
+		</div>
+	</div>
+	<div>
+		<ol>
+			<li>file 读 blob</li>
+			<li>img 加载 blob</li>
+			<li>img.onload 获取基本信息，渲染界面</li>
+			<li>down记录，up消除，move计算，leave消除</li>
+			<li>边界控制</li>
+			<li>drawImage绘制到显示窗口</li>
+			<li>toBlob获取，然后上传</li>
+		</ol>
+	</div>
+	<script type="text/javascript">
+		var canvas = document.querySelector('.viewport-image');
+		var ctx = canvas.getContext('2d');
+		var canvasWidth = 300;
+		var canvasHeight = 300;
+		var img = new Image();
+		img.src = "/static/img/Koala.jpg";
+		img.onload = function(){
+			console.log(img.width, img.height);
+			canvas.width = canvasWidth;//设定基础画布大小（宽度）
+			canvas.height = canvasHeight;//设定基础画布大小（高度）
+			var canvasDrawWidth = canvas.width/img.width;//宽度比例
+			var canvasDrawHeight = canvas.height/img.height;//高度比例
+			canvasDrawNum = Math.min(canvasDrawWidth, canvasDrawHeight, 1);//确保全部展示在页面内
+			ctx.drawImage(img, 0, 0, img.width * canvasDrawNum, img.height * canvasDrawNum)//绘制
+		}
+		var _mouse={
+			isDown: false, //按下
+			width: 100,
+			height: 100,
+			x: 0,
+			y: 0
+		}
+		// 事件 按下
+		document.querySelector('.viewport-warp').addEventListener('mousedown', function(e){
+			if(e.target.classList.contains('viewport')){
+				_mouse.isDown = true;
+			}
+		})
+		// 事件 抬起
+		document.querySelector('.viewport-warp').addEventListener('mouseup', function(e){
+			// console.log(e.target)
+			_mouse.isDown = false;
+		})
+		// 事件 移动
+		document.querySelector('.viewport-warp').addEventListener('mousemove', function(e){
+			// console.log(e.target)
+			if(_mouse.isDown){
+				var dom = document.querySelector('.viewport');
+				_mouse.x = e.clientX - (_mouse.width / 2);
+				_mouse.y = e.clientY - (_mouse.height / 2);
+				dom.style.left = _mouse.x + 'px';
+				dom.style.top = _mouse.y + 'px';
+
+				document.querySelectorAll('canvas')[1].getContext('2d').drawImage(document.querySelectorAll('canvas')[0],_mouse.x,_mouse.y,100,100,0,0,100,100)
+				document.querySelectorAll('canvas')[2].getContext('2d').drawImage(document.querySelectorAll('canvas')[0],_mouse.x,_mouse.y,100,100,0,0,200,200)
+				document.querySelectorAll('canvas')[3].getContext('2d').drawImage(document.querySelectorAll('canvas')[0],_mouse.x,_mouse.y,100,100,0,0,300,300)
+				// document.querySelectorAll('canvas')[1].getContext('2d').drawImage(document.querySelectorAll('canvas')[0],_mouse.x/canvasDrawNum,_mouse.y/canvasDrawNum,100,100,0,0,100,100)
+				// document.querySelectorAll('canvas')[2].getContext('2d').drawImage(document.querySelectorAll('canvas')[0],_mouse.x/canvasDrawNum,_mouse.y/canvasDrawNum,100,100,0,0,200,200)
+				// document.querySelectorAll('canvas')[3].getContext('2d').drawImage(document.querySelectorAll('canvas')[0],_mouse.x/canvasDrawNum,_mouse.y/canvasDrawNum,100,100,0,0,300,300)
+			}
+		})
+		// 事件 移出
+		document.querySelector('.viewport-warp').addEventListener('mouseleave', function(e){
+			// console.log(e.target)
+		})
+	</script>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

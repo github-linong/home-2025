@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<!-- <link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"> -->
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+	<!-- <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"> -->
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+
+	<!-- import stylesheet -->
+	<!-- <link rel="stylesheet" href="//unpkg.com/view-design/dist/styles/iview.css"> -->
+	<link href="https://cdn.bootcdn.net/ajax/libs/iview/3.5.4/styles/iview.css" rel="stylesheet">
+	<!-- import iView -->
+	<!-- <script src="//unpkg.com/view-design/dist/iview.min.js"></script> -->
+	<script src="https://cdn.bootcdn.net/ajax/libs/iview/3.5.4/iview.min.js"></script>
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+		<div class="panel panel-default" id="font">
+		  <div class="panel-heading">
+		    <h3 class="panel-title"><a href="#font">#</a>canvas 的 font 属性测试 {{currFont}}</h3>
+		  </div>
+		  <div class="panel-body">
+			<div class="row">
+			  <div class="col-md-6">
+			  	<div class="radio" v-for="(item,idx) in fonts" :key="item">
+			  	  <label>
+			  	    <input 
+			  	    	type="radio" 
+			  	    	name="font"
+			  	    	:value="item"
+			  	    	v-model="currFont">{{idx}} {{item}}
+			  	  </label>
+			  	</div>
+			  </div>
+			  <div class="col-md-6">
+			  	<canvas id="fontCanvas"></canvas>
+			  </div>
+			</div>
+		  </div>
+		</div>
+		<div class="panel panel-default" id="textBaseline">
+		  <div class="panel-heading">
+		    <h3 class="panel-title"><a href="#textBaseline">#</a>canvas 的 textBaseline 属性测试 {{currTextBaseLine}}</h3>
+		  </div>
+		  <div class="panel-body">
+			<div class="row">
+			  <div class="col-md-6">
+			  	<div class="radio" v-for="item in textBaseLines" :key="item">
+			  	  <label>
+			  	    <input 
+			  	    	type="radio" 
+			  	    	name="textBaseLine"
+			  	    	:value="item"
+			  	    	v-model="currTextBaseLine">{{item}}
+			  	  </label>
+			  	</div>
+			  </div>
+			  <div class="col-md-6">
+			  	<canvas id="textBaseLineCanvas"></canvas>
+			  </div>
+			</div>
+		  </div>
+		</div>
+		<div class="panel panel-default" id="textAlign">
+		  <div class="panel-heading">
+		    <h3 class="panel-title"><a href="#textAlign">#</a>canvas 的 textAlign 属性测试 {{currTextAlign}}</h3>
+		  </div>
+		  <div class="panel-body">
+			<div class="row">
+			  <div class="col-md-6">
+			  	<div class="radio" v-for="item in textAligns" :key="item">
+			  	  <label>
+			  	    <input 
+			  	    	type="radio" 
+			  	    	name="textAlign"
+			  	    	:value="item"
+			  	    	v-model="currTextAlign">{{item}}
+			  	  </label>
+			  	</div>
+			  </div>
+			  <div class="col-md-6">
+			  	<canvas id="textAlignCanvas"></canvas>
+			  </div>
+			</div>
+		  </div>
+		</div>
+		<div class="panel panel-default" id="lineStyle">
+		  <div class="panel-heading">
+		    <h3 class="panel-title"><a href="#lineStyle">#</a>canvas 的线条样式测试</h3>
+		  </div>
+		  <div class="panel-body">
+			<div class="row">
+			  <div class="col-md-6">
+			  	<i-form :label-width="130">
+				  	<form-item label="lineWidth"><input-number v-model="lineStyle.lineWidth"></input-number></form-item>
+				  	<form-item label="lineCap">
+					  	<radio-group v-model="lineStyle.lineCap">
+					        <Radio label="butt"><span>butt</span></Radio>
+					        <Radio label="round"><span>round</span></Radio>
+					        <Radio label="square"><span>square</span></Radio>
+					    </radio-group>
+				    </form-item>
+					<form-item label="lineJoin">
+						<radio-group v-model="lineStyle.lineJoin">
+					        <Radio label="miter"><span>miter</span></Radio>
+					        <Radio label="round"><span>round</span></Radio>
+					        <Radio label="bevel"><span>bevel</span></Radio>
+					    </radio-group>
+					</form-item>
+					<form-item label="miterLimit"><input-number v-model="lineStyle.miterLimit"></input-number></form-item>
+					<form-item label="lineDashOffset"><input-number v-model="lineStyle.lineDashOffset"></input-number></form-item>
+					<form-item label="lineDash">
+						<input-number v-for="(item,idx) in lineStyle.lineDash" v-model="lineStyle.lineDash[idx]"></input-number>
+						<Icon type="ios-add-circle" @click="lineStyle.lineDash.push(0)"></Icon>
+						<Icon type="ios-remove-circle" @click="lineStyle.lineDash.splice(Math.max(lineStyle.lineDash.length-1,1),1)"></Icon>
+					</form-item>
+				</i-form>
+			  </div>
+			  <div class="col-md-6">
+			  	<canvas id="lineStyleCanvas"></canvas>
+			  </div>
+			</div>
+		  </div>
+		</div>
+		<div class="panel panel-default" id="radialGradient">
+		  <div class="panel-heading">
+		    <h3 class="panel-title"><a href="#radialGradient">#</a>canvas 的径向渐变(radialGradient)测试</h3>
+		  </div>
+		  <div class="panel-body">
+			<div class="row">
+			  <div class="col-md-6">
+			  	<i-form :label-width="130">
+				  	<form-item label="x0,y0,r0">
+				  		<input-number v-model="radialGradient.x0"></input-number>,
+				  		<input-number v-model="radialGradient.y0"></input-number>,
+				  		<input-number v-model="radialGradient.r0"></input-number>
+				  	</form-item>
+				  	<form-item label="x1,y1,r1">
+				  		<input-number v-model="radialGradient.x1"></input-number>,
+				  		<input-number v-model="radialGradient.y1"></input-number>,
+				  		<input-number v-model="radialGradient.r1"></input-number>
+				  	</form-item>
+				  	<form-item label="x,y,width,height">
+				  		<input-number v-model="radialGradient.x"></input-number>,
+				  		<input-number v-model="radialGradient.y"></input-number>,
+				  		<input-number v-model="radialGradient.width"></input-number>,
+				  		<input-number v-model="radialGradient.height"></input-number>
+				  	</form-item>
+				  	<form-item label="addColorStop">
+			  		  	<div v-for="(item,idx) in radialGradient.addColorStop">
+			  		  		<input-number v-model="item.len" min="0" max="1" step="0.01"></input-number>
+			  		  		<color-picker :key="idx" v-model="item.color"></color-picker>
+			  		  		<Icon type="ios-remove-circle" @click="radialGradient.addColorStop.splice(idx,1)"></Icon>
+			  		  	</div>
+		  				<Icon type="ios-add-circle" @click="radialGradient.addColorStop.push({len: 1,color: getColor()})"></Icon>
+				  	</form-item>
+				</i-form>
+			  </div>
+			  <div class="col-md-6">
+			  	<canvas id="radialGradientCanvas"></canvas>
+			  </div>
+			</div>
+		  </div>
+		</div>
+		<div class="panel panel-default" id="linearGradient">
+		  <div class="panel-heading">
+		    <h3 class="panel-title"><a href="#linearGradient">#</a>canvas 的径向渐变(linearGradient)测试</h3>
+		  </div>
+		  <div class="panel-body">
+			<div class="row">
+			  <div class="col-md-6">
+			  	<i-form :label-width="130">
+				  	<form-item label="x0"><input-number v-model="linearGradient.x0"></input-number></form-item>
+				  	<form-item label="y0"><input-number v-model="linearGradient.y0"></input-number></form-item>
+				  	<form-item label="x1"><input-number v-model="linearGradient.x1"></input-number></form-item>
+				  	<form-item label="y1"><input-number v-model="linearGradient.y1"></input-number></form-item>
+				  	<form-item label="x,y,width,height">
+				  		<input-number v-model="linearGradient.x"></input-number>,
+				  		<input-number v-model="linearGradient.y"></input-number>,
+				  		<input-number v-model="linearGradient.width"></input-number>,
+				  		<input-number v-model="linearGradient.height"></input-number>
+				  	</form-item>
+				  	<form-item label="addColorStop">
+			  		  	<div v-for="(item,idx) in linearGradient.addColorStop">
+			  		  		<input-number v-model="item.len" min="0" max="1" step="0.01"></input-number>
+			  		  		<color-picker :key="idx" v-model="item.color"></color-picker>
+			  		  		<Icon type="ios-remove-circle" @click="linearGradient.addColorStop.splice(idx,1)"></Icon>
+			  		  	</div>
+		  				<Icon type="ios-add-circle" @click="linearGradient.addColorStop.push({len: 1,color: getColor()})"></Icon>
+				  	</form-item>
+				</i-form>
+			  </div>
+			  <div class="col-md-6">
+			  	<canvas id="linearGradientCanvas"></canvas>
+			  </div>
+			</div>
+		  </div>
+		</div>
+		<div class="panel panel-default" id="shadowStyle">
+		  <div class="panel-heading">
+		    <h3 class="panel-title"><a href="#shadowStyle">#</a>canvas 的阴影样式测试</h3>
+		  </div>
+		  <div class="panel-body">
+			<div class="row">
+			  <div class="col-md-6">
+			  	<i-form :label-width="130">
+				  	<form-item label="shadowBlur"><input-number v-model="shadowStyle.shadowBlur"></input-number></form-item>
+	  			  	<form-item label="shadowColor"><color-picker v-model="shadowStyle.shadowColor"></color-picker></form-item>
+				  	<form-item label="shadowOffsetX"><input-number v-model="shadowStyle.shadowOffsetX"></input-number></form-item>
+				  	<form-item label="shadowOffsetY"><input-number v-model="shadowStyle.shadowOffsetY"></input-number></form-item>
+				</i-form>
+			  </div>
+			  <div class="col-md-6">
+			  	<canvas id="shadowStyleCanvas"></canvas>
+			  </div>
+			</div>
+		  </div>
+		</div>
+		<div class="panel panel-default" id="bezierCurveTo">
+		  <div class="panel-heading">
+		    <h3 class="panel-title"><a href="#bezierCurveTo">#</a>canvas 的贝塞尔曲线(bezierCurveTo)测试</h3>
+		  </div>
+		  <div class="panel-body">
+			<div class="row">
+			  <div class="col-md-6">
+			  	<i-form :label-width="130">
+				  	<form-item label="moveTo x,y"><input-number v-model="bezierCurveTo.moveToX"></input-number><input-number v-model="bezierCurveTo.moveToY"></input-number></form-item>
+	  			  	<form-item label="cp1 x,y"><input-number  v-model="bezierCurveTo.cp1X"></input-number ><input-number  v-model="bezierCurveTo.cp1Y"></input-number ></form-item>
+				  	<form-item label="cp2 x,y"><input-number v-model="bezierCurveTo.cp2X"></input-number><input-number v-model="bezierCurveTo.cp2Y"></input-number></form-item>
+				  	<form-item label="end x,y"><input-number v-model="bezierCurveTo.endX"></input-number><input-number v-model="bezierCurveTo.endY"></input-number></form-item>
+				</i-form>
+			  </div>
+			  <div class="col-md-6">
+			  	<canvas id="bezierCurveToCanvas"></canvas>
+			  	<div class="bezierCurveToCanvas_point" id="bezierCurveToCanvas_moveTo" style="position:absolute;" :style="{top: bezierCurveTo.moveToY+'px',left: bezierCurveTo.moveToX+'px'}">moveTo = {{bezierCurveTo.moveToX}},{{bezierCurveTo.moveToY}}</div>
+			  	<div class="bezierCurveToCanvas_point" id="bezierCurveToCanvas_cp1" style="position:absolute;" :style="{top: bezierCurveTo.cp1Y+'px',left: bezierCurveTo.cp1X+'px'}">cp1 = {{bezierCurveTo.cp1X}},{{bezierCurveTo.cp1Y}}</div>
+			  	<div class="bezierCurveToCanvas_point" id="bezierCurveToCanvas_cp2" style="position:absolute;" :style="{top: bezierCurveTo.cp2Y+'px',left: bezierCurveTo.cp2X+'px'}">cp2 = {{bezierCurveTo.cp2X}},{{bezierCurveTo.cp2Y}}</div>
+			  	<div class="bezierCurveToCanvas_point" id="bezierCurveToCanvas_end" style="position:absolute;" :style="{top: bezierCurveTo.endY+'px',left: bezierCurveTo.endX+'px'}">end = {{bezierCurveTo.endX}},{{bezierCurveTo.endY}}</div>
+			  </div>
+			</div>
+		  </div>
+		</div>
+		<div class="panel panel-default" id="quadraticCurveTo">
+		  <div class="panel-heading">
+		    <h3 class="panel-title"><a href="#quadraticCurveTo">#</a>canvas 的二次贝塞尔曲线(quadraticCurveTo)测试</h3>
+		  </div>
+		  <div class="panel-body">
+			<div class="row">
+			  <div class="col-md-6">
+			  	<i-form :label-width="130">
+				  	<form-item label="moveTo x,y"><input-number v-model="quadraticCurveTo.moveToX"></input-number><input-number v-model="quadraticCurveTo.moveToY"></input-number></form-item>
+	  			  	<form-item label="cp1 x,y"><input-number  v-model="quadraticCurveTo.cp1X"></input-number ><input-number  v-model="quadraticCurveTo.cp1Y"></input-number ></form-item>
+				  	<form-item label="end x,y"><input-number v-model="quadraticCurveTo.endX"></input-number><input-number v-model="quadraticCurveTo.endY"></input-number></form-item>
+				</i-form>
+			  </div>
+			  <div class="col-md-6">
+			  	<canvas id="quadraticCurveToCanvas"></canvas>
+			  	<div class="quadraticCurveToCanvas_point" id="quadraticCurveToCanvas_moveTo" style="position:absolute;" :style="{top: quadraticCurveTo.moveToY+'px',left: quadraticCurveTo.moveToX+'px'}">moveTo = {{quadraticCurveTo.moveToX}},{{quadraticCurveTo.moveToY}}</div>
+			  	<div class="quadraticCurveToCanvas_point" id="quadraticCurveToCanvas_cp1" style="position:absolute;" :style="{top: quadraticCurveTo.cp1Y+'px',left: quadraticCurveTo.cp1X+'px'}">cp1 = {{quadraticCurveTo.cp1X}},{{quadraticCurveTo.cp1Y}}</div>
+			  	<div class="quadraticCurveToCanvas_point" id="quadraticCurveToCanvas_end" style="position:absolute;" :style="{top: quadraticCurveTo.endY+'px',left: quadraticCurveTo.endX+'px'}">end = {{quadraticCurveTo.endX}},{{quadraticCurveTo.endY}}</div>
+			  </div>
+			</div>
+		  </div>
+		</div>
+		<div class="panel panel-default" id="arc">
+		  <div class="panel-heading">
+		    <h3 class="panel-title"><a href="#arc">#</a>canvas 的弧线(arc)测试</h3>
+		  </div>
+		  <div class="panel-body">
+			<div class="row">
+			  <div class="col-md-6">
+			  	<i-form :label-width="130">
+				  	<form-item label="x,y,r"><input-number v-model="arc.x"></input-number><input-number v-model="arc.y"></input-number><input-number v-model="arc.r"></input-number></form-item>
+				  	<form-item label="startAngle,endAngle"><input-number v-model="arc.startAngle" step="0.01"></input-number><input-number v-model="arc.endAngle" step="0.01"></input-number></form-item>
+				  	<form-item label="anticlockwise"><i-switch v-model="arc.anticlockwise"><span slot="open">true 顺时针</span><span slot="close">false 逆时针</span></i-switch></form-item>
+				</i-form>
+			  </div>
+			  <div class="col-md-6">
+			  	<canvas id="arcCanvas"></canvas>
+			  </div>
+			</div>
+		  </div>
+		</div>
+		<div class="panel panel-default" id="ellipse">
+		  <div class="panel-heading">
+		    <h3 class="panel-title"><a href="#ellipse">#</a>canvas 的椭圆(ellipse)测试</h3>
+		  </div>
+		  <div class="panel-body">
+			<div class="row">
+			  <div class="col-md-6">
+			  	<i-form :label-width="130">
+				  	<form-item label="x,y"><input-number v-model="ellipse.x"></input-number><input-number v-model="ellipse.y"></input-number></form-item>
+				  	<form-item label="radiusX,radiusY"><input-number v-model="ellipse.radiusX"></input-number><input-number v-model="ellipse.radiusY"></input-number></form-item>
+				  	<form-item label="rotation"><input-number v-model="ellipse.rotation" step="0.01"></form-item>
+				  	<form-item label="startAngle,endAngle"><input-number v-model="ellipse.startAngle" step="0.01"></input-number><input-number v-model="ellipse.endAngle" step="0.01"></input-number></form-item>
+				  	<form-item label="anticlockwise"><i-switch v-model="ellipse.anticlockwise"><span slot="open">true 顺时针</span><span slot="close">false 逆时针</span></i-switch></form-item>
+				</i-form>
+			  </div>
+			  <div class="col-md-6">
+			  	<canvas id="ellipseCanvas"></canvas>
+			  </div>
+			</div>
+		  </div>
+		</div>
+		<div class="panel panel-default" id="transform">
+		  <div class="panel-heading">
+		    <h3 class="panel-title"><a href="#transform">#</a>canvas 的变换(transform)测试</h3>
+		  </div>
+		  <div class="panel-body">
+			<div class="row">
+			  <div class="col-md-6">
+			  	<i-form :label-width="130">
+			  		<template v-for="(item, idx) in transform.transformList" :key="item.guid">
+			  		    <form-item label="transformtype">
+		  		    		<i-select v-model="item.type" style="width:200px">
+		  		    	        <i-option value="rotate" key="rotate">rotate</i-option>
+		  		    	        <i-option value="scale" key="scale">scale</i-option>
+		  		    	        <i-option value="translate" key="translate">translate</i-option>
+		  		    	        <i-option value="transform" key="transform">transform</i-option>
+		  		    	        <i-option value="setTransform" key="setTransform">setTransform</i-option>
+		  		    	    </i-select>
+		  		    	    <Icon type="ios-remove-circle" @click="transform.transformList.splice(idx,1)"></Icon>
+			  		    </form-item>
+			  			<form-item v-if="item.type == 'rotate'" label="rotate deg,angle"><input-number v-model="item.deg"></input-number><input-number disabled v-model="item.angle"></input-number></form-item>
+
+			  			<form-item v-else-if="item.type == 'scale'" label="scale x,y"><input-number v-model="item.scaleX"></input-number><input-number v-model="item.scaleY"></input-number></form-item>
+
+			  			<form-item v-else-if="item.type == 'translate'" label="translate x,y"><input-number v-model="item.translateX"></input-number><input-number v-model="item.translateY"></input-number></form-item>
+
+			  			<form-item v-else-if="item.type == 'transform'" label="transform a,b,c,d,e,f">
+			  				<input-number v-model="item.transformA"></input-number>
+			  				<input-number v-model="item.transformB"></input-number>
+			  				<input-number v-model="item.transformC"></input-number>
+			  				<input-number v-model="item.transformD"></input-number>
+			  				<input-number v-model="item.transformE"></input-number>
+			  				<input-number v-model="item.transformF"></input-number>
+			  			</form-item>
+
+			  			<form-item v-else-if="item.type == 'setTransform'" label="setTransform a,b,c,d,e,f">
+			  				<input-number v-model="item.setTransformA"></input-number>
+			  				<input-number v-model="item.setTransformB"></input-number>
+			  				<input-number v-model="item.setTransformC"></input-number>
+			  				<input-number v-model="item.setTransformD"></input-number>
+			  				<input-number v-model="item.setTransformE"></input-number>
+			  				<input-number v-model="item.setTransformF"></input-number>
+			  			</form-item>
+			  		</template>
+	  				<Icon type="ios-add-circle" @click="pushTransformItem"></Icon>
+				</i-form>
+			  </div>
+			  <div class="col-md-6">
+			  	<canvas id="transformCanvas"></canvas>
+			  </div>
+			</div>
+		  </div>
+		</div>
+		<div class="panel panel-default" id="drawImage">
+		  <div class="panel-heading">
+		    <h3 class="panel-title"><a href="#drawImage">#</a>canvas 的绘制图像(drawImage)测试</h3>
+		  </div>
+		  <div class="panel-body">
+			<div class="row">
+			  <div class="col-md-6">
+			  	<i-form :label-width="130">
+				  	<form-item label="入参个数">
+			  			<i-select v-model="drawImage.argsLength">
+			  		        <i-option :value="3" key="3">3</i-option>
+			  		        <i-option :value="5" key="5">5</i-option>
+			  		        <i-option :value="9" key="9">9</i-option>
+			  		    </i-select>
+				  	</form-item>
+				  	<form-item label="dx,dy"><input-number v-model="drawImage.dx"></input-number><input-number v-model="drawImage.dy"></input-number></form-item>
+				  	<form-item label="dw,dh"><input-number v-model="drawImage.dw"></input-number><input-number v-model="drawImage.dh"></input-number></form-item>
+				  	<form-item label="sx,sy"><input-number v-model="drawImage.sx"></input-number><input-number v-model="drawImage.sy"></input-number></form-item>
+				  	<form-item label="sw,sh"><input-number v-model="drawImage.sw"></input-number><input-number v-model="drawImage.sh"></input-number></form-item>
+				</i-form>
+			  </div>
+			  <div class="col-md-6">
+			  	<canvas id="drawImageCanvas"></canvas>
+			  </div>
+			</div>
+		  </div>
+		</div>
+	</div>
+	<style type="text/css">
+		canvas{
+			/*border: 1px solid #f00;*/
+			/*padding: 10px;*/
+		}
+		.bezierCurveToCanvas_point:before,.quadraticCurveToCanvas_point:before{
+			content: '.';
+			position: absolute;
+			top: -9px;
+			left: 11px;
+			color: #f00;
+			font-size: 30px;
+			line-height: 0px;
+		}
+	</style>
+	<script type="text/javascript">
+		Vue.config.silent = false
+		pointArray = [];
+		for(var i =1 ; i < 10; i++) pointArray.push([lineStyleCanvas.width * Math.random(),350 * Math.random()])
+		vm = new Vue({
+			el: '#app',
+			data(){
+				return {
+					textAligns: ['start', 'end','left', 'right', 'center'],
+					textAlignTexts: ['AXIJKLTaxijklGgQq-_','中文、，。','蒹葭苍苍白露为霜所谓伊人在水一方','AXIJKLTaxijklGgQqpP-_中文,，','12321'],
+					currTextAlign: 'start',
+
+					fonts: ["serif","sans-serif","cursive","fantasy","monospace",'SimSun','Microsoft Yahei','Arial','Tahoma','PingFang SC','Droid Sans','微软雅黑'],
+					currFont: 'sans-serif',
+
+					textBaseLines: ['top','hanging','middle','alphabetic','ideographic','bottom'],
+					textBaseLineTexts: ['AXIJKLTaxijklGgQq-_','中文、，。','蒹葭苍苍白露为霜所谓伊人在水一方','AXIJKLTaxijklGgQqpP-_中文,，'],
+					currTextBaseLine: 'top',
+					lineStyle: {
+						lineWidth: 1,
+						lineCap: 'butt',
+						lineJoin: 'miter',
+						miterLimit: 10,
+						lineDashOffset: 0,
+						lineDash: [0],
+					},
+					radialGradient: {
+						x0: 50,
+						y0: 50,
+						r0: 20,
+						x1: 50,
+						y1: 50,
+						r1: 60,
+						x:0,y:0,width:300,height:300,
+						addColorStop: [
+							{len:0,color:'#f00'},
+							{len:1,color:'#0f0'}
+						]
+					},
+					linearGradient: {
+						x0: 20,
+						y0: 20,
+						x1: 50,
+						y1: 50,
+						x:0,y:0,width:300,height:300,
+						addColorStop: [
+							{len:0,color:'#f00'},
+							{len:1,color:'#0f0'}
+						]
+					},
+					shadowStyle: {
+						shadowBlur: 3,
+						shadowColor: '#39c',
+						shadowOffsetX: 10,
+						shadowOffsetY: 10,
+						rect: {
+							x:30,y:0,width:100,height:100,
+						},
+						font: {
+							x:30,y:150,width:100,height:100,
+						}
+					},
+					bezierCurveTo: {
+						moveToX: 0,
+						moveToY: 0,
+						cp1X: 100,
+						cp1Y: 150,
+						cp2X: 150,
+						cp2Y: 100,
+						endX: 200,
+						endY: 200,
+					},
+					quadraticCurveTo: {
+						moveToX: 0,
+						moveToY: 0,
+						cp1X: 100,
+						cp1Y: 100,
+						endX: 200,
+						endY: 200,
+					},
+					arc: {
+						x: 100,
+						y: 100,
+						r: 50,
+						startAngle: 0,
+						endAngle: Math.PI*(3/4),
+						anticlockwise: false
+					},
+					ellipse: {
+						x: 100,
+						y: 100,
+						radiusX: 10,
+						radiusY: 80,
+						rotation: 0,
+						startAngle: 0,
+						endAngle: Math.PI*(3/4),
+						anticlockwise: false
+					},
+					transform: {
+						transformList: []
+					},
+					drawImage: {
+						sx: 0, sy: 0, sw: 100, sh: 100,
+						dx: 0, dy: 0, dw: 100, dh: 100,
+						argsLength: 3,
+					}
+				}
+			},
+			mounted(){
+				this.updateTextBaseLineCanvas()
+				this.updateFontCanvas()
+				this.updateTextAlignCanvas()
+				this.updateLineStyle()
+				this.updateRadialGradientCanvas()
+				this.updateLinearGradientCanvas()
+				this.updateShadowStyleCanvas()
+				this.updatebezierCurveToCanvas()
+				this.updatequadraticCurveToCanvas()
+				this.updateArcCanvas()
+				this.updateEllipseCanvas()
+				this.updateTransformCanvas()
+				this.pushTransformItem();
+				this.updateDrawImageItem();
+			},
+			watch:{
+				drawImage:{
+					deep: true,
+					handler:function lineStyle(newval){
+						this.updateDrawImageItem();
+					},
+				},
+				transform:{
+					deep: true,
+					handler:function lineStyle(newval){
+						newval.transformList.forEach((item, idx)=>{
+							if(item.type == 'rotate'){
+								item.angle = item.deg/180*Math.PI
+							}
+						})
+						this.updateTransformCanvas();
+					},
+				},
+				ellipse:{
+					deep: true,
+					handler:function lineStyle(){
+						this.updateEllipseCanvas();
+					},
+				},
+				lineStyle:{
+					deep: true,
+					handler:function lineStyle(){
+						this.updateLineStyle();
+					},
+				},
+				bezierCurveTo:{
+					deep: true,
+					handler:function lineStyle(){
+						this.updatebezierCurveToCanvas();
+					},
+				},
+				arc:{
+					deep: true,
+					handler:function lineStyle(){
+						this.updateArcCanvas();
+					},
+				},
+				quadraticCurveTo:{
+					deep: true,
+					handler:function lineStyle(){
+						this.updatequadraticCurveToCanvas();
+					},
+				},
+				shadowStyle:{
+					deep: true,
+					handler:function lineStyle(){
+						this.updateShadowStyleCanvas();
+					},
+				},
+				radialGradient:{
+					deep: true,
+					handler:function radialGradient(){
+						this.updateRadialGradientCanvas();
+					},
+				},
+				linearGradient:{
+					deep: true,
+					handler:function radialGradient(){
+						this.updateLinearGradientCanvas();
+					},
+				},
+				currTextAlign(){
+					this.updateTextAlignCanvas()
+				},
+				currTextBaseLine(){
+					this.updateTextBaseLineCanvas()
+				},
+				currFont(){
+					this.updateTextBaseLineCanvas()
+					this.updateFontCanvas()
+					this.updateTextAlignCanvas()
+				}
+			},
+			methods: {
+				getColor(){
+					return '#'+(0xffffff*Math.random()>>0).toString(16)
+				},
+				pushTransformItem(){
+					this.transform.transformList.push({
+						type: 'rotate',deg: 0,angle: 0,scaleX: 1,scaleY: 1,translateX: 0,translateY: 0,transformA: 1, transformB: 0,transformC: 0,transformD: 1,transformE: 0,transformF: 0,setTransformA: 1,setTransformB: 0,setTransformC: 0,setTransformD: 1,setTransformE: 0,setTransformF: 0,guid: Math.random()
+					})
+				},
+				updateTextAlignCanvas(){
+					this.$nextTick(()=>{
+						var ctx = textAlignCanvas.getContext('2d');
+						var _width = textAlignCanvas.parentNode.offsetWidth;
+						var _height = textAlignCanvas.parentNode.offsetHeight;
+						textAlignCanvas.width = _width - 50
+						textAlignCanvas.height = 240
+						ctx.fillStyle = '#000'
+						for(var i = 0, l = 240; i < l; i+=20){
+							ctx.fillRect(0,i-.5,1000,.5)
+						}
+						for(var i = 0, l = _width; i < l; i+=50){
+							ctx.fillRect(i-.5,0,.5,1000)
+						}
+						ctx.fillStyle = '#f00'
+						ctx.fillRect(_width/2-.5,0,.5,1000)
+
+						ctx.fillStyle = '#f0f'
+						ctx.font = "16px "+this.currFont
+						ctx.textAlign = this.currTextAlign;
+						this.textAlignTexts.forEach((v, i)=>{
+							ctx.fillText(v,_width/2,(i+1)*25)
+						})
+					})
+				},
+				updateFontCanvas(){
+					this.$nextTick(()=>{
+						var ctx = fontCanvas.getContext('2d');
+						var _width = fontCanvas.parentNode.offsetWidth;
+						var _height = fontCanvas.parentNode.offsetHeight;
+						fontCanvas.width = _width - 50
+						fontCanvas.height = 320
+						this.fonts.forEach((v, i)=>{
+							ctx.font = "16px "+v
+							// ctx.fillText('AaIiLl中文田',30+(i/5>>0)*150,((i%5)+1)*25)
+							ctx.fillText((i).toString().padStart(2,'0')+' AaIiLl中文田',30,(i+1)*25)
+						})
+					})
+				},
+				updateTextBaseLineCanvas(){
+					this.$nextTick(()=>{
+						var ctx = textBaseLineCanvas.getContext('2d');
+						var _width = textBaseLineCanvas.parentNode.offsetWidth;
+						var _height = textBaseLineCanvas.parentNode.offsetHeight;
+						textBaseLineCanvas.width = _width - 50
+						textBaseLineCanvas.height = 240
+						for(var i = 0, l = 240; i < l; i+=20){
+							ctx.fillRect(0,i-.5,1000,.5)
+						}
+						for(var i = 0, l = _width; i < l; i+=50){
+							ctx.fillRect(i-.5,0,.5,1000)
+						}
+						ctx.textBaseline = this.currTextBaseLine;
+						ctx.font = "20px "+this.currFont
+						this.textBaseLineTexts.forEach((v, i)=>{
+							ctx.fillText(v,100,(i+1)*40)
+						})
+					})
+				},
+				updateLineStyle(){
+					this.$nextTick(()=>{
+						var ctx = lineStyleCanvas.getContext('2d');
+						var _width = lineStyleCanvas.parentNode.offsetWidth;
+						var _height = lineStyleCanvas.parentNode.offsetHeight;
+						lineStyleCanvas.width = _width - 50
+						lineStyleCanvas.height = 350
+
+						ctx.fillStyle = '#000'
+						for(var i = 0, l = 350; i < l; i+=20){
+							ctx.fillRect(0,i-.5,1000,.5)
+						}
+						for(var i = 0, l = _width; i < l; i+=50){
+							ctx.fillRect(i-.5,0,.5,1000)
+						}
+
+						ctx.strokeStyle = '#f00'
+						ctx.lineWidth = this.lineStyle.lineWidth
+						ctx.lineCap = this.lineStyle.lineCap
+						ctx.lineJoin = this.lineStyle.lineJoin
+						ctx.miterLimit = this.lineStyle.miterLimit
+						ctx.lineDashOffset = this.lineStyle.lineDashOffset
+						ctx.setLineDash(this.lineStyle.lineDash)
+
+
+						ctx.beginPath();
+						ctx.moveTo(10,10)
+						ctx.lineTo(100,10)
+						ctx.lineTo(100,100)
+						pointArray.forEach(v=>ctx.lineTo(...v))
+						// ctx.arcTo(50,50,80,80, Math.PI*3)
+						ctx.stroke()
+						// ctx.closePath();
+					})
+				},
+				updateRadialGradientCanvas(){
+					this.$nextTick(()=>{
+						var ctx = radialGradientCanvas.getContext('2d');
+						var _width = radialGradientCanvas.parentNode.offsetWidth;
+						var _height = radialGradientCanvas.parentNode.offsetHeight;
+						radialGradientCanvas.width = _width - 50
+						radialGradientCanvas.height = 350
+
+						var gradient = ctx.createRadialGradient(this.radialGradient.x0, this.radialGradient.y0, this.radialGradient.r0, this.radialGradient.x1, this.radialGradient.y1, this.radialGradient.r1);
+						// 设置起止颜色
+						this.radialGradient.addColorStop.forEach((v,i)=>gradient.addColorStop(v.len, v.color))
+						// gradient.addColorStop(0, 'red');
+						// gradient.addColorStop(1, 'green');
+						// 矩形填充
+						ctx.fillStyle = gradient;
+						// ctx.fillRect(0, 0, radialGradientCanvas.width, radialGradientCanvas.height);
+						ctx.fillRect(this.radialGradient.x, this.radialGradient.y, this.radialGradient.width, this.radialGradient.height);
+					})
+				},
+				updateLinearGradientCanvas(){
+					this.$nextTick(()=>{
+						var ctx = linearGradientCanvas.getContext('2d');
+						var _width = linearGradientCanvas.parentNode.offsetWidth;
+						var _height = linearGradientCanvas.parentNode.offsetHeight;
+						linearGradientCanvas.width = _width - 50
+						linearGradientCanvas.height = 350
+
+						var gradient = ctx.createLinearGradient(this.linearGradient.x0, this.linearGradient.y0, this.linearGradient.x1, this.linearGradient.y1);
+						// 设置起止颜色
+						this.linearGradient.addColorStop.forEach((v,i)=>gradient.addColorStop(v.len, v.color))
+						// 矩形填充
+						ctx.fillStyle = gradient;
+						ctx.fillRect(this.linearGradient.x, this.linearGradient.y, this.linearGradient.width, this.linearGradient.height);
+					})
+				},
+				updateShadowStyleCanvas(){
+					this.$nextTick(()=>{
+						var ctx = shadowStyleCanvas.getContext('2d');
+						var _width = shadowStyleCanvas.parentNode.offsetWidth;
+						var _height = shadowStyleCanvas.parentNode.offsetHeight;
+						shadowStyleCanvas.width = _width - 50
+						shadowStyleCanvas.height = 350
+						ctx.shadowColor = this.shadowStyle.shadowColor;
+						ctx.shadowBlur = this.shadowStyle.shadowBlur;
+						ctx.shadowOffsetX = this.shadowStyle.shadowOffsetX;
+						ctx.shadowOffsetY = this.shadowStyle.shadowOffsetY;
+						ctx.fillStyle = '#000';
+						ctx.fillRect(this.shadowStyle.rect.x, this.shadowStyle.rect.y, this.shadowStyle.rect.width, this.shadowStyle.rect.height);
+						ctx.font = "30px sans-serif"
+						ctx.fillText('lilnong.top 加油', this.shadowStyle.font.x, this.shadowStyle.font.y);
+					})
+				},
+				updatebezierCurveToCanvas(){
+					this.$nextTick(()=>{
+						var ctx = bezierCurveToCanvas.getContext('2d');
+						var _width = bezierCurveToCanvas.parentNode.offsetWidth;
+						var _height = bezierCurveToCanvas.parentNode.offsetHeight;
+						bezierCurveToCanvas.width = _width - 50
+						bezierCurveToCanvas.height = 350
+
+						ctx.beginPath();
+						ctx.moveTo(this.bezierCurveTo.moveToX, this.bezierCurveTo.moveToY);
+						ctx.bezierCurveTo(this.bezierCurveTo.cp1X, this.bezierCurveTo.cp1Y, this.bezierCurveTo.cp2X, this.bezierCurveTo.cp2Y, this.bezierCurveTo.endX, this.bezierCurveTo.endY);
+						ctx.stroke();
+					})
+				},
+				updatequadraticCurveToCanvas(){
+					this.$nextTick(()=>{
+						var ctx = quadraticCurveToCanvas.getContext('2d');
+						var _width = quadraticCurveToCanvas.parentNode.offsetWidth;
+						var _height = quadraticCurveToCanvas.parentNode.offsetHeight;
+						quadraticCurveToCanvas.width = _width - 50
+						quadraticCurveToCanvas.height = 350
+
+						ctx.beginPath();
+						ctx.moveTo(this.quadraticCurveTo.moveToX, this.quadraticCurveTo.moveToY);
+						ctx.quadraticCurveTo(this.quadraticCurveTo.cp1X, this.quadraticCurveTo.cp1Y, this.quadraticCurveTo.endX, this.quadraticCurveTo.endY);
+						ctx.stroke();
+					})
+				},
+				updateArcCanvas(){
+					this.$nextTick(()=>{
+						var ctx = arcCanvas.getContext('2d');
+						var _width = arcCanvas.parentNode.offsetWidth;
+						var _height = arcCanvas.parentNode.offsetHeight;
+						arcCanvas.width = _width - 50
+						arcCanvas.height = 350
+						ctx.beginPath();
+						ctx.arc(this.arc.x,this.arc.y,this.arc.r,this.arc.startAngle,this.arc.endAngle,this.arc.anticlockwise);
+						ctx.stroke();
+					})
+				},
+				updateEllipseCanvas(){
+					this.$nextTick(()=>{
+						var ctx = ellipseCanvas.getContext('2d');
+						var _width = ellipseCanvas.parentNode.offsetWidth;
+						var _height = ellipseCanvas.parentNode.offsetHeight;
+						ellipseCanvas.width = _width - 50
+						ellipseCanvas.height = 350
+						ctx.beginPath();
+						ctx.ellipse(this.ellipse.x,this.ellipse.y,this.ellipse.radiusX,this.ellipse.radiusY,this.ellipse.rotation,this.ellipse.startAngle,this.ellipse.endAngle,this.ellipse.anticlockwise);
+						ctx.stroke();
+					})
+				},
+				updateTransformCanvas(){
+					this.$nextTick(()=>{
+						var ctx = transformCanvas.getContext('2d');
+						var _width = transformCanvas.parentNode.offsetWidth;
+						var _height = transformCanvas.parentNode.offsetHeight;
+						transformCanvas.width = _width - 50
+						transformCanvas.height = 350
+
+						this.transform.transformList.forEach(v=>{
+							switch(v.type){
+								case 'rotate':
+									ctx.rotate(v.angle);break;
+								case 'scale':
+									ctx.scale(v.scaleX,v.scaleY);break;
+								case 'translate':
+									ctx.translate(v.translateX,v.translateY);break;
+								case 'transform':
+									ctx.transform(v.transformA,v.transformB,v.transformC,v.transformD,v.transformE,v.transformF);break;
+								case 'setTransform':
+									ctx.setTransform(v.setTransformA,v.setTransformB,v.setTransformC,v.setTransformD,v.setTransformE,v.setTransformF);break;
+							}
+						})
+						ctx.fillRect(10, 10, 100, 100);
+						ctx.fillStyle='#f00'
+						ctx.font = "30px sans-serif"
+						ctx.fillText('lilnong.top', 10, 10);
+					})
+				},
+				updateDrawImageItem(){
+					this.$nextTick(()=>{
+						var ctx = drawImageCanvas.getContext('2d');
+						var _width = drawImageCanvas.parentNode.offsetWidth;
+						var _height = drawImageCanvas.parentNode.offsetHeight;
+						drawImageCanvas.width = _width - 50
+						drawImageCanvas.height = 350
+						// ctx.drawImage(transformCanvas, )
+						if(this.drawImage.argsLength == 3){
+							ctx.drawImage(transformCanvas, this.drawImage.dx, this.drawImage.dy);
+						}else if(this.drawImage.argsLength == 5){
+							ctx.drawImage(transformCanvas, this.drawImage.dx, this.drawImage.dy, this.drawImage.dw, this.drawImage.dh);
+						}else if(this.drawImage.argsLength == 9){
+							ctx.drawImage(transformCanvas, this.drawImage.sx, this.drawImage.sy, this.drawImage.sw, this.drawImage.sh, this.drawImage.dx, this.drawImage.dy, this.drawImage.dw, this.drawImage.dh);
+						}
+						
+					})
+				},
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

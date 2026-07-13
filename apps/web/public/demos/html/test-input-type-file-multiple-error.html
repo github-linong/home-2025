@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>input上传文件，多选长度越界问题</title>
+</head>
+<body>
+	<input type="file" multiple>
+	<script type="text/javascript">
+		document.addEventListener('error', v=>console.log(v))
+		document.querySelector('input').addEventListener('change', v=>console.log(v,v.target.files));
+		document.querySelector('input').addEventListener('error', v=>console.log(v,v.target.files));
+	</script>
+	<p>https://segmentfault.com/q/1010000018123297</p>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

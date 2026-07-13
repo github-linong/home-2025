@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>vue 模拟 textarea</title>
+</head>
+<body>
+	<style type="text/css">
+		.text-area-contenteditable{
+		  /* -webkit-user-modify: read-write-plaintext-only; */
+		  /* -webkit-user-modify: read-write; */
+		  min-height: 100px;
+		  border: 1px solid #f00;
+		}
+		    
+		.text-area-contenteditable{
+		  -webkit-user-modify: read-write-plaintext-only;
+		}
+	</style>
+	<div id="app">
+	  <text-area v-model="val">
+	    
+	  </text-area>
+	  <p>{{val}}</p>
+	  <input type="text" v-model="val" />
+	</div>
+	<script type="text/javascript">
+		Vue.component('text-area', {
+		  template: `
+				<div>
+					<div>
+						<textarea :value="value" @input="changeValue"></textarea>
+					</div>
+					<div>
+						<div class="text-area-contenteditable" contenteditable v-text="value" @blur="changeText"></div>
+		      </div>
+					<div>
+						<div class="text-area-contenteditable text-area-contenteditable--css" v-text="value" @blur="changeText"></div>
+		      </div>
+					<div>
+						<div class="text-area-contenteditable text-area-contenteditable--css" v-text="value" @input="changeText2"></div>
+		      </div>
+				</div>
+			`,
+		  props:{
+		    value: String
+		  },
+		  data: ()=>{
+		    return {
+		      selection: null,
+		      ran: null,
+		    }
+		  },
+		  methods:{
+		    changeValue(e){
+		      this.$emit('input', e.target.value);
+		    },
+		    changeText(e){
+		      // 通过blur来实现
+		      this.$emit('input', e.target.innerText);
+		    },
+		    setFocus(e){
+		      console.log('setFocus2')
+		      if(this.selection){
+		        this.selection.removeAllRanges();
+		        this.selection.addRange(this.ran);
+		      }
+		    },
+		    changeText2(e){
+		      // console.log('changeText2')
+		      // this.selection = window.getSelection && window.getSelection();
+		      // this.ran = this.selection.getRangeAt(0)
+		      // this.ran = this.ran.cloneRange();
+		      // console.log(this.selection.getRangeAt(0),this.ran)
+		      
+		//       // window.getSelection().focusOffset 最后点
+		//       this.$emit('input', e.target.innerText);
+		//       this.$nextTick(()=>{
+		//         // this.selection.removeAllRanges();
+		//         // this.selection.addRange(this.ran);
+		//       })
+		      
+		      
+		      // window.getSelection().focusOffset 最后点
+		      var focusOffset = window.getSelection().focusOffset
+		      var range = new Range();
+		      // window.ln = e.target
+		      // range.setStart(e.target, getRangeAt)
+		      // var range = window.getSelection().getRangeAt(0)
+		      // console.log(range)
+		      this.$emit('input', e.target.innerText);
+		      this.$nextTick(()=>{
+		//         下面两个方法都是大选区
+		        // window.getSelection().collapse(e.target, 0);
+		        // window.getSelection().extend(e.target, 3)
+		        // window.getSelection().modify("move", "forward", 'character', 3)
+		        	window.getSelection().removeAllRanges();
+		        	range.setStart(e.target.childNodes[0], focusOffset)
+		        	window.getSelection().addRange(range);
+		      })
+		    }
+		  }
+		})
+		new Vue({
+		  el: '#app',
+		  data: ()=>{
+		   return {
+		     val: 'abc'
+		   } 
+		  }
+		})
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

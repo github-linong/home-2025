@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+    <script type="text/javascript">new VConsole()</script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.5/lib/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/vant@2.5/lib/vant.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/better-scroll"></script>
+</head>
+<body>
+    <style>
+        .wrap{padding: 10vw}
+        .flex{display: flex;align-items: center;}
+        .lrc-wrap{padding: 10vw 0;}
+        .progress-time{width:8em;text-align: center;}
+        .controls-wrap{padding: 10vw 0;}
+
+        .wrapper{height: 7em;overflow: auto;}
+        .content{padding: 3.5em 0;}
+        .content-li{white-space: nowrap;line-height: 2}
+        .content-li.hover{outline: 1px solid #f00;white-space: nowrap;}
+    </style>
+	<div id="app">
+        <div class="wrap">
+            <div class="flex volume-wrap">
+                <van-icon name="volume-o" ></van-icon>
+                <van-slider v-model="volume"></van-slider>
+            </div>
+            
+            <div class="flex lrc-wrap"  @touchstart="pause">
+                <!-- <van-picker ref="lrcpicker" @change="lrcpickerchange" :columns="columns" ></van-picker> -->
+                <div class="wrapper" style="height: 7em;overflow: auto;">
+                    <ul class="content">
+                      <li  v-for="item in columns" class="content-li" :key="item">{{item}}</li>
+                    </ul>
+                  </div>
+            </div>
+
+            <div class="flex progress-wrap">
+                <span class="progress-time">{{progressCurrentText}}</span>
+                <van-slider :value="progressCurrent" @input="progressChange" :max="progressLength"></van-slider>
+                <span class="progress-time">{{progressLengthText}}</span>
+            </div>
+
+            <div class="flex controls-wrap">
+                <van-icon name="play-circle-o" @click="play" size="10vw"></van-icon>
+                <van-icon name="pause-circle-o" @click="pause" size="10vw"></van-icon>
+                <van-icon name="stop-circle-o" size="10vw"></van-icon>
+            </div>
+            <audio controls autoplay ref="audio" @loadedmetadata="loadedmetadata" @timeupdate="timeupdate" ></audio>
+        </div>
+    </div>
+    <script>
+        var playTimeoutTag = 0;
+        vm = new Vue({
+            el: '#app',
+            data(){
+                return {
+                    volume: 100,
+                    progress: 0,
+                    progressCurrent: 0,
+                    progressLength: 0,
+                    columns: []
+                }
+            },
+            computed: {
+                progressCurrentText(){
+                    return `${String(this.progressCurrent/60>>0).padStart(2,'0')}:${String(this.progressCurrent%60>>0).padStart(2,'0')}`
+                },
+                progressLengthText(){
+                    return `${String(this.progressLength/60>>0).padStart(2,'0')}:${String(this.progressLength%60>>0).padStart(2,'0')}`
+                },
+            },
+            watch: {
+                volume(){
+                    this.$refs.audio.volume = this.volume / 100
+                }
+            },
+            mounted(){
+                console.log(this.$refs.audio, this.$refs.audio.duration)
+                this.$refs.audio.src="https://www.lilnong.top/static/audio/918c_1958_7d87_022d7d76c923b1caaca6e30ca47d0f69.mp3"
+                this.columns = [
+                    '[by:Lucky-SN]',
+                    '[00:00.000] 作曲 : 隔壁老樊',
+                    '[00:01.000] 作词 : 隔壁老樊',
+                    '[04:18.61]制作人：段小林',
+                    '[00:07.09]编曲：黄超',
+                    '[00:09.07]',
+                    '[00:17.67]世界上有很多的东西',
+                    '[00:21.36]你生不带来死不带去',
+                    '[00:26.01]你能带走的只有自己和自己的脾气',
+                    '[00:34.35]你曾拥有最美的爱情',
+                    '[00:38.17]你听过最美丽的旋律',
+                    '[00:42.57]触摸过一个人孤独的恐惧',
+                    '[00:46.30]也看到过最美的风景',
+                    '[00:52.49]我跌跌撞撞奔向你',
+                    '[01:00.52]你也不能一个人离去',
+                    '[01:08.30]我们在一起说过',
+                    '[01:12.50]无论如何一起经历了风雨',
+                    '[01:16.64]平平淡淡安安静静的老去',
+                    '[01:24.56]',
+                    '[01:59.08]世界上有很多的东西',
+                    '[02:02.65]你生不带来死不带去',
+                    '[02:07.38]你能带走的只有自己和自己的脾气',
+                    '[02:15.63]你曾拥有最美的爱情',
+                    '[02:19.18]你听过最美丽的旋律',
+                    '[02:24.04]触摸过一个人孤独的恐惧',
+                    '[02:27.44]也看到过最美的风景',
+                    '[02:34.40]我跌跌撞撞奔向你',
+                    '[02:41.76]你也不能一个人离去',
+                    '[02:49.58]我们在一起说过',
+                    '[02:53.83]无论如何一起经历了风雨',
+                    '[02:58.18]平平淡淡安安静静的老去',
+                    '[03:09.02]',
+                    '[03:38.87]我们拼命的相拥不给孤独留余地',
+                    '[03:48.21]无力 是我们最后难免的结局',
+                    '[03:56.28]无力 是我们最后难免的结局',
+                    '[04:05.59]鼓手：郝稷伦',
+                    '[04:06.89]贝斯：韩阳',
+                    '[04:07.97]吉他：黄超',
+                    '[04:09.21]和声：樊竹青 赵晨',
+                    '[04:10.41]录音师：甄浩',
+                    '[04:11.41]混音师：段小林',
+                    '[04:12.63]插画：王小洋',
+                    '[04:13.95]封面：朱小莉',
+                    '[04:15.32]录音室：北京好听音乐录音棚',
+                    '[04:16.70]出品：北京好听音乐科技有限公司',
+                    '[04:19.61]',
+                ].sort((n,m)=>{
+                    return n>m?1:-1
+                });
+                this.$nextTick(()=>{
+                    wrapper = document.querySelector('.wrapper')
+                    scroll = new BScroll(wrapper,{
+                        probeType: 2
+                    })
+                    scroll.on('scroll', ()=>{
+                        console.log('scroll', scroll.maxScrollY, scroll.y, (scroll.y / scroll.maxScrollY) * this.columns.length >> 0, arguments)
+                        var idx = Math.min(Math.max(Math.min(scroll.y / scroll.maxScrollY, 1),0) * this.columns.length >> 0, this.columns.length-1);
+                        this.pause();
+                        document.querySelectorAll('.wrapper .content li').forEach((v, _idx)=>{
+                            if(idx == _idx){
+                                v.classList.add('hover')
+                            }else{
+                                v.classList.remove('hover')
+                            }
+                        })
+                    })
+                    scroll.on('scrollEnd', ()=>{
+                        console.log('scrollEnd', scroll.maxScrollY, scroll.y, (scroll.y / scroll.maxScrollY) * this.columns.length >> 0, arguments)
+                        if(document.querySelector('.wrapper .content li.hover')){
+                            this.lrcpickerchange(document.querySelector('.wrapper .content li.hover'), document.querySelector('.wrapper .content li.hover').innerText)
+                            document.querySelector('.wrapper .content li.hover').classList.remove('hover')
+                        }
+                    })
+                })
+            },
+            methods:{
+                play(){
+                    clearTimeout(playTimeoutTag)
+                    playTimeoutTag = setTimeout(v=>{
+                        this.$refs.audio.play()
+                    }, 200);
+                },
+                pause(){
+                    clearTimeout(playTimeoutTag)
+                    this.$refs.audio.pause()
+                },
+                progressChange(val){
+                    console.log('progressChange', arguments);
+                    this.pause()
+                    this.$refs.audio.currentTime = val;
+                    this.play();
+                },
+                loadedmetadata(){
+                    this.progressCurrent = this.$refs.audio.currentTime;
+                    this.progressLength =  this.$refs.audio.duration;
+                    this.volume = this.$refs.audio.volume * 100
+                },
+                lrcpickerchange(el, value){
+                    // console.log('lrcpickerchange',arguments)
+                    var time = value&&value.match(/(\d+):(\d+)\.(\d+)/);
+                    if(time && time.length){
+                        this.$refs.audio.currentTime = time[1]*60+(+time[2]);
+                        this.play()
+                    }
+                },
+                timeupdate(){
+                    this.progressCurrent = this.$refs.audio.currentTime;
+                    // console.log(this.$refs.lrcpicker)
+                    var findItem = this.columns.findIndex(v=>{
+                        var result = v.match(/(\d+):(\d+)\.(\d+)/);
+                        if(result && result.length){
+                            var value = result[1]*60+(+result[2]);
+                            return value>this.$refs.audio.currentTime
+                        }
+                        return false
+                    }) || -1
+                    scroll.scrollToElement(document.querySelectorAll('.wrapper .content li')[Math.min(Math.max(0, findItem - 1), this.columns.length-1)], 300, true, true)
+                    // this.$refs.lrcpicker.setIndexes([Math.min(Math.max(0, findItem - 1), this.columns.length-1)])
+                    // this.$refs.lrcpicker.setValues([this.columns[Math.min(Math.max(0, findItem - 1), this.columns.length-1)]])
+                }
+            }
+        })
+    </script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>    
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<style>
+	            .letter {
+	                font-family: 'Archivo Narrow', sans-serif;
+	                font-size: 50px;
+	                font-weight: 400;
+	                position: absolute;
+	                color: #ff0081;
+	                transform: rotate(-10deg);
+	                text-decoration: none;
+	            }
+	            .dot {
+	                display: inline-block;
+	                width: 5px;
+	                height: 5px;
+	                background: red;
+	                position: absolute;
+	                top: 0;
+	                left: 0;
+	                z-index: 1;
+	            }
+	            .inner {
+	                position: absolute;
+	                top: 0;
+	                left: 0;
+	                /*background: green;*/
+	            }
+	            #head {
+	                position: relative;
+	                z-index: 100;
+	                /*max-width: 40%;*/
+	                margin-top: 20px;
+	            }
+	            #banner {
+	                text-align: center;
+	                width: 100%;
+	                overflow-x: hidden;
+	                position: relative;
+	                height: 300px;
+	                background: #ffd9d9;
+	            }
+	        </style>
+	        <script>
+	            (function () {
+	                var letters = [],
+	                    chars = 'matthew rayfield world '.split(''),
+	                    gap = 30,
+	                    middle = 0,
+	                    size = 0,
+	                    biggestHeight = 0,
+	                    heightAdjust = 0,
+	                    banner,
+	                    head, headLeft, headWidth, headMiddle, headRight,
+	                    headMap = [46,58,64,71,70,70,75,73,74,74,73,70,65,59,49,35],
+	                    headMapSize = headMap.length,
+	                    headMapA = headMap[0], headMapB = headMap[headMap.length-1];
+
+	                function extend(target, source) {
+	                    var key;
+
+	                    for (key in source) {
+	                        target[key] = source[key];
+	                    }
+
+	                    return target;
+	                }
+
+	                function createElement(tagName, properties, children) {
+	                    var element = document.createElement(tagName),
+	                        key;
+
+	                    extend(element, properties);
+
+	                    if (children) {
+	                        children.forEach(function (child) {
+	                            element.appendChild(child);
+	                        });
+	                    }
+
+	                    return element;
+	                }
+
+	                function degToRad(degrees) {
+	                    return degrees * (Math.PI / 180);
+	                }
+
+	                function rotateCoord(coords, angle) {
+	                    var x = coords.x, y = coords.y;
+	                    var radians = degToRad(angle),
+	                        cos = Math.cos(radians),
+	                        sin = Math.sin(radians),
+	                        nx = (cos * x) + (sin * y),
+	                        ny = (cos * y) - (sin * x);
+
+	                    return {x: nx, y: ny};
+	                }
+
+	                function loop() {
+	                    var newLetters = [];
+
+	                    letters.forEach(function (letter) {
+	                        letter.x -= 1;
+	                        letter.r -= 2;
+	                        updateLetter(letter);
+
+	                        if (letter.x > -gap) {
+	                            newLetters.push(letter);
+	                        }
+	                        else {
+	                            banner.removeChild(letter.element);
+	                        }
+	                    });
+
+	                    while (letters[letters.length-1].x < window.innerWidth) {
+	                        newLetters.push(addLetter());
+	                    }
+
+	                    letters = newLetters;
+
+	                    setTimeout(loop, 30);
+	                }
+
+	                function lerp(a, b, f) {
+	                    return (a * (1.0-f)) + (b * f);
+	                }
+
+	                function updateLetter(letter) {
+	                    var c,
+	                        width, height,
+	                        y = 0, n = 0, m = middle, i, a, b;
+
+	                    if (letter.x <= headLeft) {
+	                        n = letter.x / headLeft;
+	                        a = 0;
+	                        b = headMapA + heightAdjust;
+	                    }
+	                    else if (letter.x >= headRight) {
+	                        n = (letter.x - headRight) / (window.innerWidth-headRight);
+	                        a = headMapB + heightAdjust;
+	                        b = 0;
+	                    }
+	                    else {
+	                        i = ((letter.x-headLeft)/headWidth)*headMapSize;
+	                        a = headMap[Math.floor(i)] + heightAdjust;
+	                        b = (headMap[Math.ceil(i)] || headMapB) + heightAdjust;
+	                        n = i%1;
+
+	                    }
+
+	                    y = lerp(a, b, n);
+
+	                    var newCoords = rotateCoord({x: 0, y: y}, letter.r);
+	                    letter.y = newCoords.y;
+	                    letter.z = newCoords.x;
+
+	                    letter.element.style.left = letter.x;
+	                    letter.element.style.top = letter.y + middle;
+	                    letter.element.style.zIndex = Math.floor(letter.z + 100);
+	                    //letter.element.style.fontSize = ((letter.z+100)/200)*20+50;
+	                    //c = ((letter.z+100)/200) * .5 + .5;
+	                    //letter.element.style.opacity = c;
+
+	                    //letter.element.style.transform = 'rotate(' + (Math.sin(Date.now()/10000)*20) + 'deg)';
+
+	                    if (!letter.offset) {
+	                        if ((width = letter.inner.offsetWidth) && (height = letter.inner.offsetHeight)) {
+	                            letter.inner.style.left = width / -2;
+	                            letter.inner.style.top = height / -2;
+	                            if (height > biggestHeight) biggestHeight = height;
+	                            heightAdjust = (biggestHeight/2) * .8;
+	                            letter.offset = true;
+	                        }
+	                    }
+	                }
+
+	                function addLetter() {
+	                    var lastLetter,
+	                        letter = {
+	                            l: 0,
+	                            x: 0,
+	                            y: 0,
+	                            z: 0,
+	                            r: 0,
+	                            offset: false,
+	                            element: createElement('a', {href: '/', className: 'letter'}, [
+	                                    //createElement('span', {className: 'dot'})
+	                                ]),
+	                            inner: null
+	                        };
+
+	                    letter.element.className = 'letter';
+
+	                    if (letters.length) {
+	                        lastLetter = letters[letters.length-1];
+	                        letter.l = lastLetter.l + 1;
+	                        letter.x = lastLetter.x + gap;
+	                        letter.r = lastLetter.r + 20;
+	                    }
+
+	                    letter.inner = createElement('span', {className: 'inner', innerHTML: chars[letter.l % chars.length]});
+	                    letter.element.appendChild(letter.inner);
+
+	                    updateLetter(letter);
+
+	                    banner.appendChild(letter.element);
+	                    letters.push(letter);
+
+	                    return letter;
+	                };
+
+	                function updateHead() {
+	                    console.log('resize');
+	                    size = head.offsetHeight / 2;
+	                    middle = head.offsetTop + size;
+	                    headLeft = head.offsetLeft;
+	                    headWidth = head.offsetWidth;
+	                    headMiddle = headLeft + (headWidth/2);
+	                    headRight = headLeft + headWidth;
+	                }
+
+	                window.addEventListener('load', function () {
+	                    banner = document.getElementById('banner');
+	                    head = document.getElementById('head');
+
+	                    while (!letters.length || letters[letters.length-1].x < window.innerWidth) {
+	                        addLetter();
+	                    }
+
+	                    updateHead();
+
+	                    loop();
+
+	                    window.addEventListener('resize', updateHead);
+	                });
+	            })();
+	        </script>
+
+	        <script>
+	            var popups = [],
+	                popupGap = undefined;
+
+	            function closeWindows() {
+	                var popup;
+
+	                running = false;
+
+	                while (popups.length) {
+	                    popup = popups.shift();
+	                    popup.close();
+	                }
+	            }
+
+	            function setupPopups(name, count) {
+	                var i, settings, popup, y,
+	                    popupWidth = window.outerWidth,
+	                    popupHeight = 50,
+	                    x = window.screenX,
+	                    yOffset = window.screenY + (window.outerHeight - window.innerHeight);
+
+	                closeWindows();
+
+	                for (i = 0; i < count; i ++) {
+	                    y = i * (popupGap||50) + yOffset;
+
+	                    settings = 'width='+popupWidth+',height='+popupHeight+',left='+x+',top='+y;
+
+	                    if (i == count-1) {
+	                        popup = window.open('/static/html/title-game-animate-matthewrayfield-games-and-graphics-in-popup-url-bars-popup.html#'+name, 'w'+i, settings);
+	                    }
+	                    else {
+	                        popup = window.open('/static/html/title-game-animate-matthewrayfield-games-and-graphics-in-popup-url-bars-popup.html', 'w'+i, settings);
+	                    }
+
+	                    if (popupGap == undefined) {
+	                        setTimeout(function () {
+	                            popupGap = popup.outerHeight - popup.innerHeight;
+	                            popup.close();
+	                            setupPopups.call(null, name, count);
+	                        }, 500);
+	                        return;
+	                    }
+	                    else {
+	                        popups.push(popup);
+	                    }
+	                }
+
+	                setTimeout(function () {
+	                    popups.forEach(function (popup) {
+	                        popup.document.title = '-';
+	                    });
+	                    popups[popups.length-1].popups = popups;
+	                    popups[popups.length-1].setup();
+	                }, 1000);
+	            }
+
+	            window.addEventListener('load', function () {
+	                document.getElementById('wave-button').addEventListener('click', function () {setupPopups('wavy', 7);});
+	                document.getElementById('donkey-kong-button').addEventListener('click', function () {setupPopups('donkey-kong', 7);});
+	                document.getElementById('breakout-button').addEventListener('click', function () {setupPopups('breakout', 7);});
+	                document.getElementById('webcam-button').addEventListener('click', function () {setupPopups('webcam', 8);});
+	                document.getElementById('3d-cube-button').addEventListener('click', function () {setupPopups('3d-cube', 7);});
+	                document.getElementById('3d-room-button').addEventListener('click', function () {setupPopups('3d-walk', 10);});
+	            });
+	        </script>
+
+	        <style>
+	            body {
+	                font-size: 20px;
+	                font-family: 'Work Sans', arial;
+	                margin: 0;
+	            }
+	            #wrapper {
+	                position: absolute;
+	                width: 100%;
+	                left: 0;
+	                top: 200px;
+	                background: #f5f5f5;
+	            }
+	            #main {
+	                margin: 0 auto;
+	                padding: 1em 3em;
+	                color: #222;
+	                max-width: 900;
+	            }
+	            .centered {
+	                text-align: center;
+	            }
+	            h2 {
+	                border-bottom: 3px double #aaa;
+	                padding-bottom: .5em;
+	                margin-top: 1em;
+	            }
+	            pre {
+	                text-align: left;
+	                border: 1px solid #aaa;
+	                padding: .5em;
+	                background: white;
+	                overflow-x: auto;
+	            }
+	            img {
+	                max-width: 100%;
+	            }
+	            a {
+	                color: #0000ff;
+	            }
+	            .note {
+	                font-size: 1.1em;
+	                text-decoration: underline wavy #ffd9d9;
+	            }
+	        </style>
+</head>
+<body>
+	<div id="app">
+		<div>//matthewrayfield.com/articles/games-and-graphics-in-popup-url-bars/</div>
+		<div id="banner">
+            <a href="/">
+                <img id="head" alt="head"/>
+            </a>
+        </div>
+        <a href="javascript:void(0)" id="wave-button">
+            CLICK here to open "waves"
+        </a><br>
+        <a href="javascript:void(0)" id="donkey-kong-button">
+            CLICK here to open "donkey-kongs"
+        </a><br>
+        <a href="javascript:void(0)" id="breakout-button">
+            CLICK here to open "breakouts"
+        </a><br>
+        <a href="javascript:void(0)" id="webcam-button">
+            CLICK here to open "webcams"
+        </a><br>
+        <a href="javascript:void(0)" id="3d-cube-button">
+            CLICK here to open "3d-cubes"
+        </a><br>
+        <a href="javascript:void(0)" id="3d-room-button">
+            CLICK here to open "3d-rooms"
+        </a><br>
+	</div>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

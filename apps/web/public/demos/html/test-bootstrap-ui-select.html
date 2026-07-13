@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+
+	<script src="http://cdn.static.runoob.com/libs/angular.js/1.4.6/angular.min.js"></script>
+	<script src="https://cdn.bootcss.com/angular.js/1.5.0-beta.0/angular-sanitize.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-select/0.20.0/select.css" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-select/0.20.0/select.js"></script>
+
+
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+	<!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+	<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+	<!-- 可选的 Bootstrap 主题文件（一般不用引入） -->
+	<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+	<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+	<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</head>
+<body>
+
+	<div ng-app="myapp"  ng-controller="ctrl">
+	  <p>名字 : <input type="text" ng-model="name"></p>
+	  <table>
+	  	<tr>
+	  		<th>1</th>
+	  		<th>
+	  			<button ng-click="setInputFocus()">Set Focus</button>
+	  			{{selectedLN}}
+	  			<div style="display:none;position:absolute;background:#000" id="option">
+	  				<input type="" name="" style="display:block;" oninput="var _this = this;document.querySelectorAll('option').forEach(function(el){if(~el.value.indexOf(_this.value)){el.style.display = 'block'}else{el.style.display = 'none'}})">
+	  				<select size=5 ng-model="selectedLN" style="display:block;width:100%">
+	  				  <option selected="selected" value="volvo">Volvo</option>
+	  				  <option value="saab">Saab</option>
+	  				  <option value="opel">Opel</option>
+	  				  <option value="audi">Audi</option>
+	  				</select>
+	  			</div>
+	  		</th>
+	  		<th>3</th>
+	  	</tr>
+	  	<tr>
+	  		<td>1</td>
+	  		<td>1</td>
+	  		<td>1</td>
+	  	</tr>
+	  	<tr>
+	  		<td>2</td>
+	  		<td>2</td>
+	  		<td>2</td>
+	  	</tr>
+	  	<tr>
+	  		<td>3</td>
+	  		<td>3</td>
+	  		<td>3</td>
+	  	</tr>
+	  </table>
+	  
+	  <h1>Hello {{name}}</h1>
+	</div>
+	<script>
+
+	var app = angular.module('myapp', ['ui.select', 'ngSanitize'])
+		.controller('ctrl', ['$scope', function ($scope){
+		    $scope.itemArray = [
+		        {id: 1, name: 'first'},
+		        {id: 2, name: 'second'},
+		        {id: 3, name: 'third'},
+		        {id: 4, name: 'fourth'},
+		        {id: 5, name: 'fifth'},
+		    ];
+		    $scope.name = 'LN'
+		    $scope.selectedLN = undefined
+		    $scope.selected = { value: $scope.itemArray[0] };
+
+		    $scope.setInputFocus = function(){
+		    	$scope.$broadcast('SetFocus');
+		    	document.querySelector('#option').style.display = 'block';
+		      }
+		}]);
+
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

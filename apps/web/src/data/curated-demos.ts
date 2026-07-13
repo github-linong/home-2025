@@ -1,0 +1,100 @@
+/**
+ * Curated legacy demos worth highlighting beyond blog-linked ones.
+ * Slugs match content/demos/*.md (filename without .html).
+ */
+export type CuratedSection = {
+  id: string;
+  title: string;
+  description: string;
+  slugs: string[];
+};
+
+export const CURATED_DEMO_SECTIONS: CuratedSection[] = [
+  {
+    id: "media",
+    title: "媒体与图形",
+    description: "摄像头、录屏、Canvas 签名、主题色提取等浏览器能力实验。",
+    slugs: [
+      "MediaDevices-getUserMedia",
+      "MediaDevices-getDisplayMedia-MediaRecorder",
+      "MediaDevices-getDisplayMedia-MediaRecorder-download",
+      "canvas-draw-signature",
+      "fe-image-getcolor-canvas",
+      "demo-image-cover-cut-canvas",
+      "html2canvas-invite-vvmusic",
+    ],
+  },
+  {
+    id: "ai",
+    title: "AI / 图像处理",
+    description: "人脸融合、人像抠图、浏览器端人脸识别等早期 AI 实验。",
+    slugs: [
+      "ai-faceplusplus-merge",
+      "ai-baidu-merge",
+      "ai-faceplusplus-HumanBodySegment",
+      "ai-bg-merge-matting",
+      "face-api-browser",
+      "img-resize-merge-upload-config",
+      "71fcaee8aa168ee2107b2eb9125ec293",
+    ],
+  },
+  {
+    id: "interaction",
+    title: "交互与动效",
+    description: "弹幕、刮刮卡、虚拟滚动、Flex 可视化与架构图编辑器。",
+    slugs: [
+      "barrage-bullet-screen-biubiubiu",
+      "active-h5-scratchCard",
+      "canvas-active-h5-scratchCard",
+      "flex-study-WYSIWYG",
+      "chrome-virtual-scroller",
+      "架构图编辑器",
+      "zlh-Vue.Draggable",
+    ],
+  },
+  {
+    id: "mobile",
+    title: "移动端 / H5",
+    description: "摇一摇、震动、设备方向、触控击穿等移动端能力。",
+    slugs: [
+      "h5-vue-devicemotion-accelerationIncludingGravity",
+      "h5-vue-devicemotion-accelerationIncludingGravity-ball",
+      "h5-vibrate-navigator",
+      "h5-video-beforeupload-getmetadata",
+      "sf-a-1190000022552442-shake-devicemotion-vibrate-audio",
+      "sf-a-1190000019207842-mobile-bug-layoutViewport-visualViewport-idealViewport",
+    ],
+  },
+  {
+    id: "engineering",
+    title: "工程能力",
+    description: "PWA、WebSocket、上传进度、剪贴板、PDF / Excel 等实用能力。",
+    slugs: [
+      "ServiceWorkers-PWA-SW-sf-article",
+      "sum-websocket-test",
+      "clipboard-api-async",
+      "fe-file-upload-ajax-XMLHTTPRequest-progress",
+      "pdfjs-test",
+      "xlsx-sheet",
+      "sf-a-1190000022597533-file-preview-input-drop",
+      "elementui-nav-3",
+      "elementui-upload-dialog",
+    ],
+  },
+  {
+    id: "qrcode",
+    title: "二维码方案对比",
+    description: "多种二维码生成 / 美化方案的横向对比。",
+    slugs: [
+      "qrcode-20200408-jq22-yanshi4094",
+      "qrcode-20200408-jq22-yanshi21277",
+      "qrcode-20200408-qart-jq22-jqueryinfo12691",
+      "qrcode-20200408-jq22-yanshi22345",
+    ],
+  },
+];
+
+/** Flat set of curated slugs for badge / filter use */
+export const CURATED_DEMO_SLUGS = new Set(
+  CURATED_DEMO_SECTIONS.flatMap((s) => s.slugs),
+);

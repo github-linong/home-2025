@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <title>上传前预览文件 - www.lilnong.top</title> -->
+	<!-- <meta keywords="preview video, metadata,preview audio,preview image"> -->
+	<!-- <meta description="上传前预览文件，可以预览音视频，可以预览图片，可以预览文本"> -->
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.6.12/vue.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>	
+</head>
+<body>
+	<div id="app">
+		<h1>html 的表单测试，所有表单元素</h1>
+		<div>
+			https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/Input
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">单行输入框</a></h2>
+			<div class="item_inner">
+				<input type="text">
+				<ul>
+					<li>maxlength, 最大长度（最多字符数目）</li>
+					<li>pattern, 值的内容规则</li>
+					<li>placeholder, 当表单控件为空时，控件中显示的内容</li>
+					<li>size, 控件的大小，css控制更好</li>
+				</ul>
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">输入框, 动态键盘, 特殊按钮控件-上下，数字校验规则</a></h2>
+			<div class="item_inner">
+				<input type="number">
+				<ul>
+					<li>max, 最大值</li>
+					<li>min, 最小值</li>
+					<li>step, 步长</li>
+				</ul>
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">输入框, 动态键盘, tel校验规则</a></h2>
+			<div class="item_inner">
+				<input type="tel">
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">输入框, 动态键盘, email校验规则</a></h2>
+			<div class="item_inner">
+				<input type="email">
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">输入框, 动态键盘, url校验规则</a></h2>
+			<div class="item_inner">
+				<input type="url">
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">输入框, 密码域</a></h2>
+			<div class="item_inner">
+				<input type="password">
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">输入框, 回车变搜索，特殊按钮控件-清空</a></h2>
+			<div class="item_inner">
+				<input type="search">
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">按钮</a></h2>
+			<div class="item_inner">
+				<input type="button" value="btn">
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">重置表单内容</a></h2>
+			<div class="item_inner">
+				<input type="reset" value="btn">
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">提交按钮</a></h2>
+			<div class="item_inner">
+				<input type="submit" value="btn">
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">图片提交按钮</a></h2>
+			<div class="item_inner">
+				<input type="image" src="https://www.lilnong.top/favicon.ico">
+				<ul>
+					<li>alt、height、width, 同img的，图片失败时显示。满足可访问性</li>
+				</ul>
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">多选框</a></h2>
+			<div class="item_inner">
+				<input type="checkbox">
+				<ul>
+					<li>checked, 用于控制控件是否被选中</li>
+				</ul>
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">单选框</a></h2>
+			<div class="item_inner">
+				<input type="radio">
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">范围</a></h2>
+			<div class="item_inner">
+				<input type="range">
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">颜色</a></h2>
+			<div class="item_inner">
+				<input type="color">
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">日期（年、月、日，不包括时间）</a></h2>
+			<div class="item_inner">
+				<input type="date">
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">时间（）</a></h2>
+			<div class="item_inner">
+				<input type="time">
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">日期时间（不包括时区）</a></h2>
+			<div class="item_inner">
+				<input type="datetime-local">
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">日期（年、周）</a></h2>
+			<div class="item_inner">
+				<input type="week">
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">日期时间（年、月）</a></h2>
+			<div class="item_inner">
+				<input type="month">
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">文件</a></h2>
+			<div class="item_inner">
+				<input type="file">
+				<ul>
+					<li>accept, 规定文件上传控件中期望的文件类型</li>
+					<li>capture, 文件上传控件中媒体拍摄的方式</li>
+					<li>multiple, 文件多选</li>
+				</ul>
+			</div>
+		</div>
+		<div class="item_wrap">
+			<h2 class="item_title" id="abc"><a href="#abc">隐藏域</a></h2>
+			<div class="item_inner">
+				<input type="hidden">
+			</div>
+		</div>
+		
+		<ul>
+			<li>autocomplete、list, 表单的自动填充功能</li>
+			<li>autofocus, 页面加载时自动聚焦到此表单控件</li>
+			<li>disabled, 表单控件是否被禁用</li>
+			<li>readonly, 控件的值不可编辑</li>
+			<li>required, 表示为必填项，提交表单前必须先检查该值</li>
+			<li>name, 提交的key</li>
+		</ul>
+	</div>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+	<script type="text/javascript" src="//www.lilnong.top/static/js/public_hm.js"></script>
+</body>
+</html>

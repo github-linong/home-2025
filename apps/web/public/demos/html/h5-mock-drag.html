@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<style type="text/css">
+		ul{
+			height: 500px;width: 300px;
+			float:left;
+		}
+		ul:nth-child(1){
+			border: 1px solid #111;
+		}
+		ul:nth-child(2){
+			border: 1px solid #222;
+		}
+		li{
+			border: 1px solid #f00;user-select:none;
+		}
+	</style>
+	<div id="app">
+		<ul class="drap-wrap">
+			<li class="nodrap">这是一个不可以拖动的内容 5</li>
+			<li class="drap">这是一个可以拖动的内容 1</li>
+			<li class="drap">这是一个可以拖动的内容 2</li>
+			<li class="drap">这是一个可以拖动的内容 3</li>
+			<li class="nodrap">这是一个不可以拖动的内容 6</li>
+			<li class="drap">这是一个可以拖动的内容 4</li>
+		</ul>
+		<ul class="drap-wrap">
+			
+		</ul>
+	</div>
+	<script type="text/javascript">
+		var drapDOM = null;
+		window.addEventListener('mousedown', function(e){
+			if(e.target.classList.contains('drap')){
+				drapDOM = e.target;
+			}
+		})
+		window.addEventListener('mousemove', function(e){
+			if(drapDOM){
+				drapDOM.style.position = 'fixed';
+				drapDOM.style.pointerEvents =  'none';
+				drapDOM.style.left = e.clientX + 'px'
+				drapDOM.style.top = e.clientY + 'px'
+				// console.log(e)
+			}
+		})
+		window.addEventListener('mouseup', function(e){
+			// console.log(e.target)
+			if(drapDOM){
+				drapDOM.style.position = 'initial';
+				drapDOM.style.pointerEvents =  'initial';
+				drapDOM.style.left = '0'
+				drapDOM.style.top = '0';
+				var eTarget = $(e.target)
+				if(!eTarget.hasClass('drap-wrap')){
+					eTarget = eTarget.parents('.drap-wrap');
+				}
+				// console.log(eTarget)
+				if(eTarget.length){
+					if(drapDOM.parentNode != eTarget[0]){
+						eTarget[0].appendChild(drapDOM)
+					}
+				}
+				drapDOM = null
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="/static/js/uiworker-1.1.10.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<style type="text/css">
+		*{padding:0;margin:0;}
+		input{
+			width:0;height:0;overflow: hidden;
+		}
+		img{
+			/*width: 100vw;*/display: block;
+			/*line-height: 30vh;min-height: 30vh;*/
+			max-width: 100vw;min-height: 100px;line-height: 100px;
+			text-align: center;background-color: #ccc
+		}
+	</style>
+	<title>前端上传进度条</title>
+</head>
+<body>
+	<div id="app">
+		<input-date disabled/>
+	</div>
+	<script type="text/javascript">
+		// new Vue({
+		// 	el: '#app',
+		// })
+	</script>
+	<label for="file">
+		<img alt="请选择图片上传" id="prview">
+		<input id="file" type="file" name="file" accept="image/*" capture="camera">
+	</label>
+
+	<script type="text/javascript">
+
+
+		var _prviewDOM = document.querySelector('#prview');
+		var _fileDOM =document.querySelector('#file')
+		_fileDOM.onchange = function(){
+			if(this.value!=''){
+				var _file = this.files[0];
+
+				var formData = new FormData;
+				formData.append('file', _file)
+				formData.append('opacid', 'LN')
+
+				var xhr = new XMLHttpRequest();
+
+				xhr.open('post', '/upload');
+
+				xhr.onreadystatechange = (e)=>{
+					console.log('onreadystatechange', e)
+				}
+				xhr.onprogress = (e)=>{//下载的事件
+					console.log("progress", e)
+				};
+				xhr.upload.onprogress = (e)=>{//上传的事件
+					console.log("upload.progress", e)
+				};
+				xhr.send(formData);
+
+				this.value = '';
+			}
+		}
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	</body>
+</html>

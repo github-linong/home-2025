@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>ElementUI 实现导航联动功能 - www.lilnong.top</title>
+	<meta keywords="导航联动">
+	<meta description="导航联动">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+</head>
+<body>
+	<div id="app">
+        <div class="wrap">
+            <div class="header">
+                <el-menu
+                    ref="nav1" 
+                    :default-active="horizontalActiveIndex"
+                    mode="horizontal" 
+                    router
+                    @select="horizontalHandleSelect">
+                    <el-menu-item index="/">综合业务管理平台</el-menu-item>
+                    <el-menu-item index="/vvmusic">vv音乐</el-menu-item>
+                    <el-menu-item index="/vvmusic/audit/text/group">私聊文字</el-menu-item>
+                    <el-menu-item index="/vvmusic/audit/image">图片审核</el-menu-item>
+                    <el-menu-item index="/vvmusic/audit/info">信息审核</el-menu-item>
+                    <el-menu-item index="/dev/config">系统配置</el-menu-item>
+                    <el-menu-item index="/dev/config/upload">上传配置</el-menu-item>
+                </el-menu>
+            </div>
+            <div class="main">
+                <div class="main-nav" v-if="currentMenuList && currentMenuList.children && currentMenuList.children.length">
+                    <el-menu 
+                        ref="nav2"
+                        router
+                        :default-active="verticalActiveIndex">
+                        <el-submenu v-for="item in currentMenuList.children" :index="item.url"  :key="item.url">
+                          <template slot="title">
+                            <i class="el-icon-location"></i>
+                            <span slot="title">{{item.name}}</span>
+                          </template>
+                          <template v-for="item1 in item.children" :key="item1.url">
+                            <el-menu-item-group v-if="item1.isGroup">
+                                <span slot="title">{{item1.name}}</span>
+                                <el-menu-item :index="item2.url" v-for="item2 in item1.children" :key="item2.url">{{item2.name}}</el-menu-item>
+                            </el-menu-item-group>
+                            <template v-else>
+                              <el-menu-item :index="item2.url" v-for="item2 in item1.children"  :key="item2.url">{{item2.name}}</el-menu-item>
+                            </template>
+                          </template>
+                        </el-submenu>
+                      </el-menu>
+                      
+                </div>
+                <div class="main-routerview">
+                    <router-view></router-view>
+                </div>
+            </div>
+            <div class="footer"></div>
+        </div>
+    </div>
+    <style>
+      .el-menu-vertical-demo:not(.el-menu--collapse) {
+        width: 200px;
+        min-height: 400px;
+      }
+      .main{display: flex;}
+      .main-nav{width: 200px;flex: 0 0 auto;}
+      .main-routerview{flex: 1 1 auto;padding: 10px}
+    </style>
+    <script>
+        navConfig = {
+            name: '综合业务管理平台',
+            url: '/',
+            children: [
+                {
+                    name: 'vv音乐',
+                    url: '/vvmusic',
+                    children: [
+                        {
+                            name: '审核管理',
+                            url: '/vvmusic/audit',
+                            children: [
+                                {name: '文字审核', url: '/vvmusic/audit/text', isGroup: true, children: [
+                                    {name: '私聊文字', url: '/vvmusic/audit/text/group'},
+                                    {name: '群聊文字', url: '/vvmusic/audit/text/private'},
+                                    {name: '评论文字', url: '/vvmusic/audit/text/comment'}
+                                ]},
+                                {name: '图片审核', url: '/vvmusic/audit/image', isGroup: true, children: [
+                                    {name: '私聊图片', url: '/vvmusic/audit/image/group'},
+                                    {name: '群聊图片', url: '/vvmusic/audit/image/private'},
+                                    {name: '评论图片', url: '/vvmusic/audit/image/comment'}
+                                ]},
+                                {name: '信息审核', url: '/vvmusic/audit/info',}
+                            ]
+                        },
+                        {
+                            name: '活动管理',
+                            url: '/vvmusic/activity',
+                            children: [
+                                {name: '比赛活动', url: '/vvmusic/activity/match', isGroup: true, children: [
+                                    {name: '活动管理', url: '/vvmusic/activity/match/list'},
+                                    {name: '奖励配置', url: '/vvmusic/activity/match/reward'}
+                                ]},
+                                {name: '房间活动', url: '/vvmusic/activity/room', isGroup: true, children: [
+                                    {name: '活动管理', url: '/vvmusic/activity/room/list'},
+                                    {name: '奖励配置', url: '/vvmusic/activity/room/reward'},
+                                    {name: '榜单管理', url: '/vvmusic/activity/room/billboard'}
+                                ]}
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: '开发者',
+                    url: '/dev',
+                    children: [
+                        {
+                            name: '系统配置',
+                            url: '/dev/config',
+                            children: [
+                                {name: '上传配置', url: '/dev/config/upload', isGroup: true, children: [
+                                    {name: '上传图片', url: '/dev/config/upload/image'},
+                                    {name: '上传视频', url: '/dev/config/upload/video'},
+                                    {name: '上传音频', url: '/dev/config/upload/audio'},
+                                    {name: '上传文件', url: '/dev/config/upload/file'}
+                                ]},
+                                {name: '通知配置', url: '/dev/config/notify', isGroup: true, children: [
+                                    {name: '全局通知', url: '/dev/config/notify/public'},
+                                    {name: '页面通知', url: '/dev/config/notify/page'},
+                                    {name: '邮件通知', url: '/dev/config/notify/email'}
+                                ]},
+                                {name: '系统信息', url: '/dev/config/info',}
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    </script>
+    <script>
+        const Foo = { 
+            template: '<div>{{route_info}}</div>',
+            computed: {
+                route_info(){
+                    return {
+                        path: this.$route.path,
+                        params: this.$route.params,
+                        query: this.$route.query,
+                        hash: this.$route.hash,
+                        fullPath: this.$route.fullPath,
+                        // matched: this.$route.matched,
+                        name: this.$route.name,
+                        // redirectedFrom: this.$route.redirectedFrom,
+                    }
+                }
+                
+            }
+        }
+        const routes = [
+            { path: '*', component: Foo },
+        ]
+        const router = new VueRouter({
+            routes
+        })
+    </script>
+    <script>
+        vm = new Vue({
+            router: router ,
+            el: '#app',
+            data() {
+                return {
+                    horizontalActiveIndex: '1',
+                    verticalActiveIndex: '1',
+                    isCollapse: false,
+                    navConfig: navConfig,
+                };
+            },
+            computed: {
+                currentMenuList(){
+                    return this.navConfig.children.find(v =>this.$route.path.indexOf(v.url) == 0)
+                    // return this.navConfig.children[0]
+                }
+            },
+            methods: {
+                horizontalHandleSelect(key, keyPath) {
+                    console.log('horizontalHandleSelect', key, keyPath);
+                },
+                verticalHandleSelect(key, keyPath) {
+                    console.log('verticalHandleSelect', key, keyPath);
+                },
+                handleOpen(key, keyPath) {
+                    console.log(key, keyPath);
+                },
+                handleClose(key, keyPath) {
+                    console.log(key, keyPath);
+                }
+            }
+        })
+    </script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

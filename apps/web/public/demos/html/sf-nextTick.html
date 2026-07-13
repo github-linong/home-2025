@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.0/JsBarcode.all.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <div>
+            <input @input="barGen" v-model="h" />
+        </div>
+        {{h}}
+        <div></div>
+        <canvas id="barcode"></canvas>
+        <div v-for="site in info1">
+            {{ site.name }}
+        </div>
+    </div>
+    <script>
+        var vm = new Vue({
+            el: '#app',
+            created() { this.barGen(); },
+            data: { h: "google", info: "", time1: "", info1: [{ name: "baidu" }, { name: "sina" }, { name: "tengxun" }] },
+            methods: {
+                barGen: function () {
+                    this.$nextTick(() => {
+                        JsBarcode("#barcode", this.h, {
+                            format: "CODE128",
+                            width: 3
+                        })
+                    })
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>

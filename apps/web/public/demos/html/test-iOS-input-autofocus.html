@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<style type="text/css">
+		script[type="text/html"]{
+			display: block;
+			/*white-space: pre;*/
+		}
+	</style>
+	<title>iOS_input_autofocus</title>
+</head>
+<body>
+	<ol>
+		<li>
+			<script type="text/html">
+				<input type="" name="" autofocus="">
+			</script>
+			<p>遗憾的是在iOS上这个方案不好用</p>
+			<input type="" name="">
+			<script type="text/javascript">
+				
+			</script>
+		</li>
+		<li>
+			<script type="text/html">
+				<input type="" name="" id="li2">
+				var e = new Event('click');
+				document.querySelector('#li2').addEventListener('click', (e)=>{
+					<!-- e.preventDefault() -->
+					document.querySelector('#li2').focus(e);
+				});
+				document.querySelector('#li2').dispatchEvent(e);
+			</script>
+			<p>遗憾的是在这个方案不好用</p>
+			<input type="" name="" id="li2">
+			<script type="text/javascript">
+				var e = new Event('click');
+				document.querySelector('#li2').addEventListener('click', (e)=>{
+					// e.preventDefault()
+					document.querySelector('#li2').focus(e);
+				});
+				document.querySelector('#li2').dispatchEvent(e);
+			</script>
+		</li>
+
+		<li>
+			<script type="text/html">
+				<input type="" name="" id="li3"><a href="javascript:;" id="li3-btn">我是一个按钮</a>
+
+				document.querySelector('#li3-btn').addEventListener('click', (e)=>{
+					<!-- e.preventDefault() -->
+					document.querySelector('#li3').focus(e);
+				});
+			</script>
+			<p>遗憾的是在这个方案不好用</p>
+			<input type="" name="" id="li3"><a href="javascript:;" id="li3-btn">我是一个按钮</a>
+			<script type="text/javascript">
+				document.querySelector('#li3-btn').addEventListener('click', (e)=>{
+					// e.preventDefault()
+					document.querySelector('#li3').focus(e);
+				});
+			</script>
+		</li>
+
+		<li>
+			<script type="text/html">
+				<input type="" name="" id="li4"><a href="javascript:;" id="li4-btn">我是一个按钮</a>
+
+				document.querySelector('#li4-btn').onclick = (e)=>{
+					<!-- e.preventDefault() -->
+					document.querySelector('#li4').focus(e);
+				};
+				document.querySelector('#li4-btn').click();
+			</script>
+			<p>遗憾的是在这个方案不好用</p>
+			<input type="" name="" id="li4"><a href="javascript:;" id="li4-btn">我是一个按钮</a>
+			<script type="text/javascript">
+				document.querySelector('#li4-btn').onclick = (e)=>{
+					// e.preventDefault()
+					document.querySelector('#li4').focus(e);
+				};
+				document.querySelector('#li4-btn').click();
+			</script>
+		</li>
+
+		<li>
+			<script type="text/html">
+				<input type="" name="" id="li5"><label for="li5">我是一个按钮</label>
+			</script>
+			<p>遗憾的是在需要单击label标签，而不是自动获取焦点</p>
+			<input type="" name="" id="li5"><label for="li5">我是一个按钮</label>
+		</li>
+
+		<li>
+			<script type="text/html">
+				<input type="" name="" id="li6">
+				var e = new Event('click');
+				document.querySelector('#li6').addEventListener('click', (e)=>{
+					<!-- e.preventDefault() -->
+					document.querySelector('#li6').click(e);
+				});
+				document.querySelector('#li6').dispatchEvent(e);
+			</script>
+			<p>遗憾的是在这个方案不好用</p>
+			<input type="" name="" id="li6">
+			<script type="text/javascript">
+				var e = new Event('click');
+				document.querySelector('#li6').addEventListener('click', (e)=>{
+					// e.preventDefault()
+					document.querySelector('#li6').click(e);
+				});
+				document.querySelector('#li6').dispatchEvent(e);
+			</script>
+		</li>
+
+		<li>
+			<script type="text/html">
+				<input type="" name="" id="li7"><a href="javascript:;" id="li7-btn">我是一个按钮</a>
+
+				document.querySelector('#li7-btn').addEventListener('click', (e)=>{
+					<!-- e.preventDefault() -->
+					document.querySelector('#li7').click(e);
+				});
+			</script>
+			<p>遗憾的是在这个方案不好用</p>
+			<input type="" name="" id="li7"><a href="javascript:;" id="li7-btn">我是一个按钮</a>
+			<script type="text/javascript">
+				document.querySelector('#li7-btn').addEventListener('click', (e)=>{
+					// e.preventDefault()
+					document.querySelector('#li7').click(e);
+				});
+			</script>
+		</li>
+
+		<li>
+			<script type="text/html">
+				<input type="" name="" id="li8"><a href="javascript:;" id="li8-btn">我是一个按钮</a>
+
+				document.querySelector('#li8-btn').onclick = (e)=>{
+					<!-- e.preventDefault() -->
+					document.querySelector('#li8').click(e);
+				};
+				document.querySelector('#li8-btn').click();
+			</script>
+			<p>遗憾的是在这个方案不好用</p>
+			<input type="" name="" id="li8"><a href="javascript:;" id="li8-btn">我是一个按钮</a>
+			<script type="text/javascript">
+				document.querySelector('#li8-btn').onclick = (e)=>{
+					// e.preventDefault()
+					document.querySelector('#li8').click(e);
+				};
+				document.querySelector('#li8-btn').click();
+			</script>
+		</li>
+		<li>
+			<script type="text/html">
+				<input type="" name="" id="li9"><a href="javascript:;" id="li9-btn">我是一个按钮</a>
+				window.addEventListener('load', function() {
+					var textInput = document.querySelector('#li9');
+					// FastClick.attach(document.body);
+					Array.prototype.forEach.call(document.getElementsByClassName('li9-btn'), function(testEl) {
+						testEl.addEventListener('click', function() {
+							textInput.focus();
+						}, false)
+					});
+				}, false);
+			</script>
+			<p>https://labs.ft.com/fastclick/examples/focus.html 为什么好使？</p>
+			<input type="" name="" id="li9"><a href="javascript:;" id="li9-btn" class="li9-btn">我是一个按钮</a>
+			<script type="text/javascript">
+				window.addEventListener('load', function() {
+					var textInput = document.querySelector('#li9');
+					// FastClick.attach(document.body);
+					Array.prototype.forEach.call(document.getElementsByClassName('li9-btn'), function(testEl) {
+						testEl.addEventListener('click', function() {
+							textInput.focus();
+						}, false);
+						testEl.click()
+					});
+				}, false);
+				// document.querySelector('#li9').click()
+			</script>
+		</li>
+
+
+
+	</ol>
+	<script>
+	!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+	with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+	})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

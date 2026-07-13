@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<!-- <title>上传前预览文件 - www.lilnong.top</title> -->
+	<!-- <meta keywords="preview video, metadata,preview audio,preview image"> -->
+	<!-- <meta description="上传前预览文件，可以预览音视频，可以预览图片，可以预览文本"> -->
+	<meta name='viewport'
+		content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no' />
+	<!-- <link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"> -->
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.6.12/vue.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>
+	<script src="/static/js/jquery-ui@1.11.4.min.js"></script>
+	<script src="/static/js/jquery.jsPlumb.min.js"></script>
+</head>
+
+<body>
+	<div id="app">
+	</div>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box
+		}
+
+		h1,
+		h2,
+		h3,
+		h4,
+		h5,
+		h6,
+		a,
+		p,
+		label,
+		ul,
+		li,
+		label,
+		span {
+			margin: 0;
+			padding: 0;
+			font-family: 微软雅黑
+		}
+
+		a,
+		a:active,
+		a:focus,
+		a:hover {
+			text-decoration: none
+		}
+
+		.clear {
+			clear: both
+		}
+
+		body {
+			background: #ededed
+		}
+
+		html,
+		body {
+			height: 100%
+		}
+
+		.device .deviceLeft {
+			width: 220px;
+			height: 100%;
+			border-right: 1px solid #ccc;
+			float: left;
+			overflow: auto
+		}
+
+		.device .deviceLeft h3 {
+			padding-left: 10px;
+			font-size: 14px;
+			background: #ddd;
+			line-height: 36px;
+			border-top: 1px solid #ccc;
+			border-bottom: 1px solid #ccc
+		}
+
+		.device .deviceLeft .deviceLeft_box {
+			overflow: hidden;
+			padding: 10px 0
+		}
+
+		.device .deviceLeft .deviceLeft_box .node {
+			user-select: none;
+			width: 98px;
+			height: 40px;
+			line-height: 20px;
+			float: left;
+			margin: 5px
+		}
+
+		.device .node {
+			width: 120px;
+			height: 50px;
+			line-height: 30px;
+			box-shadow: 2px 2px 10px #aaa;
+			border-radius: 3px;
+			text-align: center;
+			z-index: 20;
+			background-color: #f1f1f2;
+			color: #000;
+			padding: 10px;
+			font-size: 14px;
+			cursor: pointer
+		}
+
+		.device .node:hover {
+			box-shadow: 2px 2px 19px #444;
+			opacity: .8;
+			filter: alpha(opacity=80)
+		}
+
+		.device .node[data-type="1"]{
+			border: #87cefa 1px solid
+		}
+
+		.device .node[data-type="2"]{
+			border: orange 1px solid
+		}
+
+		.device .node[data-type="3"]{
+			border: #cd5c5c 1px solid
+		}
+
+		.device .node[data-type="4"]{
+			border: #adff2f 1px solid
+		}
+
+		.device .node[data-type="5"]{
+			border: #ccc 1px solid
+		}
+
+		.device #deviceRight {
+			position: absolute;
+			right: 0;
+			width: calc(100% - 220px);
+			height: 100%;
+			box-sizing: border-box;
+			background: url(//www.lilnong.top/static/img/jsPlumb/bg.png)
+		}
+
+		.device #myDropDown {
+			width: 80px;
+			margin-left: -14px;
+			border: 1px solid #ccc;
+			text-align: center
+		}
+
+		.device #main {
+			width: 100%;
+			height: 100%
+		}
+	</style>
+	<style>
+		#dialog{
+			display: none;
+			position: fixed;
+			z-index: 1000;
+			top:0;right:0;bottom:0;left:0;
+			background: rgba(0,0,0,.3);
+		}
+		#dialog .dialog-inner {
+			height: 100%;
+			background: #fff;
+			width: 400px;
+			padding: 10px;
+		}
+	</style>
+	<div class="container device">
+		<div class="deviceLeft" id="deviceLeft">
+			<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg"
+		style="width: 300px;max-width: 100%;display:block;margin:0 auto;">
+			<input type="text" id="deviceTitle" value="test">
+			<button class="btn1">console</button>
+			<button class="btn2">导出</button>
+			<button class="btn3">导入</button>
+			<button class="btn4">导出规定格式的JSON</button>
+			<!-- <h3>输入源</h3>
+			<div class="deviceLeft_box">
+				<div class="node node1css" data-type="server">服务器</div>
+				<div class="node node2css" data-type="host">主机</div>
+				<div class="node node3css" data-type="aisle">通道</div>
+			</div>
+			<h3>配置2</h3>
+			<div class="deviceLeft_box">
+				<div class="node node4css" data-type="route">路由</div>
+			</div>
+			<h3>配置3</h3>
+			<div class="deviceLeft_box">
+				<div class="node node5css" data-type="signal">信号</div>
+			</div> -->
+		</div>
+		<div id="deviceRight">
+			<div id="main"></div>
+		</div>
+	</div>
+	<div class="dialog" id="dialog" onclick="$(this).hide()">
+		<div class="dialog-inner" onclick="event.stopPropagation()">
+			<h2>配置</h2>
+			<div class="dialog-template">
+				<input type="file">
+				<input type="text">
+			</div>
+			<button>取消</button>
+			<button>确认</button>
+		</div>
+	</div>
+	<script>
+		// https://blog.csdn.net/weixin_36401046/article/details/79756422
+	</script>
+	<script>
+		var inNodePayload = [
+			{
+				title: '模板支持输入源的类型',
+				key: 'supportType',
+				type: 'select',
+				options: [
+					{value: 1, label: '仅支持相机输入',},
+					{value: 2, label: '仅支持相册输入',},
+					{value: 3, label: '支持相机和相册输入',},
+				],
+				// value: 1
+			},
+			{
+				title: '相册输入片段列表',
+				key: 'inputs',
+				type: 'list',
+				payload: [
+					{
+						title: '片段id',
+						key: 'id',
+						type: 'text',
+						// value: ''
+					},
+					{
+						title: '片段位置',
+						key: 'index',
+						type: 'text',
+						// value: ''
+					},
+					{
+						title: '片段类型',
+						key: 'sourcetype',
+						type: 'select',
+						options: [
+							{value: 1, label: '图片',},
+							{value: 2, label: '视频',}
+						],
+						// value: 1
+					},
+					{
+						title: '片段入点',
+						key: 'inPoint',
+						type: 'text',
+						// value: '',
+						tips: '片段在什么事件开始播放，单位微秒',
+					},
+					{
+						title: '片段时长',
+						key: 'duration',
+						type: 'text',
+						// value: '',
+						tips: '片段播放时长，如果选取的是视频，则视频不能小于该时长，单位微秒'
+					},
+					{
+						title: '片段是否静音',
+						key: 'isMute',
+						type: 'text',
+						// value: ''
+					},
+				],
+				value: {
+					id: '',
+					index: '',
+					sourcetype: '',
+					inPoint: '',
+					duration: '',
+					isMute: '',
+				}
+			}
+		]	
+		// 初始化配置
+		var nodes = [
+			{
+				title: '输入源',
+				child: [
+					{
+						id: 1,
+						title: '相机',
+						type: 1,//0无输入无输出 1只能输出 2只能输入 3有输入有输出	
+						value: {// 默认值
+							supportType: 1, // 1：仅支持相机输入      2：仅支持相册输入      3：支持相机和相册输入
+							inputs: [] // supportType >= 2时此字段有值
+						},
+						payload: inNodePayload		
+					},
+					{
+						id: 2,
+						title: '相册',
+						type: 1,//0无输入无输出 1只能输出 2只能输入 3有输入有输出
+						value: {// 默认值
+							supportType: 2, // 1：仅支持相机输入      2：仅支持相册输入      3：支持相机和相册输入
+							inputs: [] // supportType >= 2时此字段有值
+						},
+						payload: inNodePayload		
+					},
+					{
+						id: 3,
+						title: '输入源',
+						type: 1,// 0无输入无输出 1只能输出 2只能输入 3有输入有输出
+						value: {// 默认值
+							supportType: 1, // 1：仅支持相机输入      2：仅支持相册输入      3：支持相机和相册输入
+							inputs: [] // supportType >= 2时此字段有值
+						},
+						payload: inNodePayload			
+					}
+				]
+			},
+			{
+				title: '特效',
+				child: [
+					{
+						id: 4,
+						title: '商汤',
+						type: 3,//0无输入无输出 1只能输出 2只能输入 3有输入有输出
+						value: {
+							fileName: '',
+							toastString: '',
+						},
+						payload: [
+							{
+								title: '特效文件',
+								type: 'file',
+								callback: function(localData, serverData){
+									// localData 本地数据
+									// serverData 服务端数据
+									localData.fileName = serverData.fileName
+								}
+								// value: ''
+							},
+							{
+								title: '商汤特效包文件名称',
+								key: 'fileName',
+								type: 'text',
+								// value: ''
+							},
+							{
+								title: '商汤特效提示语',
+								key: 'toastString',
+								type: 'text',
+								// value: ''
+							},
+							// {
+							// 	title: '提示语',
+							// 	type: 'text',
+							// 	// value: ''
+							// }
+						]
+					},
+					{
+						id: 5,
+						title: '美摄',
+						type: 3,//0无输入无输出 1只能输出 2只能输入 3有输入有输出	
+						value: {
+							type: 1,
+							videoFxId: '',
+							intensity: 1.0,
+							value: 'false',
+						},
+						payload: [
+							{
+								title: '美摄特效类型',
+								key: 'type',
+								type: 'select',
+								options: [
+									{value: 1, label: '表示package类型，需要有videofx文件和lic文件',},
+									{value: 2, label: '表示buildin类型，不需要videofx和lic文件',}
+								],
+								// value: 1
+							},
+							{
+								title: '美摄特效id',
+								key: 'videoFxId',
+								type: 'text',
+								// value: ''
+							},
+							{
+								title: '美摄特效强度',
+								key: 'intensity',
+								type: 'float',
+								// value: '1.0',
+								tips: '如果是package类型，需要与美摄videofx文件和lic文件同名，不带后缀。如果是buildin类型则在是固定的内置特效名，如Segmentation（背景分割）'
+							},
+							{
+								title: '该特效是否改变原始内容',
+								key: 'isChangeDetectArea',
+								type: 'bool',
+								// value: '',
+								tips: '该特效是否改变了视频区域，如变形、翻转、改变大小等，如果改变，后续处理可能需要重新进行识别。'
+							},
+							{
+								title: '特效文件',
+								type: 'file',
+								// value: '',
+								callback: function(localData, serverData){
+									// localData 本地数据
+									// serverData 服务端数据
+									localData.videoFxId = serverData.fileName
+								}
+							},
+							// {
+							// 	title: '提示语',
+							// 	type: 'text',
+							// 	value: ''
+							// }
+						]			
+					},
+					{
+						id: 6,
+						title: 'shader',
+						type: 3,//0无输入无输出 1只能输出 2只能输入 3有输入有输出
+						value: {
+							shaderFileName: '',
+							segmentType: 0,
+							isNeedUpdateTime: true,
+							subParams: {},
+							transform: {
+								translateX: '',
+								translateY: '',
+								rotateX: '',
+								rotateY: '',
+								rotateZ: '',
+								scaleX: '',
+								scaleY: '',
+								flipX: '',
+								flipY: '',
+							},
+						},
+						payload: [
+							{
+								title: 'shader文件名',
+								key: 'shaderFileName',
+								type: 'text',
+								// value: '',
+								tips: 'shader文件名，fsh后缀'
+							},
+							{
+								title: '特效所需要的分割类型',
+								key: 'segmentType',
+								type: 'select',
+								options: [
+									{value: 0, label: '表示不需要分割',},
+									{value: 1, label: '表示背景分割',},
+									{value: 2, label: '表示人头分割',},
+									{value: 3, label: '表示头发分割',},
+									{value: 4, label: '表示皮肤分割',}
+								],
+								// value: 1
+							},
+							{
+								title: '特效是否需要更新时间',
+								key: 'isNeedUpdateTime',
+								type: 'bool',
+								// value: '',
+								tips: '是否需要更新时间，若果自定义shader中有动画效果则为true，需要客户端更新shader中的时间参数。'
+							},
+							{
+								title: 'shader参数列表',
+								key: 'subParams',
+								type: 'text',
+								// value: '',
+								tips: 'shader中所需参数，key-value形式，key字符串与shader中的参数名相同。'
+							},
+							{
+								title: 'transform变换',
+								key: 'transform',
+								type: 'obj',
+								// value: {
+								// 	translateX: '100',
+								// 	translateY: '100',
+								// 	rotateX: '100',
+								// 	rotateY: '100',
+								// 	rotateZ: '100',
+								// 	scaleX: '100',
+								// 	scaleY: '100',
+								// 	flipX: '100',
+								// 	flipY: '100',
+								// },
+								payload: [
+									{
+										title: 'X轴平移量',
+										key: 'translateX',
+										type: 'text',
+										value: '0'
+									},
+									{
+										title: 'Y轴平移量',
+										key: 'translateY',
+										type: 'text',
+										value: '0'
+									},
+									{
+										title: '沿X轴方向旋转',
+										key: 'rotateX',
+										type: 'text',
+										value: '0'
+									},
+									{
+										title: '沿Y轴方向旋转',
+										key: 'rotateY',
+										type: 'text',
+										value: '0'
+									},
+									{
+										title: '沿Z轴方向旋转',
+										key: 'rotateZ',
+										type: 'text',
+										value: '0'
+									},
+									{
+										title: 'X轴方向缩放',
+										key: 'scaleX',
+										type: 'text',
+										value: '0'
+									},
+									{
+										title: 'Y轴方向缩放',
+										key: 'scaleY',
+										type: 'text',
+										value: '0'
+									},
+									{
+										title: '是否水平镜像',
+										key: 'flipX',
+										type: 'text',
+										value: '0'
+									},
+									{
+										title: '是否垂直镜像',
+										key: 'flipY',
+										type: 'text',
+										value: '0'
+									},
+								],
+								tips: '是否需要变换，无需则不显示以下信息（transform说明）。平移旋转缩放镜像等操作，如不配置此字段，则不做变换。'
+							},
+							{
+								title: '特效文件',
+								type: 'file',
+								// value: ''
+							},
+							{
+								title: '提示语',
+								type: 'text',
+								// value: ''
+							}
+						]				
+					}
+				]
+			},
+			{
+				title: '输出源',
+				child: [
+					{
+						id: 7,
+						title: '固定输出',
+						type: 2,//0无输入无输出 1只能输出 2只能输入 3有输入有输出		
+					},
+				]
+			}
+		];
+		var nodesHash = {};
+		nodes.forEach(v=>{
+			// console.log(v)
+			v.child.forEach(v1=>{
+				v1._partent = v;
+				nodesHash[v1.id] = v1
+				// console.log(v1)
+			})
+		})
+		// 构建一个node
+		var getNodeItem = function (node){
+			return `<div class="node" data-type="${node.type}" data-id="${node.id}">${node.title}</div>`
+		}
+		// 构建一组node
+		var getNodeBox = function (node){
+			return `<div class="deviceLeft_box">
+				${node.child.map(node1=>getNodeItem(node1)).join('\n')}
+			</div>`
+		}
+		// 构建左边整体node
+		var getNodeHTML = function (nodes){
+			return nodes.map(node=>{
+				return `
+					<h3>${node.title}</h3>
+					${getNodeBox(node)}
+				`
+			}).join('\n')
+			
+		}
+	</script>
+	<script>
+		// 获取流程图 json 格式的展示
+		var getJSON = function getJSON() {
+			var ojson = {
+				server: [],
+				// host: [],
+				// aisle: [],
+				// route: [],
+				// signal: [],
+				line: [],
+			}
+			$("#main .server").each(function (idx, elem) {
+				var $elem = $(elem);
+				var param = {
+					id: $elem.data('id'),
+					divId: $elem.attr('id'),
+					name: $elem[0].innerText,
+					positionX: parseInt($elem.css("left"), 10),
+					positionY: parseInt($elem.css("top"), 10),
+					type: $elem.data('type')
+				}
+				ojson.server.push(param)
+			});
+			// $("#main .host").each(function (idx, elem) {
+			// 	var $elem = $(elem);
+			// 	var param = {
+			// 		id: $elem.data('id'),
+			// 		divId: $elem.attr('id'),
+			// 		name: $elem[0].innerText,
+			// 		positionX: parseInt($elem.css("left"), 10),
+			// 		positionY: parseInt($elem.css("top"), 10),
+			// 		type: $elem.data('type')
+			// 	}
+			// 	ojson.host.push(param)
+			// });
+			// $("#main .aisle").each(function (idx, elem) {
+			// 	var $elem = $(elem);
+			// 	var param = {
+			// 		id: $elem.data('id'),
+			// 		divId: $elem.attr('id'),
+			// 		name: $elem[0].innerText,
+			// 		positionX: parseInt($elem.css("left"), 10),
+			// 		positionY: parseInt($elem.css("top"), 10),
+			// 		type: $elem.data('type')
+			// 	}
+			// 	ojson.aisle.push(param)
+			// });
+			// $("#main .route").each(function (idx, elem) {
+			// 	var $elem = $(elem);
+			// 	var param = {
+			// 		id: $elem.data('id'),
+			// 		divId: $elem.attr('id'),
+			// 		name: $elem[0].innerText,
+			// 		positionX: parseInt($elem.css("left"), 10),
+			// 		positionY: parseInt($elem.css("top"), 10),
+			// 		type: $elem.data('type')
+			// 	}
+			// 	ojson.route.push(param)
+			// });
+			// $("#main .signal").each(function (idx, elem) {
+			// 	var $elem = $(elem);
+			// 	var param = {
+			// 		id: $elem.data('id'),
+			// 		divId: $elem.attr('id'),
+			// 		name: $elem[0].innerText,
+			// 		positionX: parseInt($elem.css("left"), 10),
+			// 		positionY: parseInt($elem.css("top"), 10),
+			// 		type: $elem.data('type')
+			// 	}
+			// 	ojson.signal.push(param)
+			// });
+			$.each(jsPlumb.getConnections(), function (idx, connection) {
+				var param = {
+					connectionId: connection.id,
+					// value: connection.canvas.innerText,
+					value: $(connection.canvas).next().text(),
+					pageSourceId: connection.sourceId,
+					pageTargetId: connection.targetId
+				}
+				ojson.line.push(param)
+			});
+			// ojson = 
+			console.log(ojson, JSON.stringify(ojson, null, 4));
+			return ojson;
+		}
+		var getJSON2 = function(){
+			return {
+				"templateId": "1234",
+				"templateName": "多输入测试",
+				"version": 1,
+				"effects": [
+					{
+						"type": 1, // 	1表示美摄videofx类型特效   2表示商汤类型特效    3表示自定义特效
+						"id": "111", // 特效id
+						"params": { // 参数列表
+							"videoFxId": "7F4C09F0-C128-497A-A512-4DCA48A6B66E",
+							"intensity": 1,
+							"type": 1,
+							"isChangeDetectArea": true
+						}
+					},
+					{
+						"type": 2,
+						"id": "222",
+						"params": {
+							"fileName": "82ca867a4b77ed36bbb4a3441142487f.zip",
+							"toastString": "请眨眼"
+						}
+					},
+					{
+						"type": 3,
+						"id": "333",
+						"params": {
+							"shaderFileName": "splitScreenShader.fsh",
+							"segmentType": 0,
+							"isNeedUpdateTime": true,
+							"subParams": {
+								"time": 0,
+								"duration": 2.5
+							}
+						}
+					},
+					{
+						"type": 3,
+						"id": "444",
+						"isNeedUpdateTime": false,
+						"params": {
+							"shaderFileName": "maskShader.fsh",
+							"segmentType": 1,
+							"subParams": {
+								"intensity": 1
+							}
+						}
+					}
+				],
+				"chainLink": [
+					{
+						"id": "0",
+						"effectId": "input",
+						"inputs": [],
+						"outputs": [
+							{
+								"id": "1",
+								"index": 0
+							},
+							{
+								"id": "2",
+								"index": 0
+							}
+						]
+					},
+					{
+						"id": "1",
+						"effectId": "222",
+						"inputs": [
+							{
+								"id": "0",
+								"index": 0
+							}
+						],
+						"outputs": [
+							{
+								"id": "4",
+								"index": 1
+							}
+						]
+					},
+					{
+						"id": "2",
+						"effectId": "444",
+						"inputs": [
+							{
+								"id": "0",
+								"index": 0
+							}
+						],
+						"outputs": [
+							{
+								"id": "3",
+								"index": 0
+							}
+						]
+					},
+					{
+						"id": "3",
+						"effectId": "111",
+						"inputs": [
+							{
+								"id": "2",
+								"index": 0
+							}
+						],
+						"outputs": [
+							{
+								"id": "4",
+								"index": 0
+							}
+						]
+					},
+					{
+						"id": "4",
+						"effectId": "333",
+						"inputs": [
+							{
+								"id": "1",
+								"index": 1
+							},
+							{
+								"id": "3",
+								"index": 0
+							}
+						],
+						"outputs": [
+							{
+								"id": "5",
+								"index": 1
+							}
+						]
+					},
+					{
+						"id": "5",
+						"effectId": "output",
+						"inputs": [
+							{
+								"id": "4",
+								"index": 0
+							}
+						],
+						"outputs": []
+					}
+				],
+				"input": {
+					"supportType": 3,
+					"inputs": [
+						{
+							"id": "123",
+							"index": 0,
+							"?_sourcetype": "输入类型：1：图片， 2：视频",
+							"sourcetype": 1,
+							"inPoint": 0,
+							"duration": 5,
+							"isMute": true
+						},
+						{
+							"id": "456",
+							"index": 1,
+							"sourcetype": 2,
+							"inPoint": 5,
+							"duration": 10,
+							"isMute": true
+						}
+					]
+				},
+				"output": {}
+			}
+		}
+		// 导出json
+		var exportJSON = function(){
+			var json = JSON.stringify(getJSON());
+			var el = document.createElement('a');
+			el.href = URL.createObjectURL(new Blob([json]))
+			el.target="_blank"
+			el.download=`${deviceTitle.value}-${Date.now()}.json`
+			el.click();
+		}
+		// 导入json,先创建节点，然后再补充线路
+		var importJSON = function(data){
+			var idHash = {};
+			data.server.forEach(function(item){
+				var obj = appendPlumbNode(
+					{
+						x: item.positionX,
+						y: item.positionY,
+					},
+					$('.deviceLeft_box .node').filter((idx , v)=>v.innerText.indexOf(item.name)!=-1)[0]
+				)
+				idHash[item.divId] = obj.id;
+			})
+			data.line.forEach(function(item){
+				// appendPlumbNode(
+				// 	{
+				// 		x: item.positionX,
+				// 		y: item.positionY,
+				// 	},
+				// 	$('.deviceLeft_box .node').filter((idx , v)=>v.innerText.indexOf(item.name)!=-1)[0],
+				// 	item.divId
+				// )
+				// console.log(
+				var connection = jsPlumb.connect({
+						source: window[idHash[item.pageSourceId]].rightEndPoint,
+						target: window[idHash[item.pageTargetId]].leftEndPoint,
+						// scope:"zlg",
+						// ...connector,
+						// anchors:["Right", "Left" ],
+						// endpoint:"Rectangle",
+						// endpointStyle:{ fill: "yellow" }
+					})
+					// , connector
+				// );
+				$(connection.canvas).next().text(item.value)
+				
+			})
+		}
+		// 导入json文件
+		var importJSONFile = function(){
+			var inputEl = document.createElement('input');
+			inputEl.type='file';
+			inputEl.accept=".json"
+			inputEl.onchange=function(){
+				var files = this.files;
+				console.log(files.length)
+				var file = files[0];
+				if(file){
+					var fileReader = new FileReader();
+					fileReader.readAsText(file);
+					fileReader.onload = function(){
+						// console.log(JSON.parse(fileReader.result))
+						try{
+							var data = JSON.parse(fileReader.result);
+							console.log(data)
+							importJSON(data)
+						}catch(e){
+							console.error(e)
+							alert('解析失败')
+						}
+					}
+				}
+			}
+			inputEl.click();
+		}
+		// 增加一个节点
+		var appendPlumbNode = function appendPlumbNode(offset, node, value){
+			// offset = {x, y} 绘制坐标
+			if(offset == undefined) offset = {x: 0, y: 0}
+			var left = (offset && offset.x) || 0
+			var top = (offset && offset.y) || 0
+			// node 要绘制的节点
+			var dropItem = node;
+			if(!dropItem) throw new Error('请传入节点');
+			var type = dropItem.dataset.type;
+			var nodeId = dropItem.dataset.id;
+			var nodeObj = nodesHash[nodeId]
+			PLUMB_NODE_COUNT++
+			var id = "chart-server" + PLUMB_NODE_COUNT;
+			// $('#main').append(`<div class="node node1css server" style="position: absolute" id="${id}" data-type="${type}" data-id="${nodeId}">${$(dropItem).html()}</div>`);
+			$('#main').append(`<div class="node node1css server" style="position: absolute" id="${id}">${$(dropItem).html()}</div>`);
+			var $el = $("#" + id).css("left", left).css("top", top).attr({
+				'data-type': type,
+				'data-id': nodeId,
+				'data-value': JSON.stringify(Object.assign({},nodeObj.value,value))
+			});
+			var el = $el[0]
+			if(type & 1){
+				el.rightEndPoint = jsPlumb.addEndpoint(id, {
+					anchors: "Right"
+				}, hollowCircleOut);
+			}
+			if(type & 2){
+				el.leftEndPoint = jsPlumb.addEndpoint(id, {
+					anchors: "Left"
+				}, hollowCircleIn);
+			}
+			jsPlumb.draggable(id);
+			doubleclick("#" + id);
+			return {
+				id: id
+			}
+		}
+		var _getFormItemHTML = function(payload, value){
+			if(payload){
+				if(payload.type == 'select'){
+					return `
+						<span>${payload.title}</span>
+						<select name="${payload.key}" value="${value[payload.key]}">
+							${payload.options.map(v=>{
+								return `
+									<option value="${v.value}">${v.value},${v.label}</option>
+								`
+							})}
+						</select>
+					`
+				}else if(payload.type == 'list'){
+					return `
+						<span>${payload.title}</span><button>+</button>
+						<ul>
+							<li>${value[payload.key].map(v=>_getFormItemHTML(v, value[payload.key])+'<br>')}</li>
+						</ul>
+					`
+				}else{
+					return `
+						<span>${payload.title}</span>
+						<input  name="${payload.key}" value="${value[payload.key]}">
+					`
+				}
+			}
+		}
+		var getFormHTML = function(data, value){
+			console.log(data && data.payload)
+			if(data && data.payload && data.payload.length){
+				var payload = data.payload;
+				return payload.map(v=>{
+					return `<div>${_getFormItemHTML(v, value)}</div>`
+				}).join('\n')
+			}
+			return false;
+		}
+	</script>
+	<script>
+		$(deviceLeft).append(getNodeHTML(nodes));
+		
+		var PLUMB_NODE_COUNT = 0;
+
+		
+		var connectorPaintStyle = {
+			lineWidth: 2,
+			strokeStyle: "#61b8d0",
+		};
+		var connectorHoverStyle = {
+			lineWidth: 2,
+			strokeStyle: "green",
+		};
+		var paintStyle = {
+			fillStyle: "#ccc",
+			radius: 10,
+			lineWidth: 6,
+		}
+		var hoverPaintStyle = {
+			fillStyle: "#aaa",
+		}
+		// var connector = {
+		// 	connector: 'Bezier',
+		// 	connectorStyle: connectorPaintStyle,
+		// 	connectorHoverStyle: connectorHoverStyle,
+		// 	connectorOverlays: [["Arrow", {
+		// 		width: 10,
+		// 		length: 20,
+		// 		location: 1,
+		// 		id: "arrow"
+		// 	}], ["Custom", {
+		// 		create: function (component) {
+		// 			// return $('<span style="background:#fff;position:relative;z-index:999;cursor:pointer;">单击输入</span>');
+		// 			return $('<div></div>')
+		// 		},
+		// 		location: 0.5,
+		// 		id: "customOverlay",
+		// 	}],],
+		// }
+		var hollowCircle = {
+			endpoint: ["Dot", {
+				radius: 10
+			}],
+			// endpoint: ["Rectangle"],
+			connectorStyle: connectorPaintStyle,
+			connectorHoverStyle: connectorHoverStyle,
+			paintStyle: paintStyle,
+			// 鼠标经过线的样式
+			hoverPaintStyle: hoverPaintStyle,
+			isSource: true,
+			connector: ["Bezier", {
+				stub: [40, 60],
+				gap: 10,
+				cornerRadius: 5,
+				alwaysRespectStubs: true
+			}],
+			connector: 'Flowchart', // Bezier（贝塞尔曲线），Straight（直线），Flowchart（流程图），State machine（状态机）
+			// scope: 'zlg',
+			// scope: "blueline",
+			// isTarget: true,
+			isTarget: true,
+			maxConnections: -1,
+			connectorOverlays: [["Arrow", {
+				width: 10,
+				length: 20,
+				location: 1,
+				id: "arrow"
+			}],
+			["Custom", {
+				create: function (component) {
+					// console.log(component)
+					return $('<span style="background:#fff;position:relative;z-index:999;cursor:pointer;">1</span>');
+					return $('<div></div>')
+				},
+				location: 0.5,
+				id: "customOverlay",
+			}],
+			],
+		};
+		// jsPlumb.importDefaults({
+		// 	Connector : [ "Bezier", { curviness: 150 } ],
+		// 	Anchors : [ "Right", "Left" ]
+		// });
+		var hollowCircleOut = Object.assign({},hollowCircle,{isTarget: false})
+		var hollowCircleIn = Object.assign({},hollowCircle,{isSource: false})
+
+		
+		function doubleclick(id) {
+			// $(id).dblclick(function () {
+			// 	var text = $(this).text();
+			// 	$(this).html("");
+			// 	$(this).append('<input style="width:100%" type="text" class="note" value="' + text + '" />');
+			// 	$(this).mouseleave(function () {
+			// 		$(this).html($(".note").val());
+			// 	});
+			// });
+		}
+		$(document).ready(function () {
+			$(".deviceLeft .deviceLeft_box")
+				.children()
+				.draggable({
+					helper: "clone",
+					scope: "zlg",
+				});
+			$("#main").droppable({
+				scope: "zlg",
+				drop: function (event, ui) {
+					var left = parseInt(ui.offset.left - $(this).offset().left);
+					var top = parseInt(ui.offset.top - $(this).offset().top);
+					var dropItem = ui.draggable[0];
+					// var type = dropItem.dataset.type;
+					// console.log(left, top, type, this)
+					// console.log(ui, $(ui.helper).html())
+
+					// PLUMB_NODE_COUNT++;
+					// var id = "chart-server" + PLUMB_NODE_COUNT;
+					// $(this).append(`<div class="node node1css server" style="position: absolute" id="${id}" data-type="${type}" data-id=" " >${$(ui.helper).html()}</div>`);
+					// $("#" + id).css("left", left).css("top", top);
+					// if(type & 1){
+					// 	jsPlumb.addEndpoint(id, {
+					// 		anchors: "Right"
+					// 	}, hollowCircleOut);
+					// }
+					// if(type & 2){
+					// 	jsPlumb.addEndpoint(id, {
+					// 		anchors: "Left"
+					// 	}, hollowCircleIn);
+					// }
+					// jsPlumb.draggable(id);
+					// // 任意点？
+					// // jsPlumb.makeTarget(id, {
+					// // 	anchor: "Continuous"
+					// // })
+					
+					// // $("#" + id).draggable({
+					// // 	containment: "parent",
+					// // 	grid: [10, 10]
+					// // });
+					// doubleclick("#" + id);
+					appendPlumbNode(
+						{
+							x: left,
+							y: top,
+						},
+						dropItem
+					)
+				}
+			}).on("mouseenter", ".node", function () {
+				$(this).append('<img class="remove-icon op-icon" src="//www.lilnong.top/static/icon/delete.png"  style="position:absolute;width: 20px; top: -10px;right: -10px;" />').append('<img class="edit-icon op-icon" src="//www.lilnong.top/static/icon/edit.png"  style="position:absolute;width: 20px; top: -10px;right: 15px;" />');
+			}).on("mouseleave", ".node", function () {
+				$(this).find(".op-icon").remove();
+			}).on("click", ".remove-icon", function () {
+				if (confirm("确定要删除此节点吗?")) {
+					jsPlumb.removeAllEndpoints($(this).parent().attr("id"));
+					$(this).parent().remove();
+				}
+			}).on("click", ".edit-icon", function () {
+				var node = $(this).parent()
+				var nodeId = node.attr("data-id");
+				var nodeObj = nodesHash[nodeId];
+				var value = JSON.parse(node.attr("data-value"));
+				window.dialogData = {
+					node: node,
+					nodeId: nodeId,
+					nodeObj: nodeObj,
+				}
+				if(nodeObj){
+					var html = getFormHTML(nodeObj, value);
+					if(html){
+						$(dialog).show().find('.dialog-template').html(html)
+					}
+					
+				}
+			});
+			$("#deviceRight").on("click", "._jsPlumb_overlay", function () {
+				var that = $(this)
+				that.removeClass('_jsPlumb_overlay')
+				var text = that.text();
+				that.text("");
+				that.append('<input type="text" id="myDropDown" value="' + text + '" />');
+				$('#myDropDown').focus().blur(function () {
+					that.html($("#myDropDown").val());
+					that.addClass('_jsPlumb_overlay')
+				});
+				return false
+			});
+			jsPlumb.bind("dblclick", function (conn, originalEvent) {
+				if (confirm("确定删除此连线吗？"))
+					jsPlumb.detach(conn);
+			});
+			jsPlumb.bind('beforeDrop', function (info) {
+				// 可以检查是否有环
+				console.log('beforeDrop',info.sourceId , info.targetId)
+				if (info.sourceId == info.targetId) {
+					return false
+				}
+				return true
+			})
+			$('.btn1').click(getJSON);
+			
+			$('.btn2').click(exportJSON);
+
+			$('.btn3').click(importJSONFile);
+		})
+	</script>
+	<!-- <img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg"
+		style="width: 800px;max-width: 100vw;display:block;margin:0 auto;"> -->
+	<script>
+		!(function (c, b, d, a) {
+			c[a] || (c[a] = {}); c[a].config = { pid: "bthzxo624i@b8098d5c30312f3", imgUrl: "https://arms-retcode.aliyuncs.com/r.png?" };
+			with (b) with (body) with (insertBefore(createElement("script"), firstChild)) setAttribute("crossorigin", "", src = d)
+		})(window, document, "https://retcode.alicdn.com/retcode/bl.js", "__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function () {
+			var hm = document.createElement("script");
+			hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+			var s = document.getElementsByTagName("script")[0];
+			s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+	<script type="text/javascript" src="//www.lilnong.top/static/js/public_hm.js"></script>
+</body>
+
+</html>

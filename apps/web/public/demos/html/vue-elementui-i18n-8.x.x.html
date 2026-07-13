@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>elementui 国际化 i18n.8.x.x - www.lilnong.top</title>
+	<meta keywords="Vue 国际化, vue element-ui 国际化，vue-i18n@8.x.x">
+	<meta description="vue element-ui 国际化，搭配 vue-i18n@8.x.x">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.min.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.19.2/axios.min.js"></script>
+	<script type="text/javascript">new VConsole()</script>
+
+	<script src="https://cdn.bootcdn.net/ajax/libs/vue-i18n/8.18.1/vue-i18n.min.js"></script>
+	<!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue-i18n/8.18.1/vue-i18n.esm.browser.min.js"></script> -->
+
+	<!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue-i18n/6.1.3/vue-i18n.min.js"></script> -->
+	<!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue-i18n/6.1.3/vue-i18n.common.js"></script> -->
+	<!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue-i18n/6.1.3/vue-i18n.esm.js"></script> -->
+
+	<!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue-i18n/5.0.3/vue-i18n.min.js"></script> -->
+	<!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue-i18n/5.0.3/vue-i18n.common.min.js"></script> -->
+
+	
+	<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+	<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+	<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+	<link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/theme-chalk/index.css" rel="stylesheet">
+	<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/index.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/locale/zh-CN.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/locale/en.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/locale/da.min.js"></script>
+</head>
+<body>
+	<div id="app">
+		<div>
+			<el-pagination
+				@size-change="handleSizeChange"
+				@current-change="handleCurrentChange"
+				:current-page="currentPage4"
+				:page-sizes="[100, 200, 300, 400]"
+				:page-size="100"
+				layout="total, sizes, prev, pager, next, jumper"
+				:total="400">
+		</div>
+		<div>
+			<el-date-picker
+				v-model="value2"
+				type="datetimerange"
+				align="right"
+				:default-time="['12:00:00', '08:00:00']">
+				</el-date-picker>
+		</div>
+		<p>
+			<el-radio v-model="radio" label="zh-cn">zh-cn</el-radio>
+			<el-radio v-model="radio" label="en">en</el-radio>
+		</p>
+	</div>
+	<script>
+		var i18n = new VueI18n({
+			locale: 'zh-cn',
+			messages : {
+				en: ELEMENT.lang.en,
+				'zh-cn': ELEMENT.lang.zhCN
+			},
+		})
+		Vue.use(ELEMENT, {
+			i18n: (key, value) => i18n.t(key, value)
+		})
+	</script>
+	<script>
+		new Vue({
+			el: '#app',
+			i18n: i18n,
+			methods: {
+				handleSizeChange(val) {
+					console.log(`每页 ${val} 条`);
+				},
+				handleCurrentChange(val) {
+					console.log(`当前页: ${val}`);
+				}
+			},
+			watch: {
+				radio(){
+					// Vue.config.lang = this.radio
+					i18n.locale = this.radio
+				}
+			},
+			data() {
+				return {
+					radio: 'zh-cn',
+					currentPage4: 4,
+        			value2: ''
+				};
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

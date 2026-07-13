@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+		<div class="box">
+		    <video src="" controls id="vd"></video>
+		    <div class="circle clearfix">
+		        <a href="javascript:;" class="cirBtn"></a>
+		        <div class="cirProgress"><span class="grayBar"></span><span class="redBar"><em class="dot"></em></span></div>
+		        <div class="cirTime"><span>00:00</span> / <span>00:00</span></div>
+		    </div>
+		</div>
+		<style type="text/css">
+			.box {
+			    margin: 0 auto;
+			    width: 980px;
+			}
+			.box video {
+			    display: block;
+			    width: 100%;
+			    height: 640px;
+			}
+			.circle {
+			    height: 50px;
+			    padding: 10px;
+			    background-color: #333;
+			}
+			.cirBtn {
+			    position: relative;
+			    float: left;
+			    width: 40px;
+			    height: 40px;
+			    border: 3px solid #fff;
+			    border-radius: 50%;
+			}
+			.cirBtn:after,.cirBtn:before {
+			    position: absolute;
+			    top: 50%;
+			    left: 50%;
+			    content: '';
+			}
+			.cirBtn:after {
+			    margin-top: -10px;
+			    margin-left: -5px;
+			    border-top: 10px solid transparent;
+			    border-bottom: 10px solid transparent;
+			    border-left: 15px solid #fff;
+			}
+			.cirPause:after,.cirPause:before {
+			    content: '';
+			    margin-top: -10px;
+			    width: 5px;
+			    height: 20px;
+			    background-color: #fff;
+			    border: 0 none;
+			}
+			.cirPause:after {
+			    margin-left: -9px;
+			}
+			.cirPause:before {
+			    margin-left: 4px;
+			}
+
+			.cirProgress {
+			    position: relative;
+			    float: left;
+			    margin-left: 15px;
+			    padding: 18px 0;
+			    width: 500px;
+			    height: 10px;
+			    cursor: pointer;
+			}
+			.cirProgress .grayBar,.cirProgress .redBar {
+			    position: absolute;
+			    top: 50%;
+			    left: 0;
+			    margin-top: -1.5px;
+			    height: 3px;
+			}
+			.cirProgress .grayBar {
+			    right: 0;
+			    background-color: #ccc;
+			}
+			.cirProgress .redBar {
+			    background-color: #ea4646;
+			}
+			.cirProgress .dot {
+			    position: absolute;
+			    top: 50%;
+			    right: 0;
+			    margin-top: -6px;
+			    margin-right: -6px;
+			    width: 12px;
+			    height: 12px;
+			    background-color: #ea4646;
+			    border-radius: 50%;
+			    cursor: pointer;
+			}
+
+			.cirTime {
+			    float: left;
+			    margin: 10px 0 0 15px;
+			    color: #fff;
+			    font-size: 16px;
+			    line-height: 26px;
+			}
+		</style>
+		<script type="text/javascript">
+			var $ele = $('#vd');
+			var ele = $ele[0];
+			var currenTime = 0;
+			var duracTime = 0;
+
+			ele.muted = true;
+			// 当前时长和总时长
+			ele.onloadedmetadata = function () {
+			    currenTime = ele.currentTime;
+			    duracTime = ele.duration;
+			    $('.cirTime span').eq(0).html(timeFormat(currenTime));
+			    $('.cirTime span').eq(1).html(timeFormat(duracTime));
+			}
+			$('.cirBtn').click(function () {
+			    if (ele.paused) {
+			        ele.play();
+			        $(this).addClass('cirPause');
+			    } else {
+			        ele.pause();
+			        $(this).removeClass('cirPause');
+			    }
+			});
+
+			function timeFormat(nums) {
+			    var seconds = Math.floor(nums % 60);
+			    if (seconds < 10) {
+			        seconds = '0' + seconds;
+			    }
+			    var minute = Math.floor(nums / 60);
+			    if (minute < 10) {
+			        minute = '0' + minute;
+			    }
+			    return minute + ':' + seconds;
+			}
+
+			// 进度条跟随
+			$ele.on('timeupdate',function () {
+			    currenTime = ele.currentTime;
+			    duracTime = ele.duration;
+			    var percent = currenTime / duracTime * 100;
+			    $('.redBar').css('width',percent + '%');
+			    $('.cirTime span').eq(0).html(timeFormat(currenTime));
+			    if (ele.ended) {
+			        $('.cirBtn').removeClass('cirPause');
+			    }
+			});
+
+			// 进度条拖拽
+			var lock = false;
+			$('.cirProgress').on('mousedown',function (ev) {
+			    lock = true;
+			    changeCurrentTime(ev.offsetX);
+			});
+			$('.circle').on('mouseup',function (ev) {
+			    if (lock == true) {
+			        lock = false;
+			        changeCurrentTime(ev.offsetX);
+			    }
+			}).on('mousemove',function (ev) {
+			    ev.stopPropagation();
+			    ev.preventDefault();
+			    // if (lock == true && $(ev.target).hasClass('cirProgress')) {
+			    // 	console.log(ev.target, ev.offsetX)
+
+			    //     changeCurrentTime(ev.offsetX);
+			    // }
+			    if (lock == true) {
+			    	console.log('clientX:'+ev.clientX,
+			    				'pageX:'+ev.pageX,
+			    				'screenX:'+ev.screenX,
+			    				'offsetX:'+ev.offsetX)
+
+			        changeCurrentTime(ev.clientX - 60);
+			    }
+			})
+
+			// 改变当前时间
+			function changeCurrentTime(x) {
+				// console.log(x)
+			    var percent = x / $('.cirProgress').width() * 100;
+			    if (percent >= 100) {
+			        percent = 100;
+			    }
+			    if (percent <= 0) {
+			        percent = 0;
+			    }
+			    $('.redBar').css('width',percent + '%');
+			    ele.currentTime = percent * duracTime / 100;
+			    $('.cirTime span').eq(0).html(timeFormat(ele.currentTime));
+			}
+		</script>
+	</div>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

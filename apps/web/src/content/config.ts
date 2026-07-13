@@ -29,6 +29,12 @@ const demoSchema = z.object({
     type: z.enum(['web', 'desktop', 'cli', 'external', 'embed']).default('web'),
     demoUrl: z.string().optional(),
     repoUrl: z.string().optional(),
+    /** Original path on lilnong.top before migration, e.g. /static/html/waterfall.html */
+    legacyUrl: z.string().optional(),
+    /** Blog post slugs that reference this demo */
+    relatedPosts: z.array(z.string()).optional(),
+    /** High-level grouping for browse/filter UI */
+    category: z.string().optional(),
 });
 
 export type BlogSchema = z.infer<typeof blogSchema>;

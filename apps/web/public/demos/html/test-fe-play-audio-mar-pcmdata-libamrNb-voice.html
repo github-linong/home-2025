@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>前端播放amr音频</title>
+</head>
+<body>
+	<p>http://www.cnblogs.com/yuhongda0315/p/5224188.html</p>
+	<input type="button" value="play" id="playId"/>
+	<input type="button" value="play-XMLHTTPRequest" id="playId2"/>
+	<input type="button" value="play-XMLHTTPRequest-arraybuffer" id="playId3"/>
+	<input type="button" value="play-XMLHTTPRequest-blob" id="playId4"/>
+	<input type="button" value="stop" id="stopId"/>
+
+
+
+	<input type="button" value="2miao.amr" onclick="amrUrl='/static/audio/2miao.amr'"/>
+	<input type="button" value="4miao.amr" onclick="amrUrl='/static/audio/4miao.amr'"/>
+	<input type="button" value="681.amr" onclick="amrUrl='/static/audio/681.amr'"/>
+	<input type="button" value="amr-test-1.amr" onclick="amrUrl='/static/audio/amr-test-1.amr'"/>
+	<input type="button" value="test-amr.amr" onclick="amrUrl='/static/audio/test-amr.amr'"/>
+	<input type="button" value="test-amr.amr" onclick="amrUrl='/static/audio/mobile-test.amr'"/>
+	<script type="text/javascript">
+		var RongIMLib;
+		(function (RongIMLib) {
+		    var RongIMVoice = (function () {
+		        function RongIMVoice() {
+		        }
+		        /**
+		        * 初始化声音库
+		        */
+		        RongIMVoice.init = function () {
+		            if (this.isIE) {
+		                var div = document.createElement("div");
+		                div.setAttribute("id", "flashContent");
+		                document.body.appendChild(div);
+		                var script = document.createElement("script");
+		                script.src = "/static/js/swfobject-2.0.0.min.js";
+		                var header = document.getElementsByTagName("head")[0];
+		                header.appendChild(script);
+		                setTimeout(function () {
+		                    var swfVersionStr = "11.4.0";
+		                    var flashvars = {};
+		                    var params = {};
+		                    params.quality = "high";
+		                    params.bgcolor = "#ffffff";
+		                    params.allowscriptaccess = "always";
+		                    params.allowfullscreen = "true";
+		                    var attributes = {};
+		                    attributes.id = "player";
+		                    attributes.name = "player";
+		                    attributes.align = "middle";
+		                    swfobject.embedSWF("/static/swf/player-2.0.2.swf", "flashContent", "1", "1", swfVersionStr, null, flashvars, params, attributes);
+		                }, 200);
+		            }
+		            else {
+		                var list = ["/static/js/pcmdata-2.0.0.min.js", "/static/js/libamr-2.0.1.min.js"];
+		                for (var i = 0, len = list.length; i < len; i++) {
+		                    var script = document.createElement("script");
+		                    script.src = list[i];
+		                    document.head.appendChild(script);
+		                }
+		            }
+		            this.isInit = true;
+		        };
+		        /**
+		        * 开始播放声音
+		        * @param data {string} amr 格式的 base64 码
+		        * @param duration {number} 播放大概时长 用 data.length / 1024
+		        */
+		        RongIMVoice.play = function (data, duration) {
+		            this.checkInit("play");
+		            var me = this;
+		            if (me.isIE) {
+		                me.thisMovie().doAction("init", data);
+		            }
+		            else {
+		                me.palyVoice(data);
+		                me.onCompleted(duration);
+		            }
+		        };
+		        /**
+		        * 停止播放声音
+		        */
+		        RongIMVoice.stop = function () {
+		            this.checkInit("stop");
+		            var me = this;
+		            if (me.isIE) {
+		                me.thisMovie().doAction("stop");
+		            }
+		            else {
+		                if (me.element) {
+		                    me.element.stop();
+		                }
+		            }
+		        };
+		        /**
+		        * 播放声音时调用的方法
+		        */
+		        RongIMVoice.onprogress = function () {
+		            this.checkInit("onprogress");
+		        };
+		 　　　　/** 
+		　　　　　* 校验是否初始化
+		　　　　  */
+		        RongIMVoice.checkInit = function (postion) {
+		            if (!this.isInit) {
+		                throw new Error("RongIMVoice not initialized,postion:" + postion);
+		            }
+		        };
+		        RongIMVoice.thisMovie = function () {
+		            return eval("window['player']");
+		        };
+		        RongIMVoice.onCompleted = function (duration) {
+		            var me = this;
+		            var count = 0;
+		            var timer = setInterval(function () {
+		                count++;
+		                me.onprogress();
+		                if (count >= duration) {
+		                    clearInterval(timer);
+		                }
+		            }, 1000);
+		            if (me.isIE) {
+		                me.thisMovie().doAction("play");
+		            }
+		        };
+		        RongIMVoice.base64ToBlob = function (base64Data, type) {
+		            var mimeType;
+		            if (type) {
+		                mimeType = { type: type };
+		            }
+		            base64Data = base64Data.replace(/^(.*)[,]/, '');
+		            var sliceSize = 1024;
+		            var byteCharacters = atob(base64Data);
+		            var bytesLength = byteCharacters.length;
+		            var slicesCount = Math.ceil(bytesLength / sliceSize);
+		            var byteArrays = new Array(slicesCount);
+		            for (var sliceIndex = 0; sliceIndex < slicesCount; ++sliceIndex) {
+		                var begin = sliceIndex * sliceSize;
+		                var end = Math.min(begin + sliceSize, bytesLength);
+		                var bytes = new Array(end - begin);
+		                for (var offset = begin, i = 0; offset < end; ++i, ++offset) {
+		                    bytes[i] = byteCharacters[offset].charCodeAt(0);
+		                }
+		                byteArrays[sliceIndex] = new Uint8Array(bytes);
+		            }
+		            return new Blob(byteArrays, mimeType);
+		        };
+		        RongIMVoice.palyVoice = function (base64Data) {
+		            var reader = new FileReader(), blob = this.base64ToBlob(base64Data, "audio/amr"), me = this;
+		            reader.onload = function () {
+		                var samples = new AMR({
+		                    benchmark: true
+		                }).decode(reader.result);
+		                me.element = AMR.util.play(samples);
+		            };
+		            reader.readAsBinaryString(blob);
+		        };
+		        RongIMVoice.isIE = /Trident/.test(navigator.userAgent);
+		        RongIMVoice.isInit = false;
+		        return RongIMVoice;
+		    })();
+		    RongIMLib.RongIMVoice = RongIMVoice;
+		    //兼容AMD CMD
+		    if ("function" === typeof require && "object" === typeof module && module && module.id && "object" === typeof exports && exports) {
+		        module.exports = RongIMVoice;
+		    }
+		    else if ("function" === typeof define && define.amd) {
+		        define("RongIMVoice", [], function () {
+		            return RongIMVoice;
+		        });
+		    }
+		})(RongIMLib || (RongIMLib = {}));
+	</script>
+	<script type="text/javascript">
+		amrUrl = '/static/audio/test-amr.amr';
+		//初始化
+		RongIMLib.RongIMVoice.init();
+		//播放
+		document.getElementById("playId").onclick = function(){
+		// 　　 // base64Str ： amr 格式的 base64 码，可以用 HTML5 FileReader 或者canvas 进行转换 。 
+		// 		xhr = new XMLHttpRequest()
+		// 		xhr.open('get', '/static/audio/test-amr.amr?'+Date.now())
+		// 		xhr.send();
+		// 		xhr.onreadystatechange = function(){
+		// 			if(xhr.readyState == 4 && xhr.status == 200){
+		// 				file = new FileReader();
+		// 				file.onload=function(){
+		// 					// base64Str = btoa(xhr.response)
+		// 					base64Str = file.result.replace('data:application/octet-stream;base64,','');
+		// 					// base64Str = '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'
+		// 					RongIMLib.RongIMVoice.play(base64Str );
+		// 				}
+		// 				file.readAsDataURL(new Blob([xhr.response]))
+		// 			}
+		// 		}
+		// // 　　 var base64Str = "";
+		//     // RongIMLib.RongIMVoice.play(base64Str );
+			fetch(amrUrl + '?'+Date.now(), {
+			})
+			.then(response => response.blob())
+			.then(blob => {
+				file = new FileReader();
+			    file.onload=function(){
+			    	base64Str = file.result.replace('data:application/octet-stream;base64,','');
+			    	RongIMLib.RongIMVoice.play(base64Str );
+			    };
+				file.readAsDataURL(blob)
+			})
+		};
+
+		document.getElementById("playId2").onclick = function(){
+
+			xhr = new XMLHttpRequest()
+			xhr.open('get', amrUrl + '?'+Date.now())
+			xhr.onreadystatechange = function(){
+				if(xhr.readyState == 4 && xhr.status == 200){
+					// base64Str = xhr.response.replace('data:application/octet-stream;base64,','');
+					// RongIMLib.RongIMVoice.play(base64Str );
+					file = new FileReader();
+				    file.onload=function(){
+				    	base64Str = file.result.replace('data:application/octet-stream;base64,','');
+				    	RongIMLib.RongIMVoice.play(base64Str );
+				    };
+				    file.readAsDataURL(new Blob([xhr.response]))
+				}
+			}
+			xhr.send();
+		};
+		document.getElementById("playId3").onclick = function(){
+
+			xhr = new XMLHttpRequest()
+			xhr.open('get', amrUrl + '?'+Date.now())
+			xhr.responseType = "arraybuffer";
+			xhr.onreadystatechange = function(){
+				if(xhr.readyState == 4 && xhr.status == 200){
+					file = new FileReader();
+				    file.onload=function(){
+				    	RongIMLib.RongIMVoice.play(file.result.replace('data:application/octet-stream;base64,','') );
+				    };
+				    file.readAsDataURL(new Blob([xhr.response]))
+				}
+			}
+			xhr.send();
+		};
+		document.getElementById("playId4").onclick = function(){
+
+			xhr = new XMLHttpRequest()
+			xhr.open('get', amrUrl + '?'+Date.now())
+			xhr.responseType = "blob";
+			xhr.onreadystatechange = function(){
+				if(xhr.readyState == 4 && xhr.status == 200){
+					file = new FileReader();
+				    file.onload=function(){
+				    	RongIMLib.RongIMVoice.play(file.result.replace('data:application/octet-stream;base64,','') );
+				    };
+				    file.readAsDataURL(xhr.response)
+				}
+			}
+			xhr.send();
+		};
+		document.getElementById("playId5").onclick = function(){
+			xhr = new XMLHttpRequest()
+			xhr.open('get', amrUrl + '?'+Date.now())
+			req.overrideMimeType('text/plain; charset=x-user-defined');//该行重写了默认的MIME类型,强制浏览器将该响应当成纯文本文件来对待, 使用一个用户自定义的字符集.这样就是告诉了浏览器,不要去解析数据,直接返回未处理过的字节码.
+			xhr.onreadystatechange = function(){
+				if(xhr.readyState == 4 && xhr.status == 200){
+					filestream.charCodeAt(x) & 0xff//得到偏移量为x处的字节.有效的偏移量范围是0到filestream.length-1.
+				}
+			}
+			xhr.send();
+		};
+		//暂停
+		document.getElementById("stopId").onclick = function(){ RongIMLib.RongIMVoice.stop(); }; 
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

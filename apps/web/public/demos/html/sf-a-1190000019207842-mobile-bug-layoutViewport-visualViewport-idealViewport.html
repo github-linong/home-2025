@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/> -->
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+</head>
+<body>
+	<div id="app">
+		<p>https://segmentfault.com/a/1190000019207842 关于移动端适配，你必须要知道的</p>
+		<div class="devicePixelRatio" id="devicePixelRatio"></div>
+		<div class="innerWidth" id="innerWidth"></div>
+		<div class="outerWidth" id="outerWidth"></div>
+		<div class="clientWidth" id="clientWidth"></div>
+		<div class="screenWidth" id="screenWidth"></div>
+		
+		<p style="width: 100px;border-top: 1px solid #f00;">width: 100px</p>
+		<p style="width: 300px;border-top: 1px solid #f00;">width: 300px</p>
+		<p style="width: 490px;border-top: 1px solid #f00;">width: 490px</p>
+		<p style="width: 980px;border-top: 1px solid #f00;">width: 980px</p>
+		<p style="width: 100dp;border-top: 1px solid #f00;">width: 100dp</p>
+		<p style="width: 100pt;border-top: 1px solid #f00;">width: 100pt</p>
+		<p style="width: 50%;border-top: 1px solid #f00;">width: 50%</p>
+		<p style="width: 50vw;border-top: 1px solid #f00;">width: 50vw</p>
+	</div>
+	<script type="text/javascript">
+		setInterval(()=>{
+			document.querySelector('#devicePixelRatio').innerText = `device pixel ratio简称dpr-devicePixelRatio:${devicePixelRatio}`
+			document.querySelector('#innerWidth').innerText = `视觉视口(visual viewport)-innerWidth:${innerWidth}`
+			document.querySelector('#outerWidth').innerText = `outerWidth:${outerWidth}`
+			document.querySelector('#clientWidth').innerText = `布局视口(layout viewport)-document.documentElement.clientWidth:${document.documentElement.clientWidth}`
+			document.querySelector('#screenWidth').innerText = `screen.width:${screen.width}`
+		}, 300)
+	</script>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

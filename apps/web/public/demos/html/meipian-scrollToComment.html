@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>美篇 scrollTopComment 效果模仿 - www.lilnong.top</title>
+	<meta keywords="Vue,v-if,v-show,v-if bug,">
+	<meta description="Vue 中 v-if 的 bug">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.min.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+	<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+	<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+	<link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/theme-chalk/index.css" rel="stylesheet">
+	<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/index.js"></script>
+</head>
+<body>
+	<style>
+		#app img{max-width: 100vw;}
+		#gotoView{position: fixed; top: 50vw;width: 50px;height: 50px;transform: translate(-50%,-50%);right: 10px;background: red;}
+	</style>
+	<div id="app">
+		<div id="gotoView"></div>
+		<div class="mp-article-content-area">
+			<div class="mp-article-caption">
+				<div class="mp-article-caption-wrap">
+					<div class="mp-article-caption-pure" style="margin-top: 0.490667rem;">
+						<div class="mp-article-title-style-1">
+							<div class="mp-article-caption-title title title-element" style="color: rgb(25, 25, 25);">
+								<span>为何甲状腺结节越来越多? 医生: 日常少碰3种食物, 结节或能缩小</span></div>
+							<div class="mp-article-caption-subhead">
+								<div class="mp-article-caption-avatar-wrap"><img
+										src="https://ss2.meipian.me/users/48757218/c4437c50-b729-11e9-817f-870a50e60b97.png"
+										class="mp-img mp-article-caption-avatar"> <img
+										src="https://static2.meip0.me/app/bedge/enterprise.png"
+										class="mp-article-caption-bedge"></div>
+								<div class="mp-article-caption-info">
+									<div class="mp-article-caption-subhead-author" style="color: rgb(25, 25, 25);">
+										<div class="mp-article-caption-subhead-author-name">养生集</div>
+										<!---->
+									</div>
+									<div class="mp-article-caption-article">
+										<!---->
+										<!---->
+										<div class="mp-article-caption-subhead-time" style="color: rgb(155, 155, 155);">
+											2019-07-28
+										</div>
+										<div class="mp-article-caption-subhead-count" style="color: rgb(155, 155, 155);">
+											阅读 14万
+										</div>
+									</div>
+								</div>
+								<!---->
+							</div>
+						</div>
+						<!---->
+						<!---->
+					</div>
+					<!---->
+					<!---->
+					<!---->
+				</div>
+			</div>
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">
+					现在这年头，大多数人体检时都会被查出有甲状腺结节，可以这么说，每五个人中就有一个患有甲状腺结节，发病率高达18.6%。平时无病无灾的人突然看到体检报告上说自己得了甲状腺结节，心里不免恐慌和疑惑，为何患甲状腺结节的人越来越多？我们先了解甲状腺结节是什么？
+				</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-images">
+				<!---->
+				<div class="mp-article-images-blank">
+					<div class="mp-article-images-item" style="width: 370px; background-color: rgba(255, 255, 255, 0);">
+						<div class="mp-article-images-item-mask" style="opacity: 0;"></div> <img
+							class="mp-article-images-item-img"
+							style="border-color: rgb(255, 255, 255); width: 370px; opacity: 1;"
+							data-src="https://ss2.meipian.me/outer/20190728/05/d88112dc64d33e451ea833643b04f877.jpg?imageView2/2/w/750/h/1400/q/80"
+							src="https://ss2.meipian.me/outer/20190728/05/d88112dc64d33e451ea833643b04f877.jpg?imageView2/2/w/750/h/1400/q/80"
+							lazy="loaded">
+					</div>
+					<!---->
+				</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">
+					甲状腺结节就是长在甲状腺上的异常增生的肿块，可随吞咽动作随甲状腺而上下移动，是临床常见的病症，结节有大有小，可单发也可多发。临床上多数甲状腺结节早期并没有明显症状，很多人都是在体检中才发现的。也有部分患者等到病情发展较严重时才发现，一般会出现声音嘶哑、呼吸或吞咽困难、饮水咳嗽等症状。
+				</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">为什么得甲状腺结节的人越来越多？</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">1、致病原因的多样化</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-images">
+				<!---->
+				<div class="mp-article-images-blank">
+					<div class="mp-article-images-item" style="width: 370px; background-color: rgba(255, 255, 255, 0);">
+						<div class="mp-article-images-item-mask" style="opacity: 0;"></div> <img
+							class="mp-article-images-item-img"
+							style="border-color: rgb(255, 255, 255); width: 370px; opacity: 1;"
+							data-src="https://ss2.meipian.me/outer/20190728/05/7c161173f9fa3b3e908fbf7b7bfbb685.jpg?imageView2/2/w/750/h/1400/q/80"
+							src="https://ss2.meipian.me/outer/20190728/05/7c161173f9fa3b3e908fbf7b7bfbb685.jpg?imageView2/2/w/750/h/1400/q/80"
+							lazy="loaded">
+					</div>
+					<!---->
+				</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">
+					生活、工作压力增大，病毒、细菌感染，饮食不合理，微量元素和维生素的缺乏，环境毒素，各种添加剂、农药等化学物质和药物等各种因素都可能会损伤到甲状腺，从而出现甲状腺结节。</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">2、健康体检增多</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">
+					甲状腺疾病发现增多，也和宣传的重视和技术进步分不开。现在很多单位对职工的健康状况比较重视，每年组织职工进行体检，体检的项目也越来越多，其中包括甲状腺。</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">3、医学技术进步</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-images">
+				<!---->
+				<div class="mp-article-images-blank">
+					<div class="mp-article-images-item" style="width: 370px; background-color: rgba(255, 255, 255, 0);">
+						<div class="mp-article-images-item-mask" style="opacity: 0;"></div> <img
+							class="mp-article-images-item-img"
+							style="border-color: rgb(255, 255, 255); width: 370px; opacity: 1;"
+							data-src="https://ss2.meipian.me/outer/20190728/05/8cf2cb9b1831ffb904b7889dd1b0c81f.jpg?imageView2/2/w/750/h/1400/q/80"
+							src="https://ss2.meipian.me/outer/20190728/05/8cf2cb9b1831ffb904b7889dd1b0c81f.jpg?imageView2/2/w/750/h/1400/q/80"
+							lazy="loaded">
+					</div>
+					<!---->
+				</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">
+					医学技术的不断进步使我们对疾病的诊断手段大大提高。医疗器械不断改进，敏感性和特异性不断提高。目前高分辨率的B超检查，可以发现2mm的结节。所以以前很多不能发现的甲状腺结节，现在都可一目了然。</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">
+					所以说，甲状腺疾病发现增多也是很正常的，不要过于担心，主要还是保持身心愉快，尽量避免接触有毒物质，饮食均衡，规律，定期检查、监控，有病积极治疗就可以了。除了配合医生的治疗和定期复查外，我们在日常生活中需要更加重视一些饮食禁忌。
+				</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">医生提醒：日常少碰3种食物，结节或能缩小</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">1、高碘食物</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">患者体内本来含</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-images">
+				<!---->
+				<div class="mp-article-images-blank">
+					<div class="mp-article-images-item" style="width: 370px; background-color: rgba(255, 255, 255, 0);">
+						<div class="mp-article-images-item-mask" style="opacity: 0;"></div> <img
+							class="mp-article-images-item-img"
+							style="border-color: rgb(255, 255, 255); width: 370px; opacity: 1;"
+							data-src="https://ss2.meipian.me/outer/20190728/05/7973cf5a17fd0e5413e3b431b4ef4fdd.jpg?imageView2/2/w/750/h/1400/q/80"
+							src="https://ss2.meipian.me/outer/20190728/05/7973cf5a17fd0e5413e3b431b4ef4fdd.jpg?imageView2/2/w/750/h/1400/q/80"
+							lazy="loaded">
+					</div>
+					<!---->
+				</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">碘元素较多，如果继续食用刺激性食物或者浓茶、咖啡、海带等含碘高的食物不仅不利于病情的恢复，而且还会造成甲状腺炎疾病的进一步恶化，导致甲减等疾病。
+				</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">2、油腻食物</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">甲状腺结节的病人最好在平时少吃油腻的食物，因为油腻的食物会影响着体内的血液循环，血液黏稠度会增加，会刺激到甲状腺，不利于甲状腺的恢复。</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-images">
+				<!---->
+				<div class="mp-article-images-blank">
+					<div class="mp-article-images-item" style="width: 370px; background-color: rgba(255, 255, 255, 0);">
+						<div class="mp-article-images-item-mask" style="opacity: 0;"></div> <img
+							class="mp-article-images-item-img"
+							style="border-color: rgb(255, 255, 255); width: 370px; opacity: 1;"
+							data-src="https://ss2.meipian.me/outer/20190728/05/c7d8695b99cd92e15c2e245fa59f4f03.jpg?imageView2/2/w/750/h/1400/q/80"
+							src="https://ss2.meipian.me/outer/20190728/05/c7d8695b99cd92e15c2e245fa59f4f03.jpg?imageView2/2/w/750/h/1400/q/80"
+							lazy="loaded">
+					</div>
+					<!---->
+				</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">而且还可能会给甲状腺结节的增长提供有利的条件，所以像油腻的食物最好还是少吃，这样还能够避免出现肥胖的情况。</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">3、刺激性食物</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">
+					如果患上了甲状腺结节，像那些辛辣刺激性的食物就一定要学会忌口了。因为它会刺激到人的甲状腺，很可能会出现甲状腺组织肿大的情况，不利于结节的恢复，会给甲状腺增加很大的负担。</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-images">
+				<!---->
+				<div class="mp-article-images-blank">
+					<div class="mp-article-images-item" style="width: 370px; background-color: rgba(255, 255, 255, 0);">
+						<div class="mp-article-images-item-mask" style="opacity: 0;"></div> <img
+							class="mp-article-images-item-img"
+							style="border-color: rgb(255, 255, 255); width: 370px; opacity: 1;"
+							data-src="https://ss2.meipian.me/outer/20190728/05/9c46058f1e9ae453281512c1af88d9d0.jpg?imageView2/2/w/750/h/1400/q/80"
+							src="https://ss2.meipian.me/outer/20190728/05/9c46058f1e9ae453281512c1af88d9d0.jpg?imageView2/2/w/750/h/1400/q/80"
+							lazy="loaded">
+					</div>
+					<!---->
+				</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">所以辛辣刺激性的食物，再喜欢也要少吃，最好要忌口，这样才能够有利于甲状腺结节慢慢的恢复。</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">那么甲状腺结节这些不能吃，该怎么才能吃的更健康呢？</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">1、多摄入高纤维素食品</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-images">
+				<!---->
+				<div class="mp-article-images-blank">
+					<div class="mp-article-images-item" style="width: 370px; background-color: rgba(255, 255, 255, 0);">
+						<div class="mp-article-images-item-mask" style="opacity: 0;"></div> <img
+							class="mp-article-images-item-img"
+							style="border-color: rgb(255, 255, 255); width: 370px; opacity: 1;"
+							data-src="https://ss2.meipian.me/outer/20190728/05/d735b9ed248ee387ffa14a2141e0fc95.jpg?imageView2/2/w/750/h/1400/q/80"
+							src="https://ss2.meipian.me/outer/20190728/05/d735b9ed248ee387ffa14a2141e0fc95.jpg?imageView2/2/w/750/h/1400/q/80"
+							lazy="loaded">
+					</div>
+					<!---->
+				</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">包括绿叶蔬菜、粗粮以及许多水果等，如蔬菜中的白菜、芹菜、空心菜，粗粮中的黄豆、绿豆，燕麦，水果中的大枣、花生等干果，都含有丰富的纤维素。
+				</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">2、合理摄取微量元素——限碘补硒</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">
+					限碘就不再重复说了，这里主要说说补硒的问题。硒缺乏后，会引起甲状腺产生的T3减少，而T3是甲状腺激素的主要活性成分，参与身体的各种代谢活动；此外，硒缺乏还会导致对身体有害的自由基增多。</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">已经有多项研究表明，部分患者接受补硒治疗后，体内甲状腺相关抗体有明显降低。</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">
+					我们平时所摄取的硒主要来源于食物。俗话说，「吃药不如食补」，患者不必刻意靠药物补硒，多吃些富硒的食物总还是好的。肉类、海产品、蘑菇、动物肝脏、杏仁等食物的含硒量都比较高。</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">3、少食多餐</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">
+					这主要是针对甲亢患者而言的，因为甲亢患者是总是能觉得饿，然后饭量也会变大，但是体重却一直在下降，采用少食多餐的方式能够缓解患者所带来的饥饿感，可以在两餐之间进行加餐。每天进食5到6餐就很好。</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-images">
+				<!---->
+				<div class="mp-article-images-blank">
+					<div class="mp-article-images-item" style="width: 370px; background-color: rgba(255, 255, 255, 0);">
+						<div class="mp-article-images-item-mask" style="opacity: 0;"></div> <img
+							class="mp-article-images-item-img"
+							style="border-color: rgb(255, 255, 255); width: 370px; opacity: 1;"
+							data-src="https://ss2.meipian.me/outer/20190728/05/f692b5abc68dbcda1c1dc6fbff815bd3.jpg?imageView2/2/w/750/h/1400/q/80"
+							src="https://ss2.meipian.me/outer/20190728/05/f692b5abc68dbcda1c1dc6fbff815bd3.jpg?imageView2/2/w/750/h/1400/q/80"
+							lazy="loaded">
+					</div>
+					<!---->
+				</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-texts mp-content" style="color: rgb(25, 25, 25);">
+				<!---->
+				<div class="mp-article-texts-word">
+					除此之外，甲亢患者由于身体是一种高代谢的状态，所以要注意要保证充足的营养供给，可以吃一些含有优质蛋白的食物，像瘦肉，鸡蛋牛奶等都能够很好的帮助身体补充蛋白质的健康。</div>
+			</div>
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<!---->
+			<div class="mp-article-edittime"><span class="time" style="color: rgb(155, 155, 155);">更新于 2019-08-05</span>
+			</div>
+			<!---->
+		</div>
+	</div>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<div id="app1">
+		<p v-for="item in 100">{{item}}</p>
+	</div>
+	<script>
+		new Vue({
+			el: '#app1'
+		})
+	</script>
+	<script>
+		// 上次滚动位置，用来判断向上滚动还是向下滚动
+		var oldScrollTop = 0;
+		// 历史位置，用来回去的。
+		var historyViewScrollTop = 0;
+		// document.querySelector('img[alt=微信公众号-前端linong]')
+		var commentOffsetTop = document.querySelector('img[alt=微信公众号-前端linong]').offsetTop;
+
+		window.addEventListener('scroll', _.throttle(function(){
+			// (document.scrollingElement.scrollTop)
+			var scrollTop = document.scrollingElement.scrollTop;
+			if(scrollTop > oldScrollTop){
+				// 向下
+			}else{
+				// 向上
+			}
+			oldScrollTop = scrollTop;
+		}, 200))
+
+		gotoView.addEventListener('click', _.throttle(function(){
+			document.scrollingElement.scrollTop = document.querySelector('img[alt=微信公众号-前端linong]').offsetTop - 1500
+			// document.querySelector('img[alt=微信公众号-前端linong]').scrollIntoView({
+			// 	behavior: "smooth"
+			// })
+			setTimeout(v=>{
+				window.scrollTo({
+					top: document.querySelector('img[alt=微信公众号-前端linong]').offsetTop,
+					left: 0,
+					behavior: 'smooth'
+				});
+			}, 200)
+		}, 500, {trailing: false}))
+	</script>
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

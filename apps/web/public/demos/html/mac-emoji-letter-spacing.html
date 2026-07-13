@@ -1,0 +1,112 @@
+<!--
+ * @author: linong
+ * @Date: 2021-02-05 09:26:32
+ * @lastEditors: 
+ * @lastEditTime: 
+ * @Description: 
+-->
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>mac emoji 显示问题 - www.lilnong.top</title>
+	<!-- <meta keywords="preview video, metadata,preview audio,preview image"> -->
+	<!-- <meta description="上传前预览文件，可以预览音视频，可以预览图片，可以预览文本"> -->
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>	
+</head>
+<body>
+	<style>
+		input,textarea{
+			width: 100%;
+			display: block;
+		}
+		span.isEmoji {
+			letter-spacing: .3em;
+		}
+	</style>
+	<div id="app">
+		<input type="text" v-model="val">
+		<textarea type="text" v-model="val"></textarea>
+		<div>{{val}}</div>
+		<div>{{splitVal}}</div>
+		<div>{{splitValJoin}}</div>
+		<div>
+			<span v-for="item in splitValJoin" :class="{isEmoji: item.isEmoji}">{{item.val}}</span>
+		</div>
+	</div>
+	<script>
+		new Vue({
+			el: "#app",
+			data(){
+				return {
+					val: '~!@#$%^&*()_+QWERTYUIOP{}ASDFGHJKL:ZXCVBNM配合antd的input mac自带输入😊法打出来的😊😊😊😊😊😊之类的😊😊表情 emoji间没有间距'
+				}
+			},
+			computed:{
+				splitVal(){
+					return Array.from(this.val)
+				},
+				splitValJoin(){
+					return this.splitVal.reduce((s,v)=>{
+						var code = v.codePointAt();
+						// if(code > 65536){
+						// 	s.push([v])
+						// }else{
+						if(s.length == 0){
+							s.push([v])
+						}else{
+							var last = s[s.length - 1];
+							var lastCode = last[0].codePointAt()
+							if(
+								(lastCode > 65536 && code > 65536) 
+								|| (lastCode < 65536 && code < 65536) 
+							){
+								last.push(v)
+							}else{
+								s.push([v])
+							}
+						}
+						// }
+						return s
+					}, []).map(v=>({
+						val: v.join(''),
+						isEmoji: v[0].codePointAt() > 65536
+					}))
+				}
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+	<script type="text/javascript" src="//www.lilnong.top/static/js/public_hm.js"></script>
+</body>
+</html>

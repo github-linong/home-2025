@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script type="text/javascript">new VConsole()</script>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+</head>
+<body>
+	<div id="app">
+		<div class="img_box">
+	        <div class="images_center">
+	            <img src="http://chuangshicdn.mpres.51vv.com/v_block/904c7ebfe22946a12332801c1a33d425.jpg" data-img="http://chuangshicdn.mpres.51vv.com/v_block/904c7ebfe22946a12332801c1a33d425.jpg" data-index="0" w="500" h="700">
+	        </div>
+		</div>
+		
+		<div class="section">
+        <!-- 图文 -->
+          <!-- 1: 不显示图片 -->
+            <div class="img_box">
+                    <div class="images_center">
+                        <img src="http://chuangshicdn.mpres.51vv.com/v_block/9b1f441451f880717cb135e352420b5d.jpg" data-img="http://chuangshicdn.mpres.51vv.com/v_block/9b1f441451f880717cb135e352420b5d.jpg" data-index="1" w="500" h="353">
+                    </div>
+            </div>
+        </div>
+        <img src="/static/img/bug/9b1f441451f880717cb135e352420b5d.webp">
+        <img src="/static/img/bug/9b1f441451f880717cb135e352420b5d.jpg">
+        <img src="/static/img/bug/9b1f441451f880717cb135e352420b5d">
+        <img src="/static/img/bug/taobao.webp">
+        <img src="/static/img/bug/taobao">
+        <canvas id="canvas"></canvas>
+	</div>
+	<script type="text/javascript">
+		fetch('/static/img/bug/904c7ebfe22946a12332801c1a33d425.jpg')
+			.then(v=>v.blob())
+			.then(console.log)
+			.then(v=>{
+				// fetch('/static/img/bug/9b1f441451f880717cb135e352420b5d.jpg')
+					// .then(v=>v.blob())
+					// .then(v=>URL.createObjectURL(v))
+					// .then(v=>{
+						img = new Image();
+						img.src = '/static/img/bug/9b1f441451f880717cb135e352420b5d.jpg';
+						document.body.appendChild(img);
+						img.onload = function(){
+							console.log('img-onload')
+							ctx = canvas.getContext('2d');
+							ctx.drawImage(img,0,0)
+						}
+						img.onerror = function	(e){
+							console.log('img-onerror',e.messages)
+						}
+					// })
+			})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

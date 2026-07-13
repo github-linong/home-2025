@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>年度盛典</title>
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <style>
+        html {
+            overflow-y: scroll;
+        }
+
+        [data-dpr="2"] p,
+        [data-dpr="3"] p,
+        [data-dpr="2"] div,
+        [data-dpr="3"] div {
+            max-height: 100%;
+        }
+    </style>
+    <script type="text/javascript" src="https://www.lilnong.top/static/js/flexible.js"></script>
+    <script type="text/javascript">
+        var vv = window.vv || {};
+        var _ua = navigator.userAgent,
+            _isVVMusic = (/vvmusic/gi).test(_ua),
+            _isIOS = (/iphone|ipad|ipod|itouch/gi).test(_ua),
+            _isAndroid = (/android/gi).test(_ua),
+            _isWechat = (/micromessenger/gi).test(_ua),
+            _isQQ = ((/QQBrowser.*QQ/gi).test(_ua));
+
+        if (!_isVVMusic) {
+            // PC跳转
+            var sUserAgent = navigator.userAgent.toLowerCase();
+            var bIsIpad = sUserAgent.match(/ipad/i) == "ipad";
+            var bIsIphoneOs = sUserAgent.match(/iphone os/i) == "iphone os";
+            var bIsMidp = sUserAgent.match(/midp/i) == "midp";
+            var bIsUc7 = sUserAgent.match(/rv:1.2.3.4/i) == "rv:1.2.3.4";
+            var bIsUc = sUserAgent.match(/ucweb/i) == "ucweb";
+            var bIsAndroid = sUserAgent.match(/android/i) == "android";
+            var bIsCE = sUserAgent.match(/windows ce/i) == "windows ce";
+            var bIsWM = sUserAgent.match(/windows mobile/i) == "windows mobile";
+            var isM = sUserAgent.match(/iphone/gi) == "iphone";
+            var isPC = true;
+            if (bIsIpad || bIsIphoneOs || bIsMidp || bIsUc7 || bIsUc || bIsAndroid || bIsCE || bIsWM || isM) {
+                isPC = false;
+            }
+            if (isPC) {
+                (function () {
+                    var h = document.getElementsByTagName('head')[0];
+                    var p = h.getAttribute('data-page'); //<head data-page="2"> 2代表pc、移动页面都有，否则代表只有移动页面
+                    if (p === '2') {
+                        if ((/wx\/m\/active/).test(window.location.href)) window.location.href = window.location.href.replace('wx/m/active', 'pc/subject');
+                    }
+                    else {
+                        var s = document.createElement('style');
+                        s.innerText = 'body{max-width:750px;margin:0 auto !important;}';
+                        h.appendChild(s);
+                    }
+                })();
+            }
+        }
+    </script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/Swiper/3.4.2/css/swiper.min.css" rel="stylesheet">
+    <style>
+        /* @charset "UTF-8"; */
+
+        html {
+            color: #222;
+            background: #fff;
+            overflow-y: scroll;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            box-sizing: border-box;
+        }
+
+        *,
+        *:before,
+        *:after {
+            box-sizing: inherit;
+        }
+
+        html * {
+            outline: none;
+            -webkit-text-size-adjust: none;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        }
+
+        html,
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        /* 内外边距通常让各个浏览器样式的表现位置不同 */
+        body,
+        div,
+        dl,
+        dt,
+        dd,
+        ul,
+        ol,
+        li,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        pre,
+        code,
+        form,
+        fieldset,
+        legend,
+        input,
+        textarea,
+        p,
+        blockquote,
+        th,
+        td,
+        hr,
+        button,
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        hgroup,
+        menu,
+        nav,
+        section {
+            margin: 0;
+            padding: 0;
+        }
+
+        input,
+        select,
+        textarea {
+            font-size: 100%;
+        }
+
+        /* 去掉各 Table  cell 的边距并让其边重合 */
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        /* 去除默认边框 */
+        fieldset,
+        img {
+            border: 0;
+        }
+
+        /* 去掉 firefox 下此元素的边框 */
+        abbr,
+        acronym {
+            border: 0;
+            font-variant: normal;
+        }
+
+        /* 一致的 del 样式 */
+        del {
+            text-decoration: line-through;
+        }
+
+        address,
+        caption,
+        cite,
+        code,
+        dfn,
+        em,
+        th,
+        var {
+            font-style: normal;
+            font-weight: 500;
+        }
+
+        /* 去掉列表前的标识, li 会继承 */
+        ol,
+        ul {
+            list-style: none;
+        }
+
+        /* 对齐是排版最重要的因素, 别让什么都居中 */
+        caption,
+        th {
+            text-align: left;
+        }
+
+        /* 来自 yahoo, 让标题都自定义, 适应多个系统应用 */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-size: 100%;
+            font-weight: 500;
+        }
+
+        q:before,
+        q:after {
+            content: '';
+        }
+
+        /* 统一上标和下标 */
+        sub,
+        sup {
+            font-size: 75%;
+            line-height: 0;
+            position: relative;
+            vertical-align: baseline;
+        }
+
+        sup {
+            top: -0.5em;
+        }
+
+        sub {
+            bottom: -0.25em;
+        }
+
+        /* 正常链接 未访问 */
+        /* 鼠标悬停 */
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* 默认不显示下划线，保持页面简洁 */
+        ins,
+        a {
+            text-decoration: none;
+        }
+
+        ins:hover,
+        a:hover {
+            text-decoration: none;
+        }
+
+        .fz-12 {
+            font-size: 6px;
+        }
+
+        [data-dpr="2"] .fz-12 {
+            font-size: 12px;
+        }
+
+        [data-dpr="3"] .fz-12 {
+            font-size: 18px;
+        }
+
+        [data-dpr="4"] .fz-12 {
+            font-size: 24px;
+        }
+
+        .fz-14 {
+            font-size: 7px;
+        }
+
+        [data-dpr="2"] .fz-14 {
+            font-size: 14px;
+        }
+
+        [data-dpr="3"] .fz-14 {
+            font-size: 21px;
+        }
+
+        [data-dpr="4"] .fz-14 {
+            font-size: 28px;
+        }
+
+        .fz-16 {
+            font-size: 8px;
+        }
+
+        [data-dpr="2"] .fz-16 {
+            font-size: 16px;
+        }
+
+        [data-dpr="3"] .fz-16 {
+            font-size: 24px;
+        }
+
+        [data-dpr="4"] .fz-16 {
+            font-size: 32px;
+        }
+
+        .fz-18 {
+            font-size: 9px;
+        }
+
+        [data-dpr="2"] .fz-18 {
+            font-size: 18px;
+        }
+
+        [data-dpr="3"] .fz-18 {
+            font-size: 27px;
+        }
+
+        [data-dpr="4"] .fz-18 {
+            font-size: 36px;
+        }
+
+        .fz-20 {
+            font-size: 10px;
+        }
+
+        [data-dpr="2"] .fz-20 {
+            font-size: 20px;
+        }
+
+        [data-dpr="3"] .fz-20 {
+            font-size: 30px;
+        }
+
+        [data-dpr="4"] .fz-20 {
+            font-size: 40px;
+        }
+
+        .fz-22 {
+            font-size: 11px;
+        }
+
+        [data-dpr="2"] .fz-22 {
+            font-size: 22px;
+        }
+
+        [data-dpr="3"] .fz-22 {
+            font-size: 33px;
+        }
+
+        [data-dpr="4"] .fz-22 {
+            font-size: 44px;
+        }
+
+        .fz-24 {
+            font-size: 12px;
+        }
+
+        [data-dpr="2"] .fz-24 {
+            font-size: 24px;
+        }
+
+        [data-dpr="3"] .fz-24 {
+            font-size: 36px;
+        }
+
+        [data-dpr="4"] .fz-24 {
+            font-size: 48px;
+        }
+
+        .fz-26 {
+            font-size: 13px;
+        }
+
+        [data-dpr="2"] .fz-26 {
+            font-size: 26px;
+        }
+
+        [data-dpr="3"] .fz-26 {
+            font-size: 39px;
+        }
+
+        [data-dpr="4"] .fz-26 {
+            font-size: 52px;
+        }
+
+        .fz-28 {
+            font-size: 14px;
+        }
+
+        [data-dpr="2"] .fz-28 {
+            font-size: 28px;
+        }
+
+        [data-dpr="3"] .fz-28 {
+            font-size: 42px;
+        }
+
+        [data-dpr="4"] .fz-28 {
+            font-size: 56px;
+        }
+
+        .fz-30 {
+            font-size: 15px;
+        }
+
+        [data-dpr="2"] .fz-30 {
+            font-size: 30px;
+        }
+
+        [data-dpr="3"] .fz-30 {
+            font-size: 45px;
+        }
+
+        [data-dpr="4"] .fz-30 {
+            font-size: 60px;
+        }
+
+        .fz-32 {
+            font-size: 16px;
+        }
+
+        [data-dpr="2"] .fz-32 {
+            font-size: 32px;
+        }
+
+        [data-dpr="3"] .fz-32 {
+            font-size: 48px;
+        }
+
+        [data-dpr="4"] .fz-32 {
+            font-size: 64px;
+        }
+
+        .fz-34 {
+            font-size: 17px;
+        }
+
+        [data-dpr="2"] .fz-34 {
+            font-size: 34px;
+        }
+
+        [data-dpr="3"] .fz-34 {
+            font-size: 51px;
+        }
+
+        [data-dpr="4"] .fz-34 {
+            font-size: 68px;
+        }
+
+        .fz-36 {
+            font-size: 18px;
+        }
+
+        [data-dpr="2"] .fz-36 {
+            font-size: 36px;
+        }
+
+        [data-dpr="3"] .fz-36 {
+            font-size: 54px;
+        }
+
+        [data-dpr="4"] .fz-36 {
+            font-size: 72px;
+        }
+
+        .fz-38 {
+            font-size: 19px;
+        }
+
+        [data-dpr="2"] .fz-38 {
+            font-size: 38px;
+        }
+
+        [data-dpr="3"] .fz-38 {
+            font-size: 57px;
+        }
+
+        [data-dpr="4"] .fz-38 {
+            font-size: 76px;
+        }
+
+        body {
+            font-family: "Microsoft Yahei";
+        }
+
+        .clearfix:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        .fl,
+        .left {
+            float: left;
+        }
+
+        .fr,
+        .right {
+            float: right;
+        }
+
+        .hide {
+            display: none !important;
+        }
+
+        .f12 {
+            font-size: 12px;
+        }
+
+        .f14 {
+            font-size: 14px;
+        }
+
+        .f16 {
+            font-size: 16px;
+        }
+
+        .fb {
+            font-weight: 700;
+        }
+
+        .ta_l {
+            text-align: left;
+        }
+
+        .ta_c {
+            text-align: center;
+        }
+
+        .ta_r {
+            text-align: right;
+        }
+
+        .none {
+            display: none;
+        }
+
+        .padTop10 {
+            padding-top: 0.55556rem !important;
+        }
+
+        #annual_Living_one {
+            width: 10rem;
+            height: 14.44444rem;
+            max-height: none;
+            background: url("https://www.lilnong.top/static/img/annual_festival_2020/adv/bg2.png") no-repeat center top;
+            background-size: 100%;
+            color: #fff;
+        }
+
+        #annual_Living_one .rank_detail {
+            padding-top: 2.77778rem;
+            padding-bottom: 0.55556rem;
+            max-height: none;
+            width: 100%;
+            font-size: 1.11111rem;
+            color: #FFE785;
+            
+            background: linear-gradient(180deg, #FEDE9C 0%, #FFFAEC 99.169921875%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #annual_Living_one .rank_detail .rank_now {
+            text-align: center;
+            margin-bottom: 0.88889rem;
+        }
+
+        #annual_Living_one .rank_detail .rank_gap_name {
+            text-align: center;
+        }
+
+        #annual_Living_one .rank_detail .rank_gap {
+            text-align: center;
+        }
+
+        #annual_Living_one .rank_detail .adv_gifts {
+            width: 8.22222rem;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #annual_Living_one .rank_detail .adv_gifts .gift_item {
+            width: 3.55556rem;
+            height: 3.55556rem;
+            border-radius: 50% 50%;
+        }
+
+        #annual_Living_one .rank_detail .allcount {
+            text-align: center;
+            margin-bottom: 0.77778rem;
+        }
+
+        #annual_Living_one .rank_empty {
+            color: #FFE785;
+            background: linear-gradient(180deg, #FEDE9C 0%, #FFFAEC 99.169921875%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            
+            font-size: 1.44444rem;
+            text-align: center;
+            padding-top: 5.77778rem;
+            display: block;
+            line-height: 1.5;
+        }
+
+        .rank_detail--limit {
+            background-image: url("https://www.lilnong.top/static/img/annual_festival_2020/adv/ad-bg-right-limit.png");
+        }
+
+        .two_box {
+            width: 10rem;
+            height: 14.44444rem;
+            background-image: url("https://www.lilnong.top/static/img/annual_festival_2020/adv/ad-bg-right-all.png");
+            background-size: 10rem 14.44444rem;
+            background-repeat: no-repeat center;
+        }
+
+        #annual_Living_two {
+            width: 10rem;
+            height: 14.44444rem;
+            max-height: none;
+            text-align: center;
+            line-height: 1.3;
+            color: #ffe785;
+            
+        }
+
+        #annual_Living_two .rank_detail {
+            max-height: none;
+            padding-top: 4.11111rem;
+            width: 100%;
+            font-size: 1.11111rem;
+            letter-spacing: 0.11111rem;
+            color: #ffe785;
+            background: linear-gradient(180deg, #FEDE9C 0%, #FFFAEC 99.169921875%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            
+        }
+
+        #annual_Living_two .rank_detail .rank_gap {
+            width: 100%;
+            background: linear-gradient(180deg, #FEDE9C 0%, #FFFAEC 99.169921875%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #annual_Living_two .all_value_detail {
+            padding-top: 0.77778rem;
+            font-size: 1.22222rem;
+            color: #ffe785;
+            background: linear-gradient(180deg, #FEDE9C 0%, #FFFAEC 99.169921875%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;            
+        }
+
+        #annual_Living_two .all_value_detail .value_num {
+            font-size: 1.55556rem;
+            letter-spacing: 0.11111rem;
+            background: linear-gradient(180deg, #FEDE9C 0%, #FFFAEC 99.169921875%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;   
+        }
+
+        #annual_Living_two .rank_empty {
+            color: #FFE785;
+            
+            font-size: 1.44444rem;
+            text-align: center;
+            padding-top: 5.77778rem;
+            display: none;
+            line-height: 1.5;
+        }
+
+        .rank_detail--limit {
+            background-image: url("https://www.lilnong.top/static/img/annual_festival_2020/adv/ad-bg-right-limit.png") !important;
+        }
+
+        /*flex布局*/
+        .flex {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+        }
+
+        .flex-v {
+            -webkit-box-orient: vertical;
+            -webkit-flex-direction: column;
+            -ms-flex-direction: column;
+            flex-direction: column;
+        }
+
+        .flex-1 {
+            -webkit-box-flex: 1;
+            -webkit-flex: 1;
+            -ms-flex: 1;
+            flex: 1;
+        }
+
+        .flex-align-center {
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+            -ms-flex-align: center;
+            align-items: center;
+        }
+
+        .flex-pack-center {
+            -webkit-box-pack: center;
+            -webkit-justify-content: center;
+            -ms-flex-pack: center;
+            justify-content: center;
+        }
+
+        .flex-pack-justify {
+            -webkit-box-pack: justify;
+            -webkit-justify-content: space-between;
+            -ms-flex-pack: justify;
+            justify-content: space-between;
+        }
+
+        html,
+        body {
+            background-color: transparent;
+        }
+
+        #__vconsole {
+            display: none;
+        }
+
+        #container {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #container .btn {
+            display: block;
+            width: 2rem;
+            height: 2rem;
+            background: url("https://www.lilnong.top/static/img/annual_festival_2020/adv/close.png") no-repeat center top;
+            background-size: 100% 100%;
+            position: fixed;
+            right: 0;
+            top: 0;
+        }
+
+        #container .btn.open {
+            background: url("https://www.lilnong.top/static/img/annual_festival_2020/adv/open.png") no-repeat center top;
+            background-size: 100% 100%;
+            left: 0;
+        }
+
+        #container #swiper {
+            width: 100%;
+            height: 17.4rem;
+            margin-top: 2.66667rem;
+        }
+
+        .swiper-wrapper .swiper-slide {
+            height: 17.4rem;
+        }
+
+        .swiper-pagination {
+            width: 100%;
+            position: fixed !important;
+            left: 0 !important;
+            bottom: 0 !important;
+        }
+
+        .swiper-pagination-bullet {
+            background: #ffffff;
+            opacity: 0.5;
+            width: 0.4rem;
+            height: 0.4rem;
+        }
+
+        .swiper-pagination-bullet-active {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <div id="swiper">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide ANNUAL_LIVING1">
+                    <div id="annual_Living_one" class="one_box">
+                        <div class="rank_detail">
+                        </div>
+                        <div style="display: none;" class="rank_empty">
+                            <div class="rank_empty_name">当前排名</div>
+                            <div class="rank_empty_value">未上榜</div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="swiper-slide ANNUAL_LIVING2">
+                    <div class="two_box" id="annual_Living_two">
+                        <div class="rank_detail">
+                            <div class="rank_now"> 当前排名 <span class="rankValue"> - </span> 名</div>
+                            <div class="rank_gap"> 距上一名 <span class="gapCountValue"> - </span></div>
+                        </div>
+                        <div class="all_value_detail">
+                            <p class="value_now">当前已获</p>
+                            <p class="value_num">-</p>
+                            <p class="value_title">巅峰值</p>
+                        </div>
+                        <div class="rank_empty">
+                            <div class="rank_empty_name">当前排名</div>
+                            <div class="rank_empty_value">未上榜</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/Swiper/3.4.2/js/swiper.min.js"></script>
+    <script>
+        vvliveBridgeObj  = {}
+        vvliveBridgeObj.aaaaa = function(){}
+        vvliveBridgeObj.b  = function(){}
+        vvliveBridgeObj.c  = function(){}
+    </script>
+    <script>
+        window.base = {
+            //获取url参数
+            getUrlParam: function (name) {
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+                var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+                if (r != null) {
+                    return r[2];
+                } else {
+                    return null; //返回参数值
+                }
+            },
+            toHtml: function (val) {
+                if (typeof val != 'string') return '';
+                var entityMap = {
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': '&quot;',
+                    "'": '&#39;',
+                    "/": '&#x2F;'
+                };
+                return String(val).replace(/[&<>"'\/]/g, function (s) {
+                    return entityMap[s];
+                });
+            },
+            toUrl: function (url, defaultUrl) {
+                if (defaultUrl == undefined) defaultUrl = 'https://music.51vv.com/wx/m/vv-base/images/logo.png'
+                if (typeof url != 'string') return defaultUrl;
+                if (url.match(/^http/i)) {
+                    return encodeURI(url)
+                }
+                return defaultUrl
+            }
+        };
+        ;
+        /*延时加载数据*/
+        var clearDir = null;
+        vv.ajax = {
+            cache: true,
+            callback: function (obj, data) {
+                if ($(obj).attr("data-callback") && typeof vv.callback != "undefined") {
+                    var this_ = $(obj), method = this_.attr("data-callback");
+                    vv.callback[method] && vv.callback[method](data);
+                }
+            },
+            ajax_load: function (obj, temID) {
+                var url = $(obj).attr('data-url'),
+                    cacheTime = parseInt($(obj).attr("data-cacheTime")) || 0,
+                    _this = this;
+                $(obj).attr('loaded', 'loaded');
+                var NowTime = parseInt(new Date().getTime() / 1000);
+                var storageKey = $(obj).attr("storageKey") || url;
+                if (storageSupport && _this.cache && cacheTime > 0) {
+                    if (vv.storage.get(storageKey, 'content')) {
+                        if (NowTime - vv.storage.get(storageKey, 'dataLine') >= cacheTime) {
+                            _this.loadAjaxData(obj, url, NowTime, temID);
+                        }
+                        else {
+                            $(obj).css('background', 'none');
+                            var oData = vv.storage.get(storageKey, 'content');
+                            oData = oData.content ? oData.content : oData;
+                            var tmpl = $("#" + temID).html();
+                            var doTtmpl = doT.template(tmpl);
+                            $(obj).append(doTtmpl(oData));
+                            if ($(obj).find("img").hasClass("lazyload")) {
+                                var getMe = $(obj).find(".lazyload");
+                                _this.imgLazyLoad(getMe);
+                            }
+                            _this.callback(obj, oData);
+                            _this.setLiveAndFollow(obj, oData);
+                        }
+                    }
+                    else {
+                        _this.loadAjaxData(obj, url, NowTime, temID);
+                    }
+                }
+                else {
+                    _this.loadAjaxData(obj, url, NowTime, temID);
+                }
+            },
+            img_load: function (obj) {
+                var _this = this;
+                if ($(obj).attr('loaded') == 'loaded') return;
+                if ($(obj).find("img").hasClass("lazyload")) {
+                    var getMe = $(obj).find(".lazyload");
+                    _this.imgLazyLoad(getMe);
+                    $(obj).attr('loaded', 'loaded');
+                }
+            },
+            imgLazyLoad: function (obj) {
+                obj.each(function () {
+                    var oSrc = $(this).attr("_src"),
+                        me = $(this);
+                    me.attr("src", oSrc);
+                })
+            },
+            getParam: function (name, str) {
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                var r = str.match(reg);
+                if (r != null) return r[2];
+                else return null;
+            },
+            getTodayDate: function () {
+                var now = new Date();
+                now = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+                return now.getFullYear() + ((now.getMonth() + 1) > 9 ? (now.getMonth() + 1) : ("0" + (now.getMonth() + 1))) + ((now.getDate()) > 9 ? now.getDate() : ("0" + now.getDate()));
+            },
+            loadAjaxData: function (obj, url, NowTime, temID) {
+                var args = $(obj).attr('data-page'),
+                    _this = this,
+                    json = { time: Math.random() };
+                if ($(obj).attr('data-user')) {
+                    json.userId = base.getUrlParam('userid') || '';
+                }
+                if (args) {
+                    _this.loadAjaxDataPage(obj, url, temID, args);
+                } else {
+                    var storageKey = $(obj).attr("storageKey") || url;
+                    $.ajax({
+                        url: url,
+                        data: json,
+                        success: function (data) {
+                            if (data && data.result == 0) {
+                                var oData = data.content ? data.content : data;
+                                var tmpl = $("#" + temID).html();
+                                var doTtmpl = doT.template(tmpl);
+                                $(obj).append(doTtmpl(oData));
+                                $(obj).css('background', 'none');
+                            }
+                            if (storageSupport) {
+                                vv.storage.set(storageKey, 'content', data);
+                                vv.storage.set(storageKey, 'dataLine', NowTime);
+                            }
+                            _this.callback(obj, data);
+                            _this.setLiveAndFollow(obj, data);
+                        },
+                        complete: function () {
+                            if ($(obj).find("img").hasClass("lazyload")) {
+                                var getMe = $(obj).find(".lazyload");
+                                _this.imgLazyLoad(getMe);
+                            }
+                        }
+                    });
+                }
+            },
+            loadAjaxDataPage: function (obj, url, temID, args) {
+                var dataInfo = [],
+                    _this = this;
+                var page = {
+                    index: 0,
+                    current: 1,
+                    web: _this.getParam('websize', args), // 每页显示条数
+                    server: _this.getParam('serversize', args) // 服务端返回条数
+                };
+                page.size = Math.ceil(page.server / page.web); // 假分页频率
+                getAjax();
+                $(obj).on('click', '.more', function () {
+                    $(obj).find('.loading, .loaded, .more').detach();
+                    $(obj).append('<span class="loading">加载中...</span>');
+                    if (page.index / page.size == page.current - 1) {
+                        getAjax();
+                    } else {
+                        getData();
+                    }
+                });
+                function getAjax() {
+                    var args = {
+                        curPage: page.current,
+                        viewNumber: page.server,
+                        time: Math.random()
+                    }
+                    if ($(obj).attr('data-today')) {
+                        args.reportDay = _this.getTodayDate()
+                    }
+                    if ($(obj).attr('data-user')) {
+                        args.userId = base.getUrlParam('userid') || '';
+                    }
+                    $.ajax({
+                        url: url,
+                        data: args,
+                        success: function (data) {
+                            if (data && data.result == 0) {
+                                dataInfo = dataInfo.concat(data.info.reportList ? data.info.reportList : data.info);
+                                $(obj).css('background', 'none');
+                                if (!dataInfo.length) {
+                                    var empty = $(obj).attr('data-empty') || '暂无数据';
+                                    $(obj).append('<span class="loaded">' + empty + '</span>');
+                                    return;
+                                }
+                                getData();
+                                page.current++;
+                            }
+                        }
+                    });
+                };
+                function getData() {
+                    $(obj).find('.loading, .loaded, .more').detach();
+                    var oData = dataInfo.slice(page.index * page.web, (page.index + 1) * page.web);
+                    var oData = { info: oData, index: page.index };
+                    var tmpl = $("#" + temID).html();
+                    var doTtmpl = doT.template(tmpl);
+                    $(obj).append(doTtmpl(oData));
+                    page.index++;
+                    if (oData.info.length == page.web) {
+                        $(obj).append('<a href="javascript:;" class="more">加载更多 >></a>');
+                    } else {
+                        $(obj).append('<span class="loaded">已显示全部</span>');
+                    }
+                    _this.callback(obj, oData);
+                    _this.setLiveAndFollow(obj, oData);
+                };
+            },
+            triggerShow: function (obj, temID) {
+                if (!$(obj).attr('loaded')) {
+                    this.ajax_load(obj, temID);
+                    $(obj).attr('loaded', 'loaded');
+                }
+            },
+            requireSetData: function (json, obj, temID) {
+                var trigger = $(obj).attr('data-trigger');
+                var tH = json.oH + json.oT + 100;
+                var sLoad = $(obj).attr("loaded");
+                var id = $(obj).attr("id");
+                var _this = this;
+                if (!trigger && tH > json.oM && !sLoad) {
+                    _this.ajax_load($(obj), temID);
+                }
+            },
+            setLazyLoadData: function () {
+                var h = $(window).height(),
+                    t = $(window).scrollTop(),
+                    _this = this;
+                $('.ajax-load').each(function (index) {
+                    var me = this,
+                        mT = $(me).offset().top,
+                        temId = $(me).attr('temId');
+                    _this.requireSetData({ oH: h, oT: t, oM: mT }, me, temId);
+                });
+            },
+            // 可扩展
+            setLiveAndFollow: function (obj, data) {
+                var userIds = [],
+                    live = $(obj).attr('data-live'),
+                    follow = $(obj).attr('data-follow');
+                if (!live && !follow) return;
+                for (var i = 0, l = data.info.length; i < l; i++) {
+                    if (data.info[i].userID) userIds.push(data.info[i].userID);
+                    else userIds.push(data.info[i].userid);
+                }
+                if (follow) {
+                }
+                if (live) {
+                }
+            },
+            init: function () {
+                var _this = this;
+                $(window).on("scroll", function () {
+                    if (clearDir) clearTimeout(clearDir);
+                    clearDir = setTimeout(function () {
+                        _this.setLazyLoadData();
+                    }, 200);
+                });
+                $(window).on("resize", function () {
+                    _this.setLazyLoadData();
+                });
+                _this.setLazyLoadData();
+            }
+        };;
+        (function () {
+            var liveId = null, //直播间ID
+                anchorId = null, //主播ID
+                stageGift1 = [],
+                stageGift2 = [],
+                stageGift3 = [],
+                isShow = false,
+                baseURL = window.location.origin + '/',
+                activeConfig;
+            //展示广告位
+            var showThisSmallWeb = function () {
+                try {
+                    $('.swiper-slide.ANNUAL_LIVING1').show();
+                    window.checkSlides();
+                } catch (e) {
+                    console.error(e)
+                }
+            };
+            //隐藏广告位
+            var hideThisSmallWeb = function () {
+                try {
+                    $('.swiper-slide.ANNUAL_LIVING1').hide();
+                    websSwiper.update();
+                    window.checkSlides();
+                } catch (e) {
+                    console.error(e)
+                }
+            };
+            var webInit = function () {
+                getActiveConfig();
+                window.onKroomInfoGot(function (info) {
+                    anchorId = info.anchorID; //获取主播ID
+                    liveId = info.liveID; //获取直播ID
+                    getUserAuthAll(); //获取用户身份，根据身份来展示广告位个数
+                });
+                //推送
+                window.onKroomDataPush(function (res) {
+                    if (!res.activityId || res.activityId != '202101_live') return;
+                    // alert('123'+JSON.stringify(res))
+                    if (!res.rankNumAll) {
+                        //   // alert('看看是否有左边推送1'+JSON.stringify(res))
+                        //   setDataToDom(res); //更新数据
+                        setDataToDom(res);
+                    }
+                    if (res.isEnd == 1)
+                        activeSwiper();
+                });
+            };
+            var activeSwiper = function () {
+                // alert('测试1')
+                var currenTime = new Date().getTime();
+                var startTime = new Date(activeConfig.actConfig.live.stageStartTime4.replace(/-/g, '/')).getTime();
+                var endTime = new Date(activeConfig.actConfig.live.stageEndTime4.replace(/-/g, '/')).getTime();
+                // alert(`${currenTime},${startTime},${endTime},`)
+                if (currenTime >= startTime && currenTime <= endTime) {
+                    //时间是最后一天-隐藏第一个轮播图 && 不展示主播总榜背景图
+                    $('.two_box').removeClass('rank_detail--limit');
+                    hideThisSmallWeb();
+                }
+            }
+            //获取全部活动相关配置 ====（直播间三组礼物图）
+            var getActiveConfig = function () {
+                var params = { activeId: 202101 };
+                        var data = {"currentTime":1607950845750,"retCode":1000,"currentDay":20201214,"actConfig":{"article":{"endTimeDesc":1611158399000,"startTime":"2021-1-11 00:00:00","raceTrack":[{"trackId":1,"trackName":"摄影赛道"},{"trackId":2,"trackName":"文字赛道"},{"trackId":3,"topicId":411,"trackName":"年度人气作者"}],"startTimeDesc":1578672000000,"endTime":"2021-1-20 23:59:59"},"family":{"maxFamilyStartTime":"2020-12-20 00:00:00","endTimeDesc":1611158399000,"startTime":"2020-12-22 00:00:00","maxFamilyEndTimeDesc":1611158399000,"upFamilyEndTimeDesc":1611158399000,"maxFamilyStartTimeDesc":1608393600000,"maxFamilyEndTime":"2021-1-20 23:59:59","upFamilyStartTime":"2020-12-11 15:50:00","upFamilyStartTimeDesc":1607673000000,"upFamilyEndTime":"2021-1-20 23:59:59","startTimeDesc":1608566400000,"endTime":"2021-1-20 23:59:59"},"video":{"endTimeDesc":1611158399000,"startTime":"2021-1-11 00:00:00","raceTrack":[{"themeId":1,"themeName":"才艺比拼","topicId":414},{"themeId":2,"themeName":"你最戏精","topicId":409},{"themeId":3,"themeName":"挑战极限","topicId":410}],"startTimeDesc":1578672000000,"endTime":"2021-1-20 23:59:59"},"av":{"endTimeDesc":1610294399000,"flowerEndTime":"2020-12-14 18:50:00","musicSongStartTime":"2020-12-01 00:00:00","avEndTimeDesc":1608595200000,"soloAvEndTime":"2020-12-31 23:59:59","musicSongRaceTrack":3250,"soloAvStage":[{"endTimeDesc":1607615999000,"tabName":"第一阶段","startTimeDesc":1607011200000,"tabDate":"12.22-12.24","typeNum":1},{"endTimeDesc":1607919000000,"tabName":"第二阶段","startTimeDesc":1607616000000,"tabDate":"12.25-12.27","typeNum":2},{"endTimeDesc":1607944800000,"tabName":"总榜","startTimeDesc":1607919000000,"tabDate":"12.22-12.31","typeNum":3}],"flowerStartTime":"2020-12-11 10:00:00","soloAvStartTime":"2020-12-4 00:00:00","flowerStartTimeDesc":1607652000000,"chorusAvRaceTrack":3251,"endTime":"2021-1-10 23:59:59","startTimeDesc":1607011200000,"soloAvStageStartTime1":"2020-12-4 00:00:00","soloAvStageStartTime2":"2020-12-11 00:00:00","soloAvStageStartTime3":"2020-12-14 12:10:00","startTime":"2020-12-22 00:00:00","flowerEndTimeDesc":1608595200000,"musicSongEndTime":"2020-12-14 18:00:00","chorusAvStartTime":"2020-12-01 00:00:00","chorusAvEndTime":"2020-12-14 18:00:00","soloAvRaceTrack":[{"activityId":3252,"activityName":"闪耀组","typeNum":1},{"activityId":3253,"activityName":"魅力组","typeNum":2},{"activityId":3254,"activityName":"星光组","typeNum":3},{"activityId":3255,"activityName":"非凡组","typeNum":4},{"activityId":3256,"activityName":"声线组","typeNum":5}],"flowerRaceTrack":[{"raceType":10,"topicId":401,"typeNum":1,"topicName":"情感之声"},{"raceType":11,"topicId":402,"typeNum":2,"topicName":"网络流行"},{"raceType":12,"topicId":403,"typeNum":3,"topicName":"怀旧经典"},{"raceType":13,"topicId":404,"typeNum":4,"topicName":"人气热曲"},{"raceType":14,"topicId":405,"typeNum":5,"topicName":"魅力声线"},{"raceType":15,"topicId":406,"typeNum":6,"topicName":"梨园风采"},{"raceType":16,"topicId":407,"typeNum":7,"topicName":"美文美诵"}],"soloAvStageEndTime1":"2020-12-10 23:59:59","soloAvStageEndTime2":"2020-12-14 12:10:00","avStartTimeDesc":1606752000000,"soloAvStageEndTime3":"2020-12-14 19:20:00"},"live":{"endTimeDesc":1609430399000,"stageEndTime1":"2020-12-14 20:51:00","endTime":"2020-12-14 21:00:00","startTimeDesc":1606752000000,"stageEndTime4":"2020-12-14 21:00:00","stageShow":[{"endTimeDesc":1607939580000,"tabName":"第一阶段","startTimeDesc":1607875200000,"tabDate":"12.01-12.10","typeNum":1},{"endTimeDesc":1607945520000,"tabName":"第二阶段","startTimeDesc":1607939580000,"tabDate":"12.11-12.12","typeNum":2},{"endTimeDesc":1607955600000,"tabName":"第三阶段","startTimeDesc":1607945520000,"tabDate":"12.14-12.31","typeNum":3}],"stageEndTime2":"2020-12-14 20:53:00","stageEndTime3":"2020-12-14 20:55:00","startTime":"2020-12-01 00:00:00","stageStartTime4":"2020-12-14 20:55:00","stageStartTime3":"2020-12-14 20:53:00","stageStartTime2":"2020-12-14 20:51:00","stageStartTime1":"2020-12-14 00:00:00","stageGift2":[{"giftIds":"100001183,100001135","giftImg1":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/fd645517e87585dc7ac9a159cd3f7386.png","giftImg2":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/0703ff63d0c26985951553e37fa76cc6.png","giftNo":3,"giftName2":"烈焰追风","giftName1":"丝滑浓情"},{"giftIds":"100001184,100001131","giftImg1":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/6e04fbfb3d3bf40259b7ed41de6d6e1c.png","giftImg2":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/2f887a3dda9812fab6ee7c3706909bfd.png","giftNo":4,"giftName2":"旋转木马","giftName1":"一见钟情"}],"stageGift3":[{"giftIds":"100001099,100001100","giftImg1":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/0f0f823cf54f91e68844ae5d711b7c1c.png","giftImg2":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/e3cf7601120e2cefc7a30e7bfdb5481d.png","giftNo":5,"giftName2":"鎏金迅影","giftName1":"幸运金蛋"},{"giftIds":"100001101,100001102","giftImg1":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/922b10eaf057007182f48c568fa699c4.png","giftImg2":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/77b3b09d824f70d3b2c7d21e6d3a68db.png","giftNo":6,"giftName2":"梦幻摩天轮","giftName1":"金玉满堂"}],"stageGift1":[{"giftIds":"910000501,910000502","giftImg1":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/7fd00ef69954587e79ebdfec4726225c.png","giftImg2":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/0b2fbaffcfc3938f72c079dddb0a05e7.png","giftNo":1,"giftName2":"梦幻婚戒","giftName1":"天使之冠"},{"giftIds":"910000503,910000504","giftImg1":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/bd0bc01449e4f6d84bb4120a9d317694.png","giftImg2":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/21b25d7da6c6f3c3d1902fe89b65d8f9.png","giftNo":2,"giftName2":"光速飞车","giftName1":"爱的魔法"}]},"room":{"endTimeDesc":1607942040000,"startTime":"2020-1-1 00:00:00","gift":[{"giftImg":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/9cf64cbee59ee4adb5fea18b29545086.png","giftName":"糖果蜜意","giftId":100001160},{"giftImg":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/d8251b2702739f7042fd3ca0b9f4211b.png","giftName":"星光之声","giftId":100001161},{"giftImg":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/4b38c578349ce821b2dbbb8e95eb5180.png","giftName":"爱的心跳","giftId":100001150},{"giftImg":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/aa0974fe1668381474295be40018a5c3.png","giftName":"666","giftId":100001153},{"giftImg":"http://chuangshicdn.file.m.mvbox.cn/upload/ga/image/aa593627a432987a99b71994639eb4d2.png","giftName":"为你点赞","giftId":100001117}],"startTimeDesc":1577808000000,"endTime":"2020-12-14 18:34:00"}},"retMsg":"成功"};
+                        // alert('getActiveConfig,获取活动配置:'+JSON.stringify(data.actConfig.live))
+                        activeConfig = data
+                        if (data.retCode == 1000) {
+                            // 获取直播间礼物配置
+                            stageGift1 = data.actConfig.live.stageGift1;
+                            stageGift2 = data.actConfig.live.stageGift2;
+                            stageGift3 = data.actConfig.live.stageGift3;
+                            activeSwiper()
+                        } else {
+                            console.log('查询失败', e);
+                        }
+            };
+            // 数据更新
+            var setDataToDom = function (res) {
+                // alert('数据'+JSON.stringify(res))
+                var data = res;
+                /**
+                 * 区分如果是端推送 不会返回 retCode字段 取非 一定是true
+                 * 如果是接口返回数据 会有 retCode字段 且不为 0 判断 1000 即可
+                 */
+                if (!data.retCode || data.retCode == 1000) {
+                    var imgUrl = [];
+                    giftNo = data.giftNo; //获取第几组礼物
+                    if (giftNo == 1) {
+                        imgUrl[0] = stageGift1[0].giftImg1;
+                        imgUrl[1] = stageGift1[0].giftImg2;
+                    } else if (giftNo == 2) {
+                        imgUrl[0] = stageGift1[1].giftImg1;
+                        imgUrl[1] = stageGift1[1].giftImg2;
+                    } else if (giftNo == 3) {
+                        imgUrl[0] = stageGift2[0].giftImg1;
+                        imgUrl[1] = stageGift2[0].giftImg2;
+                    } else if (giftNo == 4) {
+                        imgUrl[0] = stageGift2[1].giftImg1;
+                        imgUrl[1] = stageGift2[1].giftImg2;
+                    } else if (giftNo == 5) {
+                        imgUrl[0] = stageGift3[0].giftImg1;
+                        imgUrl[1] = stageGift3[0].giftImg2;
+                    } else if (giftNo == 6) {
+                        imgUrl[0] = stageGift3[1].giftImg1;
+                        imgUrl[1] = stageGift3[1].giftImg2;
+                    }
+                    activityId = data.activityId;
+                    if (data.isEnd == 0 || data.isEnd == 2) {
+                        //0（活动未开始）|| 2（活动已结束）关闭轮播图
+                        hideThisSmallWeb();
+                    }
+                    // activeSwiper();
+                    if (data.isEnd == 1) {
+                        var str = "";
+                        if (data.rankNumLimit || data.rankNumLimit >= 0) {
+                            // alert('左边更新视图'+(JSON.stringify(data)))
+                            if (data.rankNumLimit == 0 || data.rankNumLimit > 50) {
+                                //名次 > 100 显示未上榜
+                                $('.one_box .rank_detail').css('display', 'none');
+                                $('.one_box .rank_empty').css('display', 'block');
+                                return;
+                            } else if (data.rankNumLimit == 1) {
+                                str += '<div class="rank_now">' + '当前排名<span class="rankValue"> ' + data.rankNumLimit + ' </span>名</div>' +
+                                    '<div class="adv_gifts">' +
+                                    '<img src=' + imgUrl[0] + ' alt="" class="gift_item gift-img1" />' +
+                                    '<img src=' + imgUrl[1] + ' alt="" class="gift_item gift-img2" />' +
+                                    ' </div>' +
+                                    ' <div class="allcount">';
+                                if (data.hotValueLimit || data.hotValueLimit == 0) {
+                                    str += '<span class="allcountValue">' + (data.hotValueLimit === undefined ? '-' : data.hotValueLimit || 0) + '</span>巅峰值</div>'
+                                }
+                                $('.one_box .rank_empty').css('display', 'none'); //隐藏空状态
+                                $('.one_box .rank_now').addClass("padTop10") // 排名位置调整
+                            } else if (data.rankNumLimit >= 2 && data.rankNumLimit <= 49) {
+                                str += '<div class="rank_now">' + '当前排名<span class="rankValue"> ' + data.rankNumLimit + ' </span>名' +
+                                    '</div> <div class="rank_gap_name" >距上一名</div> ' +
+                                    '<div class="rank_gap"> <span class="gapCountValue" >' + (data.gapHotValueLimit === undefined ? '-' : data.gapHotValueLimit || 0) + '</span> 巅峰值</div>' +
+                                    '<div class="adv_gifts"> <img src=' + imgUrl[0] + ' alt="" class="gift_item gift-img1" />' +
+                                    '<img src=' + imgUrl[1] + ' alt="" class="gift_item gift-img2" />  </div>' +
+                                    '<div class="allcount"><span class="allcountValue">' + (data.hotValueLimit === undefined ? '-' : data.hotValueLimit || 0) + '</span> 巅峰值</div>'
+                                $('.one_box .rank_empty').css('display', 'none');
+                            }
+                            $('.one_box .rank_detail').html(str).css('display', 'block');
+                        }
+                    }
+                }
+            };
+            // 获取主播身份类型（控制轮播图显隐）
+            // var getUserAuthAll = function () {
+            //     var params = {
+            //         anchorId: anchorId,
+            //     };
+            //     vv.axiosProxy(baseURL + 'act/year/2021/family/getUserAuthParam.htm', {
+            //         params: { parameter: JSON.stringify(params) }
+            //     })
+            //         .then(function (response) {
+            //             var data = response.data;
+            //             if (data.retCode == 1000) {
+            //                 isShow = false;
+            //                 var canShow = [3, 5, 10];
+            //                 var userList = data.resultList;
+            //                 // 没有身份的用户不展示第一个轮播
+            //                 for (var i = 0; i < userList.length; i++) {
+            //                     var type = userList[i].authType;
+            //                     if (canShow.indexOf(type) >= 0) {
+            //                         isShow = true;
+            //                         break;
+            //                     }
+            //                 }
+            //                 if (!isShow) {
+            //                     hideThisSmallWeb();
+            //                     if (activeConfig) activeSwiper()
+            //                 } else {
+            //                     // alert("$('.two_box').addClass('rank_detail--limit')")
+            //                     $('.two_box').addClass('rank_detail--limit');//展示主播总榜背景图
+            //                 }
+            //             } else {
+            //                 alert('获取身份类型信息失败');
+            //             }
+            //             getNowLiveData();
+            //             getActiveConfig();
+            //         })
+            //     // 查询直播间数据
+            //     var getNowLiveData = function () {
+            //         var params = {
+            //             liveId: liveId,
+            //             anchorId: anchorId,
+            //         };
+            //         vvliveBridgeObj.doHttpGetReq_unify(
+            //             {
+            //                 reqUrl: baseURL + 'act/year/2021/live/getNowLiveData.htm',
+            //                 parameter: params,
+            //             },
+            //             function (res) {
+            //                 setDataToDom(res.data);
+            //             }
+            //         );
+                // };
+            // };
+            window.LIVING_FESTIVAL_ONEINIT = webInit;
+        })(window);
+        ;
+        (function () {
+            var liveId = null, //直播间ID
+                anchorId = null, //主播ID
+                baseURL = window.location.origin + '/';
+            //展示广告位
+            var showThisSmallWeb = function () {
+                $('.swiper-slide.ANNUAL_LIVING2').show();
+                websSwiper.update();
+                window.checkSlides();
+            };
+            //隐藏广告位
+            var hideThisSmallWeb = function () {
+                $('.swiper-slide.ANNUAL_LIVING2').hide();
+                websSwiper.update();
+                window.checkSlides();
+            };
+            var webInit = function () {
+                window.onKroomInfoGot(function (info) {
+                    anchorId = info.anchorID; //获取主播ID
+                    liveId = info.liveID; //获取直播ID
+                    getNowLiveData();
+                });
+                //推送
+                window.onKroomDataPush(function (res) {
+                    if (!res.activityId || res.activityId != '202101_live') return;
+                    // alert('右边推送de数据'+JSON.stringify(res))
+                    setDataDom(res); //更新数据
+                });
+            };
+            // 数据更新
+            var setDataDom = function (res) {
+                var data = res;
+                // alert('直播间渲染的数据信息右边'+JSON.stringify(data))
+                /**
+                 * 区分如果是端推送 不会返回 retCode字段 取非 一定是true
+                 * 如果是接口返回数据 会有 retCode字段 且不为 0 判断 1000 即可
+                 */
+                if (!data.retCode || data.retCode == 1000) {
+                    if (data.isEnd == 0 || data.isEnd == 2) {
+                        //0（活动未开始）|| 2（活动已结束）关闭轮播图
+                        hideThisSmallWeb();
+                    }
+                    if (data.isEnd == 1) {
+                        //1（活动进行中）开启轮播图
+                        // showThisSmallWeb();
+                        if (data.rankNumAll || data.rankNumAll >= 0) {
+                            // alert('右边更新视图'+JSON.stringify(data))
+                            if (data.rankNumAll == 0 || data.rankNumAll > 100) {
+                                //名次 > 100 显示未上榜
+                                $('.two_box .rank_detail').css('display', 'none');
+                                $('.two_box .all_value_detail').css('display', 'none');
+                                $('.two_box .rank_empty').css('display', 'block');
+                            } else if (data.rankNumAll == 1) {
+                                // 名次 = 1
+                                $('.two_box .rankValue').text(data.rankNumAll); //右侧数据当前排名
+                                $('.two_box .value_num').text(data.hotValueAll === undefined ? '-' : data.hotValueAll); //巅峰值总和
+                                $('.two_box .rank_gap').css('display', 'none'); //隐藏距上一名差的总数
+                                $('.two_box .rank_empty').css('display', 'none'); //隐藏空状态
+                                $('.two_box .rank_detail').css('display', 'block');
+                                $('.two_box .all_value_detail').css('display', 'block');
+                            } else if (data.rankNumAll >= 2 && data.rankNumAll <= 99) {
+                                // alert(`1234:${$('.two_box .rankValue').length}-${data.rankNumAll}`)
+                                $('.two_box .rankValue').text(data.rankNumAll); //右侧数据当前排名
+                                $('.two_box .value_num').text(data.hotValueAll === undefined ? '-' : data.hotValueAll); //巅峰值总和
+                                $('.two_box .gapCountValue').text(data.gapHotValueAll === undefined ? '-' : data.gapHotValueAll); //距离上一名差的总数
+                                $('.two_box .rank_empty').css('display', 'none');//隐藏空状态
+                                $('.two_box .rank_detail').css('display', 'block');
+                                $('.two_box .all_value_detail').css('display', 'block');
+                            }
+                        }
+                    }
+                    // setTimeout(() => {
+                    //   $('.two_box').html($('.two_box').html()+'<br><br><br><br><br><br><br>'+Math.random())
+                    // }, 0);
+                } else {
+                    console.log('查询失败')
+                }
+            };
+            // 查询直播间数据
+            var getNowLiveData = function () {
+                var params = {
+                    liveId: liveId,
+                    anchorId: anchorId,
+                };
+                vvliveBridgeObj.doHttpGetReq_unify(
+                    {
+                        reqUrl: baseURL + 'act/year/2021/live/getNowLiveData.htm',
+                        parameter: params,
+                    },
+                    function (res) {
+                        setDataDom(res.data);
+                    }
+                );
+            };
+            window.LIVING_FESTIVAL_TWOINIT = webInit;
+        })(window);
+        ;
+        var baseURL = window.location.protocol + "//music.51vv.com/";
+        var VV_LIVING_USERINFO = null; //用户信息
+        var VV_LIVING_INFO = null; //直播间信息
+        var VV_ACTIVITY_DATA = null; //推送消息
+        var websSwiper = null;
+        var managerWeb = {
+            init: function () {
+                this.aaaaa();
+                this.getUserInfo();
+                this.updateInfo();
+                //初始化swiper
+                this.initSwiper();
+                //各个小页面初始化
+                window.LIVING_FESTIVAL_ONEINIT();
+                window.LIVING_FESTIVAL_TWOINIT();
+            },
+            initSwiper: function () {
+                websSwiper = new Swiper('#swiper', {
+                    autoplay: 5000,
+                    pagination: '.swiper-pagination',
+                    observer: true,
+                    // // pagination: '.swiper-pagination',
+                    // paginationClickable: true,
+                    // loop: true,
+                    // noSwiping: false,
+                    // // autoplay: 5000,
+                    // autoplayDisableOnInteraction: false,  // 用户操作后, 自动滑动会停掉, 改为false不会停
+                    // speed: 800,// 滑动速度，即slider自动滑动开始到结束的时间（单位ms），也是触摸滑动时释放至贴合的时间。
+                    // // observer: true,//修改swiper自己或子元素时，自动初始化swiper
+                    // observeParents: true//修改swiper的父元素时，自动初始化swiper
+                });
+            },
+            //获取直播间信息
+            aaaaa: function () {
+                vvliveBridgeObj.aaaaa(function (result) {
+                    if (_isAndroid) {
+                        try {
+                            result = JSON.parse(result);
+                        } catch (e) {
+                        }
+                    }
+                    window.VV_LIVING_INFO = result;
+                    $(document).trigger('vv-kroom-info-got', result);
+                }.bind(this));
+            },
+            getUserInfo: function () {
+                // 获取用户ID
+                vvliveBridgeObj.b(function (result) {
+                    var data = result.data;
+                    window.VV_LIVING_USERINFO = data;
+                    $(document).trigger('vv-user-info-got', data);
+                });
+            },
+            // 实时更新
+            updateInfo: function () {
+                window.handleRoomActivityInfo = function (res) {
+                    var data;
+                    if (_isAndroid) {
+                        try {
+                            data = JSON.parse(res);
+                        } catch (e) {
+                            data = res;
+                        }
+                    } else {
+                        data = res;
+                    }
+                    window.VV_ACTIVITY_DATA = data;
+                    $(document).trigger('vv-kroom-data-push', data);
+                };
+                vvliveBridgeObj.c();
+
+            },
+            //获取当前正在显示的小页面个数
+            getWebLength: function () {
+                var $slides = $('.swiper-wrapper .swiper-slide');
+                var len = 0;
+                for (var i = 0; i < $slides.length; i++) {
+                    if ($slides.eq(i).css('display') == 'block') {
+                        len += 1;
+                    }
+                }
+                return len;
+            }
+        };
+        window.onKroomInfoGot = function (fn) {
+            if (window.VV_LIVING_INFO) {
+                fn(window.VV_LIVING_INFO);
+            } else {
+                $(document).on('vv-kroom-info-got', function (event, data) {
+                    fn(data);
+                })
+            }
+        };
+        window.onUserInfoGot = function (fn) {
+            if (window.VV_LIVING_USERINFO) {
+                fn(window.VV_LIVING_USERINFO);
+            } else {
+                $(document).on('vv-user-info-got', function (event, data) {
+                    fn(data);
+                })
+            }
+        };
+        window.onKroomDataPush = function (fn) {
+            if (VV_ACTIVITY_DATA) {
+                fn(window.VV_ACTIVITY_DATA);
+            } else {
+                $(document).on('vv-kroom-data-push', function (event, data) {
+                    fn(data);
+                })
+            }
+        };
+        //检查有几个slide，据此隐藏或者展示小窗口
+        window.checkSlides = function () {
+            var len = managerWeb.getWebLength && managerWeb.getWebLength();
+            if (len === 0) {
+                //隐藏view
+                vvliveBridgeObj.hideKRoomAd({
+                    positionX: 0,
+                });
+                managerWeb.putButtonLeft && managerWeb.putButtonLeft();
+            } else {
+                //展示 view
+                vvliveBridgeObj.showKRoomAd({
+                    positionX: -152,
+                });
+                managerWeb.putButtonRight && managerWeb.putButtonRight();
+            }
+        };
+        $(document).ready(function () {
+            managerWeb.init();
+        });
+
+    </script>
+    
+    <script>
+        // setInterval(v=>{
+        //     1000
+        // })
+        // $('.rankValue').text(Date.now().toString().slice(-3))
+        setRandom = function(){
+            $('.rankValue').text(Date.now().toString().slice(-3))
+            setTimeout(setRandom, 2000 + Math.random() * 500)
+        }
+        setRandom();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>geo 下载</title>
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=1aa7aec26e20651e6fcf59c6dd3f0b78"></script> 
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+		<p><a href="https://gallery.echartsjs.com/editor.html?c=xbxUJPSiG9">ECharts Gallery - 省市区县多级联动下钻</a></p>
+		<p><a href="https://hxkj.vip/demo/echartsMap/">geojson文件下载地址</a></p>
+		<p><a href="https://lbs.amap.com/api/javascript-api/guide/abc/plugins">插件的使用-入门-教程-地图 JS API | 高德地图API</a></p>
+		<p><a href="https://lbs.amap.com/api/javascript-api/guide/services/district-search/?sug_index=0">行政区查询-服务-教程-地图 JS API | 高德地图API</a></p>
+		<div>
+			<input type="" value="河北省" id="searchInput" name=""> <button id="search">查询、转换</button>
+			<p id="callbackLog" style="white-space: pre-wrap;"></p>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+	
+		AMap.plugin('AMap.DistrictSearch',function(){//异步加载插件
+	        var districtSearch = new AMap.DistrictSearch({
+	            // 关键字对应的行政区级别，country表示国家
+	            level: 'country',
+	            //  显示下级行政区级数，1表示返回下一级行政区
+	            subdistrict: 1,
+
+			    // showbiz: false //最后一级返回街道信息
+	          })
+	          
+	          // 搜索所有省/直辖市信息
+	          districtSearch.search('中国', function(status, result) {
+	            // 查询成功时，result即为对应的行政区信息
+	            console.log(`districtSearch.search('中国'`, status, result)
+	          })
+	    });
+		AMap.plugin('AMap.DistrictSearch', function () {
+		  // 创建行政区查询对象
+		  var district = new AMap.DistrictSearch({
+		    // 返回行政区边界坐标等具体信息
+		    extensions: 'all',
+		    // 设置查询行政区级别为 区 
+		    level: 'district'
+		  })
+
+		  district.search('朝阳区', function(status, result) {
+            console.log(`district.search('朝阳区'`, status, result)
+		    // 获取朝阳区的边界信息
+		    var bounds = result.districtList[0].boundaries
+		    var polygons = []
+		    if (bounds) {
+		      for (var i = 0, l = bounds.length; i < l; i++) {
+		       //生成行政区划polygon
+		       var polygon = new AMap.Polygon({
+		         map: map,
+		         strokeWeight: 1,
+		         path: bounds[i],
+		         fillOpacity: 0.7,
+		         fillColor: '#CCF3FF',
+		         strokeColor: '#CC66CC'
+		       })
+		       polygons.push(polygon)
+		     }
+		     // 地图自适应
+		     map.setFitView()
+		   }
+		 })
+		})
+	</script>
+
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

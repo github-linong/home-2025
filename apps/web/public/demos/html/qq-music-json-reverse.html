@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+		<p>获取分类 https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_tag_conf.fcg?g_tk=5381&loginUin=0&hostUin=0&format=json&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq.json&needNewCode=0</p>
+		<p>获取详情 https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg?picmid=1&rnd=0.3589008377209899&g_tk=5381&loginUin=0&hostUin=0&format=json&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq.json&needNewCode=0&categoryId=165&sortId=5&sin=0&ein=19</p>
+		<script type="text/html">
+			// categoryId id
+			// sin 起始行
+			// ein 结束行
+			// format 返回类型
+			xhr = new XMLHttpRequest()
+			xhr.open('get', 'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg?categoryId=165&sin=100&ein=120&format=json')
+			xhr.onreadystatechange = function(){
+			    if(xhr.readyState == 4 && xhr.status == '200'){
+					var data = JSON.parse(xhr.response)
+					console.log(ln = data)
+					
+				}
+			}
+			xhr.send()
+		</script>
+		<script type="text/javascript">
+			// jsonp接口 https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_tag_conf.fcg?g_tk=5381&loginUin=0&hostUin=0&format=json&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq.json&needNewCode=0
+			data = {"code":0,"subcode":0,"message":"","default":0,"data":{"categories":[{"categoryGroupName":"热门","items":[{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"},{"sortId":1,"sortName":"默认"}],"categoryId":10000000,"categoryName":"全部","usable":0}],"usable":0},{"categoryGroupName":"语种","items":[{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":165,"categoryName":"国语","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":167,"categoryName":"英语","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":168,"categoryName":"韩语","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":166,"categoryName":"粤语","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":169,"categoryName":"日语","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":170,"categoryName":"小语种","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":203,"categoryName":"闽南语","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":204,"categoryName":"法语","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":205,"categoryName":"拉丁语","usable":1}],"usable":1},{"categoryGroupName":"流派","items":[{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":6,"categoryName":"流行","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":15,"categoryName":"轻音乐","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":11,"categoryName":"摇滚","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":28,"categoryName":"民谣","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":8,"categoryName":"R&#38;B","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":153,"categoryName":"嘻哈","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":24,"categoryName":"电子","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":27,"categoryName":"古典","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":18,"categoryName":"乡村","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":22,"categoryName":"蓝调","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":21,"categoryName":"爵士","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":164,"categoryName":"新世纪","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":25,"categoryName":"拉丁","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":218,"categoryName":"后摇","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":219,"categoryName":"中国传统","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":220,"categoryName":"世界音乐","usable":1}],"usable":1},{"categoryGroupName":"主题","items":[{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":39,"categoryName":"ACG","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":136,"categoryName":"经典","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":146,"categoryName":"网络歌曲","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":133,"categoryName":"影视","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":141,"categoryName":"KTV热歌","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":131,"categoryName":"儿歌","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":145,"categoryName":"中国风","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":194,"categoryName":"古风","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":148,"categoryName":"情歌","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":196,"categoryName":"城市","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":197,"categoryName":"现场音乐","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":199,"categoryName":"背景音乐","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":200,"categoryName":"佛教音乐","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":201,"categoryName":"UP主","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":202,"categoryName":"乐器","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":14,"categoryName":"DJ","usable":1}],"usable":1},{"categoryGroupName":"心情","items":[{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":52,"categoryName":"伤感","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":122,"categoryName":"安静","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":117,"categoryName":"快乐","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":116,"categoryName":"治愈","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":125,"categoryName":"励志","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":59,"categoryName":"甜蜜","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":55,"categoryName":"寂寞","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":126,"categoryName":"宣泄","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":68,"categoryName":"思念","usable":1}],"usable":1},{"categoryGroupName":"场景","items":[{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":78,"categoryName":"睡前","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":102,"categoryName":"夜店","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":101,"categoryName":"学习","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":99,"categoryName":"运动","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":85,"categoryName":"开车","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":76,"categoryName":"约会","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":94,"categoryName":"工作","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":81,"categoryName":"旅行","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":103,"categoryName":"派对","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":222,"categoryName":"婚礼","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":223,"categoryName":"咖啡馆","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":224,"categoryName":"跳舞","usable":1},{"allsorts":[{"sortId":2,"sortName":"最新"},{"sortId":3,"sortName":"最热"},{"sortId":4,"sortName":"评分"}],"categoryId":16,"categoryName":"校园","usable":1}],"usable":1}]}
+	}
+			data1 = (data.data.categories.slice(1).map(v=>({categoryGroupName:v.categoryGroupName,items: v.items.map(v1=>({categoryName: v1.categoryName,categoryId:v1.categoryId}))})))
+			data1String = JSON.stringify(data1, null, ' ')
+		</script>
+		<script type="text/javascript">
+			data2 = data1.map(v=>(v.items.map(v1=>({...v1,categoryGroupName:v.categoryGroupName}))))
+			data3 = data2.flat();
+			data3Hash = {};for(var i in data3) data3Hash[data3[i].categoryId] = data3[i]
+			data3String = JSON.stringify(data3, null, ' ')
+		</script>
+		<script type="text/javascript">
+			
+		</script>
+	</div>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

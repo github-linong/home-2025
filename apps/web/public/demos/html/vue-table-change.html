@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Vue 表格行修改功能 - www.lilnong.top</title>
+	<meta keywords="Vue,element-ui,table">
+	<meta description="Vue 表格行修改功能">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+	<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<body>
+	<div id="app">
+		
+		<el-button
+		  type="primary"
+		  size="small"
+		  @click="createRow"
+		>
+		  新增
+		</el-button>
+		<el-table
+			:data="tableData"
+			style="width: 100%">
+			<el-table-column align="center" label="ID" width="80">
+				<template slot-scope="{row}">
+				  <span>{{ row.id }}</span>
+				</template>
+			</el-table-column>
+			<el-table-column
+				prop="date"
+				label="日期"
+				width="180">
+			</el-table-column>
+			<el-table-column
+				prop="name"
+				label="姓名"
+				width="180">
+			</el-table-column>
+			<el-table-column min-width="300px" label="地址">
+				<template slot-scope="{row}">
+				  <template v-if="row.edit">
+					<el-input v-model="row.address" class="edit-input" size="small" />
+				  </template>
+				  <span v-else>{{ row.address }}</span>
+				</template>
+			  </el-table-column>
+			<el-table-column align="center" label="Actions" width="180">
+				<template slot-scope="{row}">
+				  <el-button
+					v-if="row.edit"
+					type="success"
+					size="small"
+					@click="confirmEdit(row, 1)"
+				  >
+					提交
+				  </el-button>
+				  <el-button
+					v-if="row.edit && row.id"
+					type="danger"
+					size="small"
+					@click="confirmEdit(row)"
+				  >
+					取消
+				  </el-button>
+				  <el-button
+					v-if="!row.edit"
+					type="primary"
+					size="small"
+					icon="el-icon-edit"
+					@click="switchEdit(row, true)"
+				  >
+					编辑
+				  </el-button>
+				</template>
+			  </el-table-column>
+		</el-table>
+	</div>
+	<script>
+		new Vue({
+			el: '#app',
+			data() {
+				return {
+					tableData: [{
+						id: 1,edit: false,date: '2016-05-02',name: '王小虎1',address: '上海市普陀区金沙江路 1518 弄'
+					}, {
+						id: 2,edit: false,date: '2016-05-04',name: '王小虎2',address: '上海市普陀区金沙江路 1517 弄'
+					}, {
+						id: 3,edit: false,date: '2016-05-01',name: '王小虎3',address: '上海市普陀区金沙江路 1519 弄'
+					}, {
+						id: 4,edit: false,date: '2016-05-03',name: '王小虎4',address: '上海市普陀区金沙江路 1516 弄'
+					}]
+				}
+			},
+			methods: {
+				createRow(){
+					if(this.tableData.every(v=>v.id)){
+
+						this.tableData.push({
+							id: null,
+							edit: true,
+							date: new Date().toLocaleString(),
+							name: 'www.lilnong.top',
+							address: ''
+						})
+					}else{
+						alert('只能有一条新增')
+					}
+				},
+				switchEdit(row, state){
+					if(state){
+						row._data = JSON.stringify(row)
+					}else{
+						// var obj = JSON.parse(row._data);
+						// Object.keys(obj).forEach(v=>{
+						// 	row[v] = obj[v]
+						// })
+					}
+					row.edit = state
+				},
+				confirmEdit(row, isSubmit){
+					if(isSubmit){
+						if(row.id){
+							console.log('update', row)
+							// delete row._data
+							// row._data = JSON.stringify(row)
+						}else{
+							console.log('insert', row)
+							row.id = Math.random()
+						}
+					}else{
+						if(row.id){
+							console.log('cancel', row)
+							var obj = JSON.parse(row._data);
+							Object.keys(obj).forEach(v=>{
+								row[v] = obj[v]
+							})
+						}else{
+							console.log('remove', row)
+						}
+					}
+					// row.edit = false;
+					this.switchEdit(row, false)
+				}
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

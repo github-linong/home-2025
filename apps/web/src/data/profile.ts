@@ -1,8 +1,8 @@
 /**
- * Profile data for 李侬 (linong) — aggregated from lilnong.top, SegmentFault articles & answers.
+ * Profile data for linong — aggregated from lilnong.top, SegmentFault articles & answers.
  */
 export const profile = {
-  name: "李侬",
+  name: "linong",
   username: "linong",
   displayName: "linong",
   tagline: "前端开发 · AI 实践 · 技术探索",

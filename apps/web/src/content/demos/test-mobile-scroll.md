@@ -1,0 +1,11 @@
+---
+title: "滚动事件"
+description: "Bug 复现交互示例：滚动事件。历史前端实验与 Bug 复现页。"
+pubDate: "2019-06-01"
+type: web
+demoUrl: "/demos/html/test-mobile-scroll.html"
+legacyUrl: "/static/html/test-mobile-scroll.html"
+category: "Bug 复现"
+badge: "Bug 复现"
+tags: ["legacy", "测试"]
+---

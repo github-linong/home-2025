@@ -14,6 +14,8 @@ const {
   includeSidebar = true,
   sideBarActiveItemID,
   ogType,
+  /** Override main content width. Default suits reading/list pages; demos use a wider layout. */
+  mainClass = "p-6 pt-10 w-full max-w-[100vw] lg:max-w-[960px]",
 } = Astro.props;
 ---
 
@@ -29,7 +31,7 @@ const {
       <div class="drawer-content bg-base-100">
         <Header title={SITE_TITLE} />
         <div class="md:flex md:justify-center">
-          <main class="p-6 pt-10 lg:max-w-[900px] max-w-[100vw]">
+          <main class={mainClass}>
             <slot />
           </main>
         </div>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- <meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.0-beta.7/vue.global.js"></script> -->
+
+    <link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/Mock.js/1.0.1-beta3/mock-min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+    <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.js"></script>
+
+
+    <!-- <link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"> -->
+    
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+
+    <!-- <script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script> -->
+    <!-- <script type="text/javascript">new VConsole()</script> -->
+
+    <div class="body">
+        <div class="header"></div>
+        <div class="container">
+            <div class="aside"></div>
+            <div class="main">
+                <div class="breadcrumb"></div>
+                <div class="filter"></div>
+                <div class="viewer"></div>
+            </div>
+        </div>
+    </div>
+    <style>
+        .to-light-blue-100 {
+            --tw-gradient-to: #e0f2fe;
+        }
+
+        .from-light-blue-50 {
+            --tw-gradient-from: #f0f9ff;
+            --tw-gradient-stops: var(--tw-gradient-from),var(--tw-gradient-to,rgba(240,249,255,0));
+        }
+    </style>
+    <div id="app" class=""> 
+        <!-- <div class="flex nav-list">
+            <div class="nav-item">已购</div>
+        </div> -->
+        <div class="flex flex-wrap items-center  booklet-list bg-gradient-to-r from-light-blue-50 to-light-blue-100 rounded-t-xl overflow-hidden bg-gradient-to-r from-light-blue-50 to-light-blue-100" >
+            <!-- class="booklet flex flex-auto p-6 m-6 max-w-sm bg-white rounded-xl shadow-md flex space-x-4"  -->
+            <div 
+                class="booklet flex-auto bg-white rounded-xl shadow-md m-6 cursor-pointer" 
+                v-for="booklet in bookletList"
+                :data-booklet="JSON.stringify(booklet, null, 4)"
+                @click="openBooklet(booklet)">
+                <!-- :style="{background: `url(${booklet.background_img})`}" -->
+                <div class="max-w-sm flex p-6 space-x-4">
+                    <div class="booklet-cover-wrap flex-none">
+                        <img :src="booklet.cover_img" :data-src="booklet.base_cover_img" :alt="booklet.title" class="booklet-cover w-12">
+                    </div>
+                    <div class="booklet-info">
+                        <div class="booklet-title text-xl font-medium text-black">
+                            {{booklet.title}}
+                        </div>
+                        <div class="booklet-author text-gray-700">{{booklet.user_name}} <span class="text-gray-300" v-show="booklet.company">({{booklet.company}})</span></div>
+                        <div class="booklet-summary text-gray-500">{{booklet.summary}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        (async function(){
+            pre_url = '//cors-www.lilnong.top/static/project/juejin-booklet/';
+            list = [
+                "bookletshelflist--1652604785813.json",
+                "getBookLetInfo-6844723704639782920-1652604814246.json",
+                "getBookLetSection-7054754754529853475-7064933291312283678-1652604969500.json"
+            ];
+            list = await fetch('//cors-www.lilnong.top/static/project/juejin-booklet')
+                .then(v=>v.text())
+                .then(v=>v.match(/href="[0-9a-z-]+\.json"/gi).map(v=>v.slice(6, -1)))
+                // .then(v=>v.match(/href="[0-9a-z-]+\.json"/gi).map(v=>v.slice(6, -6)))
+                    // .replace(/-+/g,'-')
+                .then(v=>v.map(v=>pre_url+v))
+                // .then(console.log)
+            console.log(list)
+            listGroup = _.groupBy(list, (v)=>{
+                return v.slice(pre_url.length).match(/[a-z]+/i, )
+            });
+            console.log(listGroup)
+            if(listGroup.bookletshelflist && listGroup.bookletshelflist.length){
+                listGroup.bookletshelflist = [listGroup.bookletshelflist[1]]
+            }
+            new Vue({
+                el: "#app",
+                data(){
+                    return {
+                        bookletList: [],
+                    }
+                },
+                async created(){
+                    const list = (await Promise.all(listGroup.bookletshelflist.map(v=>fetch(v).then(v=>v.json()))))[0].data;
+                    this.bookletList = list.map((v)=>{
+                        return {
+                            booklet_id: v.booklet_id,
+
+                            title: v.base_info.title,
+                            background_img: this.transJueJinUrl(v.base_info.background_img),
+                            cover_img: this.transJueJinUrl(v.base_info.cover_img),
+                            base_cover_img: (v.base_info.cover_img),
+                            section_ids: v.base_info.section_ids,
+                            summary: v.base_info.summary,
+
+                            user_name: v.user_info.user_name,
+                            company: v.user_info.company,
+                            
+                        }
+                    })
+                },
+                methods: {
+                    openBooklet(booklet){
+                        console.log(booklet);
+                        location.href = `./booklet.html?id=${booklet.booklet_id}`;
+                    },
+                    transJueJinUrl(url){
+                        return `http://www.lilnong.top/urlTrans?group=juejin&url=${url}`;
+                    }
+                }
+            });
+        })()
+    </script>
+</body>
+
+</html>

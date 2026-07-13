@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>图片处理大小 - www.lilnong.top</title>
+	<meta keywords="图片处理大小, image resize">
+	<meta description="图片处理大小">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+	<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+	<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+	<link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/theme-chalk/index.css" rel="stylesheet">
+	<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/index.js"></script>
+</head>
+<body>
+	<div id="app">
+		<input type="file" id="file1">
+		<img src="" id="viewSource" alt="">
+	</div>
+	<script>
+		function imageResize(file, width, height){
+			return new Promise((resolve, reject)=>{
+				width = width || 1024;
+				height = height || 1024;
+				var blobUrl = URL.createObjectURL(file);
+				var imgEl = new Image();
+				imgEl.src = blobUrl;
+				imgEl.onload = function(){
+					// if( imgEl.naturalWidth > width){
+
+					// }
+					var widthScale = imgEl.naturalWidth / width
+					var heightScale = imgEl.naturalHeight / height
+					var maxScale = Math.max(widthScale, heightScale);
+					var canvas = document.createElement('canvas');
+					var ctx = canvas.getContext('2d');
+					if(maxScale > 1){
+						canvas.width=width;
+						canvas.height=height;
+						ctx.drawImage(imgEl, 0, 0, imgEl.naturalWidth / maxScale >> 0,imgEl.naturalHeight / maxScale >> 0)
+					}else{
+						canvas.width=imgEl.naturalWidth;
+						canvas.height=imgEl.naturalHeight;
+						ctx.drawImage(imgEl, 0, 0)
+					}
+					canvas.toBlob(v=>{
+						resolve(v);
+					}, 'image/jpg')
+					
+				}
+				imgEl.onerror = function(){
+					reject()
+				}
+			})
+		}
+		function uploadFile(file, onprogress, onreadystatechange){
+			var formData = new FormData;
+			formData.append('file', file)
+			formData.append('type', 'foreground')
+			formData.append('random', Math.random())
+			var xhr = new XMLHttpRequest();
+			xhr.responseType = 'json'
+			xhr.open('post', '/upload_baidu_classify');
+			xhr.onreadystatechange = onreadystatechange;
+			xhr.send(formData);
+		}
+		file1.addEventListener('change', function(){
+			var _time = Date.now();
+			if(file1.files.length){
+				var imgFile = file1.files[0];
+				return imageResize(imgFile).then(v=>viewSource.src = URL.createObjectURL(v))
+				uploadFile(imgFile, function(e){}, function(e){
+					// console.log('onreadystatechange', e)
+					if(e.target.readyState == 4 && e.target.status == 200){
+						viewSource.src = 'data:image/jpeg;base64,'+e.target.response.data.foreground
+					}
+				})
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!--
+ * @author: linong
+ * @Date: 2021-02-24 20:24:38
+ * @lastEditors: 
+ * @lastEditTime: 
+ * @Description: 
+-->
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>websocket 测试服务 - www.lilnong.top</title>
+	<meta keywords="websocket 测试服务">
+	<meta description="websocket 测试服务">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+	
+</head>
+<body>
+	<div id="app">
+		<el-card class="box-card" style="margin: 6px">
+			<div slot="header" class="clearfix">
+			  <span>评分标准</span>
+			  <!-- <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button> -->
+			</div>
+			<el-tag type="danger">0-6 不及格</el-tag>
+			<el-tag type="warning">6-8 及格</el-tag>
+			<el-tag>8-9 满意</el-tag>
+			<el-tag type="success">9-10	优秀</el-tag>
+			
+			<el-collapse v-model="activeNames" accordion  style="margin: 6px 0">
+				<el-collapse-item title="实用性 Practicability" name="1">			
+					<template slot="title">
+						<div style="line-height: 1;margin-right: auto;width: 10em">实用性 <br> Practicability</div> <el-input-number @click.native.stop="activeNames = '1'" v-model="num1" :precision="1" :min="0" :step="0.1" :max="10"></el-input-number>
+					</template>
+					<div>是否和工作有关，是否有帮助，涨知识。</div>
+				<div>
+					技术方法娴熟，根据实际情况讲解<br>
+					知识点的深度
+				</div>
+				</el-collapse-item>
+				<el-collapse-item title="语言流畅、反应灵活 Fluency" name="2">
+					<template slot="title">
+						<div style="line-height: 1;margin-right: auto;width: 10em">语言流畅、反应灵活 <br> Fluency</div> <el-input-number @click.native.stop="activeNames='2'" v-model="num2" :precision="1" :min="0" :step="0.1" :max="10"></el-input-number>
+					</template>
+					<div>是否讲清楚了，听众的问题回答情况。</div>
+					<div>
+						语言表达得体流利、反应灵活。<br>
+						能够很好回答听众问题，结束时能会议要点，予以总结。<br>
+						激发听众积极性；达到“乐学高效”
+					</div>
+				</el-collapse-item>
+				<el-collapse-item title="结合实际、文档总结 Precipitate" name="3">
+					<template slot="title">
+						<div style="line-height: 1;margin-right: auto;width: 10em">结合实际、文档总结 <br> Precipitate</div> <el-input-number @click.native.stop="activeNames='3'" v-model="num3" :precision="1" :min="0" :step="0.1" :max="10"></el-input-number>
+					</template>
+					<div>实际应用场景，是否提供了文档，ppt精美程度。</div>
+					<div>
+						文字表达准确规范，阐述清楚。<br>
+						ppt整体布局风格（美观合理、立意新颖）
+					</div>
+				</el-collapse-item>
+			</el-collapse>
+		  </el-card>
+		<el-card class="box-card" style="margin: 6px">
+			<div slot="header" class="clearfix">
+				<span>评分计算</span>
+			</div>
+			<el-tag type="info">实用占比40%，语言占比30%，文档占比30%</el-tag>
+			<br>
+			<span>分值：{{practicabilityComputed | toFixed}}+{{fluencyComputed | toFixed}}+{{precipitateComputed | toFixed}}={{sumComputed | toFixed}}</span>
+			
+		</el-card>
+		<div style="display: flex;justify-content: center;">
+			<el-button type="primary"  @click="send()">上传<i class="el-icon-upload el-icon--right"></i></el-button>
+		</div>
+		<el-alert
+			v-for="item in alertTxt"
+			:title="item"
+			:closable="false"
+			type="info">
+		</el-alert>
+	</div>
+	<script type="text/javascript">
+		var ws
+		new Vue({
+			el: "#app",
+			data(){
+				return {
+					activeNames: '',
+					num1: 6,
+					num2: 6,
+					num3: 6,
+					alertTxt: []
+				}
+			},
+			computed: {
+				practicabilityComputed(){return this.num1*.4 },
+				fluencyComputed(){return this.num2*.3 },
+				precipitateComputed(){return this.num3*.3 },
+				sumComputed(){return this.practicabilityComputed+this.fluencyComputed+this.precipitateComputed }
+			},
+			filters:{
+				toFixed(val){
+					return val.toFixed(2)
+				}
+			},
+			mounted(){
+				var that = this;
+				var pingPongTime = 0;
+				var initWs = function initWs(){
+					var protocol = 'ws'
+					if(location.protocol == "http:"){
+						protocol = 'ws'
+					}else{
+						protocol = 'wss'
+					}
+					ws = new WebSocket(protocol+"://ws.lilnong.top/sum");
+					ws.onopen = function (e) {
+						console.log('连接成功');
+						clearInterval(pingPongTime)
+						pingPongTime = setInterval(()=>{
+							ws.send('')
+						}, 3000)
+					}
+					//收到消息处理
+					ws.onmessage =  (e) => {
+						// console.log(e)
+						if(e.data){
+							var data = JSON.parse(e.data);
+							that.alertTxt = [
+								`当前${data.peopleNum}人在线，${data.peopleNum_submit}人已提交，目前平均分${data.avg_sum}。`,
+								`${data.user&&data.user.submitCount?`你已提交,分数为：${data.user.sum}。提交了${data.user.submitCount}次`:'你快点提交吧，想啥呢'}`
+							]
+						}
+					}
+					//监听连接关闭情况
+					ws.onclose = function (e) {
+						setTimeout(v=>initWs(), 2000);
+						console.log('连接关闭');
+					}
+				}
+				initWs();
+			},
+			methods:{
+				send(){
+					ws.send(JSON.stringify({type:'submit_num',nums:[this.num1,this.num2,this.num3]}))
+				}
+			}
+		})
+	</script>
+	<script type="text/javascript">
+		// setInterval(v=>{
+		// 	ws.send(JSON.stringify({type: 'ping'}))
+		// }, 1000 * 10)
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+	<script type="text/javascript" src="//www.lilnong.top/static/js/public_hm.js"></script>
+</body>
+</html>

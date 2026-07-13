@@ -16,12 +16,32 @@ const { slug, kind = "article", source = "site", answerId } = Astro.props;
   (function () {
     if (typeof gtag !== "function") return;
 
-    gtag("event", "article_view", {
+    function readVisitorId() {
+      if (window.__lilnongVisitorId) return window.__lilnongVisitorId;
+      var row = document.cookie.split("; ").find(function (entry) {
+        return entry.indexOf("auth-uuid=") === 0;
+      });
+      if (!row) return;
+      var raw = row.slice("auth-uuid=".length);
+      try {
+        raw = decodeURIComponent(raw);
+      } catch (e) {
+        /* keep raw */
+      }
+      var hash = raw.indexOf("#");
+      return (hash === -1 ? raw : raw.slice(0, hash)) || undefined;
+    }
+
+    var visitorId = readVisitorId();
+    var baseParams = {
       article_slug: slug,
       content_kind: kind,
       content_source: source,
       answer_id: answerId || undefined,
-    });
+      visitor_id: visitorId,
+    };
+
+    gtag("event", "article_view", baseParams);
 
     const milestones = [25, 50, 75, 90];
     const fired = new Set();
@@ -45,6 +65,7 @@ const { slug, kind = "article", source = "site", answerId } = Astro.props;
             content_source: source,
             answer_id: answerId || undefined,
             percent_scrolled: milestone,
+            visitor_id: visitorId,
           });
         }
       }

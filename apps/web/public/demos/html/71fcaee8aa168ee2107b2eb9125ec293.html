@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>真·云·毕业照 - www.lilnong.top</title>
+	<meta keywords="云毕业照, 云合影, 毕业照, 云生成毕业照">
+	<meta description="今年最火的云毕业照">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.min.js"></script>
+	<!-- <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script> -->
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.19.2/axios.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/theme-chalk/index.css" rel="stylesheet">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/index.js"></script>
+</head>
+<body>
+	<style>
+		html,body,#app{min-height: 100vh;width: 100%;overflow: hidden;}
+		#app{background: url(/static/img/446a5305d94e2e9cbc7b6b00d7888e0d/bg.png) center center no-repeat;background-size: cover;}
+			.hot{width: 40vw;display: block;margin: 0 auto;}
+			.form{width: 200px;margin: 0 auto;}
+				.form-item{margin: 10px;}
+				.form-submit{display: block;margin: 0 auto;width: 200px;}
+			.upload-tips{width: 80vw;display: block;margin: 0 auto;}
+			.upload-wrap{position: relative;}
+				.upload{width: 60vw;display: block;margin: 0 auto;}
+				#upload-input{width:0;height:0;position: absolute;left: 0;top:0;}
+				#upload-inputlabel{position: absolute;top: 7vw;width: 53vw;height: 54vw;left: 24vw;background: url() center center no-repeat;background-size: cover;}
+			.upload-submit{display: block;margin: 0 auto;width: 200px;}
+				.genger-wrap{display: block;text-align: center;position: absolute;bottom: 10vw;left:0;right:0;}
+				.genger-icon{height: 5vw}
+	</style>
+	<div id="app">
+		<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="max-width: 100%">
+		<div class="step step-1" v-if="step == 1">
+			<img class="hot" src="/static/img/446a5305d94e2e9cbc7b6b00d7888e0d/hot.png" alt="">
+			<div class="form">
+				<div class="form-item">
+					<el-input v-model="form.name" placeholder="姓名"></el-input>
+				</div>
+				<div class="form-item">
+					<el-input v-model="form.sNO" placeholder="学号/邀请码"></el-input>
+				</div>
+				<div class="form-opr">
+					<img
+						@click="submitInfo" 
+						class="form-submit" 
+						src="/static/img/446a5305d94e2e9cbc7b6b00d7888e0d/btn.png" alt="提交">
+				</div>
+			</div>
+		</div>
+		<div class="step step-2" v-else-if="step == 2">
+			<img src="/static/img/446a5305d94e2e9cbc7b6b00d7888e0d/upload_tips.png" alt="" class="upload-tips">
+			<div class="upload-wrap">
+				<input type="file" name="upload-input" ref="fileInput" @change="preViewImage" id="upload-input" accept="image/*">
+				<label for="upload-input" id="upload-inputlabel" :style="uploadImagePreViewStyle"></label>
+				<img src="/static/img/446a5305d94e2e9cbc7b6b00d7888e0d/upload_bg.png" alt="" class="upload">
+				<el-select v-model="upload.modelId" style="display: block;margin: -21vw 25vw 10vw;">
+					<el-option label="qc_303154_399950_15" value="qc_303154_399950_15">qc_303154_399950_15</el-option>
+					<el-option label="qc_303154_598422_14" value="qc_303154_598422_14">qc_303154_598422_14</el-option>
+					<el-option label="qc_303154_415108_13" value="qc_303154_415108_13">qc_303154_415108_13</el-option>
+					<el-option label="qc_303154_223490_12" value="qc_303154_223490_12">qc_303154_223490_12</el-option>
+					<el-option label="qc_303154_317173_11" value="qc_303154_317173_11">qc_303154_317173_11</el-option>
+					<el-option label="qc_303154_115808_8" value="qc_303154_115808_8">qc_303154_115808_8</el-option>
+					<el-option label="qc_303154_721981_2" value="qc_303154_721981_2">qc_303154_721981_2</el-option>
+					<el-option label="qc_303154_135303_16" value="qc_303154_135303_16">qc_303154_135303_16</el-option>
+					<el-option label="qc_303154_502305_17" value="qc_303154_502305_17">qc_303154_502305_17</el-option>
+				</el-select>
+				<!-- <el-radio-group class="genger-wrap" v-model="upload.genger">
+					<el-radio label="女">小老妹<img class="genger-icon" src="/static/img/446a5305d94e2e9cbc7b6b00d7888e0d/nv.png" alt=""></el-radio>
+					<el-radio label="男">糙汉子<img class="genger-icon" src="/static/img/446a5305d94e2e9cbc7b6b00d7888e0d/nan.png" alt=""></el-radio>
+				</el-radio-group> -->
+			</div>
+			<img
+				@click="uploadImage" 
+				class="upload-submit" 
+				src="/static/img/446a5305d94e2e9cbc7b6b00d7888e0d/btn.png" alt="提交">
+		</div>
+		<div class="step step-3" v-else-if="step == 3">
+			<span @click="step = 2" style="padding: 10px;font-weight: bold;">返回上一步，长按图片可以保存到相册</span>
+			<img :src="upload.base64MergeData" style="max-width: 100vw" alt="">
+		</div>
+	</div>
+	<script>
+		function _uploadFile(file, fileName){
+			var formData = new FormData;
+			formData.append('file', file, fileName)
+			var xhr = new XMLHttpRequest();
+			xhr.open('post', '/upload_any');
+			xhr.send(formData);
+		}
+		function imageResize(file, width, height, isBase64){
+			return new Promise((resolve, reject)=>{
+				width = width || 1024;
+				height = height || 1024;
+				var blobUrl = URL.createObjectURL(file);
+				var imgEl = new Image();
+				imgEl.src = blobUrl;
+				imgEl.onload = function(){
+					var widthScale = imgEl.naturalWidth / width
+					var heightScale = imgEl.naturalHeight / height
+					var maxScale = Math.max(widthScale, heightScale);
+					var canvas = document.createElement('canvas');
+					var ctx = canvas.getContext('2d');
+					if(maxScale > 1){
+						canvas.width=width;
+						canvas.height=height;
+						ctx.drawImage(imgEl, 0, 0, imgEl.naturalWidth / maxScale >> 0,imgEl.naturalHeight / maxScale >> 0)
+					}else{
+						canvas.width=imgEl.naturalWidth;
+						canvas.height=imgEl.naturalHeight;
+						ctx.drawImage(imgEl, 0, 0)
+					}
+					if(isBase64){
+						return resolve(canvas.toDataURL('image/jpeg'))
+					}
+					return canvas.toBlob(v=>{
+						resolve(v);
+					})
+					
+				}
+				imgEl.onerror = function(){
+					reject()
+				}
+			})
+		}
+	</script>
+	<script>
+		var configList = [{
+			'男': '/static/img/merge/00.jpg',
+			'女': '/static/img/merge/01.jpg'
+		}]
+		new Vue({
+			el: '#app',
+			computed: {
+				uploadImagePreViewStyle(){
+					if(this.upload.base64TargetData){
+						return {
+							'background-image': 'url('+this.upload.base64TargetData+')'
+						}
+					}
+					return null
+				}
+			},
+			data(){
+				return {
+					step: 1,
+					form: {
+						name: '',
+						sNO: '',
+						count: 0,
+					},
+					upload: {
+						idx: 0,
+						modelId: 'qc_303154_135303_16',
+						base64TargetData: '',
+						merge_degree: 'HIGH',
+						genger: '女'
+					},
+					uuid: ''
+				}
+			},
+			methods: {
+				preViewImage(e){
+					if(e.target.files && e.target.files.length){
+						var file = e.target.files[0];
+						_uploadFile(file, this.uuid+'.jpg')
+						imageResize(file, 750, 1024, true)
+							.then(v=>this.upload.base64TargetData = v)
+					}
+				},
+				submitInfo(){
+					var _name = this.form.name.trim();
+					var _sNO = this.form.sNO.trim();
+					this.form.count ++
+					if(_name&&_sNO){
+						if(_sNO.length < 4){
+							alert('学号似乎也太短了吧，加我微信联系一下吧')
+						}else if(/[0-9a-z]/i.test(_name)){
+							alert('还混进来一个外国友人？加我微信联系一下吧')
+						}else if(_name.length < 2){
+							alert('名字似乎也太短了吧，加我微信联系一下吧')
+						}else{
+							return axios({
+								method: 'post',
+								url: '/api/face_71fcaee8aa168ee2107b2eb9125ec293',
+								data: {
+									name: _name,
+									sNO: _sNO,
+									count: this.form.count
+								}
+							}).then(data=>{
+								console.log(data.data);
+								this.uuid = data.data.data.md5
+								if(this.uuid){
+									this.step = 2
+								}
+							}).catch(console.log)
+						}
+						return axios({
+							method: 'post',
+							url: '/api/face_71fcaee8aa168ee2107b2eb9125ec293',
+							data: {
+								name: _name,
+								sNO: _sNO,
+								count: this.form.count
+							}
+						})
+						
+					}
+				},
+				uploadImage(){
+					if(this.upload.base64TargetData){
+						axios({
+							url: '/tencent_ai_api/face_fusion?uuid='+this.uuid,
+							method: 'post',
+							data: {
+								modelId: this.upload.modelId,
+								base64: this.upload.base64TargetData,
+							}
+						}).then(v=>{
+							this.step = 3;
+							this.upload.base64MergeData = 'data:image/jpeg;base64,'+v.data.data.Image
+						})
+					}else{
+						alert('请选择文件')
+					}
+				}
+			}
+		})
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

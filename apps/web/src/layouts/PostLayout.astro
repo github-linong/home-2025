@@ -4,7 +4,6 @@ import BaseLayout from "./BaseLayout.astro";
 import QADisplay from "../components/QADisplay.astro";
 import type { QaData } from "../components/QADisplay.astro";
 import BlogAnalytics from "../components/BlogAnalytics.astro";
-import Comments from "../components/Comments.astro";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { Image } from "astro:assets";
@@ -41,7 +40,7 @@ const contentSource = source ?? (sourceUrl ? "segmentfault" : "site");
 
 <BaseLayout title={title} description={description} image={heroImage}, ogType="article">
   <main class="md:flex md:justify-center">
-    <article class="prose prose-lg max-w-[750px] prose-img:mx-auto" data-pagefind-body>
+    <article class="prose prose-lg max-w-none prose-img:mx-auto" data-pagefind-body>
       <span data-pagefind-meta="title" class="hidden">{title}</span>
       <span data-pagefind-meta="description" class="hidden">{description}</span>
       <span data-pagefind-meta="kind" class="hidden">{kind}</span>
@@ -109,10 +108,6 @@ const contentSource = source ?? (sourceUrl ? "segmentfault" : "site");
         </>
       )}
     </article>
-
-    <div class="max-w-[750px] mx-auto">
-      <Comments />
-    </div>
   </main>
 
   <BlogAnalytics slug={slug} kind={kind} source={contentSource} answerId={answerId} />

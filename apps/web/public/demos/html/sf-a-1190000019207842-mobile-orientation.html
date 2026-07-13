@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+		<script type="text/javascript">
+			window.addEventListener("resize", ()=>{
+			    if (window.orientation === 180 || window.orientation === 0) { 
+			      // 正常方向或屏幕旋转180度
+			        console.log('竖屏');
+			    };
+			    if (window.orientation === 90 || window.orientation === -90 ){ 
+			       // 屏幕顺时钟旋转90度或屏幕逆时针旋转90度
+			        console.log('横屏');
+			    }  
+			}); 
+		</script>
+		<style type="text/css">
+			@media screen and (orientation: portrait) {
+			  /*竖屏...*/
+			  body:before{
+			  	content: '竖屏';
+			  }
+			} 
+			@media screen and (orientation: landscape) {
+			  /*横屏...*/
+			  body:before{
+			  	content: '横屏';
+			  }
+			}
+		</style>
+	</div>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

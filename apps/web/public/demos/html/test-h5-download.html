@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>download</title>
+	<meta charset="utf-8">
+</head>
+<body>
+	<a target="_blank" download="同域下载" href="download.html">同域下载</a>
+	<a target="_blank" download="跨域下载" href="http://www.51vv.com/zhuanti/wudao/images/d03/header_420.jpg">跨域下载</a>
+	<a href="javascript:;" id="ajaxDownload">ajax资源下载</a>
+	<script type="text/javascript">
+		var d = document.querySelector('#ajaxDownload');
+		var xh = new XMLHttpRequest();
+		d.onclick = function(){
+			xh.open('GET', './v1705221.mp4');
+			xh.onprogress = function(data){console.log(data)}
+			xh.onload = function(data){console.log(data)}
+			xh.send();
+		}
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

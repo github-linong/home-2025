@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+		<p><a href="https://segmentfault.com/a/1190000019315765">前端培训-初级阶段-场景实战（2019-06-06）-下载文件&下载进度 - javascript-lNong - SegmentFault 思否</a></p>
+		<p><a href="https://www.lilnong.top/static/html/test-EncodeUtf8-decodeUtf8_in_Url-Hex2Utf8-Str2Hex-Dec2Dig-Dig2Dec.html">https://www.lilnong.top/static/html/test-EncodeUtf8-decodeUtf8_in_Url-Hex2Utf8-Str2Hex-Dec2Dig-Dig2Dec.html</a></p>
+	</div>
+	<script type="text/javascript">
+		fetch('/static/static/download-20190528100124.jpg')
+			.then(v=>v.arrayBuffer())
+			.then(v=>console.log(v,new Blob([v])))
+
+		// fetch('/static/static/download-20190528100124.jpg')
+		// 	.then(v=>v.blob())
+		// 	.then(v=>{
+		// 		fileReader = new FileReader();
+		// 		fileReader.readAsBinaryString(v);
+		// 		fileReader.onload = ()=>{
+		// 			console.log([].map.call(fileReader.result, (v)=>v.codePointAt().toString(2).padStart(8, '0')).join())
+		// 		}
+		// 	})
+
+		// fetch('/static/static/download-20190528100124.jpg')
+		//     .then(v=>v.text())
+		// 	.then(v=>{
+		// 		console.log([].map.call(v, (v)=>v.codePointAt().toString(2)).join())
+		// 		// console.log(escape(v))
+		// 		console.log(encodeURI(v))
+
+		// 		// console.log(v.slice(0,100))
+		// 		// window.str = v
+		// 		// blob = new Blob([str])
+		// 		// fread = new FileReader();
+		// 		// fread.readAsText(blob)
+		// 		// // fread.onload = ()=>console.log(fread.result, v.slice(0,100) == fread.result.slice(0,100))
+		// 		// fread.onload = ()=>console.log(fread.result.slice(0,100))
+		// 	})
+		
+		fetch('/static/static/download-20190528100124.jpg')
+		    .then(v=>v.text())
+			.then(v=>{
+// 				console.log([].map.call(v, (v)=>v.codePointAt().toString(2)).map(v=>v == '1111111111111101'?0:v).join())
+				console.log([]
+					.map
+					.call(v, (v)=>v.codePointAt().toString(2))
+					.map(v=>v == '1111111111111101'?0:v)
+					.map(v=>v+'')
+					.map(v=>parseInt(v,2))
+				)
+			})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

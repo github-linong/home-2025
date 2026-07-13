@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>navigator遍历</title>
+</head>
+<body>
+<button onclick="location.reload(true)">刷新</button>
+<script type="text/javascript">
+	// appCodeName: "Mozilla"
+	// appName: "Netscape"
+	// appVersion: "5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"
+	// clipboard: Clipboard {}
+	// connection: NetworkInformation
+	// downlink: 4.7
+	// effectiveType: "3g"
+	// onchange: null
+	// rtt: 300
+	// saveData: false
+	// __proto__: NetworkInformation
+	// cookieEnabled: true
+	// credentials: CredentialsContainer {}
+	// deviceMemory: 8
+	// doNotTrack: null
+	// geolocation: Geolocation {}
+	// hardwareConcurrency: 4
+	// keyboard: Keyboard {}
+	// language: "zh-CN"
+	// languages: (3) ["zh-CN", "zh", "en"]
+	// locks: LockManager {}
+	// maxTouchPoints: 0
+	// mediaCapabilities: MediaCapabilities {}
+	// mediaDevices: MediaDevices {ondevicechange: null}
+	// mimeTypes: MimeTypeArray {0: MimeType, 1: MimeType, 2: MimeType, 3: MimeType, application/pdf: MimeType, application/x-google-chrome-pdf: MimeType, application/x-nacl: MimeType, application/x-pnacl: MimeType, length: 4}
+	// onLine: true
+	// permissions: Permissions {}
+	// platform: "Win32"
+	// plugins: PluginArray {0: Plugin, 1: Plugin, 2: Plugin, Chrome PDF Plugin: Plugin, Chrome PDF Viewer: Plugin, Native Client: Plugin, length: 3}
+	// presentation: Presentation {defaultRequest: null, receiver: null}
+	// product: "Gecko"
+	// productSub: "20030107"
+	// serviceWorker: ServiceWorkerContainer {ready: Promise, controller: null, oncontrollerchange: null, onmessage: null}
+	// storage: StorageManager {}
+	// usb: USB {onconnect: null, ondisconnect: null}
+	// userAgent: "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"
+	// vendor: "Google Inc."
+	// vendorSub: ""
+	// webkitPersistentStorage: DeprecatedStorageQuota {}
+	// webkitTemporaryStorage: DeprecatedStorageQuota {}
+
+	// appCodeName: "Mozilla"
+	// appName: "Netscape"
+	// appVersion: "5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"
+	// clipboard: Clipboard {}
+	// connection: NetworkInformation {onchange: null, effectiveType: "4g", rtt: 300, downlink: 4.7, saveData: false}
+	// cookieEnabled: true
+	// credentials: CredentialsContainer {}
+	// deviceMemory: 8
+	// doNotTrack: null
+	// geolocation: Geolocation {}
+	// hardwareConcurrency: 4
+	// keyboard: Keyboard {}
+	// language: "zh-CN"
+	// languages: (3) ["zh-CN", "zh", "en"]
+	// locks: LockManager {}
+	// maxTouchPoints: 0
+	// mediaCapabilities: MediaCapabilities {}
+	// mediaDevices: MediaDevices {ondevicechange: null}
+	// mimeTypes: MimeTypeArray {0: MimeType, 1: MimeType, 2: MimeType, 3: MimeType, application/pdf: MimeType, application/x-google-chrome-pdf: MimeType, application/x-nacl: MimeType, application/x-pnacl: MimeType, length: 4}
+	// onLine: true
+	// permissions: Permissions {}
+	// platform: "Win32"
+	// plugins: PluginArray {0: Plugin, 1: Plugin, 2: Plugin, Chrome PDF Plugin: Plugin, Chrome PDF Viewer: Plugin, Native Client: Plugin, length: 3}
+	// presentation: Presentation {defaultRequest: null, receiver: null}
+	// product: "Gecko"
+	// productSub: "20030107"
+	// serviceWorker: ServiceWorkerContainer {ready: Promise, controller: null, oncontrollerchange: null, onmessage: null}
+	// storage: StorageManager {}
+	// usb: USB {onconnect: null, ondisconnect: null}
+	// userAgent: "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"
+	// vendor: "Google Inc."
+	// vendorSub: ""
+	// webkitPersistentStorage: DeprecatedStorageQuota {}
+	// webkitTemporaryStorage: DeprecatedStorageQuota {}
+	console.log('appCodeName',navigator.appCodeName);
+	console.log('----------------')
+	console.log('appName',navigator.appName);
+	console.log('----------------')
+	console.log('appVersion',navigator.appVersion);
+	console.log('----------------')
+	console.log('clipboard',navigator.clipboard);
+	console.log('----------------')
+	console.log('connection',navigator.connection);
+	console.log('----------------')
+	console.log('cookieEnabled',navigator.cookieEnabled);
+	console.log('----------------')
+	console.log('credentials',navigator.credentials);
+	console.log('----------------')
+	console.log('deviceMemory',navigator.deviceMemory);
+	console.log('----------------')
+	console.log('doNotTrack',navigator.doNotTrack);
+	console.log('----------------')
+	console.log('geolocation',navigator.geolocation);
+	console.log('----------------')
+	console.log('hardwareConcurrency',navigator.hardwareConcurrency);
+	console.log('----------------')
+	console.log('keyboard',navigator.keyboard);
+	console.log('----------------')
+	console.log('language',navigator.language);
+	console.log('----------------')
+	console.log('languages',navigator.languages);
+	console.log('----------------')
+	console.log('locks',navigator.locks);
+	console.log('----------------')
+	console.log('maxTouchPoints',navigator.maxTouchPoints);
+	console.log('----------------')
+	console.log('mediaCapabilities',navigator.mediaCapabilities);
+	console.log('----------------')
+	console.log('mediaDevices',navigator.mediaDevices);
+	console.log('----------------')
+	console.log('mimeTypes',navigator.mimeTypes);
+	console.log('----------------')
+	console.log('onLine',navigator.onLine);
+	console.log('----------------')
+	console.log('permissions',navigator.permissions);
+	console.log('----------------')
+	console.log('platform',navigator.platform);
+	console.log('----------------')
+	console.log('plugins',navigator.plugins);
+	console.log('----------------')
+	console.log('presentation',navigator.presentation);
+	console.log('----------------')
+	console.log('product',navigator.product);
+	console.log('----------------')
+	console.log('productSub',navigator.productSub);
+	console.log('----------------')
+	console.log('serviceWorker',navigator.serviceWorker);
+	console.log('----------------')
+	console.log('storage',navigator.storage);
+	console.log('----------------')
+	console.log('usb',navigator.usb);
+	console.log('----------------')
+	console.log('userAgent',navigator.userAgent);
+	console.log('----------------')
+	console.log('vendor',navigator.vendor);
+	console.log('----------------')
+	console.log('vendorSub',navigator.vendorSub);
+	console.log('----------------')
+	console.log('webkitPersistentStorage',navigator.webkitPersistentStorage);
+	console.log('----------------')
+	console.log('webkitTemporaryStorage',navigator.webkitTemporaryStorage);
+	console.log('----------------')
+</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

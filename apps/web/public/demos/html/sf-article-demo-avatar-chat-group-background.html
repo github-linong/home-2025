@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<style type="text/css">
+		.list-view{
+			width: 30px;
+		}
+		.avatar-view{
+			width: 100px;height: 100px;
+		}
+	</style>
+</head>
+<body>
+	<div id="app">
+		<div id="app">
+		  <img :src="item" class="list-view" v-for="item in ori" alt="" />
+		  <div class="avatar-warp" key="avatar-b">
+		    <avatar :imgs="item" v-for="item in list"></avatar>
+		  </div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		Vue.component('avatar', {
+		  template: `
+		  <div class="avatar">
+		    <div class="avatar-title">avatar {{this.list.length}}</div>
+		    <div class="avatar-view" :style="avatarViewStyle"></div>
+		  </div>
+		`,
+		  props:['imgs'],
+		  data(){
+		    return {};
+		  },
+		  computed:{
+		  	avatarViewStyle(){
+	  			if(this.list.length == 1){
+	  				return {
+	  					background: `url(${this.list[0]}) center center/contain no-repeat `
+	  				}
+	  			}else if(this.list.length == 2){
+	  				return {
+	  					background: `url(${this.list[0]}) 2px center/48px no-repeat ,url(${this.list[1]}) 52px center/48px no-repeat`
+	  				}
+	  			}else if(this.list.length == 3){
+	  				return {
+	  					background: `url(${this.list[0]}) center 2px/48px no-repeat ,url(${this.list[1]}) 2px 52px/48px no-repeat, url(${this.imgs[2]}) 52px 52px/48px no-repeat`
+	  				}
+	  			}else if(this.list.length == 4){
+	  				return {
+	  					background: `url(${this.list[0]}) 2px 2px/48px no-repeat ,url(${this.list[1]}) 52px 2px/48px no-repeat ,url(${this.list[2]}) 2px 52px/48px no-repeat, url(${this.imgs[3]}) 52px 52px/48px no-repeat`
+	  				}
+	  			}else if(this.list.length == 4){
+	  				return {
+	  					background: `url(${this.list[0]}) 2px 2px/30px no-repeat ,url(${this.list[1]}) 52px 2px/30px no-repeat ,url(${this.list[2]}) 2px 52px/30px no-repeat, url(${this.imgs[3]}) 52px 52px/30px no-repeat`
+	  				}
+	  			}else{
+	  				return {}
+	  			}
+		  	},
+		    list(){
+		      if(this.imgs){
+		        if(typeof this.imgs === 'string'){
+		          return [this.imgs]
+		        }else if(Array.isArray(this.imgs)){
+		          return this.imgs.slice(0,9)
+		        }
+		      }
+		      return ['https://www.lilnong.top/static/img/Jellyfish.jpg']
+		    }
+		  }
+		});
+		new Vue({
+		  el: '#app',
+		  data: {
+		    list:[
+		      [],//1
+		      [],//2
+		      [],//3
+		      [],//4
+		      [],//5
+		      [],//6
+		      [],//7
+		      [],//8
+		      [],//9
+		    ],
+		    ori: new Array(10).fill(1).map((v,i)=>'https://www.lilnong.top/static/img/avator/avator-'+(i+11)+'.jpg')
+		  },
+		  created(){
+		    this.list.forEach((v, i)=>{
+		      v.push(...this.ori.slice(0, i+1));
+		    })
+		  }
+		})
+	</script>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

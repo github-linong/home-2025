@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/> -->
+	<script type="text/javascript">
+		var initFlexible = function(){
+			!function(e,t){function n(){t.body?t.body.style.fontSize=12*o+"px":t.addEventListener("DOMContentLoaded",n)}function d(){var e=i.clientWidth/10;i.style.fontSize=e+"px"}var i=t.documentElement,o=e.devicePixelRatio||1;if(n(),d(),e.addEventListener("resize",d),e.addEventListener("pageshow",function(e){e.persisted&&d()}),o>=2){var a=t.createElement("body"),s=t.createElement("div");s.style.border=".5px solid transparent",a.appendChild(s),i.appendChild(a),1===s.offsetHeight&&i.classList.add("hairlines"),i.removeChild(a)}}(window,document);
+		}
+	</script>
+	<script type="text/javascript">
+		win = window;
+	    doc = win.document;
+	    docEl = doc.documentElement
+
+		locationSearchHash = location.search.slice(1).split('&').map(v=>v.split('=')).reduce((s,v)=>(s[v[0]]=decodeURIComponent(v[1].trim()), s), {});
+		var content = ''
+		if(locationSearchHash.viewport == 1){
+			content = locationSearchHash.content
+		}else if(locationSearchHash.viewport == 3){
+			content = locationSearchHash.content
+		}
+		if(locationSearchHash.viewport && content){
+			metaEl = doc.createElement('meta');
+	        metaEl.setAttribute('name', 'viewport');
+	        metaEl.setAttribute('content', content);
+	        if (docEl.firstElementChild) {
+	            docEl.firstElementChild.appendChild(metaEl);
+	        } else {
+	            var wrap = doc.createElement('div');
+	            wrap.appendChild(metaEl);
+	            doc.write(wrap.innerHTML);
+	        }
+		}
+		if(locationSearchHash.viewport == 2){
+			initFlexible();
+		}else if(locationSearchHash.viewport == 3){
+			initFlexible();
+		}
+	</script>
+	<!-- <link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"> -->
+	<!-- <script type="text/javascript" src="/static/js/public_header.js"></script> -->
+	<!-- <script type="text/javascript" src="/static/js/falseReport.js"></script> -->
+	<!-- <script type="text/javascript" src="/static/js/utils.js"></script> -->
+	<!-- <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script> -->
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<!-- <script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script> -->
+	<!-- <script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script> -->
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+		<p>now:<span id="now"></span></p>
+		<p>devicePixelRatio:<span id="devicePixelRatio_panle"></span></p>
+		<p>getBoundingClientRect().width:<span id="getBoundingClientRect_width_panle"></span></p>
+		<p>screen.width:<span id="screen_width_panle"></span></p>
+		<p>screen.availWidth:<span id="screen_availWidth_panle"></span></p>
+		<p>body.offsetWidth:<span id="body_offsetWidth_panle"></span></p>
+		<p>body.clientWidth:<span id="body_clientWidth_panle"></span></p>
+		<p>body.scrollWidth:<span id="body_scrollWidth_panle"></span></p>
+		<p>因为在 iphone 3GS 出现的时候，苹果工程师在 Safari 添加了个功能，使得网页在手机浏览器里会缩小到 980px，用户想看某个地方就放大那个地方。
+		980（iPhone\iPad\Samsung\HTC\Chrome\Opera Persto\）1024（BlackBerry\IE）</p>
+		<p style="width:10rem;background:#0cc">10rem</p>
+		<p style="width:5rem;background:#0cc">5rem</p>
+		<p style="width:100vw;background:#0cc">100vw</p>
+		<p style="width:50vw;background:#0cc">50vw</p>
+		<div style="overflow:hidden;">
+			<div style="float:left;">
+				<p>不限制宽高 ↓</p>
+				<img src="https://www.lilnong.top/static/img/dpr-test/200x200-dpr-test-100-line.jpg">
+				<!-- <img src="https://www.lilnong.top/static/img/dpr-test/200x200-dpr-test-100-none.jpg"> -->
+				<!-- <img src="https://www.lilnong.top/static/img/dpr-test/200x200-dpr-test-100-optimize.jpg"> -->
+			</div>
+			<div style="float:left;">
+				<p>宽度 100px ↓</p>
+				<img src="https://www.lilnong.top/static/img/dpr-test/200x200-dpr-test-100-line.jpg" style="width: 100px">
+			</div>
+			<div style="float:left;">
+				<p>宽度 200px ↓</p>
+				<img src="https://www.lilnong.top/static/img/dpr-test/200x200-dpr-test-100-line.jpg" style="width: 200px">
+			</div>
+			<div style="float:left;">
+				<p>宽度 400px ↓</p>
+				<img src="https://www.lilnong.top/static/img/dpr-test/200x200-dpr-test-100-line.jpg" style="width: 400px">
+			</div>
+		</div>
+	</div>
+	<p><a href="https://www.lilnong.top/static/html/dpr-img-test.html?viewport=1&content=width%3Ddevice-width%2Cinitial-scale%3D1%2Cminimum-scale%3D1%2Cmaximum-scale%3D1%2Cuser-scalable%3Dno">width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no</a></p>
+	<p><a href="https://www.lilnong.top/static/html/dpr-img-test.html">不设置、默认值</a></p>
+	<p><a href="https://www.lilnong.top/static/html/dpr-img-test.html?viewport=2">flexible</a></p>
+	<p><a href="https://www.lilnong.top/static/html/dpr-img-test.html?viewport=3&content=width%3Ddevice-width%2Cinitial-scale%3D1%2Cminimum-scale%3D1%2Cmaximum-scale%3D1%2Cuser-scalable%3Dno">flexible width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no</a></p>
+	<div>
+		<h3>html meta viewport 生成器</h3>
+		<div>
+			<span>width:</span>
+			<select>
+				<optgroup label="固定值">
+					<option>device-width</option>
+				</optgroup>
+				<optgroup label="750">
+					<option>375</option>
+					<option>750</option>
+					<option>1125</option>
+				</optgroup>
+				<optgroup label="414">
+					<option>414</option>
+					<option>828</option>
+					<option>1242</option>
+				</optgroup>
+				<optgroup label="640">
+					<option>320</option>
+					<option>640</option>
+				</optgroup>
+			</select>
+		</div>
+		<div>
+			<span>height:</span>
+			<select>
+				<optgroup label="固定值">
+					<option>device-height</option>
+				</optgroup>
+				<optgroup label="750">
+					<option>375</option>
+					<option>750</option>
+					<option>1125</option>
+				</optgroup>
+				<optgroup label="414">
+					<option>414</option>
+					<option>828</option>
+					<option>1242</option>
+				</optgroup>
+				<optgroup label="640">
+					<option>320</option>
+					<option>640</option>
+				</optgroup>
+			</select>
+		</div>
+		<div>
+			<span>initial-scale:</span>
+			<input type="number" name="">
+		</div>
+		<div>
+			<span>minimum-scale:</span>
+			<input type="number" name="">
+		</div>
+		<div>
+			<span>maximum-scale:</span>
+			<input type="number" name="">
+		</div>
+		<div>
+			<span>user-scalable:</span>
+			<select>
+				<optgroup label="固定值">
+					<option>on</option>
+					<option>off</option>
+				</optgroup>
+			</select>
+		</div>
+
+	</div>
+	<script type="text/javascript">
+		reloadInfo = function(){
+			now.innerText = Date.now()
+			devicePixelRatio_panle.innerText = devicePixelRatio
+			getBoundingClientRect_width_panle.innerText = docEl.getBoundingClientRect().width;
+			screen_width_panle.innerText=screen.width
+			screen_availWidth_panle.innerText=screen.availWidth
+			body_offsetWidth_panle.innerText=document.body.offsetWidth
+			body_clientWidth_panle.innerText=document.body.clientWidth
+			body_scrollWidth_panle.innerText=document.body.scrollWidth
+		};
+		reloadInfo();
+		setInterval(reloadInfo, 1000)
+		setInterval(()=>location.reload(true), 10000)
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

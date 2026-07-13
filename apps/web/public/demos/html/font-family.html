@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+</head>
+<body>
+	<style type="text/css">
+		.font-box{
+			display: flex;
+		    flex-wrap: wrap;
+		}
+		.font-item{
+			border:1px solid #f00;
+			padding: 10px;
+			min-width: 300px;
+		}
+	</style>
+	<div id="app">
+		<!-- <div class="font-item" style=""><span>none;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style="font-family:Arial;"><span>Arial;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Arial Narrow"'><span>Arial Narrow;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style="font-family:serif;"><span>serif;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style="font-family:sans-serif;"><span>sans-serif;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style="font-family:monospace;"><span>monospace;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style="font-family:fantasy;"><span>fantasy;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style="font-family:cuisive;"><span>cuisive;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style="font-family:-apple-system;"><span>-apple-system;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style="font-family:BlinkMacSystemFont;"><span>BlinkMacSystemFont;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style="font-family:Roboto;"><span>Roboto;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"宋体"'><span>宋体;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"SimSun"'><span>SimSun;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"微软雅黑"'><span>微软雅黑;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"雅黑"'><span>雅黑;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Yahei"'><span>Yahei;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"\5FAE\8F6F\96C5\9ED1"'><span>\5FAE\8F6F\96C5\9ED1;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Microsoft Yahei"'><span>Microsoft Yahei;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Hiragino Sans GB"'><span>Hiragino Sans GB;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"PingFangSC-Regular"'><span>PingFangSC-Regular;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"PingFangSC-light"'><span>PingFangSC-light;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"PingFangSC-Medium"'><span>PingFangSC-Medium;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"PingFangSC"'><span>PingFangSC;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"PingFang SC"'><span>PingFang SC;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Helvetica Neue"'><span>Helvetica Neue;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Helvetica"'><span>Helvetica;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Futura CondensedMedium"'><span>Futura CondensedMedium;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"SourceHanSansCN Medium"'><span>SourceHanSansCN Medium;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Holly black simplified Chinese W3"'><span>Holly black simplified Chinese W3;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Roboto"'><span>Roboto;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"siyuanheiti"'><span>siyuanheiti;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"思源黑体"'><span>思源黑体;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"MicrosoftYaHei"'><span>MicrosoftYaHei;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Nimbus Sans L"'><span>Nimbus Sans L;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Liberation Sans"'><span>Liberation Sans;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"SourceHanSansCN-Bold"'><span>SourceHanSansCN-Bold;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Segoe UI"'><span>Segoe UI;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Noto Sans"'><span>Noto Sans;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Apple Color Emoji"'><span>Apple Color Emoji;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Segoe UI Emoji"'><span>Segoe UI Emoji;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Segoe UI Symbol"'><span>Segoe UI Symbol;</span><br>abcde,字体测试中文，0123456789</div>
+		<div class="font-item" style='font-family:"Noto Color Emoji"'><span>Noto Color Emoji;</span><br>abcde,字体测试中文，0123456789</div> -->
+		<div>
+			<el-input-number v-model="fontSize"></el-input-number>
+			<br>
+			<el-switch
+			  v-model="fontWeight"
+			  active-color="#13ce66"
+			  inactive-color="#ff4949"
+			  active-value="bold"
+			  inactive-value="normal"
+			  active-text="加粗"
+			  inactive-text="默认"></el-switch>
+			<el-switch
+			  v-model="fontStyle"
+			  active-color="#13ce66"
+			  inactive-color="#ff4949"
+			  active-value="italic"
+			  inactive-value="normal"
+			  active-text="斜体"
+			  inactive-text="默认"></el-switch>
+			<div>{{fontSize}},{{fontWeight}},{{fontStyle}}</div>
+		</div>
+		<div class="font-box">
+			<div class="font-item" v-for="item in fontFamilyArray" :style="{'font-family': item,'font-size': fontSize+'px','font-weight':fontWeight,'font-style':fontStyle}"><span>{{item}}</span><br>字体测试中文，<br>0123456789,<br>qwertyuiopasdfghjklzxcvbnm</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		fontFamilyArray = [
+			"",
+			"Arial",'"Arial Narrow"',
+			"serif",
+			"sans-serif",
+			"monospace",
+			"fantasy",
+			"cuisive",
+			"-apple-system",
+			"BlinkMacSystemFont",
+			"Roboto",'"Roboto"',
+			"宋体","SimSun",'"宋体"','"SimSun"',
+			"微软雅黑",'"微软雅黑"',"雅黑",'"雅黑"',"Yahei",'"Yahei"','"Microsoft Yahei"',"MicrosoftYaHei",
+			'"Hiragino Sans GB"',
+			"PingFangSC-Regular","PingFangSC-light","PingFangSC-Medium","PingFangSC",'"PingFang SC"',
+			'"Helvetica Neue"',"Helvetica",
+			'"Futura CondensedMedium"',
+			'"SourceHanSansCN Medium"',
+			'"Holly black simplified Chinese W3"',
+			"siyuanheiti","思源黑体",'"思源黑体"',
+			'"Nimbus Sans L"','"Liberation Sans"',"SourceHanSansCN-Bold",'"Segoe UI"','"Noto Sans"',
+			'"Apple Color Emoji"','"Segoe UI Emoji"','"Segoe UI Symbol"','"Noto Color Emoji"'];
+		new Vue({
+			el: '#app',
+			data(){
+				return{
+					fontSize: 16,
+					fontWeight: 'normal',
+					fontStyle: 'normal',
+					fontFamilyArray: fontFamilyArray
+				}
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

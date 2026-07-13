@@ -1,0 +1,656 @@
+<!--
+ * @author: linong
+ * @Date: 2021-03-09 18:50:12
+ * @lastEditors: 
+ * @lastEditTime: 
+ * @Description: 
+-->
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <title>上传前预览文件 - www.lilnong.top</title> -->
+	<!-- <meta keywords="preview video, metadata,preview audio,preview image"> -->
+	<!-- <meta description="上传前预览文件，可以预览音视频，可以预览图片，可以预览文本"> -->
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.6.12/vue.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>
+	<!-- <script src="https://cdn.bootcdn.net/ajax/libs/Sortable/1.13.0/Sortable.min.js"></script> -->
+	<!-- <script src="https://cdn.bootcdn.net/ajax/libs/Vue.Draggable/2.24.3/vuedraggable.umd.min.js"></script> -->
+
+</head>
+<body>
+	<div id="app">
+		<ul class="sections">
+			<!-- <draggable v-model="list">
+				<transition-group> -->
+					<li class="section section-move" v-for="(item, idx) in list" :key="item.uuid" @click="updateSection(item)">
+						<template>	
+							<span>{{idx}}.{{item.type}}</span>
+						</template>
+						<button class="section-move-btn">move</button>
+						<button @click.stop="removeSection(item, idx)">x</button>
+					</li>
+				<!-- </transition-group>
+			</draggable> -->
+			<li class="section" id="section-oper">
+				<button @click="addSection('text')">新增段落节点</button>
+				<button @click="addSection('image')">新增图片节点</button>
+				<button @click="addSection('block')">新增占位节点，空白只能设置高度</button>
+			</li>
+		</ul>
+		<div class="editor">
+			<div v-show="editor">
+				<template >
+					<div id="test">
+						<!-- <a href="javascript:window.editTools.undo();">&lt;-</a> -->
+						<!-- <a href="javascript:window.editTools.redo();">-&gt;</a> -->
+						<a href="javascript:window.editTools.fontStyle(0);">B</a>
+						<a href="javascript:window.editTools.fontStyle(1);">I</a>
+						<a href="javascript:window.editTools.fontStyle(2);">U</a>
+						<a href="javascript:window.editTools.fontSize(0);">小</a>
+						<a href="javascript:window.editTools.fontSize(1);">中</a>
+						<a href="javascript:window.editTools.fontSize(2);">大</a>
+						<a href="javascript:window.editTools.textAlign(1);">三</a>
+						<a href="javascript:window.editTools.fontColor('#000000');">black</a>
+						<a href="javascript:window.editTools.fontColor('#ff0000');">red</a>
+						<a href="javascript:window.editTools.fontColor('#0000ff');">blue</a>
+						<a href="javascript:window.editTools.fontColor('#008000');">green</a>
+						<a href="javascript:window.editTools.save();">save</a>
+						<!-- <a href="javascript:window.editTools.setFocus();">焦点</a> -->
+						<!-- <a href="javascript:window.editTools.selectAll();">全选</a> -->
+						<!-- <a href="javascript:window.editTools.insertContent('<b>123</b>');">插入</a> -->
+						<!-- <a href="javascript:window.editTools.unbindEvent();">clearInterval</a> -->
+					</div>
+					<div id="textarea" contenteditable="true" placeholder="不超过1000字" maxlength="1000">
+		
+					</div>
+					<div id="placeholder" style="display: none;">不超过5000字</div>
+				</template>
+			</div>
+		</div>
+		<div class="view">
+			<div v-for="(item, idx) in list">
+				<template v-if="item.type == 'text'">	
+					<div v-html="item.html"></div>
+				</template>
+				<template v-else-if="item.type == 'image'">
+					<img :src="item.url">
+				</template>
+			</div>
+		</div>
+		<div class="view-code">
+			{{list}}
+		</div>
+	</div>
+	<style>
+		*{padding:0;margin:0;box-sizing: border-box;}
+		#app{position: relative}
+		.sections{position: relative}
+		.editor{position: relative}
+		.view{position: relative}
+		#app{
+			display: flex;
+		}
+		.sections{
+			flex: 0 0 200px;
+		}
+		.editor{
+			flex: 1 0 400px;
+		}
+		.view{
+			flex: 0 0 750px;
+		}
+		.view img{
+			height: 100px
+		}
+		.view-code{
+			flex: 1 1 100px;
+		}
+	</style>
+	<style>
+		#test{
+			background: #ddd;
+			/* position: absolute; */
+			/* left: 0; */
+			/* right: 0; */
+			/* top: 100px; */
+			/* height: 200px; */
+		}
+		#textarea{
+			min-width: 400px;
+			min-height: 400px;
+		}
+		a{
+			display: inline-block;
+			height: 30px;
+			text-align: center;
+			line-height: 30px;
+			padding: 10px;
+		}
+	</style>
+	<script>
+		// 编辑器
+		;
+		(function (wd) {
+			var editTools = {
+				timer: null,
+				create: function () {
+
+				},
+				fontSize: function (size) {
+					var s;
+					switch (size) {
+						case 0:
+							s = 1;
+							break;
+						case 1:
+							s = 3;
+							break;
+						case 2:
+							s = 5;
+							break;
+						default:
+							break;
+					}
+					document.execCommand("FontSize", false, s);
+					window.inner_html = document.getElementById('textarea').innerHTML;
+				},
+				fontStyle: function (type) {
+					var t;
+					switch (type) {
+						case 0:
+							t = 'Bold';
+							break;
+						case 1:
+							t = 'Italic';
+							break;
+						case 2:
+							t = 'Underline';
+							break;
+						default:
+							break;
+					}
+					document.execCommand(t, false, null);
+					window.inner_html = document.getElementById('textarea').innerHTML;
+				},
+				textAlign: function (type) {
+					var t;
+					switch (type) {
+						case 0:
+							t = 'justifyleft';
+							break;
+						case 1:
+							t = 'justifycenter';
+							break;
+						case 2:
+							t = 'justifyright';
+							break;
+						default:
+							break;
+					}
+					document.execCommand(t, false, null);
+					window.inner_html = document.getElementById('textarea').innerHTML;
+				},
+				fontColor: function (color) {
+					document.execCommand("ForeColor", false, color);
+					window.inner_html = document.getElementById('textarea').innerHTML;
+				},
+				//撤销
+				undo: function () {
+					if (window.inner_html == window.store_html) return;
+					if (window.inner_text && window.inner_text.length >= 5) return;
+					document.execCommand("undo", false, null);
+				},
+				//重做被撤销的操作
+				redo: function () {
+					if (window.inner_text && window.inner_text.length >= 5) return;
+					document.execCommand("redo", false, null);
+				},
+				checkBrowser: function () {
+					var userAgent = navigator.userAgent;
+					var isOpera = userAgent.indexOf("Opera") > -1;
+					if (isOpera) {
+						return "Opera"
+					}; //判断是否Opera浏览器
+					if ((userAgent.indexOf("Firefox") > -1 || userAgent.indexOf("Mozilla") > -1) && (userAgent
+							.indexOf("Gecko") < 0)) {
+						return "FF";
+					} //判断是否Firefox浏览器
+					if (userAgent.indexOf("Chrome") > -1) {
+						return "Chrome";
+					} //判断是否Chrome浏览器
+					if (userAgent.indexOf("Safari") > -1) {
+						return "Safari";
+					} //判断是否Safari浏览器
+					if ((userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1 && !isOpera) || (
+							userAgent.indexOf("Gecko") > -1)) {
+						return "IE";
+					}; //判断是否IE浏览器
+				},
+				colorRGB2Hex: function (color) {
+					var reg = /^#([0-9a-fA-f]{3}|[0-9a-fA-f]{6})$/;
+					if (reg.test(color)) return color;
+					var rgb = color.split(',');
+					var r = parseInt(rgb[0].split('(')[1]);
+					var g = parseInt(rgb[1]);
+					var b = parseInt(rgb[2].split(')')[0]);
+					var hex = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+					return hex;
+				},
+				//获取当前光标所在的字符属性
+				getState: function () {
+					var items = {
+						bold: false,
+						italic: false,
+						underline: false,
+						fontSize: 1,
+						foreColor: 'rgb(0, 0, 0)',
+						justify: 'left',
+						Redo: false,
+						Undo: false
+					};
+					if (document.queryCommandState('bold')) {
+						items.bold = true;
+					}
+					if (document.queryCommandState('italic')) {
+						items.italic = true;
+					}
+					if (document.queryCommandState('underline')) {
+						items.underline = true;
+					}
+					if (document.queryCommandValue('fontSize')) {
+						items.fontSize = (document.queryCommandValue('fontSize') - 1) / 2;
+					}
+					if (document.queryCommandValue('foreColor')) {
+						items.foreColor = this.colorRGB2Hex(document.queryCommandValue('foreColor'));
+					}
+					// if (this.checkBrowser() != "IE") {
+					if (document.queryCommandState('justifyLeft')) {
+						items.justify = 'left';
+					}
+					if (document.queryCommandState('justifyCenter')) {
+						items.justify = 'center';
+					}
+					if (document.queryCommandState('justifyRight')) {
+						items.justify = 'right';
+					}
+					// }
+
+					if (document.queryCommandState('Redo')) {
+						items.Redo = true;
+					}
+					if (document.queryCommandState('Undo')) {
+						items.Undo = true;
+					}
+					// console.log("document.queryCommandState('Redo'):" + document.queryCommandState('Redo'))
+					// console.log("document.queryCommandState('Undo'):" + document.queryCommandState('Undo'))
+
+					//客户端协议
+					this.bridge(items);
+				},
+				bridge: function (json) {
+					console.log(json);
+				},
+				bindEvent: function () {
+					var _this = this,
+						textarea = document.getElementById('textarea'),
+						placeholder = document.getElementById('placeholder');
+					textarea.addEventListener('click', function () {
+						_this.getState();
+						// console.log(2);
+						// if(_this.timer) clearInterval(_this.timer);
+						// _this.timer = setInterval(function(){
+						//     _this.getState();
+						//     console.log(3);
+						// }, 1000);
+					});
+					textarea.addEventListener('input', function () {
+						placeholder.style.display = textarea.textContent == '' ? 'block' : 'none';
+						_this.limit(this, 1000);
+						// console.log(123);
+					});
+					// textarea.addEventListener('keyup', function(){
+					//     _this.limit(this, 5);
+					// });
+					// if(_this.timer) clearInterval(_this.timer);
+					// _this.timer = setInterval(function(){
+					//     _this.getState();
+					//     console.log(3);
+					// }, 1000);
+				},
+				unbindEvent: function () {
+					var _this = this;
+					if (_this.timer) clearInterval(_this.timer);
+				},
+				paste: function () {
+					try {
+						document.execCommand("AutoUrlDetect", false, false);
+					} catch (e) {}
+
+					var textarea = document.getElementById('textarea');
+					textarea.addEventListener('paste', function (e) {
+						e.preventDefault();
+						var text = "";
+
+						if (window.clipboardData && clipboardData.setData) {
+							// IE
+							text = window.clipboardData.getData('text');
+						} else {
+							text = (e.originalEvent || e).clipboardData.getData('text/plain') || "";
+						}
+						if (document.body.createTextRange) {
+							if (document.selection) {
+								textRange = document.selection.createRange();
+							} else if (window.getSelection) {
+								sel = window.getSelection();
+								var range = sel.getRangeAt(0);
+
+								// 创建临时元素，使得TextRange可以移动到正确的位置
+								var tempEl = document.createElement("span");
+								tempEl.innerHTML = "&#FEFF;";
+								range.deleteContents();
+								range.insertNode(tempEl);
+								textRange = document.body.createTextRange();
+								textRange.moveToElementText(tempEl);
+								tempEl.parentNode.removeChild(tempEl);
+							}
+							textRange.text = text;
+							textRange.collapse(false);
+							textRange.select();
+						} else {
+							// Chrome之类浏览器
+							document.execCommand("insertText", false, text);
+						}
+
+					});
+				},
+				limit: function (obj, limit) {
+					window.inner_text = obj.innerText;
+					if (window.inner_text.length > limit) {
+						obj.innerHTML = '';
+						document.execCommand("insertHTML", false, window.inner_html || "");
+					} else {
+						window.inner_html = obj.innerHTML;
+					}
+				},
+				save: function () {
+					var textarea = document.getElementById('textarea');
+					var obj = {
+						html: textarea.innerHTML,
+						text: textarea.innerText
+					}
+					return obj;
+				},
+				insertContent: function (html) {
+					console.log(html)
+					document.execCommand("insertHTML", false, html);
+					window.inner_html = document.getElementById('textarea').innerHTML;
+					window.store_html = html;
+				},
+				setFocus: function () {
+					document.getElementById('textarea').focus();
+				},
+				selectAll: function () {
+					document.execCommand("selectAll", false, null);
+				},
+				init: function () {
+					this.bindEvent();
+					this.paste();
+				}
+			};
+			wd.editTools = editTools;
+		})(window);
+
+		// window.editTools.init();
+	</script>
+	<script>
+		intervalSaveText = 0
+		sortable = null;
+		vm = new Vue({
+			el: '#app',
+			data(){
+				return {
+					list: [
+					],
+					editor: null,
+				}
+			},
+			mounted(){
+				window.editTools.init();
+				// this.initSort();
+			},
+			methods:{
+				initSort(){
+					var vm = this;
+					sortable = new Sortable(document.querySelector('.sections'), {
+                                    // group: "name",  // or { name: "...", pull: [true, false, 'clone', array], put: [true, false, array] }
+                                    sort: true,  // boolean 定义是否列表单元是否可以在列表容器内进行拖拽排序
+                                    delay: 0, // number 定义鼠标选中列表单元可以开始拖动的延迟时间；
+                                    // touchStartThreshold: 0, // px, how many pixels the point should move before cancelling a delayed drag event
+                                    disabled: false, // boolean 定义是否此sortable对象是否可用，为true时sortable对象不能拖放排序等功能，为false时为可以进行排序，相当于一个开关；
+                                    // store: null,  // @see Store
+                                    animation: 150,  // ms, number 单位：ms，定义排序动画的时间
+                                    easing: "cubic-bezier(1, 0, 0, 1)", // Easing for animation. Defaults to null. See https://easings.net/ for examples.
+                                    handle: ".section-move-btn",  // 格式为简单css选择器的字符串，使列表单元中符合选择器的元素成为拖动的手柄，只有按住拖动手柄才能使列表单元进行拖动
+                                    // filter: ".ignore-elements",  // 过滤器，不需要进行拖动的元素
+                                    // preventOnFilter: true, //  在触发过滤器`filter`的时候调用`event.preventDefault()`
+                                    draggable: ".section-move",  // 允许拖拽的项目类名
+                                    // ghostClass: "sortable-ghost",  // drop placeholder的css类名
+                                    chosenClass: "sortable-chosen",  // 被选中项的css 类名
+                                    dragClass: "sortable-drag",  // 正在被拖拽中的css类名
+                                    // dataIdAttr: 'data-id',
+                                
+                                    swapThreshold: 1, // Threshold of the swap zone
+                                    invertSwap: false, // Will always use inverted swap zone if set to true
+                                    invertedSwapThreshold: 1, // Threshold of the inverted swap zone (will be set to swapThreshold value by default)
+                                    direction: 'horizontal', // 拖拽方向 (默认情况下会自动判断方向)
+                                
+                                    forceFallback: false,  // 忽略 HTML5拖拽行为，强制回调进行
+                                
+                                    fallbackClass: "sortable-fallback",  // 当使用forceFallback的时候，被复制的dom的css类名
+                                    fallbackOnBody: false,  // 将cloned DOM 元素挂到body元素上。
+                                    fallbackTolerance: 0, // Specify in pixels how far the mouse should move before it's considered as a drag.
+                                
+                                    scroll: true, // or HTMLElement
+                                    scrollFn: function(offsetX, offsetY, originalEvent, touchEvt, hoverTargetEl) { 
+										
+									 }, // if you have custom scrollbar scrollFn may be used for autoscrolling
+                                    scrollSensitivity: 30, // px, how near the mouse must be to an edge to start scrolling.
+                                    scrollSpeed: 10, // px
+                                    bubbleScroll: true, // apply autoscroll to all parent elements, allowing for easier movement
+                                
+                                    dragoverBubble: false,
+                                    removeCloneOnHide: true, // Remove the clone element when it is not showing, rather than just hiding it
+                                    emptyInsertThreshold: 5, // px, distance mouse must be from empty sortable to insert drag element into it
+                                
+                                
+                                    setData: function (/** DataTransfer */dataTransfer, /** HTMLElement*/dragEl) {
+                                        dataTransfer.setData('Text', dragEl.textContent); // `dataTransfer` object of HTML5 DragEvent
+                                    },
+                                
+                                    // 元素被选中
+                                    onChoose: function (/**Event*/evt) {
+                                        evt.oldIndex;  // element index within parent
+                                    },
+                                
+                                    // 元素未被选中的时候（从选中到未选中）
+                                    onUnchoose: function(/**Event*/evt) {
+                                        // same properties as onEnd
+                                    },
+                                
+                                    // 开始拖拽的时候
+                                    onStart: function (/**Event*/evt) {
+                                        evt.oldIndex;  // element index within parent
+                                    },
+                                
+                                    // 结束拖拽
+                                    onEnd: function (/**Event*/evt) {
+										console.log('onEnd',evt.oldIndex ,evt.newIndex, evt)
+                                        // // var itemEl = evt.item;  // dragged HTMLElement
+                                        // // evt.to;    // target list
+                                        // // evt.from;  // previous list
+                                        // // evt.oldIndex;  // element's old index within old parent
+                                        // // evt.newIndex;  // element's new index within new parent
+                                        // // evt.clone // the clone element
+                                        // // evt.pullMode;  // when item is in another sortable: `"clone"` if cloning, `true` if moving
+										// if(evt.oldIndex > evt.newIndex){
+										// 	// vm.list.splice(evt.newIndex,0,vm.list.splice(evt.oldIndex,1))
+										// }else if(evt.oldIndex < evt.newIndex){
+										// 	vm.list.splice(evt.newIndex + 1,0,vm.list[evt.oldIndex])
+										// 	vm.list.splice(evt.oldIndex,1)
+										// }
+										// vm.list.splice(evt.newIndex,0,vm.list.splice(evt.oldIndex,1)[0]);
+                                    },
+                                
+                                    // 元素从一个列表拖拽到另一个列表
+                                    onAdd: function (/**Event*/evt) {
+                                        // same properties as onEnd
+                                    },
+                                
+                                    // 列表内元素顺序更新的时候触发
+                                    onUpdate: function (/**Event*/evt) {
+                                        // same properties as onEnd
+                                    },
+                                
+                                    // 列表的任何更改都会触发
+                                    onSort: function (/**Event*/evt) {
+                                        // same properties as onEnd
+                                    },
+                                
+                                    // 元素从列表中移除进入另一个列表
+                                    onRemove: function (/**Event*/evt) {
+                                        // same properties as onEnd
+                                    },
+                                
+                                    // 试图拖拽一个filtered的元素
+                                    onFilter: function (/**Event*/evt) {
+                                        var itemEl = evt.item;  // HTMLElement receiving the `mousedown|tapstart` event.
+                                    },
+                                
+                                    // 拖拽移动的时候
+                                    onMove: function (/**Event*/evt, /**Event*/originalEvent) {
+										console.log(evt, originalEvent)
+                                        // Example: https://jsbin.com/nawahef/edit?js,output
+                                        evt.dragged; // dragged HTMLElement
+                                        evt.draggedRect; // DOMRect {left, top, right, bottom}
+                                        evt.related; // HTMLElement on which have guided
+                                        evt.relatedRect; // DOMRect
+                                        evt.willInsertAfter; // Boolean that is true if Sortable will insert drag element after target by default
+                                        originalEvent.clientY; // mouse position
+                                        // return false; — for cancel
+                                        // return -1; — insert before target
+                                        // return 1; — insert after target
+										return false
+                                    },
+                                
+                                    // clone一个元素的时候触发
+                                    onClone: function (/**Event*/evt) {
+                                        var origEl = evt.item;
+                                        var cloneEl = evt.clone;
+                                    },
+                                
+                                    // 拖拽元素改变位置的时候
+                                    onChange: function(/**Event*/evt) {
+                                        evt.newIndex // most likely why this event is used is to get the dragging element's current index
+                                        // same properties as onEnd
+                                    }
+                                });
+				},
+				createUUID(){
+					return 'xxxxxxxxxxx-yyyy-vvmc-xxxxx'.replace(/x/g,function(){
+						return Math.random * 10 >> 0
+					})
+				},
+				addSection(type){
+					// text
+					// image
+					// block
+					if(type == 'text'){
+						this.list.push({
+							type: 'text',
+							uuid: this.createUUID(),
+							// text: '',
+							html: ''
+						})
+						this.updateSection(this.list[this.list.length-1])
+					}else if(type=="image"){
+						this.list.push({
+							type: 'image',
+							uuid: this.createUUID(),
+							state: 0,//0未开始，1上传中，2上传成功，3上传失败
+							url: 'https://www.lilnong.top/static/img/avator/avator-14.jpg'
+						})
+						this.updateSection(this.list[this.list.length-1])
+					}else{
+						this.list.push({
+							type: 'block',
+							uuid: this.createUUID(),
+						})
+					}
+				},
+				updateSection(item){
+					if(this.editor){
+						var obj = window.editTools.save();
+						this.editor.html = obj.html
+					}
+					this.editor = null;
+					if(item.type == 'text'){
+						this.editor = item;
+						this.intervalSaveText();
+						// window.editTools.selectAll();
+						// window.editTools.insertContent(item.html)
+						textarea.innerHTML = item.html
+					}else if(item.type == 'image'){
+						// 上传接口
+					}
+				},
+				// 删除节点
+				removeSection(item, idx){
+					this.list.splice(idx, 1)
+				},
+				// 定时保存
+				intervalSaveText(){
+					clearInterval(intervalSaveText)
+					intervalSaveTextTag = setInterval(v=>{
+						if(this.editor){
+							var obj = window.editTools.save();
+							this.editor.html = obj.html
+						}
+					}, 1000)
+				}
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+	<script type="text/javascript" src="//www.lilnong.top/static/js/public_hm.js"></script>
+</body>
+</html>

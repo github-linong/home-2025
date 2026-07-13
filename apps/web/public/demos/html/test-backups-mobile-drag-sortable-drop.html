@@ -1,0 +1,960 @@
+<html data-dpr="1" style="font-size: 36px;">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">
+    <title>歌房专属礼物-备份代码-测试用例-插件</title>
+    <meta name="format-detection" content="telephone=no">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<style type="text/css">
+		@charset "UTF-8";
+		html {
+		  color: #000;
+		  background: #fff;
+		  overflow-y: scroll;
+		  -webkit-text-size-adjust: 100%;
+		  -ms-text-size-adjust: 100%;
+		  box-sizing: border-box; }
+
+		*, *:before, *:after {
+		  box-sizing: inherit; }
+
+		html * {
+		  outline: none;
+		  -webkit-text-size-adjust: none;
+		  -webkit-tap-highlight-color: transparent; }
+
+		html,
+		body {
+		  font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; }
+
+		/* 内外边距通常让各个浏览器样式的表现位置不同 */
+		body,
+		div,
+		dl,
+		dt,
+		dd,
+		ul,
+		ol,
+		li,
+		h1,
+		h2,
+		h3,
+		h4,
+		h5,
+		h6,
+		pre,
+		code,
+		form,
+		fieldset,
+		legend,
+		input,
+		textarea,
+		p,
+		blockquote,
+		th,
+		td,
+		hr,
+		button,
+		article,
+		aside,
+		details,
+		figcaption,
+		figure,
+		footer,
+		header,
+		hgroup,
+		menu,
+		nav,
+		section {
+		  margin: 0;
+		  padding: 0; }
+
+		input,
+		select,
+		textarea {
+		  font-size: 100%; }
+
+		/* 去掉各 Table  cell 的边距并让其边重合 */
+		table {
+		  border-collapse: collapse;
+		  border-spacing: 0; }
+
+		/* 去除默认边框 */
+		fieldset,
+		img {
+		  border: 0; }
+
+		/* 去掉 firefox 下此元素的边框 */
+		abbr,
+		acronym {
+		  border: 0;
+		  font-variant: normal; }
+
+		/* 一致的 del 样式 */
+		del {
+		  text-decoration: line-through; }
+
+		address,
+		caption,
+		cite,
+		code,
+		dfn,
+		em,
+		th,
+		var {
+		  font-style: normal;
+		  font-weight: 500; }
+
+		/* 去掉列表前的标识, li 会继承 */
+		ol,
+		ul {
+		  list-style: none; }
+
+		/* 对齐是排版最重要的因素, 别让什么都居中 */
+		caption,
+		th {
+		  text-align: left; }
+
+		/* 来自 yahoo, 让标题都自定义, 适应多个系统应用 */
+		h1,
+		h2,
+		h3,
+		h4,
+		h5,
+		h6 {
+		  font-size: 100%;
+		  font-weight: 500; }
+
+		q:before,
+		q:after {
+		  content: ''; }
+
+		/* 统一上标和下标 */
+		sub,
+		sup {
+		  font-size: 75%;
+		  line-height: 0;
+		  position: relative;
+		  vertical-align: baseline; }
+
+		sup {
+		  top: -0.5em; }
+
+		sub {
+		  bottom: -0.25em; }
+
+		/* 正常链接 未访问 */
+		/* 鼠标悬停 */
+		a:hover {
+		  text-decoration: underline; }
+
+		/* 默认不显示下划线，保持页面简洁 */
+		ins,
+		a {
+		  text-decoration: none; }
+		  ins:hover,
+		  a:hover {
+		    text-decoration: none; }
+
+		.fz-12 {
+		  font-size: 6px; }
+		  [data-dpr="2"] .fz-12 {
+		    font-size: 12px; }
+		  [data-dpr="3"] .fz-12 {
+		    font-size: 18px; }
+		  [data-dpr="4"] .fz-12 {
+		    font-size: 24px; }
+
+		.fz-14 {
+		  font-size: 7px; }
+		  [data-dpr="2"] .fz-14 {
+		    font-size: 14px; }
+		  [data-dpr="3"] .fz-14 {
+		    font-size: 21px; }
+		  [data-dpr="4"] .fz-14 {
+		    font-size: 28px; }
+
+		.fz-16 {
+		  font-size: 8px; }
+		  [data-dpr="2"] .fz-16 {
+		    font-size: 16px; }
+		  [data-dpr="3"] .fz-16 {
+		    font-size: 24px; }
+		  [data-dpr="4"] .fz-16 {
+		    font-size: 32px; }
+
+		.fz-18 {
+		  font-size: 9px; }
+		  [data-dpr="2"] .fz-18 {
+		    font-size: 18px; }
+		  [data-dpr="3"] .fz-18 {
+		    font-size: 27px; }
+		  [data-dpr="4"] .fz-18 {
+		    font-size: 36px; }
+
+		.fz-20 {
+		  font-size: 10px; }
+		  [data-dpr="2"] .fz-20 {
+		    font-size: 20px; }
+		  [data-dpr="3"] .fz-20 {
+		    font-size: 30px; }
+		  [data-dpr="4"] .fz-20 {
+		    font-size: 40px; }
+
+		.fz-22 {
+		  font-size: 11px; }
+		  [data-dpr="2"] .fz-22 {
+		    font-size: 22px; }
+		  [data-dpr="3"] .fz-22 {
+		    font-size: 33px; }
+		  [data-dpr="4"] .fz-22 {
+		    font-size: 44px; }
+
+		.fz-24 {
+		  font-size: 12px; }
+		  [data-dpr="2"] .fz-24 {
+		    font-size: 24px; }
+		  [data-dpr="3"] .fz-24 {
+		    font-size: 36px; }
+		  [data-dpr="4"] .fz-24 {
+		    font-size: 48px; }
+
+		.fz-26 {
+		  font-size: 13px; }
+		  [data-dpr="2"] .fz-26 {
+		    font-size: 26px; }
+		  [data-dpr="3"] .fz-26 {
+		    font-size: 39px; }
+		  [data-dpr="4"] .fz-26 {
+		    font-size: 52px; }
+
+		.fz-28 {
+		  font-size: 14px; }
+		  [data-dpr="2"] .fz-28 {
+		    font-size: 28px; }
+		  [data-dpr="3"] .fz-28 {
+		    font-size: 42px; }
+		  [data-dpr="4"] .fz-28 {
+		    font-size: 56px; }
+
+		.fz-30 {
+		  font-size: 15px; }
+		  [data-dpr="2"] .fz-30 {
+		    font-size: 30px; }
+		  [data-dpr="3"] .fz-30 {
+		    font-size: 45px; }
+		  [data-dpr="4"] .fz-30 {
+		    font-size: 60px; }
+
+		.fz-32 {
+		  font-size: 16px; }
+		  [data-dpr="2"] .fz-32 {
+		    font-size: 32px; }
+		  [data-dpr="3"] .fz-32 {
+		    font-size: 48px; }
+		  [data-dpr="4"] .fz-32 {
+		    font-size: 64px; }
+
+		.fz-34 {
+		  font-size: 17px; }
+		  [data-dpr="2"] .fz-34 {
+		    font-size: 34px; }
+		  [data-dpr="3"] .fz-34 {
+		    font-size: 51px; }
+		  [data-dpr="4"] .fz-34 {
+		    font-size: 68px; }
+
+		.fz-36 {
+		  font-size: 18px; }
+		  [data-dpr="2"] .fz-36 {
+		    font-size: 36px; }
+		  [data-dpr="3"] .fz-36 {
+		    font-size: 54px; }
+		  [data-dpr="4"] .fz-36 {
+		    font-size: 72px; }
+
+		.fz-38 {
+		  font-size: 19px; }
+		  [data-dpr="2"] .fz-38 {
+		    font-size: 38px; }
+		  [data-dpr="3"] .fz-38 {
+		    font-size: 57px; }
+		  [data-dpr="4"] .fz-38 {
+		    font-size: 76px; }
+
+		body {
+		  font-family: "Microsoft Yahei"; }
+
+		.clearfix:after {
+		  content: "";
+		  display: table;
+		  clear: both; }
+
+		.fl, .left {
+		  float: left; }
+
+		.fr, .right {
+		  float: right; }
+
+		.hide {
+		  display: none !important; }
+
+		.f12 {
+		  font-size: 12px; }
+
+		.f14 {
+		  font-size: 14px; }
+
+		.f16 {
+		  font-size: 16px; }
+
+		.fb {
+		  font-weight: 700; }
+
+		.ta_l {
+		  text-align: left; }
+
+		.ta_c {
+		  text-align: center; }
+
+		.ta_r {
+		  text-align: right; }
+
+		.none {
+		  display: none; }
+
+		[contenteditable="true"], input, textarea {
+		  -webkit-user-select: auto !important;
+		  -khtml-user-select: auto !important;
+		  -moz-user-select: auto !important;
+		  -ms-user-select: auto !important;
+		  -o-user-select: auto !important;
+		  user-select: auto !important; }
+
+		/*reset*/
+		input,
+		textarea {
+		  border: 0;
+		  outline: 0; }
+
+		body {
+		  background: #EFEFF4;
+		  font-size: 0.42667rem; }
+
+		input,
+		textarea,
+		input::-webkit-input-placeholder,
+		textarea::-webkit-input-placeholder,
+		input::input-placeholder,
+		textarea::input-placeholder {
+		  font-size: 0.42667rem;
+		  color: #999; }
+
+		html, body, input, textarea {
+		  font-family: PingFangSC,'Helvetica Neue',Helvetica,Arial,sans-serif,"Microsoft Yahei"; }
+
+		textarea {
+		  resize: none; }
+
+		/*----------用来移除向下箭头----------*/
+		input[type="date"]::-webkit-calendar-picker-indicator,
+		input[type="date"]::calendar-picker-indicator {
+		  display: none; }
+
+		/*----------用来移除叉叉按钮----------*/
+		input[type="date"]::-webkit-clear-button,
+		input[type="date"]::clear-button {
+		  display: none; }
+
+		[v-cloak] {
+		  display: none; }
+
+		::-webkit-inner-spin-button {
+		  visibility: hidden; }
+
+		.flex {
+		  display: -webkit-box;
+		  display: -webkit-flex;
+		  display: -ms-flexbox;
+		  display: flex; }
+
+		.flex-v {
+		  -webkit-box-orient: vertical;
+		  -webkit-flex-direction: column;
+		  -ms-flex-direction: column;
+		  flex-direction: column; }
+
+		.flex-1 {
+		  -webkit-box-flex: 1;
+		  -webkit-flex: 1;
+		  -ms-flex: 1;
+		  flex: 1; }
+
+		.gift-list {
+		  overflow: hidden;
+		  padding: 0.2rem 0 1.33333rem;
+		  background-color: #fff; }
+		  .gift-list .gift-item {
+		    margin: 0.2rem 0.2rem 0.2rem 0.28rem;
+		    float: left; }
+		    .gift-list .gift-item:nth-child(3n+1) {
+		      margin-left: 0.4rem; }
+		    .gift-list .gift-item .gift-view {
+		      width: 2.69333rem;
+		      height: 1.92rem;
+		      background: url() no-repeat center center;
+		      background-size: contain;
+		      position: relative; }
+		      .gift-list .gift-item .gift-view .gift-view-right {
+		        position: absolute;
+		        right: 0;
+		        top: 0;
+		        min-width: 0.64rem;
+		        height: 0.64rem;
+		        background: url(../img/checked.png) no-repeat center center;
+		        background-size: 0.64rem; }
+		      .gift-list .gift-item .gift-view .gift-view-right--remove {
+		        background-image: url(../img/remove.png); }
+		        .gift-list .gift-item .gift-view .gift-view-right--remove:active {
+		          background-image: url(../img/remove-h.png); }
+		      .gift-list .gift-item .gift-view .gift-view-right--text {
+		        background: #ff4e46;
+		        color: white;
+		        line-height: 0.64rem;
+		        font-size: 0.4rem;
+		        text-align: center;
+		        border-radius: 50%; }
+		      .gift-list .gift-item .gift-view--down {
+		        filter: grayscale(100%); }
+		        .gift-list .gift-item .gift-view--down:before {
+		          content: "";
+		          background: url(../img/down-gift.png) no-repeat center center;
+		          width: 100%;
+		          height: 100%;
+		          display: block;
+		          background-size: contain; }
+		    .gift-list .gift-item .gift-main {
+		      padding: 0.24rem 0 0.2rem;
+		      font-size: 0.4rem;
+		      color: #333333;
+		      display: flex;
+		      justify-content: center; }
+		    .gift-list .gift-item .gift-sub {
+		      font-size: 0.34667rem;
+		      line-height: 0.34667rem;
+		      color: #999999;
+		      display: flex;
+		      justify-content: center; }
+		  .gift-list .gift-item--drag {
+		    position: fixed;
+		    left: -100rem;
+		    top: -100rem;
+		    opacity: .7;
+		    user-select: none;
+		    pointer-events: none; }
+
+		.gift-header {
+		  padding: 0 0.4rem;
+		  background: #f7f7f7; }
+		  .gift-header .gift-header-btn {
+		    font-size: 0.4rem;
+		    color: #999999;
+		    line-height: 1.17333rem; }
+		    .gift-header .gift-header-btn--red {
+		      color: #ff4e46; }
+
+		.gift-control {
+		  position: fixed;
+		  bottom: 0;
+		  left: 0;
+		  right: 0;
+		  background: #ff4e46; }
+		  .gift-control .gift-control-btn {
+		    line-height: 1.30667rem;
+		    font-size: 0.48rem;
+		    color: white;
+		    text-align: center; }
+
+		.gift-nolist {
+		  height: 13.33333rem;
+		  background: #fff;
+		  min-height: 100vh;
+		  position: relative;
+		  overflow: hidden; }
+		  .gift-nolist-img {
+		    margin: 4.89333rem auto 0.61333rem;
+		    height: 1.65333rem;
+		    background: url(../img/nolist.png) no-repeat center center;
+		    background-size: contain; }
+		  .gift-nolist-tips {
+		    text-align: center;
+		    font-size: 0.34667rem;
+		    color: #999999;
+		    line-height: 0.34667rem; }
+		  .gift-nolist-btn {
+		    width: 7.73333rem;
+		    height: 1.14667rem;
+		    margin: 0 auto;
+		    position: absolute;
+		    bottom: 1.33333rem;
+		    left: 0;
+		    right: 0;
+		    background: url(../img/add-btn.png) no-repeat center center;
+		    background-size: contain; }
+
+		.icon.icon-yb {
+		  background: url(../img/yb.png) no-repeat center center;
+		  background-size: 0.37333rem;
+		  width: 0.37333rem;
+		  height: 0.37333rem;
+		  margin-left: 0.13333rem;
+		  display: block;
+		  border-radius: 50%; }
+	</style>
+</head>
+<body style="font-size: 12px;">
+	<div id="app"></div>
+    <script type="text/javascript" src="/static/js/Sortable.min.js"></script>
+    <script type="text/javascript">
+    		_render = {render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+	  return _c('div', {
+	    staticClass: "gift-warp"
+	  }, [_c('div', {
+	    staticClass: "gift-continer"
+	  }, [(_vm.type == 2 && _vm.kroomGiftList && _vm.kroomGiftList.length == 0) ? _c('div', {
+	    staticClass: "gift-nolist"
+	  }, [_c('div', {
+	    staticClass: "gift-nolist-img"
+	  }), _vm._v(" "), _c('div', {
+	    staticClass: "gift-nolist-tips"
+	  }, [_vm._v("您还没设置歌房专属礼物呢")]), _vm._v(" "), _c('div', {
+	    staticClass: "gift-nolist-btn",
+	    on: {
+	      "click": function($event) {
+	        _vm.switchNav(1)
+	      }
+	    }
+	  })]) : _vm._e(), _vm._v(" "), (_vm.type == 2 && _vm.kroomGiftList && _vm.kroomGiftList.length > 0) ? _c('div', {
+	    staticClass: "gift-header flex"
+	  }, [_c('span', {
+	    staticClass: "gift-header-btn flex-1"
+	  }, [_vm._v("共 " + _vm._s(_vm.kroomGiftList.length) + " 个礼物")]), _vm._v(" "), _c('span', {
+	    staticClass: "gift-header-btn gift-header-btn--red",
+	    on: {
+	      "click": function($event) {
+	        _vm.switchNav(3)
+	      }
+	    }
+	  }, [_vm._v("编辑")])]) : _vm._e(), _vm._v(" "), (_vm.type == 3) ? _c('div', {
+	    staticClass: "gift-header flex"
+	  }, [_c('span', {
+	    staticClass: "gift-header-btn flex-1"
+	  }, [_vm._v("共 " + _vm._s(_vm.kroomGiftList.length) + " 个礼物（长按拖动排序）")]), _vm._v(" "), _c('span', {
+	    staticClass: "gift-header-btn gift-header-btn--red",
+	    on: {
+	      "click": function($event) {
+	        _vm.saveKroomGiftList()
+	      }
+	    }
+	  }, [_vm._v("完成")])]) : _vm._e(), _vm._v(" "), (_vm.type == 1) ? _c('div', {
+	    staticClass: "gift-list"
+	  }, _vm._l((this.giftList), function(item, index) {
+	    return _c('div', {
+	      key: item.giftID,
+	      staticClass: "gift-item"
+	    }, [_c('div', {
+	      staticClass: "gift-view",
+	      style: ({
+	        backgroundImage: 'url(' + item.image + ')'
+	      })
+	    }, [(item.checked == -1) ? _c('i', {
+	      staticClass: "gift-view-right",
+	      on: {
+	        "click": function($event) {
+	          _vm.checkedItem(item, index)
+	        }
+	      }
+	    }) : _vm._e(), _vm._v(" "), (item.checked > 0) ? _c('span', {
+	      staticClass: "gift-view-right gift-view-right--text",
+	      on: {
+	        "click": function($event) {
+	          _vm.checkedItem(item, index)
+	        }
+	      }
+	    }, [_vm._v(_vm._s(item.checked))]) : _vm._e()]), _vm._v(" "), _c('div', {
+	      staticClass: "gift-main"
+	    }, [_vm._v(_vm._s(item.diamondPrice)), _c('i', {
+	      staticClass: "icon icon-yb"
+	    })]), _vm._v(" "), _c('div', {
+	      staticClass: "gift-sub"
+	    }, [_vm._v(_vm._s(item.name))])])
+	  })) : _vm._e(), _vm._v(" "), (_vm.type == 2 && _vm.kroomGiftList && _vm.kroomGiftList.length > 0) ? _c('div', {
+	    staticClass: "gift-list"
+	  }, _vm._l((this.kroomGiftList), function(item, index) {
+	    return _c('div', {
+	      key: item.giftID,
+	      staticClass: "gift-item"
+	    }, [_c('div', {
+	      staticClass: "gift-view",
+	      class: {
+	        'gift-vew--down': item.state === 0
+	      },
+	      style: ({
+	        backgroundImage: 'url(' + item.image + ')'
+	      })
+	    }), _vm._v(" "), _c('div', {
+	      staticClass: "gift-main"
+	    }, [_vm._v(_vm._s(item.diamondPrice)), _c('i', {
+	      staticClass: "icon icon-yb"
+	    })]), _vm._v(" "), _c('div', {
+	      staticClass: "gift-sub"
+	    }, [_vm._v(_vm._s(item.name))])])
+	  })) : _vm._e(), _vm._v(" "), (_vm.type == 3) ? _c('div', {
+	    staticClass: "gift-list",
+	    attrs: {
+	      "id": "gift-list"
+	    }
+	  }, _vm._l((this.kroomGiftList), function(item, index) {
+	    return _c('div', {
+	      key: item.giftID,
+	      staticClass: "gift-item"
+	    }, [_c('div', {
+	      staticClass: "gift-view",
+	      style: ({
+	        backgroundImage: 'url(' + item.image + ')'
+	      })
+	    }, [_c('i', {
+	      staticClass: "gift-view-right gift-view-right--remove",
+	      on: {
+	        "click": function($event) {
+	          _vm.removeItem(item, index)
+	        }
+	      }
+	    })]), _vm._v(" "), _c('div', {
+	      staticClass: "gift-main"
+	    }, [_vm._v(_vm._s(item.diamondPrice)), _c('i', {
+	      staticClass: "icon icon-yb"
+	    })]), _vm._v(" "), _c('div', {
+	      staticClass: "gift-sub"
+	    }, [_vm._v(_vm._s(item.name))])])
+	  })) : _vm._e(), _vm._v(" "), _c('div', {
+	    staticClass: "gift-control flex"
+	  }, [(_vm.type == 1) ? _c('span', {
+	    staticClass: "gift-control-btn flex-1",
+	    on: {
+	      "click": function($event) {
+	        _vm.saveKroomGiftList()
+	      }
+	    }
+	  }, [_vm._v("完成(" + _vm._s(_vm.checkedList.length) + ")")]) : _vm._e(), _vm._v(" "), (_vm.type == 2 && _vm.kroomGiftList && _vm.kroomGiftList.length > 0) ? _c('span', {
+	    staticClass: "gift-control-btn flex-1",
+	    on: {
+	      "click": function($event) {
+	        _vm.switchNav(1)
+	      }
+	    }
+	  }, [_vm._v("添加")]) : _vm._e()])])])
+	},staticRenderFns: []}
+			var sortable = null
+    		new Vue({
+    			el: '#app',
+    			render: _render.render,
+    			data: function data() {
+    				return {
+    					type: '2', //1直接添加 2正常视图 3直接编辑
+    					giftList: [], // 礼物列表
+    					kroomGiftList: [], // 歌房专属礼物
+    					checkedList: [], //选中的礼物队列-下标队列
+    					roomID: ''
+    				};
+    			},
+    			created: function created() {
+    				var _roomID = location.search.match(/roomID=([^&]+)/);
+    				if (_roomID) {
+    					this.roomID = _roomID[1];
+    				}
+    				var _type = location.search.match(/type=([^&]+)/);
+    				if (_type) {
+    					this.type = _type[1] || '2';
+    				}
+    				// this.switchNav(this.type);
+    				// this.getRoomConfigGiftBaseList();
+    				// this.getRoomPrivateGiftList();
+    			},
+    			mounted: function mounted() {
+    				this.mock();
+    				this.destroySort();
+    				this.initSort();
+    				// this.initSortDraggable();
+    			},
+    			methods: {
+    				mock: function mock() {
+    					for (var i = 0; i < 150; i++) {
+    						this.giftList.push({
+    							giftID: i,
+    							name: '礼物' + i,
+    							diamondPrice: i * 100 + 100, //(Math.random()*8000)>>0,
+    							checked: -1, // -1 未选择 0已存在 1顺序
+    							image: '/static/img/ycimg6000226.png'
+    						});
+    					}
+    					this.kroomGiftList = this.giftList
+    				},
+
+    				// 插件 排序
+    				initSort: function initSort() {
+    					var _this = this;
+    					if (sortable) return sortable;
+    					this.$nextTick(function () {
+    						var el = document.getElementById('gift-list');
+    						sortable = Sortable.create(el, {
+    							delay: 100,
+    							sort: true,
+    							// touchStartThreshold: 5,
+    							scrollSensitivity: 100,
+    							// scroll: false, //自动滚动
+    							// dragoverBubble: true,
+    							animation: 150,
+    							ghostClass: 'gift-ghost-item',
+    							chosenClass: 'gift-chosen-item',
+    							// onChoose: function (/**Event*/evt) {
+    							// 	console.log('onChoose')
+    							// },
+    							// onUnchoose: function(/**Event*/evt) {
+    							// 	console.log('onUnchoose')
+    							// },
+    							onEnd: function onEnd( /**Event*/evt) {
+    								// console.log('onEnd',evt);
+    								_this.kroomGiftList.splice(evt.newIndex, 0, _this.kroomGiftList.splice(evt.oldIndex, 1)[0]);
+    							}
+    						});
+    					});
+    				},
+
+    				// 插件 移除排序
+    				destroySort: function destroySort() {
+    					if (sortable) {
+    						sortable.destroy();
+    						sortable = null;
+    					}
+    				},
+
+    				// 自写 排序
+    				initSortDraggable: function initSortDraggable() {
+    					var defaultOptions = {
+    						delay: 200,
+    						scrollSensitivity: 3,
+    						scroll_border: 100
+    					};
+    					var findParentDom = function findParentDom(className, dom) {
+    						if (!className) {
+    							return null; // 无效className
+    						} else if (!dom) {
+    							return null; // 非法DOM
+    						} else if (dom.classList.contains(className)) {
+    							return dom;
+    						} else if (dom.tagName === 'BODY') {
+    							return null; //return dom
+    						} else {
+    							return findParentDom(className, dom.parentNode);
+    						}
+    					};
+    					this.$nextTick(function () {
+    						var el = document.querySelector('#gift-list');
+    						var _itemArr = el.childNodes; //el.children;
+    						var _offset = [];
+    						_itemArr.forEach(function (v) {
+    							_offset.push({
+    								left: v.offsetLeft,
+    								top: v.offsetTop
+    							});
+    						});
+    						var _touch_start_time = 0; //触摸开始时间，如果时间内移动了，就是滑动。
+    						var _touch_start_isOne = false; //第一次移动标记
+    						var _touch_move = true; //应该执行移动还是拖放
+    						var _touch_Element = null; //拖放的DOM
+    						window._touch_Element_copy = null; //let _touch_Element_copy = null;
+    						var _touch_Element_offset = {};
+    						el.addEventListener('touchstart', function (e) {
+    							_touch_Element = findParentDom('gift-item', e.target);
+    							if (_touch_Element) {
+    								_touch_Element_offset.top = _touch_Element.offsetHeight / 2;
+    								_touch_Element_offset.left = _touch_Element.offsetWidth / 2;
+    								_touch_start_time = Date.now();
+    								_touch_start_isOne = true;
+    							} else {
+    								_touch_start_isOne = false;
+    								_touch_move = true;
+    							}
+    						});
+    						var scroll_interval = 0;
+    						el.addEventListener('touchmove', function (e) {
+    							// 第一次进入
+    							if (_touch_start_isOne == true) {
+    								console.log(Date.now() - _touch_start_time, Date.now() - _touch_start_time < defaultOptions.delay);
+    								// 规定事件内，应该走滑动
+    								if (Date.now() - _touch_start_time < defaultOptions.delay) {
+    									_touch_move = true;
+    								} else {
+    									_touch_move = false;
+    									e.preventDefault();
+
+    									_touch_Element_copy = _touch_Element.cloneNode(true);
+    									_touch_Element_copy.classList.add('gift-item--drag');
+    									// _touch_Element_copy.
+    									el.appendChild(_touch_Element_copy);
+    								}
+    								_touch_start_isOne = false;
+    							} else {
+    								// 之后进入
+    								if (_touch_move) {
+    									// 移动不执行操作
+    								} else {
+    									e.preventDefault();
+    									_touch_Element_copy.style.left = e.targetTouches[0].clientX - _touch_Element_offset.left + 'px';
+    									_touch_Element_copy.style.top = e.targetTouches[0].clientY - _touch_Element_offset.top + 'px';
+    									if (e.targetTouches[0].clientY < defaultOptions.scroll_border) {
+    										if (scroll_interval) {} else {
+    											clearInterval(scroll_interval);
+    											scroll_interval = setInterval(function () {
+    												document.scrollingElement.scrollTop -= defaultOptions.scrollSensitivity;
+    											}, 16.7);
+    										}
+    									} else if (window.innerHeight - e.targetTouches[0].clientY < defaultOptions.scroll_border) {
+    										// document.scrollingElement.scrollTop+=defaultOptions.scrollSensitivity
+    										if (scroll_interval) {} else {
+    											clearInterval(scroll_interval);
+    											scroll_interval = setInterval(function () {
+    												document.scrollingElement.scrollTop += defaultOptions.scrollSensitivity;
+    											}, 16.7);
+    										}
+    									} else {
+    										clearInterval(scroll_interval);
+    										scroll_interval = 0;
+    									}
+
+    									el.insertBefore(_touch_Element, findParentDom('gift-item', document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY)));
+    								}
+    							}
+    						});
+    						el.addEventListener('touchend', function (e) {
+    							console.log('touchend', e.target);
+    							clearInterval(scroll_interval);
+    							scroll_interval = 0;
+    							_touch_Element_copy.remove();
+    						});
+    					});
+    				},
+
+    				// 选中
+    				checkedItem: function checkedItem(item, index) {
+    					var _this2 = this;
+
+    					var _index = this.checkedList.indexOf(index);
+    					if (!~_index) {
+    						this.checkedList.push(index);
+    					} else {
+    						this.checkedList.splice(_index, 1);
+    					}
+    					this.giftList.forEach(function (v) {
+    						if (_this2.kroomGiftListHash[v.giftID]) {
+    							v.checked = 0;
+    						} else {
+    							v.checked = -1;
+    						}
+    					});
+    					this.checkedList.forEach(function (v, i) {
+    						_this2.giftList[v].checked = i + 1;
+    					});
+    				},
+
+    				// 移除
+    				removeItem: function removeItem(item, index) {
+    					this.delRoomPrivateGift(item.giftID, item, index);
+    					this.kroomGiftList.splice(index, 1);
+    				},
+
+    				// 保存当前编辑列表
+    				saveKroomGiftList: function saveKroomGiftList() {
+    					var _this3 = this;
+
+    					if (this.type == 1) {
+    						// 新增
+    						this.setRoomPrivateGift(JSON.stringify(this.kroomGiftList.concat(this.checkedList.map(function (v) {
+    							return {
+    								giftID: _this3.giftList[v].giftID
+    							};
+    						})).map(function (v, i) {
+    							return { "giftID": v.giftID, "priotity": i + 1 };
+    						})));
+    					} else {
+    						// 排序
+    						this.setRoomPrivateGift(JSON.stringify(this.kroomGiftList.map(function (v, i) {
+    							return { "giftID": v.giftID, "priotity": i + 1 };
+    						})));
+    					}
+    				},
+
+    				// 切换列表状态
+    				switchNav: function switchNav(type) {
+    					var _this4 = this;
+
+    					//1直接添加 2正常视图 3直接编辑
+    					this.destroySort();
+    					if (type == 1) {
+    						this.getRoomPrivateGiftList();
+    						this.getRoomConfigGiftBaseList();
+    					} else if (type == 2) {
+    						// this.getRoomConfigGiftBaseList();
+    						this.getRoomPrivateGiftList();
+    					} else if (type == 3) {
+    						// this.getRoomConfigGiftBaseList();
+    						this.getRoomPrivateGiftList();
+    						this.$nextTick(function () {
+    							_this4.initSort();
+    						});
+    					}
+    					this.type = type;
+    				},
+
+    				//17.4 获取歌房礼物配置基础信息列表
+    				getRoomConfigGiftBaseList: function getRoomConfigGiftBaseList() {
+    				},
+
+    				//17.5 获取歌房专属礼物配置基础信息列表
+    				getRoomPrivateGiftList: function getRoomPrivateGiftList() {
+    				},
+
+    				//17.3	用户删除歌房专属礼物
+    				delRoomPrivateGift: function delRoomPrivateGift(giftID, item) {
+    				},
+
+    				//17.2	用户设置歌房专属礼物(全量)
+    				setRoomPrivateGift: function setRoomPrivateGift(giftInfo /*{["giftID":1,"priotity":1],["giftID":2,"priotity":2],...}*/) {
+    				}
+    			},
+    			computed: {
+    				kroomGiftListHash: function kroomGiftListHash() {
+    					var _obj = {};
+    					this.kroomGiftList.forEach(function (v) {
+    						_obj[v.giftID] = true;
+    					});
+    					return _obj;
+    				}
+    			},
+    			components: {}
+    		});
+    </script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

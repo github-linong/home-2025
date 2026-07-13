@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+		<div>
+			<a href="#全量事件监听">全量事件监听</a>
+			<input type="" name="" id="demo1">
+		</div>
+		<div>
+			<a href="#全量事件监听2">全量事件监听2</a>
+			<input type="" name="" id="demo1_1">
+		</div>
+		<div>
+			<a href="#keydown">keydown</a>
+			<input type="" name="" id="keydown">
+		</div>
+		<div>
+			<a href="#keydownPreventDeafult">keydownPreventDeafult</a>
+			<input type="" name="" id="keydownPreventDeafult">
+		</div>
+		<div>
+			<a href="#keyup">keyup</a>
+			<input type="" name="" id="keyup">
+		</div>
+		<div>
+			<a href="#keypress">keypress</a>
+			<input type="" name="" id="keypress">
+		</div>
+		<div>
+			<a href="#change">change</a>
+			<input type="" name="" id="change">
+		</div>
+		<div>
+			<a href="#input">input</a>
+			<input type="" name="" id="input">
+		</div>
+		<div>
+			<a href="#inputPreventDefault">inputPreventDefault</a>
+			<input type="" name="" id="inputPreventDefault">
+		</div>
+		<div>
+			<a href="#inputReturn">inputReturn</a>
+			<input type="" name="" id="inputReturn">
+		</div>
+		<div>
+			<a href="#beforeinput">beforeinput</a>
+			<input type="" name="" id="beforeinput">
+		</div>
+		<div>
+			<a href="#beforeinputPreventDefault">beforeinputPreventDefault</a>
+			<input type="" name="" id="beforeinputPreventDefault">
+		</div>
+		<div>
+			<a href="#afterinput">afterinput</a>
+			<input type="" name="" id="afterinput">
+		</div>
+		<div>
+			<a href="#compositionstart">compositionstart</a>
+			<input type="" name="" id="compositionstart">
+		</div>
+		<div>
+			<a href="#compositionupdate">compositionupdate</a>
+			<input type="" name="" id="compositionupdate">
+		</div>
+		<div>
+			<a href="#compositionend">compositionend</a>
+			<input type="" name="" id="compositionend">
+		</div>
+		<div>
+			<a href="#change-focus-blur-input">change-focus-blur-input</a>
+			<input type="" name="" id="demo2">
+		</div>
+		<div>
+			<a href="#composition">composition</a>
+			<input type="" name="" id="composition">
+		</div>
+		<div>
+			<a href="#change-focus-blur-compositionend-input">change-focus-blur-compositionend-input</a>
+			<input type="" name="" id="demo3">
+		</div>
+		<div>
+			<a href="#input-composition-filter">input-composition-filter</a>
+			<input type="" name="" id="demo4">
+		</div>
+		<div>
+			<a href="#实现方案1">实现方案1</a>
+			<input type="" name="" id="demo5">
+		</div>
+		<div>
+			<a href="#实现方案2">实现方案2</a>
+			<input type="" name="" id="demo6">
+		</div>
+	</div>
+	<script type="text/javascript">
+		var keys = function(value){
+			var arr = [];
+			for(var i in value){
+				arr.push(i+'')
+			}
+			return arr
+		}
+		var addEventS = function(key, value){
+			//Object.keys(value)
+			keys(value).filter(v=>v.match(/^on/)).map(v=>v.slice(2)).forEach(v=>{
+				value.addEventListener(v, _=>console.warn(`${key}-${v}`));
+			})
+		}
+		var addEvent = function(dom, eventName){
+			dom.addEventListener(eventName, _=>console.log(`${eventName}-${_.target.value}`));
+		}
+		addEventS('demo1', demo1);
+		addEvent(demo1_1, 'input')
+		addEvent(demo1_1, 'change')
+		addEvent(demo1_1, 'keyup')
+		addEvent(demo1_1, 'keypress')
+		addEvent(demo1_1, 'keydown')
+		addEvent(demo1_1, 'focus')
+		addEvent(demo1_1, 'blur')
+		addEvent(demo1_1, 'compositionstart')
+		addEvent(demo1_1, 'compositionupdate')
+		addEvent(demo1_1, 'compositionend')
+
+
+
+
+
+
+		keydown.addEventListener('keydown', e=>{
+			console.log('keydown ' + e.target.value)
+		})
+		keydownPreventDeafult.addEventListener('keydown', e=>{
+			if(e.target.value.length>5) e.preventDefault();
+			console.log('keydown ' + e.target.value)
+		})
+		keyup.addEventListener('keyup', e=>{
+			console.log('keyup ' + e.target.value)
+		})
+		keypress.addEventListener('keypress', e=>{
+			console.log('keypress ' + e.target.value)
+		})
+		// 
+		change.addEventListener('change', e=>{
+			console.log('change ' + e.target.value)
+		})
+		input.addEventListener('input', e=>{
+			console.log('input ' + e.target.value)
+		})
+		// 
+		inputPreventDefault.addEventListener('input', e=>{
+			if(e.target.value.length>5) e.preventDefault();
+			console.log('inputPreventDefault ' + e.target.value)
+		})
+		inputReturn.addEventListener('input', e=>{
+			console.log('inputPreventDefault ' + e.target.value)
+			if(e.target.value.length>5) return;
+		})
+		// 
+		beforeinput.addEventListener('beforeinput', e=>{
+			console.log('beforeinput ' + e.target.value)
+		})
+		beforeinputPreventDefault.addEventListener('beforeinput', e=>{
+			e.preventDefault();
+			console.log('beforeinputPreventDefault ' + e.target.value)
+		})
+		afterinput.addEventListener('afterinput', e=>{
+			console.log('afterinput ' + e.target.value)
+		})
+		// 
+		compositionstart.addEventListener('compositionstart', e=>{
+			console.log('compositionstart ' + e.target.value)
+		})
+		compositionupdate.addEventListener('compositionupdate', e=>{
+			console.log('compositionupdate ' + e.target.value)
+		})
+		compositionend.addEventListener('compositionend', e=>{
+			console.log('compositionend ' + e.target.value)
+		})
+		// 
+		demo2.addEventListener('input', e=>{
+			console.log('input ' + e.target.value)
+		})
+		demo2.addEventListener('change', e=>{
+			console.log('change ' + e.target.value)
+		})
+		demo2.addEventListener('focus', e=>{
+			console.log('focus ' + e.target.value)
+		})
+		demo2.addEventListener('blur', e=>{
+			console.log('blur ' + e.target.value)
+		})
+		// 
+		composition.addEventListener('compositionstart', e=>{
+			console.log('compositionstart '+e.target.value)
+		})
+		composition.addEventListener('compositionupdate', e=>{
+			console.log('compositionupdate '+e.target.value)
+		})
+		composition.addEventListener('compositionend', e=>{
+			console.log('compositionend '+e.target.value)
+		})
+		// 
+		demo3.addEventListener('compositionend', e=>{
+			console.log('compositionend '+e.target.value)
+		})
+		demo3.addEventListener('compositionupdate', e=>{
+			console.log('compositionupdate '+e.target.value)
+		})
+		demo3.addEventListener('compositionstart', e=>{
+			console.log('compositionstart '+e.target.value)
+		})
+		demo3.addEventListener('input', e=>{
+			console.log('input '+e.target.value)
+		})
+		demo3.addEventListener('change', e=>{
+			console.log('change '+e.target.value)
+		})
+		demo3.addEventListener('blur', e=>{
+			console.log('blur '+e.target.value)
+		})
+		demo3.addEventListener('focus', e=>{
+			console.log('focus '+e.target.value)
+		})
+		// 
+		demo4.addEventListener('input', e=>{
+			if(e.target.value.length >= 5){
+				e.target.value = e.target.value.slice(0, 5)
+			}
+		})
+		// 
+		demo5Console = function(val){
+			console.log('demo5Console', val)
+		}
+		demo5Composition = false;
+		demo5.addEventListener('compositionupdate', e=>{
+			demo5Composition = true
+		})
+		demo5.addEventListener('input', e=>{
+			if(!demo5Composition) demo5Console(e.target.value);
+		})
+		demo5.addEventListener('compositionend', e=>{
+			demo5Console(e.target.value);
+		})
+		// 
+		demo6Console = function(val){
+			console.log('demo6Console', val)
+		}
+		demo6Value = ''
+		demo6.addEventListener('compositionupdate', e=>{
+			demo6Value = e.target.value
+			console.log('compositionupdate '+e.target.value)
+		})
+		demo6.addEventListener('input', e=>{
+			// if(!demo6Composition) demo6Console(e.target.value);
+			// console.log('input '+e.target.value)
+			if(demo6Value) e.target.value = demo6Value;
+			demo6Value = ''
+		})
+		
+	</script>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

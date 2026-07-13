@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <!-- <script src="https://cdn.bootcdn.net/ajax/libs/promise-polyfill/8.2.0/polyfill.min.js"></script> -->
+    <!-- <script src="https://cdn.bootcdn.net/ajax/libs/babel-polyfill/7.12.1/polyfill.min.js"></script> -->
+    <!-- <script src="https://cdn.bootcdn.net/ajax/libs/babel-polyfill/7.12.1/polyfill.js"></script> -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <!-- <script src="https://cdn.bootcdn.net/ajax/libs/babel-polyfill/6.9.1/polyfill.min.js"></script> -->
+	<!-- <script src="//www.51vv.com/js_1405/swfobject_chimee.js"></script> -->
+	<script src="//www.lilnong.top/static/js/swfobject_chimee.js"></script>
+</head>
+<body>
+    <style>
+        #app{
+            overflow: hidden;
+        }
+        .box{
+            width: 500px;
+            display: block;
+            float: left;
+            overflow: hidden;
+        }
+    </style>
+	<div id="app">
+        <div class="box">
+            <h2>SWFObject</h2>
+            <div class="" id="player1"></div>
+        </div>
+        <div class="box">
+            <h2>ChimeePlayer</h2>
+            <div class="" id="player2"></div>
+        </div>
+        <div class="box">
+            <h2>native video</h2>
+            <video class="" id="player3" controls style="width: 100%;display: block;" src="//data.mvbox.cn/music/sp/16/04/19/client16041917133828622847.mp4"></video>
+        </div>
+        <div class="box">
+            <h2>native audio</h2>
+            <audio class="" id="player4" controls style="width: 100%;display: block;" src="//data.mvbox.cn/music/sp/16/04/19/client16041917133828622847.mp4"></audio>
+        </div>
+        <div class="box">
+            <h2>swfobject_video.html</h2>
+            <iframe src="swfobject_video.html" frameborder="0" style="width:100%;display: block;height: 500px"></iframe>
+            <!-- <audio class="" id="player4" controls style="width: 100%;display: block;" src="//data.mvbox.cn/music/sp/16/04/19/client16041917133828622847.mp4"></audio> -->
+        </div>
+        <!-- <div class="box">
+            <h2>native audio</h2>
+            <audio class="" id="player4" controls style="width: 100%;display: block;" src="//data.mvbox.cn/music/sp/16/04/19/client16041917133828622847.mp4"></audio>
+        </div> -->
+	</div>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+    <script type="text/javascript" src="//www.lilnong.top/static/js/public_hm.js"></script>
+    <script>
+        
+        // el = document.createElement('div')
+        // el.id = 'player'
+        // document.body.appendChild(el)
+
+        var s1 = new SWFObject("//www.51vv.com/js_1405/player.swf","single",300,300,"1");
+        s1.addParam("allowfullscreen","true");
+        s1.addParam("wmode","transparent");
+        s1.addVariable("autostart","false");
+        s1.addVariable("enablejs","true");
+
+        s1.addVariable("image",'');
+        s1.addVariable("file",'//data.mvbox.cn/music/sp/16/04/19/client16041917133828622847.mp4');
+        s1.addVariable("width",300);
+        s1.addVariable("height",300);
+        s1.addVariable("volume",50);
+        s1.addVariable("repeat","true");
+        s1.write("player1");
+    </script>
+    <script>
+        new ChimeePlayer({
+        // 播放地址
+        src: '//data.mvbox.cn/music/sp/16/04/19/client16041917133828622847.mp4',
+        // 直播:live 点播：vod
+        // isLive: type == 'live',
+        // 编解码容器  mp4,flv,m3u8,
+        // box: box,
+        // poster: this.poster,
+        // dom容器
+        wrapper: '#player2',
+        // video
+        autoplay: true,
+        // preload: 'none',
+        controls: true
+        });
+    </script>
+    <script>
+        $(function(){
+            $('*').on('click',function(e){
+                e&&e.preventDefault&&e.preventDefault();
+            })
+        })
+    </script>
+    <style>
+        #testie{
+            position: relative;
+        }
+        #testie > *{
+            position: relative;
+            display: block;
+        }
+    </style>
+    <div id="testie">
+        <DIV>DIV</DIV>
+        <H1>H1</H1>
+        <A>A</A>
+        <UL>UL</UL>
+        <LI>LI</LI>
+        <SPAN>SPAN</SPAN>
+        <IMG>IMG</IMG>
+        <SCRIPT>SCRIPT</SCRIPT>
+        <LINK>LINK</LINK>
+        <P>P</P>
+        <FORM>FORM</FORM>
+        <INPUT>INPUT</INPUT>
+        <IFRAME>IFRAME</IFRAME>
+        <H2>H2</H2>
+        <CONTAINER>CONTAINER</CONTAINER>
+        <VIDEO>VIDEO</VIDEO>
+        <CHIMEE-POPUP>CHIMEE-POPUP</CHIMEE-POPUP>
+        <CM-PP-CLOSE>CM-PP-CLOSE</CM-PP-CLOSE>
+        <CM-PP-HEAD>CM-PP-HEAD</CM-PP-HEAD>
+        <LABEL>LABEL</LABEL>
+        <CM-PP-BODY>CM-PP-BODY</CM-PP-BODY>
+        <TEXTAREA>TEXTAREA</TEXTAREA>
+        <CHIMEE-MENU>CHIMEE-MENU</CHIMEE-MENU>
+        <CHIMEE-CENTER-STATE>CHIMEE-CENTER-STATE</CHIMEE-CENTER-STATE>
+        <CHIMEE-CENTER-STATE-CORRECT>CHIMEE-CENTER-STATE-CORRECT</CHIMEE-CENTER-STATE-CORRECT>
+        <CHIMEE-CENTER-STATE-LOADING>CHIMEE-CENTER-STATE-LOADING</CHIMEE-CENTER-STATE-LOADING>
+        <CHIMEE-CENTER-STATE-TIP>CHIMEE-CENTER-STATE-TIP</CHIMEE-CENTER-STATE-TIP>
+        <CHIMEE-CENTER-STATE-ERROR>CHIMEE-CENTER-STATE-ERROR</CHIMEE-CENTER-STATE-ERROR>
+        <CHIMEE-CONTROL>CHIMEE-CONTROL</CHIMEE-CONTROL>
+        <CHIMEE-CONTROL-WRAP>CHIMEE-CONTROL-WRAP</CHIMEE-CONTROL-WRAP>
+        <CHIMEE-CONTROL-STATE>CHIMEE-CONTROL-STATE</CHIMEE-CONTROL-STATE>
+        <svg>svg</svg>
+        <g>g</g>
+        <path>path</path>
+        <CHIMEE-PROGRESSTIME>CHIMEE-PROGRESSTIME</CHIMEE-PROGRESSTIME>
+        <CHIMEE-PROGRESSTIME-PASS>CHIMEE-PROGRESSTIME-PASS</CHIMEE-PROGRESSTIME-PASS>
+        <CHIMEE-PROGRESSTIME-TOTAL>CHIMEE-PROGRESSTIME-TOTAL</CHIMEE-PROGRESSTIME-TOTAL>
+        <CHIMEE-PROGRESSTIME-TOTAL-VALUE>CHIMEE-PROGRESSTIME-TOTAL-VALUE</CHIMEE-PROGRESSTIME-TOTAL-VALUE>
+        <CHIMEE-SCREEN>CHIMEE-SCREEN</CHIMEE-SCREEN>
+        <CHIMEE-SCREEN-FULL>CHIMEE-SCREEN-FULL</CHIMEE-SCREEN-FULL>
+        <desc>desc</desc>
+        <defs>defs</defs>
+        <polygon>polygon</polygon>
+        <CHIMEE-SCREEN-SMALL>CHIMEE-SCREEN-SMALL</CHIMEE-SCREEN-SMALL>
+        <CHIMEE-VOLUME>CHIMEE-VOLUME</CHIMEE-VOLUME>
+        <CHIMEE-VOLUME-STATE>CHIMEE-VOLUME-STATE</CHIMEE-VOLUME-STATE>
+        <CHIMEE-VOLUME-BAR>CHIMEE-VOLUME-BAR</CHIMEE-VOLUME-BAR>
+        <CHIMEE-VOLUME-BAR-WRAP>CHIMEE-VOLUME-BAR-WRAP</CHIMEE-VOLUME-BAR-WRAP>
+        <CHIMEE-VOLUME-BAR-BG>CHIMEE-VOLUME-BAR-BG</CHIMEE-VOLUME-BAR-BG>
+        <CHIMEE-VOLUME-BAR-ALL>CHIMEE-VOLUME-BAR-ALL</CHIMEE-VOLUME-BAR-ALL>
+        <CHIMEE-VOLUME-BAR-BALL>CHIMEE-VOLUME-BAR-BALL</CHIMEE-VOLUME-BAR-BALL>
+        <CHIMEE-VOLUME-BAR-TRACK>CHIMEE-VOLUME-BAR-TRACK</CHIMEE-VOLUME-BAR-TRACK>
+        <CHIMEE-PROGRESSBAR>CHIMEE-PROGRESSBAR</CHIMEE-PROGRESSBAR>
+        <CHIMEE-PROGRESSBAR-WRAP>CHIMEE-PROGRESSBAR-WRAP</CHIMEE-PROGRESSBAR-WRAP>
+        <CHIMEE-PROGRESSBAR-BG>CHIMEE-PROGRESSBAR-BG</CHIMEE-PROGRESSBAR-BG>
+        <CHIMEE-PROGRESSBAR-BUFFER>CHIMEE-PROGRESSBAR-BUFFER</CHIMEE-PROGRESSBAR-BUFFER>
+        <CHIMEE-PROGRESSBAR-ALL>CHIMEE-PROGRESSBAR-ALL</CHIMEE-PROGRESSBAR-ALL>
+        <CHIMEE-PROGRESSBAR-BALL>CHIMEE-PROGRESSBAR-BALL</CHIMEE-PROGRESSBAR-BALL>
+        <CHIMEE-PROGRESSBAR-TIP>CHIMEE-PROGRESSBAR-TIP</CHIMEE-PROGRESSBAR-TIP>
+        <H3>H3</H3>
+        <I>I</I>
+        <STYLE>s{}</STYLE>
+        <BUTTON>BUTTON</BUTTON>
+    </div>
+</body>
+</html>

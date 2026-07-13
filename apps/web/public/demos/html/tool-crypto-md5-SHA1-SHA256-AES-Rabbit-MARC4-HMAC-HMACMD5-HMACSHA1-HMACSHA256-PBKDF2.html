@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>MD5 加密 | lilnong.top</title>
+    <meta name="keywords" content="MD5 加密,SHA 加密">
+    <meta name="description" content="MD5 在线加密工具，生成32位字符。SHA 在线加密工具 hash加密  散列加密 md5在线加密 sha1在线加密 sha256在线加密 sha512在线加密 hmacmd5在线加密 hmacsha1在线加密 hmacsha在线加密..">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/crypto-js/3.1.9-1/crypto-js.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+		<div class="input-wrap">
+			<label>原始值</label><input v-model="val">
+		</div>
+		<div class="input-wrap">
+			<label>Hmackey</label><input v-model="valKey">
+		</div>
+		<div class="input-wrap">
+			<label>MD5</label><input :value="toMD5">
+		</div>
+		<div class="input-wrap">
+			<label>SHA1</label><input :value="toSHA1">
+		</div>
+		<div class="input-wrap">
+			<label>SHA224</label><input :value="toSHA224">
+		</div>
+		<div class="input-wrap">
+			<label>SHA256</label><input :value="toSHA256">
+		</div>
+		<div class="input-wrap">
+			<label>SHA384</label><input :value="toSHA384">
+		</div>
+		<div class="input-wrap">
+			<label>SHA512</label><input :value="toSHA512">
+		</div>
+		<div class="input-wrap">
+			<label>HmacSHA1</label><input :value="toHmacSHA1">
+		</div>
+		<div class="input-wrap">
+			<label>HmacSHA224</label><input :value="toHmacSHA224">
+		</div>
+		<div class="input-wrap">
+			<label>HmacSHA256</label><input :value="toHmacSHA256">
+		</div>
+		<div class="input-wrap">
+			<label>HmacSHA384</label><input :value="toHmacSHA384">
+		</div>
+		<div class="input-wrap">
+			<label>HmacSHA512</label><input :value="toHmacSHA512">
+		</div>
+		<div class="input-wrap">
+			<label>HmacMD5</label><input :value="toHmacMD5">
+		</div>
+		<div class="input-wrap">
+			<label>PBKDF2</label><input :value="toPBKDF2">
+		</div>
+	</div>
+	<style type="text/css">
+		.input-wrap{
+			display: flex;
+		}
+		.input-wrap input{
+			flex: 1;
+		}
+		.input-wrap label{
+			width: 10em;
+			text-align: right
+		}
+	</style>
+	<script type="text/javascript">
+		new Vue({
+			el: '#app',
+			data(){
+				return {
+					val: 'lilnong.top',
+					valKey: '',
+					iterations: 0,
+					salt: 'ABCDEFG',
+					key_size: 32,
+				}
+			},
+			computed:{
+				toMD5(){
+					return CryptoJS.MD5(this.val)
+				},
+				toAES(){
+					
+				},
+				toSHA1(){
+					return CryptoJS.SHA1(this.val)
+				},
+				toSHA224(){
+					return CryptoJS.SHA224(this.val)
+				},
+				toSHA256(){
+					return CryptoJS.SHA256(this.val)
+				},
+				toSHA384(){
+					return CryptoJS.SHA384(this.val)
+				},
+				toSHA512(){
+					return CryptoJS.SHA512(this.val)
+				},
+				toHmacSHA1(){
+					return CryptoJS.HmacSHA1(this.val, this.valKey)
+				},
+				toHmacSHA224(){
+					return CryptoJS.HmacSHA224(this.val, this.valKey)
+				},
+				toHmacSHA256(){
+					return CryptoJS.HmacSHA256(this.val, this.valKey)
+				},
+				toHmacSHA384(){
+					return CryptoJS.HmacSHA384(this.val, this.valKey)
+				},
+				toHmacSHA512(){
+					return CryptoJS.HmacSHA512(this.val, this.valKey)
+				},
+				toHmacMD5(){
+					return CryptoJS.HmacMD5(this.val, this.valKey)
+				},
+				toPBKDF2(){
+					if(Number.isNaN(this.iterations)){
+                        var salt=CryptoJS.enc.Utf8.parse(this.salt);
+                        var hash_str_pbkdf2=CryptoJS.PBKDF2(
+                            this.val,
+                            salt,
+                            { 
+                            	keySize: this.key_size,
+                                iterations: this.iterations 
+                            }
+                        );
+                        return hash_str_pbkdf2
+                    }
+                    return ''
+				},
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

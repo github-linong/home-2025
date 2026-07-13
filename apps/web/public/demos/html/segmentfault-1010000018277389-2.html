@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>vue批量绑定排查</title>
+</head>
+<body>
+	<div id="app">
+		<button @click="loadMore">loadMore</button>
+		<button @click="test">翻倍</button>
+		<button @click="loadMore2">loadMore2</button>
+		<button @click="test2">翻倍2</button>
+		<button @click="loadMore3">loadMore3</button>
+		<button @click="test3">翻倍2</button>
+		<button @click="switchLog">切换logsTag开关</button>
+		<div>
+			<h3>test - 2</h3>
+			<div v-for="(d,i) in data1">
+		        <span :class="d.class">{{d.name}}</span>
+		    </div>
+		</div>
+		<div>
+			<h3>test - 3</h3>
+			<div v-for="(d, i) in data2">
+		        <item :name="d.name" :id="d.id" :favorite="favorite" :key="i"></item>
+		    </div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		let logTag = true;
+		let log = function(){
+			// console.log(arguments)
+
+			if(logTag) console.log.apply(console, arguments)
+		}
+		Vue.component('item', {
+		    props: ['name', 'id', 'favorite'],
+		    computed: {
+		      isFavorite: function () {
+		        log(this.id, this.name, 'test-3')
+		        for (let f of this.favorite) {
+		          if(this.id == f.id)
+		            return true
+		        }
+		        return false;
+		      }
+		    },
+		    template: `<span :class="isFavorite ? 'red' : ''">{{name}}</span>`
+		  })
+
+	    let vm = new Vue({
+	        el: '#app',
+	        data: {
+	            data: [
+	                {
+	                    id: 1,
+	                    name: "one"
+	                },
+	                {
+	                    id: 2,
+	                    name: "two"
+	                },
+	                {
+	                    id: 3,
+	                    name: "three"
+	                }
+	            ],
+	            data1: [
+	                {
+	                    id: 1,
+	                    name: "one"
+	                },
+	                {
+	                    id: 2,
+	                    name: "two"
+	                },
+	                {
+	                    id: 3,
+	                    name: "three"
+	                }
+	            ],
+	            data2: [
+	                {
+	                    id: 1,
+	                    name: "one"
+	                },
+	                {
+	                    id: 2,
+	                    name: "two"
+	                },
+	                {
+	                    id: 3,
+	                    name: "three"
+	                }
+	            ],
+	            favorite: [
+	                {
+	                    id: 1,
+	                    name: "one"
+	                }
+	            ]
+	        },
+	        methods: {
+	        	switchLog: function(){
+	        		logTag = !logTag;
+	        		console.log(logTag)
+	        	},
+	            isFavorite: function (index) {
+	            	log(index, this.data[index].id, this.data[index].name, 'test-1')
+	                for (let f of this.favorite) {
+	                    if(this.data[index].id == f.id)
+	                        return true
+	                }
+	                return false;
+	            },
+	            isFavorite2: function (id) {
+	            	log(id,'test-2')
+	                for (let f of this.favorite) {
+	                    if(id == f.id)
+	                        return true
+	                }
+	                return false;
+	            },
+	            loadMore: function () {
+	                this.data.push(
+	                    {
+	                        id:50000+(Math.random()*5000)>>0,
+	                        name:"100"
+	                    }
+	                )
+	            },
+	            test(){
+	            	var arr = [];
+	            	for(var i = 0 ; i < 10000; i++){
+	            		arr.push({
+		                    id: i,
+		                    name: "three"
+		                })
+	            	}
+	            	console.time()
+	            	this.data = arr;
+	            	console.timeEnd()
+	            },
+	            loadMore2: function () {
+	            	var id = 50000+(Math.random()*5000)>>0
+	                this.data1.push(
+	                    {
+	                        id:id,
+	                        name:"100",
+	                        class:  this.isFavorite2(id)
+	                    }
+	                )
+	            },
+	            test2(){
+	            	var arr = [];
+	            	for(var i = 0 ; i < 10000; i++){
+	            		var obj = {
+		                    id: i,
+		                    name: "three"
+		                }
+		                arr.class = this.isFavorite2(i);
+	            		arr.push(obj)
+		                
+	            	}
+	            	console.time()
+	            	this.data1 = arr;
+	            	console.timeEnd()
+	            },
+	            loadMore3: function () {
+	                this.data2.push(
+	                    {
+	                        id:50000+(Math.random()*5000)>>0,
+	                        name:"100"
+	                    }
+	                )
+	            },
+	            test3(){
+	            	var arr = [];
+	            	for(var i = 0 ; i < 10000; i++){
+	            		var obj = {
+		                    id: i,
+		                    name: "three"
+		                }
+	            		arr.push(obj)
+		                
+	            	}
+	            	console.time()
+	            	this.data2 = arr;
+	            	console.timeEnd()
+	            }
+	        }
+	    });
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

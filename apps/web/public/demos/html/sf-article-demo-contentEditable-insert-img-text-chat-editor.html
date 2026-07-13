@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<link rel="stylesheet" href="/static/font/font_q1wz5siqote/iconfont.css">
+	<script type="text/javascript" src="/static/emoji/keys.js"></script>
+</head>
+<body>
+	<style type="text/css">
+		
+		::-webkit-scrollbar {
+		    width: 10px;
+		    height: 10px;
+		}
+		::-webkit-scrollbar-thumb {
+		    height: 40px;
+		    border-radius: 5px;
+		    background: #d7d7d7;
+		}
+		::-webkit-scrollbar-track {
+		    border-radius: 5px;
+		}
+		.flex{
+			display: flex;
+		}
+		.flex--warp{
+			flex-wrap: wrap;
+		}
+		.flex--vcenter{
+		    align-items: center;
+		}
+		.chatsend-emojis{
+			width: 360px;height: 178px;overflow: scroll;overflow-x: hidden;
+		}
+		.chatsend-emoji-warp{width: 36px;height: 36px;position: relative;}
+		.chatsend-emoji{/*position: absolute;*//*top:50%;left:50%;transform: translate(-50%,-50%);*/}
+
+		.chatsend-controls{}
+		.chatsend-controls-btn{margin-right: 10px;}
+		.chatsend-controls .iconfont{
+			font-size: 24px;cursor: pointer;line-height: 30px;
+		}
+		.chatsend-controls .icon-xiala{
+			font-size: 9px;transform: scale(0.6,1);
+		}
+		.chatsend-controls .iconfont:hover{
+			color: #f84f53;
+		}
+		.chatsend-warp{
+			height: 154px;
+		}
+		.chatsend-editor{
+			height: calc(100% - 30px - 30px);outline:0 none;overflow: auto;border: 1px solid #999;
+		}
+	</style>
+	<div id="app">
+		<vv-chat-send></vv-chat-send>
+	</div>
+	<script type="text/javascript">
+		Vue.component('vv-chat-send',{
+			name: 'vv-chat-send',
+			template: `
+				<div class="vv-chat-send-component chatsend-warp">
+					<div class="flex flex--warp chatsend-controls">
+						<div class="flex flex--warp chatsend-controls-btn">
+							<div class="flex flex--warp chatsend-controls-icon chatsend-controls-icon--emoji"><span class="iconfont icon-biaoqing" @click.stop="switchEmojiProp"></span></div>
+						</div>
+						<div class="flex flex--warp flex--vcenter chatsend-controls-btn">
+							<div class="flex flex--warp chatsend-controls-icon chatsend-controls-btn--cut"><span class="iconfont icon-jietu1"></span></div>
+							<div class="flex flex--warp chatsend-controls-icon chatsend-controls-btn--angle"><span class="iconfont icon-xiala"></span></div>
+						</div>
+					</div>
+					<div class="chatsend-editor" contentEditable @paste="editorPaste" @drop="editorDrop" @blur="editorBlur" ref="editor"></div>
+					<div class="chatsend-btns">
+						<div class="chatsend-btn chatsend-sendbtn">发送</div>
+					</div>
+					<div class="chatsend-emojis flex flex--warp" v-show="emojiData.isShow">
+						<div class="chatsend-emoji-warp" v-for="(item, key) in emojilist"><img :name="key" @click="insertEmoji" :alt="key" class="chatsend-emoji" :src="item"></div>
+					</div>
+				</div>
+			`,
+			props: {
+				value: String,//默认值，用来清空，或者带入旧的消息
+			},
+			created(){
+				window.addEventListener('click', () => {
+					this.emojiData.isShow = false;
+				})
+			},
+			data(){
+				return {
+					emojiData:{
+						list: emojis||{},
+						isShow: false,
+					},
+					editor: {
+						selection: null,
+						blurAnchorNode: null,
+						blurAnchorOffset: null,
+					}
+				}
+			},
+			methods:{
+				insertEmoji(e){
+					this.setFocus();
+					var dom = e.target.cloneNode();
+					var selection = this.editor.selection
+					var anchorNode = selection.anchorNode
+					var anchorOffset = selection.anchorOffset
+					if(selection.isCollapsed){
+						// 插入
+						if(anchorNode.nodeName == '#text'){
+							// 文本节点
+							anchorNode.splitText(anchorOffset);
+							anchorNode.after(dom);
+						}else{
+							if(anchorOffset >= anchorNode.childNodes.length){
+								// 最后节点，插入即可
+								anchorNode.appendChild(dom)
+							}else{
+								// 中间节点
+								anchorNode.childNodes[anchorOffset].before(dom);
+							}
+						}
+						// 纠正焦点
+						// this.editor.selection.setPosition(dom)
+						// 纠正焦点
+						var ran = selection.getRangeAt(0);
+						ran = ran.cloneRange();
+						ran.setStartAfter(dom);
+						selection.removeAllRanges();
+						selection.addRange(ran);
+					}
+				},
+				switchEmojiProp(){
+					this.emojiData.isShow = !this.emojiData.isShow;
+					this.setFocus();
+				},
+				editorPaste(e){
+					// console.log(e.clipboardData);
+					// console.log(e.clipboardData.types)
+					// console.log(e.clipboardData.getData('text/plain'))
+
+					// var items = e.clipboardData.items;
+					// for(var i = 0,il = items.length; i < il; i++){
+					// 	if(items[i].kind == 'string'){
+					// 		// 粘贴文本
+					// 		if(items[i].type == "text/html"){
+					// 			// 网页内容，带格式内容
+					// 		}else if(items[i].type == "text/plain"){
+					// 			// 纯文本
+					// 		}
+					// 	}else if(items[i].kind == 'file'){
+					// 		// 粘贴文件
+					// 		if(items.type == "image/png"){
+					// 			// 粘贴了一张图片
+					// 		}
+					// 	}
+					// 	console.log(items[i], items[i].getAsString((v)=>console.log(v)))
+					// }
+					// console.log(ln = $(e.clipboardData.getData('text/html')))
+
+					// 这个方案看上去可以控制的地方更多
+					// clipboardData = e.clipboardData
+					// var clipboardDataValue = clipboardData.getData('text/html')
+					// if(clipboardDataValue == ''){
+					// 	// 内容为无格式文本
+					// 	clipboardDataValue = clipboardData.getData('text');
+					// }else{
+					// 	var tempDom = document.createElement('div');//临时DOM，用来渲染剪贴板中的内容
+					// 	tempDom.innerHTML = clipboardDataValue;//<script>alert(1)<\/script>可以看到已处理编码问题
+					// 	var imgs = document.querySelectorAll('img[name][src]');//获取所有emoji
+					// 	for(var i = 0, il = imgs.length; i < il; i++){
+					// 		var item = imgs[i];
+					// 		var _attr_name = item.name;
+					// 		var _attr_src = item.src;
+					// 		var _emoji = emojis[_attr_name];
+					// 		if(_emoji && _emoji == _attr_src){
+					// 			// 是emoji
+					// 			// 并且地址相同
+					// 			item.parentNode.replaceChild(document.createTextNode(_attr_name), item);
+					// 		}
+					// 	}
+					// 	console.log(tempDom.innerText)
+					// }
+					e.preventDefault();//阻止默认复制
+
+					var clipboardData = e.clipboardData;//剪贴板对象
+					var clipboardDataValue = clipboardData.getData('text');//获取文字内容，图片会变为alt属性
+					clipboardDataValue = utils.toHtml(clipboardDataValue).replace(/(\[[^\]\[]+\])/g,v=>emojis[v]?`<img src="${emojisBaseUrl+emojis[v]}" alt="${v}" title="${v}">`:v);//表情转换为DOMString
+					var tempDiv = document.createElement('div');//容器
+					tempDiv.innerHTML = clipboardDataValue;//转换为DOM
+					var documentFragment = document.createDocumentFragment();
+					var _focus = tempDiv.childNodes[tempDiv.childNodes.length - 1]
+					while(tempDiv.childNodes.length){
+						documentFragment.appendChild(tempDiv.childNodes[0]);
+					}
+					// 获取选区
+					var selection = window.getSelection && window.getSelection();
+					// 有选区，删除选区内容
+					if(selection.anchorNode != selection.extentNode || selection.anchorOffset != selection.extentOffset){
+						selection.deleteFromDocument()
+					}
+					var anchorNode = selection.anchorNode;
+					var anchorOffset = selection.anchorOffset;
+					if(anchorNode.nodeType == 3){
+						// 在文字节点当中
+						anchorNode.splitText(anchorOffset);//分为两个串
+						selection.anchorNode.after(documentFragment)//复制
+					}else if(anchorNode.nodeType == 1){
+						// 块节点当中
+						selection.anchorNode.insertBefore(documentFragment, anchorNode.childNodes[anchorOffset])
+					}
+					//设置焦点
+					var ran = selection.getRangeAt(0);
+					ran = ran.cloneRange();
+					ran.setStartAfter(_focus);
+					selection.removeAllRanges();
+					selection.addRange(ran);
+					// pn.focus();
+				},
+				editorDrop(e){
+					// e.preventDefault();//阻止默认复制
+					// e.dataTransfer.effectAllowed = 'none'
+					// var selection = window.getSelection && window.getSelection();
+					// var anchorNode = selection.anchorNode;
+					// var anchorOffset = selection.anchorOffset;
+					// console.log(anchorOffset)
+					// // e.dataTransfer.setData('text', e.dataTransfer.getData('text'))
+					// // console.log(e.dataTransfer)
+					// // console.log(e)
+					// return '123'
+				},
+				editorBlur(e){
+					var selection = window.getSelection();
+					this.editor.selection = selection
+					this.editor.blurAnchorNode = selection.anchorNode;
+					this.editor.blurAnchorOffset = selection.anchorOffset;
+				},
+				setFocus(e){
+					this.$refs.editor.focus();
+					if(this.editor.blurAnchorNode){
+						this.editor.selection.setPosition(this.editor.blurAnchorNode, this.editor.blurAnchorOffset)
+					}
+					
+				}
+			},
+			computed:{
+				emojilist(){
+					// var obj = [];
+					// for(var i in this.emojis) obj.push(emojisBaseUrl + this.emojis[i]);
+					var obj = {}
+					for(var i in this.emojiData.list) obj[i] = emojisBaseUrl + this.emojiData.list[i]
+					return obj
+				}
+			},
+
+		})
+		vm = new Vue({
+			el: '#app',
+			methods:{
+				alert(){
+					console.log(1)
+				}
+			}
+		})
+	</script>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

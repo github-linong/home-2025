@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>击穿实现双重事件 - www.lilnong.top</title>
+	<meta keywords="击穿实现双重事件">
+	<meta description="击穿实现双重事件">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+	<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<body>
+	<div id="app">
+		<div class="btn">
+			我是个鬼东西 
+		</div>
+		<div class="btn btn--relative">
+			我是个鬼东西 relative
+		</div>
+		<div class="btn btn--absolute">
+			我是个鬼东西 absolute
+		</div>
+		<div class="btn btn--fixed">
+			我是个鬼东西 fixed
+		</div>
+		<div class="btn btn--static">
+			我是个鬼东西 static
+		</div>
+		<div class="btn btn--sticky">
+			我是个鬼东西 sticky
+		</div>
+		<div class="btn btn--initial">
+			我是个鬼东西 initial
+		</div>
+		<div class="btn btn--inherit">
+			我是个鬼东西 inherit
+		</div>
+		<div class="btn btn--unset">
+			我是个鬼东西 unset
+		</div>
+		<style>
+			.btn{height: 100px;width: 100px;background: #0cc;}
+			.btn--relative{position: relative;}
+			.btn--absolute{position: absolute;}
+			.btn--fixed{position: fixed;}
+			.btn--static{position: static;}
+			.btn--sticky{position: sticky;}
+			.btn--initial{position: initial;}
+			.btn--inherit{position: inherit;}
+			.btn--unset{position: unset;}
+
+			.btn--click{position: absolute;top:0;left:0;width:100%;height:100%;background: #f00;}
+		</style>
+		<script>
+			clickHandle = function(e){
+				console.log('clickHandle', e)
+				this.removeEventListener('click', clickHandle);
+				setTimeout(v=>{
+					this.parentNode.removeChild(this)
+				})
+			}
+			document.body.addEventListener('touchstart', (e)=>{
+				var el = e.target;
+				if(el.classList.contains('btn')){
+					console.log('touchstart', e);
+					console.log(`h:${el.offsetHeight},w:${el.offsetWidth},l:${el.offsetLeft},t:${el.offsetTop}`)
+					if(el.querySelector('.btn--click')){
+						// 存在
+						console.log('存在btn--click')
+					}else{
+						// 不存在
+						var _el = document.createElement('div')
+						_el.classList.add('btn--click')
+						_el.addEventListener('click', clickHandle)
+						if(getComputedStyle(document.body).position == 'static'){
+							el.style.position = 'relative'
+						}
+						el.appendChild(_el)
+					}
+				}
+			})
+		</script>
+	</div>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

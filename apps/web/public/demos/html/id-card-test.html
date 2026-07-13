@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+		<input type="text" id="idCard" name="">
+		<!-- <div id="cLog"></div> -->
+	</div>
+	<script type="text/javascript">
+		$('#idCard').off().on('input', function(e){
+			console.log(this.value, {
+				check: check(this.value),
+				checkProvice: checkProvice(this.value),
+				checkVerifyCode: checkVerifyCode(this.value),
+				checkIndetityCardNo: checkIndetityCardNo(this.value),
+			})
+		})
+		function check(val){
+		    var reg=/^[1-9]\d{5}(19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|(10|20|30|31))\d{3}[0-9Xx]$/;
+		     return reg.test(val);
+		}
+
+		// 检测省份码
+		function checkProvice(val)
+		{
+		    var patten=/^[1-9][0-9]/;
+		    if(patten.test(val))
+		    {
+		        var prov={11:"北京",12:"天津",13:"河北",14:"山西",15:"内蒙古",21:"辽宁",22:"吉林",23:"黑龙江",31:"上海",32:"江苏",33:"浙江",34:"安徽",35:"福建",36:"江西",37:"山东",41:"河南",42:"湖北",43:"湖南",44:"广东",45:"广西",46:"海南",51:"四川",52:"贵州",53:"云南",54:"西藏",50:"重庆",61:"陕西",62:"甘肃",63:"青海",64:"宁夏",65:"新疆",81:"香港",82:"澳门",83:"台湾"};
+		        if(prov[val.slice(0,2)])
+		        {
+
+		            return prov[val.slice(0,2)];//true;
+		        };
+		    }
+
+
+		   return false;
+		}
+
+
+		// 检测出生日期
+		function checkBirthDay(val)
+		{
+		    var patten=/^(19|20)\d{2}((0[1-9])|1[0-2])(([0-2][1-9])|(10|20|30|31))/;
+		    if(patten.test(val))
+		    {
+		        var year=val.substring(0,4);
+		        var month=val.substring(4,6);
+		        var day=val.substring(6,8);
+		         
+		        var date=new Date(year+"-"+month+"-"+day);
+		        if(date&&date.getMonth()==(parseInt(month)-1))
+		        {
+		            return true;
+		        }
+		 
+		    }
+		    return false;
+		}
+
+		// 检测校验码
+		function checkVerifyCode(val)
+		{
+		    var patten=/^[1-9]\d{5}(19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|(10|20|30|31))\d{3}[0-9X]$/;
+		    var ratio=[7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2];
+		    var codeArr=[1,0,"X",9,8,7,6,5,4,3,2];
+		    var code=val.substring(17);
+		    if(patten.test(val))
+		    {
+		        var sum=0;
+		        for(var i=0;i<17;i++)
+		        {
+		            sum+=val[i]*ratio[i];
+		        }
+		        // console.log(sum)
+		        var remainder=sum%11;
+		        if(codeArr[remainder]==code)
+		        {
+		            return true;
+		        }
+		    }
+		    return false;
+		}
+
+		function checkIndetityCardNo(val){
+		    var province=val.substring(0,2);
+		    if(checkProvice(province))
+		    {
+		         var date=val.substring(6,14);
+		         if(checkBirthDay(date))
+		         { 
+		             return checkVerifyCode(val);
+		         }
+		    }
+		    return false;
+		}
+	</script>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

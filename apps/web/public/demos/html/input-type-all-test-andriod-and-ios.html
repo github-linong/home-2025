@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<style type="text/css">
+		#app label{
+			/*min-width: 8em;*/
+			display: inline-block;
+		}
+		div#app div{
+		    border: 1px solid #eee;
+		    padding: 15px 0; 
+		    position:relative;
+		    margin: 10px 0;
+		    min-height: 2em;
+		}
+		div#app+div{
+		    /*//border-top: 0;*/
+		}
+		#app label{
+		    position:absolute;
+		    top: 0;
+		    line-height:1;
+		    transform: translate(1em,-.5em);
+		    background: rgba(255,255,255,1);
+		    padding: 0 10px;
+
+		}
+	</style>
+	<title>input的type属性测试</title>
+</head>
+<body>
+	<div id="app">
+		<div v-for="(item, index) in types">
+			<label :for="'input'+index">{{item}}</label>
+			<input :type="item" :name="'input'+index" :id="'input'+index">
+		</div>
+	</div>
+	<script type="text/javascript">
+		new Vue({
+			el: '#app',
+			data: {
+				types: ['button','checkbox','color','date','datetime-local','email','file','hidden','image','month','number','password','radio','range','reset','search','submit','tel','text','time','url','week']
+			}
+		})
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

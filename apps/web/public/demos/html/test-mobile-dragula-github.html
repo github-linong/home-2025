@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/dragula/3.7.2/dragula.js"></script>
+	<link href="https://cdn.bootcss.com/dragula/3.7.2/dragula.css" rel="stylesheet">
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>dragula 测试</title>
+</head>
+<body>
+	<p>https://github.com/bevacqua/dragula</p>
+	<ul id="sortable">
+	</ul>
+
+	<style>
+	*{
+	    user-select: none;
+	}
+	#sortable { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+	#sortable li { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
+	#sortable li span { position: absolute; margin-left: -1.3em; }
+	</style>
+	<script>
+
+    var str = ''
+    for(var i = 0;i < 20;i++){
+        str += '      <li class="ui-state-default"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>Item '+i+'</li>';
+    }
+    sortable.innerHTML = str;
+	dragula([document.querySelector('#sortable')],{
+
+	});
+  //       dragula([document.querySelector('#sortable')],{
+		//   isContainer: function (el) {
+		//     return false; // only elements in drake.containers will be taken into account
+		//   },
+		//   moves: function (el, source, handle, sibling) {
+		//     return true; // elements are always draggable by default
+		//   },
+		//   accepts: function (el, target, source, sibling) {
+		//     return true; // elements can be dropped in any of the `containers` by default
+		//   },
+		//   invalid: function (el, handle) {
+		//     return false; // don't prevent any drags from initiating by default
+		//   },
+		//   direction: 'vertical',             // Y axis is considered when determining where an element would be dropped
+		//   copy: false,                       // elements are moved by default, not copied
+		//   copySortSource: true,             // elements in copy-source containers can be reordered
+		//   revertOnSpill: false,              // spilling will put the element back where it was dragged from, if this is true
+		//   removeOnSpill: false,              // spilling will `.remove` the element, if this is true
+		//   mirrorContainer: document.body,    // set the element that gets mirror elements appended
+		//   ignoreInputTextSelection: true     // allows users to select input text, see details below
+		// });
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

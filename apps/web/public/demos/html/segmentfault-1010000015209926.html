@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world', Date.now());
+	</script>
+</head>
+<body>
+	<div id="app">
+		{{test}}
+		<div class="drag"
+	     v-drag
+	 	 style="background: url('https://ss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=988279975,1210033778&fm=58');
+	        background-size: cover;
+	        width: 200px;
+	        height: 200px;
+	        position: absolute;
+	        top: 100px;
+	        left: 180px;
+	        transform: scale(1) rotate(0deg);
+	        color: #fff;"
+	    >
+    </div>
+	</div>
+	<script type="text/javascript">
+	//求两点之间的距离 勾股定理  
+	function getDistance(a, b) {
+	    let x = b.pageX - a.pageX,
+	        y = b.pageY - a.pageY;
+	    return Math.sqrt((x * x) + (y * y));
+	}
+
+	//求旋转角度 反三角函数
+	function getAngle(a, b) {
+	    let x = a.pageX - b.pageX,
+	        y = a.pageY - b.pageY;
+	    return Math.atan2(y, x) * 180 / Math.PI;
+	}
+	Vue.directive('drag', {
+	  	bind(el, binding, vnode) {
+	  		console.log('bind')
+	        let type = binding.arg, 
+	            obj = {},
+	            now = [], //记录当前移动距离 
+	            start = [], //记录手指按下位置
+	            scale = 1, //缩放
+	            old_scale = 1, //记录每次缩放
+	            rotation = 0, //旋转度数
+	            old_rotation = 0, //记录每次旋转
+	            isTouch = false; // 是否开始touch事件
+		  	        
+	        el.addEventListener('touchstart', (e)=>{
+	  			// console.log('touchstart')
+	            if(e.touches.length >= 2) {
+	                isTouch = true;
+	                start = e.touches;
+	                if(binding.arg === 'start') {
+	                    binding.value(start);
+	                }
+	                old_scale = +(obj.scale || 1);
+	                old_rotation = +(obj.rotation || 0);
+                console.log(old_scale, old_rotation)
+	            }
+	        }, false);
+
+	        el.addEventListener('touchmove', (e)=>{
+	  			// console.log('touchmove')
+	            if(e.preventDefault){
+	                e.preventDefault();
+	            } else {
+	                e.stopPropagation();
+	            }
+	            if(e.touches.length >= 2 && isTouch) {
+	                now = e.touches;
+	                scale = getDistance(now[0], now[1]) / getDistance(start[0], start[1]);
+	                rotation = getAngle(now[0], now[1]) - getAngle(start[0], start[1]);
+	                obj = {
+	                    scale: old_scale * scale.toFixed(2),
+	                    rotation: +old_rotation + +rotation.toFixed(2)
+	                }
+	                if(binding.arg === 'move') {
+	                    binding.value(obj);
+	                } else {
+	                    el.style.transform = `scale(${obj.scale}) rotate(${obj.rotation}deg)`;
+	                }
+	            }
+	        }, false);
+	        
+	        el.addEventListener('touchend', (e)=>{
+	  			// console.log('touchend')
+	            if(isTouch) {
+	                isTouch = false;
+	            }
+	            if(binding.arg === 'end') {
+	                binding.value();
+	            }
+	        }, false);
+	    }
+	})
+	new Vue({
+		el: '#app',
+		data: {
+			test: 'LN'
+		}
+	})
+	</script>
+	<script>
+	!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+	with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+	})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

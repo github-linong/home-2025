@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>陀螺仪、震动</title>
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+</head>
+<body>
+	<div id="app">
+		<button id="openVibrate" class="btn btn-info">开启持续震动</button>
+		<button id="stopVibrate" class="btn btn-danger">关闭持续震动</button>
+		<button id="showVibrate" class="btn btn-info">震动一下</button>
+		<button id="reload" onclick="location.reload(true)" class="btn btn-info">刷新</button>
+	</div>
+	<div id="accelerationIncludingGravityValue"></div>
+	<div id="deviceorientationValue"></div>
+	<script type="text/javascript">
+		vibrateInterval = 0;
+		openVibrate.onclick = function(){
+			clearInterval(vibrateInterval)
+			vibrateInterval = setInterval(function(){
+				startVibrate(1000)
+			}, 1500)
+		}
+		stopVibrate.onclick = function(){
+			clearInterval(vibrateInterval)
+			startVibrate(0);
+		}
+		showVibrate.onclick = function(){
+			startVibrate(300)	
+		}
+		startVibrate = function(duration){
+			navigator.vibrate(duration);
+		}
+	</script>
+	<script type="text/javascript">
+		var lastDevicemotion={}; 
+		var devicemotionCount = 0;
+		var startTime = Date.now();
+		window.addEventListener('devicemotion', function(e){	// DeviceMotionEvent
+			var acceleration = event.accelerationIncludingGravity;
+			var x = Math.abs(acceleration.x-lastDevicemotion.X)>>0
+			var y = Math.abs(acceleration.y-lastDevicemotion.y)>>0
+			var z = Math.abs(acceleration.z-lastDevicemotion.z)>>0
+			devicemotionCount++;
+			if(x> 30 || y> 30 || z> 30){
+		    	accelerationIncludingGravityValue.style.background='#0f0'
+				accelerationIncludingGravityValue.innerText = `摇了，${(Date.now()-startTime)/devicemotionCount >> 0}/ms，${devicemotionCount}\nx:${acceleration.x}-${x}\ny:${acceleration.y}-${y}\nz:${acceleration.z}-${z}`
+			}else{
+		    	accelerationIncludingGravityValue.style.background='#fff'
+				accelerationIncludingGravityValue.innerText = `没摇，${(Date.now()-startTime)/devicemotionCount >> 0}/ms，${devicemotionCount}\nx:${acceleration.x}-${x}\ny:${acceleration.y}-${y}\nz:${acceleration.z}-${z}`
+			}
+			lastDevicemotion = acceleration;
+		}, false);
+
+		var lastDeviceorientation={};    // 用来存储上一次的deviceorientation事件
+		var deviceorientationCount = 0;
+		window.addEventListener('deviceorientation', function(e){	//DeviceOrientationEvent
+		    var delA = Math.abs(event.alpha - lastDeviceorientation.alpha);    // alpha轴偏转角
+		    var delB = Math.abs(event.beta - lastDeviceorientation.beta);    // beta轴偏转角
+		    var delG = Math.abs(event.gamma - lastDeviceorientation.gamma);    // gamma轴偏转角
+		    lastDeviceorientation = event;    // 存储上一次的event
+		    deviceorientationCount++
+		    if ( (delA > 15 && delB > 15) || (delA > 15 && delG > 15) || (delB > 15 || delG > 15)) {
+		    	deviceorientationValue.style.background='#f00'
+				deviceorientationValue.innerText = `摇了，${(Date.now()-startTime)/deviceorientationCount >> 0}/ms，${deviceorientationCount}\nalpha:${event.alpha}\ny:${event.beta}\nz:${event.gamma}`
+		    }else{
+		    	deviceorientationValue.style.background='#fff'
+				deviceorientationValue.innerText = `没摇，${(Date.now()-startTime)/deviceorientationCount >> 0}/ms，${deviceorientationCount}\nalpha:${event.alpha}\ny:${event.beta}\nz:${event.gamma}`
+		    }
+		}, false);
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

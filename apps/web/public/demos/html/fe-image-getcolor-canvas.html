@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>如何对前端图片主题色进行提取</title>
+</head>
+<body>
+	<img src="https://www.lilnong.top/static/img/Penguins.jpg">
+	<img src="https://www.lilnong.top/static/img/QQ_20190301172228.jpg">
+	<img src="https://www.lilnong.top/static/img/QQ_20190301172329.jpg">
+	<img src="https://www.lilnong.top/static/img/QQ_20190301172837.jpg">
+	
+	<canvas width="10" height="10" style="width: 200px;height: 200px;"></canvas>
+	<script type="text/javascript">
+		var canvas = document.querySelector('canvas');
+		var context = canvas.getContext('2d');
+		var _image = document.querySelector('img');
+		// console.dir(context);
+		// context.drawImage(_image,0,0,300,150);
+		_image.onload = function(){
+			context.drawImage(_image,0,0,1,1);
+			console.log(context.getImageData(0,0,1,1));
+		}
+		document.querySelectorAll('img').forEach(v=>{
+			v.addEventListener('click', () => {
+				context.drawImage(v,0,0,1,1);
+				console.log(context.getImageData(0,0,1,1));
+			})
+		})
+
+		// var xhr = new XMLHttpRequest();
+		// xhr.onload = function () {
+		//     var url = URL.createObjectURL(this.response);
+		//     var img = new Image();
+		//     img.onload = function () {
+		//         // 此时你就可以使用canvas对img为所欲为了
+		//         // ... code ...
+		// 		context.drawImage(img,0,0,1,1);
+		// 		context.getImageData(0,0,1,1);
+		//         // 图片用完后记得释放内存
+		//         URL.revokeObjectURL(url);
+		//     };
+		//     img.src = url;
+		// };
+		// xhr.open('GET', 'https://www.lilnong.top/static/img/Penguins.jpg', true);
+		// xhr.responseType = 'blob';
+		// xhr.send();
+	</script>
+	<style type="text/css">
+		canvas{
+		  border: 1px solid #f00;
+		}
+		img{
+		  width:300px;
+		}
+	</style>
+	<p>https://segmentfault.com/a/1190000017854473</p>
+	<p>http://jsrun.net/MZXKp/edit</p>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	</body>
+</html>

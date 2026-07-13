@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>实现表格列操作 - www.lilnong.top</title>
+	<meta keywords="Vue 实现表格列操作">
+	<meta description="Vue 中实现表格列操作">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.min.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.6.11/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.19.2/axios.min.js"></script>
+	<script type="text/javascript">new VConsole()</script>
+	<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+	<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+	<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+	<link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/theme-chalk/index.css" rel="stylesheet">
+	<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/index.js"></script>
+</head>
+<body>
+	<div id="app">
+		<div>
+			渠道：
+			<el-radio-group v-model="query.business">
+				<el-radio label="qq">QQ 音乐</el-radio>
+				<el-radio label="163">网易云音乐</el-radio>
+			</el-radio-group>
+		</div>
+		<div>
+			关键词：
+			<el-radio-group v-model="query.searchType">
+				<el-radio label="id">id</el-radio>
+				<el-radio label="key" disabled>关键词</el-radio>
+			</el-radio-group>
+			<el-input type="text" v-model="query.searchValue" @keyup.native.enter="searchHandler"></el-input>
+			<el-button @click="searchHandler">查询</el-button>
+		</div>
+		<div>
+			表格显示字段：
+			<el-checkbox-group v-model="data.showCols">
+			  <el-checkbox :label="item" v-for="item in data.cols">{{item}}</el-checkbox>
+			</el-checkbox-group>
+		</div>
+		<!-- <ul>
+			<li></li>
+		</ul> -->
+		<div>
+			<!-- {{computedList}} -->
+			<!-- {{data.showCols}} -->
+		</div>
+		<table
+			style="width: 100%">
+			<tr>
+				<td>编号</td>
+				<th
+					v-for="item in data.showCols"
+					:key="item">
+					{{item}}
+				</th>
+			</tr>
+			<tr v-for="(record, idx) in computedList" :key="record.songId + '-' + idx">
+				<td>{{idx}}</td>
+				<td
+					v-for="item in data.showCols"
+					:key="item">
+					{{record[item]}}
+				</td>
+			</tr>
+		</table>
+	</div>
+	<script>
+		new Vue({
+			el: '#app',
+			data(){
+				return {
+					query: {
+						business: 'qq',
+						searchType: 'id',
+						searchValue: '7495023900'
+					},
+					data: {
+						list: [],
+						dissInfo: {},
+						cols: ['dissName', 'dissTag', 'dissId', 'song_name','song_title', 'songId', 'singerName', 'albumName'],
+						showCols: ['dissName', 'song_name','song_title', 'singerName', 'albumName'],
+					}
+				}
+			},
+			computed:{
+				computedList(){
+					return this.data.list.map(v=>({
+						...v,
+						...this.data.dissInfo
+					}))
+				}
+			},
+			methods: {
+				searchHandler(){
+					this.query.searchValue = this.query.searchValue.trim()
+					if(this.query.searchValue){
+						axios({
+							url: '/vapi/playlist',
+							params: this.query
+						}).then(v=>{
+							if(v.data.state == 1000){
+								this.data.list = v.data.data.songList
+								this.data.dissInfo = v.data.data.dissInfo
+							}else{
+								// this.$messages(v.data.msg)
+								Vue.prototype.$message({
+									message: v.data.msg,
+									type: 'error'
+								})
+							}
+						})
+					}
+				}
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

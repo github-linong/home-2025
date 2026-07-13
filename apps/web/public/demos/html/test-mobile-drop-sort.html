@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+	<!-- <script src="//code.jquery.com/jquery-1.9.1.js"></script> -->
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<!-- <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script> -->
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>移动端拖拽</title>
+</head>
+<body>
+
+	<ul id="sortable">
+	</ul>
+	
+	<style>
+		*{padding:0;margin:0;}
+		#sortable { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+		#sortable li {padding: 0.4em; padding-left: 1.5em; font-size: 1.4em;}
+		#sortable li span { position: absolute;     margin: 0.3em 0 0 -1.3em; }
+
+		.top{
+		    box-shadow: inset 0px 4px 0px 0px;
+		    /*box-shadow:  0px -2px 0px 0px;    position: relative;*/
+		}
+		.bottom{
+		    /*box-shadow: inset 0px -4px 0px 0px;*/
+		    box-shadow:  0px 4px 0px 0px;    position: relative;
+		}
+		.checked{
+			color: red;
+		}
+	</style>
+	<script type="text/javascript">
+		var str = ''
+		for(var i = 0;i < 20;i++){
+			str += '	  <li class="ui-state-default" draggable="true"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>Item '+i+'</li>';
+		}
+		sortable.innerHTML = str;
+		var _current = null
+
+		$('.ui-state-default').off('touchstart').on('touchstart', function(e){
+		    _current = $(this);
+		    _current.addClass('checked')
+		    var _index = _current.index()
+		    var _offset = _current.offset().top;
+		    var _height = _current.outerHeight();
+			// _current.hide();
+			var _strart = _offset;
+			$('.ui-state-default').off('touchmove').on('touchmove', function(e){
+				e.preventDefault();
+		        var _offset = (e.touches[0].pageY - _strart) / _height;
+		        var _move = Math.floor(_offset);
+		        var _isTop = (_offset % 1) <= 0.5
+		        if(_offset<0){
+		        	_isTop = (_offset % 1) <= -0.5
+		        }
+		        $('.ui-state-default')
+		        	.removeClass('top')
+		        	.removeClass('bottom')
+		        	.eq(_index + _move)
+		        	.addClass(_isTop?'top':'bottom');
+		    })
+		    $(document).off().on('touchend' , function(e){
+		    	if(_current){
+		    		$('.ui-state-default').filter('.top').before(_current).removeClass('top');
+		    		$('.ui-state-default').filter('.bottom').after(_current).removeClass('bottom');
+		    	}
+		    	_current.removeClass('checked');
+		    	_current = null;
+		    	$('.ui-state-default').off('touchmove');
+		    })
+		})
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

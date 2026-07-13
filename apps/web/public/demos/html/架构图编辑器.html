@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>架构图编辑器</title>
+</head>
+<body>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/html2canvas/1.4.1/html2canvas.js"></script>
+    <pre>
+        <h2>【腾讯文档】简单架构图开发计划https://docs.qq.com/sheet/DWW9sRWJxZERwT0pN</h2>
+        - 【已支持】右面支持任意拖拽
+        - 【已支持】支持左边拖拽进右面
+            - 【已支持】需要限定层级关系
+            - 【已支持】需要拦截节点，创建为正确节点
+        - 【已支持】右面支持删除
+        - 【已支持】文案支持编辑
+        - 【已支持】支持 style 修改面板
+        - 【已支持】数据结构互译
+        - 【已支持】渲染功能。导出图片功能。
+            - 「暂不支持」一键美化功能。
+        - ICON
+        - IMG
+    </pre>
+    <script>
+        var downloadFile = function(txt, fileName) {
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([txt]))
+            a.target = "_blank";
+            a.download = fileName || `${Date.now()}`
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+        var fileChange = function(event){
+            const el = event.target;
+            if(el && el.files && el.files.length){
+                const file = el.files[0]
+                console.log(file);
+                fr = new FileReader();
+                fr.readAsText(file);
+                fr.onload = ()=>{
+                    importJSON(JSON.parse(fr.result), document.querySelector('.right'), true)
+                    initRightSortableAll(document.querySelector('.right'));
+                }
+            }
+            el.value = '';
+        }
+        printResource = async () =>{
+            printVm.json = window.exportJSON(document.querySelector('.right').children[0]);
+            // await printVm.$nextTick();
+            // html2canvas(printVm.$refs.printPanel).then(function(canvas) {
+            //     document.body.appendChild(canvas);
+            // });
+        }
+        downloadPrintPanel = async () =>{
+            html2canvas(printVm.$refs.printPanel).then(function(canvas) {
+                // document.body.appendChild(canvas);
+                // console.log(canvas)
+                canvas.toBlob(v=>{
+                    // console.log(URL.createObjectURL(v))
+                    downloadFile(v, `${Date.now()}-架构图.png`);
+                })
+                // downloadFile(canvas.toDataURL(), `${Date.now()}-架构图.png`);
+            });
+        }
+    </script>
+    <style>
+        .col .btn{display: inline-block;vertical-align: top;}
+    </style>
+    <div class="container-fluid">
+        <div class="panel row">
+            <div class="col">
+                <button class="btn btn-primary" onclick="console.log(window.exportJSON(document.querySelector('.right').children[0])),console.log(JSON.stringify(window.exportJSON(document.querySelector('.right').children[0])))">exportJSON 到控制台</button>
+                <button class="btn btn-primary" onclick="downloadFile(JSON.stringify(exportJSON(document.querySelector('.right').children[0])), `${Date.now()}-${('架构图')}.json`)">导出并下载 json</button>
+                <input type="file"  id="importFile" onchange="fileChange(event)" name="importFile" style="width:0;height:0;line-height:0;display: inline-flex;overflow: hidden;opacity:0;vertical-align: top;">
+                <label class="btn btn-primary" for="importFile">导入 json</label>
+                <button class="btn btn-primary" onclick="printResource()">绘制</button>
+                <button class="btn btn-primary" onclick="downloadPrintPanel()">绘制区导出图片</button>
+            </div>
+        </div>
+    </div>
+
+    <br>
+    <div id="configPanel">
+        <!-- <div>
+            <input type="checkbox" id="editorStyleBold"> 加粗 
+            <input type="checkbox" id="editorStyleItalic"> 倾斜
+        </div> -->
+        <div>
+            <div>
+                字号：<select data-style-name="fontSize" id="editorStyleFontSizeSelect">
+                    <option value="12px">12px</option>
+                    <option value="14px">14px</option>
+                    <option value="16px">16px</option>
+                    <option value="18px">18px</option>
+                    <option value="20px">20px</option>
+                </select>
+                <input data-style-name="fontSize" id="editorStyleFontSizeInput"></input>
+            </div>
+            <div>
+                行高：<select data-style-name="lineHeight" id="editorStyleLineHeightSelect">
+                    <option value="12px">12px</option>
+                    <option value="14px">14px</option>
+                    <option value="16px">16px</option>
+                    <option value="18px">18px</option>
+                    <option value="20px">20px</option>
+                    <option value="1">1</option>
+                    <option value="1.5">1.5</option>
+                    <option value="2">2</option>
+                </select>
+                <input data-style-name="lineHeight" id="editorStyleLineHeightInput"></input>
+            </div>
+            <div>
+                缩进：
+                <input data-style-name="textIndent" id="editorStyleTextIndentInput"></input>
+            </div>
+        </div>
+        <div>
+            <div>
+                对齐：<select data-style-name="textAlign" id="editorStyleTextAlignSelect">
+                    <option value="left">left</option>
+                    <option value="right">right</option>
+                    <option value="center">center</option>
+                    <option value="justify">justify</option>
+                    <!-- <option value="revert">revert</option> -->
+                </select>
+            </div>
+        </div>
+        <div>
+            字色：
+            <input type="color" data-style-name="color" id="editorStyleColorInput"></input>
+        </div>
+        <div>
+            背色：
+            <input type="color" data-style-name="backgroundColor" id="editorStyleBackgroundColorInput"></input>
+        </div>
+    </div>
+    <div id="app" class="flex">
+        <div class="left">
+            <div class="group">
+                <div class="group-title">Gird 布局</div>
+                <div data-tag="Row" data-tag-arg1="0" class="item"> Row </div>
+                <div data-tag="Row" data-tag-arg1="1" class="item"> Row 12 </div>
+                <div data-tag="Row" data-tag-arg1="2" class="item"> Row 6 6 </div>
+                <div data-tag="Row" data-tag-arg1="3" class="item"> Row 4 4 4 </div>
+                <div data-tag="Row" data-tag-arg1="4" class="item"> Row 3 3 3 3</div>
+                <div data-tag="Column" data-tag-arg1="0" class="item"> Column </div>
+
+                <!-- <div class="group-title">Flex 布局</div>
+                <div class="item"> Flex </div>
+                <div class="item"> Flex 1 </div>
+                <div class="item"> Flex 2 </div>
+                <div class="item"> Flex 3 </div> -->
+            </div>
+
+            <div class="group">
+                <div class="group-title">Text 文案</div>
+                <!-- <div data-tag="Span" class="item"> Span </div> -->
+                <div data-tag="Div" class="item"> Div </div>
+                <!-- <div data-tag="Input" class="item"> Input </div> -->
+                <!-- <div data-tag="Title" class="item"> Title </div> -->
+            </div>
+
+            <div class="group">
+                <div class="group-title">Media 多媒体</div>
+                <div data-tag="Img" class="item disabled"> Img </div>
+                <div data-tag="Icon" class="item disabled"> Icon </div>
+            </div>
+        </div>
+        
+        <div class="right flex-auto">
+            <div class="container-fluid"  data-tag="Container">
+                <div class="tag"  data-tag="Container"></div>
+
+            </div>
+            <div class="container-fluid demo"  data-tag="Container">
+                <div class="tag"  data-tag="Container"></div>
+                <div class="row" data-tag="Row" data-font-size="14px" data-line-height="18px" data-text-indent="2em" data-color="#c81919" data-background-color="#702e2e" data-text-align="right">
+                    <div class="tag" data-tag="Row"></div>
+                    <div class="remove">删</div>
+                    <div class="config">配</div>
+                    <div class="col" data-tag="Column">
+                        <div class="tag" data-tag="Column"></div>
+                        <div class="remove">删</div>
+                        <div class="config">配</div>
+                        <div class="div" data-tag="Div">
+                            <div class="tag" data-tag="Div"></div>
+                            <div class="remove">删</div>
+                            <div class="config">配</div>
+                            <contenteditable contenteditable=""
+                            data-font-size="18px" 
+                            data-line-height="28px" data-text-indent="4em" 
+                            data-color="#00a0cc" data-background-color="#702e2e" 
+                            data-text-align="center"
+                            >123</contenteditable>
+                        </div>
+                        <div class="div" data-tag="Div">
+                            <div class="tag" data-tag="Div"></div>
+                            <div class="remove">删</div>
+                            <div class="config">配</div>
+                            <contenteditable contenteditable=""> 456</contenteditable>
+                        </div>
+                    </div>
+                    <div class="col" data-tag="Column">
+                        <div class="tag" data-tag="Column"></div>
+                        <div class="remove">删</div>
+                        <div class="config">配</div>
+                        <div class="div" data-tag="Div">
+                            <div class="tag" data-tag="Div"></div>
+                            <div class="remove">删</div>
+                            <div class="config">配</div>
+                            <contenteditable contenteditable=""></contenteditable>
+                        </div>
+                        <div class="row" data-tag="Row">
+                            <div class="tag" data-tag="Row"></div>
+                            <div class="remove">删</div>
+                            <div class="config">配</div>
+                            <div class="col" data-tag="Column">
+                                <div class="tag" data-tag="Column"></div>
+                                <div class="remove">删</div>
+                                <div class="config">配</div>
+                                <div class="div" data-tag="Div">
+                                    <div class="tag" data-tag="Div"></div>
+                                    <div class="remove">删</div>
+                                    <div class="config">配</div>
+                                    <contenteditable contenteditable=""></contenteditable>
+                                </div>
+                                <div class="div" data-tag="Div">
+                                    <div class="tag" data-tag="Div"></div>
+                                    <div class="remove">删</div>
+                                    <div class="config">配</div>
+                                    <contenteditable contenteditable=""></contenteditable>
+                                </div>
+                            </div>
+                            <div class="col" data-tag="Column">
+                                <div class="tag" data-tag="Column"></div>
+                                <div class="remove">删</div>
+                                <div class="config">配</div>
+                                <div class="div" data-tag="Div">
+                                    <div class="tag" data-tag="Div"></div>
+                                    <div class="remove">删</div>
+                                    <div class="config">配</div>
+                                    <contenteditable contenteditable=""></contenteditable>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+            <div class="row"  data-tag="Row">
+                <div class="tag"  data-tag="Row"></div>
+                <div class="remove">删</div>
+                <div class="config">配</div>
+                <div class="col" data-tag="Column">
+                    <div class="tag"  data-tag="Column"></div>
+                    <div class="remove">删</div>
+                    <div class="config">配</div>
+                    <div class="div"  data-tag="Div">
+                        <div class="tag"  data-tag="Div"></div>
+                        <div class="remove">删</div>
+                        <div class="config">配</div>
+                        <contenteditable contenteditable></contenteditable>
+                    </div>
+                    <div class="div"  data-tag="Div">
+                        <div class="tag"  data-tag="Div"></div>
+                        <div class="remove">删</div>
+                        <div class="config">配</div>
+                        <contenteditable contenteditable></contenteditable>
+                    </div>
+                </div>
+                <div class="col" data-tag="Column">
+                    <div class="tag"  data-tag="Column"></div>
+                    <div class="remove">删</div>
+                    <div class="config">配</div>
+                    <div class="div"  data-tag="Div">
+                        <div class="tag"  data-tag="Div"></div>
+                        <div class="remove">删</div>
+                        <div class="config">配</div>
+                        <contenteditable contenteditable></contenteditable>
+                    </div>
+                    <div class="row"  data-tag="Row">
+                        <div class="tag"  data-tag="Row"></div>
+                        <div class="remove">删</div>
+                        <div class="config">配</div>
+                        <div class="col" data-tag="Column">
+                            <div class="tag"  data-tag="Column"></div>
+                            <div class="remove">删</div>
+                            <div class="config">配</div>
+                            <div class="div"  data-tag="Div">
+                                <div class="tag"  data-tag="Div"></div>
+                                <div class="remove">删</div>
+                                <div class="config">配</div>
+                                <contenteditable contenteditable></contenteditable>
+                            </div>
+                            <div class="div"  data-tag="Div">
+                                <div class="tag"  data-tag="Div"></div>
+                                <div class="remove">删</div>
+                                <div class="config">配</div>
+                                <contenteditable contenteditable></contenteditable>
+                            </div>
+                        </div>
+                        <div class="col" data-tag="Column">
+                            <div class="tag"  data-tag="Column"></div>
+                            <div class="remove">删</div>
+                            <div class="config">配</div>
+                            <div class="div"  data-tag="Div">
+                                <div class="tag"  data-tag="Div"></div>
+                                <div class="remove">删</div>
+                                <div class="config">配</div>
+                                <contenteditable contenteditable></contenteditable>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            
+            
+            
+            
+
+
+
+                <div class="row"  data-tag="Row">
+                    <div data-tag="Column" class="col-6">col-6</div>
+                    <!-- <div contenteditable data-tag="Column" class="col-6">col-6</div> -->
+                    <div data-tag="Column" class="col-6">col-6</div>
+                    <!-- <div contenteditable data-tag="Column" class="col-6">col-6</div> -->
+                </div>
+                <div class="row"  data-tag="Row">
+                    <div data-tag="Column" class="col">col</div>
+                    <!-- <div contenteditable data-tag="Column" class="col">col</div> -->
+                    <div data-tag="Column" class="col">col</div>
+                    <!-- <div contenteditable data-tag="Column" class="col">col</div> -->
+                </div>
+                <div class="row"  data-tag="Row">
+                    <div data-tag="Column" class="col">col</div>
+                    <!-- <div contenteditable data-tag="Column" class="col">col</div> -->
+                    <div data-tag="Column" class="col">col</div>
+                    <!-- <div contenteditable data-tag="Column" class="col">col</div> -->
+                    <div data-tag="Column" class="col">col</div>
+                    <!-- <div contenteditable data-tag="Column" class="col">col</div> -->
+                    <div data-tag="Column" class="col">col</div>
+                    <!-- <div contenteditable data-tag="Column" class="col">col</div> -->
+                </div>
+                <div class="row"  data-tag="Row">
+                    <div data-tag="Column" class="col">col</div>
+                    <!-- <div contenteditable data-tag="Column" class="col">col</div> -->
+                </div>
+                <div class="row"  data-tag="Row">
+                    <div data-tag="Column" class="col">
+                        <div class="div">内容</div>
+                        <!-- <div contenteditable class="div">内容</div> -->
+                        <div class="row"  data-tag="Row">
+                            <div data-tag="Column" class="col">
+                                <div class="div">内容</div>
+                                <!-- <div contenteditable class="div">内容</div> -->
+                                <div class="row"  data-tag="Row">
+                                    <div data-tag="Column" class="col">
+                                        <div class="div">内容</div>
+                                        <!-- <div contenteditable class="div">内容</div> -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        *{padding:0;margin:0;box-sizing: border-box;}
+
+        .flex{display: flex;justify-content: flex-start;align-items: flex-start;}
+        .flex-auto{flex: auto;}
+        .container-fluid{overflow: hidden;}
+        .container-fluid:first-child{margin-top: 0;}
+        
+        .left{width: 200px;flex: none;background: #ccc}
+        .left .group{padding: 10px;}
+        .left .group-title{font-size: 14px;color: #fff;text-shadow: 0 1px 0 rgb(0 0 0 / 30%);}
+        .left .item{background: #bbb;margin: 8px;padding: 4px 6px;border-radius: 4px;font-size: 12px;cursor: move;}
+        .left .item.disabled{cursor: no-drop;background-color: #ddd;color: #999;}
+        
+        .right div{
+            /* padding: 20px 12px 12px 12px; */
+            padding-top: 30px;
+            padding-bottom: 10px;
+            /* padding-left: 10px; */
+            /* padding-right: 10px; */
+            box-shadow: inset 0 1px 13px rgb(0 0 0 / 10%);
+            min-height: 80px;
+            min-width: 10px;
+            /* margin-left: 20px; */
+            margin-top: 10px;
+            margin-bottom: 10px;
+            position: relative;
+            border-radius: 4px;
+            padding-left: 20px;
+            padding-right: 20px;
+            overflow: hidden;
+        }
+
+        /* .right .container,  */
+        .right .row,
+        .right .col{
+            /* margin-left: 10px; */
+            /* padding-left: 10px; */
+        }
+        .right .remove,
+        .right .config,
+        .right .tag{
+            width: auto;height: auto;
+            min-width: auto;min-height: auto;
+            max-width: auto;max-height: auto;
+            margin: 0;padding:0;
+            position: absolute;
+        }
+
+        .right .row:hover:before,
+        .right .col:hover:before,
+        .right .div:hover:before{
+            width: auto;height: auto;
+            min-width: auto;min-height: auto;
+            max-width: auto;max-height: auto;
+            margin: 0;padding:0;
+
+            content: attr(class);
+            background-color: #ccF5F5;
+            border: 1px solid #DDDDDD;
+            border-radius: 4px 0 4px 0;
+            color: #9DA0A4;
+            font-size: 12px;
+            font-weight: bold;
+            right: 0px;
+            top: 0px;
+            padding: 3px 7px;
+            position: absolute;
+        }
+        /* .right div:before, */
+        .right .tag{
+            width: auto;height: auto;
+            min-width: auto;min-height: auto;
+            max-width: auto;max-height: auto;
+            margin: 0;padding:0;
+
+            background-color: #F5F5F5;
+            border: 1px solid #DDDDDD;
+            border-radius: 4px 0 4px 0;
+            color: #9DA0A4;
+            font-size: 12px;
+            font-weight: bold;
+            left: 0px;
+            position: absolute;
+            top: 0px;
+            padding: 3px 7px;
+        }
+        .right .tag:after{
+            content: attr(class);
+            content: attr(data-tag);
+        }
+        .right .tag:before{
+            /* content: ''; */
+            display: none;
+        }
+        .right .remove{
+            top: 0;left: 100px;
+        }
+        .right .config{
+            top: 0;left: 120px;
+        }
+        .right .remove,
+        .right .config{
+            display: none;
+            font-size: 16px;
+        }
+        .right div:hover > .remove,
+        .right div:hover > .config{
+            display: block;
+            cursor: pointer;
+        }
+        .right [data-tag]{
+            /* color: attr(data-color color, red); */
+            /* background-color: attr(data-background color, red); */
+            /* attr(data-color); */
+        }
+        .demo{border: 1px solid #f00}
+
+        contenteditable{
+            min-height: 10px;
+            display: block;
+            border: 1px solid #0f0;
+        }
+
+        #configPanel{
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            right:0;
+            padding: 12px;
+            background-color: #ccc;
+        }
+    </style>
+    <script>
+        childTag = {
+            'Container': ['Row'],
+            'Row': ['Column'],
+            'Column': ['Span', 'Row', 'Div','Img','Icon'],
+            'Div': [],
+            'Img': [],
+            'Icon': [],
+        }
+        getDragDom = function(tag, num = 0, text = null, dataset = {}){
+            // `
+            // <div class="row"  data-tag="Row">
+            //     <div class="tag"  data-tag="Row"></div>
+            // </div>
+            // `
+            // `
+            // <div class="col" data-tag="Column">
+            //     <div class="tag"  data-tag="Column"></div>
+            // </div>
+            // `
+            // `
+            // <div class="div"  data-tag="Div">
+            //     <div class="tag"  data-tag="Div"></div>
+            // </div>
+            // `
+            getControlsTemplate = ({tagName = 'Row'}) => `
+                <div class="tag"  data-tag="${tagName}"></div>
+                <div class="remove">删</div>
+                <div class="config">配</div>
+            `
+            getDataAttribute = (dataset) => {
+                return _.map(dataset, (value, key) => ` data-${_.kebabCase(key)}="${value}" `).join('')
+            }
+            getStyleAttribute = (dataset)=>{
+                return _.map(dataset, (value, key) => `; ${_.kebabCase(key)}: ${value} ;`).join('')
+            }
+
+            //  ${text !== null? text : '<contenteditable contenteditable></contenteditable>'}
+            getSortableTemplateDIV = (text, dataset)=>`
+                <div class="div"  data-tag="Div" ${getDataAttribute(dataset)} style="${getStyleAttribute(dataset)}">
+                    ${getControlsTemplate({tagName: 'Div'})}
+                    <contenteditable contenteditable>${text || ''}</contenteditable>
+                </div>
+            `
+            getSortableTemplateCol = (text, dataset)=>`
+                <div class="col" data-tag="Column" ${getDataAttribute(dataset)} style="${getStyleAttribute(dataset)}">
+                    ${getControlsTemplate({tagName: 'Column'})}
+                    ${text !== null? (text || '') : ''}
+                </div>
+            `
+            getSortableTemplateRow = (repeat = 0, text, dataset)=>`
+                <div class="row" data-tag="Row" ${getDataAttribute(dataset)} style="${getStyleAttribute(dataset)}">
+                    ${getControlsTemplate({tagName: 'Row'})}
+                    ${text !== null? (text || '') : getSortableTemplateCol().repeat(repeat)}
+                </div>
+            `
+            getSortableTemplateImg = (dataset)=>`
+                <div class="Img" data-tag="Img" ${getDataAttribute(dataset)} style="${getStyleAttribute(dataset)}">
+                    ${getControlsTemplate({tagName: 'Img'})}
+                </div>
+            `
+            getSortableTemplateContainer = (text, dataset)=>`
+                <div class="container-fluid" data-tag="Container"  ${getDataAttribute(dataset)} style="${getStyleAttribute(dataset)}">
+                    <div class="tag"  data-tag="Container"></div>
+                    ${text || ''}
+                </div>
+            `
+            switch(tag){
+                case 'Row':
+                    return getSortableTemplateRow(num, text, dataset)
+                case 'Column':
+                    return getSortableTemplateCol(text, dataset)
+                case 'Div':
+                    return getSortableTemplateDIV(text, dataset)
+                case 'Container':
+                    return getSortableTemplateContainer(text, dataset)
+            }
+            // const el = document.createElement('div');
+            // el.innerHTML = getSortableTemplateRow();
+        }
+
+        initLeftSortable = function(el){
+            new Sortable(el, {
+                group: {
+                    name: 'shared',
+                    pull: 'clone',
+                    put: false // 不允许拖拽进这个列表
+                },
+                filter: '.disabled',
+                handle: '.item',
+                animation: 150,
+                onSort(...args){
+                    console.log('onSort', ...args)
+                    const evt = args[0]
+                    const {item, to} = evt;
+                    const dragDom = $(getDragDom(item.dataset.tag, item.dataset.tagArg1));
+                    $(item).replaceWith(dragDom)
+                    initRightSortable(dragDom[0])
+                    var rightSortables = [].slice.call(dragDom[0].querySelectorAll('.right .row,.right .col,.right .div,.right .container-fluid'));
+                    rightSortables.forEach(v=>{
+                        initRightSortable(v)
+                    })
+                },
+                onMove(...args){
+                    console.log('onMove', ...args)
+                    const [event] = args;
+                    const {to,dragged} = event;
+                    console.log(to?.dataset?.tag, dragged?.dataset?.tag)
+                    return (childTag[to?.dataset?.tag]?.includes(dragged?.dataset?.tag))
+                },
+                sort: false,
+            });
+        }
+        initRightSortable = function(el){
+            new Sortable(el, {
+                handle: '.tag',
+                // filter: '.tag',
+
+                draggable: '.row, .col, .div',
+                group: 'shared',
+                animation: 150,
+                fallbackOnBody: true,
+
+                onMove(...args){
+                    console.log('onMove', 'right', ...args)
+                    const [event] = args;
+                    const {to,dragged} = event;
+                    console.log(to?.dataset?.tag, dragged?.dataset?.tag)
+                    return (childTag[to?.dataset?.tag]?.includes(dragged?.dataset?.tag))
+                },
+            });
+        }
+        var nestedSortables = [].slice.call(document.querySelectorAll('.left .group'));
+        nestedSortables.forEach(v=>{
+            initLeftSortable(v)
+            // new Sortable(v, {
+            // // new Sortable(document.querySelector('.left'), {
+            //     group: {
+            //         name: 'shared',
+            //         pull: 'clone',
+            //         put: false // 不允许拖拽进这个列表
+            //     },
+            //     // filter: '.group, .group-title',
+            //     handle: '.item',
+            //     // draggable: '.item', // 和上一个有什么区别
+            //     animation: 150,
+            //     // onClone: function (/**Event*/evt) {
+            //     //     // 拉起的时候就选中了，太早了
+            //     //     // console.log('onClone', evt)
+            //     //     // var origEl = evt.item;
+            //     //     // var cloneEl = evt.clone;
+            //     // },
+            //     // onChange: function(...args){console.log('onChange', ...args)},
+            //     // onUpdate: function(...args){console.log('onUpdate', ...args)},
+            //     // onAdd: function(...args){console.log('onAdd', ...args)},
+                
+            //     // onMove: function(...args){
+            //     //     // 太频繁，而且是中间态
+            //     //     // console.log('onMove', ...args)
+            //     // },
+            //     // onFilter: function(...args){console.log('onFilter', ...args)},
+
+            //     // onRemove 和 onSort 可以？
+            //     // onRemove: function(...args){console.log('onRemove', ...args)},
+            //     onSort: function(...args){
+            //         console.log('onSort', ...args)
+            //         const evt = args[0]
+            //         const {item, to} = evt;
+            //         console.log(item, to)
+            //         item.classList.add(item.dataset.tag)
+            //         new Sortable(item, {
+            //             group: 'shared',
+            //             animation: 150,
+            //             fallbackOnBody: true,
+            //         });
+            //         // new Sortable(to, {
+            //         //     group: 'shared',
+            //         //     animation: 150,
+            //         //     fallbackOnBody: true,
+            //         // });
+            //     },
+                
+            //     sort: false, // 设为false，禁止sort
+
+
+
+            //     // 元素开始动作（）
+            //     onStart: function(...args){console.log('onStart', ...args)},
+            //     // setData: function(...args){console.log('setData', ...args)},
+            //     // 元素结束动作（最后一个触发）
+            //     onEnd: function(...args){console.log('onEnd', ...args)},
+
+
+            //     // 元素被选中
+            //     onChoose: function(...args){console.log('onChoose', ...args)},
+            //     // 元素未被选中的时候（从选中到未选中）
+            //     onUnchoose: function(...args){console.log('onUnchoose', ...args)},
+            // });
+        })
+
+        var rightSortables = [].slice.call(document.querySelectorAll('.right .row,.right .col,.right .div,.right .container-fluid'));
+        rightSortables.forEach(v=>{
+            // new Sortable(document.querySelector('.right'), {
+            // new Sortable(v, {
+            //     group: 'shared',
+            //     animation: 150,
+            //     fallbackOnBody: true,
+            // });
+
+            initRightSortable(v)
+        })
+        let configEl = null
+        document.body.addEventListener('click', function(event){
+            // console.log(event.target)
+            const el = event.target;
+            if(el.classList.contains('remove')){
+                const removeEl = el.parentNode;
+                removeEl.parentNode.removeChild(removeEl)
+            }else if(el.classList.contains('config')){
+                configPanel.style.display = 'block'
+                console.log(el.parentNode)
+                configEl = el.parentNode
+                const {
+                    fontSize,
+                    lineHeight,
+                    textIndent,
+                    textAlign,
+                    color,
+                    backgroundColor,
+                } = configEl.dataset;
+                // if(fontSize){
+                    editorStyleFontSizeSelect.value = fontSize || ''
+                    editorStyleFontSizeInput.value = fontSize || ''
+                // }
+                // if(lineHeight){
+                    editorStyleLineHeightSelect.value = lineHeight || ''
+                    editorStyleLineHeightInput.value = lineHeight || ''
+                // }
+                // if(textIndent){
+                    editorStyleTextIndentInput.value = textIndent || ''
+                // }
+                // if(textAlign){
+                    editorStyleTextAlignSelect.value = textAlign || ''
+                // }
+                // if(color){
+                    editorStyleColorInput.value = color || ''
+                // }
+                // if(backgroundColor){
+                    editorStyleBackgroundColorInput.value = backgroundColor || ''
+                // }
+            }
+        })
+        configFormChange = (event)=>{
+            const el = event.target;
+            configEl.dataset[el.dataset.styleName] = el.value;
+            
+            configEl.style.fontSize = configEl.dataset.fontSize
+            configEl.style.lineHeight = configEl.dataset.lineHeight
+            configEl.style.textAlign = configEl.dataset.textAlign
+            configEl.style.textIndent = configEl.dataset.textIndent
+            configEl.style.color = configEl.dataset.color
+            configEl.style.backgroundColor = configEl.dataset.backgroundColor
+        }
+        editorStyleFontSizeSelect.addEventListener('change', configFormChange)
+        editorStyleFontSizeInput.addEventListener('change', configFormChange)
+        editorStyleLineHeightSelect.addEventListener('change', configFormChange)
+        editorStyleLineHeightInput.addEventListener('change', configFormChange)
+        editorStyleTextIndentInput.addEventListener('change', configFormChange)
+        editorStyleTextAlignSelect.addEventListener('change', configFormChange)
+        editorStyleColorInput.addEventListener('change', configFormChange)
+        editorStyleBackgroundColorInput.addEventListener('change', configFormChange)
+    </script>
+    <script>
+        exportJSON = function(el = document.querySelector('.right'), json = {}){
+            const tag = el.dataset.tag;
+            if(
+                !el || 
+                el.classList.contains('tag') ||
+                el.classList.contains('remove') ||
+                el.classList.contains('config')
+            ){
+                return null
+            }
+            if(tag){
+                json.tag = tag;
+                json.dataset = JSON.parse(JSON.stringify(el.dataset))
+                if(tag === 'Div'){
+                    json.innerText = el.innerText;
+                }else{
+                    json.children = Array.from(el.children).map(v=>exportJSON(v)).filter(v=>v);
+                }
+                
+                return json
+            }
+            return {
+                tag: 'wrap',
+                children: Array.from(el.children).map(v=>exportJSON(v))
+            }
+        }
+        documentFragment = document.createDocumentFragment();
+        documentFragmentEl = document.createElement('div')
+        documentFragment.append(documentFragmentEl);
+        console.log(documentFragment, documentFragmentEl)
+        initRightSortableAll = function(el){
+            var rightSortables = [].slice.call(el.querySelectorAll('.right .row,.right .col,.right .div,.right .container-fluid'));
+            rightSortables.forEach(v=>{
+                initRightSortable(v)
+            })
+        }
+        importDemo1 = {"tag":"Container","dataset":{"tag":"Container"},"children":[{"tag":"Row","dataset":{"tag":"Row"},"children":[]},{"tag":"Row","dataset":{"tag":"Row"},"children":[{"tag":"Column","dataset":{"tag":"Column"},"children":[{"tag":"Div","dataset":{"tag":"Div"},"innerText":"123"},{"tag":"Div","dataset":{"tag":"Div","fontSize":"80px"},"innerText":"456"}]},{"tag":"Column","dataset":{"tag":"Column"},"children":[]},{"tag":"Column","dataset":{"tag":"Column"},"children":[]},{"tag":"Column","dataset":{"tag":"Column"},"children":[]}]}]}
+        importJSON = function(node, el = document.querySelector('.right'), clear = false){
+            console.log('importJSON', node, el , clear)
+            if(clear){
+                el.innerHTML = ''
+                if(el){
+                    if(node.tag === 'Div'){
+                        return el.innerHTML = getDragDom(node.tag, 0, node.innerText, node.dataset)
+                    }
+                    return el.innerHTML = getDragDom(node.tag, 0, node?.children?.map(v=>importJSON(v, null, null, v.dataset)).join(''))
+                }
+            }else if(el){
+                if(node.tag === 'Div'){
+                    documentFragmentEl.innerHTML = getDragDom(node.tag, 0, node.innerText, node.dataset)
+                    return el.append(documentFragmentEl.children[0])
+                }
+                documentFragmentEl.innerHTML = getDragDom(node.tag, 0, node?.children?.map(v=>importJSON(v, null, null, v.dataset)).join(''))
+                return el.append(documentFragmentEl.children[0])
+            }
+
+            if(node.tag === 'Div'){
+                return getDragDom(node.tag, 0, node.innerText, node.dataset)
+            }
+            return getDragDom(node.tag, 0, node?.children?.map(v=>importJSON(v, null, null, v.dataset)).join(''))
+            // node.innerHTML = ``
+        }
+        importJSON(importDemo1, document.querySelector('.right'), true)
+        initRightSortableAll(document.querySelector('.right'));
+    </script>
+
+    <style>
+        #print-view{
+            position: fixed;
+            right:0;bottom:0;
+            width: 200px;height: 200px;
+            background-color: #eee;
+            
+            font-size: 12px;
+            line-height: 1.375;
+        }
+        #print-view .print-view-box{
+            padding: 8px 12px;
+            border: 1px solid #fff;
+        }
+        #print-view .print-view-box.Row,
+        #print-view .print-view-box.Div{
+            border: 1px solid #fff;
+        }
+        #print-view .print-view-box.Row{
+            display: flex;
+            /* padding: 8px 12px; */
+        }
+        #print-view .print-view-box.Column{
+            flex: auto;
+        }
+    </style>
+    <div id="print-view">
+        <div :style="{zoom: 1/zoom}">
+            <div :style="{width:width * zoom+'px',height:height * zoom+'px'}" ref="printPanel">
+                <print-view :json="json"></print-view>
+            </div>
+        </div>
+    </div>
+    <script>
+        Vue.component('print-view',{
+            props: ['json'],
+            template: `
+                <div class="print-view-box" :class="boxClass" :style="boxStyle">
+                    <template v-if="json.tag === 'Div'">
+                        {{json.innerText}}
+                    </template>
+                    <template v-else>
+                        <print-view v-for="item in json.children" :json="item"></print-view>
+                    </template>
+                </div>
+            `,
+            computed: {
+                boxClass(){
+                    return [
+                        this.json.tag
+                    ]
+                },
+                boxStyle(){
+                    return this.json.dataset
+                }
+            }
+        })
+        printVm = new Vue({
+            el: '#print-view',
+            data(){
+                return {
+                    json: importDemo1,
+                    width: 200,
+                    height: 200,
+                    zoom: 10,
+                }
+            }
+        })
+    </script>
+</body>
+</html>

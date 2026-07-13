@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/flexible.3.2.0.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>歌房专属礼物-bug-Android-字体不居中</title>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<style type="text/css">
+
+		.demo{
+			text-align: center;border-radius: 50%;
+			background: #f00;border: 1px solid #0f0;
+			position: relative;
+		}
+		.demo:before{
+			content: '';
+			position: absolute;top: 0 ;bottom:0;left:50%;transform: translateX(-50%);width: 1px;background: #00f;
+		}
+		.demo:after{
+			content: '';
+			position: absolute;left: 0 ;right:0;top:50%;transform: translateY(-50%);height: 1px;background: #00f;
+		}
+		.demo1{
+			width: 6.1333vw;height: 6.1333vw;line-height: 6.1333vw;
+		}
+		.demo2{
+			width: 0.61333rem;height: 0.61333rem;line-height: 0.61333rem;
+		}
+	</style>
+</head>
+<body>
+	<button onclick="location.reload(true)">reload</button>
+	<h3>line-height + vw</h3>
+	<div class="demo demo1">1</div>
+	<div class="demo demo1">10</div>
+	<h3>line-height + span-block + vw</h3>
+	<span style="display: block" class="demo demo1">1</span>
+	<span style="display: block" class="demo demo1">10</span>
+	<h3>line-height + span-inline-block + vw</h3>
+	<span style="display: inline-block" class="demo demo1">1</span>
+	<span style="display: inline-block" class="demo demo1">10</span>
+
+
+	<h3>line-height + rem</h3>
+	<div class="demo demo2">1</div>
+	<div class="demo demo2">10</div>
+	<h3>line-height + span-block + rem</h3>
+	<span style="display: block" class="demo demo2">1</span>
+	<span style="display: block" class="demo demo2">10</span>
+	<h3>line-height + span-inline-block + rem</h3>
+	<span style="display: inline-block" class="demo demo2">1</span>
+	<span style="display: inline-block" class="demo demo2">10</span>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

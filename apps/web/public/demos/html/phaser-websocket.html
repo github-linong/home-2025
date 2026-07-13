@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>phaser - www.lilnong.top</title>
+	<meta keywords="Phaser 是一款快速、免费以及开源 HTML5 游戏框架，它支持 WebGL 和 Canvas 两种渲染模式，可以在任何 Web 浏览器环境下运行，游戏可以通过第三方工具转为 iOS、Android 支持的 Native APP，允许使用 JavaScript 和 TypeScript 进行开发。">
+	<meta description="Phaser 是一款快速、免费以及开源 HTML5 游戏框架，它支持 WebGL 和 Canvas 两种渲染模式，可以在任何 Web 浏览器环境下运行，游戏可以通过第三方工具转为 iOS、Android 支持的 Native APP，允许使用 JavaScript 和 TypeScript 进行开发。">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<!-- <script src="//cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.min.js"></script> -->
+	<!-- <script src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script> -->
+	<script src="//cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="//cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="//cdn.bootcss.com/moment.js/2.24.0/moment.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<!-- <script src="//cdn.bootcdn.net/ajax/libs/axios/0.19.2/axios.min.js"></script> -->
+	<script type="text/javascript">new VConsole()</script>
+	<!-- <link href="//cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/theme-chalk/index.css" rel="stylesheet"> -->
+	<!-- <script src="//cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/index.js"></script> -->
+	<script src="//cdn.bootcdn.net/ajax/libs/phaser/3.23.0/phaser.min.js"></script>
+</head>
+<body>
+	<style>
+		body {display: flex;flex-wrap: wrap;}
+		body > canvas{order: 1;max-width: 100%}
+		body > img{order: 3}
+		#app{order: 2}
+		#app *{word-break: break-all;}
+		#app li{max-width: 30em}
+	</style>
+	<div id="app">
+		<ul>
+			<li>聊天消息 <input type="text" v-model="mesasgeInput" @keyup.enter="sendMessage"><button @click="sendMessage">send</button></li>
+			<li v-for="item in messageList">
+				<span>{{item.time | filterDate}}</span>
+				<span>{{item.nickname}}:{{item.message}}</span>
+			</li>
+		</ul>
+		<ul v-if="clients">
+			<li>在线用户（{{clients.message.length}}） {{clients.time | filterDate}}</li>
+			<li v-for="item in clients.message">
+				<span>{{item.nickname}}（{{item.sessionId}}）</span>
+			</li>
+		</ul>
+	</div>
+	<script>
+		var config = {
+			type: Phaser.AUTO,
+			width: 800,
+			height: 600,
+			physics: {
+				default: 'arcade',
+				arcade: {
+					gravity: { y: 300 },
+					debug: false
+				}
+			},
+			scene: {
+				preload: preload,
+				create: create,
+				update: update
+			}
+		};
+
+		var game = new Phaser.Game(config);
+		var gameThis;
+		var platforms;
+		var player;
+		// var otherPlayer = {}
+		var otherPlayer = []
+		var cursors;
+		var stars;
+		var score = 0;
+		var scoreText 
+		function preload (){
+			this.load.image('sky', location.protocol+'//www.lilnong.top/static/project/phaser3-tutorial-src/assets/sky.png');
+			this.load.image('ground', location.protocol+'//www.lilnong.top/static/project/phaser3-tutorial-src/assets/platform.png');
+			this.load.image('star', location.protocol+'//www.lilnong.top/static/project/phaser3-tutorial-src/assets/star.png');
+			this.load.image('bomb', location.protocol+'//www.lilnong.top/static/project/phaser3-tutorial-src/assets/bomb.png');
+			this.load.spritesheet('dude', 
+				location.protocol+'//www.lilnong.top/static/project/phaser3-tutorial-src/assets/dude.png',
+				{ frameWidth: 32, frameHeight: 48 }
+			);
+		}
+
+		function create() {
+			gameThis = this
+			this.add.image(400, 300, 'sky');
+			var scoreStar = this.add.image(400, 300, 'star');
+			
+			platforms = this.physics.add.staticGroup();
+
+			platforms.create(400, 568, 'ground').setScale(2).refreshBody();
+
+			platforms.create(600, 400, 'ground');
+			platforms.create(50, 250, 'ground');
+			platforms.create(750, 220, 'ground');
+
+			player = this.physics.add.sprite(100, 450, 'dude');
+
+			player.setBounce(0.2, 0.5);//设置回弹
+			player.setCollideWorldBounds(true);//设置边界
+
+			this.anims.create({
+				key: 'left',
+				frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+				frameRate: 10,//跑动时每秒10帧
+				repeat: -1//动画要循环播放
+			});
+
+			this.anims.create({
+				key: 'turn',
+				frames: [ { key: 'dude', frame: 4 } ],
+				frameRate: 20
+			});
+
+			this.anims.create({
+				key: 'right',
+				frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+				frameRate: 10,
+				repeat: -1
+			});
+
+			this.physics.add.collider(player, platforms);//碰撞器（Collider）是施魔法的地方。它接收两个对象，检测二者之间的碰撞，并使二者分开
+
+			cursors = this.input.keyboard.createCursorKeys();
+
+			stars = this.physics.add.group({
+				key: 'star',
+				repeat: 11,
+				setXY: { x: 12, y: 0, stepX: 70 }
+			});
+			stars.children.iterate(function (child) {
+				child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+				child.setBounce(.5);//设置回弹
+				child.setCollideWorldBounds(true);//设置边界
+			});
+
+			stars1 = this.physics.add.group({
+				key: 'star',
+				repeat: 1,
+				setXY: { x: 400, y: 3000, stepX: 70 }
+			});
+			stars1.children.iterate(function (child) {
+				child.setCollideWorldBounds(true);//设置边界
+			});
+			this.physics.add.collider(platforms, stars);
+			this.physics.add.collider(player, stars);
+			this.physics.add.collider(stars, stars);
+			// stars.setCollideWorldBounds(true);//设置边界
+
+			this.physics.add.overlap(player, stars1, collectStar, null, this); // 检测玩家是否与星星重叠
+
+			scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+		}
+
+		function collectStar (player, star){
+			console.log('collectStar')
+			scoreText.setText('Score: ' + (++score));// scoreText = this.add.text(16, 16, 'score: '+(++stars), { fontSize: '32px', fill: '#000' });
+			// star.disableBody(true, true);
+		}
+		function update() {
+			if (cursors.left.isDown){
+				player.setVelocityX(-160);
+
+				player.anims.play('left', true);
+			}
+			else if (cursors.right.isDown){
+				player.setVelocityX(160);
+
+				player.anims.play('right', true);
+			}
+			else{
+				player.setVelocityX(0);
+
+				player.anims.play('turn');
+			}
+
+			if (cursors.up.isDown && player.body.touching.down){
+				player.setVelocityY(-350);
+			}
+		}
+	</script>
+	<script type="text/javascript">
+		var ws
+		var initWs = function initWs(){
+			var protocol = 'ws'
+			if(location.protocol == "http:"){
+				protocol = 'ws'
+			}else{
+				protocol = 'wss'
+			}
+			ws = new WebSocket(protocol+"://ws.lilnong.top");
+			//收到消息处理
+			ws.onmessage = function (e) {
+			    var data = JSON.parse(e.data);
+			    if(data.type == "connection"){
+			    	if(vm.uuid){
+			    		ws.send(JSON.stringify({type: 'update_nick', data: vm.nickname}))
+			    		ws.send(JSON.stringify({type: 'update_user', data: vm.uuid}))
+			    	}else{
+			    		vm.uuid = data.id;
+			    		vm.nickname = data.nickname;
+						localStorage.setItem('websocket-nickname', vm.nickname)
+						localStorage.setItem('websocket-uuid', vm.uuid)
+			    	}
+					ws.send(JSON.stringify({type: 'game_login'}))
+			    }else{
+					if(data.type=="message"){
+						vm.messageList.push(data)
+						vm.messageList.splice(0, vm.messageList.length - 10)
+					}else if(data.type=="clients"){
+						vm.clients = data;
+					}else if (data.type=='game-phaser'){
+						// for(var i in otherPlayer){
+
+						// }
+						// otherPlayer = []
+						if(!player) return ;
+						data.message.forEach(v=>{
+							addPlayers(v.sessionId, v.x, v.y)
+							// // if(v.sessionId ==)
+							// var player = otherPlayer.find(player=>player.sessionId == v.sessionId)
+							// if(player){
+
+							// }else{
+							// 	addPlayers()
+							// 	// player =  gameThis.physics.add.sprite(100, 450, 'dude');
+							// 	// player.setBounce(0.2);//设置回弹
+							// 	// player.setCollideWorldBounds(true);//设置边界
+							// 	// gameThis.physics.add.collider(player, platforms);
+							// 	// player.sessionId = v.sessionId
+							// 	// otherPlayer.push(player)
+							// }
+							// player.x = v.x;
+							// player.y = v.y;
+						})
+						// otherPlayer.forEach(v=>{
+						// 	if(!data.message.find(_v=>_v.sessionId == v.sessionId)){
+						// 		v.disableBody(true, true);
+						// 	}
+						// })
+					}
+			    	vm.list.push(data)
+			    }
+			}
+			//监听连接关闭情况
+			ws.onclose = function (e) {
+			    setTimeout(v=>initWs(), 2000);
+			    console.log('连接关闭');
+			}
+		}
+		setInterval(v=>{
+			// ws.send(JSON.stringify({type: 'ping'}));
+			ws.send(JSON.stringify({type: 'get_clients'}));
+			
+		}, 10 * 1000);
+		setInterval(v=>{
+			ws.send(JSON.stringify({type: 'set_game_pointer', x: player.x, y: player.y}));
+			ws.send(JSON.stringify({type: 'get_game_pointer'}));
+		}, 30);
+
+		vm = new Vue({
+			el: '#app',
+			data(){
+				return {
+					nickname: localStorage.getItem('websocket-nickname'),
+					uuid: localStorage.getItem('websocket-uuid'),
+					mesasgeInput: '',
+					list: [],
+					clients: null,
+					messageList: [],
+				}
+			},
+			filters: {
+				filterDate(val){
+					return moment(+val).format('HH:mm')
+				}
+			},
+			methods:{
+				//发送消息
+				sendMessage: function sendMessage() {
+				    if (ws.readyState === WebSocket.OPEN) {
+				        if(this.mesasgeInput){
+				        	ws.send(JSON.stringify({type: 'message', data: this.mesasgeInput}));
+				        }
+				        this.mesasgeInput = ''
+				    }
+				}
+			}
+		})
+
+		initWs();
+	</script>
+	<script>
+		var _players = [];
+		function addPlayers(uuid, x, y){
+			var _player = _players.find(v=>v.__lilnong_uuid == uuid);
+			if(_player){
+				// _player.disableBody(true, true);
+			}else{
+				_player = gameThis.physics.add.sprite(100, 450, 'dude');
+				_player.__lilnong_uuid = uuid;
+				// _player.setBounce(0.2);//设置回弹
+				_player.setCollideWorldBounds(true);//设置边界
+				gameThis.physics.add.collider(platforms, _player);
+				_players.push(_player);
+				_player.anims.play('turn');
+			}
+			// _player.x = x;
+			// _player.y = y;
+			_player.setPosition(x,y)
+		}
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

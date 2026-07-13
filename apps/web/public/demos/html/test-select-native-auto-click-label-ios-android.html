@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>调起select，label失效</title>
+</head>
+<body>
+<p>2019年3月21日12:24:27 没有好的解决办法，我也是通过透明做的</p>
+<p>资料： https://segmentfault.com/q/1010000000448409</p>
+
+	<select name="select" id="select">
+		<option lable="1-1">1</option>
+		<option lable="1-2">2</option>
+	</select>
+	<div>
+		<label for="select">label标签</label>
+	</div>
+	<div>
+		<button onclick="select.click()">.click()</button>
+	</div>
+	<div>
+		<button onclick="select.select()">.select()</button>
+	</div>
+
+	<div>
+		<button onclick="e = document.createEvent('MouseEvents');e.initMouseEvent('mousedown', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);select.dispatchEvent(e);">MouseEvents mousedown()</button>
+	</div>
+	<div>
+		<button onclick="e = document.createEvent('MouseEvents');e.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);select.dispatchEvent(e);">MouseEvents click()</button>
+	</div>
+	<div>
+		<button onclick="e = document.createEvent('MouseEvents');e.initMouseEvent('touchstart', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);select.dispatchEvent(e);">MouseEvents touchstart()</button>
+	</div>
+	<div>
+		<button onclick="e = document.createEvent('MouseEvents');e.initMouseEvent('mouseup', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);select.dispatchEvent(e);">MouseEvents mouseup()</button>
+	</div>
+
+	<div>
+		<button onclick="e =  new CustomEvent('mousedown');select.dispatchEvent(e);">CustomEvent mousedown()</button>
+	</div>
+	<div>
+		<button onclick="e =  new CustomEvent('click');select.dispatchEvent(e);">CustomEvent click()</button>
+	</div>
+	<div>
+		<button onclick="e =  new CustomEvent('touchstart');select.dispatchEvent(e);">CustomEvent touchstart()</button>
+	</div>
+	<div>
+		<button onclick="e =  new CustomEvent('mouseup');select.dispatchEvent(e);">CustomEvent mouseup()</button>
+	</div>
+
+	<!-- <div>
+		<button onclick="select.select()">event select()</button>
+	</div> -->
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

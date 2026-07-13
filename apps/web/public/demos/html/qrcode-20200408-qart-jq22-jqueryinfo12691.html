@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+    <script type="text/javascript">new VConsole()</script>
+    <script src="https://cdn.bootcss.com/qartjs/1.2.0/qart.min.js"></script>
+</head>
+<body>
+	<div id="app">
+        <h2>https://github.com/kciter/qart.js</h2>
+        <h3>http://www.jq22.com/jquery-info12691</h3>
+        <div id="qrcode"></div>
+    </div>
+    <script>
+        image = new Image();
+        image.src = '//www.lilnong.top/static/img/avator/avator-14.jpg';
+        image.width = 100;
+        document.body.appendChild(image)
+        image.onload = function(){
+            new QArt({
+                value: 'https://www.lilnong.top/cors/qart/threshold',
+                imagePath: '//www.lilnong.top/static/img/avator/avator-14.jpg',
+                filter: 'threshold',
+                size: 300
+            }).make(function (canvas) {
+                document.getElementById('qrcode').appendChild(canvas)
+            });
+            
+            new QArt({
+                value: 'https://www.lilnong.top/cors/qart/color',
+                imagePath: '//www.lilnong.top/static/img/avator/avator-14.jpg',
+                filter: 'color',
+                size: 300
+            }).make(function (canvas) {
+                document.getElementById('qrcode').appendChild(canvas)
+            });
+            new QArt({
+                value: 'https://www.lilnong.top/cors/qart/noimagePath',
+                imagePath: '',
+                filter: 'color',
+                size: 300
+            }).make(function (canvas) {
+                document.getElementById('qrcode').appendChild(canvas)
+            });
+        }
+    </script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+</head>
+<body>
+	<style type="text/css">
+		.desc-switch{
+			color: #00f;
+		}
+	</style>
+	<div id="app">
+		<ul id="list">
+			<li>
+				
+			</li>
+		</ul>
+		<script type="text/javascript">
+			list=[
+				{
+					title: '潘石屹寄语517电信日：5G将会造福全世界的人们',
+					desc: 'SOHO中国董事长潘石屹的5G寄语：5G将会造福全世界的人们，这是全人类的共同财富。有些狭隘的观点视这种进步为洪水猛兽，我们不要受这些干扰。埋头苦干，一份勤劳总会有一份收获。 '
+				},
+				{
+					title: '瑞幸咖啡IPO发行价定在17美元 市值将达42亿美元',
+					desc: '瑞幸咖啡IPO发行价定在17美元/股，这意味着市值将达到42亿美元。同时，该公司还将其IPO增加至3300万股。'
+				},
+				{
+					title: '潘石屹寄语517电信日：5G将会造福全世界的人们',
+					desc: 'SOHO中国董事长潘石屹的5G寄语：5G将会造福全世界的人们，这是全人类的共同财富。有些狭隘的观点视这种进步为洪水猛兽，我们不要受这些干扰。埋头苦干，一份勤劳总会有一份收获。 '
+				},
+				{
+					title: '瑞幸咖啡IPO发行价定在17美元 市值将达42亿美元',
+					desc: '瑞幸咖啡IPO发行价定在17美元/股，这意味着市值将达到42亿美元。同时，该公司还将其IPO增加至3300万股。'
+				},
+			]
+			str = ''
+			list.forEach(v=>{
+				var isLongDesc = v.desc.length > 69;
+				str+=`
+				<li>
+					<div class="title">${v.title}</div>
+					<div class="desc">${isLongDesc?(v.desc.slice(0,69) + '……'):v.desc}</div>
+				`
+				if(isLongDesc){
+					str+= `<div class="desc-switch desc--switch--close">展开</div>`
+				}
+				str+=`</li>`
+			})
+			$('#list').html(str).off('click').on('click', '.desc-switch,.desc' ,function(e){
+				console.log(this)
+				var idx = $(this).parents('li').index()
+				var btn = $(this).parents('li').find('.desc-switch')
+				if(btn.hasClass('desc--switch--close')){
+					btn.addClass('desc--switch--open').removeClass('desc--switch--close').text('收起');
+					btn.parents('li').find('.desc').text(list[idx].desc)
+				}else if(btn.hasClass('desc--switch--open')){
+					btn.removeClass('desc--switch--open').addClass('desc--switch--close').text('展开');
+					btn.parents('li').find('.desc').text(list[idx].desc.slice(0,69) + '……')
+				}
+			});
+
+		</script>
+	</div>
+
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

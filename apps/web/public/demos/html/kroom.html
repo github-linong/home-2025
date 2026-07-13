@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>kroom</title>
+	<style type="text/css">
+		*{padding:0;margin:0;box-sizing: border-box;}
+		body,html{min-height: 768px;min-width: 1024px}
+		/*color 配置*/
+		.m-c{color: #f6f6f6;}
+		.s-c{color: #9f9fa9;}
+		.t-c{color: #f17268;}
+		/*整体结构*/
+		#left,#center,#right{position: fixed;top:0;bottom:0;background: #30303f}
+		#left{left:0;width:300px;z-index:2;box-shadow:  1px 0px 0px 0px #232331,  2px 0px 0px 0px #353649;}
+		#center{left:300px;right:300px;}
+		#right{right:0;width:300px;z-index:2;box-shadow: inset 1px 0px 0px 0px #232331, inset 2px 0px 0px 0px #353649;box-shadow: -1px 0px 0px 0px #353649, -2px 0px 0px 0px #232331;}
+		/*left 模块结构*/
+		#viewer{position: relative;overflow: hidden;height: 60vh;}
+		#auchor{height: 72px;display: flex;}
+		.auchor-photo{width: 42px;}
+		.auchor-info{display: flex;}
+		.auchor-txt{overflow: hidden;white-space: nowrap;text-overflow: ellipsis;}
+		.auchor-icon{flex-shrink: 0;}
+
+		.viewer-controler{display: flex;height: 28px;}
+		.viewer-count{flex: 1;}
+
+		.viewer-list{position: absolute;top: 100px;left:0;right:0;bottom:0;}
+		.viewer-item{display: flex;}
+		.viewer-photo{width: 42px;}
+		.viewer-info{display: flex;}
+		.viewer-txt{overflow: hidden;white-space: nowrap;text-overflow: ellipsis;}
+		.viewer-icon{flex-shrink: 0;}
+
+		#mic{position: relative;height: calc( 40vh - 50px);}
+		.mic-controler{height: 28px;display: flex;}
+		.mic-admin{display: flex;height: 42px;}
+		.mic-list{position: absolute;top: 70px;left:0;right:0;bottom:0;}
+
+		#voice{display: flex;height: 50px;}
+	</style>
+</head>
+<body>
+	<div id="app">
+		<div id="left" class="left-warp m-c">
+			<div id="viewer" class="viewer-warp">
+				<div id="auchor">
+					<div class="auchor-photo"></div>
+					<div class="auchor-user">
+						<div class="auchor-info">
+							<div class="auchor-txt">颜值极高</div>
+							<div class="auchor-icon">房主</div>
+							<div class="auchor-icon">前端</div>
+							<div class="auchor-icon">JS</div>
+						</div>
+						<div class="auchor-info">
+							<div class="auchor-txt s-c">920110633</div>
+							<div class="auchor-icon">在线</div>
+						</div>
+					</div>
+				</div>
+				<div class="viewer-controler">
+					<div class="viewer-count t-c">现成观众[1]</div>
+					<div class="viewer-icon">邀</div>
+					<div class="viewer-icon">管</div>
+					<div class="viewer-icon">搜</div>
+				</div>
+				<div id="viewer-list">
+					<div class="viewer-item">
+						<div class="viewer-photo"></div>
+						<div class="viewer-user">
+							<div class="viewer-info">
+								<div class="viewer-txt">颜值极高</div>
+								<div class="viewer-icon">房主</div>
+								<div class="viewer-icon">前端</div>
+								<div class="viewer-icon">JS</div>
+							</div>
+							<div class="viewer-info">
+								<div class="viewer-txt">920110633</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="mic" class="mic-warp">
+				<div class="mic-controler">
+					<div class="mic-count t-c">麦序[1]</div>
+					<div class="mic-untop">未置顶[0]</div>
+					<div class="mic-gotome">我在那</div>
+					<div class="mic-icon">管理</div>
+				</div>
+				<div class="mic-admin">
+					<div class="mic-controlertips">语音席</div>
+					<div class="mic-auchor"></div>
+					<div class="mic-auchor2"></div>
+					<div class="mic-invite">邀请</div>
+				</div>
+				<div class="mic-list">
+					<div class="mic-item">
+						<div class="mic-index"></div>
+						<div class="mic-photo"></div>
+						<div class="mic-user">
+							<div class="mic-info">
+								<div class="mic-txt">颜值极高</div>
+								<div class="mic-icon">房主</div>
+								<div class="mic-icon">前端</div>
+								<div class="mic-icon">JS</div>
+							</div>
+							<div class="mic-info">
+								<div class="mic-txt s-c">920110633</div>
+							</div>
+						</div>
+						<div class="mic-useradmin"></div>
+					</div>
+				</div>
+			</div>
+			<div id="voice" class="voice-warp">
+				<div class="voice-icon">音</div>
+				<div class="voice-icon">麦</div>
+				<div class="voice-icon">管</div>
+				<div class="voice-icon">按F2说话</div>
+				<div class="voice-icon">下麦</div>
+			</div>
+		</div>
+		<div id="center">
+			<div id="video">
+				
+			</div>
+			<div id="chat">
+				<div class="chat-public"></div>
+				<div class="chat-message"></div>
+				<div class="chat-tips"></div>
+				<div class="chat-tips"></div>
+			</div>
+		</div>
+		<div id="right">
+			<div id="charts">
+				<div class="charts-nav">
+					<div class="charts-item">K歌榜</div>
+					<div class="charts-item">富豪榜</div>
+					<div class="charts-item">麦霸榜</div>
+					<div class="charts-item">铁粉榜</div>
+				</div>
+				<div class="charts-subnav">
+					<div class="charts-item">场榜</div>
+					<div class="charts-item">总榜</div>
+				</div>
+				<div class="charts-list">
+					<div class="charts-item">
+						<div class="charts-index"></div>
+						<div class="charts-photo"></div>
+						<div class="charts-user">
+							<div class="charts-info">
+								<div class="charts-txt">颜值极高</div>
+								<div class="charts-icon">房主</div>
+								<div class="charts-icon">前端</div>
+								<div class="charts-icon">JS</div>
+							</div>
+							<div class="charts-info">
+								<div class="charts-txt">920110633</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="gift"></div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		new Vue({
+			el: '#app'
+		})
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Flex 布局属性测试 | lilnong.top</title>
+	<meta name="keywords" content="Flex 布局属性测试">
+	<meta name="description" content="Flex 布局属性测试">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<!-- <script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script> -->
+	<!-- <script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script> -->
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<!-- <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css"> -->
+	<!-- <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script> -->
+</head>
+<body>
+	<style type="text/css">
+		.card{margin-bottom: 20px;}
+		.flex-code{display:flex;min-height: 100px;background: rgba(0,0,255,.1)}
+		.flex-code{display:block;min-height: 100px;background: rgba(0,0,255,.1)}
+			.flex-left{flex: 1 0 300px;resize: auto;background: rgba(255,0,0,.1)}
+			.flex-right{flex: 1 0 300px;background: rgba(0,255,0,.1)}
+	</style>
+	<div id="app">
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 左200px，右自适应
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex">
+		  				<div style="flex: 0 0 200px;">left</div>
+		  				<div style="flex: 1">right</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 左200px，右自适应,但最小200px
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex">
+		  				<div style="flex: 0 0 200px">left</div>
+		  				<div style="flex: 1;min-width: 200px;">right</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 左200px，右自适应,但最小200px
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex">
+		  				<div style="flex: 0 0 200px">left</div>
+		  				<div style="flex: 1 0;min-width: 200px;">right</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 左200px，右自适应,但最小200px
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex">
+		  				<div style="flex: 0 0 200px">left</div>
+		  				<div style="flex: 1 0 200px;">right</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 左200px，右自适应,但最小200px,最大500px
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex">
+		  				<div style="flex: 0 0 200px">left</div>
+		  				<div style="flex: 1;min-width: 200px;max-width: 500px;">right</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 水平排列
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex">
+		  				<div>1</div>
+		  				<div>2</div>
+		  				<div>3</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 垂直排列
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex;flex-direction: column;">
+		  				<div>1</div>
+		  				<div>2</div>
+		  				<div>3</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 不换行
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex">
+		  				<div style="flex: 1 0 100%">1</div>
+		  				<div style="flex: 1 0 100%">2</div>
+		  				<div style="flex: 1 0 100%">3</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 换行
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex;flex-wrap: wrap">
+		  				<div style="flex: 1 0 100%">1</div>
+		  				<div style="flex: 1 0 100%">2</div>
+		  				<div style="flex: 1 0 100%">3</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 主轴居中（水平居中）
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex;justify-content: center;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  			</div>
+		  			<div style="display: flex;justify-content: center;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  			</div>
+		  			<div style="display: flex;justify-content: center;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  			</div>
+		  			<div style="display: flex;justify-content: center;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  				<div style="width: 50px;height: 30px;">4</div>
+		  			</div>
+		  			<div style="display: flex;justify-content: center;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  				<div style="width: 50px;height: 30px;">4</div>
+		  				<div style="width: 50px;height: 30px;">5</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 主轴两端对齐（水平两端对齐）space-between
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex;justify-content: space-between;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  			</div>
+		  			<div style="display: flex;justify-content: space-between;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  			</div>
+		  			<div style="display: flex;justify-content: space-between;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  			</div>
+		  			<div style="display: flex;justify-content: space-between;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  				<div style="width: 50px;height: 30px;">4</div>
+		  			</div>
+		  			<div style="display: flex;justify-content: space-between;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  				<div style="width: 50px;height: 30px;">4</div>
+		  				<div style="width: 50px;height: 30px;">5</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 主轴两端对齐（水平两端对齐）space-around 每个项目两侧的间隔相等。所以，项目之间的间隔比项目与边框的间隔大一倍。
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex;justify-content: space-around;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  			</div>
+		  			<div style="display: flex;justify-content: space-around;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  			</div>
+		  			<div style="display: flex;justify-content: space-around;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  			</div>
+		  			<div style="display: flex;justify-content: space-around;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  				<div style="width: 50px;height: 30px;">4</div>
+		  			</div>
+		  			<div style="display: flex;justify-content: space-around;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  				<div style="width: 50px;height: 30px;">4</div>
+		  				<div style="width: 50px;height: 30px;">5</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 主轴两端对齐（默认水平两端对齐）space-evenly 间距一样大
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex;justify-content: space-evenly;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  			</div>
+		  			<div style="display: flex;justify-content: space-evenly;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  			</div>
+		  			<div style="display: flex;justify-content: space-evenly;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  			</div>
+		  			<div style="display: flex;justify-content: space-evenly;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  				<div style="width: 50px;height: 30px;">4</div>
+		  			</div>
+		  			<div style="display: flex;justify-content: space-evenly;">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  				<div style="width: 50px;height: 30px;">4</div>
+		  				<div style="width: 50px;height: 30px;">5</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 交叉轴（垂直底部）flex-end
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex;align-items: flex-end; height: 50px">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  			</div>
+		  			<div style="display: flex;align-items: flex-end; height: 50px">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  			</div>
+		  			<div style="display: flex;align-items: flex-end; height: 50px">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  			</div>
+		  			<div style="display: flex;align-items: flex-end; height: 50px">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  				<div style="width: 50px;height: 30px;">4</div>
+		  			</div>
+		  			<div style="display: flex;align-items: flex-end; height: 50px">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  				<div style="width: 50px;height: 30px;">4</div>
+		  				<div style="width: 50px;height: 30px;">5</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 交叉轴（垂直居中）center
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex;align-items: center; height: 50px">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  			</div>
+		  			<div style="display: flex;align-items: center; height: 50px">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  			</div>
+		  			<div style="display: flex;align-items: center; height: 50px">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  			</div>
+		  			<div style="display: flex;align-items: center; height: 50px">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  				<div style="width: 50px;height: 30px;">4</div>
+		  			</div>
+		  			<div style="display: flex;align-items: center; height: 50px">
+		  				<div style="width: 50px;height: 40px;">1</div>
+		  				<div style="width: 30px;height: 20px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  				<div style="width: 50px;height: 30px;">4</div>
+		  				<div style="width: 50px;height: 30px;">5</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 交叉轴底部（默认垂直拉伸、占满）stretch .如果项目未设置高度或设为auto，将占满整个容器的高度。
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex;align-items: stretch; height: 50px">
+		  				<div style="width: 50px;">1</div>
+		  			</div>
+		  			<div style="display: flex;align-items: stretch; height: 50px">
+		  				<div style="width: 50px;">1</div>
+		  				<div style="width: 30px;">2</div>
+		  			</div>
+		  			<div style="display: flex;align-items: stretch; height: 50px">
+		  				<div style="width: 50px;">1</div>
+		  				<div style="width: 30px;">2</div>
+		  				<div style="width: 50px;">3</div>
+		  			</div>
+		  			<div style="display: flex;align-items: stretch; height: 50px">
+		  				<div style="width: 50px;">1</div>
+		  				<div style="width: 30px;">2</div>
+		  				<div style="width: 50px;">3</div>
+		  				<div style="width: 50px;">4</div>
+		  			</div>
+		  			<div style="display: flex;align-items: stretch; height: 50px">
+		  				<div style="width: 50px;">1</div>
+		  				<div style="width: 30px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  				<div style="width: 50px;">4</div>
+		  				<div style="width: 50px;">5</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 多根轴线的对齐方式 align-content（center 居中） .如果项目只有一根轴线，该属性不起作用。
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex;align-content: center">
+		  				<div style="width: 50px;">1</div>
+		  			</div>
+		  			<div style="display: flex;align-content: center">
+		  				<div style="width: 50px;">1</div>
+		  				<div style="width: 30px;">2</div>
+		  			</div>
+		  			<div style="display: flex;align-content: center">
+		  				<div style="width: 50px;">1</div>
+		  				<div style="width: 30px;">2</div>
+		  				<div style="width: 50px;">3</div>
+		  			</div>
+		  			<div style="display: flex;align-content: center">
+		  				<div style="width: 50px;">1</div>
+		  				<div style="width: 30px;">2</div>
+		  				<div style="width: 50px;">3</div>
+		  				<div style="width: 50px;">4</div>
+		  			</div>
+		  			<div style="display: flex;align-content: center">
+		  				<div style="width: 50px;">1</div>
+		  				<div style="width: 30px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  				<div style="width: 50px;">4</div>
+		  				<div style="width: 50px;">5</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 多根轴线的对齐方式 align-content（stretch 拉伸） .如果项目只有一根轴线，该属性不起作用。
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex;align-content: stretch">
+		  				<div style="width: 50px;">1</div>
+		  			</div>
+		  			<div style="display: flex;align-content: stretch">
+		  				<div style="width: 50px;">1</div>
+		  				<div style="width: 30px;">2</div>
+		  			</div>
+		  			<div style="display: flex;align-content: stretch">
+		  				<div style="width: 50px;">1</div>
+		  				<div style="width: 30px;">2</div>
+		  				<div style="width: 50px;">3</div>
+		  			</div>
+		  			<div style="display: flex;align-content: stretch">
+		  				<div style="width: 50px;">1</div>
+		  				<div style="width: 30px;">2</div>
+		  				<div style="width: 50px;">3</div>
+		  				<div style="width: 50px;">4</div>
+		  			</div>
+		  			<div style="display: flex;align-content: stretch">
+		  				<div style="width: 50px;">1</div>
+		  				<div style="width: 30px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  				<div style="width: 50px;">4</div>
+		  				<div style="width: 50px;">5</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 多根轴线的对齐方式 align-content（space-between 两端对齐） .如果项目只有一根轴线，该属性不起作用。
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div>
+		  				<div style="width: 50px;">1</div>
+		  			</div>
+		  			<div style="display: flex;align-content: space-between">
+		  				<div style="width: 50px;">1</div>
+		  				<div style="width: 30px;">2</div>
+		  			</div>
+		  			<div style="display: flex;align-content: space-between">
+		  				<div style="width: 50px;">1</div>
+		  				<div style="width: 30px;">2</div>
+		  				<div style="width: 50px;">3</div>
+		  			</div>
+		  			<div style="display: flex;align-content: space-between">
+		  				<div style="width: 50px;">1</div>
+		  				<div style="width: 30px;">2</div>
+		  				<div style="width: 50px;">3</div>
+		  				<div style="width: 50px;">4</div>
+		  			</div>
+		  			<div style="display: flex;align-content: space-between">
+		  				<div style="width: 50px;">1</div>
+		  				<div style="width: 30px;">2</div>
+		  				<div style="width: 50px;height: 30px;">3</div>
+		  				<div style="width: 50px;">4</div>
+		  				<div style="width: 50px;">5</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 内容等分
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left demo1">
+		  			<style type="text/css">
+		  				.demo1{}
+		  				.demo1>div{display: flex;}
+		  				.demo1>div>div{flex:1;}
+		  			</style>
+		  			<div>
+		  				<div>1</div>
+		  			</div>
+		  			<div>
+		  				<div>1</div><div>2</div>
+		  			</div>
+		  			<div>
+		  				<div>1</div><div>2</div><div>3</div>
+		  			</div>
+		  			<div>
+		  				<div>1</div><div>2</div><div>3</div><div>4</div>
+		  			</div>
+		  			<div>
+		  				<div>1</div><div>2</div><div>3</div><div>4</div><div>5</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 左右布局，左侧定宽，右侧撑满
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left">
+		  			<div style="display: flex;">
+		  				<div style="width: 300px">1</div>
+		  			</div>
+		  			<div style="display: flex;">
+		  				<div style="width: 300px">1</div><div>2</div>
+		  			</div>
+		  			<div style="display: flex;">
+		  				<div style="width: 300px">1</div><div style="width: 100%">2</div>
+		  			</div>
+		  			<div style="display: flex;">
+		  				<div style="width: 300px">1</div><div style="flex: auto">2</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+		<div class="card">
+		  <div class="card-header">
+		    Flex: 未知高宽上下左右居中
+		  </div>
+		  <div class="card-body">
+		  	<div class="flex-code">
+		  		<div class="flex-left demo2">
+		  			<style type="text/css">
+		  				.demo2{}
+		  				.demo2>div{display: flex;height: 50px;align-items: center; justify-content: center;}
+		  				/*.demo1>div>div{flex:1;}*/
+		  			</style>
+		  			<div>
+		  				<div style="min-height: 20px">1</div>
+		  			</div>
+		  			<div>
+		  				<div style="min-height: 20px">1</div><div style="min-height: 30px;">2</div>
+		  			</div>
+		  			<div>
+		  				<div style="min-height: 20px">1</div><div style="min-height: 30px;">2</div><div>3</div>
+		  			</div>
+		  			<div>
+		  				<div style="min-height: 20px">1</div><div style="min-height: 30px;">2</div><div>3</div><div>4</div>
+		  			</div>
+		  			<div>
+		  				<div style="min-height: 20px">1</div><div style="min-height: 30px;">2</div><div>3</div><div>4</div><div>5</div>
+		  			</div>
+		  		</div>
+		  		<div class="flex-right"></div>
+		  	</div>
+		  </div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		// $('div').each(function(){
+		// 	this.style.color = `#${(0xffffff * Math.random() >> 0).toString(16).padStart(6, 0)}`
+		// })
+		$('.flex-code .flex-left div').each(function(){
+		    // this.style.backgroundColor = `#${(0xffffff * Math.random() >> 0 | 0x555555).toString(16).padStart(6, 0)}`
+		    this.style.backgroundColor = `hsla(${360*Math.random()>>0}, ${60+30*Math.random()>>0}%, ${60+30*Math.random()>>0}%, 1)`
+		})
+		// $('.flex-right').each(function(){
+		// 	this.innerText = $(this).siblings('flex-left').html();
+		// })
+		$('.flex-right').each(function(){
+		    this.innerText = $(this).siblings('.flex-left').html().trim();
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

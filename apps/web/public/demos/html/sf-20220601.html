@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+        table,tr,th,td{border: 1px solid #333;}
+        th,td{padding: 6px 12px;}
+    </style>
+    <table id="table">
+        <tr>
+            <th>
+                <input type="checkbox" id="checkedAll">全选
+            </th>
+            <th>
+                姓名
+            </th>
+            <th>
+                年龄
+            </th>
+            <th>
+                性别
+            </th>
+            <th>
+                电话
+            </th>
+            <th>
+                操作
+            </th>
+        </tr>
+        <tr>
+            <th>
+                <button id="removeAll">删除多个</button>
+            </th>
+            <th colspan="5">
+                <button id="removeFirst">从首行删除</button>
+                <button id="removeLast">从末行删除</button>
+            </th>
+        </tr>
+    </table>
+    <hr>
+    <form action="" onsubmit="event.preventDefault()">
+        <p>
+            <label for="formName">姓名:</label>
+            <input type="text" name="formName" id="formName">
+        </p>
+        <p>
+            <label for="formAge">年龄:</label>
+            <input type="number" name="formAge" id="formAge">
+        </p>
+        <p>
+            <label for="formGender">性别:</label>
+            <input type="radio" name="formGender" id="formGender" value="男" checked>男
+            <input type="radio" name="formGender" id="formGender" value="女">女
+        </p>
+        <p>
+            <label for="formTel">电话:</label>
+            <input type="text" name="formTel" id="formTel">
+        </p>
+        <button type="reset">重置</button>
+        <button id="add" type="button">添加</button>
+    </form>
+    <script>
+        add.addEventListener('click', (event)=>{
+            const list = table.children[0].children;
+            const a = list[list.length - 1]
+            const tr = document.createElement('tr')
+            tr.className="data"
+            tr.innerHTML = `
+                    <td>
+                        <input type="checkbox">
+                    </td>
+                    <td>
+                        ${document.querySelector('#formName').value}
+                    </td>
+                    <td>
+                        ${document.querySelector('#formAge').value}
+                    </td>
+                    <td>
+                        ${ document.querySelector('#formGender:checked').value}
+                    </td>
+                    <td>
+                        ${document.querySelector('#formTel').value}
+                    </td>
+                    <td>
+                        <button class="remove">删除</button>
+                    </td>
+                `
+            a.before(tr)
+        })
+        table.addEventListener('click', ()=>{
+            if(event.target.classList.contains('remove')){
+                const row = event.target.parentNode.parentNode;
+                row.parentNode.removeChild(row);
+            }
+        })
+        checkedAll.addEventListener('click', ()=>{
+            Array.from(document.querySelectorAll('.data [type="checkbox"]')).forEach(v=>{
+                v.checked = checkedAll.checked
+            })
+        })
+        removeAll.addEventListener('click', ()=>{
+            Array.from(document.querySelectorAll('.data [type="checkbox"]:checked')).forEach(v=>{
+                const row = v.parentNode.parentNode;
+                row.parentNode.removeChild(row);
+            })
+        })
+        removeFirst.addEventListener('click', ()=>{
+            Array.from(document.querySelectorAll('.data [type="checkbox"]')).slice(0,1).forEach(v=>{
+                const row = v.parentNode.parentNode;
+                row.parentNode.removeChild(row);
+            })
+        })
+        removeLast.addEventListener('click', ()=>{
+            Array.from(document.querySelectorAll('.data [type="checkbox"]')).slice(-1).forEach(v=>{
+                const row = v.parentNode.parentNode;
+                row.parentNode.removeChild(row);
+            })
+        })
+    </script>
+</body>
+</html>

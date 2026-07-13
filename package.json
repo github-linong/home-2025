@@ -14,7 +14,10 @@
     "crawl:sf": "node scripts/crawl-sf.mjs",
     "crawl:sf:discover": "node scripts/crawl-sf.mjs --discover",
     "import:sf-answers": "node scripts/import-sf-answers.mjs",
-    "optimize:sf-answers": "node scripts/optimize-sf-answers-llm.mjs"
+    "optimize:sf-answers": "node scripts/optimize-sf-answers-llm.mjs",
+    "migrate:static-html": "node scripts/migrate-static-html-demos.mjs",
+    "migrate:static-html:next": "node scripts/migrate-static-html-demos.mjs --limit 1",
+    "generate:demo-entries": "node scripts/generate-legacy-demo-entries.mjs"
   },
   "engines": {
     "node": ">=22.0.0"

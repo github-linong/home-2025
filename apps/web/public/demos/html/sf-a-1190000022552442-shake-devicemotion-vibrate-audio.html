@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>devicemotion 实现摇一摇功能 - www.lilnong.top</title>
+	<meta keywords="devicemotion，摇一摇">
+	<meta description="devicemotion 实现摇一摇功能">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+	<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<body>
+	<div id="app">
+        <div>
+            <div>
+                <h2>摇一摇 完整DEMO</h2>
+                <ul>
+                    <li>- 摇一摇手机，<b>绿色</b>变为<b>黄色</b>，为分数统计</li>
+                    <li>- 黄色 + 触发 50 阈值时 ，触发 200ms 震动</li>
+                    <li>- 黄色 + 触发 100 阈值时 ，触发声音效果</li>
+                </ul>
+            </div>
+            <div>
+                <button @click="switchPause">暂停</button>
+                <button @click="switchPlay">开始</button>
+            </div>
+
+            <h3>实时 devicemotion</h3>
+            <pre :style="styleComputed">{{devicemotionComputed}}</pre>
+            <p>{{styleComputed}}</p>
+        </div>
+    </div>
+    <script>
+        devicemotion = null;
+        new Vue({
+            el: '#app',
+            data(){
+                return {
+                    devicemotion: {
+                        acceleration: {x:null, y:null, z:null},
+                        accelerationIncludingGravity: {x:null, y:null, z:null},
+                        interval: null,
+                        rotationRate: {alpha: null, beta: null, gamma: null},
+                        timeStamp: 0,
+                        thresholdCount_1: 0,
+                        thresholdCount_5: 0,
+                        thresholdCount_10: 0,
+                        thresholdCount_15: 0,
+                        thresholdCount_20: 0,
+                        thresholdCount_25: 0,
+                        thresholdCount_50: 0,
+                        thresholdCount_100: 0,
+                        count: 0,
+                        shakeValue: 0,
+                    },
+                    historyDevicemotion: null,
+
+                    devicemotionReturn: false
+                }
+            },
+            methods:{
+                switchPause(){
+                    this.devicemotionReturn = true;
+                },
+                switchPlay(){
+                    this.devicemotionReturn = false;
+                }
+            },
+            watch:{
+                
+            },
+            computed:{
+                devicemotionComputed(){
+                    return JSON.stringify(this.devicemotion, null, 2)
+                },
+                styleComputed(){
+                    return {
+                        background: '#'+Math.min(255,Math.max(0, this.devicemotion.shakeValue)).toString(16).padStart(2, '0')+'ff00'
+                    }
+                }
+            },
+            mounted(){
+                window.addEventListener('devicemotion', (e) => {
+                    console.log(e)
+                    if(this.devicemotionReturn) return ;
+                    this.historyDevicemotion = JSON.parse(JSON.stringify(this.devicemotion))
+
+                    this.devicemotion.acceleration.x = e.acceleration.x
+                    this.devicemotion.acceleration.y = e.acceleration.y
+                    this.devicemotion.acceleration.z = e.acceleration.z
+
+                    this.devicemotion.accelerationIncludingGravity.x = e.accelerationIncludingGravity.x
+                    this.devicemotion.accelerationIncludingGravity.y = e.accelerationIncludingGravity.y
+                    this.devicemotion.accelerationIncludingGravity.z = e.accelerationIncludingGravity.z
+
+                    this.devicemotion.interval = e.interval
+
+                    this.devicemotion.rotationRate.alpha = e.rotationRate.alpha
+                    this.devicemotion.rotationRate.beta = e.rotationRate.beta
+                    this.devicemotion.rotationRate.gamma = e.rotationRate.gamma
+
+                    this.devicemotion.timeStamp = e.timeStamp
+
+                    this.devicemotion.count++
+                    
+                    if(this.historyDevicemotion.accelerationIncludingGravity.x || 
+                        this.historyDevicemotion.accelerationIncludingGravity.y || 
+                        this.historyDevicemotion.accelerationIncludingGravity.z){
+                            var thresholdCount = Math.max(
+                                Math.abs(this.historyDevicemotion.accelerationIncludingGravity.x - e.accelerationIncludingGravity.x),
+                                Math.abs(this.historyDevicemotion.accelerationIncludingGravity.y - e.accelerationIncludingGravity.y),
+                                Math.abs(this.historyDevicemotion.accelerationIncludingGravity.z - e.accelerationIncludingGravity.z)   
+                            )
+                            if(thresholdCount > 1) this.devicemotion.thresholdCount_1++;
+                            if(thresholdCount > 5) this.devicemotion.thresholdCount_5++;
+                            if(thresholdCount > 10) this.devicemotion.thresholdCount_10++;
+                            if(thresholdCount > 15) this.devicemotion.thresholdCount_15++;
+                            if(thresholdCount > 20) this.devicemotion.thresholdCount_20++;
+                            if(thresholdCount > 25) this.devicemotion.thresholdCount_25++;
+                            if(thresholdCount > 50) this.devicemotion.thresholdCount_50++;
+                            if(thresholdCount > 100) this.devicemotion.thresholdCount_100++;
+
+                            // 颜色变化逻辑
+                            if(thresholdCount > 20) this.devicemotion.shakeValue = Math.min(255, this.devicemotion.shakeValue + 10)
+                            
+                            if(thresholdCount > 50 && this.devicemotion.shakeValue >= 255){
+                                window.navigator.vibrate(200);
+                            }
+                            if(thresholdCount > 100 && this.devicemotion.shakeValue >= 255){
+                                var el = document.createElement('audio');
+                                el.src = '/static/audio/70E888piCdRb.mp3'
+                                document.body.appendChild(el);
+                                el.play()
+                                el.onended = ()=>document.body.removeChild(el)
+                            }
+                    }
+                    this.devicemotion.shakeValue = Math.max(0, this.devicemotion.shakeValue - 1);
+                })
+            }
+        })
+    </script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<!-- <script src="https://cdn.bootcss.com/jquery.qrcode/1.0/jquery.qrcode.min.js"></script> -->
+	<!-- <script src="https://cdn.bootcss.com/qrcode-generator/1.4.3/qrcode.min.js"></script> -->
+	<script type="text/javascript" src="/static/js/qrcodejs.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>构建二维码</title>
+	<style type="text/css">
+		#myTextarea{
+			display: block;
+		    width: 100%;
+			min-height:3em;
+		}
+	</style>
+</head>
+<body>
+	<textarea id="myTextarea">https://segmentfault.com/u/linong</textarea>
+	<div id="qrcode"></div>
+	<script type="text/javascript">
+
+		var qrcode = new QRCode(document.getElementById("qrcode"), {
+			text: $.trim($('#myTextarea').val()),
+			width: 500,
+			height: 500,
+			colorDark : "#000000",
+			colorLight : "#ffffff",
+			correctLevel : QRCode.CorrectLevel.H
+		});
+
+		$('#myTextarea').on('input', function(){
+			//new QRCode($("#qrcode").html('').get(0), $.trim($(this).val()));
+			qrcode.clear(); // clear the code.
+			qrcode.makeCode($.trim($(this).val())); // make another code.
+		})//.trigger('input')
+		setInterval(v=>{
+			document.querySelector('#qrcode').querySelector('img').style.width = Math.random()*100 + '%'
+			document.querySelector('#qrcode').querySelector('canvas').style.width = Math.random()*100 + '%'
+		}, 3000)
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>上传前预览文件 - www.lilnong.top</title>
+	<meta keywords="preview video, metadata,preview audio,preview image">
+	<meta description="上传前预览文件，可以预览音视频，可以预览图片，可以预览文本">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+	<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+	<!-- <script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.16.8/xlsx.min.js"></script> -->
+	<script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.16.8/xlsx.full.min.js"></script>
+</head>
+<body>
+	<style>
+		*{padding:0;margin:0;}
+		#app{}
+			#input{width:0;height:0;display: block;}
+			.wrap{display: flex;padding: 10px;}
+				.upload-wrap{flex: 1 0 50%;font-size: 14px;cursor:pointer;height: 300px;border: 1px dashed #aaa;display: flex;align-content: center;flex-wrap: wrap;justify-content:center;}
+				.upload-wrap:hover,.upload-wrap--hover{border-color: #409EFF}
+					.upload-icon{flex: 1 0 100%;text-align: center;font-size: 50px;margin-bottom: 20px;color: #aaa}
+					.blue-text{color: #409EFF}
+				.preview-wrap{flex: 1 1 50%;padding: 10px;}
+
+				.file-preview-audio{}
+					.file-preview-audio audio{}
+				.file-preview-video{}
+					.file-preview-video video{max-width:100%;max-height: 200px;}
+				.file-preview-image{}
+					.file-preview-image img{max-width:100%;max-height: 200px;}
+				.file-preview-json{}
+					.file-preview-json pre{overflow: scroll;max-width: 50vw;}
+				.file-preview-text{}
+					.file-preview-text video{}
+		.selected{color: #0cc}
+	</style>
+	<h2>上传前预览文件</h2>
+	<!-- <p>支持预览：音频、视频、图片、文本、json</p> -->
+	<ul>
+		<li>v0.1 支持预览：音频、视频、图片、文本、json</li>
+		<li>v0.2（2020-12-30） 支持预览：PDF。<a href="//www.lilnong.top/static/html/pdfjs-test.html">更详细的测试pdf地址</a>，其他问题可以再联系</li>
+		<li>v0.3（2021-01-02） 支持预览：EXCEL。使用xlsx.js</li>
+	</ul>
+	<br>
+	<div id="app">
+		<input type="file" name="input" id="input" @change="inputHandler">
+		<div class="wrap">
+			<label for="input" class="upload-wrap" 
+				:class="{'upload-wrap--hover': dragover}"
+				@drop.prevent="onDrop"
+				@dragover.prevent="dragover = true"
+				@dragleave.prevent="dragover = false">
+				<i class="el-icon-upload upload-icon"></i>
+				将文件拖到此处，或<span class="blue-text">点击上传</span>
+			</label>
+			<div class="preview-wrap">
+				<div class="file-info">
+					<h3>文件基本信息</h3>
+					<div v-if="file">
+						<p>文件名称：{{file.name}}</p>
+						<p>文件大小：{{file.size}}</p>
+						<p>文件类型：{{file.type}}</p>
+						<p>修改时间：{{file.lastModified}}</p>
+					</div>
+				</div>
+				<div class="file-preview">
+					<div class="file-preview-audio" v-if="type == '音频'">
+						<h3>解析信息</h3>
+						<div v-if="audioInfo.nextTickInfo">
+							<p>音频时长：{{audioInfo.nextTickInfo.duration}}</p>
+						</div>
+						<audio :src="audioInfo.url" controls ref="audio" @loadedmetadata="onloadedmetadata($event, audioInfo)"></audio>
+					</div>
+					<div class="file-preview-video" v-else-if="type == 'PDF'">
+						<h3>解析信息</h3>
+						<iframe :src="'https://www.lilnong.top/static/project/pdfjs-es5-2.5.207/web/viewer-1.html?file='+pdfInfo.url" controls ref="pdf"></iframe>
+						<!-- https://www.lilnong.top/static/project/pdfjs-es5-2.5.207/web/viewer-1.html?file=https://www.lilnong.top/static/pdf/B-4-RxJS%E5%9C%A8React%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8-%E9%BE%99%E9%80%B8%E6%A5%A0_.pdf -->
+					</div>
+					<div class="file-preview-video" v-else-if="type == 'EXCEL'">
+						<h3>解析信息</h3>
+						<div>
+							表：<span v-for="(item, idx) in excelInfo.table" @click="excelInfo.htmlIdx = idx" :class="{selected: excelInfo.htmlIdx == idx}"> {{item.title}} </span>
+						</div> 
+						<div v-if="excelInfo.table[excelInfo.htmlIdx]" v-html="excelInfo.table[excelInfo.htmlIdx].html"></div>
+						<!-- <div v-html="excelInfo.html"></div> -->
+					</div>
+					<div class="file-preview-video" v-else-if="type == '视频'">
+						<h3>解析信息</h3>
+						<div v-if="videoInfo.nextTickInfo">
+							<p>视频时长：{{videoInfo.nextTickInfo.duration}}</p>
+							<p>视频宽高：{{videoInfo.nextTickInfo.videoWidth}}*{{videoInfo.nextTickInfo.videoHeight}}</p>
+						</div>
+						<video :src="videoInfo.url" controls ref="video" @loadedmetadata="onloadedmetadata($event, videoInfo)"></video>
+					</div>
+					<div class="file-preview-image" v-else-if="type == '图片'">
+						<h3>解析信息</h3>
+						<div v-if="imgInfo.nextTickInfo">
+							<p>图片宽高：{{imgInfo.nextTickInfo.naturalWidth}}*{{imgInfo.nextTickInfo.naturalHeight}}</p>
+						</div>
+						<img :src="imgInfo.url" controls ref="img" @load="onloadedmetadata($event, imgInfo)"></img>
+					</div>
+					<div class="file-preview-json" v-else-if="type == 'JSON'">
+						<div v-if="jsonInfo">
+							<p>是否可以被JSON.parse：{{jsonInfo.isJSON}}</p>
+						</div>
+						<pre>{{jsonInfo.pre}}</pre>
+					</div>
+					<div class="file-preview-text" v-else>
+						<h3>解析信息</h3>
+						{{textInfo}}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+    <script>
+		document.body.addEventListener("drop", (e)=>{
+			console.log(e.dataTransfer.files[0])
+		});
+		document.body.addEventListener("paste", (e)=>{
+			// debugger;
+			console.log(e.clipboardData.files[0])
+			if(e.clipboardData.files[0]) {
+				vm.analysisFile(e.clipboardData.files[0]);
+				this.file = e.clipboardData.files[0];
+			}
+		});
+		vm = new Vue({
+			el: '#app',
+			data(){
+				return {
+					type: '',
+					file: null,
+					dragover: false,
+					videoInfo:{
+						url: '',
+						nextTickInfo: null
+					},
+					audioInfo:{
+						url: '',
+						nextTickInfo: null
+					},
+					imgInfo:{
+						url: '',
+						nextTickInfo: null
+					},
+					pdfInfo:{
+						url: '',
+						nextTickInfo: null
+					},
+					excelInfo:{	
+						html: '',
+						table: [],
+						htmlIdx: 0,
+						nextTickInfo: null
+					},
+					jsonInfo:null,
+					textInfo:null
+				}
+			},
+			methods:{
+				inputHandler(e){
+					var el = e.target;
+					if(el && el.files.length){
+						var file = el.files[0];
+						this.analysisFile(file)
+						this.file = file;
+					}
+				},
+				onDrop(e){
+					this.dragover = false;
+					this.analysisFile(e.dataTransfer.files[0])
+					this.file = e.dataTransfer.files[0];
+				},
+				onloadedmetadata(e, obj){
+					obj.nextTickInfo = {
+						duration: e.target.duration,
+						videoWidth: e.target.videoWidth,
+						videoHeight: e.target.videoHeight,
+
+						naturalHeight: e.target.naturalHeight,
+						naturalWidth: e.target.naturalWidth,
+					}
+				},
+				analysisFile(file){
+					if(file){
+						this.type = '文本'
+						if(file.type == "text/plain"){
+							// txt 文件
+							this.textInfo = null
+							var fileReader = new FileReader();
+							fileReader.readAsText(file)
+							fileReader.onload = () => {
+								this.textInfo = fileReader.result
+							}
+						}else if(file.type == "application/json"){
+							// json 文件
+							this.type = 'JSON'
+							this.jsonInfo = null
+							var fileReader = new FileReader();
+							fileReader.readAsText(file)
+							fileReader.onload = () => {
+								this.jsonInfo = {
+									pre: fileReader.result,
+									isJSON: false,
+								}
+								try{
+									JSON.parse(this.jsonInfo.pre);
+									this.jsonInfo.isJSON = true;
+								}catch(e){}
+							}
+						}else if(file.type.indexOf('audio') == 0){
+							// 音频文件
+							this.type = '音频'
+							this.audioInfo.url = URL.createObjectURL(file)
+							this.audioInfo.nextTickInfo = null;
+						}else if(file.type.indexOf('video') == 0){
+							// 视频文件
+							this.type = '视频'
+							this.videoInfo.url = URL.createObjectURL(file)
+							this.videoInfo.nextTickInfo = null;
+						}else if(file.type.indexOf('image') == 0){
+							// 图片文件
+							this.type = '图片'
+							this.imgInfo.url = URL.createObjectURL(file)
+							this.imgInfo.nextTickInfo = null;
+						}else if(file.type == 'application/pdf'){
+							// PDF
+							this.type = 'PDF'
+							this.pdfInfo.url = URL.createObjectURL(file)
+							this.pdfInfo.nextTickInfo = null;
+						}else if(/\.(xlsx|xls)$/.test(file.name)){
+							this.type = 'EXCEL'
+							this.excelInfo.nextTickInfo = null;
+							this.excelInfo.table = []
+							console.time();
+							var reader = new FileReader();
+							reader.onloadend = (event) => {
+								var arrayBuffer = reader.result;
+								// debugger
+
+								var options = { type: 'array' };
+								var workbook = XLSX.read(arrayBuffer, options);
+								console.timeEnd();
+
+								// var sheetName = workbook.SheetNames
+								// var sheet = workbook.Sheets[sheetName]
+								// console.log(workbook)
+								// this.excelInfo.html = XLSX.utils.sheet_to_html(sheet)
+								// result1.innerHTML = XLSX.utils.sheet_to_html(sheet)
+								workbook.SheetNames.forEach(v=>{
+									var sheet = workbook.Sheets[v];
+									try{
+										this.excelInfo.table.push({
+											title: v,
+											html: XLSX.utils.sheet_to_html(sheet)
+										})
+									}catch(e){
+										console.error(e);
+										this.excelInfo.table.push({
+											title: v,
+											html: 'error'
+										})
+									}
+								})
+								this.excelInfo.htmlIdx = 0;
+							};
+							reader.readAsArrayBuffer(file);
+						}else{
+							this.textInfo = null
+							var fileReader = new FileReader();
+							fileReader.readAsText(file)
+							fileReader.onload = () => {
+								this.textInfo = fileReader.result
+							}
+						}
+
+						uploadFile(file)
+
+					}
+				}
+				
+			}
+		})
+	</script>
+	<script>
+		function uploadFile(file, onprogress, onreadystatechange){
+			var formData = new FormData;
+			formData.append('file', file)
+			formData.append('opacid', 'LN')
+			formData.append('random', Math.random())
+			var xhr = new XMLHttpRequest();
+			xhr.upload.onprogress = onprogress;
+			xhr.open('post', '/upload_any');
+			xhr.onreadystatechange = onreadystatechange;
+			xhr.send(formData);
+		}
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

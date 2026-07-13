@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/axios/0.19.0-beta.1/axios.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.11/lodash.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>自建比赛页面fixed元素丢失测试</title>
+</head>
+<body>
+	<style type="text/css">
+		#app{
+			padding-top: 100px;
+		}
+		#control{
+			position: fixed;
+			top:0;left:0;right:0;
+			box-shadow: 0px 6px 10px -5px #000;
+			background-color: #fff;
+		}
+	</style>
+	<div id="control">
+		<button class="btn check-order">检查排序是否正确</button><button class="btn put-user">进人</button><button class="btn out-user">出人</button>
+	</div>
+	<div id="app">
+		<div id="userlist" class="userlist">
+			<div class="useritem" v-for="item in userlist">
+				{{item.userid}}.{{item.sort_order}}
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		var userSync = (function(local){
+			return local = {
+				userInfos: {},//用来存放所有用户信息//过滤后，userid为主键，userinfo为值
+				userInfos_sort: [],//有序的用户列表，排序字段为sort_order
+				// VV_isOnline 内部字段，true为在歌房，false为不在歌房
+				filterKeyArr: ['userid','useridext','nickname','sort_order','userimg','treasure_level','authentication_images','consumption_images','majia_images','user_types','VV_isOnline','VV_isVIP'],
+				filter(obj, keyArr, _obj = {}){
+					keyArr = keyArr || this.filterKeyArr;
+					keyArr.forEach(v=>_obj[v] = obj[v]);
+					if(_obj.user_types && ~_obj.user_types.indexOf(100)) _obj.nickname = '游客';
+					if(_obj.user_types && ~_obj.user_types.indexOf(201)) _obj.VV_isVIP = true;
+					return _obj;
+				},
+				put(data){
+					if(Array.isArray(data)){
+						data.forEach(v=>this.put(v))
+					}else{
+						data = this.filter(data);//过滤之后再保存
+						var _oldData = this.userInfos[data.userid]
+						// 是否有旧数据
+						if(_oldData){
+							// 判断是不是在房间内，房间内需要修改userinfoSort的位置
+							// this.update(data)
+							if(_oldData.VV_isOnline){
+								// 在房间内，更新
+								if(data.sort_order == _oldData.sort_order){
+									// 位置不变
+									this.filterKeyArr.forEach(v=>_oldData[v] = data[v]);
+								}else{
+									// 位置变化
+									// 应该对分检索，先删后插入，目前没做
+									this.filterKeyArr.forEach(v=>_oldData[v] = data[v]);
+								}
+							}else{
+								// 不在房间，直接更新
+								_oldData.VV_isOnline = true;
+								this.filterKeyArr.forEach(v=>_oldData[v] = data[v]);
+							}
+						}else{
+							// 不存在旧数据，新增数据，新增userinfoSort
+							// this.data.push(data);
+							this.userInfos[data.userid] = data;
+							data.VV_isOnline = true;
+							// 应该对分检索，每次落在最差的情况，插入。目前没做
+							this.userInfos_sort.push(data);
+						}
+					}
+				},
+				del(data){
+					if(Array.isArray(data)){
+						data.forEach(v=>this.del(v))
+					}else{
+						// 设为离开歌房
+						this.userInfos[data].VV_isOnline = false;
+						// 对分检索，然后移除userinfoSort。目前没做
+						// this.
+					}
+				},
+				clear(){
+					this.userInfos = {};
+					this.userInfos_sort = [];
+				},
+				sort: _.throttle(function sort(){
+					// console.log(local)
+					// console.log('sort')
+					// local.userInfos_sort.splice(0,local.userInfos_sort.length,...local.userInfos_sort.filter(v=>v.VV_isOnline).sort((n,m)=>m.sort_order-n.sort_order));
+					local.userInfos_sort.sort((n,m)=>m.sort_order-n.sort_order)
+				}, 1000,{leading:true,trailing:true}),
+				sync(cb){
+					console.log('sort_start')
+					this.sort();
+					console.log('sort_end')
+					if(cb){
+						cb(this.userInfos_sort.concat())
+					}else{
+						return this.userInfos_sort.concat();
+					}
+				},
+				getUserInfoS(ids){
+					return ids.map(v=>this.userInfos[v]||v)
+				}
+			}
+		})()
+		var _axiosUserlistResult = [];
+		var _vue_this = null;
+		new Vue({
+			el: '#app',
+			created(){
+				axios.get('../json/userlist.json').then(({data})=>{
+					data = data.slice(0, 10)
+					_axiosUserlistResult = data.concat();
+					userSync.put(data);
+					this.userlist = userSync.sync();
+				});
+				window.Web = (data)=>{
+					console.count(data.type);
+					switch(data.type){
+						case 1://进人
+							userSync.put(data.userInfos);
+							console.log(data.userInfos.map(v=>v.userid))
+							this.userlist = userSync.sync();
+							break;
+						case 2://出人
+							console.log(data.ids)
+							userSync.del(data.ids);
+							this.userlist = userSync.sync();
+							break;
+					}
+				}
+				_vue_this = this;
+			},
+			data:{
+				userlist: [],
+			}
+		})
+		document.querySelector('.check-order').addEventListener('click', ()=>{
+			var _tempA = document.querySelector('.userlist').innerText.match(/\S*/g).filter(v=>v).map(v=>+v.match(/\.(\d*)/)[1]);//数据字段
+			var _tempB = _tempA.concat().sort((n,m)=>m-n);
+			var _result = _tempA.join() == _tempB.join();
+			if(_result){
+				console.log('数据一致')
+			}else{
+				console.log('数据不一致',_tempA,_tempB)
+			}
+		})
+		document.querySelector('.put-user').addEventListener('click', ()=>{
+			for(var i = 0;i<10;i++){
+				var _data = _axiosUserlistResult[_axiosUserlistResult.length*Math.random()>>0];
+				_data.userid = _data.useridext = 80000*Math.random()>>0
+				window.Web({
+					type: 1,
+					userInfos: [_data]
+				})
+			}
+		})
+		document.querySelector('.out-user').addEventListener('click', ()=>{
+			// for(var i = 0;i<10;i++){
+				window.Web({
+					type: 2,
+					ids: [_vue_this.userlist[_vue_this.userlist.length*Math.random()>>0].userid]
+				})
+			// }
+		})
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

@@ -1,6 +1,6 @@
 {
   "name": "astrofy",
-  "description": "李侬个人站 — Astro 静态博客、项目展示与思否归档",
+  "description": "linong 个人站 — Astro 静态博客、项目展示与思否归档",
   "type": "module",
   "version": "3.0.0",
   "private": true,

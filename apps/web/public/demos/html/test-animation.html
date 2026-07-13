@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <title>上传前预览文件 - www.lilnong.top</title> -->
+	<!-- <meta keywords="preview video, metadata,preview audio,preview image"> -->
+	<!-- <meta description="上传前预览文件，可以预览音视频，可以预览图片，可以预览文本"> -->
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+	
+</head>
+<body>
+	<style type="text/css">
+		/* 规定动画，改变y轴偏移距离*/
+		@keyframes animation-y {
+		  0%{
+		   transform:  translate(-50%, 100px) scale(0);
+		  }
+		  50%{
+		   transform:  translate(-50%, -100px) scale(1.5);
+		  }
+		  100%{
+		    transform:  translate(-50%, -300px) scale(1.5);
+		  }
+		}
+		/* 规定动画，改变x轴偏移距离 */
+		@keyframes animation-x {
+		  0%{
+		    margin-left: 0px;
+		  }
+		  25%{
+		    margin-left: 25px;
+		  }
+		  75%{
+		    margin-left: -25px;
+		  }
+		  100%{
+		    margin-left: 0px;
+		  }
+		}
+		/* 规定动画，改变x轴偏移距离 */
+		@keyframes animation-x-1 {
+		  0%{
+		    transform: translateX(0px);
+		  }
+		  25%{
+		    transform: translateX(25px);
+		  }
+		  75%{
+		    transform: translateX(-25px);
+		  }
+		  100%{
+		    transform: translateX(0px);
+		  }
+		}
+		/* 规定动画，隐藏效果 */
+		@keyframes animation-opacity {
+		  0%{
+		    opacity: 0;
+		  }
+		  5%{
+		    opacity: 1;
+		  }
+		  50%{
+		    opacity: 1;
+		  }
+		  90%{
+		    opacity: 0;
+		  }
+		  100%{
+		    opacity: 0;
+		  }
+		}
+		.bubble {
+		  opacity: 0;
+		  /*animation: animation-x 3s -2s linear infinite,animation-y 4s 0s linear 1;*/
+		  animation: animation-x 3s -2s linear infinite,animation-y 4s 0s linear infinite,animation-opacity 4s 0s linear infinite;
+		}
+		.bubble--1 {
+		  /*animation: animation-x 3s 0s linear infinite,animation-y 4s 0s linear 1;*/
+		  animation: animation-x 3s -1s linear infinite,animation-y 4s 0s linear infinite,animation-opacity 4s 0s linear infinite;
+		}
+		.bubble--2 {
+		  /*animation: animation-x 3s 0s linear infinite,animation-y 4s 0s linear 1;*/
+		  animation: animation-x 3s 0s linear infinite,animation-y 4s 0s linear infinite,animation-opacity 4s 0s linear infinite;
+		}
+		.bubble--3 {
+		  /*animation: animation-x 3s 0s linear infinite,animation-y 4s 0s linear 1;*/
+		  animation: animation-x 3s .5s linear infinite,animation-y 4s 0s linear infinite,animation-opacity 4s 0s linear infinite;
+		}
+		.bubble--4 {
+		  /*animation: animation-x 3s 0s linear infinite,animation-y 4s 0s linear 1;*/
+		  animation: animation-x 3s -1.5s linear infinite,animation-y 4s 0s linear infinite,animation-opacity 4s 0s linear infinite;
+		}
+
+		.bubble-1 {
+		  opacity: 0;
+		  animation: animation-y 4s 0s linear infinite,animation-opacity 4s 0s linear infinite;
+		}
+		.bubble-1--1 {
+		  animation: animation-y 4s 0s linear infinite,animation-opacity 4s 0s linear infinite;
+		}
+		.bubble-1--2 {
+		  animation: animation-y 4s 0s linear infinite,animation-opacity 4s 0s linear infinite;
+		}
+		.bubble-1--3 {
+		  animation: animation-y 4s 0s linear infinite,animation-opacity 4s 0s linear infinite;
+		}
+		.bubble-1--4 {
+		  animation: animation-y 4s 0s linear infinite,animation-opacity 4s 0s linear infinite;
+		}
+		.bubble-1-x {
+		  animation: animation-x-1 3s -2s linear infinite;
+		}
+		.bubble-1-x--1 {
+		  animation: animation-x-1 3s -1s linear infinite;
+		}
+		.bubble-1-x--2 {
+		  animation: animation-x-1 3s 0s linear infinite;
+		}
+		.bubble-1-x--3 {
+		  animation: animation-x-1 3s .5s linear infinite;
+		}
+		.bubble-1-x--4 {
+		  animation: animation-x-1 3s -1.5s linear infinite;
+		}
+		.like{
+			width: 25px;
+			height: 25px;
+			pointer-events: none;
+			background-size: cover;
+			background-position: center;
+			background-repeat: no-repeat;
+			background-image: url(https://img14.360buyimg.com/ling/jfs/t1/134959/40/26/8929/5ec79d68E968b0377/aa4feff2b7bcf231.png);
+		}
+		.like--1{
+			background-image: url(https://img14.360buyimg.com/ling/jfs/t1/134906/37/26/9080/5ec79d5dE90e5f972/bc39e647c61c8bab.png);
+		}
+	</style>
+	<style type="text/css">
+		#app,#app1{
+			padding: 200px 100px;
+			display: flex;
+			width: 50%;float:left;
+		}
+		section{border: 1px solid #000;}
+		.inline div{display: inline-block;}
+		.flex div{display: flex;}
+	</style>
+	<div id="app">
+		<section>
+			<div class="like bubble"></div>
+			<div class="like like--1 bubble bubble--3"></div>
+			<div class="like bubble bubble--1"></div>
+			<div class="like like--1 bubble"></div>
+			<div class="like bubble bubble--2"></div>
+			<div class="like like--1 bubble"></div>
+			<div class="like bubble bubble--4"></div>
+			<div class="like like--1 bubble bubble--1"></div>
+			<div class="like bubble"></div>
+			<div class="like bubble bubble--1"></div>
+		</section>
+
+		<section class="inline">
+			<div class="like bubble"></div>
+			<div class="like like--1 bubble bubble--3"></div>
+			<div class="like bubble bubble--1"></div>
+			<div class="like like--1 bubble"></div>
+			<div class="like bubble bubble--2"></div>
+			<div class="like like--1 bubble"></div>
+			<div class="like bubble bubble--4"></div>
+			<div class="like like--1 bubble bubble--1"></div>
+			<div class="like bubble"></div>
+			<div class="like bubble bubble--1"></div>
+		</section>
+
+		<section class="flex">
+			<div class="like bubble"></div>
+			<div class="like like--1 bubble bubble--3"></div>
+			<div class="like bubble bubble--1"></div>
+			<div class="like like--1 bubble"></div>
+			<div class="like bubble bubble--2"></div>
+			<div class="like like--1 bubble"></div>
+			<div class="like bubble bubble--4"></div>
+			<div class="like like--1 bubble bubble--1"></div>
+			<div class="like bubble"></div>
+			<div class="like bubble bubble--1"></div>
+		</section>
+
+
+	</div>
+	<div id="app1">
+		
+		<section>
+			<div class="bubble-1"><div class="like bubble-1-x "></div></div>
+			<div class="bubble-1 bubble-1--3"><div class="like bubble-1-x like--1"></div></div>
+			<div class="bubble-1 bubble-1--1"><div class="like bubble-1-x bubble-1-x--2"></div></div>
+			<div class="bubble-1"><div class="like bubble-1-x like--1"></div></div>
+			<div class="bubble-1 bubble-1--2"><div class="like bubble-1-x  bubble-1-x--1"></div></div>
+			<div class="bubble-1"><div class="like bubble-1-x like--1  bubble-1-x--2"></div></div>
+			<div class="bubble-1 bubble-1--4"><div class="like bubble-1-x "></div></div>
+			<div class="bubble-1 bubble-1--1"><div class="like bubble-1-x like--1 bubble-1-x--2"></div></div>
+			<div class="bubble-1"><div class="like bubble-1-x "></div></div>
+			<div class="bubble-1 bubble-1--1"><div class="like bubble-1-x  bubble-1-x--2"></div></div>
+		</section>
+
+		<section class="inline">
+			<div class="bubble-1"><div class="like bubble-1-x "></div></div>
+			<div class="bubble-1 bubble-1--3"><div class="like bubble-1-x like--1"></div></div>
+			<div class="bubble-1 bubble-1--1"><div class="like bubble-1-x bubble-1-x--2"></div></div>
+			<div class="bubble-1"><div class="like bubble-1-x like--1"></div></div>
+			<div class="bubble-1 bubble-1--2"><div class="like bubble-1-x  bubble-1-x--1"></div></div>
+			<div class="bubble-1"><div class="like bubble-1-x like--1  bubble-1-x--2"></div></div>
+			<div class="bubble-1 bubble-1--4"><div class="like bubble-1-x "></div></div>
+			<div class="bubble-1 bubble-1--1"><div class="like bubble-1-x like--1 bubble-1-x--2"></div></div>
+			<div class="bubble-1"><div class="like bubble-1-x "></div></div>
+			<div class="bubble-1 bubble-1--1"><div class="like bubble-1-x  bubble-1-x--2"></div></div>
+		</section>
+
+		<section class="flex">
+			<div class="bubble-1"><div class="like bubble-1-x "></div></div>
+			<div class="bubble-1 bubble-1--3"><div class="like bubble-1-x like--1"></div></div>
+			<div class="bubble-1 bubble-1--1"><div class="like bubble-1-x bubble-1-x--2"></div></div>
+			<div class="bubble-1"><div class="like bubble-1-x like--1"></div></div>
+			<div class="bubble-1 bubble-1--2"><div class="like bubble-1-x  bubble-1-x--1"></div></div>
+			<div class="bubble-1"><div class="like bubble-1-x like--1  bubble-1-x--2"></div></div>
+			<div class="bubble-1 bubble-1--4"><div class="like bubble-1-x "></div></div>
+			<div class="bubble-1 bubble-1--1"><div class="like bubble-1-x like--1 bubble-1-x--2"></div></div>
+			<div class="bubble-1"><div class="like bubble-1-x "></div></div>
+			<div class="bubble-1 bubble-1--1"><div class="like bubble-1-x  bubble-1-x--2"></div></div>
+		</section>
+	</div>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+	<script type="text/javascript" src="//www.lilnong.top/static/js/public_hm.js"></script>
+</body>
+</html>

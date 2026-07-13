@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>https://github.com/Bilibili/flv.js</title>
+</head>
+<body>
+	<script src="flv.min.js"></script>
+	<video id="videoElement"></video>
+	<script>
+	    if (flvjs.isSupported()) {
+	        var videoElement = document.getElementById('videoElement');
+	        var flvPlayer = flvjs.createPlayer({
+	            type: 'flv',
+	            url: 'http://example.com/flv/video.flv'
+	        });
+	        flvPlayer.attachMediaElement(videoElement);
+	        flvPlayer.load();
+	        flvPlayer.play();
+	    }
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

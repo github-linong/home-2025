@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>消息发送框</title>
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<p>消息发送框，iframe，保留焦点，发送图标，发送图片，@好友</p>
+	<button onclick="app.classList.toggle('resize')">toggle resize</button>
+	<style type="text/css">
+		/*整体部分*/
+		::-webkit-scrollbar {
+		  width: 10px;
+		  height: 10px; }
+
+		/*滑动轨道*/
+		::-webkit-scrollbar-track {
+		  border-radius: 5px; }
+
+		/*滑块*/
+		::-webkit-scrollbar-thumb {
+		  height: 40px;
+		  border-radius: 5px;
+		  background: #d7d7d7; }
+
+		/*滑块效果*/
+		::-webkit-scrollbar-thumb:hover {
+		  background: #999; }
+
+		/*滑块效果*/
+		::-webkit-scrollbar-thumb:active {
+		  background: #949494; }
+
+		#app{
+			width:770px;
+			height:500px;
+			background:rgba(245,245,245,1);
+			box-shadow:0px 0px 10px 0px rgba(0,0,0,0.04);
+			border-radius:6px;
+			border:1px solid rgba(229,229,229,1);
+			font-size: 12px;
+		}
+		#app.resize{
+			padding: 10px;
+		    resize: both;
+    		overflow: hidden;
+		}
+		.pointer{cursor:pointer;}
+		.ellipsis{white-space: nowrap;overflow: hidden;text-overflow: ellipsis;}
+		.noselect{user-select:none;}
+		.scroll-list{overflow-y: scroll}
+
+		.wrap{display: flex;}
+		.side-wrap{width:60px;background:rgba(38,38,38,1);display: flex;flex-direction: column;align-items: center;}
+		.session-wrap{width:260px;background:linear-gradient(180deg,rgba(244,244,244,1) 0%,rgba(229,229,229,1) 100%);border-right: 1px solid rgba(229,229,229,1);position: relative;}
+		.chat-wrap{flex:1;position: relative;}
+		.wrap-title{height:20px;width:100%;}
+		.wrap-header{height:40px;border-bottom: 1px solid rgba(229,229,229,1);}
+
+		.side-avatar{width:40px;height:40px;background: url(/static/img/avator/avator-18.jpg) no-repeat center center;background-size:cover;margin-bottom: 30px;}
+		.side-icon{width:24px;height:24px;margin-bottom: 30px;fill: #dbdbdb;cursor: pointer;}
+			.side-icon:hover,.side-icon.side-icon--hover{fill: rgb(236,109,109)}
+			.side-icon--last{margin-top: auto;}
+
+		.search-title{display: flex;padding: 0 12px}
+		.search-input-wrap{width:180px;height:26px;background:rgba(214,214,214,1);border-radius:4px;border:1px solid rgba(208,208,208,1);display: flex;align-items: center;}
+			.search-icon{width:18px;height:18px;padding: 0 4px 0;fill:#707070}
+			.search-input{width:0px;flex:1;outline: 0;border:0;background: rgba(0,0,0,0);font-size:12px;color:rgba(130,130,130,1);}
+		.search-btn{width:46px;height:26px;line-height:26px;text-align:center;background:rgba(214,214,214,1);border-radius:4px;border:1px solid rgba(208,208,208,1);margin-left: 10px;color:rgba(102,102,102,1);}
+			.search-btn-icon{width: 10px;height: 10px;fill:#707070}
+
+		.session-list{position: absolute;top:61px;bottom:0;left:0;right:0;}
+			.session-item{padding:12px;display: flex;}
+				.session-item:hover,.session-item--hover{background:rgba(212,212,212,1);}
+			.session-avatar{width: 44px;height: 44px;flex-shrink: 0;background: url(/static/img/avator/avator-17.jpg) no-repeat center center;background-size:cover;position: relative;margin-right: 10px;}
+			.session-info{flex:1;color:rgba(136,136,136,1);overflow: hidden;}
+				.session-title{display: flex;line-height: 26px;}
+				.session-name{color:rgba(0,0,0,1);font-size:14px;flex:1;}
+				.session-time{flex-shrink:0;}
+			.session-unread{position: absolute;right:0;top:0;width:18px;line-height:18px;height:18px;text-align:center;background:rgba(238,70,62,1);border-radius: 50%;transform: translate(50%,-50%);color:rgba(255,255,255,1);}
+				.session-unread:empty{display: none}
+
+		.chat-header{display: flex;font-size:18px;color:rgba(0,0,0,1);padding: 0 20px;line-height: 26px;}
+			.chat-header-icon{width: 26px;height:26px;margin-left:auto;fill:#707070}
+		.messages-wrap{position: absolute;left:0;right:0;top:60px;bottom: 154px;}
+		.send-wrap{position: absolute;left:0;right:0;bottom:0;height:154px;border-top: 1px solid rgba(229,229,229,1);background:rgba(245,245,245,1);}
+
+		.messages-tips-wrap{position: absolute;right: 5px;top: 5px;display: flex;flex-direction: column;align-items: flex-end;}
+			.messages-tips{display: flex;align-items: center;padding: 10px 20px;}
+			.messages-tips-icon{width: 8px;height: 8px;transform: scale(-1)}
+
+		.send-controls{display: flex;padding: 6px 20px;position: absolute;top:0;left:0;right:0;}
+			.send-controls-icon{width: 18px;height: 18px;fill:#707070}
+			.send-controls-icon-menu{width: 8px;}
+			.send-controls-icon-margin{margin-right: 15px}
+		.send-editor{border:0;outline:0;width:100%;height:100%;box-sizing: border-box;}
+		.send-btn-group{display: flex;justify-content: flex-end;padding: 0 15px;position: absolute;bottom:5px;left:0;right:0;}
+			.send-btn{width:66px;height:28px;line-height:28px;background:rgba(255,255,255,1);border-radius:3px;border:1px solid rgba(229,229,229,1);font-size:14px;color:rgba(51,51,51,1);text-align: center;}
+	</style>
+	<div id="app" class="wrap">
+		<div class="side-wrap">
+			<div class="wrap-title"></div>
+			<div class="side-avatar"></div>
+			<svg class="side-icon side-icon--hover" viewBox="0 0 1257 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5746" width="200" height="200"><path d="M809.092 284.333c10.732 0 24.145 0 34.877 2.682-32.195-147.556-187.798-257.551-370.23-257.551-201.213 0-364.865 136.824-364.865 311.208 0 101.947 53.656 182.432 147.556 246.819l-37.559 109.996 128.776-64.387c45.608 10.732 80.485 18.78 126.093 18.78 13.414 0 24.145 0 34.877 0-5.365-24.145-10.732-50.974-10.732-77.802 0-160.97 136.824-289.746 311.208-289.746zM613.246 185.067c26.828 0 45.608 18.78 45.608 45.608s-18.78 45.608-45.608 45.608c-29.512 0-56.34-18.78-56.34-45.608 0-26.828 26.828-45.608 56.34-45.608zM355.694 276.284c-26.828 0-53.656-18.78-53.656-45.608s26.828-45.608 53.656-45.608c26.828 0 45.608 18.78 45.608 45.608 0 26.828-18.78 45.608-45.608 45.608z" p-id="5747"></path><path d="M1144.446 568.712c0-144.873-147.556-265.6-311.208-265.6-174.383 0-311.208 120.727-311.208 265.6 0 147.556 136.824 265.6 311.208 265.6 34.877 0 72.437-8.049 109.996-16.097l99.265 53.656-26.828-91.217c72.437-56.34 128.776-128.776 128.776-211.943zM731.292 523.105c-18.78 0-37.559-16.097-37.559-34.877s18.78-37.559 37.559-37.559c26.828 0 45.608 18.78 45.608 37.559 0 18.78-18.78 34.877-45.608 34.877zM932.503 523.105c-18.781 0-34.877-16.097-34.877-34.877s16.097-37.559 34.877-37.559c26.828 0 45.608 18.78 45.608 37.559 0 18.78-18.781 34.877-45.608 34.877z" p-id="5748"></path></svg>
+			<svg class="side-icon" viewBox="0 0 1030 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7082" width="200" height="200"><path d="M478.346 628.498q-1.792 9.858-4.481 15.235t-12.546 11.65q-23.3 14.339-50.184 23.3t-51.528 19.715-43.015 28.228-22.851 49.735q-1.792 9.858-2.24 19.267t-1.344 17.474q-0.896 1.792-1.792 3.136t-1.792 3.136q-34.95-2.689-70.795-6.274t-65.866-8.066-50.632-8.961-25.989-8.961q-8.066-6.274-12.098-37.638t3.136-81.549q4.481-27.781 22.851-42.567t43.463-23.3 51.528-15.683 47.048-19.715q16.13-10.754 24.644-19.715t12.098-18.371 3.585-19.267-0.896-21.508q-1.792-17.923-12.098-28.228t-22.851-21.059q-7.169-4.481-12.098-14.339t-8.513-19.715q-3.585-10.754-7.169-24.196-5.376-1.792-10.754-5.376-4.481-3.585-9.41-10.754t-9.41-19.715-3.585-23.748 4.481-19.267q3.585-9.858 9.858-16.13-0.896-28.676 2.689-58.249 3.585-24.196 11.65-51.977t24.196-50.184q14.339-21.508 32.261-34.95t36.294-21.059 37.189-10.305 36.743-2.689q44.807 0 80.653 18.82t53.768 40.327q11.65 15.235 14.786 28.228t8.513 30.02q-17.027 9.858-36.294 29.125t-33.605 38.982q-17.923 25.092-26.884 55.56t-13.443 56.458q-4.481 31.365-4.481 62.729-7.169 8.066-10.754 17.923-3.585 8.961-4.481 21.059t3.585 26.435q4.481 15.235 9.858 23.3t9.858 12.546q5.376 5.376 10.754 7.169 3.585 14.339 7.169 26.884 3.585 10.754 8.513 21.955t12.098 16.579q6.274 5.376 9.858 8.961t5.825 6.721 2.689 8.513 2.241 14.339zM955.988 793.388q3.585 12.546 5.825 30.469t2.24 36.294-2.689 34.501-8.066 24.196q-3.585 5.376-21.059 10.754t-43.463 9.858-57.353 8.513-63.178 6.721-61.385 4.481-51.977 1.792-51.528-1.792-60.489-4.481-61.834-5.825-56.009-7.169-43.014-8.066-21.955-7.617q-7.169-6.274-11.65-37.638t2.689-80.653q4.481-28.676 22.851-43.015t43.463-23.3 51.528-15.683 47.048-20.164q16.13-10.754 24.644-19.715t12.546-17.923 4.033-18.819-0.896-22.404q-1.792-17.923-12.546-28.228t-23.3-20.164q-6.274-5.376-11.202-15.235t-8.513-19.715q-3.585-10.754-7.169-24.196-5.376-1.792-10.754-5.376-4.481-3.585-9.41-10.754t-9.41-19.715-3.585-23.748 4.481-18.371q3.585-8.961 9.858-16.13-0.896-28.676 2.689-58.249 3.585-25.092 11.202-52.424t23.748-50.632q14.339-21.508 32.261-34.95t36.743-21.059 37.638-10.305 35.845-2.689q45.704 0 81.549 18.819t52.873 40.327q19.715 24.196 29.125 54.217t13.89 56.009q4.481 30.469 3.585 60.938 4.481 3.585 8.066 9.858 2.689 5.376 4.929 13.89t0.449 21.059q-1.792 16.13-7.169 25.989t-10.754 15.235q-6.274 6.274-14.339 8.066-3.585 13.443-7.169 24.196-3.585 9.858-8.961 19.715t-11.65 14.339q-7.169 6.274-12.994 10.754t-10.305 9.41-7.617 11.202-4.929 15.235q-1.792 11.65-1.344 23.748t5.825 23.748 17.474 22.404 33.605 18.819q18.819 8.066 41.67 13.89t43.911 13.89 37.638 20.611 23.748 32.261z" p-id="7083"></path></svg>
+			<svg class="side-icon side-icon--last" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7815" width="200" height="200"><path d="M512 336.26558c-96.899934 0-175.73442 78.834486-175.73442 175.73442 0 96.900957 78.834486 175.735443 175.73442 175.735443s175.73442-78.834486 175.73442-175.735443C687.73442 415.099043 608.899934 336.26558 512 336.26558zM512 626.337071c-63.044872 0-114.336048-51.291177-114.336048-114.337071 0-63.044872 51.291177-114.336048 114.336048-114.336048s114.336048 51.291177 114.336048 114.336048C626.336048 575.044872 575.044872 626.337071 512 626.337071z" p-id="7816"></path><path d="M934.902776 582.577429l-56.914244-32.859385c1.274016-12.503778 1.917676-25.146727 1.917676-37.718043 0-12.571317-0.64366-25.214265-1.917676-37.718043l56.916291-32.860409c21.584598-12.463869 29.005614-40.163745 16.542768-61.746296L846.321298 197.589171c-12.461823-21.585621-40.163745-29.005614-61.748343-16.545838l-56.915267 32.860409c-20.451798-14.820544-42.348504-27.486004-65.328891-37.786605L662.328797 110.465904c0-24.924669-20.276812-45.202505-45.202505-45.202505L406.872684 65.263399c-24.924669 0-45.202505 20.277836-45.202505 45.202505l0 65.651232c-22.979364 10.3006-44.87607 22.966061-65.327868 37.786605l-56.916291-32.860409c-21.585621-12.462846-49.285496-5.040806-61.747319 16.545838L72.551386 379.675252c-12.461823 21.585621-5.039783 49.285496 16.545838 61.747319l56.914244 32.859385c-1.274016 12.504802-1.917676 25.146727-1.917676 37.718043 0 12.571317 0.64366 25.215288 1.917676 37.718043l-56.914244 32.859385c-21.584598 12.461823-29.007661 40.161698-16.545838 61.748343l105.127316 182.087105c12.463869 21.583574 40.161698 29.005614 61.747319 16.542768l56.915267-32.860409c20.451798 14.81952 42.35055 27.486004 65.328891 37.786605l0 65.651232c0 24.924669 20.277836 45.203528 45.202505 45.203528l210.253608 0c24.924669 0 45.202505-20.277836 45.202505-45.203528l0-65.651232c22.979364-10.299577 44.87607-22.965038 65.328891-37.786605l56.915267 32.860409c21.582551 12.463869 49.28345 5.039783 61.748343-16.544815l105.126292-182.085058C963.909413 622.741173 956.488397 595.041298 934.902776 582.577429zM801.246707 781.685185l-52.136428-30.101575c-15.928784-9.195429-35.611056-7.895831-50.14405 3.310396-21.530362 16.600073-45.131897 30.250978-70.148663 40.573067-16.940834 6.991228-27.887141 23.3805-27.887141 41.751916l0 60.118216L423.068552 897.337205l0-60.118216c0-18.371416-10.946306-34.760688-27.888164-41.751916-25.016767-10.323113-48.617277-23.974018-70.14457-40.571021-14.531971-11.207249-34.217313-12.509918-50.14712-3.311419l-52.135404 30.100552L133.821845 627.65202l52.114938-30.088272c15.895015-9.17701 24.616654-26.840298 22.217001-45.001937-1.766226-13.362332-2.662643-27.009144-2.662643-40.561811 0-13.552667 0.895393-27.200502 2.662643-40.563858 2.39863-18.158568-6.321986-35.821857-22.217001-44.998867l-52.114938-30.089295 88.931448-154.033166 52.135404 30.100552c15.925714 9.196453 35.610032 7.897877 50.145074-3.308349 21.529339-16.600073 45.130873-30.250978 70.146617-40.574091 16.941857-6.990205 27.889187-23.378453 27.889187-41.751916l0-60.118216L600.930425 126.662795l0 60.118216c0 18.373463 10.94733 34.762735 27.889187 41.751916 25.015743 10.32209 48.617277 23.972994 70.149687 40.576137 14.534018 11.20418 34.217313 12.500709 50.142004 3.306302l52.135404-30.100552 88.930425 154.033166-52.115961 30.089295c-15.895015 9.178033-24.615631 26.840298-22.215978 45.000913 1.76725 13.361309 2.662643 27.009144 2.662643 40.561811 0 13.553691-0.895393 27.200502-2.662643 40.563858-2.399653 18.158568 6.320962 35.821857 22.217001 44.99989l52.115961 30.088272L801.246707 781.685185z" p-id="7817"></path></svg>
+		</div>
+		<div class="session-wrap">
+			<div class="wrap-title"></div>
+			<div class="wrap-header session-header search-title">
+				<div class="search-input-wrap">
+					<svg  class="search-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1387" width="200" height="200"><path d="M409.6 672c57.6 0 112-19.2 156.8-54.4l265.6 265.6 22.4-22.4 22.4-22.4-265.6-265.6c32-44.8 54.4-96 54.4-156.8 0-140.8-115.2-256-256-256s-256 115.2-256 256c3.2 140.8 115.2 256 256 256z m0-448c105.6 0 192 86.4 192 192s-86.4 192-192 192-192-86.4-192-192 86.4-192 192-192z"  p-id="1388"></path></svg>
+					<input class="search-input" placeholder="搜索"></input>
+				</div>
+				<div class="create-group search-btn pointer"><svg class="search-btn-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1393" width="200" height="200"><path d="M892.95285 447.568549H576.43094V131.045615c0-35.815717-29.03529-64.849984-64.847937-64.849984-35.81674 0-64.851007 29.034267-64.851007 64.849984v316.522934H130.208039c-35.815717 0-64.849984 29.036313-64.849984 64.849983s29.034267 64.84896 64.849984 64.848961h316.523957v316.522933c0 35.81367 29.034267 64.849984 64.851007 64.849984 35.812647 0 64.847937-29.036313 64.847937-64.849984V577.266469h316.52191c35.815717 0 64.851007-29.034267 64.851007-64.84896s-29.03529-64.84896-64.851007-64.84896z" p-id="1394"></path></svg>群聊</div>
+			</div>
+			<div class="session-list noselect scroll-list">
+				<div class="session-item pointer ">
+					<div class="session-avatar"></div>
+					<div class="session-info">
+						<div class="session-title">
+							<div class="session-name ellipsis">木子李</div>
+							<div class="session-time">下午15:19</div>
+						</div>
+						<div class="session-sub">
+							<div class="session-txt ellipsis">周末一起去浪啊</div>
+							<div class="session-icon session-remove"></div>
+						</div>
+
+					</div>
+				</div>
+				<div class="session-item pointer session-item--hover">
+					<div class="session-avatar">
+						<div class="session-unread"></div>
+					</div>
+					<div class="session-info">
+						<div class="session-title">
+							<div class="session-name ellipsis">木子李</div>
+							<div class="session-time">下午15:19</div>
+						</div>
+						<div class="session-sub">
+							<div class="session-txt ellipsis">周末一起去浪啊</div>
+							<div class="session-icon session-remove"></div>
+						</div>
+
+					</div>
+				</div>
+				<div class="session-item pointer">
+					<div class="session-avatar">
+						<div class="session-unread">1</div>
+					</div>
+					<div class="session-info">
+						<div class="session-title">
+							<div class="session-name ellipsis">木子李超级昵称测试超级昵称测试超级昵称测试</div>
+							<div class="session-time">下午15:19</div>
+						</div>
+						<div class="session-sub">
+							<div class="session-txt ellipsis">周末一起去浪啊超级文案测试超级文案测试</div>
+							<div class="session-icon session-remove"></div>
+						</div>
+
+					</div>
+				</div>
+				<div class="session-item pointer ">
+					<div class="session-avatar">
+						<div class="session-unread">1</div>
+					</div>
+					<div class="session-info">
+						<div class="session-title">
+							<div class="session-name ellipsis">木子李</div>
+							<div class="session-time">下午15:19</div>
+						</div>
+						<div class="session-sub">
+							<div class="session-txt ellipsis">周末一起去浪啊</div>
+							<div class="session-icon session-remove"></div>
+						</div>
+
+					</div>
+				</div>
+				<div class="session-item pointer ">
+					<div class="session-avatar">
+						<div class="session-unread">1</div>
+					</div>
+					<div class="session-info">
+						<div class="session-title">
+							<div class="session-name ellipsis">木子李</div>
+							<div class="session-time">下午15:19</div>
+						</div>
+						<div class="session-sub">
+							<div class="session-txt ellipsis">周末一起去浪啊</div>
+							<div class="session-icon session-remove"></div>
+						</div>
+
+					</div>
+				</div>
+				<div class="session-item pointer ">
+					<div class="session-avatar">
+						<div class="session-unread">1</div>
+					</div>
+					<div class="session-info">
+						<div class="session-title">
+							<div class="session-name ellipsis">木子李</div>
+							<div class="session-time">下午15:19</div>
+						</div>
+						<div class="session-sub">
+							<div class="session-txt ellipsis">周末一起去浪啊</div>
+							<div class="session-icon session-remove"></div>
+						</div>
+
+					</div>
+				</div>
+				<div class="session-item pointer ">
+					<div class="session-avatar">
+						<div class="session-unread">1</div>
+					</div>
+					<div class="session-info">
+						<div class="session-title">
+							<div class="session-name ellipsis">木子李</div>
+							<div class="session-time">下午15:19</div>
+						</div>
+						<div class="session-sub">
+							<div class="session-txt ellipsis">周末一起去浪啊</div>
+							<div class="session-icon session-remove"></div>
+						</div>
+
+					</div>
+				</div>
+				<div class="session-item pointer ">
+					<div class="session-avatar">
+						<div class="session-unread">1</div>
+					</div>
+					<div class="session-info">
+						<div class="session-title">
+							<div class="session-name ellipsis">木子李</div>
+							<div class="session-time">下午15:19</div>
+						</div>
+						<div class="session-sub">
+							<div class="session-txt ellipsis">周末一起去浪啊</div>
+							<div class="session-icon session-remove"></div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="chat-wrap">
+			<div class="wrap-title"></div>
+			<div class="wrap-header chat-header noselect">
+				群聊（10）
+				<svg class="chat-header-icon pointer" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2118" width="200" height="200"><path d="M102.4 409.6c56.32 0 102.4 46.08 102.4 102.4s-46.08 102.4-102.4 102.4-102.4-46.08-102.4-102.4 46.08-102.4 102.4-102.4z m409.6 0c56.32 0 102.4 46.08 102.4 102.4s-46.08 102.4-102.4 102.4-102.4-46.08-102.4-102.4 46.08-102.4 102.4-102.4z m409.6 0c56.32 0 102.4 46.08 102.4 102.4s-46.08 102.4-102.4 102.4-102.4-46.08-102.4-102.4 46.08-102.4 102.4-102.4z" p-id="2119"></path></svg>
+			</div>
+			<div class="messages-wrap">
+				<div class="messages-tips-wrap">
+					<div class="messages-tips messages-tips-new">
+						<svg class="messages-tips-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4818" width="200" height="200"><path d="M497.664 950.912a21.248 21.248 0 0 0 15.552 6.912 21.248 21.248 0 0 0 15.552-6.912h-31.104z m31.104 0l417.6-449.984c18.368-19.776 17.216-52.672-1.152-72.384a44.416 44.416 0 0 0-66.176-0.064l-365.888 393.792-365.76-393.792a44.48 44.48 0 0 0-66.24 0.064c-18.368 19.712-19.52 52.672-1.152 72.384l417.6 449.984h31.168z" p-id="4819"></path><path d="M497.344 601.792a21.248 21.248 0 0 0 15.552 6.912 21.376 21.376 0 0 0 15.552-6.912h-31.104z m31.104 0l417.6-449.984c18.368-19.776 17.28-52.672-1.088-72.384a44.48 44.48 0 0 0-66.24-0.064L512.896 473.152 147.072 79.36a44.48 44.48 0 0 0-66.24 0.064c-18.304 19.712-19.456 52.608-1.024 72.384l417.6 449.984h31.04z" p-id="4820"></path></svg> 1 条未读消息
+					</div>
+					<div class="messages-tips messages-tips-kroom">
+						群歌房（10人在线）
+					</div>
+					<div class="messages-tips messages-tips-verify">
+						1 条入群申请
+					</div>
+					<div class="messages-tips messages-tips-call">
+						木子李 提到了你
+					</div>
+				</div>
+			</div>
+			<div class="send-wrap">
+				<div class="send-controls">
+					<svg @click="setEditorFocus" class="pointer send-controls-icon send-controls-icon-margin" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2515" width="200" height="200"><path d="M510.944 960c-247.04 0-448-200.96-448-448s200.992-448 448-448c247.008 0 448 200.96 448 448S757.984 960 510.944 960zM510.944 128c-211.744 0-384 172.256-384 384 0 211.744 172.256 384 384 384 211.744 0 384-172.256 384-384C894.944 300.256 722.688 128 510.944 128zM512 773.344c-89.184 0-171.904-40.32-226.912-110.624-10.88-13.92-8.448-34.016 5.472-44.896 13.888-10.912 34.016-8.48 44.928 5.472 42.784 54.688 107.136 86.048 176.512 86.048 70.112 0 134.88-31.904 177.664-87.552 10.784-14.016 30.848-16.672 44.864-5.888 14.016 10.784 16.672 30.88 5.888 44.864C685.408 732.32 602.144 773.344 512 773.344zM368 515.2c-26.528 0-48-21.472-48-48l0-64c0-26.528 21.472-48 48-48s48 21.472 48 48l0 64C416 493.696 394.496 515.2 368 515.2zM656 515.2c-26.496 0-48-21.472-48-48l0-64c0-26.528 21.504-48 48-48s48 21.472 48 48l0 64C704 493.696 682.496 515.2 656 515.2z" p-id="2516"></path></svg>
+					<svg @click="setEditorFocus" class="pointer send-controls-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3490" width="200" height="200"><path d="M835.3 250.9v522.3H188.7V250.9h646.6m49.8-49.8H138.9v621.8H885V201.1h0.1z" p-id="3491"></path><path d="M138.9 101.6v99.5H64.3v49.8H188.7V101.6zM885.1 922.4v-99.5h74.6v-49.8H835.3v149.3zM511 705.4H297.5c-7.8 0-20.4-2.9-23.3-7.8-2.9-4.9 1.9-16.5 5.8-23.3 26.2-39.8 53.4-79.6 79.6-119.4 8.7-12.6 17.5-13.6 31.1-7.8 44.6 21.4 90.3 42.7 135.9 64.1 12.6 5.8 28.1 1.9 35.9-9.7 24.3-37.9 49.5-74.7 75.7-111.6 4.9-6.8 13.6-17.5 20.4-17.5 7.8 0 13.6 12.6 16.5 20.4 24.3 60.2 47.6 121.3 70.9 181.5 9.7 25.2 5.8 31.1-23.3 31.1H511z m-78.6-298c0 29.1-25.2 52.4-54.4 51.4-29.1-1-51.4-23.3-51.4-51.4 0-29.1 24.3-52.4 54.4-51.4 27.1 0.9 51.4 24.2 51.4 51.4z" p-id="3492"></path></svg>
+					<svg @click="setEditorFocus" class="pointer send-controls-icon send-controls-icon-margin send-controls-icon-menu" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6192" width="200" height="200"><path d="M512.2 881l384-665H128.3z" p-id="6193"></path></svg>
+				</div>
+				<!-- <iframe src="data:text/html;charset=utf-8,<body contentEditable></body>"></iframe> -->
+				<iframe class="send-editor" src="./404.editer.2.html" onload="" ref="editor"></iframe>
+				<div class="send-btn-group">
+					<div class="send-btn send-btn-submit pointer">发送</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		new Vue({
+			el: '#app',
+			data(){
+				return {
+
+				}
+			},
+			methods:{
+				setEditorFocus(){
+					this.$refs.editor.contentWindow.editor.focus()
+				}
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

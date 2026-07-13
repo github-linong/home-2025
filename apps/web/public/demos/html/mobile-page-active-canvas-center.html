@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+</head>
+<body>
+	<div id="app">
+		<!-- <img style="position: fixed;top:6vw;width: 82vw;margin: 0 auto;left: 0;right: 0;z-index: 2;" src="/static/img/20190515/index-title.png"> -->
+		<!-- <img style="position: fixed;top:40vw;width: 100vw" src="/static/img/20190515/index-close.png"> -->
+		<!-- <img style="position: fixed;bottom:-6vw;width: 100vw" src="/static/img/20190515/index-foot.png"> -->
+		<canvas width="750" height="1335" style="min-width: 100vw;min-height: 100vh;width: 200px;height: 200px;position: fixed;left: 50%;top: 50%;transform: translate(-50%, -50%);"></canvas>
+		<script type="text/javascript">
+			cvs = document.querySelector('canvas');
+			ctx = cvs.getContext('2d')
+			imgs = [
+				{url: '/static/img/20190515/index-title.png',position:{top:40,left: 66,z: 2}},
+				{url: '/static/img/20190515/index-close.png',position:{top:40+35*7.5,z: 1}},
+				{url: '/static/img/20190515/index-foot.png',position:{top:1004,z: 2}}
+			].sort((n,m)=>n.z-m.z)
+			var draw = function(){
+				imgs.forEach(v=>{
+					if(v.img){
+						ctx.drawImage(v.img,v.position.left||0, v.position.top || 0);
+					}
+				})
+			}
+			imgs.forEach(v=>{
+				let img = new Image();
+				img.onload = function(){
+					v.img = img;
+					draw();	
+				}
+				img.src = v.url
+			})
+		</script>
+	</div>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

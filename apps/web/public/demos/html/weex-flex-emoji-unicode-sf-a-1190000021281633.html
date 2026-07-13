@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+		<h3>下面这个是我直接复制到HTML中</h3>
+		<p>😂😂😂😂😂🐶😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂🐷恩😂🐨😏😝💋🌸🐳你好，阳光💃💃💃💃演的电影了🎬，我", "我爱钱生钱💰</p>
+
+
+		<h3>下面这个是直接输出</h3>
+		<p>{{str}}</p>
+
+		<h3>下面这个 v-for="item in str"</h3>
+		<p>
+			<span v-for="item in str">{{item}}</span>
+		</p>
+
+		<h3>下面这个 v-for="item of str"</h3>
+		<p>
+			<span v-for="item of str">{{item}}</span>
+		</p>
+
+		<h3>下面这个 template v-for="item of str"</h3>
+		<p>
+			<template v-for="item of str">{{item}}</template>
+		</p>
+		<h3>下面这个 p style="float:left" v-for="item in str"</h3>
+		<div style="overflow:hidden;">
+			<p style="float:left" v-for="item in str">{{item}}</p>
+		</div>
+		<h3>下面这个 p style="float:left" v-for="item of str"</h3>
+		<div style="overflow:hidden;">
+			<p style="float:left" v-for="item of str">{{item}}</p>
+		</div>
+		<h3>下面这个 p style="float:left" v-for="item of computedOfStr"</h3>
+		<div style="overflow:hidden;">
+			<p style="float:left" v-for="item of computedOfStr">{{item}}</p>
+		</div>
+		<h3>下面这个 p style="float:left" v-for="item of computedStrCodePointAt"</h3>
+		<div style="overflow:hidden;">
+			<p style="float:left" v-for="item of computedStrCodePointAt">{{item}}</p>
+		</div>
+		<h3>下面这个 p style="float:left" v-for="item of computedStrIterator"</h3>
+		<div style="overflow:hidden;">
+			<p style="float:left" v-for="item of computedStrIterator">{{item}}</p>
+		</div>
+		<h3>下面这个 p style="float:left" v-for="item of computedStrFrom"</h3>
+		<div style="overflow:hidden;">
+			<p style="float:left" v-for="item of computedStrFrom">{{item}}</p>
+		</div>
+
+	</div>
+	<script type="text/javascript">
+		new Vue({
+			el: '#app',
+			data(){
+				return {
+					str: `😂😂😂😂😂🐶😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂🐷恩😂🐨😏😝💋🌸🐳你好，阳光💃💃💃💃演的电影了🎬，我", "我爱钱生钱💰`
+				}
+			},
+			computed: {
+				computedOfStr(){
+					var arr = [];
+					for(var item of this.str){
+						arr.push(item)
+					}
+					return arr
+				},
+				computedStrCodePointAt(){
+					var arr = [];
+					var i = 0;
+					while(i < this.str.length){
+						if(this.str.codePointAt(i) < 0xffff){
+							arr.push(this.str[i])
+						}else{
+							arr.push(this.str.slice(i, i+2))
+							i++
+						}
+						i++
+					}
+					return arr
+				},
+				computedStrIterator(){
+					return [...this.str]
+				},
+				computedStrFrom(){
+					return Array.from(this.str)
+				}
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+	<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<body>
+	<div id="app">
+        <div>
+            <button @click="interval">切换定时器</button>
+            <p>请在定时器开始和关闭的情况下分别测试一下。 {{time}}</p>
+        </div>
+
+        <div>
+            <h2>v-model="value1" : {{value1}}</h2>
+            <input 
+            cols="30" 
+            rows="10" 
+            v-model="value1">
+            {{time}}
+        </div>
+            
+        <div>
+            <h2>v-model.lazy="value2" : {{value2}}</h2>
+            <input 
+                cols="30" 
+                rows="10" 
+                v-model.lazy="value2">
+            {{time}}
+        </div>
+
+
+    </div>
+    <script>
+        events = ['click','change','focus','keydown','keypress','input','keyup','blur','compositionstart','compositionupdate','compositionend']
+        new Vue({
+            el: '#app',
+            data(){
+                return {
+                    value1: '',
+                    value2: '',
+                    list: events,
+                    eventConsoleList: [].concat(events),
+                    eventStopPropagationList: [],
+                    eventPreventDefaultList: [],
+                    intervalTag: 0,
+                    time: ''
+                }
+            },
+            methods:{
+                interval(){
+                    if(this.intervalTag){
+                        clearInterval(this.intervalTag)
+                        this.intervalTag = 0
+                    }else{
+                        this.intervalTag = setInterval(v=>{
+                            this.time = Date.now();
+                        }, 100)
+                    }
+                },
+                handler(e){
+                    if(this.eventStopPropagationList.indexOf(e.type) != -1) e.stopPropagation();
+                    if(this.eventPreventDefaultList.indexOf(e.type) != -1) e.preventDefault();
+                    if(this.eventConsoleList.indexOf(e.type) != -1) console.log(
+                        e.type,
+                        e,
+                        [
+                            'e.target',
+                            `value:${e.target.value}`,
+                            `length:${e.target.value.length}`,
+                        ],
+                        [
+                            'this',
+                            `value:${this.value}`,
+                            `length:${this.value.length}`,
+                        ]
+
+                    )
+                }
+            }
+        })
+    </script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>上传前预览文件 - www.lilnong.top</title>
+	<meta keywords="preview video, metadata,preview audio,preview image">
+	<meta description="上传前预览文件，可以预览音视频，可以预览图片，可以预览文本">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+</head>
+<body>
+	<style>
+		*{padding:0;margin:0;}
+		#app{}
+			#input{width:0;height:0;display: block;}
+			.wrap{display: flex;padding: 10px;flex-wrap: wrap;}
+				.upload-wrap{flex: 1 0 320px;font-size: 14px;cursor:pointer;height: 300px;border: 1px dashed #aaa;display: flex;align-content: center;flex-wrap: wrap;justify-content:center;}
+				.upload-wrap:hover,.upload-wrap--hover{border-color: #409EFF}
+					.upload-icon{flex: 1 0 100%;text-align: center;font-size: 50px;margin-bottom: 20px;color: #aaa}
+					.blue-text{color: #409EFF}
+				.preview-wrap{flex: 1 1 50%;padding: 10px;}
+
+				.file-preview-audio{}
+					.file-preview-audio audio{}
+				.file-preview-video{}
+					.file-preview-video video{max-width:100%;max-height: 200px;}
+				.file-preview-image{}
+					.file-preview-image img{max-width:100%;max-height: 200px;}
+				.file-preview-json{}
+					.file-preview-json pre{overflow: scroll;max-width: 50vw;}
+				.file-preview-text{}
+					.file-preview-text video{}
+	</style>
+	<div id="app">
+		<input type="file" name="input" id="input" @change="inputHandler" :accept="accept" :capture="capture" :multiple="multiple" :webkitdirectory="webkitdirectory">
+		<ul>
+			<li>
+				<el-button @click="location.reload(true)">刷新</el-button>
+				<el-button @click="acceptCheckList = []">清空 accept</el-button>
+			</li>
+			<li style="padding-left: 20px">
+				accept: <el-checkbox-group v-model="acceptCheckList">
+				    <el-checkbox :label="false">false</el-checkbox>
+				    <el-checkbox :label="true">true</el-checkbox>
+				    <el-checkbox label="">空</el-checkbox>
+				    <el-checkbox label=".jpg"></el-checkbox>
+				    <el-checkbox label=".jpeg"></el-checkbox>
+				    <el-checkbox label=".png"></el-checkbox>
+				    <el-checkbox label=".webp"></el-checkbox>
+				    <el-checkbox label=".gif"></el-checkbox>
+				    <el-checkbox label=".svg"></el-checkbox>
+				    <el-checkbox label=".bmp"></el-checkbox>
+				    <el-checkbox label=".doc"></el-checkbox>
+				    <el-checkbox label=".mp3"></el-checkbox>
+				    <el-checkbox label=".mp4"></el-checkbox>
+				    <el-checkbox label=".m4a"></el-checkbox>
+				    <el-checkbox label="audio/*"></el-checkbox>
+				    <el-checkbox label="video/*"></el-checkbox>
+				    <el-checkbox label="image/*"></el-checkbox>
+				    <el-checkbox label="image/png"></el-checkbox>
+				    <el-checkbox label="image/jpg"></el-checkbox>
+				    <el-checkbox label="image/jpeg"></el-checkbox>
+				    <el-checkbox label="video/mp4"></el-checkbox>
+				</el-checkbox-group>
+			</li>
+			<li style="padding-left: 20px">
+				capture: <el-radio-group v-model="capture">
+				    <el-radio :label="false">false</el-radio>
+				    <el-radio :label="true">true</el-radio>
+				    <el-radio label="">空</el-radio>
+				    <el-radio label="user">user 前置</el-radio>
+				    <el-radio label="environment">environment 后置</el-radio>
+				    <el-radio label="camera">camera 相机</el-radio>
+				    <el-radio label="camcorder">camcorder 摄像机</el-radio>
+				    <el-radio label="microphone">microphone 录音</el-radio>
+				    <el-radio label="filesystem">filesystem</el-radio>    
+				</el-radio-group>
+			</li>
+			<li style="padding-left: 20px">
+				<el-checkbox v-model="multiple">multiple</el-checkbox>
+				<el-checkbox v-model="webkitdirectory">webkitdirectory</el-checkbox>
+
+			</li>
+		</ul>
+		<ul>
+			<li>accept: {{acceptCheckList}}</li>
+			<li>capture: {{capture}}</li>
+			<li>multiple: {{multiple}}</li>
+			<li>webkitdirectory: {{webkitdirectory}}</li>
+			<li id="domInnerText"></li>
+		</ul>
+		<div class="wrap">
+			<label for="input" class="upload-wrap" 
+				:class="{'upload-wrap--hover': dragover}"
+				@drop.prevent="onDrop"
+				@dragover.prevent="dragover = true"
+				@dragleave.prevent="dragover = false">
+				<i class="el-icon-upload upload-icon"></i>
+				将文件拖到此处，或<span class="blue-text">点击上传</span>
+			</label>
+			<div class="preview-wrap">
+				<div class="file-info">
+					<h3>文件基本信息</h3>
+					<div v-if="file">
+						<p>文件名称：{{file.name}}</p>
+						<p>文件大小：{{file.size}}</p>
+						<p>文件类型：{{file.type}}</p>
+						<p>修改时间：{{file.lastModified}}</p>
+					</div>
+				</div>
+				<div class="file-preview">
+					<div class="file-preview-audio" v-if="type == '音频'">
+						<h3>解析信息</h3>
+						<div v-if="audioInfo.nextTickInfo">
+							<p>音频时长：{{audioInfo.nextTickInfo.duration}}</p>
+						</div>
+						<audio :src="audioInfo.url" controls ref="audio" @loadedmetadata="onloadedmetadata($event, audioInfo)"></audio>
+					</div>
+					<div class="file-preview-video" v-else-if="type == '视频'">
+						<h3>解析信息</h3>
+						<div v-if="videoInfo.nextTickInfo">
+							<p>视频时长：{{videoInfo.nextTickInfo.duration}}</p>
+							<p>视频宽高：{{videoInfo.nextTickInfo.videoWidth}}*{{videoInfo.nextTickInfo.videoHeight}}</p>
+						</div>
+						<video :src="videoInfo.url" controls ref="video"
+					     @enterpictureinpicture="onloadedmetadata($event, videoInfo)"
+					     @leavepictureinpicture="onloadedmetadata($event, videoInfo)"
+					     @encrypted="onloadedmetadata($event, videoInfo)"
+					     @waitingforkey="onloadedmetadata($event, videoInfo)"
+					     @copy="onloadedmetadata($event, videoInfo)"
+					     @cut="onloadedmetadata($event, videoInfo)"
+					     @paste="onloadedmetadata($event, videoInfo)"
+					     @abort="onloadedmetadata($event, videoInfo)"
+					     @blur="onloadedmetadata($event, videoInfo)"
+					     @cancel="onloadedmetadata($event, videoInfo)"
+					     @canplay="onloadedmetadata($event, videoInfo)"
+					     @canplaythrough="onloadedmetadata($event, videoInfo)"
+					     @change="onloadedmetadata($event, videoInfo)"
+					     @click="onloadedmetadata($event, videoInfo)"
+					     @close="onloadedmetadata($event, videoInfo)"
+					     @contextmenu="onloadedmetadata($event, videoInfo)"
+					     @cuechange="onloadedmetadata($event, videoInfo)"
+					     @dblclick="onloadedmetadata($event, videoInfo)"
+					     @drag="onloadedmetadata($event, videoInfo)"
+					     @dragend="onloadedmetadata($event, videoInfo)"
+					     @dragenter="onloadedmetadata($event, videoInfo)"
+					     @dragleave="onloadedmetadata($event, videoInfo)"
+					     @dragover="onloadedmetadata($event, videoInfo)"
+					     @dragstart="onloadedmetadata($event, videoInfo)"
+					     @drop="onloadedmetadata($event, videoInfo)"
+					     @durationchange="onloadedmetadata($event, videoInfo)"
+					     @emptied="onloadedmetadata($event, videoInfo)"
+					     @ended="onloadedmetadata($event, videoInfo)"
+					     @error="onloadedmetadata($event, videoInfo)"
+					     @focus="onloadedmetadata($event, videoInfo)"
+					     @formdata="onloadedmetadata($event, videoInfo)"
+					     @input="onloadedmetadata($event, videoInfo)"
+					     @invalid="onloadedmetadata($event, videoInfo)"
+					     @keydown="onloadedmetadata($event, videoInfo)"
+					     @keypress="onloadedmetadata($event, videoInfo)"
+					     @keyup="onloadedmetadata($event, videoInfo)"
+					     @load="onloadedmetadata($event, videoInfo)"
+					     @loadeddata="onloadedmetadata($event, videoInfo)"
+					     @loadstart="onloadedmetadata($event, videoInfo)"
+					     @mousedown="onloadedmetadata($event, videoInfo)"
+					     @mouseenter="onloadedmetadata($event, videoInfo)"
+					     @mouseleave="onloadedmetadata($event, videoInfo)"
+					     @mousemove="onloadedmetadata($event, videoInfo)"
+					     @mouseout="onloadedmetadata($event, videoInfo)"
+					     @mouseover="onloadedmetadata($event, videoInfo)"
+					     @mouseup="onloadedmetadata($event, videoInfo)"
+					     @mousewheel="onloadedmetadata($event, videoInfo)"
+					     @pause="onloadedmetadata($event, videoInfo)"
+					     @play="onloadedmetadata($event, videoInfo)"
+					     @playing="onloadedmetadata($event, videoInfo)"
+					     @progress="onloadedmetadata($event, videoInfo)"
+					     @ratechange="onloadedmetadata($event, videoInfo)"
+					     @reset="onloadedmetadata($event, videoInfo)"
+					     @resize="onloadedmetadata($event, videoInfo)"
+					     @scroll="onloadedmetadata($event, videoInfo)"
+					     @seeked="onloadedmetadata($event, videoInfo)"
+					     @seeking="onloadedmetadata($event, videoInfo)"
+					     @select="onloadedmetadata($event, videoInfo)"
+					     @stalled="onloadedmetadata($event, videoInfo)"
+					     @submit="onloadedmetadata($event, videoInfo)"
+					     @suspend="onloadedmetadata($event, videoInfo)"
+					     @timeupdate="onloadedmetadata($event, videoInfo)"
+					     @toggle="onloadedmetadata($event, videoInfo)"
+					     @volumechange="onloadedmetadata($event, videoInfo)"
+					     @waiting="onloadedmetadata($event, videoInfo)"
+					     @webkitanimationend="onloadedmetadata($event, videoInfo)"
+					     @webkitanimationiteration="onloadedmetadata($event, videoInfo)"
+					     @webkitanimationstart="onloadedmetadata($event, videoInfo)"
+					     @webkittransitionend="onloadedmetadata($event, videoInfo)"
+					     @wheel="onloadedmetadata($event, videoInfo)"
+					     @auxclick="onloadedmetadata($event, videoInfo)"
+					     @gotpointercapture="onloadedmetadata($event, videoInfo)"
+					     @lostpointercapture="onloadedmetadata($event, videoInfo)"
+					     @pointerdown="onloadedmetadata($event, videoInfo)"
+					     @pointermove="onloadedmetadata($event, videoInfo)"
+					     @pointerup="onloadedmetadata($event, videoInfo)"
+					     @pointercancel="onloadedmetadata($event, videoInfo)"
+					     @pointerover="onloadedmetadata($event, videoInfo)"
+					     @pointerout="onloadedmetadata($event, videoInfo)"
+					     @pointerenter="onloadedmetadata($event, videoInfo)"
+					     @pointerleave="onloadedmetadata($event, videoInfo)"
+					     @selectstart="onloadedmetadata($event, videoInfo)"
+					     @selectionchange="onloadedmetadata($event, videoInfo)"
+					     @animationend="onloadedmetadata($event, videoInfo)"
+					     @animationiteration="onloadedmetadata($event, videoInfo)"
+					     @animationstart="onloadedmetadata($event, videoInfo)"
+					     @transitionend="onloadedmetadata($event, videoInfo)"
+					     @pointerrawupdate="onloadedmetadata($event, videoInfo)"
+					     @beforecopy="onloadedmetadata($event, videoInfo)"
+					     @beforecut="onloadedmetadata($event, videoInfo)"
+					     @beforepaste="onloadedmetadata($event, videoInfo)"
+					     @search="onloadedmetadata($event, videoInfo)"
+					     @fullscreenchange="onloadedmetadata($event, videoInfo)"
+					     @fullscreenerror="onloadedmetadata($event, videoInfo)"
+					     @webkitfullscreenchange="onloadedmetadata($event, videoInfo)"
+					     @webkitfullscreenerror="onloadedmetadata($event, videoInfo)"
+						 @loadedmetadata="onloadedmetadata($event, videoInfo)"></video>
+					</div>
+					<div class="file-preview-image" v-else-if="type == '图片'">
+						<h3>解析信息</h3>
+						<div v-if="imgInfo.nextTickInfo">
+							<p>图片宽高：{{imgInfo.nextTickInfo.naturalWidth}}*{{imgInfo.nextTickInfo.naturalHeight}}</p>
+						</div>
+						<img :src="imgInfo.url" controls ref="img" @load="onloadedmetadata($event, imgInfo)"></img>
+					</div>
+					<div class="file-preview-json" v-else-if="type == 'JSON'">
+						<div v-if="jsonInfo">
+							<p>是否可以被JSON.parse：{{jsonInfo.isJSON}}</p>
+						</div>
+						<pre>{{jsonInfo.pre}}</pre>
+					</div>
+					<div class="file-preview-text" v-else>
+						<h3>解析信息</h3>
+						{{textInfo}}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div>
+		
+		<h1>https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/input/file</h1>
+		<h2>accept 如果该元素的 type 属性的值是file,则该属性表明了服务器端可接受的文件类型；否则它将被忽略。该属性的值必须为一个逗号分割的列表,包含了多个唯一的内容类型声明：</h2>
+		<ul>
+			<li>以 STOP 字符 (U+002E) 开始的文件扩展名。（例如：".jpg,.png,.doc"）</li>
+			<li>一个有效的 MIME 类型，但没有扩展名</li>
+			<li>audio/* 表示音频文件 HTML5</li>
+			<li>video/* 表示视频文件 HTML5</li>
+			<li>image/* 表示图片文件 HTML5</li>
+		</ul>
+		<h2>capture</h2>
+		<p>Introduced in the HTML Media Capture specification and valid for the file input type only, the capture attribute defines which media—microphone, video, or camera—should be used to capture a new file for upload with file upload control in supporting scenarios. See the file input type.</p>
+		<p>capture 属性是一个字符串，如果 accept 属性指出了 input 是图片或者视频类型，则它指定了使用哪个摄像头去这些数据。值 user 表示应该使用前置摄像头和/或麦克风。值 environment 表示应该使用后置摄像头和/或麦克风。如果缺少此属性，则 user agent 可以自由决定做什么。如果请求的前置模式不可用，则用户代理可能退回到其首选的默认模式。
+		Note: capture 以前是一个布尔类型的属性，如果存在，则请求使用设备的媒体捕获设备（如：摄像机），而不是请求一个文件输入。</p>
+		<h2>multiple</h2>
+		<p>This Boolean attribute indicates whether the user can enter more than one value.这个属性指示用户能否输入多个值。这个属性仅在type属性为email或file的时候生效 ; 否则被忽视.</p>
+		<h2>webkitdirectory</h2>
+		<p>This Boolean attribute indicates if the selector used when the type attribute is filehas to allow for the selection of directories only.一个布尔值，表示是否仅允许用户选择一个目录（或多个目录，如果 multiple 也出现的话）</p>
+		
+	</div>
+	
+	
+	
+    <script>
+		document.body.addEventListener("drop", function(e){
+			console.log(e.dataTransfer.files[0])
+		});
+		document.body.addEventListener("paste", function(e){
+			// debugger;
+			console.log(e.clipboardData.files[0])
+			if(e.clipboardData.files[0]) {
+				vm.analysisFile(e.clipboardData.files[0]);
+				this.file = e.clipboardData.files[0];
+			}
+		});
+		vm = new Vue({
+			el: '#app',
+			data: function(){
+				return {
+					type: '',
+					file: null,
+					dragover: false,
+					acceptCheckList: [],
+					capture: false,
+					multiple: false,
+					webkitdirectory: false,
+					videoInfo:{
+						url: '',
+						nextTickInfo: null
+					},
+					audioInfo:{
+						url: '',
+						nextTickInfo: null
+					},
+					imgInfo:{
+						url: '',
+						nextTickInfo: null
+					},
+					jsonInfo:null,
+					textInfo:null
+				}
+			},
+			computed: {
+				accept: function(){
+					for(var i = 0, l = this.acceptCheckList.length; i < l; i++){
+						var item = this.acceptCheckList[i];
+						if(item === true){
+							return true
+						}else if(item === false){
+							return false
+						}else if(item === ''){
+							return ''
+						}
+					}
+					if(this.acceptCheckList.length == 0){
+						return false
+					}
+					return this.acceptCheckList.join()
+				}
+			},
+			mounted: function(){
+				var searchParams = new URLSearchParams(location.search);
+				var accept = searchParams.get('accept');
+				if(accept != null){
+					this.acceptCheckList = accept.split(',');
+					this.acceptCheckList.forEach(function(v,i){
+						if(v == 'true'){
+							vm.acceptCheckList.splice(i,1, true)
+						}else if(v == 'false'){
+							vm.acceptCheckList.splice(i,1, false)
+						}
+					})
+				}
+				var capture = searchParams.get('capture');
+				if(capture != null){
+					this.capture = capture;
+				}
+				var multiple = searchParams.get('multiple');
+				if(multiple != null){
+					this.multiple = multiple;
+				}
+				var webkitdirectory = searchParams.get('webkitdirectory');
+				if(webkitdirectory != null){
+					this.webkitdirectory = webkitdirectory;
+				}
+			},
+			methods:{
+				inputHandler: function(e){
+					var el = e.target;
+					if(el && el.files.length){
+						var file = el.files[0];
+						this.analysisFile(file)
+						this.file = file;
+					}
+				},
+				onDrop: function(e){
+					this.dragover = false;
+					this.analysisFile(e.dataTransfer.files[0])
+					this.file = e.dataTransfer.files[0];
+				},
+				onloadedmetadata: function(e, obj){
+					console.log('onloadedmetadata', e.type)
+					obj.nextTickInfo = {
+						duration: e.target.duration,
+						videoWidth: e.target.videoWidth,
+						videoHeight: e.target.videoHeight,
+
+						naturalHeight: e.target.naturalHeight,
+						naturalWidth: e.target.naturalWidth,
+					}
+				},
+				analysisFile: function(file){
+					if(file){
+						this.type = '文本'
+						if(file.type == "text/plain"){
+							// txt 文件
+							this.textInfo = null
+							var fileReader = new FileReader();
+							fileReader.readAsText(file)
+							fileReader.onload = function() {
+								vm.textInfo = fileReader.result
+							}
+						}else if(file.type == "application/json"){
+							// json 文件
+							this.type = 'JSON'
+							this.jsonInfo = null
+							var fileReader = new FileReader();
+							fileReader.readAsText(file)
+							fileReader.onload = function() {
+								vm.jsonInfo = {
+									pre: fileReader.result,
+									isJSON: false,
+								}
+								try{
+									JSON.parse(vm.jsonInfo.pre);
+									vm.jsonInfo.isJSON = true;
+								}catch(e){}
+							}
+						}else if(file.type.indexOf('audio') == 0){
+							// 音频文件
+							this.type = '音频'
+							this.audioInfo.url = URL.createObjectURL(file)
+							this.audioInfo.nextTickInfo = null;
+						}else if(file.type.indexOf('video') == 0){
+							// 视频文件
+							this.type = '视频'
+							this.videoInfo.url = URL.createObjectURL(file)
+							this.videoInfo.nextTickInfo = null;
+						}else if(file.type.indexOf('image') == 0){
+							// 图片文件
+							this.type = '图片'
+							this.imgInfo.url = URL.createObjectURL(file)
+							this.imgInfo.nextTickInfo = null;
+						}else{
+							this.textInfo = null
+							var fileReader = new FileReader();
+							fileReader.readAsText(file)
+							fileReader.onload = function(){
+								vm.textInfo = fileReader.result
+							}
+						}
+
+						uploadFile(file)
+
+					}
+				}
+				
+			}
+		})
+	</script>
+	<script type="text/javascript">
+		setInterval(function(v){
+			if(domInnerText) domInnerText.innerText = input.outerHTML
+		}, 500)
+	</script>
+	<script>
+		function uploadFile(file, onprogress, onreadystatechange){
+			var formData = new FormData;
+			formData.append('file', file)
+			formData.append('opacid', 'LN')
+			formData.append('random', Math.random())
+			var xhr = new XMLHttpRequest();
+			xhr.upload.onprogress = onprogress;
+			xhr.open('post', '/upload_any');
+			xhr.onreadystatechange = onreadystatechange;
+			xhr.send(formData);
+		}
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

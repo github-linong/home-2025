@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<style type="text/css">
+		.avatar-view{
+			width: 100px;height: 100px;position: relative;
+		}
+	      .avatar-view .avatar-image.avatar-image--1{
+	        width: 90%;height: 90%;
+	      }
+	      .avatar-view .avatar-image.avatar-image--2{
+	        width: 45%;height: 45%;
+	      }
+	      .avatar-view .avatar-image.avatar-image--3{
+	        width: 30%;height: 30%;
+	      }
+		body{
+		  padding: 10px;
+		}
+		.avatar-warp{
+		  display: flex;
+		  flex-wrap: wrap;
+		}
+		.list-view{
+		  width: 50px;height:50px;vertical-align:top;
+		}
+		.avatar-view--2 .avatar-image:nth-child(1){
+			position: absolute;top: 22.5%;left: 1%;
+		}
+		.avatar-view--2 .avatar-image:nth-child(2){
+			position: absolute;top: 22.5%;left: 51%;
+		}
+
+		.avatar-view--3 .avatar-image:nth-child(1){
+			position: absolute;top: 1%;left: 22.5%;
+		}
+		.avatar-view--3 .avatar-image:nth-child(2){
+			position: absolute;top: 51%;left: 1%;
+		}
+		.avatar-view--3 .avatar-image:nth-child(3){
+			position: absolute;top: 51%;left: 51%;
+		}
+	</style>
+</head>
+<body>
+	<div id="app">
+		<div id="app">
+		  <img :src="item" class="list-view" v-for="item in ori" alt="" />
+		  <div class="avatar-warp" key="avatar-b">
+		    <avatar :imgs="item" v-for="item in list"></avatar>
+		  </div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		Vue.component('avatar', {
+		  template: `
+		  <div class="avatar">
+		    <div class="avatar-title">avatar {{this.list.length}}</div>
+		    <div class="avatar-view" :class="['avatar-view--'+list.length]">
+		      <img class="avatar-image" :class="className" :src="item" v-for="item in list"/>
+		    </div>
+		  </div>
+		`,
+		  props:['imgs'],
+		  data(){
+		    return {};
+		  },
+		  computed:{
+		    list(){
+		      if(this.imgs){
+		        if(typeof this.imgs === 'string'){
+		          return [this.imgs]//.reverse()
+		        }else if(Array.isArray(this.imgs)){
+		          return this.imgs.slice(0,9)//.reverse();
+		        }
+		      }
+		      return ['https://www.lilnong.top/static/img/Jellyfish.jpg']
+		    },
+		    className(){
+		      return [{
+						'avatar-image--1': this.list.length == 1,
+		        'avatar-image--2': this.list.length > 1 && this.list.length<5,
+		        'avatar-image--3': this.list.length > 4,
+		      }]
+		    }
+		  }
+		});
+		new Vue({
+		  el: '#app',
+		  data: {
+		    list:[
+		      [],//1
+		      [],//2
+		      [],//3
+		      [],//4
+		      [],//5
+		      [],//6
+		      [],//7
+		      [],//8
+		      [],//9
+		    ],
+		    ori: new Array(10).fill(1).map((v,i)=>'https://www.lilnong.top/static/img/avator/avator-'+(i+11)+'.jpg')
+		  },
+		  created(){
+		    this.list.forEach((v, i)=>{
+		      v.push(...this.ori.slice(0, i+1));
+		    })
+		  }
+		})
+	</script>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

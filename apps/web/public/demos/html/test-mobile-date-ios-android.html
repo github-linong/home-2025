@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>测试平台 new Date</title>
+</head>
+<body>
+	<script type="text/javascript">
+		document.write(`+new Date("2018-06-07T03:54:37.000+0000")=>${+new Date("2018-06-07T03:54:37.000+0000")} <br>`)
+		document.write(`+new Date("2018-06-07T03:54:37.000+0000".replace(/-/g,'/'))=>${+new Date("2018-06-07T03:54:37.000+0000".replace(/-/g,'/'))} <br>`)
+		document.write(`+new Date("2018-06-07T03:54:37.000+0000".replace('.000','').replace(/-/g,'/'))=>${+new Date("2018-06-07T03:54:37.000+0000".replace('.000','').replace(/-/g,'/'))} <br>`)
+		document.write(`+new Date("2018-06-07 03:54:37")=>${+new Date("2018-06-07 03:54:37")} <br>`)
+		document.write(`+new Date("2018-06-07T03:54:37")=>${+new Date("2018-06-07T03:54:37")} <br>`)
+		document.write(`+new Date("2018-06-07T03:54:37.000")=>${+new Date("2018-06-07T03:54:37.000")} <br>`)
+		document.write(`+new Date("2018-06-07T03:54:37+0000")=>${+new Date("2018-06-07T03:54:37+0000")} <br>`)
+		document.write(`+new Date("2018-06-07T03:54:37.000+0000")=>${+new Date("2018-06-07T03:54:37.000+0000")} <br>`)
+		document.write(`+new Date("2018-06-07T03:54:37.000 +0000")=>${+new Date("2018-06-07T03:54:37.000 +0000")} <br>`)
+		document.write(`+new Date(...'2018-06-07T03:54:37.000+0000'.split(/-|T|:|\.|\+/g))=>${+new Date(...'2018-06-07T03:54:37.000+0000'.split(/-|T|:|\.|\+/g))} <br>`)
+		// YYYY-MM-DDTHH:mm:ss.sssZ
+		document.write(`+new Date("2018-06-07T03:54:37.0000")=>${+new Date("2018-06-07T03:54:37.0000")} <br>`)
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

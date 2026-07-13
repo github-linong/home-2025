@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<!-- <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script> -->
+	<!-- <script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script> -->
+	<!-- <script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script> -->
+	<script src="https://cdn.bootcss.com/vue/2.6.11/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/Mock.js/1.0.1-beta3/mock-min.js"></script>
+	<!-- <script type="text/javascript">new VConsole()</script> -->
+	<!-- <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css"> -->
+	<!-- <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script> -->
+
+	<!-- <link rel="stylesheet" href="vue-virtual-scroller/dist/vue-virtual-scroller.css"/> -->
+	<!-- <script src="vue-virtual-scroller/dist/vue-virtual-scroller.min.js"></script> -->
+	<link rel="stylesheet" href="/static/js/vue-virtual-scroller/vue-virtual-scroller.css"/>
+	<script src="/static/js/vue-virtual-scroller/vue-virtual-scroller.umd.js"></script>
+</head>
+<body>
+	<style type="text/css">
+		*{padding:0;margin:0;line-height:1;box-sizing: border-box;}
+		.session-list{height: 700px;overflow: auto}
+		.session-item{height: 70px;}
+		.session-item:hover{color: red;}
+	</style>
+	<div id="app">
+		<div>
+			人数{{list.length}} 
+			<button @click="testSort">sort</button> 
+			<button @click="testPush()">随机push</button>
+			<button @click="testPush(0)">头push</button>
+			<button @click="testPush(0, list.length)">尾push</button>
+		</div>
+		<recycle-scroller
+		    class="scroller session-list"
+		    :items="list"
+		    :item-size="70"
+		    key-field="id"
+		    v-slot="{ item, index }"
+		  >
+		  	<session-item  :item="item"  
+				@stick="testStick(item)"  
+				@remove="testRemove(list, item, index)"
+				@update="testUpdate(item)"></session-item>
+		  </recycle-scroller>
+	</div>
+	<template id="session-item">
+		<div  class="session-item">
+			<button @click="$emit('stick')">{{item.stickTime?'取消置顶':'置顶'}}</button>
+			<button @click="$emit('remove')">删除</button>
+			<button @click="$emit('update')">更新</button>
+			<div>
+				[id: {{item.id}}]
+				[name: {{item.name}}]
+			</div>
+			<div>
+				[stickTime: {{item.stickTime | formatDate}}]
+				[lastTime: {{item.lastTime | formatDate}}]	
+			</div>
+		</div>
+	</template>
+	<script type="text/javascript">
+		// Mock.mock('@cname')
+		// Mock.mock('@integer(1596684567072, 1597289367072)')
+		count = 0;
+		function createUserInfo(){
+			return {
+				id: Math.random(),
+				name: Mock.mock('@cname'),
+				lastTime: Mock.mock('@integer(1596684567072, 1597289367072)'),
+				stickTime: Math.random() < 0.005?Mock.mock('@integer(1596684567072, 1597289367072)'):0,
+			}
+		}
+		// createUserInfo();
+		// sortFunList = [
+		// 	((n,m)=>Math.sign(m.stickTime)-Math.sign(n.stickTime)),//置顶的在未置顶之前
+		// 	((n,m)=>n.stickTime-m.stickTime),//置顶时间是升序
+		// 	((n,m)=>m.lastTime-n.lastTime),//聊天时间是降序
+		// 	((n,m)=>m.id-n.id)//id来防止异常排序
+		// ]
+		sortFunList = [
+			((n,m)=>Math.sign(m.stickTime)-Math.sign(n.stickTime)),//置顶的在未置顶之前
+			((n,m)=>m.stickTime==0?(m.lastTime-n.lastTime):(n.stickTime-m.stickTime)),//置顶的在未置顶之前,置顶时间是升序,聊天时间是降序
+			// ((n,m)=>n.stickTime-m.stickTime),//置顶时间是升序
+			// ((n,m)=>m.lastTime-n.lastTime),//聊天时间是降序
+			((n,m)=>m.id-n.id)//id来防止异常排序
+		]
+	</script>
+	<script type="text/javascript">
+		Vue.component('session-item', {
+			template: '#session-item',
+			data(){return{}},
+			props: ['item'],
+		})
+		Vue.filter('formatDate', function(val){
+			// console.count('formatDate')
+			var date = new Date(val);
+			return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+		})
+		vm = new Vue({
+			el: '#app',
+			data(){
+				return {
+					list: []
+				}
+			},
+			created(){
+				var data = localStorage.getItem('sessionList')
+				if(data){
+					var list = JSON.parse(data);
+					for(var i = 0; i < list.length; i++){
+						this.sessionListInserAndUpdate(list[i])
+					}
+				}else{
+					for(var i = 0; i < 5000; i++){
+						this.sessionListInserAndUpdate(createUserInfo())
+					}
+					localStorage.setItem('sessionList', JSON.stringify(this.list))
+				}
+				this.testSort();
+				setInterval(()=>{
+					// this.testSort();
+				}, 1000)
+			},
+			methods:{
+				sessionListInserAndUpdate(info){
+					// this.list.push(info);
+					
+					var result = this.list.find(item => item.id == info.id);
+					if(result){
+						result.time = info.time
+					}else{
+						this.list.push(info);
+					}
+					this.testSort();
+				},
+				testSort: _.debounce(function testSort(){
+					console.time('testSort')
+					this.list.sort((n,m)=>{
+						for(var i = 0, l = sortFunList.length; i < l; i++){
+							var result = sortFunList[i](n,m);
+							if(result === 0){
+								continue;
+							}else{
+								return result;
+							}
+						}
+						return 0
+					})
+					console.timeEnd('testSort')
+					return this.list
+				}, 50, {leading: true}),
+				testPush(start, end){
+					console.time('testPush')
+					// var time = Date.now();
+					var user = createUserInfo();
+					if(arguments.length == 0){
+						// user.lastTime = Mock.mock('@integer(1596684567072, 1597289367072)');
+					}else if(arguments.length == 1){
+						// user.lastTime = Mock.mock('@integer(1596684567072, 1597289367072)');
+						// user.lastTime = this.list[Math.min(start, this.list.length - 1)].lastTime + 1
+						user.lastTime = Date.now();
+					}else if(arguments.length == 2){
+						// user.lastTime = Mock.mock('@integer(1596684567072, 1597289367072)');
+						user.lastTime = this.list[Math.min(end, this.list.length - 1)].lastTime - 1
+						// user.lastTime
+					}
+					console.log(user)
+					// this.list.push(user)
+					this.sessionListInserAndUpdate(user)
+					console.timeEnd('testPush')
+				},
+				testUpdate(item){
+					console.time('testUpdate')
+					console.time('testUpdate-sort')
+					item.lastTime = Date.now();
+					console.timeEnd('testUpdate')
+					this.testSort();
+					console.timeEnd('testUpdate-sort')
+				},
+				testStick(item){
+					console.time('testStick')
+					console.time('testStick-sort')
+					item.stickTime?item.stickTime=0:item.stickTime=Date.now()
+					console.timeEnd('testStick')
+					this.testSort();
+					console.timeEnd('testStick-sort')
+				},
+				testRemove(list, item, index){
+					console.time('testStick')
+					console.time('testStick-sort')
+					list.splice(index,1)
+					console.timeEnd('testStick')
+					this.testSort();
+					console.timeEnd('testStick-sort')
+				}
+
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<ul>
+		<li>
+			<a href="https://www.lilnong.top/static/html/user-session-list.html">普通测试demo，未实现自动排序</a>
+		</li>
+		<li>
+			<a href="https://www.lilnong.top/static/html/user-session-list.html">普通测试demo，未实现自动排序，加入虚拟列表逻辑</a>
+		</li>
+		<li>
+			<a href="https://www.lilnong.top/static/html/user-session-list-virtual-sort-setInterval.htmll">逻辑测试demo，自动排序（节流&定时&操作），虚拟列表</a>
+		</li>
+	</ul>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

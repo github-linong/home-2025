@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+	<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+        <el-row>
+            <el-col style="overflow: auto;height: 100vh" :span="6">
+                <el-menu
+                    default-active="1"
+                    class="el-menu-vertical-demo"
+                    @open="handleOpen"
+                    @close="handleClose"
+                    @select="handleSelect"
+                    background-color="#545c64"
+                    text-color="#fff"
+                    style="min-height: 100vh"
+                    active-text-color="#ffd04b">
+                    <el-menu-item index="1">
+                        <i class="el-icon-menu"></i>
+                        <span slot="title">部门管理</span>
+                    </el-menu-item>
+                    <el-menu-item index="2">
+                        <i class="el-icon-user-solid"></i>
+                        <span slot="title">人员管理</span>
+                    </el-menu-item>
+                    <el-menu-item index="3">
+                        <i class="el-icon-s-shop"></i>
+                        <span slot="title">库存管理</span>
+                    </el-menu-item>
+                    <el-menu-item index="4">
+                        <i class="el-icon-tickets"></i>
+                        <span slot="title">操作记录</span>
+                    </el-menu-item>
+                </el-menu>
+            </el-col>
+            <el-col style="overflow: auto;height: 100vh" :span="18">
+                <div v-if="navIdx == 1">
+                    <div class="header">部门管理</div>
+                    <div class="search-box">
+                        <el-button size="mini" type="primary" @click="insertGroup">新增部门</el-button>
+                    </div>
+                    <el-table
+                    :data="list1"
+                    style="width: 100%;padding-left: 10px;">
+                        <el-table-column
+                            prop="id"
+                            label="编号"
+                            width="180">
+                        </el-table-column>
+                        <el-table-column
+                            prop="name"
+                            label="名称"
+                            width="auto">
+                        </el-table-column>
+                        <el-table-column
+                            label="操作"
+                            width="200">
+                            <template slot-scope="scope">
+                                <el-button size="mini" type="warning" @click="updateGroup(scope.row)">修改部门信息</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+                <div v-else-if="navIdx == 2">
+                    <div class="header">人员管理</div>
+                    <div class="search-box">
+                        <el-button size="mini" type="primary" @click="insertMember">新增人员</el-button>
+                    </div>
+                    <el-table
+                    :data="list2"
+                    style="width: 100%;padding-left: 10px;">
+                        <el-table-column
+                            prop="id"
+                            label="编号"
+                            width="180">
+                        </el-table-column>
+                        <el-table-column
+                            prop="name"
+                            label="名称"
+                            width="auto">
+                        </el-table-column>
+                        <el-table-column
+                            label="所属部门"
+                            width="200">
+                            <template slot-scope="scope">
+                                {{ groupHash[scope.row.groupid].name }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                            label="操作"
+                            width="200">
+                            <template slot-scope="scope">
+                                <el-button size="mini" type="warning" @click="updateMember(scope.row)">修改人员信息</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+                <div v-else-if="navIdx == 3">
+                    <div class="header">库存管理</div>
+                    <div class="search-box">
+                        <el-button size="mini" type="primary" @click="insertInventory">新增</el-button>
+                    </div>
+                    <el-table
+                    :data="list3"
+                    style="width: 100%;padding-left: 10px;">
+                        <el-table-column
+                            prop="id"
+                            label="编号"
+                            width="180">
+                        </el-table-column>
+                        <el-table-column
+                            prop="name"
+                            label="名称"
+                            width="auto">
+                        </el-table-column>
+                        <el-table-column
+                            prop="num"
+                            label="数量"
+                            width="auto">
+                        </el-table-column>
+                        <el-table-column
+                            label="操作"
+                            width="200">
+                            <template slot-scope="scope">
+                                <el-button size="mini" type="warning" @click="updateInventory(scope.row)">补货</el-button>
+                                <el-button size="mini" type="success" :disabled="scope.row.num <= 0" @click="removeInventory(scope.row)">领用</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+                <div v-else-if="navIdx == 4">
+                    <ul>
+                        <li v-for="item in list4">{{item.txt}}</li>
+                    </ul>
+                </div>
+            </el-col>
+        </el-row>
+        <el-dialog
+            :title="groupInfo.id?'修改':'新增'"
+            :visible.sync="groupInfo.dialogVisible"
+            width="30%">
+            <div>
+                <div><el-input v-model="groupInfo.name" placeholder="部门名称"></el-input></div>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="mini" @click="groupInfoHandler(0)">取 消</el-button>
+                <el-button size="mini" type="primary" @click="groupInfoHandler(1)">确 定</el-button>
+            </span>
+        </el-dialog>
+        <el-dialog
+            :title="memberInfo.id?'修改':'新增'"
+            :visible.sync="memberInfo.dialogVisible"
+            width="30%">
+            <div>
+                <div>
+                    <el-input v-model="memberInfo.name" placeholder="人员名称"></el-input>
+                </div>
+                <div>
+                    <el-select v-model="memberInfo.groupid" placeholder="请选择所属部门">
+                        <el-option
+                            v-for="item in list1"
+                            :key="item.id"
+                            :label="item.name"
+                            :value="item.id">
+                        </el-option>
+                    </el-select>
+                </div>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="mini" @click="memberInfoHandler(0)">取 消</el-button>
+                <el-button size="mini" type="primary" @click="memberInfoHandler(1)">确 定</el-button>
+            </span>
+        </el-dialog>
+        <el-dialog
+            :title="inventoryInfo.id?'修改库存':'新增'"
+            :visible.sync="inventoryInfo.dialogVisible"
+            width="30%">
+            <div>
+                <div>
+                    <el-input v-model="inventoryInfo.name" placeholder="物品名称"></el-input>
+                </div>
+                <div>
+                    <el-input-number v-model="inventoryInfo.num" :min="1" label="数量"></el-input-number>
+                </div>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="mini" @click="inventoryInfoHandler(0)">取 消</el-button>
+                <el-button size="mini" type="primary" @click="inventoryInfoHandler(1)">确 定</el-button>
+            </span>
+        </el-dialog>
+        <el-dialog
+            title="领用"
+            :visible.sync="inventoryInfo2.dialogVisible"
+            width="30%">
+            <div>
+                <div>
+                    <el-select disabled v-model="inventoryInfo2.id" placeholder="物品">
+                        <el-option
+                            v-for="item in list3"
+                            :key="item.id"
+                            :label="item.name"
+                            :value="item.id">
+                        </el-option>
+                    </el-select>
+                </div>
+                <div>
+                    <el-input-number v-model="inventoryInfo2.num" :min="1" :max="inventoryInfo2.max" label="数量"></el-input-number>
+                </div>
+                <div>
+                    <el-select v-model="inventoryInfo2.memberid" placeholder="请选择领用人">
+                        <el-option
+                            v-for="item in list2"
+                            :key="item.id"
+                            :label="item.name"
+                            :value="item.id">
+                        </el-option>
+                    </el-select>
+                </div>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="mini" @click="inventoryInfo2Handler(0)">取 消</el-button>
+                <el-button size="mini" type="primary" @click="inventoryInfo2Handler(1)">确 定</el-button>
+            </span>
+        </el-dialog>
+    </div>
+    <script>
+        /**
+         * 部门 { 
+         *      id:部门id,
+         *      name:部门名称，
+         *      createTime:创建时间，
+         *      updateTime:修改时间，
+         * }
+        */
+        /**
+         * 人员 { 
+         *      id: 人员id,
+         *      groupid: 部门id,
+         *      name: 人员，
+         * }
+        */
+        /**
+         * 库存 { 
+         *      id: 库存id,
+         *      name: 名称，
+         *      num: num，
+         * }
+        */
+        /**
+         * 记录 { 
+         *      type: typeidx,
+         *      txt: 描述，
+         * }
+        */
+        vm = new Vue({
+            el: '#app',
+            data(){
+                return {
+                    navIdx: 1,
+                    list1: [], // 部门管理
+                    list2: [], // 人员管理
+                    list3: [], // 进出库管理
+                    list4: [], // 操作记录
+                    groupInfo:{
+                        dialogVisible: false,
+                        name: '',
+                        id: ''
+                    },
+                    memberInfo:{
+                        dialogVisible: false,
+                        name: '',
+                        groupid: '',
+                        id: ''
+                    },
+                    inventoryInfo:{
+                        dialogVisible: false,
+                        name: '',
+                        num: '',
+                        id: ''
+                    },
+                    inventoryInfo2:{
+                        dialogVisible: false,
+                        memberid: '',
+                        num: '',
+                        id: '',
+                        max: 0
+                    },
+                }
+            },
+            created(){
+                this.list1 = JSON.parse(localStorage.getItem('list1')) || []
+                this.list2 = JSON.parse(localStorage.getItem('list2')) || []
+                this.list3 = JSON.parse(localStorage.getItem('list3')) || []
+                this.list4 = JSON.parse(localStorage.getItem('list4')) || []
+            },
+            computed:{
+                groupHash(){
+                    return this.list1.reduce((s, n)=>{
+                        s[n.id] = n;
+                        return s;
+                    }, {})
+                },
+                memberHash(){
+                    return this.list2.reduce((s, n)=>{
+                        s[n.id] = n;
+                        return s;
+                    }, {})
+                },
+                inventoryHash(){
+                    return this.list3.reduce((s, n)=>{
+                        s[n.id] = n;
+                        return s;
+                    }, {})
+                }
+            },
+            methods: {
+                handleSelect(key, keyPath) {
+                    this.navIdx = key
+                    console.log('handleSelect', key, keyPath);
+                },
+                handleOpen(key, keyPath) {
+                    console.log('handleOpen', key, keyPath);
+                },
+                handleClose(key, keyPath) {
+                    console.log('handleClose', key, keyPath);
+                },
+                saveLog(type, txt){
+                    this.list4.push({
+                        type: type,
+                        txt: txt
+                    })
+                    localStorage.setItem('list4',JSON.stringify(this.list4))
+                },
+                insertGroup(){
+                    console.log('insertGroup', arguments)
+                    this.groupInfo.dialogVisible = true;
+                    this.groupInfo.id = '';
+                    this.groupInfo.name = '';
+                },
+                updateGroup(row){
+                    console.log('updateGroup', arguments)
+                    this.groupInfo.dialogVisible = true;
+                    this.groupInfo.id = row.id;
+                    this.groupInfo.name = row.name;
+                },
+                insertMember(){
+                    console.log('insertMember', arguments)
+                    this.memberInfo.dialogVisible = true;
+                    this.memberInfo.id = '';
+                    this.memberInfo.groupid = '';
+                    this.memberInfo.name = '';
+                },
+                updateMember(row){
+                    console.log('updateMember', arguments)
+                    this.memberInfo.dialogVisible = true;
+                    this.memberInfo.id = row.id;
+                    this.memberInfo.groupid = row.groupid;
+                    this.memberInfo.name = row.name;
+                },
+                insertInventory(){
+                    console.log('insertInventoryInfo', arguments)
+                    this.inventoryInfo.dialogVisible = true;
+                    this.inventoryInfo.id = '';
+                    this.inventoryInfo.num = 0;
+                    this.inventoryInfo.name = '';
+                },
+                updateInventory(row){
+                    console.log('updateInventoryInfo', arguments)
+                    this.inventoryInfo.dialogVisible = true;
+                    this.inventoryInfo.id = row.id;
+                    this.inventoryInfo.num = 0;
+                    this.inventoryInfo.name = row.name;
+                },
+                removeInventory(row){
+                    console.log('removeInventory', arguments)
+                    this.inventoryInfo2.dialogVisible = true;
+                    this.inventoryInfo2.id = row.id;
+                    this.inventoryInfo2.memberid = '';
+                    this.inventoryInfo2.num = 0;
+                    this.inventoryInfo2.max = row.num;
+                },
+                inventoryInfo2Handler(type){
+                    // 0取消 1确认
+                    console.log('inventoryInfo2Handler', arguments)
+                    if(!type){
+
+                    }else{
+                        if(this.inventoryInfo2.id){
+                            if(!this.inventoryInfo2.memberid){
+                                return this.$message.error("请选择领用人")
+                            }
+                            var item = this.inventoryHash[this.inventoryInfo2.id];
+                            this.saveLog(2, `领用：${this.memberHash[this.inventoryInfo2.memberid].name} => [${this.inventoryHash[this.inventoryInfo2.id].name}-${this.inventoryInfo2.id}](${this.inventoryInfo2.num})`)
+                            item.num -= this.inventoryInfo2.num
+                        }
+                        localStorage.setItem('list3',JSON.stringify(this.list3))
+                    }
+                    this.inventoryInfo2.dialogVisible = false;
+                },
+                inventoryInfoHandler(type){
+                    // 0取消 1确认
+                    console.log('inventoryInfoHandler', arguments)
+                    if(!type){
+
+                    }else{
+                        if(this.inventoryInfo.id){
+                            var item = this.inventoryHash[this.inventoryInfo.id];
+                            this.saveLog(2, `更新库存：${item.name}(${item.num}) => ${this.inventoryInfo.name}(${item.num + this.inventoryInfo.num})`)
+                            item.name = this.inventoryInfo.name
+                            item.num += this.inventoryInfo.num
+                        }else{
+                            if(this.inventoryInfo.name.trim().length == ''){
+                                return this.$message.error("请输入名称")
+                            }
+                            this.list3.push({
+                                id: (this.list3.length+1),
+                                num: this.inventoryInfo.num,
+                                name: this.inventoryInfo.name
+                            })
+                            this.saveLog(2, `入库：${this.inventoryInfo.name}(${this.inventoryInfo.num})`)
+                        }
+                        localStorage.setItem('list3',JSON.stringify(this.list3))
+                    }
+                    this.inventoryInfo.dialogVisible = false;
+                },
+                groupInfoHandler(type){
+                    // 0取消 1确认
+                    console.log('groupInfoHandler', arguments)
+                    if(!type){
+
+                    }else{
+                        if(this.groupInfo.id){
+                            var item = this.groupHash[this.groupInfo.id];
+                            this.saveLog(2, `更新部门：${item.name} => ${this.groupInfo.name}`)
+                            item.name = this.groupInfo.name
+                        }else{
+                            if(this.groupInfo.name.trim().length == ''){
+                                return this.$message.error("请输入名称")
+                            }
+                            this.list1.push({
+                                id:  (this.list1.length+1),
+                                name: this.groupInfo.name
+                            })
+                            this.saveLog(2, `新增部门：${this.groupInfo.name}`)
+                        }   
+                        localStorage.setItem('list1',JSON.stringify(this.list1))
+                    }
+                    this.groupInfo.dialogVisible = false;
+                },
+                memberInfoHandler(type){
+                    // 0取消 1确认
+                    console.log('memberInfoHandler', arguments)
+                    if(!type){
+
+                    }else{
+                        if(this.memberInfo.id){
+                            var item = this.memberHash[this.memberInfo.id];
+                            this.saveLog(2, `更新人员：${item.name}(${this.groupHash[item.groupid].name}) => ${this.memberInfo.name}(${this.groupHash[this.memberInfo.groupid].name})`)
+                            item.name = this.memberInfo.name
+                            item.groupid = this.memberInfo.groupid
+                        }else{
+                            if(this.memberInfo.name.trim().length == ''){
+                                return this.$message.error("请输入名称")
+                            }
+                            if(!this.memberInfo.groupid){
+                                return this.$message.error("请选择部门")
+                            }
+                            this.list2.push({
+                                id: (this.list2.length+1),
+                                groupid: this.memberInfo.groupid,
+                                name: this.memberInfo.name
+                            })
+                            this.saveLog(2, `新增人员：${this.memberInfo.name}(${this.groupHash[this.memberInfo.groupid].name})`)
+                        }
+                        localStorage.setItem('list2',JSON.stringify(this.list2))
+                    }
+                    this.memberInfo.dialogVisible = false;
+                }
+            }
+        })
+    </script>
+    <style>
+        html,body{min-width: 800px}
+        .header{padding: 10px;border-bottom: 1px solid #ccc;}
+        .search-box{margin: 10px 0;padding-left: 10px}
+    </style>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

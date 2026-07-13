@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>动态字体方案，兼容chrome40</title>
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+	<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+	<style type="text/css">
+		.article-title,.article-text{
+			font-family: '宋体';
+		}
+
+		.font .article-title,.font .article-text{
+			font-family: myFont;
+		}
+	</style>
+</head>
+<body>
+	<div id="app">
+		<div class="article-title">桃花源记</div>
+		<div class="article-section article-text">
+			晋太元中，武陵人捕鱼为业。缘溪行，忘路之远近。忽逢桃花林，夹岸数百步，中无杂树，芳草鲜美，落英缤纷，渔人甚异之，复前行，欲穷其林。
+		</div>
+		<div class="article-section article-text">
+			林尽水源，便得一山，山有小口，仿佛若有光。便舍船，从口入。初极狭，才通人。复行数十步，豁然开朗。土地平旷，屋舍俨然，有良田美池桑竹之属。阡陌交通，鸡犬相闻。其中往来种作，男女衣着，悉如外人。黄发垂髫，并怡然自乐。
+		</div>
+		<div class="article-section article-text">
+			见渔人，乃大惊，问所从来。具答之。便要还家，设酒杀鸡作食。村中闻有此人，咸来问讯。自云先世避秦时乱，率妻子邑人来此绝境，不复出焉，遂与外人间隔。问今是何世，乃不知有汉，无论魏晋。此人一一为具言所闻，皆叹惋。余人各复延至其家，皆出酒食。停数日，辞去。此中人语云：“不足为外人道也。”
+		</div>
+
+		<div class="article-section article-text">
+			既出，得其船，便扶向路，处处志之。及郡下，诣太守，说如此。太守即遣人随其往，寻向所志，遂迷，不复得路。
+		</div>
+
+		<div class="article-section article-text">
+			南阳刘子骥，高尚士也，闻之，欣然规往。未果，寻病终，后遂无问津者。
+		</div>
+	</div>
+	<div id="appChangeFont">
+		<button>使用默认字体</button>
+
+		<button v-for="(item,idx) in list" @click="changeFont(item.url)">使用{{idx}}字体</button>
+
+		<button v-for="(item,idx) in list" @click="changeAJAXFont(item.url)">使用其他方式加载字体{{idx}}字体</button>
+
+		<div>
+			<div id="clog"></div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		var styleEl = document.createElement('style');
+		document.body.appendChild(styleEl)
+		vm = new Vue({
+			el: '#appChangeFont',
+			data(){
+				return {
+					list: [
+						{url: '//www.lilnong.top/static/font/a1.ttf'},
+						{url: '//www.lilnong.top/static/font/a2.ttf'},
+						{url: '//www.lilnong.top/static/font/a3.otf'},
+						{url: '//www.lilnong.top/static/font/a4.otf'}
+					]
+				}
+			},
+			methods:{
+				changeFont(url){
+					if(url){
+						app.classList.add('font')
+						styleEl.innerHTML = `@font-face
+						{
+						font-family: myFont;
+						src: url('${url}');
+						}`
+					}else{
+						app.classList.remove('font')
+					}
+				},
+				changeAJAXFont(url){
+					if(window.xhr) xhr.abort();
+					xhr = new XMLHttpRequest();
+					xhr.open('get', url);
+					xhr.responseType = 'blob'
+					xhr.onprogress = (e)=>clog.innerText = (`${e.loaded/e.total*100}%`)
+					xhr.onload = (e) => {
+						var url = URL.createObjectURL(xhr.response);
+						app.classList.add('font')
+						styleEl.innerHTML = `@font-face
+						{
+						font-family: myFont;
+						src: url('${url}');
+						}`
+					}
+					xhr.send();
+				}
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

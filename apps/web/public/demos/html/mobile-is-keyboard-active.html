@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>监听页面键盘弹起</title>
+</head>
+<body>
+	<div id="log"></div>
+	<button onclick="location.reload(true)">reload</button>
+	<input type="" name="">
+	<input type="datetime-local" name="" id="datetime">
+	<textarea></textarea>
+	<script type="text/javascript">
+		let ua = navigator.userAgent;
+		let utils = {
+		  // 移动端
+		  isMobile: ("ontouchstart" in window || navigator.msMaxTouchPoints) ? true : false,
+		  // 微信
+		  isWechat: /micromessenger/gi.test(ua),
+		  // qq
+		  isQQ: /qq/gi.test(ua),
+		  // VV音乐
+		  isvvmusic: /vvmusic/gi.test(ua),
+		  // 安卓
+		  isAndroid: /android/gi.test(ua),
+		  // iOS
+		  isIOS: /iphone|ipad|ipod|itouch/gi.test(ua), // IOS
+		}
+		let isKeyboardActive = false;
+		let isDateSelectSuccess = true;
+		if(utils.isAndroid){
+			var originHeight = document.documentElement.clientHeight || document.body.clientHeight;
+			window.addEventListener('resize', function(){
+				if(originHeight > (document.documentElement.clientHeight || document.body.clientHeight)){
+					isKeyboardActive = true
+				}else{
+					isKeyboardActive = false
+				}
+			});
+			document.querySelector('#datetime').addEventListener('focus', ()=>{
+				isDateSelectSuccess = false
+			})
+			document.querySelector('#datetime').addEventListener('input', ()=>{
+				isDateSelectSuccess = true
+			})
+			document.querySelector('#datetime').addEventListener('blur', ()=>{
+				isDateSelectSuccess = true
+			})
+		}else{
+			//  if(utils.isIOS)
+			window.addEventListener('focusin', function(){
+				isKeyboardActive = true
+				isDateSelectSuccess = true
+			})
+			window.addEventListener('focusout', function(){
+				isKeyboardActive = false
+				isDateSelectSuccess = false
+			})
+		}
+		setInterval(function(){
+			log.innerHTML =  Date.now() + '<br >'+
+							'isKeyboardActive:'+isKeyboardActive + '<br >'+
+							'isDateSelectSuccess:'+isDateSelectSuccess
+		},100)
+		
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

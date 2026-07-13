@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>键盘兼容性测试</title>
+	<style type="text/css">
+		#log{
+			background: #333;
+			color: #eee;
+			min-height: 50px;
+		}
+		#fix{
+			bottom: 0;left: 0;right: 0;background: #0cc;
+		}
+		#log{
+			position: fixed;top:0;left: 0;right:0;
+		}
+		body{
+			padding: 100px 0 40px 0;
+		}
+	</style>
+</head>
+<body>
+	<div id="log">
+		
+	</div>
+	<div >
+		<button id="refresh">刷新</button><button id="refresh" onclick="location.href = './'">返回目录</button><button id="switchPosition">切换position</button>
+	</div>
+	<div style="height: 500px;">
+		<input type="" name="">
+	</div>
+	<div style="height: 500px;">
+		<textarea></textarea>
+	</div>
+	<div style="height: 500px;">
+		input <input type="" name="">
+	</div>
+	<div style="height: 500px;">
+		 textarea <textarea></textarea>
+	</div>
+
+	<div id="fix">
+		内容
+	</div>
+	<script type="text/javascript">
+		if(NodeList.prototype.forEach === undefined){
+			NodeList.prototype.forEach = function(v){
+				[].__proto__.forEach.call(this,v)	
+			}
+		}
+		var tag = true;
+		var isMobile = ("ontouchstart" in window || navigator.msMaxTouchPoints) ? true:false;
+
+		document.querySelectorAll('input').forEach(function(v){v.addEventListener(isMobile?'touchstart':'click', function(e){e.stopPropagation()})})
+		document.querySelectorAll('textarea').forEach(function(v){v.addEventListener(isMobile?'touchstart':'click', function(e){e.stopPropagation()})})
+		document.querySelector('#log').addEventListener(isMobile?'touchstart':'click', function(e){e.stopPropagation()})
+
+		document.querySelector('#refresh').addEventListener(isMobile?'touchstart':'click', function(){
+			location.reload(true)
+		})
+		document.querySelector('#switchPosition').addEventListener(isMobile?'touchstart':'click', function(){
+			if(tag){
+				fix.style.position = 'fixed';
+			}else{
+				fix.style.position = 'static';
+			}
+		 	tag = !tag;
+		})
+
+		var originHeight = document.documentElement.clientHeight || document.body.clientHeight;
+		setInterval(function(){
+			var resizeHeight = document.documentElement.clientHeight || document.body.clientHeight;
+			log.innerHTML = '<div>'+
+				' document.body.offsetHeight:'+document.body.offsetHeight+
+				' document.body.clientHeight:'+document.body.clientHeight+
+				' document.body.scrollHeight:'+document.body.scrollHeight+
+				' originHeight:'+originHeight+
+				' resizeHeight:'+resizeHeight+
+				'</div>'
+		},500)
+	</script>
+	<p>https://juejin.im/post/5c6d1c8b6fb9a049de6df441</p>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

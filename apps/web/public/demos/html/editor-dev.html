@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+<title>编辑器</title>
+<style type="text/css">
+*{
+    padding: 0;
+    margin: 0;
+}
+body{
+    font-size: 16px;
+    line-height: 24px;
+    color: #000000;
+}
+[contenteditable=true]{
+    tap-highlight-color: rgba(0,0,0,0);
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 50vh;
+    padding: 15px 15px 0;
+    overflow-x: hidden;
+    word-break: break-all;
+    white-space: pre-wrap;
+    outline:none;
+}
+#clog{
+    tap-highlight-color: rgba(0,0,0,0);
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50vh;
+    bottom: 0;
+    padding: 15px 15px 0;
+    overflow-x: hidden;
+    word-break: break-all;
+    white-space: pre-wrap;
+    outline:none;
+}
+font[size="1"]{
+    line-height: 24px;
+    /*font-size: 24px;*/
+}
+font[size="3"]{
+    line-height: 32px;
+    /*font-size: 32px;*/
+}
+font[size="5"]{
+    line-height: 40px;
+    /*font-size: 40px;*/
+}
+#placeholder{
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    padding: 15px 15px 0;
+    z-index: -1;
+    display: block;
+    line-height: 24px;
+    color: #9d9d9d;
+}
+</style>
+</head>
+<body>
+
+<div id="textarea" contenteditable="true" maxlength="5000"></div>
+<div id="clog">
+    <div><button onclick="vvliveBridgeObj.save()">保存</button></div>
+    <div id="consoleLog">
+        
+    </div>
+</div>
+<script type="text/javascript">
+// 编辑器
+(function(wd) {
+
+    var ua = navigator.userAgent,
+        isWechat = (/micromessenger/gi).test(ua), //微信
+        isQQ = (/qq/gi).test(ua), //qq
+        isvvlive = (/vvmusic/gi).test(ua), // VV 直播
+        isAndroid = (/android/gi).test(ua), //安卓
+        isIOS = (/iphone|ipad|ipod|itouch/gi).test(ua); // IOS
+
+    var vvliveBridgeObj = {
+
+        gloableBridge: null,
+
+        gloableBridgeState: 0,
+
+        bridgeCallHander: function(_bridgeCallback, _callbackParam, __callbackParam, ___callbackParam) {
+
+            _bridgeCallback = _bridgeCallback || function() {};
+            _callbackParam = _callbackParam || null;
+            __callbackParam = __callbackParam || null;
+            ___callbackParam = ___callbackParam || null;
+
+            var _this = this;
+
+            // 首先确定得在VVlive客户端里
+            if (isvvlive) {
+                if (isIOS) {
+                    function setupWebViewJavascriptBridge(callback) {
+                        if (window.WebViewJavascriptBridge) {
+                            return callback(WebViewJavascriptBridge);
+                        }
+                        if (window.WVJBCallbacks) {
+                            return window.WVJBCallbacks.push(callback);
+                        }
+                        window.WVJBCallbacks = [callback];
+                        var WVJBIframe = document.createElement('iframe');
+                        WVJBIframe.style.display = 'none';
+                        WVJBIframe.src = 'wvjbscheme://__BRIDGE_LOADED__';
+                        document.documentElement.appendChild(WVJBIframe);
+                        setTimeout(function() {
+                            document.documentElement.removeChild(WVJBIframe);
+                        }, 0)
+                    }
+                    setupWebViewJavascriptBridge(function(bridge) {
+                        vvliveBridgeObj.gloableBridge = bridge;
+                        vvliveBridgeObj.gloableBridgeState = 1;
+                        _bridgeCallback(_callbackParam, __callbackParam, ___callbackParam);
+
+                        _this.bridgeCallHanderJs(WebViewJavascriptBridge);
+
+                    });
+                } else if (isAndroid) {
+                    function connectWebViewJavascriptBridge(callback) {
+                        if (window.WebViewJavascriptBridge) {
+                            callback(WebViewJavascriptBridge)
+                        } else {
+                            document.addEventListener(
+                                'WebViewJavascriptBridgeReady',
+                                function() {
+                                    callback(WebViewJavascriptBridge)
+                                },
+                                false
+                            );
+                        }
+                    }
+                    connectWebViewJavascriptBridge(function(bridge) {
+                        vvliveBridgeObj.gloableBridge = window.WebViewJavascriptBridge;
+                        bridge.init(function(message, responseCallback) {
+                            responseCallback(data);
+                        });
+                        vvliveBridgeObj.gloableBridgeState = 1;
+                        _bridgeCallback(_callbackParam, __callbackParam, ___callbackParam);
+
+                        _this.bridgeCallHanderJs(vvliveBridgeObj.gloableBridge);
+
+                    })
+                }
+            }
+        },
+
+        bridgeCallHanderFn: function(_handle, _param, _callback) {
+            if (isvvlive) {
+                if (vvliveBridgeObj.gloableBridgeState == 1) {
+                    if (isAndroid) {
+                        vvliveBridgeObj.gloableBridge.callHandler(
+                            _handle, _param,
+                            function(response) {
+                                _callback ? _callback(response) : void 0;
+                            }
+                        );
+                    } else if (isIOS) {
+                        vvliveBridgeObj.gloableBridge.callHandler(
+                            _handle, _param,
+                            function(response) {
+                                _callback ? _callback(response) : void 0;
+                            }
+                        );
+                    }
+                } else {
+                    vvliveBridgeObj.bridgeCallHander(vvliveBridgeObj.bridgeCallHanderFn, _handle, _param, _callback);
+                }
+            }
+        },
+
+        //js调起客户端协议
+        stateCallBack: function(json) {
+            vvliveBridgeObj.bridgeCallHanderFn('vvEditorStateCallHandle', json, function(res){});
+        },
+
+        keyDownCallBack: function() {
+            vvliveBridgeObj.bridgeCallHanderFn('vvEditorKeyDownCallHandle', {}, function(res){});
+        },
+
+        limitCallBack: function() {
+            vvliveBridgeObj.bridgeCallHanderFn('vvEditorLimitCallHandle', {}, function(res){});
+        },
+
+        pasteCallBack: function(callback) {
+            vvliveBridgeObj.bridgeCallHanderFn('vvEditorPasteCallHandle', {text: window.inner_text || ''}, function(res){
+                callback && callback(res);
+            });
+        },
+
+        //客户端调起js
+        bridgeCallHanderJs: function(v) {
+            var _this = this;
+            // data 0:小 1:中 2:大
+            v.registerHandler("vvEditorFontSize", function(data) {
+                _this.fontSize(data);
+            });
+
+            // data 0:加粗 1:斜体 2:下划线
+            v.registerHandler("vvEditorFontStyle", function(data) {
+                _this.fontStyle(data);
+            });
+
+            // data 十六进制色值
+            v.registerHandler("vvEditorFontColor", function(data) {
+                _this.fontColor(data);
+            });
+
+            // data 0:左 1:中 2:右
+            v.registerHandler("vvEditorTextAlign", function(data) {
+                _this.textAlign(data);
+            });
+
+            v.registerHandler("vvEditorUndo", function(data) {
+                _this.undo();
+            });
+
+            v.registerHandler("vvEditorRedo", function(data) {
+                _this.redo();
+            });
+
+            v.registerHandler("vvEditorSave", function(data, responseCallback) {
+                var responseData = _this.save();
+                responseCallback(responseData);
+            });
+
+            // data html结构
+            v.registerHandler("vvEditorInsertContent", function(data) {
+                if(isAndroid) _this.insertContent(_this.delQuotes(data));
+                else _this.insertContent(data);
+            });
+
+            v.registerHandler("vvEditorSetFocus", function(data) {
+                _this.setFocus();
+            });
+
+            v.registerHandler("vvEditorSelectAll", function(data) {
+                _this.selectAll();
+            });
+
+            v.registerHandler("vvEditorGetFocus", function(data, responseCallback) {
+                var responseData = _this.getState(1);
+                responseCallback(responseData);
+            });
+
+            v.registerHandler("vvEditorClear", function(data) {
+                _this.clear();
+            });
+            
+        },
+
+        fontSize: function(size) {
+            var s;
+            switch (size) {
+                case '0':
+                    s = 1;
+                    break;
+                case '1':
+                    s = 3;
+                    break;
+                case '2':
+                    s = 5;
+                    break;
+                default:
+                    break;
+            }
+            document.execCommand("FontSize", false, s);
+            window.inner_html = document.getElementById('textarea').innerHTML;
+        },
+        fontStyle: function(type) {
+            var t;
+            switch (type) {
+                case '0':
+                    t = 'Bold';
+                    break;
+                case '1':
+                    t = 'Italic';
+                    break;
+                case '2':
+                    t = 'Underline';
+                    break;
+                default:
+                    break;
+            }
+            document.execCommand(t, false, null);
+            window.inner_html = document.getElementById('textarea').innerHTML;
+        },
+        fontColor: function(color) {
+            document.execCommand("ForeColor", false, color);
+            window.inner_html = document.getElementById('textarea').innerHTML;
+        },
+        textAlign: function(type) {
+            var t;
+            switch (type) {
+                case '0':
+                    t = 'justifyleft';
+                    break;
+                case '1':
+                    t = 'justifycenter';
+                    break;
+                case '2':
+                    t = 'justifyright';
+                    break;
+                default:
+                    break;
+            }
+            document.execCommand(t, false, null);
+            window.inner_html = document.getElementById('textarea').innerHTML;
+        },
+        //撤销
+        undo: function() {
+            if(window.inner_html == window.store_html) return;
+            if(window.inner_text && window.inner_text.length >= 5000) return;
+            document.execCommand("undo", false, null);
+        },
+        //重做被撤销的操作
+        redo: function() {
+            if(window.inner_text && window.inner_text.length >= 5000) return;
+            document.execCommand("redo", false, null);
+        },
+        clear: function() {
+            document.getElementById('textarea').innerHTML = '';
+        },
+        checkBrowser: function() {
+            var userAgent = navigator.userAgent;
+            var isOpera = userAgent.indexOf("Opera") > -1;
+            if (isOpera) {
+                return "Opera"
+            }; //判断是否Opera浏览器
+            if ((userAgent.indexOf("Firefox") > -1 || userAgent.indexOf("Mozilla") > -1) && (userAgent.indexOf("Gecko") < 0)) {
+                return "FF";
+            } //判断是否Firefox浏览器
+            if (userAgent.indexOf("Chrome") > -1) {
+                return "Chrome";
+            } //判断是否Chrome浏览器
+            if (userAgent.indexOf("Safari") > -1) {
+                return "Safari";
+            } //判断是否Safari浏览器
+            if ((userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1 && !isOpera) || (userAgent.indexOf("Gecko") > -1)) {
+                return "IE";
+            }; //判断是否IE浏览器
+        },
+        colorRGB2Hex: function(color) {
+            var reg = /^#([0-9a-fA-f]{3}|[0-9a-fA-f]{6})$/;
+            if(reg.test(color)) return color;
+            var rgb = color.split(',');
+            var r = parseInt(rgb[0].split('(')[1]);
+            var g = parseInt(rgb[1]);
+            var b = parseInt(rgb[2].split(')')[0]);
+            var hex = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+            return hex;
+        },
+        //获取当前光标所在的字符属性
+        getState: function(param) {
+            var items = {
+                bold: false,
+                italic: false,
+                underline: false,
+                fontSize: 1,
+                foreColor: '#000000',
+                justify: 0
+            };
+            if (document.queryCommandState('bold')) {
+                items.bold = true;
+            }
+            if (document.queryCommandState('italic')) {
+                items.italic = true;
+            }
+            if (document.queryCommandState('underline')) {
+                items.underline = true;
+            }
+            if (document.queryCommandValue('fontSize')) {
+                items.fontSize = (document.queryCommandValue('fontSize') - 1) / 2;
+            }
+            if (document.queryCommandValue('foreColor')) {
+                items.foreColor = this.colorRGB2Hex(document.queryCommandValue('foreColor'));
+            }
+            // if (this.checkBrowser() != "IE") {
+                if (document.queryCommandState('justifyLeft')) {
+                    items.justify = 0;
+                }
+                if (document.queryCommandState('justifyCenter')) {
+                    items.justify = 1;
+                }
+                if (document.queryCommandState('justifyRight')) {
+                    items.justify = 2;
+                }
+            // }
+            
+            if(param) return items;
+            //客户端协议
+            this.stateCallBack(items);
+        },
+        bindEvent: function() {
+            var _this = this,
+            textarea = document.getElementById('textarea'),
+            placeholder = document.getElementById('placeholder');
+            textarea.addEventListener('click', function(){
+                if(isAndroid) _this.getState();
+            });
+            textarea.addEventListener('input', function(){
+                _this.keyDownCallBack();
+                _this.save();
+                if(isAndroid) _this.getState();
+                _this.limit(this, 5000);
+                placeholder.style.display = textarea.textContent == '' ? 'block' : 'none';
+            });
+            textarea.scrollTop = textarea.scrollHeight;
+        },
+        paste: function() {
+            try {
+                document.execCommand("AutoUrlDetect", false, false);
+            } catch (e) {}
+
+            var _this = this,
+            textarea = document.getElementById('textarea');
+            textarea.addEventListener('paste', function(e){
+                e.preventDefault();
+                _this.pasteCallBack(function(text){
+                    if(isAndroid) document.execCommand("insertText", false, _this.delHtmlTag(text));
+                    else document.execCommand("insertText", false, text);
+                    textarea.scrollTop = textarea.scrollHeight;
+                    _this.setFocus();
+                });
+            });
+        },
+        limit: function(obj, limit) {
+            var _this = this;
+            window.inner_text = obj.innerText;
+            if (window.inner_text.length > limit) {
+                obj.innerHTML = '';
+                document.execCommand("insertHTML", false, window.inner_html || "");
+                _this.limitCallBack();
+            } else {
+                window.inner_html = obj.innerHTML;
+            }
+        },
+        save: function() {
+            var textarea = document.getElementById('textarea');
+            var obj = {
+                html: textarea.innerHTML,
+                text: textarea.innerText
+            }
+            if(!/^\s*$/.test(obj.text)){
+                obj.text = obj.text
+                    .replace(/ +$/,'')//删除结尾的空白符
+            }
+            
+            if(!/^\s*(<div>\s*(<br>)?\s*<\/div>)*$/.test(obj.html)){
+                if(!/^(<div>\s*(<br>)?\s*<\/div>)+$/.test(obj.html)){
+                    obj.html = obj.html
+                        .replace(/ *<\/div> *$/,'</div>')//结尾的空格
+                        .replace(/ +$/,'')
+                        .replace(/<div><\/div>/g,'<div><br></div>')
+                }
+            }
+            if(window.consoleLog){
+                consoleLog.innerText = JSON.stringify(obj, null, 4)
+            }
+            return obj;
+        },
+        insertContent: function(html) {
+            document.execCommand("insertHTML", false, html);
+            window.inner_html = document.getElementById('textarea').innerHTML;
+            window.store_html = html;
+        },
+        setFocus: function() {
+            document.getElementById('textarea').focus();
+        },
+        selectAll: function() {
+            document.execCommand("selectAll", false, null);
+        },
+        delHtmlTag: function(str) {
+            try {
+                var data = JSON.parse(str);
+                if(data && typeof(data) == 'object') {
+                    str = data.text;
+                }
+            } catch(e) {
+            }
+            var _this = this;
+            var textarea = document.getElementById('textarea');
+            var len = textarea.innerText.length;
+            var s = str.replace(/<(.(?!br)[^>]*)>/g, '').replace(/<br.*\/?>/g, '\n').replace(/%-10/g, '\'').replace(/%-20/g, '"');
+            if(len + s.length > 5000) {
+                _this.limitCallBack();
+                return s.slice(0, 5000 - len);
+            } else {
+                return s;
+            }
+        },
+        delQuotes: function(str) {
+            try {
+                var data = JSON.parse(str);
+                if(data && typeof(data) == 'object') {
+                    str = data.text;
+                }
+            } catch(e) {
+            }
+            return str.replace(/%-10/g, '\'').replace(/%-20/g, '"');
+        },
+        init: function() {
+            this.bindEvent();
+            this.paste();
+            this.getState();
+        }
+    };
+    wd.vvliveBridgeObj = vvliveBridgeObj;
+
+})(window);
+
+window.vvliveBridgeObj.init();
+</script>
+
+</body>
+</html>

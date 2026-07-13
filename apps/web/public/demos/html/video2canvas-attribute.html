@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>使用canvas捕获video视频 - www.lilnong.top</title>
+	<meta keywords="使用canvas捕获video视频">
+	<meta description="使用canvas捕获video视频">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+	<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+	<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+	<link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/theme-chalk/index.css" rel="stylesheet">
+	<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/index.js"></script>
+</head>
+<body>
+	<style>
+		.video{
+			height: 75vh;
+		}
+		.object-fit-cover{
+			-o-object-fit: cover;
+			object-fit: cover;
+			/* height: 100%; */
+		}
+		.icon-absolute{position: absolute;z-index: 1000;right: 0px;top:50vh;}
+		.icon-fixed{position: fixed;z-index: 2000;right: 100px;top:50vh;}
+		.icon-btn{padding: 20px;}
+	</style>
+	<div id="app">
+		<button onclick="video.play()">play</button>
+		<button onclick="video.classList.toggle('object-fit-cover')">toggle-cover</button>
+		<div class="icon-absolute">
+			<div class="icon-btn" onclick="alert('absolute-单击了微信')">微信</div>
+			<div class="icon-btn" onclick="alert('absolute-单击了QQ')">QQ</div>
+		</div>
+		<div class="icon-fixed">
+			<div class="icon-btn" onclick="alert('fixed-单击了微信')">微信</div>
+			<div class="icon-btn" onclick="alert('fixed-单击了QQ')">QQ</div>
+		</div>
+		<video 
+			class="video object-fit-cover"
+			id="video"
+			width="100%" 
+			type="video/mp4" 
+			src="https://www.lilnong.top/static/video/v1705221.mp4" 
+			alt="最后一个太难了，你们知道？" 
+			preload="auto" 
+			webkit-playsinline="" 
+			playsinline="" 
+			x5-video-player-fullscreen="false " 
+			x5-video-player-type="h5"></video>
+		<canvas id="canvas"
+		width="200"
+		height="200"
+		style="height: 200px;width: 200px;"></canvas>
+	</div>
+	<script>
+		var ctx = canvas.getContext('2d')
+		paintCanvas = function(){
+			ctx.drawImage(video, 0, 0, 200, 200)
+		}
+		requestAnimationFrameHandler = function(){
+			requestAnimationFrame(()=>{
+				requestAnimationFrameHandler();
+			})
+			paintCanvas()
+		}
+		requestAnimationFrameHandler()
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

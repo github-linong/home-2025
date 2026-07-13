@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<title>时区测试</title>
+</head>
+<body>
+	<div id="app">
+	  <input type="datetime-local" v-model="test" />
+	  <p>test:{{test}}</p>
+	  <p>formmat:{{formmat}}</p>
+	  <p>filterformmat:{{filterformmat}}</p>
+	  <p>Newformmat:{{Newformmat}}</p>
+	  <p>testformmat:{{testformmat}}</p>
+	  <p>time:{{time}}</p>
+	  <p>formmatTime:{{formmatTime}}</p>
+	</div>
+	<script type="text/javascript">
+		new Vue({
+		  el: '#app',
+		  data: {
+		    test: '',
+		    time: new Date(1514833445000)
+		  },
+		  computed: {
+		    formmat() {
+		      if (this.test) {
+		        var _d = new Date(this.test); return `${_d.getFullYear()}-${_d.getMonth() + 1}-${_d.getDate()} ${_d.getHours()}:${_d.getMinutes()}:${_d.getSeconds()}`
+		      } else {
+		        return ''
+		      }
+		    },
+		    formmatTime() {
+		        var _d = this.time; return `${_d.getFullYear()}-${_d.getMonth() + 1}-${_d.getDate()} ${_d.getHours()}:${_d.getMinutes()}:${_d.getSeconds()}`
+		    },
+		    filterformmat() {
+		      if (this.test) {
+		        var _d = new Date(this.test.replace(/T/,' ').replace(/\.[0-9]*$/,'').replace(/-/g,'/')); return `${_d.getFullYear()}-${_d.getMonth() + 1}-${_d.getDate()} ${_d.getHours()}:${_d.getMinutes()}:${_d.getSeconds()}`
+		      } else {
+		        return ''
+		      }
+		    },
+		    Newformmat() {
+		      if (this.test) {
+		        var _d = new Date(this.test);
+		        _d = new Date();
+		        return `${_d.getFullYear()}-${_d.getMonth() + 1}-${_d.getDate()} ${_d.getHours()}:${_d.getMinutes()}:${_d.getSeconds()}`
+		      } else {
+		        return ''
+		      }
+		    },
+		    testformmat() {
+		      if (this.test) {
+		        var _d = new Date(this.test);
+		        _d = new Date('2018/06/12 10:16:22');
+		        return `${_d.getFullYear()}-${_d.getMonth() + 1}-${_d.getDate()} ${_d.getHours()}:${_d.getMinutes()}:${_d.getSeconds()}`
+		      } else {
+		        return ''
+		      }
+		    }
+		  }
+		})
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>isComposing</title>
+	<meta charset="utf-8">
+</head>
+<body>
+	<input type="text" id="inputTest" maxlength="4"/>
+	<p>
+	  inputLength:<label id="inputLength"></label>
+	</p>
+	<script type="text/javascript">
+		inputTest.addEventListener('input',function(event){
+		  // console.log('input', event.isComposing, event.keyCode);
+		  if(event.isComposing == false){
+		    inputLength.innerText = this.value.length
+		  }
+		})
+
+		inputTest.addEventListener('compositionend',function(event){
+		  // console.log('compositionend', event.isComposing);
+		  inputLength.innerText = this.value.length
+		});
+
+	</script>
+	<script type="text/html" style="display: block;white-space: pre;color: #0cc;">
+		<input type="text" id="inputTest" maxlength="4"/>
+		<p>
+		  inputLength:<label id="inputLength"></label>
+		</p>
+		<script type="text/javascript">
+			inputTest.addEventListener('input',function(event){
+			  // console.log('input', event.isComposing, event.keyCode);
+			  if(event.isComposing == false){
+			    inputLength.innerText = this.value.length
+			  }
+			})
+
+			inputTest.addEventListener('compositionend',function(event){
+			  // console.log('compositionend', event.isComposing);
+			  inputLength.innerText = this.value.length
+			});
+		<script>
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>我们同时监听放电状态和电池等级和剩余事件的事件</title>
+</head>
+<body>
+<button onclick="location.reload(true)">刷新</button>
+<script type="text/javascript">
+	navigator.getBattery().then(function(battery) {
+
+	  console.log("Battery charging? " + (battery.charging ? "Yes" : "No"));
+	  console.log("Battery level: " + battery.level * 100 + "%");
+	  console.log("Battery charging time: " + battery.chargingTime + " seconds");
+	  console.log("Battery discharging time: " + battery.dischargingTime + " seconds");
+
+	  battery.addEventListener('chargingchange', function() {
+	    console.log("Battery charging? " + (battery.charging ? "Yes" : "No"));
+	  });
+
+	  battery.addEventListener('levelchange', function() {
+	    console.log("Battery level: " + battery.level * 100 + "%");
+	  });
+
+	  battery.addEventListener('chargingtimechange', function() {
+	    console.log("Battery charging time: " + battery.chargingTime + " seconds");
+	  });
+
+	  battery.addEventListener('dischargingtimechange', function() {
+	    console.log("Battery discharging time: " + battery.dischargingTime + " seconds");
+	  });
+
+	});
+
+	function handleMotionEvent(event) {
+
+	    var x = event.accelerationIncludingGravity.x;
+	    var y = event.accelerationIncludingGravity.y;
+	    var z = event.accelerationIncludingGravity.z;
+	    console.log(x,y,z)
+	    // Do something awesome.
+	}
+
+	// window.addEventListener("devicemotion", handleMotionEvent, true);
+	
+</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>JSON 在线解析</title>
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/codemirror.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/comment/comment.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/comment/continuecomment.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/dialog/dialog.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/display/autorefresh.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/display/fullscreen.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/display/panel.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/display/placeholder.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/display/rulers.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/edit/closebrackets.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/edit/closetag.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/edit/matchbrackets.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/edit/trailingspace.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/hint/css-hint.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/hint/javascript-hint.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/hint/html-hint.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/hint/xml-hint.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/lint/css-lint.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/lint/html-lint.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/lint/javascript-lint.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/lint/json-lint.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/selection/active-line.min.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/selection/selection-pointer.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/lint/lint.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/addon/runmode/colorize.js"></script>
+	<script src="https://cdn.bootcss.com/codemirror/5.48.0/mode/javascript/javascript.min.js"></script>
+
+	<link href="https://cdn.bootcss.com/codemirror/5.48.0/codemirror.css" rel="stylesheet">
+	<link href="https://cdn.bootcss.com/codemirror/5.48.0/theme/mbo.min.css" rel="stylesheet">
+	<link href="https://cdn.bootcss.com/codemirror/5.48.0/addon/dialog/dialog.css" rel="stylesheet">
+	<link href="https://cdn.bootcss.com/codemirror/5.48.0/addon/display/fullscreen.css" rel="stylesheet">
+	<link href="https://cdn.bootcss.com/codemirror/5.48.0/addon/lint/lint.css" rel="stylesheet">
+	<!-- import stylesheet -->
+	<!-- <link rel="stylesheet" href="//unpkg.com/iview/dist/styles/iview.css"> -->
+	<link href="https://cdn.bootcdn.net/ajax/libs/iview/3.5.4/styles/iview.css" rel="stylesheet">
+	<!-- import iView -->
+	<!-- <script src="//unpkg.com/iview/dist/iview.min.js"></script> -->
+	<script src="https://cdn.bootcdn.net/ajax/libs/iview/3.5.4/iview.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+		<div>
+			JSON 在线解析
+    		<i-button type="success" @click="gshyz">格式化并验证</i-button>
+    		<i-button @click="yz">验证</i-button>
+    		<i-button @click="gsh">格式化</i-button>
+    		<i-button @click="mh">美化</i-button>
+    		<i-input v-model="spaceValue" placeholder="Enter something..." style="width: 300px" ></i-input>
+    		<div>
+	    		<i-button @click="yszy">压缩并转义</i-button>
+	    		<i-button @click="qczy">去除转义</i-button>
+	    		<i-button @click="json2xml">JSON2XML</i-button>
+	    		<i-button @click="json2csv">JSON2CSV</i-button>
+    		</div>
+		</div>
+		<div id="clog">
+			<Alert :type="tipsType" show-icon v-show="tips">{{tips}}</Alert>
+		</div>
+		<div>
+			<textarea ref="myTextarea">{test: 1}</textarea>
+		</div>
+	</div>
+	<style type="text/css">
+		#clog{
+			padding: 10px;
+			min-height: 50px;
+		}
+		.CodeMirror{
+			height: 600px;
+		}
+	</style>
+	<script type="text/javascript">
+		new Vue({
+			el: '#app',
+			data(){
+				return {
+					editor: null,
+					jsonStr: '',
+					spaceValue: 2,
+					tips: '',
+					tipsType: 'info'
+				}
+			},
+			mounted(){
+				this.$refs.myTextarea.value = localStorage.getItem(location.href)
+				window.editor = CodeMirror.fromTextArea(this.$refs.myTextarea, {
+			        lineNumbers: true,
+			        height: '500px',
+			        change: ()=>console.log('改变了'),
+				    styleActiveLine: true,
+				    matchBrackets: true,
+				    theme: 'mbo'
+			    });
+			    editor.on('change', ()=>this.save())
+			},
+			methods:{
+				save(){
+					localStorage.setItem(location.href, window.editor.getValue())
+				},
+				gshyz(){
+					this.tips = '格式化并验证失败'
+					this.tipsType = 'error'
+					this.gsh()
+					this.yz()
+					this.tips = '格式化并验证成功';
+					this.tipsType = 'success'
+				},
+				yz(){
+					this.jsonStr = window.editor.getValue()
+					try{
+						JSON.parse(this.jsonStr);
+						this.tips = '验证成功';
+						this.tipsType = 'success'
+					}catch(e){
+						console.warn(e);
+						this.tips = '验证失败'
+						this.tipsType = 'error'
+					}
+				},
+				gsh(){
+					this.jsonStr = window.editor.getValue()
+					var json = null;
+					try{
+						json = JSON.parse(this.jsonStr);
+						this.tips = '格式化成功';
+						this.tipsType = 'success'
+					}catch(e){
+						try{
+							json = eval(`(${this.jsonStr})`)
+							this.tips = '格式化成功';
+							this.tipsType = 'success'
+						}catch(e){
+							console.warn(e);
+							this.tips = '格式化失败'
+							this.tipsType = 'error'
+						}
+					}
+					var str = JSON.stringify(json)
+					window.editor.setValue(str)
+				},
+				mh(){
+					this.jsonStr = window.editor.getValue()
+					var json = null;
+					try{
+						json = JSON.parse(this.jsonStr);
+						this.tips = '美化成功';
+						this.tipsType = 'success'
+					}catch(e){
+						try{
+							json = eval(`(${this.jsonStr})`)
+							this.tips = '美化成功';
+							this.tipsType = 'success'
+						}catch(e){
+							console.warn(e);
+							this.tips = '美化失败'
+							this.tipsType = 'error'
+						}
+					}
+					window.editor.setValue(JSON.stringify(json, null, +this.spaceValue))
+				},
+				yszy(){
+					try{
+						window.editor.setValue(JSON.stringify(JSON.stringify(JSON.parse(window.editor.getValue()))))
+						this.tips = '压缩并转义成功';
+						this.tipsType = 'success'
+					}catch(e){
+						this.tips = '压缩并转义失败'
+						this.tipsType = 'error'
+					}
+				},
+				qczy(){
+					try{
+						window.editor.setValue(JSON.stringify(JSON.parse(JSON.parse(window.editor.getValue()))))
+						this.tips = '去除转义成功';
+						this.tipsType = 'success'
+					}catch(e){
+						this.tips = '去除转义失败'
+						this.tipsType = 'error'
+					}
+				},
+				json2xml(){
+					this.jsonStr = window.editor.getValue()
+					var json = null;
+					try{
+						json = JSON.parse(this.jsonStr);
+					}catch(e){
+						try{
+							json = eval(`(${this.jsonStr})`)
+						}catch(e){}
+					}
+
+					var str = `<?xml version="1.0" encoding="UTF-8" ?>`
+					str+=this.json2xmlFun(json);
+					console.log(str)
+				},
+				json2xmlFun(data, key){
+					var str = '';
+					if(typeof data != 'object') return data;
+					// if(Array.isArray(data)){
+					// 	for(var i in data){
+					// 		str+=`<${i}>${this.json2xmlFun(data[i])}</${i}>`
+					// 	}
+					// }
+					for(var i in data){
+						str+=`<${i}>${this.json2xmlFun(data[i])}</${i}>`
+					}
+					return str
+				},
+				json2csv(){
+
+				},
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<script src="https://cdn.bootcss.com/moment.js/2.24.0/moment.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+	    <div class="container">
+			<ul id="messages" class="list-unstyled" ref="messages">
+				<li v-for="item in list" :class="['message-'+item.type]">
+					<template v-if="item.type == 'notice'">{{item.message}}</template>
+					<template v-else-if="item.type == 'notice-href'">
+						<a :href="item.href" target="_blank">{{item.href}}</a>
+					</template>
+					<template v-else>{{item.time | filterDate}}  [{{item.nickname}}] : {{item.message}}</template>
+				</li>
+			</ul>
+			<div class="user-container">
+				<input v-model="nickname" placeholder="nickname">
+				<input v-model="uuid" placeholder="uuid" v-show="false">
+				<button class="btn btn-sm btn-info" @click="changeUser">修改</button>
+			</div>
+	    </div>
+	    <div class="container">
+			<div class="chat-send-box">
+				<input v-model="mesasgeInput" @keydown.enter="sendMessage" class="chat-send-input form-control">
+				<button class="chat-send-submit btn btn-primary" @click="sendMessage">发送消息</button>
+			</div>
+	    </div>
+	</div>
+	<script type="text/javascript">
+		var ws
+		var initWs = function initWs(){
+			var protocol = 'ws'
+			if(location.protocol == "http:"){
+				protocol = 'ws'
+			}else{
+				protocol = 'wss'
+			}
+			ws = new WebSocket(protocol+"://ws.lilnong.top");
+			ws.onopen = function (e) {console.log('连接成功');}
+			//收到消息处理
+			ws.onmessage = function (e) {
+			    // var data = JSON.parse(e.data);
+			    // nickname = data.nickname;
+			    // appendLog(data.type, data.nickname, data.message);
+			    // console.log("ID: [%s] = %s", data.id, data.message);
+			    console.log(e.data)
+			    var data = JSON.parse(e.data);
+			    if(data.type == "connection"){
+			    	if(vm.uuid){
+			    		ws.send(JSON.stringify({type: 'update_nick', data: vm.nickname}))
+			    		ws.send(JSON.stringify({type: 'update_user', data: vm.uuid}))
+			    	}else{
+			    		vm.uuid = data.id;
+			    		vm.nickname = data.nickname;
+						localStorage.setItem('websocket-nickname', vm.nickname)
+						localStorage.setItem('websocket-uuid', vm.uuid)
+			    	}
+			    }else{
+			    	vm.list.push(data)
+			    	vm.$nextTick(v=>vm.$refs.messages.scrollTop = 999999999)
+			    	
+			    }
+			}
+			//监听连接关闭情况
+			ws.onclose = function (e) {
+			    setTimeout(v=>initWs(), 2000);
+			    console.log('连接关闭');
+			}
+		}
+		setTimeout(v=>{
+			vm.list.push({"type":"notice","message":"可以关注一下公众号，扫描底部二维码。","nickname":"管理员","time":1573434248713})
+			vm.list.push({"type":"notice","message":"公众号可以加入微信群。","nickname":"管理员","time":1573434248714})
+			vm.list.push({"type":"notice","message":"技术栈：nginx+node(ws)+vue+WebSocket+bootstrap","nickname":"管理员","time":1573434248715})
+			vm.list.push({"type":"notice-href","href": "https://www.lilnong.top","message":"lilnong.top","nickname":"管理员","time":1573434248714})
+			vm.$nextTick(v=>vm.$refs.messages.scrollTop = 999999999)
+		},1000)
+		setInterval(v=>{
+			ws.send(JSON.stringify({type: 'ping'}));
+		}, 10 * 1000);
+		vm = new Vue({
+			el: '#app',
+			data(){
+				return {
+					nickname: localStorage.getItem('websocket-nickname'),
+					uuid: localStorage.getItem('websocket-uuid'),
+					mesasgeInput: '',
+					list: [],
+				}
+			},
+			filters: {
+				filterDate(val){
+					return moment(+val).format('MM-DD HH:mm:ss')
+				}
+			},
+			methods:{
+				//发送消息
+				sendMessage: function sendMessage() {
+				    if (ws.readyState === WebSocket.OPEN) {
+				        if(this.mesasgeInput){
+				        	ws.send(JSON.stringify({type: 'message', data: this.mesasgeInput}));
+				        }
+				        this.mesasgeInput = ''
+				    }
+				},
+				//修改名称
+				changeUser: function changeUser() {
+					if(this.nickname != localStorage.getItem('websocket-nickname')){
+						ws.send(JSON.stringify({type: 'update_nick', data: this.nickname}));
+					}else if(this.uuid != localStorage.getItem('websocket-uuid')){
+						ws.send(JSON.stringify({type: 'update_user', data: this.uuid}));
+					}
+					localStorage.setItem('websocket-nickname', this.nickname)
+					localStorage.setItem('websocket-uuid', this.uuid)
+				}
+			}
+		})
+
+		initWs();
+	</script>
+	<style>
+		#app{margin-bottom: 10px}
+		.container{display: flex;    flex-wrap: wrap;}
+		.user-container{display: flex;flex-direction: column;padding: 10px;flex-grow: 1;}
+		#messages{height: 500px;flex:1;overflow:auto;flex: 100 0 300px;}
+		.chat-send-box{display: flex;flex:1;}
+		.chat-send-input{flex:1;}
+		.chat-send-submit{width: 8em;}
+	    p {color: orange;padding: 5px 10px;margin: 0;}
+	    .user_msg {color: #ccc;}
+	    #messages {background: #000;}
+	    #messages li{color: #ccc;}
+	    #messages li.message-notice {color: #f00;}
+	</style>
+	<script type="text/javascript">
+	    function appendLog(type, nickname, message) {
+	        if (typeof message == "undefined") return;
+	        var messages = document.getElementById('messages');
+	        var messageElem = document.createElement("li");
+	        var preface_label;
+	        var message_text;
+	        if (type === 'notification') {
+	            preface_label = `<span class="label label-warning"><i class="glyphicon glyphicon-plus"></i></span>`;
+	            message_text = `<p>${preface_label}&nbsp;&nbsp;${message}</p>`
+	        } else if (type == 'nick_update') {
+	            preface_label = `<span class="label label-warning"><i class="glyphicon glyphicon-bullhorn"></i></span>`;
+	            message_text = `<p>${preface_label}&nbsp;&nbsp;${message}</p>`
+	        } else {
+	            preface_label = `<span class="label label-info">${nickname}</span>`;
+	            message_text = `<p class="user_msg">${preface_label}&nbsp;&nbsp;${message}</p>`
+	        }
+	        messageElem.innerHTML = message_text;
+	        messages.appendChild(messageElem);
+	    }
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

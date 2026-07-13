@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+	<title>移动端如何怎么实现通过按钮复制div内的文本内容</title>
+</head>
+<body>
+	<textarea  id="bar">hello</textarea>
+
+	<br>
+	<button class="btn" data-clipboard-text="Just because you can doesn't mean you should — clipboard.js">
+	    Copy to clipboard
+	</button>
+	<button class="btn1" data-clipboard-action="copy" data-clipboard-target="#bar">Cut</button>
+	
+	<br>
+	<a href='#' class="btn" data-clipboard-text="Copy to clipboard1">
+	    Copy to clipboard
+	</a>
+	<br>
+	<a href='#' class="btn1" data-clipboard-action="copy" data-clipboard-target="#bar">Cut</a>
+
+	<br>
+	<br>
+	<button id="test1">复制按钮-自己写的1</button>
+	<button id="test2">复制按钮-自己写的2</button>
+	<br>
+	<a href="#" id="test3">复制按钮-自己写的3</a>
+	<br>
+	<a href="#" id="test4">复制按钮-自己写的4</a>
+	<script type="text/javascript">
+		var clipboard = new ClipboardJS('.btn');
+
+		var clipboard = new ClipboardJS('.btn1');
+		clipboard.on('success', function(e) {
+		    // alert(1)
+		});
+
+		clipboard.on('error', function(e) {
+		    // alert(2)
+		});
+
+
+		// // clipboard.on('success', function(e) {
+		// //     alert(1)
+		// // });
+
+		// // clipboard.on('error', function(e) {
+		// //     alert(2)
+		// // });
+		// var clipboard = new ClipboardJS('.btn1');
+
+		// clipboard.on('success', function(e) {
+		//     console.info('Action:', e.action);
+		//     console.info('Text:', e.text);
+		//     console.info('Trigger:', e.trigger);
+
+		//     e.clearSelection();
+		// });
+
+		// clipboard.on('error', function(e) {
+		//     console.error('Action:', e.action);
+		//     console.error('Trigger:', e.trigger);
+		// });
+		// new ClipboardJS('.btn1', {
+		//     text: function(trigger) {
+		//         return trigger.getAttribute('aria-label');
+		//     }
+		// });
+		function copy(val){
+			var input = document.createElement('input');
+			input.value = val;
+			document.body.appendChild(input)
+			input.select();
+			console.log(document.execCommand('copy'));
+			document.body.removeChild(input)
+		}
+		document.querySelector('#test1').addEventListener('click', function(){
+			 copy(Date.now())
+		})
+		document.querySelector('#test2').addEventListener('click', function(){
+			copy('不考虑兼容性')
+		})
+		document.querySelector('#test3').addEventListener('click', function(){
+			 copy(Date.now()+'test3')
+		})
+		document.querySelector('#test4').addEventListener('click', function(){
+			copy('不考虑兼容性'+'test4')
+		})
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

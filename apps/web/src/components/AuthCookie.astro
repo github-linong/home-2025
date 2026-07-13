@@ -1,0 +1,47 @@
+---
+import { AUTH_COOKIE_MAX_AGE_SEC, AUTH_COOKIE_NAME } from "../lib/authCookie";
+import { AUTH_COOKIE_DOMAIN } from "../config";
+---
+
+<!-- Runs synchronously before analytics scripts in BaseHead -->
+<script is:inline define:vars={{ cookieName: AUTH_COOKIE_NAME, cookieMaxAge: AUTH_COOKIE_MAX_AGE_SEC, cookieDomain: AUTH_COOKIE_DOMAIN }}>
+  (function () {
+    function readAuthCookie() {
+      var prefix = cookieName + "=";
+      var row = document.cookie.split("; ").find(function (entry) {
+        return entry.indexOf(prefix) === 0;
+      });
+      return row ? row.slice(prefix.length) : "";
+    }
+
+    function writeAuthCookie() {
+      var value = crypto.randomUUID() + "#" + Date.now();
+      var parts = [
+        cookieName + "=" + encodeURIComponent(value),
+        "max-age=" + cookieMaxAge,
+        "path=/",
+        "SameSite=Lax",
+      ];
+      var host = location.hostname;
+      if (host !== "localhost" && host !== "127.0.0.1") {
+        parts.push("domain=" + cookieDomain);
+      }
+      document.cookie = parts.join("; ");
+      return value;
+    }
+
+    function getVisitorId(raw) {
+      if (!raw) return;
+      try {
+        raw = decodeURIComponent(raw);
+      } catch (e) {
+        /* keep raw */
+      }
+      var hash = raw.indexOf("#");
+      return (hash === -1 ? raw : raw.slice(0, hash)) || undefined;
+    }
+
+    if (!readAuthCookie()) writeAuthCookie();
+    window.__lilnongVisitorId = getVisitorId(readAuthCookie());
+  })();
+</script>

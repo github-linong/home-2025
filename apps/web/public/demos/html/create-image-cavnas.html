@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+        canvas{
+            width: 100px;height:100px;border:1px solid #f00;
+        }
+    </style>
+    <!-- <canvas width="500" height="800"></canvas>
+    <canvas width="500" height="3000"></canvas>
+    <canvas width="3300" height="1000"></canvas>
+    <canvas width="3300" height="3000"></canvas>
+    <canvas width="3300" height="30001"></canvas>
+    <canvas width="33001" height="2160"></canvas>
+    <canvas width="33000" height="2260"></canvas> -->
+    <button id="paintBtn">绘制文字</button>
+    <div>
+        <input id="appendWidthBtn" type="text" placeholder="宽">
+        <input id="appendHeihgtBtn" type="text" placeholder="高">
+        <button id="appendBtn">最佳新的canvas</button>
+    </div>
+    <script>
+        [
+            [500, 800],
+            [300, 300],
+            [300, 500],
+            [500, 300],
+            [500, 3000],
+            [3300, 1000],
+            [3300, 3000],
+            [3300, 30001],
+            [3301, 2160],
+            [3300, 2260]
+        ].forEach(v=>{
+            el = document.createElement('canvas');
+            el.width = v[0]
+            el.height = v[1]
+            document.body.appendChild(el);
+            
+
+            console.log(`${v.join('*')} => ${(function(){
+                var min = Math.min(...v);
+                if(min>2160){
+                    var scale = 2160/min;
+                    // console.log('scale', )
+                    return v.map(v=>v*scale>>0).join('*')
+                }else{
+                    return v.join('*')
+                }
+            })()}`)
+        })
+        function paintText(){
+            document.body.querySelectorAll('canvas').forEach(v=>{
+                // if(v.dataset.paint){
+                //     // return console.log('')
+                //     return
+                // }
+                // v.dataset.paint = true;
+                ctx = v.getContext('2d');
+                var width = v.width;
+                var height = v.height;
+                var str = `${width}*${height}`
+                // console.log(str);
+                ctx.font = "30px sans-serif"
+                ctx.fillStyle = `#${(0xffffff*Math.random() >> 0).toString(16).padStart(6,0)}`
+                var textWidth = ctx.measureText(str).width
+                // for(var i = 0; i<100; i++){
+                //     for(var j = 0; j<100; j++){
+                //         ctx.fillText(str, i * (textWidth + 30) , j * 35)
+                //     }
+                // }
+                for(var i = 0; ; i++){
+                    if(i * textWidth > width) break;
+                    for(var j = 0; ; j++){
+                        if(j * 30 > height) break;
+                        ctx.fillText(str, i * (textWidth + 30) , j * 35)
+                    }
+                }
+            })
+        }
+        window.onload = ()=>{
+         setTimeout(v=>paintText(), 2000);
+        }
+        paintBtn.onclick = paintText
+        appendBtn.onclick = function(e){
+            el = document.createElement('canvas');
+            el.width = appendWidthBtn.value
+            el.height = appendHeihgtBtn.value
+            document.body.appendChild(el);
+
+            paintText()
+        }
+    </script>
+</body>
+</html>

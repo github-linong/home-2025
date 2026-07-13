@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>vue 中拖动插件 vueDraggable - www.lilnong.top</title>
+	<meta keywords="vue, sortablejs, vueDraggable, vue.draggable">
+	<meta description="vue 使用拖动插件，实现拖动功能，并处理唯一性">
+	<meta name='viewport'
+		content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no' />
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<!-- <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css"> -->
+	<link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/theme-chalk/index.css" rel="stylesheet">
+	<!-- <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script> -->
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/index.js"></script>
+
+	<!-- <script src="//cdnjs.cloudflare.com/ajax/libs/vue/2.5.2/vue.min.js"></script> -->
+	<!-- CDNJS :: Sortable (https://cdnjs.com/) -->
+	<script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
+	<!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
+	<!-- <script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.20.0/vuedraggable.umd.min.js"></script> -->
+	<!-- <script src="https://cdn.bootcdn.net/ajax/libs/Vue.Draggable/15.0.0/vuedraggable.min.js"></script> -->
+	<script src="https://cdn.bootcdn.net/ajax/libs/Vue.Draggable/2.22.0/vuedraggable.umd.min.js"></script>
+</head>
+
+<body>
+	<style>
+		.dargwrap {
+			border: 1px solid #f00;
+			padding: 10px;
+			margin: 10px;
+			display: flex;
+		}
+
+		.dargwrap .ul {
+			flex: 1 1 auto;
+			margin: 10px;
+			padding: 10px;
+			border: 1px solid #ff0;
+			list-style: none
+		}
+	</style>
+	<div id="app">
+		<p>
+			list: {{list}}
+		</p>
+		<p>
+			list1: {{list1}}
+		</p>
+		<p>
+			list2: {{list2}}
+		</p>
+		<div class="dargwrap">
+			<draggable class="dragArea list-group ul" :list="list"
+				ref="sourceList"
+				:move="moveHandle"
+				:group="{ name: 'people', pull: 'clone', put: false }">
+				<div class="list-group-item" v-for="element in list" :key="element">
+					<input type="checkbox" v-model="element.checked"><span @mousedown="element.checked = true">{{ element.txt }}</span>
+				</div>
+			</draggable>
+
+			<!-- <draggable :move="moveHandle" class="dragArea list-group ul" :list="list1" group="people" @change="log"> -->
+			<draggable  :move="moveHandle" class="dragArea list-group ul" :list="list1" group="people" @change="log">
+				<div class="list-group-item" v-for="element in list1" :key="element">
+					{{ element.txt }}
+				</div>
+			</draggable>
+
+			<!-- <draggable :move="moveHandle" class="dragArea list-group ul" :list="list2" group="people" @change="log"> -->
+			<draggable :move="moveHandle" class="dragArea list-group ul" :list="list2" group="people" @change="log">
+				<div class="list-group-item" v-for="element in list2" :key="element">
+					{{ element.txt }}
+				</div>
+			</draggable>
+			<!-- <ul>
+				<li v-for="item in list">{{item}}</li>
+			</ul> -->
+			<!-- <ul>
+				<li v-for="item in list1">{{item}}</li>
+			</ul> -->
+			<!-- <ul>
+				<li v-for="item in list2">{{item}}</li>
+			</ul> -->
+		</div>
+	</div>
+	<script>
+		lastEvent = null;
+		new Vue({
+			el: '#app',
+			data() {
+				return {
+					list: [
+						{txt: '人教大法师', checked: false},
+						{txt: '人教小法师', checked: false},
+						{txt: '长庚道友', checked: false},
+						{txt: '长寿道友', checked: false},
+						{txt: '海神', checked: false},
+						{txt: '水神', checked: false},
+						{txt: '苟寿', checked: false},
+						{txt: '大兴西北', checked: false},
+					],
+					list1: [],
+					list2: [],
+				}
+			},
+			computed:{},
+			methods: {
+				log: function (evt) {
+					window.console.log(evt, lastEvent);
+					if( app.__vue__.$refs.sourceList.$el  == lastEvent.from){
+						// 从原始数据中拖出
+						lastEvent.draggedContext.element.checked=false
+						this.list.forEach(v=>{
+							if(v.checked){
+								v.checked = false;
+								if(!lastEvent.relatedContext.list.includes(v)){
+									lastEvent.relatedContext.list.push(v)	
+								}
+							}
+						})
+					}
+				},
+				moveHandle(ctx, event){
+					// console.log(arguments, this)
+					lastEvent = ctx;
+					var key = ctx.draggedContext.element
+					if(ctx.relatedContext.list == this.list) return false
+					if(ctx.relatedContext.list.includes(key)){
+						if(ctx.from == ctx.to) return true
+						return false
+					}
+					return true
+				}
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg"
+		style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function () {
+			var hm = document.createElement("script");
+			hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+			var s = document.getElementsByTagName("script")[0];
+			s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+
+</html>

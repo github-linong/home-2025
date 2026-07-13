@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<style type="text/css">
+		*{padding:0;margin:0;}
+		input{
+			width:0;height:0;overflow: hidden;
+		}
+		img{
+			display: block;
+			max-width: 100vw;min-height: 100px;line-height: 100px;
+			text-align: center;background-color: #ccc
+		}
+	</style>
+</head>
+<body>
+	<label for="file">
+		<img alt="请选择图片上传" id="prview">
+	</label>
+	<p id="filesDetails"></p>
+	<div id="console">
+		
+	</div>
+	<input id="file" type="file" name="" accept="image/*" capture="camera">
+	<script type="text/javascript">
+		var _prviewDOM = document.querySelector('#prview');
+		var _fileDOM =document.querySelector('#file')
+		// 压缩图片需要的一些元素和对象
+		var reader = new FileReader(), img = new Image();
+		// 选择的文件对象
+		var file = null;
+		// 缩放图片需要的canvas
+		var canvas = document.createElement('canvas');
+		var context = canvas.getContext('2d');
+		// base64地址图片加载完毕后
+		img.onload = function () {
+		    // 图片原始尺寸
+		    var originWidth = this.width;
+		    var originHeight = this.height;
+		    // 最大尺寸限制
+		    var maxWidth = 1000, maxHeight = 1000;
+		    // 目标尺寸
+		    var targetWidth = originWidth, targetHeight = originHeight;
+		    // 图片尺寸超过400x400的限制
+		    if (originWidth > maxWidth || originHeight > maxHeight) {
+		        if (originWidth / originHeight > maxWidth / maxHeight) {
+		            // 更宽，按照宽度限定尺寸
+		            targetWidth = maxWidth;
+		            targetHeight = Math.round(maxWidth * (originHeight / originWidth));
+		        } else {
+		            targetHeight = maxHeight;
+		            targetWidth = Math.round(maxHeight * (originWidth / originHeight));
+		        }
+		    }
+		        
+		    // canvas对图片进行缩放
+		    canvas.width = targetWidth;
+		    canvas.height = targetHeight;
+		    // 清除画布
+		    context.clearRect(0, 0, targetWidth, targetHeight);
+		    // 图片压缩
+		    context.drawImage(img, 0, 0, targetWidth, targetHeight);
+		    // canvas转为blob并上传
+		    canvas.toBlob(function (blob) {
+		    	// _prviewDOM.src=blob;
+		        var formData = new FormData;
+		        formData.append('file', blob)
+		        formData.append('opacid', 'LN')
+		         $.ajax({
+		         	url:'/upload',
+		         	type:'POST',
+		         	data: formData,
+		         	contentType: false,
+		         	processData: false,
+		         	cache: false,
+    	        	success(data){
+    	        		if(data.data.error_code){
+    	        			document.querySelector('#console').innerHTML = JSON.stringify(data.data);
+    	        		}else{
+    	        			document.querySelector('#console').innerHTML = Object.getOwnPropertyNames(data.data.words_result).map(v=>v+':'+data.data.words_result[v].words).join('<br>')
+    	        		}
+    	        	}
+    	        })
+        	   
+		    }, file.type || 'image/png');
+		    _prviewDOM.src = canvas.toDataURL(file.type || 'image/png')
+		};
+
+		// 文件base64化，以便获知图片原始尺寸
+		reader.onload = function(e) {
+		    img.src = e.target.result;
+		};
+
+		_fileDOM.onchange = function(){
+			if(this.value!=''){
+				// 选择的文件是图片
+				file = this.files[0];
+				document.querySelector('#filesDetails').innerHTML = '文件大小'+file.size;
+				if (file.type.indexOf("image") == 0) {
+				    reader.readAsDataURL(file);    
+				}
+				this.value = '';
+				
+			}
+		}
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

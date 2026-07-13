@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+</head>
+<body>
+	<div id="app">
+		{{dataValue}}
+	</div>
+	<script type="text/javascript">
+		new Vue({
+			el: '#app',
+			data(){
+				return{
+					dataValue: 'txt'
+				}
+			},
+			methods:{
+				methodValue(){
+					console.log('methodValue')
+				}
+			},
+			beforeCreate(){console.log('beforeCreate',this.$el,this.dataValue,this.methodValue)},
+			created(){console.log('created',this.$el,this.dataValue,this.methodValue)},
+			beforeMount(){console.log('beforeMount',this.$el,this.dataValue,this.methodValue)},
+			mounted(){console.log('mounted',this.$el,this.dataValue,this.methodValue)},
+			beforeUpdate(){console.log('beforeUpdate',this.$el,this.dataValue,this.methodValue)},
+			updated(){console.log('updated',this.$el,this.dataValue,this.methodValue)},
+			activated(){console.log('activated',this.$el,this.dataValue,this.methodValue)},
+			deactivated(){console.log('deactivated',this.$el,this.dataValue,this.methodValue)},
+			beforeDestroy(){console.log('beforeDestroy',this.$el,this.dataValue,this.methodValue)},
+			destroyed(){console.log('destroyed',this.$el,this.dataValue,this.methodValue)},
+			errorCaptured(){console.log('errorCaptured',this.$el,this.dataValue,this.methodValue)},
+		})
+	</script>
+	<hr>
+	<div id="app1">
+		{{dataValue}}
+	</div>
+	<script type="text/javascript">
+		new Vue({
+			el: '#app1',
+			data(){
+				return{
+					dataValue: 'txt'
+				}
+			},
+			methods:{
+				methodValue(){
+					console.log('methodValue')
+				}
+			},
+			beforeCreate:()=>console.log('=>.beforeCreate',this.$el,this.dataValue,this.methodValue),
+			created:()=>console.log('=>.created',this.$el,this.dataValue,this.methodValue),
+			beforeMount:()=>console.log('=>.beforeMount',this.$el,this.dataValue,this.methodValue),
+			mounted:()=>console.log('=>.mounted',this.$el,this.dataValue,this.methodValue),
+			beforeUpdate:()=>console.log('=>.beforeUpdate',this.$el,this.dataValue,this.methodValue),
+			updated:()=>console.log('=>.updated',this.$el,this.dataValue,this.methodValue),
+			activated:()=>console.log('=>.activated',this.$el,this.dataValue,this.methodValue),
+			deactivated:()=>console.log('=>.deactivated',this.$el,this.dataValue,this.methodValue),
+			beforeDestroy:()=>console.log('=>.beforeDestroy',this.$el,this.dataValue,this.methodValue),
+			destroyed:()=>console.log('=>.destroyed',this.$el,this.dataValue,this.methodValue),
+			errorCaptured:()=>console.log('=>.errorCaptured',this.$el,this.dataValue,this.methodValue),
+		})
+	</script>
+	<hr>
+	<h3>render+html+template</h3>
+	<div id="app2">
+		{{dataValue}} .html
+	</div>
+	<script type="text/javascript">
+		new Vue({
+			el: '#app2',
+			template: `<div">
+				{{dataValue}} .template
+			</div>`,
+			render (h) {
+			    return h('div', 'render')
+			},
+			data(){
+				return{
+					dataValue: 'txt'
+				}
+			},
+		})
+	</script>
+	<hr>
+	<h3>html+template</h3>
+	<div id="app3">
+		{{dataValue}} .html
+	</div>
+	<script type="text/javascript">
+		new Vue({
+			el: '#app3',
+			template: `<div>
+				{{dataValue}} .template
+			</div>`,
+			data(){
+				return{
+					dataValue: 'txt'
+				}
+			},
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

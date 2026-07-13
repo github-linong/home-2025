@@ -1,0 +1,309 @@
+<!--
+ * @author: linong
+ * @Date: 2021-02-03 16:06:38
+ * @lastEditors: 
+ * @lastEditTime: 
+ * @Description: 
+-->
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>关键词强化记忆 - www.lilnong.top</title>
+	<!-- <meta keywords="preview video, metadata,preview audio,preview image"> -->
+	<!-- <meta description="上传前预览文件，可以预览音视频，可以预览图片，可以预览文本"> -->
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>	
+</head>
+<body>
+	<div id="app">
+        <el-form :inline="true" class="demo-form-inline">
+            <el-form-item label="语速">
+              <el-input type="number" v-model="spd" placeholder="语速"></el-input>
+            </el-form-item>
+            <el-form-item label="音调">
+              <el-input type="number" v-model="pit" placeholder="音调"></el-input>
+            </el-form-item>
+            <el-form-item label="语音库">
+              <el-input type="number" v-model="per" placeholder="语音库"></el-input>
+            </el-form-item>
+            <el-form-item label="语言">
+              <el-select v-model="lan" placeholder="语言">
+                <el-option label="zh" value="zh"></el-option>
+                <el-option label="en" value="en"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <!-- <el-button type="primary" @click="onSubmit">查询</el-button> -->
+                <button type="button" @click="play($event, 'all')">playall</button>
+                <button type="button" @click="save">save</button>
+                <button type="button" @click="oper($event, '+')">+</button>
+            </el-form-item>
+          </el-form>
+        <input type="text" :value="text" readonly>
+        <div>
+            <!-- <p>{{audioSrc}}</p> -->
+            <audio :src="audioSrc" controls autoplay loop></audio>
+        </div>
+        
+        <ul>
+            <li v-for="(item, idx) in list" :key="item.uuid" >
+                <button @click="oper($event, '-', idx, item)">-</button>
+                <button @click="play($event, 'one', idx, item)">play</button>
+                <br>
+                <textarea type="text" v-model="item.key" cols="30" rows="3"></textarea>
+                <textarea v-model="item.value" name="" id="" cols="30" rows="3"></textarea>
+            </li>
+        </ul>
+    </div>
+    <div id="app2">
+        <div v-if="result">
+
+            <img :src="result.fenxiang_img" alt="" style="max-height: 500px;max-width: 500px;">
+            <p>{{result.content}}</p>
+            <p>{{result.note}}</p>
+            <audio :src="result.tts" controls></audio>
+        </div>
+    </div>
+    <div id="app3">
+        <input type="text" v-model="input" @keydown.enter="getdsapi">
+        <button @click="getdsapi">search</button>
+    </div>
+    <script>
+        new Vue({
+            el: '#app3',
+            data(){
+                return {
+                    input: 'task',
+                    result: null
+                }
+            },
+            created(){
+                this.getdsapi(this.input)
+            },
+            methods: {
+                getdsapi(str){
+                    axios('/proxy-iciba-co/api/dictionary.php?w='+(str || this.input)+'&key=54A9DE969E911BC5294B70DA8ED5c9C4')
+                        .then(v=>{
+                            this.result = v.data
+                            // console.log(v)
+                            // content
+                            // tts
+                            // note
+                            // fenxiang_img
+                        })
+                }
+            }
+        })
+        // 查词接口
+        // 返回格式：XML/JSON 默认XML
+
+        // 传入参数：
+        // w : 单词/汉字
+        // type : 返回格式 为空是xml 传入 xml 或者 json
+        // key : 您申请到的key
+
+        // 例如：http://dict-co.iciba.com/api/dictionary.php?w=go&key=********
+
+        // JSON 字段解释(英文)
+        // {
+        // 'word_name':'' #单词
+        // 'exchange': '' #单词的各种时态
+        // 'symbols':'' #单词各种信息 下面字段都是这个字段下面的
+        // 'ph_en': '' #英式音标
+        // 'ph_am': '' #美式音标
+        // 'ph_en_mp3':'' #英式发音
+        // 'ph_am_mp3': '' #美式发音
+        // 'ph_tts_mp3': '' #TTS发音
+        // 'parts':'' #词的各种意思
+        // }
+        // JSON 字段解释(中文)
+        // {
+        // 'word_name':'' #所查的词
+        // 'symbols':'' #词各种信息 下面字段都是这个字段下面的
+        // 'word_symbol': '' #拼音
+        // 'symbol_mp3': '' #发音
+        // 'parts':'' #汉字的各种翻译 数组
+        // 'net_means': '' #网络释义
+        // }
+    </script>
+    <script>
+        new Vue({
+            el: '#app2',
+            data(){
+                return {
+                    result: null
+                }
+            },
+            created(){
+                this.getdsapi()
+            },
+            methods: {
+                getdsapi(str){
+                    axios('/proxy-iciba/dsapi/?'+str)
+                        .then(v=>{
+                            this.result = v.data
+                            // console.log(v)
+                            // content
+                            // tts
+                            // note
+                            // fenxiang_img
+                        })
+                }
+            }
+        })
+		// // location /proxy-iciba/ {
+		// // 	proxy_pass http://open.iciba.com/;
+		// // }
+        
+        // axios('/proxy-iciba/dsapi/')
+        //     .then(v=>{
+        //         console.log(v)
+        //         // {
+        //         //     "sid": "4077",
+        //         //     "tts": "https://staticedu-wps.cache.iciba.com/audio/818c3bed366a5499ee7b3d769a63fa8e.mp3",
+        //         //     "content": "You can overcome anything, if and only if you love something enough.",
+        //         //     "note": "只要并只有你足够热爱一件事时，你可以克服任何困难。",
+        //         //     "love": "69",
+        //         //     "translation": "新版每日一句",
+        //         //     "picture": "https://staticedu-wps.cache.iciba.com/image/e8c6e99671f9797106bc2a60f66f5633.jpg",
+        //         //     "picture2": "https://staticedu-wps.cache.iciba.com/image/0dfd35fcad9190747d8bd3cd2c91c758.jpg",
+        //         //     "caption": "词霸每日一句",
+        //         //     "dateline": "2021-03-25",
+        //         //     "s_pv": "0",
+        //         //     "sp_pv": "0",
+        //         //     "fenxiang_img": "https://staticedu-wps.cache.iciba.com/image/5b40a320836f2163ea68301f644c1d79.png",
+        //         //     "picture3": "https://staticedu-wps.cache.iciba.com/image/05041b6b2fdc4b862d1f15bdd8b947c2.jpg",
+        //         //     "picture4": "https://staticedu-wps.cache.iciba.com/image/b1e20fd1986c4caf666d78f8d0cb865a.jpg",
+        //         //     "tags": []
+        //         // }
+        //         // {
+        //         // 'sid':'' #每日一句ID
+        //         // 'tts': '' #音频地址
+        //         // 'content':'' #英文内容
+        //         // 'note': '' #中文内容
+        //         // 'love': '' #每日一句喜欢个数
+        //         // 'translation':'' #词霸小编
+        //         // 'picture': '' #图片地址
+        //         // 'picture2': '' #大图片地址
+        //         // 'caption':'' #标题
+        //         // 'dateline':'' #时间
+        //         // 's_pv':'' #浏览数
+        //         // 'sp_pv':'' #语音评测浏览数
+        //         // 'tags':'' #相关标签
+        //         // 'fenxiang_img':'' #合成图片，建议分享微博用的
+        //         // }
+        //     })
+        // //         传入参数：
+        // // file //数据格式，默认（json），可选xml
+        // // date //标准化日期格式 如：2013-05-06， 如：http://open.iciba.com/dsapi/?date=2013-05-03
+        // // 如果 date为空 则默认取当日的，当日为空 取前一日的
+        // // type(可选) // last 和 next 你懂的，以date日期为准的，last返回前一天的，next返回后一天的
+
+        // // JSON 字段解释
+        // // {
+        // // 'sid':'' #每日一句ID
+        // // 'tts': '' #音频地址
+        // // 'content':'' #英文内容
+        // // 'note': '' #中文内容
+        // // 'love': '' #每日一句喜欢个数
+        // // 'translation':'' #词霸小编
+        // // 'picture': '' #图片地址
+        // // 'picture2': '' #大图片地址
+        // // 'caption':'' #标题
+        // // 'dateline':'' #时间
+        // // 's_pv':'' #浏览数
+        // // 'sp_pv':'' #语音评测浏览数
+        // // 'tags':'' #相关标签
+        // // 'fenxiang_img':'' #合成图片，建议分享微博用的
+        // // }
+    </script>
+    <script>
+        window.list = JSON.parse(localStorage.getItem('en-key-storage'))
+    </script>
+    <script>
+        new Vue({
+            el: '#app',
+            data(){
+                return {
+                    spd: 3,
+                    pit: 10,
+                    lan: 'zh',
+                    per:0,
+                    text: 'JavaScript',
+                    list: window.list || [{
+                        uuid: 'www.lilnong.top',
+                        key: 'www.lilnong.top',
+                        value: ''
+                    }]
+                }
+            },
+            computed:{
+                audioSrc(){
+                    // https://segmentfault.com/a/1190000038251777
+                    // var url = "http://tts.baidu.com/text2audio?lan=zh&ie=UTF-8&spd=5&text=" + encodeURI(str);
+                    //     // 百度语音合成：或者使用新版地址https://tsn.baidu.com/text2audio
+                    return `//tts.baidu.com/text2audio?lan=${this.lan}&ie=UTF-8&pit=${this.pit}&per=${this.per}&spd=${this.spd}&text=${encodeURI(this.text)}`
+                    // return `https://fanyi.baidu.com/gettts?lan=en&text=${encodeURIComponent(this.text)}&spd=${this.spd}&source=web`
+                }
+            },
+            methods:{
+                oper(e, oper, idx, item){
+                    if(oper == '-'){
+                        this.list.splice(idx,1)
+                    }else if(oper == '+'){
+                        this.list.push({
+                            uuid: Date.now().toString(36),
+                            key: '',
+                            value: ''
+                        })
+                    }
+                    this.save();
+                },
+                play(e, oper, idx, item){
+                    if(oper == 'one'){
+                        this.text = item.key
+                    }else{
+                        this.text = this.list.map(v=>v.key).join(';')
+                    }
+                    // https://fanyi.baidu.com/gettts?lan=en&text=Secure%20Socket%20Layer.%20SSL.%20HTTPSHTTP%3B&spd=3&source=web
+                },
+                save(){
+                    localStorage.setItem('en-key-storage', JSON.stringify(this.list)) 
+                }
+            }
+        })
+    </script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+	<script type="text/javascript" src="//www.lilnong.top/static/js/public_hm.js"></script>
+</body>
+</html>

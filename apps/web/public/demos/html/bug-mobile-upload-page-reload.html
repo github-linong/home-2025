@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- <meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.0-beta.7/vue.global.js"></script> -->
+
+    <link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/Mock.js/1.0.1-beta3/mock-min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+    <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.js"></script>
+
+
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- <script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script> -->
+    <!-- <script type="text/javascript">new VConsole()</script> -->
+
+    <div class="body">
+        <div class="header">测试无限上传文件，是否会造成内存超过阈值导致页面刷新</div>
+        <div class="container">
+            <div class="aside"></div>
+            <div class="main">
+                <!-- <div class="breadcrumb"></div> -->
+                <!-- <div class="filter"></div> -->
+                <div class="viewer">
+
+    <div id="app">
+		<input type="file" name="input" id="input" @change="inputHandler" multiple>
+		<div class="wrap">
+			<label for="input" class="upload-wrap" 
+				:class="{'upload-wrap--hover': dragover}"
+				@drop.prevent="onDrop"
+				@dragover.prevent="dragover = true"
+				@dragleave.prevent="dragover = false">
+				<i class="el-icon-upload upload-icon"></i>
+				将文件拖到此处，或<span class="blue-text">点击上传</span>
+			</label>
+		</div>
+        <table>
+            <tr>
+                <th>文件名称</th>
+                <th>文件大小</th>
+                <th>文件类型</th>
+                <th>修改时间</th>
+                <th>内容</th>
+            </tr>
+            <tr v-for="item in tableData">
+                <td>{{item.file.name}}</td>
+                <td>{{item.file.size}}</td>
+                <td>{{item.file.type}}</td>
+                <td>{{item.file.lastModified}}</td>
+                <td>
+                    <div>{{item.type}}</div>
+                    <div style="max-height: 10em;overflow: scroll;">{{item.review}}</div>
+                    
+                    <div class="file-preview">
+                        <div class="file-preview-audio" v-if="item.type == '音频'">
+                            <!-- <h3>解析信息</h3> -->
+                            <!-- <div v-if="item.nextTickInfo">
+                                <p>音频时长：{{item.nextTickInfo.duration}}</p>
+                            </div> -->
+                            <audio :src="item.review.url" controls ref="audio" @loadedmetadata="onloadedmetadata($event, item)"></audio>
+                        </div>
+                        <div class="file-preview-video" v-else-if="item.type == 'PDF'">
+                            <!-- <h3>解析信息</h3> -->
+                            <iframe :src="'https://www.lilnong.top/static/project/pdfjs-es5-2.5.207/web/viewer-1.html?file='+item.review.url" controls ref="pdf"></iframe>
+                            <!-- https://www.lilnong.top/static/project/pdfjs-es5-2.5.207/web/viewer-1.html?file=https://www.lilnong.top/static/pdf/B-4-RxJS%E5%9C%A8React%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8-%E9%BE%99%E9%80%B8%E6%A5%A0_.pdf -->
+                        </div>
+                        <div class="file-preview-video" v-else-if="item.type == '视频'">
+                            <!-- <h3>解析信息</h3> -->
+                            <!-- <div v-if="item.nextTickInfo">
+                                <p>视频时长：{{item.nextTickInfo.duration}}</p>
+                                <p>视频宽高：{{item.nextTickInfo.videoWidth}}*{{item.nextTickInfo.videoHeight}}</p>
+                            </div> -->
+                            <video :src="item.review.url" controls ref="video" @loadedmetadata="onloadedmetadata($event, item)"></video>
+                        </div>
+                        <div class="file-preview-image" v-else-if="item.type == '图片'">
+                            <!-- <h3>解析信息</h3> -->
+                            <!-- <div v-if="item.nextTickInfo">
+                                <p>图片宽高：{{item.nextTickInfo.naturalWidth}}*{{item.nextTickInfo.naturalHeight}}</p>
+                            </div> -->
+                            <img :src="item.review.url" controls ref="img" @load="onloadedmetadata($event, item)"></img>
+                        </div>
+                        <div class="file-preview-json" v-else-if="item.type == 'JSON'">
+                            <div v-if="jsonInfo">
+                                <p>是否可以被JSON.parse：{{item.review.isJSON}}</p>
+                            </div>
+                            <pre>{{item.review.json}}</pre>
+                        </div>
+                        <div class="file-preview-text" v-else>
+                            <!-- <h3>解析信息</h3> -->
+                            {{item.review}}
+                        </div>
+                    </div>
+
+                    <div v-if="item.review.nextTickInfo">
+                        <h3>多媒体信息</h3>
+                        <div v-if="item.review.nextTickInfo">
+                            <p v-if="item.review.nextTickInfo.duration">时长：{{item.review.nextTickInfo.duration}}</p>
+                            <p v-if="item.review.nextTickInfo.videoWidth || item.review.nextTickInfo.videoHeight">宽高：{{item.review.nextTickInfo.videoWidth}}*{{item.review.nextTickInfo.videoHeight}}</p>
+                            <p v-if="item.review.nextTickInfo.naturalWidth || item.review.nextTickInfo.naturalHeight">宽高：{{item.review.nextTickInfo.naturalWidth}}*{{item.review.nextTickInfo.naturalHeight}}</p>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+	</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+	<style>
+		*{padding:0;margin:0;}
+		#app{}
+			#input{width:0;height:0;display: block;}
+			.wrap{display: flex;padding: 10px;}
+				.upload-wrap{flex: 1 0 50%;font-size: 14px;cursor:pointer;height: 300px;border: 1px dashed #aaa;display: flex;align-content: center;flex-wrap: wrap;justify-content:center;}
+				.upload-wrap:hover,.upload-wrap--hover{border-color: #409EFF}
+					.upload-icon{flex: 1 0 100%;text-align: center;font-size: 50px;margin-bottom: 20px;color: #aaa}
+					.blue-text{color: #409EFF}
+				.preview-wrap{flex: 1 1 50%;padding: 10px;}
+
+				.file-preview-audio{}
+					.file-preview-audio audio{}
+				.file-preview-video{}
+					.file-preview-video video{max-width:100%;max-height: 200px;}
+				.file-preview-image{}
+					.file-preview-image img{max-width:100%;max-height: 200px;}
+				.file-preview-json{}
+					.file-preview-json pre{overflow: scroll;max-width: 50vw;}
+				.file-preview-text{}
+					.file-preview-text video{}
+		.selected{color: #0cc}
+
+        table,tr,th,td{
+            border: 1px solid #eee;
+            min-width: 200px;
+        }
+        .file-preview{
+            max-height: 200px;
+            overflow: auto;
+        }
+        /* td{
+            min-width: 200px;
+        } */
+	</style>
+    <script>
+		document.body.addEventListener("drop", (e)=>{
+			console.log(e.dataTransfer.files[0])
+		});
+		document.body.addEventListener("paste", (e)=>{
+			// debugger;
+			console.log(e.clipboardData.files[0])
+			if(e.clipboardData.files[0]) {
+				vm.analysisFile(e.clipboardData.files[0]);
+				this.file = e.clipboardData.files[0];
+			}
+		});
+		vm = new Vue({
+			el: '#app',
+			data(){
+				return {
+					type: '',
+					file: null,
+					dragover: false,
+					videoInfo:{
+						url: '',
+						nextTickInfo: null
+					},
+					audioInfo:{
+						url: '',
+						nextTickInfo: null
+					},
+					imgInfo:{
+						url: '',
+						nextTickInfo: null
+					},
+					pdfInfo:{
+						url: '',
+						nextTickInfo: null
+					},
+					excelInfo:{	
+						html: '',
+						table: [],
+						htmlIdx: 0,
+						nextTickInfo: null
+					},
+					jsonInfo:null,
+					textInfo:null,
+                    tableData: []
+				}
+			},
+			methods:{
+				inputHandler(e){
+					var el = e.target;
+					if(el && el.files.length){
+						var files = el.files;
+						this.analysisFile(Array.from(files))
+					}
+				},
+				onDrop(e){
+					this.dragover = false;
+					this.analysisFile(Array.from(e.dataTransfer.files))
+				},
+				onloadedmetadata(e, obj){
+					obj.review.nextTickInfo = {
+						duration: e.target.duration,
+						videoWidth: e.target.videoWidth,
+						videoHeight: e.target.videoHeight,
+
+						naturalHeight: e.target.naturalHeight,
+						naturalWidth: e.target.naturalWidth,
+					}
+				},
+				analysisFile(files){
+                    files.forEach(file => {
+                        uploadFile(file)
+                        const fileInfo = {
+                            file: file,
+                            type: '文本',
+                            review: ''
+                        }
+                        this.tableData.push(fileInfo);
+                        if(file){
+                            if(file.type == "text/plain"){
+                                var fileReader = new FileReader();
+                                fileReader.readAsText(file)
+                                fileReader.onload = () => {
+                                    fileInfo.review = fileReader.result
+                                }
+                            }else if(file.type == "application/json"){
+                                // json 文件
+                                fileInfo.type = 'JSON'
+                                var fileReader = new FileReader();
+                                fileReader.readAsText(file)
+                                fileReader.onload = () => {
+                                    fileInfo.review = {
+                                        json: fileReader.result,
+                                        isJSON: false,
+                                    }
+                                    try{
+                                        fileInfo.review.json = JSON.stringify(JSON.parse(fileInfo.review.json), null, 4);
+                                        fileInfo.review.isJSON = true;
+                                    }catch(e){}
+                                }
+                            }else if(file.type.indexOf('audio') == 0){
+                                // 音频文件
+                                fileInfo.type = '音频'
+                                fileInfo.review = {
+                                    url: URL.createObjectURL(file),
+                                    nextTickInfo: null,
+                                }
+                            }else if(file.type.indexOf('video') == 0){
+                                // 视频文件
+                                fileInfo.type = '视频'
+                                fileInfo.review = {
+                                    url: URL.createObjectURL(file),
+                                    nextTickInfo: null,
+                                }
+                            }else if(file.type.indexOf('image') == 0){
+                                // 图片文件
+                                fileInfo.type = '图片'
+                                fileInfo.review = {
+                                    url: URL.createObjectURL(file),
+                                    nextTickInfo: null,
+                                }
+                                compressImage(file, console.log);
+                            }else if(file.type == 'application/pdf'){
+                                // PDF
+                                fileInfo.type = 'PDF'
+                                fileInfo.review = {
+                                    url: URL.createObjectURL(file),
+                                    nextTickInfo: null,
+                                }
+                            }else{
+                                var fileReader = new FileReader();
+                                fileReader.readAsText(file)
+                                fileReader.onload = () => {
+                                    fileInfo.review = fileReader.result
+                                }
+                            }
+                        }
+                    })
+				}
+				
+			}
+		})
+	</script>
+    <img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+    <script>
+		function uploadFile(file, onprogress, onreadystatechange){
+			var formData = new FormData;
+			formData.append('file', file)
+			formData.append('opacid', 'LN')
+			formData.append('random', Math.random())
+			var xhr = new XMLHttpRequest();
+			xhr.upload.onprogress = onprogress;
+			xhr.open('post', '//www.lilnong.top/upload_any');
+			xhr.onreadystatechange = onreadystatechange;
+			xhr.send(formData);
+		}
+	</script>
+    <style>
+        .compressImage{
+
+        }
+        .compressImage img,
+        .compressImage canvas{
+            max-width: 200px;
+            max-height: 200px;
+            vertical-align: top;
+        }
+    </style>
+    <script>
+        // 压缩图片
+        function compressImage(file, cb){
+            const el = document.createElement('div');
+            el.className="compressImage"
+            document.body.appendChild(el)
+
+            let img = new Image();
+            img.src = URL.createObjectURL(file);
+            el.appendChild((img))
+
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                el.appendChild(canvas)
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                ctx.drawImage(img,0,0)
+                canvas.toBlob((blob)=>{
+                    console.log(blob)
+                    const result = {
+                        url: URL.createObjectURL(blob),
+                    };
+                    let img = new Image();
+                    img.src = URL.createObjectURL(blob);
+                    el.appendChild((img))
+
+                    
+                    ;cb && cb(result);
+                    el.append(`源文件大小：${file.size}，压缩后大小：${blob.size},压缩比例：${blob.size/file.size}`);
+                }, 'image/jpeg')
+            }
+        }
+    </script>
+</body>
+
+</html>

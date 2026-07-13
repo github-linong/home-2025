@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>瀑布流布局 - www.lilnong.top</title>
+	<meta keywords="瀑布流布局，css 实现瀑布流布局，JS 实现瀑布流布局，grid 实现瀑布流布局，flex 实现瀑布流布局，columns 实现瀑布流布局">
+	<meta description="前端实现瀑布流布局，CSS 和 JS 多种方案实现">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.6.12/vue.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>	
+</head>
+<body>
+    <style>
+        *{padding:0;margin:0;}
+		#app{display: flex;flex-wrap: wrap;}
+		.wrap{width: 500px;margin: 0 auto;}
+
+
+        .wrap-waterfall--columns img{vertical-align: top;width: 100px}
+        .wrap-waterfall--columns .list{position: relative;columns: 4; column-gap: 6px;}
+        .wrap-waterfall--columns .item{position: relative;margin: 5px}
+        .wrap-waterfall--columns .item-index{position: absolute;width: 1.5em;height: 1.5em;text-align: center;background-color: rgba(255,0,0,.5);top:0;left:0;}
+
+
+        /* *{padding:0;margin:0;} */
+        .wrap-waterfall--flex img{vertical-align: top;width: 100px;}
+        .wrap-waterfall--flex .list{display: flex;flex-flow: column wrap;height: 2300px;}
+        .wrap-waterfall--flex .list{position: relative;}
+        .wrap-waterfall--flex .item{position: relative;margin: 5px}
+        .wrap-waterfall--flex .item-index{position: absolute;width: 1.5em;height: 1.5em;text-align: center;background-color: rgba(255,0,0,.5);top:0;left:0;}
+
+
+        .wrap-waterfall--grid img{vertical-align: top;width: 100px}
+        .wrap-waterfall--grid .list{position: relative;display: grid;grid-gap: 10px;grid-template-columns: repeat(4, 1fr);grid-auto-rows: minmax(50px, auto);}
+        .wrap-waterfall--grid .item{position: relative;}
+        .wrap-waterfall--grid .item-index{position: absolute;width: 1.5em;height: 1.5em;text-align: center;background-color: rgba(255,0,0,.5);top:0;left:0;}
+
+		/* .wrap-waterfall--inline img{} */
+        .wrap-waterfall--inline img{vertical-align: top;width: 100px;}
+        .wrap-waterfall--inline .list{position: relative;}
+        .wrap-waterfall--inline .item{position: relative;display:inline-block;}
+        .wrap-waterfall--inline .item-index{position: absolute;width: 1.5em;height: 1.5em;text-align: center;background-color: rgba(255,0,0,.5);top:0;left:0;}
+
+		
+        .wrap-waterfall--float img{vertical-align: top;width: 100px;}
+        .wrap-waterfall--float .list{position: relative;overflow: hidden;}
+        .wrap-waterfall--float .item{position: relative;float:left;}
+        .wrap-waterfall--float .item-index{position: absolute;width: 1.5em;height: 1.5em;text-align: center;background-color: rgba(255,0,0,.5);top:0;left:0;}
+		
+        .wrap-waterfall--bootstrapGrid img{vertical-align: top;width: 100px;}
+        .wrap-waterfall--bootstrapGrid .list{position: relative;}
+        .wrap-waterfall--bootstrapGrid .item{position: relative;}
+        .wrap-waterfall--bootstrapGrid .item-index{position: absolute;width: 1.5em;height: 1.5em;text-align: center;background-color: rgba(255,0,0,.5);top:0;left:0;}
+
+        .wrap-waterfall--absolute img{vertical-align: top;width: 100px}
+        .wrap-waterfall--absolute .list{position: relative;}
+        .wrap-waterfall--absolute .item-index{position: absolute;width: 1.5em;height: 1.5em;text-align: center;background-color: rgba(255,0,0,.5);top:0;left:0;}
+
+		
+        .wrap-waterfall--js img{vertical-align: top;width: 100px;}
+        .wrap-waterfall--js .list{position: relative;display: flex;}
+		.wrap-waterfall--js .list-group{position: relative;}
+        .wrap-waterfall--js .item{position: relative;margin: 5px;}
+        .wrap-waterfall--js .item-index{position: absolute;width: 1.5em;height: 1.5em;text-align: center;background-color: rgba(255,0,0,.5);top:0;left:0;}
+    </style>
+	<div id="app">
+		<div style="width: 100%">
+			<!-- ['columns','flex','grid','inline','float','absolute','js普通通道', 'js优化通道'] -->
+			<el-button @click="showWaterFall = ['grid','inline','float', 'bootstrapGrid']">垃圾方案</el-button>
+			<el-button @click="showWaterFall = ['columns','flex']">缺陷方案</el-button>
+			<el-button @click="showWaterFall = ['absolute','js普通通道', 'js优化通道']">合理方案</el-button>
+			<br>
+			<el-checkbox-group v-model="showWaterFall">
+				<!-- waterFallList -->
+				<el-checkbox :label="item" v-for="item in waterFallList"></el-checkbox>
+				<!-- <el-checkbox label="复选框 A"></el-checkbox> -->
+				<!-- <el-checkbox label="复选框 B"></el-checkbox>
+				<el-checkbox label="复选框 C"></el-checkbox>
+				<el-checkbox label="禁用" disabled></el-checkbox>
+				<el-checkbox label="选中且禁用" disabled></el-checkbox> -->
+			</el-checkbox-group>
+		</div>
+		<div class="wrap wrap-waterfall--columns" v-show="showWaterFall.indexOf('columns')!=-1">
+			<h2>columns 方案</h2>
+			<div class="list flex-demo">
+				<div class="item" v-for="(item, idx) in list">
+					<div class="item-index">{{idx}}</div>
+					<!-- <img :src="item" @load="imageOnload(idx, item, $event)"> -->
+					<img :src="item" >
+				</div>
+			</div>
+		</div>
+		<div class="wrap wrap-waterfall--flex" v-show="showWaterFall.indexOf('flex')!=-1">
+			<h2>flex 方案</h2>
+			<div class="list flex-demo">
+				<div class="item" v-for="(item, idx) in list">
+					<div class="item-index">{{idx}}</div>
+					<!-- <img :src="item" @load="imageOnload(idx, item, $event)"> -->
+					<img :src="item" >
+				</div>
+			</div>
+		</div>
+		<div class="wrap wrap-waterfall--grid" v-show="showWaterFall.indexOf('grid')!=-1">
+			<h2>grid 方案</h2>
+			<div class="list flex-demo">
+				<div class="item" v-for="(item, idx) in list">
+					<div class="item-index">{{idx}}</div>
+					<!-- <img :src="item" @load="imageOnload(idx, item, $event)"> -->
+					<img :src="item" >
+				</div>
+			</div>
+		</div>
+		<div class="wrap wrap-waterfall--inline" v-show="showWaterFall.indexOf('inline')!=-1">
+			<h2>inline 方案</h2>
+			<div class="list flex-demo">
+				<div class="item" v-for="(item, idx) in list">
+					<div class="item-index">{{idx}}</div>
+					<!-- <img :src="item" @load="imageOnload(idx, item, $event)"> -->
+					<img :src="item" >
+				</div>
+			</div>
+		</div>
+		<div class="wrap wrap-waterfall--float" v-show="showWaterFall.indexOf('float')!=-1">
+			<h2>float 方案</h2>
+			<div class="list flex-demo">
+				<div class="item" v-for="(item, idx) in list">
+					<div class="item-index">{{idx}}</div>
+					<!-- <img :src="item" @load="imageOnload(idx, item, $event)"> -->
+					<img :src="item" >
+				</div>
+			</div>
+		</div>
+		<div class="wrap wrap-waterfall--bootstrapGrid" v-show="showWaterFall.indexOf('bootstrapGrid')!=-1">
+			<h2>bootstrapGrid 方案</h2>
+			<div class="list flex-demo ">
+				<div class="container-fluid">
+					<div class="row">
+						<div class="item col-xs-3 col-sm-3 col-md-3 col-lg-3" v-for="(item, idx) in list">
+							<div class="item-index">{{idx}}</div>
+							<!-- <img :src="item" @load="imageOnload(idx, item, $event)"> -->
+							<img :src="item" >
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="wrap wrap-waterfall--absolute" v-show="showWaterFall.indexOf('absolute')!=-1">
+			<h2>absolute 方案</h2>
+			<div class="list flex-demo" :style="{height: maxHeight+'px'}">
+				<div class="item" v-for="(item, idx) in list"  
+					:style="listHeightHash[idx].width?{top:listHeightHash[idx].top,left:listHeightHash[idx].left,position: 'absolute'}:{}">
+					<div class="item-index">{{idx}}</div>
+					<img :src="item" @load="imageOnload(idx, item, $event)">
+				</div>
+			</div>
+		</div>
+		
+		<div class="wrap wrap-waterfall--js" v-show="showWaterFall.indexOf('js普通通道')!=-1">
+			<h2>JS 通道 方案</h2>
+			<!-- <div class="list flex-demo"> -->
+				<!-- <div v-for="idx2 in 4"> -->
+					<!-- <div class="item" v-for="(item, idx) in (list.length / 4)"> -->
+						<!-- <div class="item-index">{{idx * 4 + idx2}}</div> -->
+						<!-- <img :src="item"> -->
+					<!-- </div> -->
+				<!-- </div> -->
+			<!-- </div> -->
+			
+			<div class="list flex-demo">
+				<div v-for="item in jsGroupList">
+					<div class="item" v-for="(item2) in item">
+						<div class="item-index">{{item2.idx}}</div>
+						<img :src="item2.item">
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="wrap wrap-waterfall--js" v-show="showWaterFall.indexOf('js优化通道')!=-1">
+			<h2>JS 通道 优化方案 高度</h2>
+			<div class="list flex-demo">
+				<div v-for="item in jsGroupHeightList">
+					<div class="item" v-for="(item2) in item.list">
+						<div class="item-index">{{item2.idx}}</div>
+						<img :src="item2.item">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		vm = new Vue({
+            el: '#app',
+            data(){
+                return {
+					waterFallList: ['columns','flex','grid','inline','float','absolute','js普通通道', 'js优化通道', 'bootstrapGrid'],
+					showWaterFall: ['columns','flex','grid','inline','float','absolute','js普通通道', 'js优化通道', 'bootstrapGrid'],
+                    itemWidth: 100,
+                    screenWidth: 400, //document.body.offsetWidth,
+                    waterFallInfo: [],
+                    listInfo: new Array(90).fill().map((v,i)=>({width:0,height:0,line:0,top:0,left:0})),
+                    list: new Array(90).fill().map((v,i)=>`/static/img/waterfall/${i}.jpg`)
+                }
+            },
+            computed:{
+				jsGroupList(){
+					return this.list.reduce((s,n,idx)=>{
+						s[idx % 4].push({idx: idx, item: n})
+						return s
+					}, [
+						[],
+						[],
+						[],
+						[],
+					])
+				},
+				jsGroupHeightList(){
+					var list = [
+						{height: 0, list: []},
+						{height: 0, list: []},
+						{height: 0, list: []},
+						{height: 0, list: []},
+					]
+					for(var i = 0; i < this.list.length; i++){
+						if(!this.listInfo[i].height) return list;
+						var minHeightItem = list[0];
+						list.forEach(v=>{
+							if(v.height < minHeightItem.height) minHeightItem = v
+						})
+						minHeightItem.height += this.listInfo[i].height
+						minHeightItem.list.push({idx: i, item: this.list[i]})
+					}
+					return list;
+				},
+                // document.body.offsetWidth/ 220 >>0
+                getListPosition(){
+                    let col = this.screenWidth / this.itemWidth >> 0;
+                    var arr = [];
+                    for(var i = 0; i < col; i++) arr.push({
+                        list: [],
+                        height: 0,
+                    })
+                    this.listInfo.forEach((item,idx)=>{
+                        // 找到最低的一列
+                        // var colItem = arr[0]
+                        var colIndex = 0;
+                        for(var i = 1; i < col; i++){
+                            if(arr[colIndex].height > arr[i].height){
+                                // colItem = arr[i]
+                                colIndex = i
+                            }
+                        }
+                        item.line = colIndex;
+                        item.top = arr[colIndex].height+ 'px';
+                        item.left = colIndex * (this.itemWidth + 10) + 'px'
+                        arr[colIndex].list.push(item);
+                        arr[colIndex].height += item.height + 10;
+                    })
+                    return arr
+                },
+                listHeightHash(){
+                    this.getListPosition
+                    // console.log(this.getListPosition);
+                    return this.listInfo
+                },
+				maxHeight(){
+					return Math.max(...this.getListPosition.map(v=>v.height), 0)
+				}
+            },
+            created(){
+                // this.screenWidth = document.body.offsetWidth;
+                // window.addEventListener('resize', ()=>{
+                //     this.screenWidth = document.body.offsetWidth;
+                // })
+            },
+            methods:{
+                imageOnload(idx, item, $event){
+                    // console.log('imageOnload', arguments)
+                    // item.width = $event.target.naturalWidth;
+                    // this.listInfo[idx].width = $event.target.naturalWidth;
+                    this.listInfo[idx].width = $event.target.width;
+                    // item.height = $event.target.naturalHeight;
+                    // this.listInfo[idx].height = $event.target.naturalHeight;
+                    this.listInfo[idx].height = $event.target.height;
+                }
+            }
+        })
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+	<script type="text/javascript" src="//www.lilnong.top/static/js/public_hm.js"></script>
+</body>
+</html>

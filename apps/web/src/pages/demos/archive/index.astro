@@ -1,0 +1,103 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+import createSlug from "../../../lib/createSlug";
+
+const allDemos = (await getCollection("demos"))
+  .filter((d) => d.data.tags?.includes("legacy"))
+  .sort((a, b) => a.data.title.localeCompare(b.data.title, "zh"));
+
+const q = Astro.url.searchParams.get("q")?.toLowerCase().trim() ?? "";
+const cat = Astro.url.searchParams.get("cat")?.trim() ?? "";
+
+const categories = [...new Set(allDemos.map((d) => d.data.category).filter(Boolean))].sort(
+  (a, b) => a!.localeCompare(b!, "zh"),
+);
+
+const filtered = allDemos.filter((d) => {
+  if (cat && d.data.category !== cat) return false;
+  if (!q) return true;
+  const hay = [d.data.title, d.data.description, d.slug, d.data.category, ...(d.data.tags ?? [])]
+    .join(" ")
+    .toLowerCase();
+  return hay.includes(q);
+});
+---
+
+<BaseLayout
+  title="Demo 归档"
+  sideBarActiveItemID="demos"
+  mainClass="p-6 pt-10 w-full max-w-[100vw] lg:max-w-[1200px]"
+>
+  <div class="not-prose">
+    <a href="/demos" class="link link-hover text-sm" data-astro-reload>← 项目展示</a>
+    <h1 class="text-3xl font-bold mt-2">Demo 归档</h1>
+    <p class="opacity-80 mt-2 mb-4">
+      共 {allDemos.length} 个历史交互示例，按名称排序。点击标题进入项目页预览并查看关联文章。
+    </p>
+
+    <form method="get" class="flex flex-wrap gap-2 mb-4 max-w-3xl">
+      <input
+        type="search"
+        name="q"
+        value={q}
+        placeholder="搜索标题、描述、标签…"
+        class="input input-bordered flex-1 min-w-[200px]"
+      />
+      <select name="cat" class="select select-bordered">
+        <option value="">全部分类</option>
+        {
+          categories.map((c) => (
+            <option value={c} selected={cat === c}>
+              {c}
+            </option>
+          ))
+        }
+      </select>
+      <button type="submit" class="btn btn-primary">筛选</button>
+      {(q || cat) && <a href="/demos/archive/" class="btn btn-ghost">清除</a>}
+    </form>
+
+    <p class="text-sm opacity-70 mb-4">
+      {q || cat ? `匹配 ${filtered.length} / ${allDemos.length}` : "按名称排序"}
+    </p>
+
+    <div class="overflow-x-auto">
+      <table class="table table-sm table-zebra">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>项目</th>
+            <th>分类</th>
+            <th>文章</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            filtered.map((demo, i) => {
+              const url = "/demos/" + createSlug(demo.data.title, demo.slug);
+              const posts = demo.data.relatedPosts?.length ?? 0;
+              return (
+                <tr>
+                  <td class="opacity-50">{i + 1}</td>
+                  <td class="max-w-lg">
+                    <a class="link link-hover font-medium" href={url}>
+                      {demo.data.title}
+                    </a>
+                    <div class="text-xs opacity-60 truncate mt-0.5">{demo.data.description}</div>
+                  </td>
+                  <td class="whitespace-nowrap text-xs">
+                    {demo.data.category && (
+                      <span class="badge badge-outline badge-sm">{demo.data.category}</span>
+                    )}
+                  </td>
+                  <td class="text-xs opacity-70">{posts > 0 ? `${posts} 篇` : "—"}</td>
+                </tr>
+              );
+            })
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</BaseLayout>

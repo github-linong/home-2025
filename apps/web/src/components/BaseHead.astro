@@ -3,6 +3,8 @@
 // all pages through the use of the <BaseHead /> component.
 import '../styles/global.css';
 import { BAIDU_HM_ID, GA_MEASUREMENT_ID } from '../config';
+import AuthCookie from './AuthCookie.astro';
+import { AUTH_COOKIE_NAME } from '../lib/authCookie';
 
 export interface Props {
 	title: string;
@@ -41,6 +43,8 @@ const { title, description, image = '/social_img.webp', ogType = 'website' } = A
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image, Astro.url)} />
 
+<AuthCookie />
+
 <!-- Baidu Analytics -->
 <script is:inline define:vars={{ baiduHmId: BAIDU_HM_ID }}>
   var _hmt = _hmt || [];
@@ -54,11 +58,30 @@ const { title, description, image = '/social_img.webp', ogType = 'website' } = A
 
 <!-- Google Analytics -->
 <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}></script>
-<script is:inline define:vars={{ gaId: GA_MEASUREMENT_ID }}>
+<script is:inline define:vars={{ gaId: GA_MEASUREMENT_ID, cookieName: AUTH_COOKIE_NAME }}>
   window.dataLayer = window.dataLayer || [];
   function gtag() {
     dataLayer.push(arguments);
   }
   gtag("js", new Date());
-  gtag("config", gaId);
+
+  function readVisitorId() {
+    if (window.__lilnongVisitorId) return window.__lilnongVisitorId;
+    var prefix = cookieName + "=";
+    var row = document.cookie.split("; ").find(function (entry) {
+      return entry.indexOf(prefix) === 0;
+    });
+    if (!row) return;
+    var raw = row.slice(prefix.length);
+    try {
+      raw = decodeURIComponent(raw);
+    } catch (e) {
+      /* keep raw */
+    }
+    var hash = raw.indexOf("#");
+    return (hash === -1 ? raw : raw.slice(0, hash)) || undefined;
+  }
+
+  var visitorId = readVisitorId();
+  gtag("config", gaId, visitorId ? { user_id: visitorId } : {});
 </script>

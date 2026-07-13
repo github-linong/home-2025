@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>时区转换demo - www.lilnong.top</title>
+	<meta keywords="时区问题">
+	<meta description="时区问题">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+	<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<body>
+	<div id="app">
+		<h2> new Date('2020-05-12 12:00:00')</h2>
+		<div>
+			<h3>在北京电脑上执行的结果</h3>
+			<p>
+				<span>1589256000000</span>
+				<span>2020-5-12 12:0:0</span>
+				<span>-480</span>
+			</p>
+		</div>
+		<div>
+			<h3>手机本地执行的结果</h3>
+			<p>
+				<span>{{time1_getTime}}</span>
+				<span>{{time1_format}}</span>
+				<span>{{time1_getTimezoneOffset}}</span>
+			</p>
+		</div>
+		<div>
+			<h3>手机本地执行纠正后的结果</h3>
+			<p>
+				<span>{{time1_offset_getTime}}</span>
+				<span>{{time1_offset_format}}</span>
+				<span>{{time1_offset_getTimezoneOffset}}</span>
+			</p>
+		</div>
+
+		<hr>
+		
+		<h2> new Date(1589256000000)</h2>
+		<div>
+			<h3>在北京电脑上执行的结果</h3>
+			<p>
+				<span>1589256000000</span>
+				<span>2020-5-12 12:0:0</span>
+				<span>-480</span>
+			</p>
+		</div>
+		<div>
+			<h3>手机本地执行的结果</h3>
+			<p>
+				<span>{{time2_getTime}}</span>
+				<span>{{time2_format}}</span>
+				<span>{{time2_getTimezoneOffset}}</span>
+			</p>
+		</div>
+		<div>
+			<h3>手机本地执行纠正后的结果</h3>
+			<p>
+				<span>{{time2_offset_getTime}}</span>
+				<span>{{time2_offset_format}}</span>
+				<span>{{time2_offset_getTimezoneOffset}}</span>
+			</p>
+		</div>
+
+		
+		<hr>
+		<h2> new Date()</h2>
+		<div>
+			<h3>在北京服务器上执行的结果</h3>
+			<p>
+				<span>{{time3_server.time}}</span>
+				<span>{{time3_server.format}}</span>
+				<span>{{time3_server.zoneOffset}}</span>
+			</p>
+		</div>
+		<div>
+			<h3>北京服务器返回</h3>
+			<p>
+				<span>{{time3_getTime}}</span>
+				<span>{{time3_format}}</span>
+				<span>{{time3_getTimezoneOffset}}</span>
+			</p>
+		</div>
+		<div>
+			<h3>手机本地执行纠正后的结果</h3>
+			<p>
+				<span>{{time3_offset_getTime}}</span>
+				<span>{{time3_offset_format}}</span>
+				<span>{{time3_offset_getTimezoneOffset}}</span>
+			</p>
+		</div>
+	</div>
+	<script>
+		vm = new Vue({
+			el: '#app',
+			data(){
+				return {
+					time1: new Date('2020-05-12 12:00:00'),
+					time2: new Date(1589256000000),
+					time3: new Date(),
+					time3_server:{
+						time: '',
+						format: '',
+						zoneOffset: '',
+					}
+				}
+			},
+			created(){
+				var xhr = new XMLHttpRequest();
+				xhr.open('get', '//www.lilnong.top/cors/time')
+				xhr.responseType = 'json'
+				xhr.send()
+				xhr.onload = ()=>{
+					this.time3_server.time = xhr.response.timezone.time
+					this.time3_server.format = xhr.response.timezone.timeFormat	
+					this.time3_server.zoneOffset = xhr.response.timezone.timezoneOffset
+				}
+			},
+			computed:{
+				time1_getTime(){
+					return this.time1.getTime()
+				},
+				time1_format(){
+					return this.format(this.time1)
+				},
+				time1_getTimezoneOffset(){
+					return this.time1.getTimezoneOffset()
+				},
+				time1_offset_getTime(){
+					return this.time1.getTime() + (-480 - this.time1_getTimezoneOffset) * 60 * 1000
+				},
+				time1_offset_format(){
+					return this.format(this.time1)
+				},
+				time1_offset_getTimezoneOffset(){
+					return -480
+				},
+				
+				time2_getTime(){
+					return this.time2.getTime()
+				},
+				time2_format(){
+					return this.format(this.time2)
+				},
+				time2_getTimezoneOffset(){
+					return this.time2.getTimezoneOffset()
+				},
+				time2_offset_getTime(){
+					return this.time2_getTime
+					// this.time2.getTime() + (-480 - this.time2_getTimezoneOffset) * 60 * 1000
+				},
+				time2_offset_format(){
+					return this.format(new Date(this.time2 - (-480 - this.time2_getTimezoneOffset) * 60 * 1000))
+				},
+				time2_offset_getTimezoneOffset(){
+					return -480
+				},
+			
+				time3_getTime(){
+					return this.time3.getTime()
+				},
+				time3_format(){
+					return this.format(this.time3)
+				},
+				time3_getTimezoneOffset(){
+					return this.time3.getTimezoneOffset()
+				},
+				time3_offset_getTime(){
+					return this.time3_getTime
+					// this.time3.getTime() + (-480 - this.time3_getTimezoneOffset) * 60 * 1000
+				},
+				time3_offset_format(){
+					return this.format(new Date(this.time3 - (-480 - this.time3_getTimezoneOffset) * 60 * 1000))
+				},
+				time3_offset_getTimezoneOffset(){
+					return -480
+				},
+			},
+			methods:{
+				format(time){
+					return `${time.getFullYear()}-${time.getMonth() + 1}-${time.getDate()} ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`
+				}
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

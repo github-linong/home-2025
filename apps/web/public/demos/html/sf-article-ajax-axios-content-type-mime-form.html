@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<!-- <script src="https://unpkg.com/axios@0.19.0/dist/axios.min.js"></script> -->
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<style type="text/css">
+		form{
+			margin: 20px;
+		}
+	</style>
+	<div id="app">
+		<img src="/static/img/art/preservelog-network.jpg">
+		<p>注意打开持续日志，这样方便看</p>
+		<div>
+			<form action="/CORS/lnong">
+				<div>默认 get 无enctype</div>
+				<input name="a" value="1">
+				<input name="b" value="2">
+				<input type="submit" value="提交">
+			</form>
+			<form action="/CORS/lnong" enctype="application/x-www-form-urlencoded">
+				<div>get application/x-www-form-urlencoded</div>
+				<input name="a" value="1">
+				<input name="b" value="2">
+				<input type="submit" value="提交">
+			</form>
+			<form action="/CORS/lnong" enctype="multipart/form-data">
+				<div>get multipart/form-data</div>
+				<input name="a" value="1">
+				<input name="b" value="2">
+				<input type="submit" value="提交">
+			</form>
+			<form action="/CORS/lnong" enctype="text/plain">
+				<div>get text/plain</div>
+				<input name="a" value="1">
+				<input name="b" value="2">
+				<input type="submit" value="提交">
+			</form>
+		</div>
+		<div>
+			<form method="post" action="/CORS/lnong">
+				<div>post get 无enctype</div>
+				<input name="a" value="1">
+				<input name="b" value="2">
+				<input type="submit" value="提交">
+			</form>
+			<form method="post" action="/CORS/lnong" enctype="application/x-www-form-urlencoded">
+				<div>post application/x-www-form-urlencoded</div>
+				<input name="a" value="1">
+				<input name="b" value="2">
+				<input type="submit" value="提交">
+			</form>
+			<form method="post" action="/CORS/lnong" enctype="multipart/form-data">
+				<div>post multipart/form-data</div>
+				<input name="a" value="1">
+				<input name="b" value="2">
+				<input type="submit" value="提交">
+			</form>
+			<form method="post" action="/CORS/lnong" enctype="text/plain">
+				<div>post text/plain</div>
+				<input name="a" value="1">
+				<input name="b" value="2">
+				<input type="submit" value="提交">
+			</form>
+		</div>
+		<script type="text/javascript">
+			// a = 1;
+			// b = 2;
+			// // $.ajax({
+			// // 	url: '/CORS/lnong',
+			// // 	data: {a:1,b:2}
+			// // })
+			// // axios({
+			// // 	url: '/CORS/lnong',
+			// // 	data: {a:1,b:2}
+			// // })
+			// // axios.get('/CORS/lnong', {
+			// // 	data: {a:1,b:2}
+			// // })
+			// // axios({
+			// // 	url: '/CORS/lnong?'+`a=${a}&b=${b}`,
+			// // })
+			// // axios.get('/CORS/lnong', {
+			// // 	params: {a:1,b:2}
+			// // })
+			// // axios({
+			// // 	url: '/CORS/lnong',
+			// // 	params: {a:1,b:2}
+			// // })
+			// $.ajax({
+			// 	type: 'post',
+			// 	url: '/CORS/lnong',
+			// 	data: {a:1,b:2}
+			// })
+			// // axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+			// // axios({
+			// // 	method: 'post',
+			// // 	url: '/CORS/lnong',
+			// // 	data: {a:1,b:2}
+			// // })
+			// var data = new URLSearchParams()
+			// data.append('a', '1')
+			// data.append('b', '2')
+			// axios({
+			//     method: 'post',
+			//     url: '/CORS/lnong',
+			//     data: data
+			// })
+			var user = 'linong'
+			var pwd = 'lnong'
+		</script>
+		<div>
+			<button onclick="$.ajax({url: '/CORS/lnong',data: {user,pwd}})">ajax-get-$.ajax({url: '/CORS/lnong',data: {user,pwd}})</button>
+			<button onclick="axios({url: '/CORS/lnong',data: {user,pwd}})">axios-get-axios({url: '/CORS/lnong',data: {user,pwd}})</button>
+			<button onclick="axios({url: '/CORS/lnong',params: {user,pwd}})">axios-get-params-axios({url: '/CORS/lnong',params: {user,pwd}})</button>
+			<button onclick="$.ajax({url: '/CORS/lnong',type: 'post',data: {user,pwd}})">ajax-post-$.ajax({url: '/CORS/lnong',type: 'post',data: {user,pwd}})</button>
+			<button onclick="axios({url: '/CORS/lnong',method: 'post',data: {user,pwd}})">axios-post-axios({url: '/CORS/lnong',method: 'post',data: {user,pwd}})</button>
+		</div>
+	</div>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

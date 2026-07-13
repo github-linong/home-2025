@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <canvas width="500" height="500"></canvas>
+    <style type="text/css">
+        canvas{
+          border: 1px solid #f00;
+        }
+    </style>
+    <script type="text/javascript">
+        cvs = document.querySelector('canvas');
+        ctx = cvs.getContext('2d');
+        ctx.clearRect(0,0,500,500);
+        ctx.beginPath();
+        ctx.arc(300, 300, 80, -.5*Math.PI, 1.5*Math.PI ,false);
+        ctx.strokeStyle = 'blue';
+        ctx.lineWidth = 10;
+        ctx.stroke();
+
+        var _tag = 2/(20)/10
+        var endAngle = 1.5
+        setInterval(()=>{
+            ctx.beginPath();
+            ctx.arc(300, 300, 80, -.5*Math.PI, (endAngle-=_tag)*Math.PI ,true);
+            ctx.strokeStyle = 'red';
+            ctx.stroke();
+        }, 50)
+    </script>
+</body>
+</html>

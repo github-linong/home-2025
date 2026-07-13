@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <title>上传前预览文件 - www.lilnong.top</title> -->
+	<!-- <meta keywords="preview video, metadata,preview audio,preview image"> -->
+	<!-- <meta description="上传前预览文件，可以预览音视频，可以预览图片，可以预览文本"> -->
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.6.12/vue.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>	
+</head>
+<body>
+	<div id="app">
+	</div>
+	<script>
+		var nodeDataArray = [
+			{key: "iscroll容器-1", name: "iscroll容器-1", compId: "111", color: "pink", cursor: "grab",loc: "0 0"},
+			{key: "iscroll容器-2", name: "iscroll容器-1", compId: "222", color: "pink", cursor: "grab",loc: "0 -100"},
+			// ...
+		];
+		var relation = [
+			{from: "111", fromNodeType: "component", to: "222", toNodeType: "event"},
+			// ...
+		];
+		var diagram = new go.Diagram('go-graph-diagram');
+		var $go = go.GraphObject.make;
+		diagram.nodeTemplate = $(go.Node, 'Auto',  //'Auto'：与css设置width:auto同样效果
+        {
+          // 添加点击事件
+          click: function(e, obj) {}
+        },
+         // 将节点数据nodeDataArray .loc与图表位置建立联系
+         new go.Binding('position', 'loc', go.Point.parse),
+        //设置节点形状：带圆角的长方形
+         $(go.Shape, 'RoundedRectangle',
+          // 设置大小，边框大小、颜色，背景色，鼠标手势
+          {desiredSize: new go.Size(160, NaN), strokeWidth: 0, fill: 'white', cursor: 'grab'},
+          //将节点数据nodeDataArray .color与节点背景色建立联系
+          new go.Binding('fill', 'color'), 
+         //将节点数据nodeDataArray .cursor与节点鼠标手势建立联系
+          new go.Binding('cursor', 'cursor')
+        ),
+        // 设置文本节点
+        $(go.TextBlock,
+          // 设置文本样式：大小，是否换行，margin
+          {
+            desiredSize: new go.Size(100, NaN),
+            wrap: go.TextBlock.WrapFit,
+            margin: 8
+          }, 
+          // bind TextBlock.text to Node.data.name
+          new go.Binding('text', 'name'), 
+          new go.Binding('cursor', 'cursor')
+        )
+      );
+	  this.diagram.linkTemplate = $(go.Link,
+        $(go.Shape, // the link shape
+          {strokeWidth: 2, stroke: 'white'}),
+        $(go.Shape, // the arrowhead
+          {toArrow: 'OpenTriangle',
+            fill: null, stroke: 'white'})
+      );
+	  // 将图表在画布中居中显示
+		this.diagram.initialContentAlignment = go.Spot.Center;
+		// 操作支持ctrl+z、ctrl+Y 实现undo和redo
+		this.diagram.undoManager.isEnabled = true;
+		this.diagram.model = new go.GraphLinksModel(nodeDataArray, relation); //nodeDataArray:graph, linkDataArray: relation
+
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+	<script type="text/javascript" src="//www.lilnong.top/static/js/public_hm.js"></script>
+</body>
+</html>

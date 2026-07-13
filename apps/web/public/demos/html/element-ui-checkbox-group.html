@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+</head>
+<body>
+	<div id="app">
+		<div class="card">
+			  <div class="card-header">公用</div>
+			  <div class="card-body">
+			 		<div>{{demo1checkedList}}</div>
+			  		<div>
+			  			<el-checkbox :value="list1CheckAll">全选</el-checkbox>	
+				  		<el-checkbox-group v-model="demo1checkedList">
+				  		    <el-checkbox v-for="item in list1" :label="item" :key="item">{{item}}</el-checkbox>
+				  		</el-checkbox-group>
+			  		</div>
+			  		<div>	
+			  			<el-checkbox :value="list2CheckAll">全选</el-checkbox>
+				  		<el-checkbox-group v-model="demo1checkedList">
+				  		    <el-checkbox v-for="item in list2" :label="item" :key="item">{{item}}</el-checkbox>
+				  		</el-checkbox-group>
+			  		</div>
+			  		<div>	
+			  			<el-checkbox :value="list3CheckAll">全选</el-checkbox>
+				  		<el-checkbox-group v-model="demo1checkedList">
+				  		    <el-checkbox v-for="item in list3" :label="item" :key="item">{{item}}</el-checkbox>
+				  		</el-checkbox-group>
+			  		</div>
+			  </div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		vm = new Vue({
+			el: '#app',
+			data(){
+				return {
+					demo1checkedList: [],
+					list: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+				}
+			},
+			computed:{
+				list1(){
+					return this.list.slice(0,5)
+				},
+				list1CheckAll(){
+					return this.list1.every(v=>this.demo1checkedList.includes(v))
+				},
+				list2(){
+					return this.list.slice(5,10)
+				},
+				list2CheckAll(){
+					return this.list2.every(v=>this.demo1checkedList.includes(v))
+				},
+				list3(){
+					return this.list.slice(10,15)
+				},
+				list3CheckAll(){
+					return this.list3.every(v=>this.demo1checkedList.includes(v))
+				},
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

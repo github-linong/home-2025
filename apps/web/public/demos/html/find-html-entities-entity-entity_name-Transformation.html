@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>实体对照表-HTML转义字符常用对照表</title>
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<style type="text/css">
+		#app{
+			width: 35em;
+			margin: 0 auto;
+		}
+		#app i{
+			display: inline-block;
+			width: 10em;
+			font-style: inherit;
+			font-size: 18px;
+			line-height: 36px;
+		}
+		#app div i:nth-child(1){
+			background-color: #f4f4f4;
+		}
+		.app-header{
+			position: sticky;
+			top: 0;
+			background: #fff;
+		}
+		.app-header i{
+			font-weight: bold;
+		}
+		.app-content p{
+		    border-top: 1px solid #dddddd;
+			margin: 0 auto;
+			display: flex;
+		    align-items: center;
+		}
+	</style>
+	<div id="app">
+		<div class="app-header"><i>字符</i><i>十进制</i><i>转义字符</i></div>
+		<div class="app-content">
+			<p><i>"</i><i>&amp;#34;</i><i>&amp;quot;</i></p>
+			<p><i>&</i><i>&amp;#38;</i><i>&amp;amp;</i></p>
+			<p><i><</i><i>&amp;#60;</i><i>&amp;lt;</i></p>
+			<p><i>></i><i>&amp;#62;</i><i>&amp;gt;</i></p>
+			<p><i>不断开空格(non-breaking space)</i><i>&amp;#160;</i><i>&amp;nbsp;</i></p>
+		</div>
+		<div class="app-content">
+			<p><i>?</i><i>&amp;#161;</i><i>&amp;iexcl;</i></p>
+			<p><i>Á</i><i>&amp;#193;</i><i>&amp;Aacute;</i></p>
+			<p><i>á</i><i>&amp;#225;</i><i>&amp;aacute;</i></p>
+
+			<p><i>￠</i><i>&amp;#162;</i><i>&amp;cent;</i></p>
+			<p><i>Â</i><i>&amp;#194;</i><i>&amp;circ;</i></p>
+			<p><i>â</i><i>&amp;#226;</i><i>&amp;acirc;</i></p>
+			<p><i>￡</i><i>&amp;#163;</i><i>&amp;pound;</i></p>
+			<p><i>Ã</i><i>&amp;#195;</i><i>&amp;Atilde;</i></p>
+			<p><i>ã</i><i>&amp;#227;</i><i>&amp;atilde;</i></p>
+
+			<p><i>¤</i><i>&amp;#164;</i><i>&amp;curren;</i></p>
+			<p><i>Ä</i><i>&amp;#196;</i><i>&amp;Auml;</i></p>
+			<p><i>ä</i><i>&amp;#228;</i><i>&amp;auml;</i></p>
+
+			<p><i>￥</i><i>&amp;#165;</i><i>&amp;yen;</i></p>
+			<p><i>Å</i><i>&amp;#197;</i><i>&amp;ring;</i></p>
+			<p><i>å</i><i>&amp;#229;</i><i>&amp;aring;</i></p>
+
+			<p><i>|</i><i>&amp;#166;</i><i>&amp;brvbar;</i></p>
+			<p><i>Æ</i><i>&amp;#198;</i><i>&amp;AElig;</i></p>
+			<p><i>æ</i><i>&amp;#230;</i><i>&amp;aelig;</i></p>
+
+			<p><i>§</i><i>&amp;#167;</i><i>&amp;sect;</i></p>
+			<p><i>Ç</i><i>&amp;#199;</i><i>&amp;Ccedil;</i></p>
+			<p><i>ç</i><i>&amp;#231;</i><i>&amp;ccedil;</i></p>
+
+			<p><i>¨</i><i>&amp;#168;</i><i>&amp;uml;</i></p>
+			<p><i>È</i><i>&amp;#200;</i><i>&amp;Egrave;</i></p>
+			<p><i>è</i><i>&amp;#232;</i><i>&amp;egrave;</i></p>
+
+			<p><i>©</i><i>&amp;#169;</i><i>&amp;copy;</i></p>
+			<p><i>É</i><i>&amp;#201;</i><i>&amp;Eacute;</i></p>
+			<p><i>é</i><i>&amp;#233;</i><i>&amp;eacute;</i></p>
+
+			<p><i>a</i><i>&amp;#170;</i><i>&amp;ordf;</i></p>
+			<p><i>Ê</i><i>&amp;#202;</i><i>&amp;Ecirc;</i></p>
+			<p><i>ê</i><i>&amp;#234;</i><i>&amp;ecirc;</i></p>
+
+			<p><i>?</i><i>&amp;#171;</i><i>&amp;laquo;</i></p>
+			<p><i>Ë</i><i>&amp;#203;</i><i>&amp;Euml;</i></p>
+			<p><i>ë</i><i>&amp;#235;</i><i>&amp;euml;</i></p>
+
+			<p><i>?</i><i>&amp;#172;</i><i>&amp;not;</i></p>
+			<p><i>Ì</i><i>&amp;#204;</i><i>&amp;Igrave;</i></p>
+			<p><i>ì</i><i>&amp;#236;</i><i>&amp;igrave;</i></p>
+
+			<p><i>x7f</i><i>&amp;#173;</i><i>&amp;shy;</i></p>
+			<p><i>Í</i><i>&amp;#205;</i><i>&amp;Iacute;</i></p>
+			<p><i>í</i><i>&amp;#237;</i><i>&amp;iacute;</i></p>
+
+			<p><i>®</i><i>&amp;#174;</i><i>&amp;reg;</i></p>
+			<p><i>Î</i><i>&amp;#206;</i><i>&amp;Icirc;</i></p>
+			<p><i>î</i><i>&amp;#238;</i><i>&amp;icirc;</i></p>
+
+			<p><i>ˉ</i><i>&amp;#175;</i><i>&amp;macr;</i></p>
+			<p><i>Ï</i><i>&amp;#207;</i><i>&amp;Iuml;</i></p>
+			<p><i>ï</i><i>&amp;#239;</i><i>&amp;iuml;</i></p>
+
+			<p><i>°</i><i>&amp;#176;</i><i>&amp;deg;</i></p>
+			<p><i>Ð</i><i>&amp;#208;</i><i>&amp;ETH;</i></p>
+			<p><i>ð</i><i>&amp;#240;</i><i>&amp;ieth;</i></p>
+
+			<p><i>±</i><i>&amp;#177;</i><i>&amp;plusmn;</i></p>
+			<p><i>Ñ</i><i>&amp;#209;</i><i>&amp;Ntilde;</i></p>
+			<p><i>ñ</i><i>&amp;#241;</i><i>&amp;ntilde;</i></p>
+
+			<p><i>2</i><i>&amp;#178;</i><i>&amp;sup2;</i></p>
+			<p><i>Ò</i><i>&amp;#210;</i><i>&amp;Ograve;</i></p>
+			<p><i>ò</i><i>&amp;#242;</i><i>&amp;ograve;</i></p>
+
+			<p><i>3</i><i>&amp;#179;</i><i>&amp;sup3;</i></p>
+			<p><i>Ó</i><i>&amp;#211;</i><i>&amp;Oacute;</i></p>
+			<p><i>ó</i><i>&amp;#243;</i><i>&amp;oacute;</i></p>
+
+			<p><i>′</i><i>&amp;#180;</i><i>&amp;acute;</i></p>
+			<p><i>Ô</i><i>&amp;#212;</i><i>&amp;Ocirc;</i></p>
+			<p><i>ô</i><i>&amp;#244;</i><i>&amp;ocirc;</i></p>
+
+			<p><i>μ</i><i>&amp;#181;</i><i>&amp;micro;</i></p>
+			<p><i>Õ</i><i>&amp;#213;</i><i>&amp;Otilde;</i></p>
+			<p><i>õ</i><i>&amp;#245;</i><i>&amp;otilde;</i></p>
+
+			<p><i>?</i><i>&amp;#182;</i><i>&amp;para;</i></p>
+			<p><i>Ö</i><i>&amp;#214;</i><i>&amp;Ouml;</i></p>
+			<p><i>ö</i><i>&amp;#246;</i><i>&amp;ouml;</i></p>
+
+			<p><i>·</i><i>&amp;#183;</i><i>&amp;middot;</i></p>
+			<p><i>&times;</i><i>&amp;#215;</i><i>&amp;times;</i></p>
+			<p><i>÷</i><i>&amp;#247;</i><i>&amp;divide;</i></p>
+
+			<p><i>?</i><i>&amp;#184;</i><i>&amp;cedil;</i></p>
+			<p><i>Ø</i><i>&amp;#216;</i><i>&amp;Oslash;</i></p>
+			<p><i>ø</i><i>&amp;#248;</i><i>&amp;oslash;</i></p>
+
+			<p><i>1</i><i>&amp;#185;</i><i>&amp;sup1;</i></p>
+			<p><i>Ù</i><i>&amp;#217;</i><i>&amp;Ugrave;</i></p>
+			<p><i>ù</i><i>&amp;#249;</i><i>&amp;ugrave;</i></p>
+
+			<p><i>o</i><i>&amp;#186;</i><i>&amp;ordm;</i></p>
+			<p><i>Ú</i><i>&amp;#218;</i><i>&amp;Uacute;</i></p>
+			<p><i>ú</i><i>&amp;#250;</i><i>&amp;uacute;</i></p>
+
+			<p><i>?</i><i>&amp;#187;</i><i>&amp;raquo;</i></p>
+			<p><i>Û</i><i>&amp;#219;</i><i>&amp;Ucirc;</i></p>
+			<p><i>û</i><i>&amp;#251;</i><i>&amp;ucirc;</i></p>
+
+			<p><i>?</i><i>&amp;#188;</i><i>&amp;frac14;</i></p>
+			<p><i>Ü</i><i>&amp;#220;</i><i>&amp;Uuml;</i></p>
+			<p><i>ü</i><i>&amp;#252;</i><i>&amp;uuml;</i></p>
+
+			<p><i>?</i><i>&amp;#189;</i><i>&amp;frac12;</i></p>
+			<p><i>Ý</i><i>&amp;#221;</i><i>&amp;Yacute;</i></p>
+			<p><i>ý</i><i>&amp;#253;</i><i>&amp;yacute;</i></p>
+
+			<p><i>?</i><i>&amp;#190;</i><i>&amp;frac34;</i></p>
+			<p><i>Þ</i><i>&amp;#222;</i><i>&amp;THORN;</i></p>
+			<p><i>þ</i><i>&amp;#254;</i><i>&amp;thorn;</i></p>
+
+			<p><i>?</i><i>&amp;#191;</i><i>&amp;iquest;</i></p>
+			<p><i>ß</i><i>&amp;#223;</i><i>&amp;szlig;</i></p>
+			<p><i>ÿ</i><i>&amp;#255;</i><i>&amp;yuml;</i></p>
+
+			<p><i>À</i><i>&amp;#192;</i><i>&amp;Agrave;</i></p>
+			<p><i>à</i><i>&amp;#224;</i><i>&amp;agrave;</i></p>
+		</div>
+	</div>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

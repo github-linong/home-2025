@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <title>上传前预览文件 - www.lilnong.top</title> -->
+	<!-- <meta keywords="preview video, metadata,preview audio,preview image"> -->
+	<!-- <meta description="上传前预览文件，可以预览音视频，可以预览图片，可以预览文本"> -->
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+	
+</head>
+<body>
+	<style type="text/css">
+		.grid-container {
+		    display: grid;
+		}
+
+		.grid-container-1 {
+		    display: grid;
+		    grid-template-columns: 1fr 2fr 1fr;
+		    grid-template-rows: 50px 70vh 50px;
+		}
+		.grid-item {
+		    /* 这些规则指定子网格在布局中的位置*/
+		    grid-column: 2 / 4;      /* 两列垂直 */
+		    grid-row: 1 / 3;         /* 两行水平 */
+
+		    /* 这些规则属于子网格本身 */
+		    display: grid;
+		    grid-template-columns: subgrid;
+		    grid-template-rows: subgrid;
+		}
+		.grid-item-1 {
+		  display: grid;
+		  grid-template-columns: subgrid;
+		  grid-template-rows: 200px 400px 200px;
+		}
+		.grid-demo{
+			border: 1px solid #f00;
+		}
+	</style>
+
+	<p>2020年11月12日15:10:31 https://segmentfault.com/a/1190000037493676 你现在可以玩下这 5 个 CSS 新功能</p>
+	<div id="app">
+		<div class="grid-demo grid-container"></div>
+		<div class="grid-demo grid-container-1"></div>
+		<div class="grid-demo grid-container-1">
+			<div class="grid-item"></div>
+			<div class="grid-item"></div>
+			<div class="grid-item"></div>
+			<div class="grid-item"></div>
+			<div class="grid-item"></div>
+			<div class="grid-item"></div>
+			<div class="grid-item"></div>
+			<div class="grid-item"></div>
+		</div>
+		<div class="grid-container-1">
+			<div class="grid-item-1"></div>
+			<div class="grid-item-1"></div>
+			<div class="grid-item-1"></div>
+			<div class="grid-item-1"></div>
+			<div class="grid-item-1"></div>
+			<div class="grid-item-1"></div>
+			<div class="grid-item-1"></div>
+			<div class="grid-item-1"></div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		$('div').each((idx, el)=>el.style.background = '#' + (0xffffff * Math.random() >> 0).toFixed(0).padStart(6,0))
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+	<script type="text/javascript" src="//www.lilnong.top/static/js/public_hm.js"></script>
+</body>
+</html>

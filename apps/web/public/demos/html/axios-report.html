@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>
+	<script type="text/javascript">
+		var vvAxios = axios.create();
+		vvAxios.interceptors.request.use(function (config) {
+			// console.log('request', 'fun-1', this, config)
+			config._guid = new Date().getTime()
+			config._sendTime = (function getPageTime(){
+						event = new Event('click')
+						return event.timeStamp
+					})();
+			console.log({
+				author: 'linong',
+				localTime: new Date().getTime(),
+				pageTimeStamp:(function getPageTime(){
+						event = new Event('click')
+						return event.timeStamp
+					})(),
+				url: location.href,
+				currentScript:function() {
+		            var e = document.currentScript;
+		            if (!e) {
+		                var t = document.scripts;
+		                e = t[t.length - 1]
+		            }
+		            return e.src 
+		        }(),
+				platform: 'windows',// 系统 Android iOS windows
+
+				type: 'req',
+				version: 'axios.report.html',
+				method: config.url,
+				params: JSON.stringify(config.params),
+				respnse: '',
+				requestTime: '',
+				status: '',
+				keyTime: config._guid,
+				value: JSON.stringify({})
+			})
+			return config;
+		}, function (error) {
+			console.log('request', 'fun-2', this, error)
+			return Promise.reject(error);
+		});
+		vvAxios.interceptors.response.use(function (response) {
+			// console.log('response', 'fun-1', this, response)
+			console.log({
+				author: 'linong',
+				localTime: new Date().getTime(),
+				pageTimeStamp:(function getPageTime(){
+						event = new Event('click')
+						return event.timeStamp
+					})(),
+				url: location.href,
+				currentScript:function() {
+		            var e = document.currentScript;
+		            if (!e) {
+		                var t = document.scripts;
+		                e = t[t.length - 1]
+		            }
+		            return e.src 
+		        }(),
+				platform: 'windows',// 系统 Android iOS windows
+
+				type: 'rsp',
+				version: 'axios.report.html',
+				method: response.config.url,
+				params: JSON.stringify(response.config.params),
+				respnse: JSON.stringify(response.data),
+				requestTime: (function getPageTime(){
+					event = new Event('click')
+					return event.timeStamp
+				})()-response.config._sendTime,
+				status: response.status,
+				keyTime: response.config._guid,
+				value: JSON.stringify({})
+			})
+			return response;
+		}, function (error) {
+			console.log('response', 'fun-2', this, error)
+			return Promise.reject(error);
+		});
+	</script>
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+		<button id="btn1">get请求方式1 config-method-params</button>
+	</div>
+	<script type="text/javascript">
+		btn1.onclick = function(){
+			vvAxios({
+				url: '/cors/config-method-params',
+				method: 'get',
+				params: {
+				    ID: 12345
+				},
+			}).then(v=>{
+				console.log('then', v)
+			})
+		}
+
+		// vvAxios({
+		// 	method: 'get',
+		// 	url: '/cors/1',
+		// 	// `data` 是作为请求主体被发送的数据
+		// 	// 只适用于这些请求方法 'PUT', 'POST', 和 'PATCH'
+		// 	// 在没有设置 `transformRequest` 时，必须是以下类型之一：
+		// 	// - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
+		// 	// - 浏览器专属：FormData, File, Blob
+		// 	// - Node 专属： Stream
+		// 	data: {
+		// 	  firstName: 'Fred'
+		// 	},
+
+		// 	// `params` 是即将与请求一起发送的 URL 参数
+		// 	// 必须是一个无格式对象(plain object)或 URLSearchParams 对象
+		// 	params: {
+		// 	  ID: 12345
+		// 	},
+		// })
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

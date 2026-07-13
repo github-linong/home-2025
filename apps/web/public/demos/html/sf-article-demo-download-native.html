@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+		<style type="text/css">
+			#progress,#progress1,#progress2{
+				background: #ccc;
+			}
+			.warp{
+				margin: 20px 0;
+				border-bottom: 1px solid #ccc;
+			}
+		</style>	
+		<a href="/static/static/download-text.txt" download="file-name-download-test.txt">原生download下载测试</a>
+		<a href="https://www.lilnong.top/static/pdf/B-4-RxJS%E5%9C%A8React%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8-%E9%BE%99%E9%80%B8%E6%A5%A0_.pdf" download="file-name-download-test.txt">原生download下载测试 file1</a>
+		<a href="https://www.lilnong.top/static/pdf/2018-ebook-engineer.pdf" download="file-name-download-test.txt">原生download下载测试 file2</a>
+		<div class="warp">
+			显示进度条，ajax 模拟下载
+			<button id="btn1">缓存下载资源file1</button>
+			<button id="btn2">不缓存下载资源file1</button>
+			<button id="btn3">缓存下载资源file2</button>
+			<button id="btn4">不缓存下载资源file2</button>
+			<div id="progress">
+				进度条
+			</div>
+		</div>
+		<div class="warp">
+			<span style="color: red">我的服务器好像被我玩坏了，没走缓存，我在研究研究吧</span>
+			实现前端下载文件并显示进度条（浏览器缓存）
+			<button id="btn5">缓存下载资源file1</button>
+			<button id="btn6">不缓存下载资源file1</button>
+			<button id="btn7">缓存下载资源file2</button>
+			<button id="btn8">不缓存下载资源file2</button>
+			<div id="progress1">
+				进度条
+			</div>
+		</div>
+		<div class="warp">
+			实现前端下载文件并显示进度条（bloburl）
+			<button id="btn11">缓存下载资源file1</button>
+			<button id="btn12">不缓存下载资源file1</button>
+			<button id="btn13">缓存下载资源file2</button>
+			<button id="btn14">不缓存下载资源file2</button>
+			<div id="progress2">
+				进度条
+			</div>
+		</div>
+		<div class="warp">
+			<button id="btn21">txt-打印默认response</button>
+			<button id="btn22">txt-打印arraybuffer</button>
+			<button id="btn23">txt-打印blob</button>
+
+			<button id="btn24">img-打印默认response</button>
+			<button id="btn25">img-打印arraybuffer</button>
+			<button id="btn26">img-打印blob</button>
+		</div>
+		<script type="text/javascript">
+			var file1={
+				size: 2596452,
+				url: 'https://www.lilnong.top/static/pdf/B-4-RxJS%E5%9C%A8React%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8-%E9%BE%99%E9%80%B8%E6%A5%A0_.pdf'
+			}
+			var file2={
+				size: 18006847,
+				url: 'https://www.lilnong.top/static/pdf/2018-ebook-engineer.pdf'
+			}
+			onprogress = (e)=>{
+				console.log(e);
+				progress.style.width = e.loaded / e.total * 100 + '%'
+				progress.innerText = `进度条 ${progress.style.width},loaded:${e.loaded},total:${e.total}`
+			}
+			onprogress1 = (e)=>{
+				console.log(e);
+				progress1.style.width = e.loaded / e.total * 100 + '%'
+				progress1.innerText = `进度条 ${progress1.style.width},loaded:${e.loaded},total:${e.total}`
+			}
+			onprogress2 = (e)=>{
+				console.log(e);
+				progress2.style.width = e.loaded / e.total * 100 + '%'
+				progress2.innerText = `进度条 ${progress2.style.width},loaded:${e.loaded},total:${e.total}`
+			}
+			progressFile = (url) =>{
+				var xhr = new XMLHttpRequest();
+				xhr.open('get', url);
+				xhr.onprogress = onprogress;//下载进度
+				// .upload.onprogress 这个是上传的时候的进度
+				xhr.send()
+			}
+			btn1.addEventListener('click', e=>{
+				progressFile(file1.url);
+			})
+			btn2.addEventListener('click', e=>{
+				progressFile(file1.url+'?'+Math.random());
+			})
+			btn3.addEventListener('click', e=>{
+				progressFile(file2.url);
+			})
+			btn4.addEventListener('click', e=>{
+				progressFile(file2.url+'?'+Math.random());
+			})
+			downloadFile1 = (url)=>{
+				var xhr = new XMLHttpRequest();
+				xhr.open('get', url);
+				xhr.responseType='blob';//这是精髓
+				xhr.onprogress = onprogress1;//下载进度
+				// .upload.onprogress 这个是上传的时候的进度
+				xhr.onreadystatechange = ()=>{
+					if(xhr.readyState == 4 && xhr.status == 200){
+						nativeDownload(url)
+					}
+				}
+				xhr.send()
+			}
+			btn5.addEventListener('click', e=>{
+				downloadFile1(file1.url);
+			})
+			btn6.addEventListener('click', e=>{
+				downloadFile1(file1.url+'?'+Math.random());
+			})
+			btn7.addEventListener('click', e=>{
+				downloadFile1(file2.url);
+			})
+			btn8.addEventListener('click', e=>{
+				downloadFile1(file2.url+'?'+Math.random());
+			})
+
+			downloadFile2 = (url)=>{
+				var xhr = new XMLHttpRequest();
+				xhr.open('get', url);
+				xhr.responseType='blob';//这是精髓
+				xhr.onprogress = onprogress2;//下载进度
+				// .upload.onprogress 这个是上传的时候的进度
+				xhr.onreadystatechange = ()=>{
+					if(xhr.readyState == 4 && xhr.status == 200){
+						nativeDownload(URL.createObjectURL(xhr.response))
+					}
+				}
+				xhr.send()
+			}
+			btn11.addEventListener('click', e=>{
+				downloadFile2(file1.url);
+			})
+			btn12.addEventListener('click', e=>{
+				downloadFile2(file1.url+'?'+Math.random());
+			})
+			btn13.addEventListener('click', e=>{
+				downloadFile2(file2.url);
+			})
+			btn14.addEventListener('click', e=>{
+				downloadFile2(file2.url+'?'+Math.random());
+			})
+
+			nativeDownload = (url)=>{
+				var dom = document.createElement('a');
+				dom.download=true
+				dom.href = url;
+				dom.click();
+			}
+
+
+			ajax_repsonseType = function(url, responseType){
+				var xhr = new XMLHttpRequest();
+				xhr.open('get', url);
+				if(responseType) xhr.responseType=responseType
+				xhr.onreadystatechange = ()=>{
+					if(xhr.readyState == 4 && xhr.status == 200){
+						// console.log(xhr, xhr.response)
+						console.log(xhr.response, responseType)
+					}
+				}
+				xhr.send()
+			}
+			btn21.addEventListener('click', e=>{
+				ajax_repsonseType('/static/static/download-text.txt');
+			})
+			btn22.addEventListener('click', e=>{
+				ajax_repsonseType('/static/static/download-text.txt', 'arraybuffer');
+			})
+			btn23.addEventListener('click', e=>{
+				ajax_repsonseType('/static/static/download-text.txt', 'blob');
+			})
+			btn24.addEventListener('click', e=>{
+				ajax_repsonseType('/static/static/download-20190528100124.jpg');
+			})
+			btn25.addEventListener('click', e=>{
+				ajax_repsonseType('/static/static/download-20190528100124.jpg', 'arraybuffer');
+			})
+			btn26.addEventListener('click', e=>{
+				ajax_repsonseType('/static/static/download-20190528100124.jpg', 'blob');
+			})
+		</script>
+	</div>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

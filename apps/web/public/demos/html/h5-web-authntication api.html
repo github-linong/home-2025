@@ -1,0 +1,297 @@
+<!--
+ * @author: linong
+ * @Date: 2021-03-08 11:06:45
+ * @lastEditors: 
+ * @lastEditTime: 
+ * @Description: 
+-->
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>实现Web端指纹登录 - www.lilnong.top</title>
+	<meta keywords="Web Authentication API">
+	<meta description="实现Web端指纹登录">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.6.12/vue.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>	
+</head>
+<body>
+	<h3><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Authentication_API">https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Authentication_API</a></h3>
+	<div id="app">
+		<pre>
+			https://juejin.cn/post/6935811262752227335
+			代码不全。
+
+			// // touchIDRegistered('linong','350','felinong')
+			// // // J6aWRyhmGs7NHS2aTT0a9MU6ZD9qUKNdEF
+			// touchIDLogin('felinong', 'J6aWRyhmGs7NHS2aTT0a9MU6ZD9qUKNdEF')
+
+			// localStorage.setItem("certificate", 'felinong');
+			// localStorage.setItem("touchId", 'J6aWRyhmGs7NHS2aTT0a9MU6ZD9qUKNdEF');
+		</pre>
+	</div>
+	<script>
+		arrayBufferToString = function (
+			buffer //: ArrayBuffer
+		) {
+			let binary = "";
+			const bytes = new Uint8Array(buffer);
+			const len = bytes.byteLength;
+			for (let i = 0; i < len; i++) {
+				binary += String.fromCharCode(bytes[i]);
+			}
+			return binary;
+		}
+		base64ToArrayBuffer = function (
+				base64 //: string
+			) {
+				const binaryString = window.atob(base64);
+				const len = binaryString.length;
+				const bytes = new Uint8Array(len);
+				for (let i = 0; i < len; i++) {
+					bytes[i] = binaryString.charCodeAt(i);
+				}
+				return bytes.buffer;
+			},
+			arrayBufferToBase64 = function (
+				buffer //: ArrayBuffer
+			) {
+				let binary = "";
+				const bytes = new Uint8Array(buffer);
+				const len = bytes.byteLength;
+				for (let i = 0; i < len; i++) {
+					binary += String.fromCharCode(bytes[i]);
+				}
+				return window.btoa(binary);
+			}
+		const touchIDOptions = {
+			publicKey: {
+				rp: {
+					name: "chat-system"
+				}, // 网站信息
+				user: {
+					name: "", // 用户名
+					id: "", // 用户id(ArrayBuffer)
+					displayName: "" // 用户名
+				},
+				pubKeyCredParams: [{
+					type: "public-key",
+					alg: -7 // 接受的算法
+				}],
+				challenge: "", // 凭证(touchIDOptions)
+				authenticatorSelection: {
+					authenticatorAttachment: "platform"
+				}
+			}
+		}
+		var touchIDRegistered = async function (
+			userName, //: string,
+			userId, //: string,
+			certificate, //: string
+		) {
+			// 校验设备是否支持touchID
+			const hasTouchID = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+			if (
+				hasTouchID &&
+				window.confirm("检测到您的设备支持指纹登录，是否启用？")
+			) {
+				// 更新注册凭证
+				touchIDOptions.publicKey.challenge = base64ToArrayBuffer(
+					certificate
+				);
+				// 更新用户名、用户id
+				touchIDOptions.publicKey.user.name = userName;
+				touchIDOptions.publicKey.user.displayName = userName;
+				touchIDOptions.publicKey.user.id = base64ToArrayBuffer(
+					userId
+				);
+				// 调用指纹设备，创建指纹
+				const publicKeyCredential = await navigator.credentials.create(
+					touchIDOptions
+				);
+				if (publicKeyCredential && "rawId" in publicKeyCredential) {
+					// 将rowId转为base64
+					const rawId = publicKeyCredential["rawId"];
+					const touchId = arrayBufferToBase64(rawId);
+					const response = publicKeyCredential["response"];
+					// 获取客户端信息
+					const clientDataJSON = arrayBufferToString(
+						response["clientDataJSON"]
+					);
+					console.log(touchId, clientDataJSON, publicKeyCredential)
+					console.log(rawId,touchId,response)
+					// 调用注册TouchID接口
+					// this.$api.touchIdLogingAPI
+					// 	.registeredTouchID({
+					// 		touchId: touchId,
+					// 		clientDataJson: clientDataJSON
+					// 	})
+					// 	.then((
+					// 		// res: responseDataType < string > 
+					// 	) => {
+					// 		if (res.code === 0) {
+					// 			// 保存touchId用于指纹登录
+					// 			localStorage.setItem("touchId", touchId);
+					// 			return;
+					// 		}
+					// 		alert(res.msg);
+					// 	});
+				}
+			}
+		}
+		authLogin = function (
+			state, //: string, 
+			code, //: string, 
+			platform, //: string
+		) {
+			this.$api.authLoginAPI
+				.authorizeLogin({
+					state: state,
+					code: code,
+					platform: platform
+				})
+				.then(async (
+					res //: responseDataType
+				) => {
+					if (res.code == 0) {
+						//  ... 授权登录成功，其他代码省略 ... //
+						// 保存用户凭证，用于指纹登录
+						const certificate = res.data.certificate;
+						localStorage.setItem("certificate", certificate);
+						// 校验设备是否支持touchID
+						const hasTouchID = await PublicKeyCredential
+							.isUserVerifyingPlatformAuthenticatorAvailable();
+						if (hasTouchID) {
+							//  ... 其他代码省略 ... //
+							// 获取Touch ID，检测用户是否已授权本网站指纹登录
+							this.$api.touchIdLogingAPI
+								.getTouchID({
+									userId: userId
+								})
+								.then(async (
+									res //: responseDataType
+								) => {
+									if (res.code !== 0) {
+										// touchId不存在, 询问用户是否注册touchId
+										await this.touchIDRegistered(username, userId, certificate);
+									}
+									// 保存touchid
+									localStorage.setItem("touchId", res.data);
+									// 跳转消息组件
+									await this.$router.push({
+										name: "message"
+									});
+								});
+							return;
+						}
+						// 设备不支持touchID，直接跳转消息组件
+						await this.$router.push({
+							name: "message"
+						});
+						return;
+					}
+					// 登录失败，切回登录界面
+					this.isLoginStatus = loginStatusEnum.NOT_LOGGED_IN;
+					alert(res.msg);
+				});
+		}
+
+		touchIDLogin = async function (
+			certificate, //: string, 
+			touchId, //: string
+		) {
+			// 校验设备是否支持touchID
+			const hasTouchID = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+			if (hasTouchID) {
+				// 更新登录凭证
+				// this.touchIDLoginOptions
+				touchIDOptions.publicKey.challenge = base64ToArrayBuffer(
+					certificate
+				);
+				// 更新touchID
+				// this.touchIDLoginOptions
+				touchIDOptions.publicKey.allowCredentials[0].id = base64ToArrayBuffer(
+					touchId
+				);
+				// 开始校验指纹
+				await navigator.credentials.get(
+					// this.touchIDLoginOptions
+					touchIDOptions
+				);
+				// 调用指纹登录接口
+				this.$api.touchIdLogingAPI
+					.touchIdLogin({
+						touchId: touchId,
+						certificate: certificate
+					})
+					.then((
+						res //: responseDataType
+					) => {
+						if (res.code == 0) {
+							// 存储当前用户信息
+							localStorage.setItem("token", res.data.token);
+							localStorage.setItem("refreshToken", res.data.refreshToken);
+							localStorage.setItem("profilePicture", res.data.avatarSrc);
+							localStorage.setItem("userID", res.data.userID);
+							localStorage.setItem("username", res.data.username);
+							const certificate = res.data.certificate;
+							localStorage.setItem("certificate", certificate);
+							// 跳转消息组件
+							this.$router.push({
+								name: "message"
+							});
+							return;
+						}
+						// 切回登录界面
+						this.isLoginStatus = loginStatusEnum.NOT_LOGGED_IN;
+						alert(res.msg);
+					});
+			}
+		}
+	</script>
+	<script>
+		const touchId = localStorage.getItem("touchId");
+		const certificate = localStorage.getItem("certificate");
+		// 如果touchId存在，则调用指纹登录
+		if (touchId && certificate) {
+			// 提示用户是否需要touchId登录
+			setTimeout(() => {
+				if (window.confirm("您已授权本网站通过指纹登录，是否立即登录？")) {
+					this.touchIDLogin(certificate, touchId);
+				}
+			}, 1000);
+		}
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+	<script type="text/javascript" src="//www.lilnong.top/static/js/public_hm.js"></script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+		<p>https://cloud.tencent.com/developer/article/1143991</p>
+		<div>
+			<?php
+			error_reporting(0);
+			if($_GET['open']==1 && strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger')!==false){
+				header("Content-Disposition: attachment; filename=\"load.doc\"");
+				header("Content-Type: application/vnd.ms-word;charset=utf-8");
+			}
+			?>
+			&lt;!DOCTYPE html>
+			&lt;html>
+			&lt;head>
+				&lt;meta charset="UTF-8">
+				&lt;title>Welcome&lt;/title>
+				&lt;meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+				&lt;meta content="yes" name="apple-mobile-web-app-capable"/>
+				&lt;meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+				&lt;meta name="format-detection" content="telephone=no"/>
+				&lt;meta content="false" name="twcClient" id="twcClient"/>
+				&lt;style>
+				body,html{width:100%;height:100%}
+				*{margin:0;padding:0}
+				body{background-color:#fff}
+				.top-bar-guidance{font-size:15px;color:#fff;height:40%;line-height:1.8;padding-left:20px;padding-top:20px;background:url(//gw.alicdn.com/tfs/TB1eSZaNFXXXXb.XXXXXXXXXXXX-750-234.png) center top/contain no-repeat}
+				.top-bar-guidance .icon-safari{width:25px;height:25px;vertical-align:middle;margin:0 .2em}
+				.app-download-btn{display:block;width:214px;height:40px;line-height:40px;margin:18px auto 0 auto;text-align:center;font-size:18px;color:#2466f4;border-radius:20px;border:.5px #2466f4 solid;text-decoration:none}
+			&lt;/style>
+			&lt;/head>
+			&lt;body>
+				&lt;div class="top-bar-guidance">
+					&lt;p>
+						点击右上角&lt;img src="//gw.alicdn.com/tfs/TB1xwiUNpXXXXaIXXXXXXXXXXXX-55-55.png" class="icon-safari"/> Safari打开
+					&lt;/p>
+					&lt;p>
+						可以继续访问本站哦~
+					&lt;/p>
+				&lt;/div>
+				&lt;a class="app-download-btn" id="BtnClick" href="javascript:;"> 点此继续访问 &lt;/a>
+				&lt;script>
+					var url = 'http://www.youngxj.cn';//更改需要跳转的地址
+					document.querySelector('body').addEventListener('touchmove', function (event) {
+						event.preventDefault();
+					});
+					window.mobileUtil = (function(win, doc) {
+						var UA = navigator.userAgent,
+						isAndroid = /android|adr/gi.test(UA),
+						isIOS = /iphone|ipod|ipad/gi.test(UA) && !isAndroid,
+						isBlackBerry = /BlackBerry/i.test(UA),
+						isWindowPhone = /IEMobile/i.test(UA),
+						isMobile = isAndroid || isIOS || isBlackBerry || isWindowPhone;
+						return {
+							isAndroid: isAndroid,
+							isIOS: isIOS,
+							isMobile: isMobile,
+							isWeixin: /MicroMessenger/gi.test(UA),
+							isQQ: /QQ/gi.test(UA)
+						};
+					})(window, document);
+					if(mobileUtil.isWeixin){
+						if(mobileUtil.isIOS){
+							url = "https://t.asczwa.com/taobao?backurl=" + encodeURIComponent(url);
+							document.getElementById('BtnClick').href=url;
+						}else if(mobileUtil.isAndroid){
+							url = '?open=1';
+							document.getElementById('BtnClick').href=url;
+							var iframe = document.createElement("iframe");
+							iframe.style.display = "none";
+							iframe.src = url;
+							document.body.appendChild(iframe);
+						}
+					}else{
+						document.getElementById('BtnClick').href=url;
+						window.location.replace(url);
+					}
+				//setTimeout('WeixinJSBridge.invoke("closeWindow", {}, function(e) {})', 2000); &lt;/script>
+			&lt;/body>
+			&lt;/html>
+		</div>
+		<p>https://www.lilnong.top/static/html/wx-apk-download.html</p>
+		<p>http://www.lilnong.top/redirect 测试地址</p>
+	</div>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+	  {{time}}
+	  <vv-upload class="vv-upload"></vv-upload>
+	  <vv-upload class="vv-upload">
+	    <div>上传</div>
+	  </vv-upload>
+	  <vv-upload class="vv-upload"></vv-upload>
+	  <hr>
+	  <vv-upload class="vv-upload">
+	  	
+	  </vv-upload>
+	</div>
+	<style type="text/css">
+		.vv-upload{
+		  display: block;
+		}
+	</style>
+	<script type="text/javascript">
+		var ua = navigator.userAgent,
+		  isIOS=/iphone|ipad|ipod/gi.test(ua),
+		  isAndroid=/android/gi.test(ua),
+		  isVVMusic=/vvmusic/gi.test(ua);
+		var componentPre = 'vv-upload-component'
+		Vue.component('vv-upload', {
+		  name: componentPre,
+		  author: 'lilnong.top',
+		  template: `
+				<label :for="labelFor" @click="uploadImage">
+					<slot>上传图片</slot>
+					<input type="file" :accept="accept" :name="inputID" :id="inputID" style="width:0;height:0;overflow:hidden;position:absolute;" @change="inputChange">
+				</label>
+			`,
+		  data(){
+		    return{
+		      inputID: componentPre+Date.now()+Math.random().toFixed(10).slice(2),
+		      random: Math.random()
+		    }
+		  },
+		  methods: {
+		    uploadImage(){
+		      if(this.labelFor === false){
+						// 需要客户端上传
+		        
+		      }
+		    },
+		    inputChange(e){
+		   		var files = e.target.files
+				if(files.length > 0){
+						// 选中了文件
+					this.uploadImage(files[0])
+					var formData = new FormData();
+					formData.append(this.fileName, files[0])
+					for(var i in this.body) formData.append(i, this.body[i]);
+					var xhr = new XMLHttpRequest();
+					xhr.open('post', this.url);
+					xhr.onreadystatechange = function(){
+						if(xhr.readyState == 4){
+							if(xhr.status == 200){
+								console.log(xhr.response, 'success')
+							}else{
+								console.log(xhr.response, 'error')
+							}
+						}
+					}
+					xhr.send(formData);
+				}
+		    }
+		  },
+		  computed: {
+		    labelFor(){
+					// 开启了识别
+		      if(this.isClientAutoUpload === true){
+						// 开启了客户端上传
+		        if(this.isClientUpload === true){
+							// 服务支持版本验证通过
+		          if(true){
+		            return false;
+		          }
+		        }
+		      }
+		      return this.inputID
+		    }
+		  },
+		  props:{
+		  	body:{
+		  		type: Object,
+		  		default: {}
+		  	},
+		  	url: {
+		      type: String,
+		      default: 'https://www.lilnong.top/upload_any'
+		  	},
+		  	fileName: {
+		      type: String,
+		      default: 'file'
+		  	},
+		  	fileSize: {
+		      type: Number,
+		      default: 1024*1024*15
+		  	},
+		  	fileType: {
+		      type: String,
+		      default: "png,jpg,jpeg"
+		  	},
+		    accept: {
+		      type: String,
+		      default: "image/*"
+		    },
+		    isAndroid: {
+		      type: Boolean,
+		      default: isAndroid
+		    },
+		    isIOS: {
+		      type: Boolean,
+		      default: isIOS
+		    },
+		    isVVMusic: {
+		      type: Boolean,
+		      default: isVVMusic
+		    },
+			// 是否开启客户端上传
+		    isClientUpload: {
+		      type: Boolean,
+		      default: true
+		    },
+			// 自动识别，端内客户端上传，端外H5
+		    isClientAutoUpload: {
+		      type: Boolean,
+		      default: false
+		    }
+		  }
+		})
+
+		new Vue({
+		  el: '#app',
+		  data(){
+		    return{
+		      time: Date.now()
+		    }
+		  }
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

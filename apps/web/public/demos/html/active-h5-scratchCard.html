@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<style type="text/css">
+		#canvas{
+		  background: url(https://www.lilnong.top/static/img/avator/avator-21.jpg) #fff no-repeat center center;
+		  background-size: cover;
+		  background-size: contain;
+		  border: 1px solid #f00;
+		}
+	</style>
+	<div id="app">
+		<canvas id="canvas" width="300" height="200"></canvas>
+		<p id="eraseRate"></p>
+		<button id="auto">自动</button>
+		<button id="fill">覆盖</button>
+		<p>节点记录 <span id="lines"></span></p>
+	</div>
+	<script type="text/javascript">
+		ctx = canvas.getContext('2d');
+		ctx.beginPath();
+		ctx.moveTo(0, 0);//window.getComputedStyle(canvas).width
+		ctx.lineTo(300, 0);
+		ctx.lineTo(300, 200);
+		ctx.lineTo(0, 200);
+		ctx.fill();
+		var imageFill = new Image();
+		imageFill.src = 'https://www.lilnong.top/static/img/defaultmatch.png'
+		imageFill.onload = ()=>{
+		  ctx.drawImage(imageFill,0,0,300,200)
+		}
+		var imageCursor = new Image();
+		imageCursor.src = 'https://www.lilnong.top/static/img/ml-btn6.png'
+
+		linearr = [];
+		clearRectTag = false;
+
+		clearRectLen = 30
+		clearRectLen2 = clearRectLen / 2
+		clearRectCanvas = _.throttle((e)=>{
+		  ctx.beginPath();
+		  ctx.globalCompositeOperation = 'destination-out';
+		  ctx.drawImage(imageCursor, e.x - (imageCursor.width / 2), e.y- (imageCursor.height / 2))
+		}, 50)
+		function saveLines(e){
+		  linearr.push({x: e.x, y: e.y});
+		}
+		canvas.addEventListener('mousedown', (e)=>{
+		  clearRectTag = true
+		  clearRectCanvas(e)
+		  saveLines(e)
+		})
+		canvas.addEventListener('mousemove', (e)=>{
+		  if(clearRectTag){
+		    saveLines(e)
+		    clearRectCanvas(e)
+		  }
+		})
+		canvas.addEventListener('mouseup', (e)=>{
+		  clearRectTag = false
+		})
+		canvas.addEventListener('mouseout', (e)=>{
+		  clearRectTag = false
+		})
+
+		setInterval(v=>{
+		  var imageData = ctx.getImageData(0, 0, 300, 200).data;
+		  var eraseTotal = 0;
+		  var step = 1 * 4;//步长精度
+		  for (var i = 3, len = imageData.length; i < len; i += step) {
+		    if (imageData[i] === 0) {
+		        eraseTotal++;
+		    }
+		  }
+		  eraseRate.innerText = eraseTotal/(len/step)
+		  
+		  lines.innerText = JSON.stringify(linearr)
+		}, 1000)
+		fill.addEventListener('click', function(){
+		  ctx.globalCompositeOperation="source-over"
+		  ctx.beginPath();
+		  ctx.moveTo(0, 0);//window.getComputedStyle(canvas).width
+		  ctx.lineTo(300, 0);
+		  ctx.lineTo(300, 200);
+		  ctx.lineTo(0, 200);
+		  ctx.fill();
+		});
+		auto.addEventListener('click', function(){
+		  arr = [{"x":23,"y":14},{"x":23,"y":15},{"x":23,"y":16},{"x":24,"y":17},{"x":27,"y":17},{"x":31,"y":17},{"x":37,"y":19},{"x":45,"y":19},{"x":54,"y":19},{"x":62,"y":19},{"x":71,"y":19},{"x":81,"y":19},{"x":89,"y":19},{"x":97,"y":19},{"x":104,"y":19},{"x":114,"y":19},{"x":123,"y":20},{"x":133,"y":22},{"x":140,"y":23},{"x":145,"y":23},{"x":151,"y":26},{"x":153,"y":26},{"x":156,"y":28},{"x":157,"y":28},{"x":158,"y":28},{"x":158,"y":30},{"x":157,"y":30},{"x":154,"y":33},{"x":148,"y":35},{"x":141,"y":36},{"x":132,"y":39},{"x":125,"y":41},{"x":116,"y":44},{"x":106,"y":48},{"x":97,"y":50},{"x":88,"y":52},{"x":78,"y":55},{"x":71,"y":58},{"x":64,"y":61},{"x":58,"y":63},{"x":55,"y":64},{"x":52,"y":66},{"x":50,"y":66},{"x":49,"y":67},{"x":49,"y":68},{"x":50,"y":69},{"x":50,"y":70},{"x":52,"y":70},{"x":55,"y":70},{"x":59,"y":70},{"x":68,"y":70},{"x":77,"y":70},{"x":89,"y":70},{"x":103,"y":70},{"x":117,"y":70},{"x":133,"y":70},{"x":148,"y":70},{"x":163,"y":69},{"x":179,"y":66},{"x":192,"y":66},{"x":202,"y":62},{"x":213,"y":62},{"x":220,"y":61},{"x":224,"y":61},{"x":226,"y":61},{"x":227,"y":61},{"x":225,"y":63},{"x":221,"y":65},{"x":217,"y":67},{"x":209,"y":70},{"x":201,"y":72},{"x":191,"y":74},{"x":180,"y":78},{"x":167,"y":81},{"x":154,"y":84},{"x":140,"y":88},{"x":126,"y":91},{"x":117,"y":95},{"x":106,"y":98},{"x":96,"y":101},{"x":87,"y":103},{"x":79,"y":107},{"x":75,"y":107},{"x":70,"y":109},{"x":67,"y":110},{"x":66,"y":112},{"x":65,"y":112},{"x":65,"y":113},{"x":66,"y":113},{"x":69,"y":113},{"x":72,"y":113},{"x":78,"y":113},{"x":83,"y":113},{"x":94,"y":113},{"x":105,"y":113},{"x":114,"y":113},{"x":127,"y":113},{"x":139,"y":113},{"x":148,"y":113},{"x":155,"y":113},{"x":162,"y":113},{"x":165,"y":113},{"x":168,"y":114},{"x":171,"y":116},{"x":173,"y":118},{"x":173,"y":120},{"x":171,"y":122},{"x":168,"y":124},{"x":163,"y":128},{"x":157,"y":131},{"x":149,"y":133},{"x":140,"y":137},{"x":132,"y":138},{"x":126,"y":141},{"x":114,"y":145},{"x":105,"y":147},{"x":92,"y":148},{"x":84,"y":150},{"x":77,"y":151},{"x":73,"y":151},{"x":70,"y":153},{"x":73,"y":153},{"x":89,"y":151},{"x":101,"y":150},{"x":113,"y":148},{"x":127,"y":147},{"x":139,"y":144},{"x":154,"y":138},{"x":166,"y":137},{"x":177,"y":134},{"x":190,"y":131},{"x":200,"y":127},{"x":208,"y":124},{"x":218,"y":121},{"x":224,"y":121},{"x":229,"y":121},{"x":234,"y":121},{"x":236,"y":121},{"x":238,"y":121}];
+		interval = setInterval(()=>{
+		    if(arr.length == 0) return clearInterval(interval)
+		    clearRectCanvas(arr.shift());
+		}, 20)
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

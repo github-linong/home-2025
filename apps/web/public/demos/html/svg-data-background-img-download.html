@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/downloadjs/1.4.8/download.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+
+	<!-- Required to convert named colors to RGB -->
+	<script src="https://cdn.jsdelivr.net/npm/rgbcolor@^1/index.js"></script>
+	<!-- Optional if you want blur -->
+	<script src="https://cdn.jsdelivr.net/npm/stackblur-canvas@^1/dist/stackblur.min.js"></script>
+	<!-- Main canvg code -->
+	<script src="https://cdn.jsdelivr.net/npm/canvg/dist/browser/canvg.min.js"></script>
+
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+	<a href="http://jsrun.net/uIyKp/edit">jsrun 测试地址</a>
+	<a href="https://www.lilnong.top/static/html/svg-to-css-background.html">svgToCssBackground 的转换地址</a>
+	<br style="clear: both">
+	<style type="text/css">
+		.demo-svg { display: block; }
+		.demo-polygon { fill: #41B883; }
+		.demo-circle {
+		  fill: transparent;
+		  stroke: #35495E;
+		}
+		.demo-range-input {
+		  display: block;
+		  width: 100%;
+		  margin-bottom: 15px;
+		}
+		.warp{
+		  height: 200px;width: 200px;
+		}
+		.demo-warp{
+			height: 300px;
+			float:left;    border: 1px solid #f00;
+		}
+	</style>
+		<div class="demo-warp">
+			<p>单纯svg</p>
+			<svg width="200" height="200" class="demo-svg warp">
+			  <polygon points="100,10.899999999999991 175.32367609057616,75.52585404550416 145.49457852743743,162.61791536462093 71.43363673858582,139.31822592662246 41.795341202736594,81.08815994425322" class="demo-polygon" style="fill: #41B883;"></polygon> 
+			  <circle cx="100" cy="100" r="90" class="demo-circle" style="fill: transparent;stroke: #35495E;"></circle>
+			</svg>
+		</div>
+		<div class="demo-warp">
+			<p>img加载svg DataURL</p>
+			<img id="svgDataImg" class=" warp" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' class='demo-svg warp'%3E %3Cpolygon points='100,10.899999999999991 175.32367609057616,75.52585404550416 145.49457852743743,162.61791536462093 71.43363673858582,139.31822592662246 41.795341202736594,81.08815994425322' class='demo-polygon' style='fill: %2341B883;'%3E%3C/polygon%3E %3Ccircle cx='100' cy='100' r='90' class='demo-circle' style='fill: transparent;stroke: %2335495E;'%3E%3C/circle%3E %3C/svg%3E" alt="" />
+		</div>
+
+		<div class="demo-warp">
+			<p>背景图加载 svg DataURL</p>
+			<div class=" warp" style="background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' class='demo-svg warp'%3E %3Cpolygon points='100,10.899999999999991 175.32367609057616,75.52585404550416 145.49457852743743,162.61791536462093 71.43363673858582,139.31822592662246 41.795341202736594,81.08815994425322' class='demo-polygon' style='fill: %2341B883;'%3E%3C/polygon%3E %3Ccircle cx='100' cy='100' r='90' class='demo-circle' style='fill: transparent;stroke: %2335495E;'%3E%3C/circle%3E %3C/svg%3E&quot;);"></div>
+		</div>
+		<div class="demo-warp">
+			<p>download属性 svg DataURL 改后缀 </p>
+			<p>download="linong-svg.png"</p>
+			<a href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' class='demo-svg warp'%3E %3Cpolygon points='100,10.899999999999991 175.32367609057616,75.52585404550416 145.49457852743743,162.61791536462093 71.43363673858582,139.31822592662246 41.795341202736594,81.08815994425322' class='demo-polygon' style='fill: %2341B883;'%3E%3C/polygon%3E %3Ccircle cx='100' cy='100' r='90' class='demo-circle' style='fill: transparent;stroke: %2335495E;'%3E%3C/circle%3E %3C/svg%3E" download="linong-svg.png"><img class=" warp" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' class='demo-svg warp'%3E %3Cpolygon points='100,10.899999999999991 175.32367609057616,75.52585404550416 145.49457852743743,162.61791536462093 71.43363673858582,139.31822592662246 41.795341202736594,81.08815994425322' class='demo-polygon' style='fill: %2341B883;'%3E%3C/polygon%3E %3Ccircle cx='100' cy='100' r='90' class='demo-circle' style='fill: transparent;stroke: %2335495E;'%3E%3C/circle%3E %3C/svg%3E" alt="" /></a>
+		</div>
+		<div class="demo-warp">
+			<p>download属性 svg DataURL 改后缀 </p>
+			<p>download="linong-svg"</p>
+			<a href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' class='demo-svg warp'%3E %3Cpolygon points='100,10.899999999999991 175.32367609057616,75.52585404550416 145.49457852743743,162.61791536462093 71.43363673858582,139.31822592662246 41.795341202736594,81.08815994425322' class='demo-polygon' style='fill: %2341B883;'%3E%3C/polygon%3E %3Ccircle cx='100' cy='100' r='90' class='demo-circle' style='fill: transparent;stroke: %2335495E;'%3E%3C/circle%3E %3C/svg%3E" download="linong-svg"><img class=" warp" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' class='demo-svg warp'%3E %3Cpolygon points='100,10.899999999999991 175.32367609057616,75.52585404550416 145.49457852743743,162.61791536462093 71.43363673858582,139.31822592662246 41.795341202736594,81.08815994425322' class='demo-polygon' style='fill: %2341B883;'%3E%3C/polygon%3E %3Ccircle cx='100' cy='100' r='90' class='demo-circle' style='fill: transparent;stroke: %2335495E;'%3E%3C/circle%3E %3C/svg%3E" alt="" /></a>
+		</div>
+		<div class="demo-warp">
+			<p>download属性 svg DataURL 改后缀 </p>
+			<p>download="linong-svg.jpg"</p>
+			<a href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' class='demo-svg warp'%3E %3Cpolygon points='100,10.899999999999991 175.32367609057616,75.52585404550416 145.49457852743743,162.61791536462093 71.43363673858582,139.31822592662246 41.795341202736594,81.08815994425322' class='demo-polygon' style='fill: %2341B883;'%3E%3C/polygon%3E %3Ccircle cx='100' cy='100' r='90' class='demo-circle' style='fill: transparent;stroke: %2335495E;'%3E%3C/circle%3E %3C/svg%3E" download="linong-svg.jpg"><img class=" warp" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' class='demo-svg warp'%3E %3Cpolygon points='100,10.899999999999991 175.32367609057616,75.52585404550416 145.49457852743743,162.61791536462093 71.43363673858582,139.31822592662246 41.795341202736594,81.08815994425322' class='demo-polygon' style='fill: %2341B883;'%3E%3C/polygon%3E %3Ccircle cx='100' cy='100' r='90' class='demo-circle' style='fill: transparent;stroke: %2335495E;'%3E%3C/circle%3E %3C/svg%3E" alt="" /></a>
+		</div>
+		<div class="demo-warp">
+			<p>https://github.com/canvg/canvg</p>
+			<canvas id="canvas" width="1000px" height="600px"></canvas>
+			<script>
+				window.onload = function() {
+				  //load '../path/to/your.svg' in the canvas with id = 'canvas'
+				  canvg('canvas', "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' class='demo-svg warp'%3E %3Cpolygon points='100,10.899999999999991 175.32367609057616,75.52585404550416 145.49457852743743,162.61791536462093 71.43363673858582,139.31822592662246 41.795341202736594,81.08815994425322' class='demo-polygon' style='fill: %2341B883;'%3E%3C/polygon%3E %3Ccircle cx='100' cy='100' r='90' class='demo-circle' style='fill: transparent;stroke: %2335495E;'%3E%3C/circle%3E %3C/svg%3E")
+
+				  //load a svg snippet in the canvas with id = 'drawingArea'
+				  // canvg(document.getElementById('drawingArea'), '<svg>...</svg>')
+
+				  //ignore mouse events and animation
+				  // canvg('canvas', 'file.svg', { ignoreMouse: true, ignoreAnimation: true })
+				}
+			</script>
+		</div>
+		<div class="demo-warp">
+			<p>img引入svgDataURL，canvas读img。</p>
+			<canvas width="200" height="200" id="canvas1"></canvas>
+			<script type="text/javascript">
+				var ctx = canvas1.getContext('2d')
+				ctx.drawImage(svgDataImg, 0, 0)
+			</script>
+		</div>
+		<div class="demo-warp">
+			<p>img引入svgDataURL，canvas读img。toDataURL</p>
+			<a href="" download="linong.png" id="download1href"><img id="download1src"></a>
+			<script type="text/javascript">
+				download1href.href=download1src.src=canvas1.toDataURL("image/png")
+			</script>
+		</div>
+		<div class="demo-warp">
+			<p>img引入svgDataURL，canvas读img。toBlob</p>
+			<a href="" download="linong.png" id="download2href"><img id="download2src"></a>
+			<script type="text/javascript">
+				canvas1.toBlob(function(v){
+					download2href.href=download2src.src=URL.createObjectURL(v)
+				},"image/png")
+			</script>
+		</div>
+		<div class="demo-warp">
+			<p>img引入svgDataURL，canvas读img。toDataURL。无download</p>
+			<img id="download3src">
+			<script type="text/javascript">
+				download3src.src=canvas1.toDataURL("image/png")
+			</script>
+		</div>
+		<div class="demo-warp">
+			<p>img引入svgDataURL，canvas读img。toBlob。无download</p>
+			<img id="download4src">
+			<script type="text/javascript">
+				canvas1.toBlob(function(v){
+					download4src.src=URL.createObjectURL(v)
+				},"image/png")
+			</script>
+		</div>
+		<div class="demo-warp">
+			<p>https://github.com/rndme/download</p>
+			<button id="downloadBtn1">download-dataURL ;</button>
+			<button id="downloadBtn2">download-string ;</button>
+			<button id="downloadBtn3">download-blob  ;</button>
+			<button id="downloadBtn4">download-url  ;</button>
+			<button id="downloadBtn5">download-UInt8 Array  ;</button>
+			<button id="downloadBtn6">download-img blob  ;</button>
+			<script type="text/javascript">
+				downloadBtn1.onclick=function(){
+					download(download3src.src, "linong.png", "image/png");
+				}
+				downloadBtn2.onclick=function(){
+					download("hello world", "dlText.txt", "text/plain");
+				}
+				downloadBtn3.onclick=function(){
+					download(new Blob(["hello world"]), "dlTextBlob.txt", "text/plain");
+				}
+				downloadBtn4.onclick=function(){
+					download("/robots.txt");
+				}
+				downloadBtn5.onclick=function(){
+					var str= "hello world",	arr= new Uint8Array(str.length);
+					str.split("").forEach(function(a,b){
+					  arr[b]=a.charCodeAt();
+					});
+
+					download( arr, "textUInt8Array.txt", "text/plain" );
+				}
+				downloadBtn6.onclick=function(){
+					
+					canvas1.toBlob(function(v){
+						// download4src.src=URL.createObjectURL(v)
+						download(v, "awesomesauce.png", "image/png");
+					},"image/png")
+				}
+			</script>
+		</div>
+	</div>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

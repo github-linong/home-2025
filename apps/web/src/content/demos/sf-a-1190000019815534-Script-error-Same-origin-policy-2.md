@@ -1,0 +1,25 @@
+---
+title: "Script Error Same Origin Policy 2"
+description: "src=\"../js/scripterror.js\" 无跨域限制单页面 src=\"https://www.lilnong.top/static/js/scripterror.js?1\""
+pubDate: "2019-06-01"
+type: web
+demoUrl: "/demos/html/sf-a-1190000019815534-Script-error-Same-origin-policy-2.html"
+legacyUrl: "/static/html/sf-a-1190000019815534-Script-error-Same-origin-policy-2.html"
+category: "思否配套"
+badge: "博客配套"
+tags: ["legacy", "SegmentFault", "博客配套"]
+relatedPosts: ["sf-1190000019815534"]
+---
+
+## 简介
+
+Script error / 同源策略系列变体 2。
+
+## 如何测试验证
+
+1. 触发错误并记录；与变体 1/3/4 对照 CORS 头差异。
+
+## 相关规范与文档
+
+- [MDN: CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+- [MDN: Access-Control-Allow-Origin](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin)

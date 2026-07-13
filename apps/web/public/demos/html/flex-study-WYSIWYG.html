@@ -1,0 +1,264 @@
+<!--
+ * @author: linong
+ * @Date: 2021-02-07 15:15:56
+ * @lastEditors: 
+ * @lastEditTime: 
+ * @Description: 
+-->
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Flex 可视化学习 - www.lilnong.top</title>
+	<!-- <meta keywords="preview video, metadata,preview audio,preview image"> -->
+	<!-- <meta description="上传前预览文件，可以预览音视频，可以预览图片，可以预览文本"> -->
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>	
+</head>
+<body>
+	<style>
+		*{
+			font-size: 12px;
+		}
+		h3 span{
+			font-size: 16px;font-weight: bold;
+			border-bottom: 1px dashed #eee;
+		}
+		/* h3 + label{
+			margin-left: 2em;
+		} */
+	</style>
+	<div id="app">
+		<h1>Flex 可视化学习</h1>
+		<div style="display: flex;"  v-for="box in parentList">
+			<div style="flex: 1 0 200px">
+				<h2>盒子属性设置</h2>
+				<div>
+					<div v-for="item in parentAttr" :key="item.key">
+						<h3><el-checkbox v-model="box[item.key].checked"></el-checkbox> <span>{{item.key}}</span></h3>
+						<template v-if="item.type == 'select'">
+							<el-select  style="width: 120px" v-model="box[item.key].value">
+								<el-option :value="option" :label="option" v-for="option in item.values" :key="option"></el-option>
+							</el-select>
+						</template>
+						<template v-else-if="item.type == 'number'">
+							<el-input style="width: 120px" type="number"  v-model="box[item.key].value"></el-input>
+						</template>
+						<template v-else>
+							<el-input style="width: 120px" v-model="box[item.key].value"></el-input>
+						</template>
+					</div>
+				</div>
+			</div>
+			<div style="flex: 1 1 800px">
+				<h2>预览 <button @click="add(box.list)">add child</button></h2>
+				<div style="display: flex;" :style="filterStyle(parentAttr, box)">
+					<div v-for="child in box.list" :style="filterStyle(childAttr, child)">
+						<div>id: {{child.id}}</div>
+						<div v-for="item in childAttr" :key="item.key" >
+							<h3><el-checkbox v-model="child[item.key].checked"></el-checkbox> <span>{{item.key}}</span></h3>
+							
+							<template v-if="item.type == 'select'">
+								<el-select  style="width: 120px" v-model="child[item.key].value">
+									<el-option :value="option" :label="option" v-for="option in item.values" :key="option"></el-option>
+								</el-select>
+							</template>
+							<template v-else-if="item.type == 'number'">
+								<el-input style="width: 120px" type="number"  v-model="child[item.key].value"></el-input>
+							</template>
+							<template v-else>
+								<el-input style="width: 120px" v-model="child[item.key].value"></el-input>
+							</template>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		count = 0;
+		vm = new Vue({
+			el: '#app',
+			data(){
+				return {
+					parentList: [
+						{
+							'flex-direction': {
+								value: 'row',
+								checked: false,
+							},
+							'justify-content': {
+								value: 'center',
+								checked: false,
+							},
+							'align-items': {
+								value: 'center',
+								checked: false,
+							},
+							'align-content': {
+								value: 'center',
+								checked: false,
+							},
+							'flex-wrap': {
+								value: 'nowrap',
+								checked: false,
+							},
+							list: []
+						}
+					],
+					parentAttr: [
+						{
+							key: 'flex-direction',
+							values: ['row','row-reverse','column','column-reverse'],
+							desc: '主轴可以通过flex-direction来进行设置，取值为row和column。当为row时，justify-content 控制水平方向的布局，align-items 控制垂直方向的布局。当为column时，justify-content 控制垂直方向的布局，align-items 控制水平方向的布局。',
+							default: '',
+							// value: 'row',
+							type: 'select',// select选择，text字符串，number数值，px单位
+						},
+						{
+							key: 'justify-content',
+							values: ['flex-start','flex-end','center',"space-between","space-around"],
+							desc: '主轴方向的布局方式',
+							default: '',
+							// value: 'nowrap',
+							type: 'select',// select选择，text字符串，number数值，px单位
+						},
+						{
+							key: 'align-items',
+							values: ['flex-start','flex-end','center',"space-between","space-around"],
+							desc: '交叉轴方向的布局方式',
+							default: '',
+							// value: 'nowrap',
+							type: 'select',// select选择，text字符串，number数值，px单位
+						},
+						{
+							key: 'align-content',
+							values: ['flex-start','flex-end','center','stretch',"space-between","space-around"],
+							default: '',
+							// value: 'nowrap',
+							type: 'select',// select选择，text字符串，number数值，px单位
+						},
+						{
+							key: 'flex-wrap',
+							values: ['nowrap','wrap','wrap-reverse'],
+							default: '',
+							// value: 'nowrap',
+							type: 'select',// select选择，text字符串，number数值，px单位
+						},
+					],
+					childAttr: [
+						{
+							key: 'order',
+							default: '',
+							type: "number",// select选择，text字符串，number数值，px单位
+						},
+						{
+							key: 'flex-grow',
+							default: '',
+							type: "number",// select选择，text字符串，number数值，px单位
+						},
+						{
+							key: 'flex-shrink',
+							default: '',
+							type: 'number',// select选择，text字符串，number数值，px单位
+						},
+						{
+							key: 'flex-basis',
+							default: '',
+							type: 'px',// select选择，text字符串，number数值，px单位
+						},
+						{
+							key: 'align-self',
+							values: ['auto','flex-start','flex-end','center','base-line'],
+							default: 'auto',
+							type: 'select',// select选择，text字符串，number数值，px单位
+						},
+					],
+					list: [
+
+					]
+				}
+			},
+			computed:{
+			},
+			mounted(){
+				// this.parentList[0]
+				for(let i = 0;i < 3;i++)
+					this.add(this.parentList[0].list)
+			},
+			methods:{
+				filterStyle(styleObj, values){
+					var obj = {};
+					// for(let i in styleObj){
+					styleObj.forEach((element, i) => {
+						var key = element.key
+						let value = values[key];
+						if(value.checked){
+							obj[key] = value.value;	
+						}
+					});
+					// }
+					return obj
+				},
+				add(list){
+					list.push({
+						//id: Date.now() + Math.random(),
+						id: ++count,
+						'order': {
+							value: 0,
+							checked: false,
+						},
+						'flex-grow': {
+							value: 0,
+							checked: false,
+						},
+						'flex-shrink': {
+							value: 0,
+							checked: false,
+						},
+						'flex-basis': {
+							value: "200px",
+							checked: true,
+						},
+						'align-self': {
+							value: 'auto',
+							checked: false,
+						} 
+					})
+				}
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+	<script type="text/javascript" src="//www.lilnong.top/static/js/public_hm.js"></script>
+</body>
+</html>

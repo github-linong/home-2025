@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world', Date.now());
+	</script>
+	<title></title>
+</head>
+<body>
+	<style type="text/css">
+		.audio_user{}
+		.audio_controllbtn{
+			width: 100px;
+			height: 100px;
+			border-radius: 50%;
+			margin: 0 auto;
+			background-color: #67C23A;
+		}
+		.audio_controllbtn.insert{
+			background-color: #409EFF;
+		}
+		.audio_controllbtn.insert{
+			background-color: #409EFF;
+		}
+		.video_view{
+			background-color: #0cc;
+		}
+		.video_view video{
+			width: 100%;
+		}
+	</style>
+	<div class="btn_cont">
+		<button class="btn_audio">录制音频</button>
+		<button class="btn_audio__stop">暂停音频</button>
+		<button class="btn_audiogetTracks">音频-getTracks</button>
+		<button class="btn_audio_buffers">音频-buffers</button>
+		<button class="btn_video">视频</button>
+		<button onclick="location.reload(true)">reload</button>
+		<hr>
+		<button class="btn_startRecording">startRecording</button>
+		<button class="btn_stopRecording">stopRecording</button>
+		<button class="btn_playRecording">playRecording</button>
+		<button class="btn_uploadAudio">uploadAudio</button>
+	</div>
+	<div class="audio_user">
+		<div class="audio_view">
+			<audio controls></audio>
+		</div>
+	</div>
+	<div class="video_user">
+		<div class="video_view">
+			<video controls></video>
+		</div>
+	</div>
+	<script type="text/javascript">
+		// var _audio_stream = null
+		// var buffers = [];
+		// let sourceNode = null;
+		// let scriptNode = null; 
+		// let audioContext = null;
+		// document.querySelector('.btn_audio').onclick = function(){
+		// 	buffers = [];
+		// 	navigator.mediaDevices.getUserMedia({audio: true})
+		// 	.then(function(stream) {
+		// 	  console.log('getUserMedia',_audio_stream = stream);
+		// 	  // 一些初始化
+		// 	  audioContext = new AudioContext();
+		// 	  sourceNode = audioContext.createMediaStreamSource(stream);
+		// 	  scriptNode = audioContext.createScriptProcessor(1024, 1, 1);
+
+		// 	  sourceNode.connect(scriptNode);
+		// 	  scriptNode.connect(audioContext.destination);
+		// 	  // // 监听录音的过程
+		// 	  scriptNode.onaudioprocess = event => {
+		// 	   buffers.push(event.inputBuffer.getChannelData(0)); // 获取当前频道的数据，并写入数组
+		// 	  };
+		// 	  try{
+		// 	  	var xhr = new XMLHttpRequest();
+		// 	  	xhr.open('post', '/upload_any');
+		// 	  	var fmd = new FormData();
+		// 	  	// fmd.append('file', stream)
+		// 	  	// xhr.send(fmd)
+		// 	  	// xhr.send(stream);
+		// 	  }catch(e){
+		// 	  	console.log(e)
+		// 	  }
+		// 	})
+		// 	.catch(function(err) {
+		// 	  console.log('catch',err.message , err)
+		// 	});
+		// }
+		// document.querySelector('.btn_audio__stop').onclick = function(){
+		// 	  sourceNode.disconnect(scriptNode);
+		// 	  scriptNode.disconnect(audioContext.destination);
+		// }
+		// document.querySelector('.btn_audiogetTracks').onclick = function(){
+		// 	console.log(_audio_stream.getTracks());
+		// }
+		// document.querySelector('.btn_audio_buffers').onclick = function(){
+		// 	console.log(buffers);
+		// }
+		
+		document.querySelector('.btn_video').onclick = function(){
+			// 想要获取一个最接近 1280x720 的相机分辨率
+			var constraints = { audio: true, video: { width: 1280, height: 720,frameRate: { ideal: 10, max: 15 } } }; 
+
+			navigator.mediaDevices.getUserMedia(constraints)
+			.then(function(mediaStream) {
+			  var video = document.querySelector('video');
+			  video.srcObject = mediaStream;
+			  video.onloadedmetadata = function(e) {
+			    video.play();
+			  };
+			})
+			.catch(function(err) { console.log(err.name + ": " + err.message); }); // 总是在最后检查错误
+		}
+	</script>
+
+	<script type="text/javascript">
+		// http://www.mamicode.com/info-detail-2207069.html
+		// HZRecorder.js
+		(function (window) {
+		    //兼容
+		    window.URL = window.URL || window.webkitURL;
+		    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+		    var HZRecorder = function (stream, config) {
+		        config = config || {};
+		        config.sampleBits = config.sampleBits || 8;      //采样数位 8, 16
+		        config.sampleRate = config.sampleRate || (44100 / 6);   //采样率(1/6 44100)
+
+		        var context = new (window.webkitAudioContext || window.AudioContext)();
+		        var audioInput = context.createMediaStreamSource(stream);
+		        var createScript = context.createScriptProcessor || context.createJavaScriptNode;
+		        var recorder = createScript.apply(context, [4096, 1, 1]);
+
+		        var audioData = {
+		            size: 0          //录音文件长度
+		            , buffer: []     //录音缓存
+		            , inputSampleRate: context.sampleRate    //输入采样率
+		            , inputSampleBits: 16       //输入采样数位 8, 16
+		            , outputSampleRate: config.sampleRate    //输出采样率
+		            , oututSampleBits: config.sampleBits       //输出采样数位 8, 16
+		            , input: function (data) {
+		                this.buffer.push(new Float32Array(data));
+		                this.size += data.length;
+		            }
+		            , compress: function () { //合并压缩
+		                //合并
+		                var data = new Float32Array(this.size);
+		                var offset = 0;
+		                for (var i = 0; i < this.buffer.length; i++) {
+		                    data.set(this.buffer[i], offset);
+		                    offset += this.buffer[i].length;
+		                }
+		                //压缩
+		                var compression = parseInt(this.inputSampleRate / this.outputSampleRate);
+		                var length = data.length / compression;
+		                var result = new Float32Array(length);
+		                var index = 0, j = 0;
+		                while (index < length) {
+		                    result[index] = data[j];
+		                    j += compression;
+		                    index++;
+		                }
+		                return result;
+		            }
+		            , encodeWAV: function () {
+		                var sampleRate = Math.min(this.inputSampleRate, this.outputSampleRate);
+		                var sampleBits = Math.min(this.inputSampleBits, this.oututSampleBits);
+		                var bytes = this.compress();
+		                var dataLength = bytes.length * (sampleBits / 8);
+		                var buffer = new ArrayBuffer(44 + dataLength);
+		                var data = new DataView(buffer);
+
+		                var channelCount = 1;//单声道
+		                var offset = 0;
+
+		                var writeString = function (str) {
+		                    for (var i = 0; i < str.length; i++) {
+		                        data.setUint8(offset + i, str.charCodeAt(i));
+		                    }
+		                }
+
+		                // 资源交换文件标识符 
+		                writeString('RIFF'); offset += 4;
+		                // 下个地址开始到文件尾总字节数,即文件大小-8 
+		                data.setUint32(offset, 36 + dataLength, true); offset += 4;
+		                // WAV文件标志
+		                writeString('WAVE'); offset += 4;
+		                // 波形格式标志 
+		                writeString('fmt '); offset += 4;
+		                // 过滤字节,一般为 0x10 = 16 
+		                data.setUint32(offset, 16, true); offset += 4;
+		                // 格式类别 (PCM形式采样数据) 
+		                data.setUint16(offset, 1, true); offset += 2;
+		                // 通道数 
+		                data.setUint16(offset, channelCount, true); offset += 2;
+		                // 采样率,每秒样本数,表示每个通道的播放速度 
+		                data.setUint32(offset, sampleRate, true); offset += 4;
+		                // 波形数据传输率 (每秒平均字节数) 单声道×每秒数据位数×每样本数据位/8 
+		                data.setUint32(offset, channelCount * sampleRate * (sampleBits / 8), true); offset += 4;
+		                // 快数据调整数 采样一次占用字节数 单声道×每样本的数据位数/8 
+		                data.setUint16(offset, channelCount * (sampleBits / 8), true); offset += 2;
+		                // 每样本数据位数 
+		                data.setUint16(offset, sampleBits, true); offset += 2;
+		                // 数据标识符 
+		                writeString('data'); offset += 4;
+		                // 采样数据总数,即数据总大小-44 
+		                data.setUint32(offset, dataLength, true); offset += 4;
+		                // 写入采样数据 
+		                if (sampleBits === 8) {
+		                    for (var i = 0; i < bytes.length; i++, offset++) {
+		                        var s = Math.max(-1, Math.min(1, bytes[i]));
+		                        var val = s < 0 ? s * 0x8000 : s * 0x7FFF;
+		                        val = parseInt(255 / (65535 / (val + 32768)));
+		                        data.setInt8(offset, val, true);
+		                    }
+		                } else {
+		                    for (var i = 0; i < bytes.length; i++, offset += 2) {
+		                        var s = Math.max(-1, Math.min(1, bytes[i]));
+		                        data.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+		                    }
+		                }
+
+		                return new Blob([data], { type: 'audio/wav' });
+		            }
+		        };
+
+		        //开始录音
+		        this.start = function () {
+		            audioInput.connect(recorder);
+		            recorder.connect(context.destination);
+		        }
+
+		        //停止
+		        this.stop = function () {
+		            recorder.disconnect();
+		        }
+
+		        //获取音频文件
+		        this.getBlob = function () {
+		            this.stop();
+		            return audioData.encodeWAV();
+		        }
+
+		        //回放
+		        this.play = function (audio) {
+		            audio.src = window.URL.createObjectURL(this.getBlob());
+		        }
+
+		        //上传
+		        this.upload = function (url, callback) {
+		            var fd = new FormData();
+		            fd.append("audioData", this.getBlob());
+		            var xhr = new XMLHttpRequest();
+		            if (callback) {
+		                xhr.upload.addEventListener("progress", function (e) {
+		                    callback('uploading', e);
+		                }, false);
+		                xhr.addEventListener("load", function (e) {
+		                    callback('ok', e);
+		                }, false);
+		                xhr.addEventListener("error", function (e) {
+		                    callback('error', e);
+		                }, false);
+		                xhr.addEventListener("abort", function (e) {
+		                    callback('cancel', e);
+		                }, false);
+		            }
+		            xhr.open("POST", url);
+		            xhr.send(fd);
+		        }
+
+		        //音频采集
+		        recorder.onaudioprocess = function (e) {
+		            audioData.input(e.inputBuffer.getChannelData(0));
+		            //record(e.inputBuffer.getChannelData(0));
+		        }
+
+		    };
+		    //抛出异常
+		    HZRecorder.throwError = function (message) {
+		        alert(message);
+		        throw new function () { this.toString = function () { return message; } }
+		    }
+		    //是否支持录音
+		    HZRecorder.canRecording = (navigator.getUserMedia != null);
+		    //获取录音机
+		    HZRecorder.get = function (callback, config) {
+		        if (callback) {
+		            if (navigator.getUserMedia) {
+		                navigator.getUserMedia(
+		                    { audio: true } //只启用音频
+		                    , function (stream) {
+		                        var rec = new HZRecorder(stream, config);
+		                        callback(rec);
+		                    }
+		                    , function (error) {
+		                        switch (error.code || error.name) {
+		                            case 'PERMISSION_DENIED':
+		                            case 'PermissionDeniedError':
+		                                HZRecorder.throwError('用户拒绝提供信息。');
+		                                break;
+		                            case 'NOT_SUPPORTED_ERROR':
+		                            case 'NotSupportedError':
+		                                HZRecorder.throwError('浏览器不支持硬件设备。');
+		                                break;
+		                            case 'MANDATORY_UNSATISFIED_ERROR':
+		                            case 'MandatoryUnsatisfiedError':
+		                                HZRecorder.throwError('无法发现指定的硬件设备。');
+		                                break;
+		                            default:
+		                                HZRecorder.throwError('无法打开麦克风。异常信息:' + (error.code || error.name));
+		                                break;
+		                        }
+		                    });
+		            } else {
+		                HZRecorder.throwErr('当前浏览器不支持录音功能。'); return;
+		            }
+		        }
+		    }
+
+		    window.HZRecorder = HZRecorder;
+
+		})(window);
+	</script>
+   <script>
+        var recorder;
+        var audio = document.querySelector('audio');
+        document.querySelector('.btn_startRecording').onclick = startRecording;
+        document.querySelector('.btn_stopRecording').onclick = stopRecording;
+        document.querySelector('.btn_playRecording').onclick = playRecording;
+        document.querySelector('.btn_uploadAudio').onclick = uploadAudio;
+        function startRecording() {
+            HZRecorder.get(function (rec) {
+                recorder = rec;
+                recorder.start();
+            });
+        }
+
+        function stopRecording() {
+            recorder.stop();
+        }
+
+        function playRecording() {
+            recorder.play(audio);
+        }
+
+        function uploadAudio() {
+            recorder.upload("/upload_any", function (state, e) {
+                switch (state) {
+                    case 'uploading':
+                        //var percentComplete = Math.round(e.loaded * 100 / e.total) + '%';
+                        break;
+                    case 'ok':
+                        //alert(e.target.responseText);
+                        alert("上传成功");
+                        break;
+                    case 'error':
+                        alert("上传失败");
+                        break;
+                    case 'cancel':
+                        alert("上传被取消");
+                        break;
+                }
+            });
+        }
+
+    </script>
+    <script type="text/javascript">
+    	// https://github.com/wangpengfei15975/recorder.js
+    </script>
+    <script>
+    	var _hmt = _hmt || [];
+    	(function() {
+    	  var hm = document.createElement("script");
+    	  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+    	  var s = document.getElementsByTagName("script")[0]; 
+    	  s.parentNode.insertBefore(hm, s);
+    	})();
+    </script>
+    </body>
+</html>

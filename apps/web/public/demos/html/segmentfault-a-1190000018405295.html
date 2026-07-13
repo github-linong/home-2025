@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title>发布框前端体验优化 - 优化 - linong</title>
+	<style type="text/css">
+		.editor{
+			display: block;
+			width:100%;
+			height: 300px;
+			border: 1px solid #f00;
+		}
+	</style>
+</head>
+<body>
+	<textarea class="editor"></textarea>
+	<input class="editor" type="" name="">
+	<div class="editor" contentEditable></div>
+	<script type="text/javascript">
+
+		let forEach = function(arr, cb=()=>{}){
+			// 用于遍历 FileList
+			for(let i = 0, il = arr.length; i < il; i++){
+				cb(arr[i], i);
+			}
+			// 链式操作
+			return arr;
+		}
+		document.querySelectorAll('.editor').forEach(v=>{
+			// 拖拽
+			v.addEventListener('drop', (e)=>{
+				let isFiles = !!e.dataTransfer.files.length
+				console.log(e)
+				// 文件类型处理
+				forEach(e.dataTransfer.files, (v, i)=>{
+					console.log(`--------文件,drop---------`);
+					console.log(`文件名称: `+v.name);
+					console.log(`文件大小：`+v.size);
+					console.log(`文件类型：`+v.type);
+
+					// let reader = new FileReader();
+					// let that = this;
+					// reader.onload = (function(file) {
+					//   return function(e) {
+					//     that.weiboContent += this.result;
+					//   };
+					// })(el);
+					// //读取文本内容
+					// reader.readAsText(el, "gbk");
+
+					// readAsText(Blob|File, opt_encoding)：返回文本字符串。默认情况下，文本编码格式是 UTF-8，可以通过可选的格式参数，指定其他编码格式的文本。用此方法我们可以读取文件内容。
+					// readAsDataURL(Blob|File)：返回一个基于 Base64 编码的 data-uri 对象。用此方法我们可以做图片预览。
+
+					//  window.URL.createObjectURL(file|blob); //传入一个 File 对象或者 Blob 对象，能生成一个链接：
+				})
+				if(isFiles) e.preventDefault(); //阻止下载
+				// forEach(e.dataTransfer.items, (v, i)=>{
+				// 	console.log(v);
+				// })
+			})
+			v.addEventListener('paste', (e)=>{
+				let items = e.clipboardData && e.clipboardData.items || [];
+				console.log(e.clipboardData.files.length, items.length)
+				let isFiles = !!e.clipboardData.files.length
+				forEach(e.clipboardData.files, (v, i)=>{
+					console.log(`--------文件,paste---------`);
+					console.log(`文件名称: `+v.name);
+					console.log(`文件大小：`+v.size);
+					console.log(`文件类型：`+v.type);
+				})
+				forEach(items, (v, i)=>{
+					console.log(`--------items,paste---------`);
+					console.log(v.kind)
+					console.log(v.getAsString((data)=>{
+						console.log(v,data)
+					}));
+				})
+			})
+		})
+		window.addEventListener('dragenter', (e)=>{
+			// console.log('window-dragenter-进入投放区时触发')
+			// e.relatedTarget || e.fromElement 来源，上次路过
+			if((e.relatedTarget || e.fromElement) === null){
+				console.log('dragenter', e.relatedTarget || e.fromElement)
+			}
+			
+		})
+		window.addEventListener('dragover', ()=>{
+			// console.log('window-dragover-在投放区时触发',Date.now())
+		})
+		// window.addEventListener('dragover', (e)=>{
+		// 	e.preventDefault()
+		// 	console.log('window-dragover-在投放区时触发（每隔 350 毫秒会触发一次）-preventDefault',Date.now())
+		// })
+		window.addEventListener('dragleave', (e)=>{
+			// console.log('window-dragleave-离开投放区时触发')
+			if((e.relatedTarget || e.fromElement) === null){
+				console.log('dragleave', e.relatedTarget || e.fromElement)
+			}
+
+		})
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

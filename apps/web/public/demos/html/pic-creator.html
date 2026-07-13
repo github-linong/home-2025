@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<style type="text/css">
+		.box{}
+		.box-inner{border:1px solid #f00;}
+	</style>
+	<div id="app" class="">
+		<h1>图片生成器</h1>
+		<div class="form-inline">
+			<div class="form-group">
+				<div class="input-group">
+			      <input type="number" value="100" class="form-control" id="canvasWidth" placeholder="宽">
+			    </div>
+				<div class="input-group">
+			      <input type="number" value="100" class="form-control" id="canvasHeight" placeholder="高">
+			    </div>
+				<div class="input-group">
+			      <input type="number" value="100" class="form-control" id="canvasWidthHeight" oninput="canvasWidth.value = canvasHeight.value = this.value" placeholder="高">
+			    </div>
+			</div>
+		</div>
+		<div class="box" style="display:flex;">
+			<div class="box-inner">
+				<p>canvas</p>
+				<canvas id="canvas" width="100" height="100" style="max-height: 200px;max-width: 200px"></canvas>
+			</div>
+			<div class="box-inner">
+				<p>jpg <a id="img_jpg_tips"></a></p>
+				<img style="max-height: 200px;max-width: 200px" id="img_jpg" src="">
+			</div>
+			<div class="box-inner">
+				<p>png <a id="img_png_tips"></a></p>
+				<img style="max-height: 200px;max-width: 200px" id="img_png" src="">
+			</div>
+			<div class="box-inner">
+				<p>jpeg <a id="img_jpeg_tips"></a></p>
+				<img style="max-height: 200px;max-width: 200px" id="img_jpeg" src="">
+			</div>
+			<div class="box-inner">
+				<p>webp <a id="img_webp_tips"></a></p>
+				<img style="max-height: 200px;max-width: 200px" id="img_webp" src="">
+			</div>
+			<div class="box-inner">
+				<p>gif <a id="img_gif_tips"></a></p>
+				<img style="max-height: 200px;max-width: 200px" id="img_gif" src="">
+			</div>
+		</div>
+	</div>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" id="wxshare" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script type="text/javascript">
+		refrsh = _.throttle(function(){
+			canvas.width = canvasWidth.value;
+			canvas.height = canvasHeight.value;
+			ctx = canvas.getContext('2d')
+			ctx.drawImage(wxshare, 10, 10)
+			ctx.fillStyle = '#f00'
+			var fontSize = Math.max(Math.max(canvas.width,canvas.height)/10,10)
+			ctx.font=`${fontSize}px sans-serif`
+			ctx.fillText(`${canvasWidth.value}*${canvasHeight.value}`,fontSize,fontSize)
+			ctx.fillText(`${canvasWidth.value}*${canvasHeight.value} lilnong.top`,canvas.width*Math.random(),canvas.height*Math.random())
+			canvas.toBlob(function(blob){
+				img_jpg.src = URL.createObjectURL(blob)
+				img_jpg_tips.innerText = blob.type
+				img_jpg_tips.href = img_jpg.src;
+				img_jpg_tips.download = `${canvasWidth.value}-${canvasHeight.value}`
+				console.log(arguments[0], 'image/jpg')
+			}, 'image/jpg');
+			canvas.toBlob(function(blob){
+				img_png.src = URL.createObjectURL(blob)
+				img_png_tips.innerText = blob.type
+				img_png_tips.href = img_png.src;
+				img_png_tips.download = `${canvasWidth.value}-${canvasHeight.value}`
+				console.log(arguments[0], 'image/png')
+			}, 'image/png');
+			canvas.toBlob(function(blob){
+				img_jpeg.src = URL.createObjectURL(blob)
+				img_jpeg_tips.innerText = blob.type
+				img_jpeg_tips.href = img_jpeg.src;
+				img_jpeg_tips.download = `${canvasWidth.value}-${canvasHeight.value}`
+				console.log(arguments[0], 'image/jpeg')
+			}, 'image/jpeg');
+			canvas.toBlob(function(blob){
+				img_webp.src = URL.createObjectURL(blob)
+				img_webp_tips.innerText = blob.type
+				img_webp_tips.href = img_webp.src;
+				img_webp_tips.download = `${canvasWidth.value}-${canvasHeight.value}`
+				console.log(arguments[0], 'image/webp')
+			}, 'image/webp');
+			canvas.toBlob(function(blob){
+				img_gif.src = URL.createObjectURL(blob)
+				img_gif_tips.innerText = blob.type
+				img_gif_tips.href = img_gif.src;
+				img_gif_tips.download = `${canvasWidth.value}-${canvasHeight.value}`
+				console.log(arguments[0], 'image/gif')
+			}, 'image/gif');
+		}, 300)
+		$('.form-control').off().on('input', function(){
+			refrsh()
+		})
+		//  onload="$('.form-control').first().trigger('input')" 
+		setTimeout(function(){
+			refrsh()
+		})
+	</script>
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

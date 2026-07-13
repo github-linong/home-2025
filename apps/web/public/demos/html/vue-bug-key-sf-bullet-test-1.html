@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+</head>
+<body>
+	<div id="app">
+		<div>
+			{{json}}
+		</div>
+		<ul>
+			<li>错误案例  :key="idx"</li>
+			<li v-for="(item,idx) in list" :key="idx">{{item.id}}.{{item.count}} <button @click="item.count++">add</button><button @click="remove(idx)">remove</button><button @click="move(idx, 1)">up</button><button @click="move(idx, -1)">down</button></li>
+		</ul>
+		<ul>
+			<li>正确案例  :key="item.id"</li>
+			<li v-for="(item,idx) in list" :key="item.id">{{item.id}}.{{item.count}} <button @click="item.count++">add</button><button @click="remove(idx)">remove</button><button @click="move(idx, 1)">up</button><button @click="move(idx, -1)">down</button></li>
+		</ul>
+	</div>
+	<script type="text/javascript">
+		new Vue({
+			el: '#app',
+			data(){
+				return {
+					list: [
+						{id: 1, count: 0},
+						{id: 2, count: 0},
+						{id: 3, count: 0},
+						{id: 4, count: 0},
+						{id: 5, count: 0},
+						{id: 6, count: 0}
+					]
+				}
+			},
+			methods:{
+				remove(idx){
+					return this.list.splice(idx, 1)
+				},
+				move(idx, tag){
+					if(this.length < 2){
+						return console.log('数量这么少，你干啥呢？')
+					}else if(idx == 0 && tag == 1){
+						return console.log('最上面的一个不能向上移动了')
+					}else if(idx == this.list.length - 1 && tag == -1){
+						return console.log('最下面的一个不能向下移动了')
+					}
+					this.list.splice(idx-tag, 0, this.list.splice(idx, 1)[0])
+				}
+			},
+			computed: {
+				json(){
+					return JSON.stringify(this.list)
+				}
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

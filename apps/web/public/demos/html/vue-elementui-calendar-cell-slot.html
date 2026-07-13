@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+</head>
+<body>
+	<div id="app">
+		<p>{ type, isSelected, day}，
+			type 表示该日期的所属月份，可选值有 prev-month，current-month，next-month；
+			isSelected 标明该日期是否被选中；
+			day 是格式化的日期，格式为 yyyy-MM-dd</p>
+		<el-calendar>
+		  <!-- 这里使用的是 2.5 slot 语法，对于新项目请使用 2.6 slot 语法-->
+		  <template
+		    slot="dateCell"
+		    slot-scope="{date, data}">
+		    <!-- <p :class="data.isSelected ? 'is-selected' : ''">
+		      {{ data.day.split('-').slice(1).join('-') }} {{ data.isSelected ? '' : ''}}
+		    </p> -->
+		    <div style="width:100%;height: 100%;overflow: hidden;color: #333" :style="{color: filterDate(date)?'#000':'#ddd'}">
+			    <!-- <div>date:{{date}}</div> -->
+			    <!-- <div>data:{{data}}</div> -->
+			    <div>{{filterDate(date)}}</div>
+			    <div>{{data.day}}</div>
+		    </div>
+		  </template>
+		</el-calendar>
+	</div>
+	<script type="text/javascript">
+		var date = new Date();
+		date.setHours(0,0,0,0)
+		var showTimes = 1000*60*60*24*14;
+		var showTimes = 1000*60*60*24*5;
+		new Vue({
+			el: '#app',
+			data(){
+				return {
+
+				}
+			},
+			methods:{
+				filterDate(_date){
+					if(_date.getTime()>date.getTime()
+						&& _date.getTime()-date.getTime() < showTimes){
+						return true;
+					}
+					return false;
+				}
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

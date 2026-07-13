@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+</head>
+<body>
+	<div id="app">
+		<style type="text/css">
+			/*#app h3{
+				margin-top: 10px;
+			}	*/
+			#app div{
+				/*border: 1px solid #f00;*/
+				border-left: 10px solid #f00;
+			}
+		</style>
+
+		<h3>冒泡阶段触发事件</h3>
+		<div class="div1">
+			div1
+			<div class="div1-1">
+				div1-1
+				<div class="div1-1-1">div1-1-1</div>
+			</div>
+		</div>
+
+		<h3>捕获阶段触发事件</h3>
+		<div class="div2">
+			div2
+			<div class="div2-1">
+				div2-1
+				<div class="div2-1-1">div2-1-1</div>
+			</div>
+		</div>
+
+		<h3>冒泡&捕获阶段触发事件</h3>
+		<div class="div3">
+			div3
+			<div class="div3-1">
+				div3-1
+				<div class="div3-1-1">div3-1-1</div>
+			</div>
+		</div>
+		<h3>冒泡&捕获阶段触发事件2</h3>
+		<div class="div4">
+			div4
+			<div class="div4-1">
+				div4-1
+				<div class="div4-1-1">div4-1-1</div>
+			</div>
+		</div>
+		<h3>IE触发事件</h3>
+		<div class="div5">
+			div5
+			<div class="div5-1">
+				div5-1
+				<div class="div5-1-1">div5-1-1</div>
+			</div>
+		</div>
+
+		<h3>错误案例，两个方法不是同一引用，导致清除不掉</h3>
+		<div class="div6">
+			div6
+		</div>
+		<h3>正确案例，同一引用，可以清除</h3>
+		<div class="div7">
+			div7
+		</div>
+		<script type="text/javascript">
+			// document.querySelector('.div1').addEventListener('click', function(){
+			// 	console.log('div1')
+			// })
+			function bingClickEvent(className){
+				document.querySelector('.'+className).addEventListener('click', function(e){
+					console.log('冒泡:'+className, e)
+				})
+			}
+			bingClickEvent('div1');
+			bingClickEvent('div1-1');
+			bingClickEvent('div1-1-1');
+
+
+			function bingClickEvent2(className){
+				// 一个指定有关 listener 属性的可选参数对象。可用的选项如下：
+				// capture:  Boolean，表示 listener 会在该类型的事件捕获阶段传播到该 EventTarget 时触发。
+				// once:  Boolean，表示 listener 在添加之后最多只调用一次。如果是 true， listener 会在其被调用之后自动移除。
+				// passive: Boolean，设置为true时，表示 listener 永远不会调用 preventDefault()。如果 listener 仍然调用了这个函数，客户端将会忽略它并抛出一个控制台警告。
+				document.querySelector('.'+className).addEventListener('click', function(e){
+					console.log('捕获:'+className, e)
+				}, {capture: true})
+			}
+			bingClickEvent2('div2');
+			bingClickEvent2('div2-1');
+			bingClickEvent2('div2-1-1');
+
+
+			bingClickEvent('div3');
+			bingClickEvent('div3-1');
+			bingClickEvent('div3-1-1');
+			bingClickEvent2('div3');
+			bingClickEvent2('div3-1');
+			bingClickEvent2('div3-1-1');
+
+			bingClickEvent2('div4');
+			bingClickEvent2('div4-1');
+			bingClickEvent2('div4-1-1');
+			bingClickEvent('div4');
+			bingClickEvent('div4-1');
+			bingClickEvent('div4-1-1');
+		</script>
+		<script type="text/javascript">
+			function bingClickEvent2attachEvent(className){
+				document.getElementsByClassName(className)[0].attachEvent('onclick', function(){
+					console.log('只有冒泡:'+className)
+				})
+			}
+			bingClickEvent2attachEvent('div5')
+			bingClickEvent2attachEvent('div5-1')
+			bingClickEvent2attachEvent('div5-1-1')
+		</script>
+		<script type="text/javascript">
+			document.querySelector('.div6').addEventListener('click', function(){console.log(1)})
+        	document.querySelector('.div6').removeEventListener('click', function(){console.log(1)})
+        	function documentClick(){console.log(1)}
+			document.querySelector('.div7').addEventListener('click', documentClick)
+        	document.querySelector('.div7').removeEventListener('click', documentClick)
+		</script>
+	</div>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+</body>
+</html>

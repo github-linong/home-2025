@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Vue 中 v-if 和 v-show 的使用 - www.lilnong.top</title>
+	<meta keywords="Vue,v-if,v-show,v-if bug,">
+	<meta description="Vue 中 v-if 的 bug">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+	<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+</head>
+<body>
+	<div id="app">
+		<h2><a href="https://segmentfault.com/a/1190000022770549">深入解析你不知道的 EventLoop 和浏览器渲染、帧动画、空闲回调（动图演示）</a></h2>
+		<h3>闪烁动画测试</h3>
+		<p>假设我们现在想要快速的让屏幕上闪烁 红、蓝两种颜色，保证用户可以观察到，如果我们用 setTimeout 来写，并且带着我们长期的误解「宏任务之间一定会伴随着浏览器绘制」，那么你会得到一个预料之外的结果。</p>
+		<p>测试方案：100ms执行一次，统计执行次数。统计requestAnimationFrame执行次数。统计fps</p>
+		<div class="view-box">
+
+		</div>
+
+	</div>
+	<style>
+		.view-box{width: 100px;height: 100px;position: relative;z-index: 10;}
+	</style>
+	<script>
+		var el = document.querySelector('.view-box');
+		var intervalCountObj = {};
+		var raFCountObj = {};
+		function countAdd(obj, key = ''){
+			var date = Date.now();
+			var date_s = date/1000  >> 0;
+			if( obj[date_s] ){
+				obj[date_s].push(date + key)
+			}else{
+				obj[date_s]=[]
+			}
+			return obj
+		}
+		// 获取当前对象，秒级频率
+		function getCountTotal_s(obj, s){
+			if(obj[s]){
+				return obj[s].length// / 60 >> 0
+			}else{
+				return 0
+			}
+		}
+		// 获取平均后的数据
+		function getAvg_s(obj, s, count){
+			var sum = 0;
+			for(var i = 0; i < count; i++){
+				sum += getCountTotal_s(obj, s - i);
+			}
+			return sum / count >> 0
+		}
+		function getCountTotal(obj){
+			var date = Date.now() / 1000  >> 0;
+			return `一秒（实时）：${getAvg_s(obj,date,1)}
+			一秒（上次）：${getAvg_s(obj,date - 1,1)}
+			五秒（实时）：${getAvg_s(obj,date, 5)}
+			五秒（上次）：${getAvg_s(obj,date - 1, 5)}`
+		}
+		var interval = setInterval(()=>{
+			setTimeout(() => {
+				el.style.background = "red"
+				countAdd(intervalCountObj)
+				setTimeout(() => {
+					countAdd(intervalCountObj)
+					el.style.background = "blue"
+				})
+			})
+		}, 100)
+		raF = function(){
+			requestAnimationFrame(function(){
+				countAdd(raFCountObj)
+				// console.count('requestAnimationFrame')
+				raF()
+			})
+			// console.clear()
+			console.log({
+				intervalCountObj: getCountTotal(intervalCountObj),
+				raFCountObj: getCountTotal(raFCountObj),
+			})
+		}
+		raF()
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+</body>
+</html>

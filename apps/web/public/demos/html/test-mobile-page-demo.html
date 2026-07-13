@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>全部订单</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- <link rel="stylesheet" type="text/css" href="./css/reset.css"> -->
+	<style type="text/css">
+		/*
+	    HTML5 Reset :: style.css
+	    ----------------------------------------------------------
+	    We have learned much from/been inspired by/taken code where offered from:
+	    Eric Meyer                  :: http://meyerweb.com
+	    HTML5 Doctor                :: http://html5doctor.com
+	    and the HTML5 Boilerplate   :: http://html5boilerplate.com
+		-------------------------------------------------------------------------------*/
+
+		/* Let's default this puppy out
+		-------------------------------------------------------------------------------*/
+
+		html, body, body div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp, small, strong, sub, sup, var, b, i, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, figure, footer, header, menu, nav, section, time, mark, audio, video, details, summary {
+		    margin: 0;
+		    padding: 0;
+		    border: 0;
+		    font-size: 100%;
+		    font-weight: normal;
+		    vertical-align: baseline;
+		    background: transparent;
+		}
+
+		article, aside, figure, footer, header, nav, section, details, summary {display: block;}
+
+		/* Handle box-sizing while better addressing child elements:
+		   http://css-tricks.com/inheriting-box-sizing-probably-slightly-better-best-practice/ */
+		html {
+		    box-sizing: border-box;
+		}
+
+		*,
+		*:before,
+		*:after {
+		    box-sizing: inherit;
+		}
+
+		/* consider resetting the default cursor: https://gist.github.com/murtaugh/5247154 */
+
+		/* Responsive images and other embedded objects */
+		/* if you don't have full control over `img` tags (if you have to overcome attributes), consider adding height: auto */
+		img,
+		object,
+		embed {max-width: 100%;}
+
+		/*
+		   Note: keeping IMG here will cause problems if you're using foreground images as sprites.
+		    In fact, it *will* cause problems with Google Maps' controls at small size.
+		    If this is the case for you, try uncommenting the following:
+		#map img {
+		        max-width: none;
+		}
+		*/
+
+		/* force a vertical scrollbar to prevent a jumpy page */
+		html {overflow-y: scroll;}
+
+		/* we use a lot of ULs that aren't bulleted.
+		    you'll have to restore the bullets within content,
+		    which is fine because they're probably customized anyway */
+		ul {list-style: none;}
+
+		blockquote, q {quotes: none;}
+
+		blockquote:before,
+		blockquote:after,
+		q:before,
+		q:after {content: ''; content: none;}
+
+		a {margin: 0; padding: 0; font-size: 100%; vertical-align: baseline; background: transparent;}
+
+		del {text-decoration: line-through;}
+
+		abbr[title], dfn[title] {border-bottom: 1px dotted #000; cursor: help;}
+
+		/* tables still need cellspacing="0" in the markup */
+		table {border-collapse: collapse; border-spacing: 0;}
+		th {font-weight: bold; vertical-align: bottom;}
+		td {font-weight: normal; vertical-align: top;}
+
+		hr {display: block; height: 1px; border: 0; border-top: 1px solid #ccc; margin: 1em 0; padding: 0;}
+
+		input, select {vertical-align: middle;}
+
+		pre {
+		    white-space: pre; /* CSS2 */
+		    white-space: pre-wrap; /* CSS 2.1 */
+		    white-space: pre-line; /* CSS 3 (and 2.1 as well, actually) */
+		    word-wrap: break-word; /* IE */
+		}
+
+		input[type="radio"] {vertical-align: text-bottom;}
+		input[type="checkbox"] {vertical-align: bottom;}
+		.ie7 input[type="checkbox"] {vertical-align: baseline;}
+		.ie6 input {vertical-align: text-bottom;}
+
+		select, input, textarea {font: 99% sans-serif;}
+
+		table {font-size: inherit; font: 100%;}
+
+		small {font-size: 85%;}
+
+		strong {font-weight: bold;}
+
+		td, td img {vertical-align: top;}
+
+		/* Make sure sup and sub don't mess with your line-heights http://gist.github.com/413930 */
+		sub, sup {font-size: 75%; line-height: 0; position: relative;}
+		sup {top: -0.5em;}
+		sub {bottom: -0.25em;}
+
+		/* standardize any monospaced elements */
+		pre, code, kbd, samp {font-family: monospace, sans-serif;}
+
+		/* hand cursor on clickable elements */
+		.clickable,
+		label,
+		input[type=button],
+		input[type=submit],
+		input[type=file],
+		button {cursor: pointer;}
+
+		/* Webkit browsers add a 2px margin outside the chrome of form elements */
+		button, input, select, textarea {margin: 0;}
+
+		/* make buttons play nice in IE */
+		button,
+		input[type=button] {width: auto; overflow: visible;}
+
+		/* scale images in IE7 more attractively */
+		.ie7 img {-ms-interpolation-mode: bicubic;}
+
+		/* prevent BG image flicker upon hover
+		   (commented out as usage is rare, and the filter syntax messes with some pre-processors)
+		.ie6 html {filter: expression(document.execCommand("BackgroundImageCache", false, true));}
+		*/
+
+		/* let's clear some floats */
+		.clearfix:before, .clearfix:after { content: "\0020"; display: block; height: 0; overflow: hidden; }
+		.clearfix:after { clear: both; }
+		.clearfix { zoom: 1; }
+	</style>
+	<style type="text/css">
+		body{width:100vw;overflow: hidden;}
+		.public_back_icon{border:2px solid #fff;border-right:0px;border-bottom:0px;width:4vw;height:4vw;position: absolute;top:50%;left:50%;margin-left:-2vw;margin-top:-2vw;transform: rotate(-45deg);}
+		.public_href_icon{transform: rotate(135deg);border:2px solid #ccc;border-right:0px;border-bottom:0px;width:3vw;height:3vw;margin-left:-1.5vw;margin-top:-1.5vw;    display: inline-block;margin-left:.5vw;}
+		/*.public-orderlist-mr{margin-right: 2vw}*/
+		.public-orderlist-pd{padding:0 2vw;}
+		a.btn{display: inline-block;padding:1.5vw 3vw;margin: 1vw; line-height:5vw;border:1px solid #eee;border-radius: 5vw;color:#333;text-decoration: none;text-align: center}
+		a.btn-warning{border-color:#efc311;color:#efc311;}
+
+		.header{background:#099fde;color:#fff;height: 12.8vw;}
+		.header-back{width: 12.8vw;height: 12.8vw;display: block;vertical-align: top;position: absolute;top:0;left: 0;}
+		.header-title{line-height: 12.8vw;text-align: center}
+
+		.nav{position: relative;overflow: hidden;border-bottom: 1px solid #eee}
+		.nav-item{float: left;width:20vw;text-align: center;}
+		.nav-item_btn{text-decoration: none;display: block;}
+		.nav-item_btn span{line-height: 10vw;color: #666;}
+		.nav-item_btn.select span{border-bottom: 2px solid #099fde;    height: 10vw;    display: inline-block;color: #099fde;}
+
+		.orderlist{background: #eee}
+		.orderlist-item{/*padding:0 2vw;*/margin-bottom:2vw;background: #fff}
+		.orderlist-title{line-height: 10vw;position: relative;}
+		.orderlist-title_state{float: right;color:#efc311;}
+		.orderlist-content{background-color: #eee;padding:2vw;overflow: hidden;}
+		.orderlist-content_img{width: 23.4375vw;height: 23.4375vw;vertical-align: top;float: left}
+		.orderlist-content_text{padding-left: 25vw;font-size:0.9em;line-height: 1.55em}
+		.orderlist-content_date,.orderlist-content_priceold,.orderlist-content_number{color: #999}
+		.orderlist-content_priceold{margin-left:1vw;}
+		.orderlist-content_number{float: right}
+		.orderlist-btn{text-align: right}
+	</style>
+</head>
+<body>
+	<header class="header">
+		<a href="javascritp:;" class="header-back">
+			<span class="public_back_icon"></span>
+		</a>
+		<p class="header-title">全部订单</p>
+	</header>
+	<ul class="nav">
+		<li class="nav-item"><a href="javascript:;" class="nav-item_btn select"><span>全部</span></a></li>
+		<li class="nav-item"><a href="javascript:;" class="nav-item_btn"><span>代付款</span></a></li>
+		<li class="nav-item"><a href="javascript:;" class="nav-item_btn"><span>进行中</span></a></li>
+		<li class="nav-item"><a href="javascript:;" class="nav-item_btn"><span>已完成</span></a></li>
+		<li class="nav-item"><a href="javascript:;" class="nav-item_btn"><span>已取消</span></a></li>
+	</ul>
+	<ul class="orderlist">
+		<li class="orderlist-item">
+			<div>
+				<h3 class="orderlist-title public-orderlist-pd">三亚风景区 <a href="javascritp:;" class="public_href_icon"></a> <span class="orderlist-title_state public-orderlist-mr">等待签约付款</span></h3>
+				<div class="public-orderlist-pd orderlist-content">
+					<img src="./images/list1.png" class="orderlist-content_img">
+					<div  class="orderlist-content_text">
+						<p class="orderlist-content_title">八达岭长城是万里长城的重要隘口居高临下山北京旅行团八达岭长城</p>
+						<p class="orderlist-content_date">出行人日期:2017-09-06</p>
+						<p><span  class="orderlist-content_price">$2500.00</span><span  class="orderlist-content_priceold">$3000.00</span><span  class="orderlist-content_number"> x2</span></p>
+					</div>
+				</div>
+				<div class="public-orderlist-pd orderlist-btn">
+					<a href="javascript:;" class="btn btn-default">取消订单</a>
+					<a href="javascript:;" class="btn btn-warning">付款</a>
+				</div>
+			</div>
+		</li>
+		<li class="orderlist-item">
+			<div>
+				<h3 class="orderlist-title public-orderlist-pd">三亚风景区 <a href="javascritp:;" class="public_href_icon"></a> <span class="orderlist-title_state public-orderlist-mr">等待签约付款</span></h3>
+				<div class="public-orderlist-pd orderlist-content">
+					<img src="./images/list1.png" class="orderlist-content_img">
+					<div  class="orderlist-content_text">
+						<p class="orderlist-content_title">八达岭长城是万里长城的重要隘口居高临下山北京旅行团八达岭长城</p>
+						<p class="orderlist-content_date">出行人日期:2017-09-06</p>
+						<p><span  class="orderlist-content_price">$2500.00</span><span  class="orderlist-content_priceold">$3000.00</span><span  class="orderlist-content_number"> x2</span></p>
+					</div>
+				</div>
+				<div class="public-orderlist-pd orderlist-btn">
+					<a href="javascript:;" class="btn btn-default">取消订单</a>
+					<a href="javascript:;" class="btn btn-warning">付款</a>
+				</div>
+			</div>
+		</li>
+		<li class="orderlist-item">
+			<div>
+				<h3 class="orderlist-title public-orderlist-pd">三亚风景区 <a href="javascritp:;" class="public_href_icon"></a> <span class="orderlist-title_state public-orderlist-mr">等待签约付款</span></h3>
+				<div class="public-orderlist-pd orderlist-content">
+					<img src="./images/list1.png" class="orderlist-content_img">
+					<div  class="orderlist-content_text">
+						<p class="orderlist-content_title">八达岭长城是万里长城的重要隘口居高临下山北京旅行团八达岭长城</p>
+						<p class="orderlist-content_date">出行人日期:2017-09-06</p>
+						<p><span  class="orderlist-content_price">$2500.00</span><span  class="orderlist-content_priceold">$3000.00</span><span  class="orderlist-content_number"> x2</span></p>
+					</div>
+				</div>
+				<div class="public-orderlist-pd orderlist-btn">
+					<a href="javascript:;" class="btn btn-default">取消订单</a>
+					<a href="javascript:;" class="btn btn-warning">付款</a>
+				</div>
+			</div>
+		</li>
+	</ul>
+
+
+
+	<script type="text/javascript">
+		var arr = ["NORTH", "SOUTH", "SOUTH", "EAST", "WEST", "NORTH", "WEST"];
+		var obj = {};
+
+		for(var i = 0 ,il = arr.length; i < il; i++){
+			var tag = arr[i];
+			obj[tag] = obj[tag] ? obj[tag] + 1 : 1
+		}
+
+		// var obj={
+		// 	'EAST': 'WEST',
+		// 	'WEST': 'EAST',
+		// 	'SOUTH': 'NORTH',
+		// 	'NORTH': 'SOUTH',
+		// }
+		var EASTWEST = Math.max(Math.min(obj.EAST,obj.WEST),0);
+		var NORTHSOUTH = Math.max(Math.min(obj.NORTH,obj.SOUTH),0);
+
+		// for(var i in obj){
+
+		// }
+
+		obj.EAST && (obj.EAST -= EASTWEST);
+		obj.WEST && (obj.WEST -= EASTWEST);
+		obj.SOUTH && (obj.SOUTH -= NORTHSOUTH);
+		obj.NORTH && (obj.NORTH -= NORTHSOUTH);
+
+		console.log(JSON.stringify(obj))
+
+		console.info(`                                                
+          JJJJJJJJJJJ               JJJJJJJJJJJ     MMMMMMMM               MMMMMMMM
+          J:::::::::J               J:::::::::J     M:::::::M             M:::::::M
+          J:::::::::J               J:::::::::J     M::::::::M           M::::::::M
+          JJ:::::::JJ               JJ:::::::JJ     M:::::::::M         M:::::::::M
+            J:::::J                   J:::::J       M::::::::::M       M::::::::::M
+            J:::::J                   J:::::J       M:::::::::::M     M:::::::::::M
+            J:::::J                   J:::::J       M:::::::M::::M   M::::M:::::::M
+            J:::::j                   J:::::j       M::::::M M::::M M::::M M::::::M
+            J:::::J                   J:::::J       M::::::M  M::::M::::M  M::::::M
+JJJJJJJ     J:::::J       JJJJJJJ     J:::::J       M::::::M   M:::::::M   M::::::M
+J:::::J     J:::::J       J:::::J     J:::::J       M::::::M    M:::::M    M::::::M
+J::::::J   J::::::J       J::::::J   J::::::J       M::::::M     MMMMM     M::::::M
+J:::::::JJJ:::::::J       J:::::::JJJ:::::::J       M::::::M               M::::::M
+ JJ:::::::::::::JJ         JJ:::::::::::::JJ        M::::::M               M::::::M
+   JJ:::::::::JJ             JJ:::::::::JJ          M::::::M               M::::::M
+     JJJJJJJJJ                 JJJJJJJJJ            MMMMMMMM               MMMMMMMM                            
+`);
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>

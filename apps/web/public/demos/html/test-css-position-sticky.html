@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		div{
+		  height:100px;
+		  background:#f7f7f7;
+		}
+		div:nth-child(odd){
+		  background:#f0f3f3;
+		}
+		div.sticky{
+		  postion: -webkit-sticky;
+		  postion: sticky;
+		  top: 50px
+		}
+	</style>
+</head>
+<body>
+	<div class="sticky">1</div>
+	<div>1</div>
+	<div>1</div>
+	<div>1</div>
+	<div>1</div>
+	<div>1</div>
+	<div>1</div>
+	<div>1</div>
+	<div>1</div>
+	<div>1</div>
+	<div>1</div>
+	<div>1</div>
+	<div>1</div>
+	<div>1</div>
+	<div>1</div>
+	<script type="text/javascript">
+		var div = document.querySelectorAll('div');
+		for(var i = 0; i < div.length ; i++ ){
+		  div[i].innerText = i+1;
+		}
+	</script>
+<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script></body>
+</html>
