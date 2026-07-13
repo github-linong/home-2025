@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/face-api-browser.html"
 legacyUrl: "/static/html/face-api-browser.html"
-category: "文件/AI"
+category: "文件 IO"
 badge: "精选"
 tags: ["legacy", "文件 IO", "精选"]
 ---

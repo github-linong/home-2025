@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/canvas-draw-signature-douyin.html"
 legacyUrl: "/static/html/canvas-draw-signature-douyin.html"
-category: "图形/媒体"
+category: "图形"
 badge: "实验"
 tags: ["legacy", "图形"]
 ---

@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-a-1190000019815534-Script-error-Same-origin-policy.html"
 legacyUrl: "/static/html/sf-a-1190000019815534-Script-error-Same-origin-policy.html"
-category: "思否配套"
+category: "SegmentFault"
 badge: "博客配套"
 tags: ["legacy", "SegmentFault", "博客配套"]
 relatedPosts: ["sf-1190000019815534"]

@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/elementui-upload-dialog.html"
 legacyUrl: "/static/html/elementui-upload-dialog.html"
-category: "前端实验"
+category: "实验"
 badge: "精选"
 tags: ["legacy", "实验", "精选"]
 ---

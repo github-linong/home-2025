@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/qrc-tran-test-hexToUtf8.html"
 legacyUrl: "/static/html/qrc-tran-test-hexToUtf8.html"
-category: "前端实验"
+category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---

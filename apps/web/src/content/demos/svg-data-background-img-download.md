@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/svg-data-background-img-download.html"
 legacyUrl: "/static/html/svg-data-background-img-download.html"
-category: "图形/媒体"
+category: "图形"
 badge: "博客配套"
 tags: ["legacy", "图形", "博客配套"]
 relatedPosts: ["sf-1190000019407019"]

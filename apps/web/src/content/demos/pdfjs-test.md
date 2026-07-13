@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/pdfjs-test.html"
 legacyUrl: "/static/html/pdfjs-test.html"
-category: "PDF/文档"
+category: "PDF"
 badge: "精选"
 tags: ["legacy", "PDF", "精选"]
 ---

@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/bug-mobile-upload-page-reload.html"
 legacyUrl: "/static/html/bug-mobile-upload-page-reload.html"
-category: "Bug 复现"
+category: "Bug"
 badge: "Bug 复现"
 tags: ["legacy", "Bug"]
 ---

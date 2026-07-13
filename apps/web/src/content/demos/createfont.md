@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/createfont.html"
 legacyUrl: "/static/html/createfont.html"
-category: "图形/媒体"
+category: "图形"
 badge: "博客配套"
 tags: ["legacy", "图形", "博客配套"]
 relatedPosts: ["sf-1190000022021264"]

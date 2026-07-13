@@ -2,7 +2,7 @@
   "name": "personal-site",
   "private": true,
   "version": "0.1.0",
-  "description": "Personal site — Astrofy static web + Hono API",
+  "description": "Personal site — Astrofy static web + Express legacy API",
   "type": "module",
   "scripts": {
     "dev:web": "npm run dev --prefix apps/web",
@@ -17,8 +17,10 @@
     "optimize:sf-answers": "node scripts/optimize-sf-answers-llm.mjs",
     "migrate:static-html": "node scripts/migrate-static-html-demos.mjs",
     "migrate:static-html:next": "node scripts/migrate-static-html-demos.mjs --limit 1",
+    "migrate:static-projects": "node scripts/migrate-static-projects.mjs",
     "generate:demo-entries": "node scripts/generate-legacy-demo-entries.mjs",
-    "deploy:web": "bash scripts/deploy-web.sh"
+    "deploy:web": "bash scripts/deploy-web.sh",
+    "test:api": "npm test --prefix apps/api"
   },
   "engines": {
     "node": ">=22.0.0"

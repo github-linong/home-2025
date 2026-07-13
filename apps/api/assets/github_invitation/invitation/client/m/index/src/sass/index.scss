@@ -1,0 +1,16 @@
+@import '../../../../base/sass/storebase';
+
+@import '../component/sass/aside';
+
+.warp{
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+
+	.page{
+
+	}
+	.music{
+		background: url(../images/bg_music_btn.png) no-repeat center center pxrem(34) pxrem(80)
+	}
+}

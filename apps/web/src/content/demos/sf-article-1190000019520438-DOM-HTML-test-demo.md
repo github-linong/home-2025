@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-article-1190000019520438-DOM-HTML-test-demo.html"
 legacyUrl: "/static/html/sf-article-1190000019520438-DOM-HTML-test-demo.html"
-category: "思否配套"
+category: "SegmentFault"
 badge: "博客配套"
 tags: ["legacy", "SegmentFault", "博客配套"]
 relatedPosts: ["sf-1190000019520438"]

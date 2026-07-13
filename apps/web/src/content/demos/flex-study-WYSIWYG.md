@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/flex-study-WYSIWYG.html"
 legacyUrl: "/static/html/flex-study-WYSIWYG.html"
-category: "CSS 布局"
+category: "CSS"
 badge: "精选"
 tags: ["legacy", "CSS", "精选"]
 ---

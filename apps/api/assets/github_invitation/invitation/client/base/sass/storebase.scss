@@ -1,0 +1,66 @@
+@import 'base/base';
+@import 'helpers/functions';
+@import 'helpers/mixins';
+@import 'helpers/variables';
+
+body{
+  font-family: "Microsoft Yahei";
+}
+
+.clearfix {
+    &:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+}
+
+.fl, .left {
+  float: left;
+}
+
+.fr, .right {
+  float: right;
+}
+
+.hide {
+  display: none !important;
+}
+
+.f12 {
+	font-size: 12px;
+}
+
+.f14 {
+	font-size: 14px;
+}
+
+.f16 {
+	font-size: 16px;
+}
+
+.fb {
+	font-weight: 700;
+}
+
+.ta_l {
+	text-align: left;
+}
+
+.ta_c {
+	text-align: center;
+}
+
+.ta_r {
+	text-align: right;
+}
+
+.none {
+  display: none;
+}
+
+/*文字超出省略*/
+.ellipsis{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/*光标*/
+.cursor{ cursor: pointer; }

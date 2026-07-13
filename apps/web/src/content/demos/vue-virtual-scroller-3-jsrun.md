@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vue-virtual-scroller-3-jsrun.html"
 legacyUrl: "/static/html/vue-virtual-scroller-3-jsrun.html"
-category: "Vue 示例"
+category: "Vue"
 badge: "实验"
 tags: ["legacy", "Vue"]
 ---

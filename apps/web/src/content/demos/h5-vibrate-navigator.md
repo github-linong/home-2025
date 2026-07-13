@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/h5-vibrate-navigator.html"
 legacyUrl: "/static/html/h5-vibrate-navigator.html"
-category: "移动端/H5"
+category: "移动端"
 badge: "精选"
 tags: ["legacy", "移动端", "精选"]
 ---

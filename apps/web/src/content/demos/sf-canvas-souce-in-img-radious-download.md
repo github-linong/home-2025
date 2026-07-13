@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-canvas-souce-in-img-radious-download.html"
 legacyUrl: "/static/html/sf-canvas-souce-in-img-radious-download.html"
-category: "思否配套"
+category: "SegmentFault"
 badge: "思否"
 tags: ["legacy", "SegmentFault"]
 ---

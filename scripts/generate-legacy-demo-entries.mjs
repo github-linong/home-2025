@@ -26,24 +26,25 @@ const HTML_DIR = path.join(ROOT, 'apps/web/public/demos/html');
 
 const SKIP_DEMO_FILES = new Set(['ai-prototype.md']);
 
+/** Category name equals the primary topic tag (one shared vocabulary with search). */
 const CATEGORY_RULES = [
-  { re: /^(sf-a|sf-q|sf-article|sf-)/i, category: '思否配套', tag: 'SegmentFault' },
-  { re: /^test-/i, category: 'Bug 复现', tag: '测试' },
-  { re: /^bug-/i, category: 'Bug 复现', tag: 'Bug' },
-  { re: /^vue-/i, category: 'Vue 示例', tag: 'Vue' },
-  { re: /^react-/i, category: 'React 示例', tag: 'React' },
+  { re: /^(sf-a|sf-q|sf-article|sf-)/i, category: 'SegmentFault', tag: 'SegmentFault' },
+  { re: /^test-/i, category: '测试', tag: '测试' },
+  { re: /^bug-/i, category: 'Bug', tag: 'Bug' },
+  { re: /^vue-/i, category: 'Vue', tag: 'Vue' },
+  { re: /^react-/i, category: 'React', tag: 'React' },
   { re: /^qrcode/i, category: '二维码', tag: '二维码' },
-  { re: /^pdf/i, category: 'PDF/文档', tag: 'PDF' },
+  { re: /^pdf/i, category: 'PDF', tag: 'PDF' },
   { re: /websocket/i, category: 'WebSocket', tag: 'WebSocket' },
   { re: /^pwa|^service.?worker/i, category: 'PWA', tag: 'PWA' },
   { re: /^(audio|video|media|flv|hls)/i, category: '音视频', tag: '音视频' },
-  { re: /^(flex|css|waterfall|sticky|grid)/i, category: 'CSS 布局', tag: 'CSS' },
-  { re: /^(input|textarea|form|select)/i, category: '表单/输入', tag: '表单' },
-  { re: /^(touch|click|copy|clipboard|drag|drop|sort)/i, category: '交互/事件', tag: '交互' },
-  { re: /^(ai-|img-|face|merge|upload|download|file|blob)/i, category: '文件/AI', tag: '文件 IO' },
-  { re: /^(axios|ajax|xhr|cors|jsonp|fetch|http)/i, category: '网络/HTTP', tag: 'HTTP' },
-  { re: /^(wx|wechat|mobile|ios|android|h5)/i, category: '移动端/H5', tag: '移动端' },
-  { re: /font|exif|canvas|svg/i, category: '图形/媒体', tag: '图形' },
+  { re: /^(flex|css|waterfall|sticky|grid)/i, category: 'CSS', tag: 'CSS' },
+  { re: /^(input|textarea|form|select)/i, category: '表单', tag: '表单' },
+  { re: /^(touch|click|copy|clipboard|drag|drop|sort)/i, category: '交互', tag: '交互' },
+  { re: /^(ai-|img-|face|merge|upload|download|file|blob)/i, category: '文件 IO', tag: '文件 IO' },
+  { re: /^(axios|ajax|xhr|cors|jsonp|fetch|http)/i, category: 'HTTP', tag: 'HTTP' },
+  { re: /^(wx|wechat|mobile|ios|android|h5)/i, category: '移动端', tag: '移动端' },
+  { re: /font|exif|canvas|svg/i, category: '图形', tag: '图形' },
 ];
 
 function parseArgs(argv) {
@@ -207,7 +208,7 @@ function inferCategory(file) {
   for (const rule of CATEGORY_RULES) {
     if (rule.re.test(file)) return { category: rule.category, tag: rule.tag };
   }
-  return { category: '前端实验', tag: '实验' };
+  return { category: '实验', tag: '实验' };
 }
 
 function extractSfIds(file) {

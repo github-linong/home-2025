@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-q-1010000020634645-vue-vueRouter-watch-keepAlive-history.html"
 legacyUrl: "/static/html/sf-q-1010000020634645-vue-vueRouter-watch-keepAlive-history.html"
-category: "思否配套"
+category: "SegmentFault"
 badge: "思否"
 tags: ["legacy", "SegmentFault"]
 ---

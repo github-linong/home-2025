@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/json-parse-unicode-4-ctor.html"
 legacyUrl: "/static/html/json-parse-unicode-4-ctor.html"
-category: "前端实验"
+category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---

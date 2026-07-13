@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vue-bug-key-sf-bullet-test-1.html"
 legacyUrl: "/static/html/vue-bug-key-sf-bullet-test-1.html"
-category: "Vue 示例"
+category: "Vue"
 badge: "实验"
 tags: ["legacy", "Vue"]
 ---

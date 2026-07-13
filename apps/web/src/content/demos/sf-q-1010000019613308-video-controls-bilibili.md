@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-q-1010000019613308-video-controls-bilibili.html"
 legacyUrl: "/static/html/sf-q-1010000019613308-video-controls-bilibili.html"
-category: "思否配套"
+category: "SegmentFault"
 badge: "思否"
 tags: ["legacy", "SegmentFault"]
 ---

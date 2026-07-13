@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/ai-faceplusplus-merge.html"
 legacyUrl: "/static/html/ai-faceplusplus-merge.html"
-category: "文件/AI"
+category: "文件 IO"
 badge: "精选"
 tags: ["legacy", "文件 IO", "精选"]
 ---

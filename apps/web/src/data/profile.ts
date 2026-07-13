@@ -116,6 +116,6 @@ export const profile = {
   links: {
     site: "https://www.lilnong.top",
     segmentfault: "https://segmentfault.com/u/linong",
-    github: "https://github.com/hkxiaoyao/edict",
+    github: "https://github.com/github-linong",
   },
 } as const;

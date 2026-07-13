@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/bug-vue-audio-pending-status.html"
 legacyUrl: "/static/html/bug-vue-audio-pending-status.html"
-category: "Bug 复现"
+category: "Bug"
 badge: "博客配套"
 tags: ["legacy", "Bug", "博客配套"]
 relatedPosts: ["sf-1190000022957951"]

@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/bug-test-img-upload-cut.html"
 legacyUrl: "/static/html/bug-test-img-upload-cut.html"
-category: "Bug 复现"
+category: "Bug"
 badge: "Bug 复现"
 tags: ["legacy", "Bug"]
 ---

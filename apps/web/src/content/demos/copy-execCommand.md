@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/copy-execCommand.html"
 legacyUrl: "/static/html/copy-execCommand.html"
-category: "交互/事件"
+category: "交互"
 badge: "博客配套"
 tags: ["legacy", "交互", "博客配套"]
 relatedPosts: ["sf-1190000022736770"]

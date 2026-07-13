@@ -1,0 +1,30 @@
+<!-- 解决低版本IE不支持JSON方法的bug -->
+<!--[if lt IE 9]>
+<script type="text/javascript" src="https://cdn.bootcss.com/json2/20160511/json2.min.js"></script>
+<![endif]-->
+<script type="text/javascript">
+    var LN = window.LN || {};
+</script>
+meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<style>
+    html {
+        overflow-y: scroll;
+    }
+    
+    [data-dpr="2"] p,
+    [data-dpr="3"] p,
+    [data-dpr="2"] div,
+    [data-dpr="3"] div {
+        max-height: 100%;
+    }
+</style>
+<script type="text/javascript" src="/invitation/base/js/flexible.js"></script>
+<script type="text/javascript">
+    var vv = window.vv || {};
+    var _ua = navigator.userAgent,
+        _isIOS = (/iphone|ipad|ipod|itouch/gi).test(_ua),
+        _isAndroid = (/android/gi).test(_ua),
+        _isWechat = (/micromessenger/gi).test(_ua),
+        _isQQ = ((/QQBrowser.*QQ/gi).test(_ua));
+</script>

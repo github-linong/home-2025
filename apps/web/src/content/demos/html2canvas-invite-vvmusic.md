@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/html2canvas-invite-vvmusic.html"
 legacyUrl: "/static/html/html2canvas-invite-vvmusic.html"
-category: "图形/媒体"
+category: "图形"
 badge: "精选"
 tags: ["legacy", "图形", "精选"]
 ---

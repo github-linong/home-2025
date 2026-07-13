@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/tool-crypto-md5-SHA1-SHA256-AES-Rabbit-MARC4-HMAC-HMACMD5-HMACSHA1-HMACSHA256-PBKDF2.html"
 legacyUrl: "/static/html/tool-crypto-md5-SHA1-SHA256-AES-Rabbit-MARC4-HMAC-HMACMD5-HMACSHA1-HMACSHA256-PBKDF2.html"
-category: "前端实验"
+category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---

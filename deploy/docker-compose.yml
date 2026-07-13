@@ -21,14 +21,23 @@ services:
     environment:
       API_PORT: 3001
       SITE_URL: ${SITE_URL:-https://example.com}
-      AUTH_ENABLED: ${AUTH_ENABLED:-false}
-      MYSQL_HOST: mysql
-      MYSQL_PORT: 3306
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-personal_site}
-      MYSQL_USER: ${MYSQL_USER:-site}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-sitepass}
-    depends_on:
-      - mysql
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://www.lilnong.top}
+      MONGO_URI: ${MONGO_URI:-mongodb://127.0.0.1:27017/}
+      BAIDU_CLIENT_ID: ${BAIDU_CLIENT_ID:-}
+      BAIDU_CLIENT_SECRET: ${BAIDU_CLIENT_SECRET:-}
+      FACEPP_API_KEY: ${FACEPP_API_KEY:-}
+      FACEPP_API_SECRET: ${FACEPP_API_SECRET:-}
+      TENCENT_SECRET_ID: ${TENCENT_SECRET_ID:-}
+      TENCENT_SECRET_KEY: ${TENCENT_SECRET_KEY:-}
+      WX_APPID: ${WX_APPID:-}
+      WX_APP_SECRET: ${WX_APP_SECRET:-}
+      WX_SERVER_TOKEN: ${WX_SERVER_TOKEN:-invitationln}
+      WX_HOST_ALLOWLIST: ${WX_HOST_ALLOWLIST:-www.lilnong.top}
+      KG_QQ_COOKIE: ${KG_QQ_COOKIE:-}
+      KG_QQ_COOKIE_ALT: ${KG_QQ_COOKIE_ALT:-}
+      NETEASE_API_BASE: ${NETEASE_API_BASE:-http://127.0.0.1:9101}
+    volumes:
+      - api_data:/app/data
     ports:
       - "3001:3001"
 
@@ -45,3 +54,4 @@ services:
 
 volumes:
   mysql_data:
+  api_data:

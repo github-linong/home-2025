@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vue-bug-list-update-sf-q-1010000008937946.html"
 legacyUrl: "/static/html/vue-bug-list-update-sf-q-1010000008937946.html"
-category: "Vue 示例"
+category: "Vue"
 badge: "实验"
 tags: ["legacy", "Vue"]
 ---

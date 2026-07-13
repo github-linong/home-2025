@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/pdf-es5-viewer-2.html"
 legacyUrl: "/static/html/pdf-es5-viewer-2.html"
-category: "PDF/文档"
+category: "PDF"
 badge: "实验"
 tags: ["legacy", "PDF"]
 ---

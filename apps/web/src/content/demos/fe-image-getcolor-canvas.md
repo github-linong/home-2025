@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/fe-image-getcolor-canvas.html"
 legacyUrl: "/static/html/fe-image-getcolor-canvas.html"
-category: "图形/媒体"
+category: "图形"
 badge: "精选"
 tags: ["legacy", "图形", "精选"]
 ---

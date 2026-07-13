@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vue-erp-test-vue@2.6.11.html"
 legacyUrl: "/static/html/vue-erp-test-vue@2.6.11.html"
-category: "Vue 示例"
+category: "Vue"
 badge: "博客配套"
 tags: ["legacy", "Vue", "博客配套"]
 relatedPosts: ["sf-1190000022728116"]

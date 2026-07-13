@@ -33,6 +33,15 @@ if [[ "${SKIP_BUILD:-0}" != "1" ]]; then
     source "$HOME/.nvm/nvm.sh" 2>/dev/null || true
     nvm use 22 >/dev/null 2>&1 || true
   fi
+  # Whole-site project assets are gitignored; restore from home-2023 snapshot if missing.
+  if [[ ! -d "$ROOT/apps/web/public/demos/project/pwa-20190625" ]]; then
+    if [[ -d "${PROJECT_SRC:-/tmp/home-2023-inspect/123.56.16.33/lilnong/static/project}" ]]; then
+      echo "==> Restoring demos/project from home-2023 snapshot..."
+      npm run migrate:static-projects
+    else
+      echo "WARN: apps/web/public/demos/project missing and PROJECT_SRC not found; deploy will omit whole-site demos." >&2
+    fi
+  fi
   npm run build:web
 fi
 

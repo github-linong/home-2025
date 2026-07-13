@@ -1,7 +1,6 @@
 ---
 const { title, img, desc, url, badge, tags, target = "_blank", kind, votes, accepted } = Astro.props;
 import { Image } from "astro:assets";
-const tag_url = url.split("/").slice(0, -1).join("/") + "/tag";
 const isAnswer = kind === "answer";
 ---
 
@@ -40,7 +39,7 @@ const isAnswer = kind === "answer";
           {
             tags &&
               tags.map((tag) => (
-                <a href={`${tag_url}/${tag}`} class="badge badge-outline">
+                <a href={`/search/?tag=${encodeURIComponent(tag)}`} class="badge badge-outline">
                   {tag}
                 </a>
               ))

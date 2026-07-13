@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/wechat-avatar-70-call-translate-scale-rotate.html"
 legacyUrl: "/static/html/wechat-avatar-70-call-translate-scale-rotate.html"
-category: "移动端/H5"
+category: "移动端"
 badge: "实验"
 tags: ["legacy", "移动端"]
 ---

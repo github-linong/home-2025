@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/input-type-all-test-andriod-and-ios.html"
 legacyUrl: "/static/html/input-type-all-test-andriod-and-ios.html"
-category: "表单/输入"
+category: "表单"
 badge: "实验"
 tags: ["legacy", "表单"]
 ---

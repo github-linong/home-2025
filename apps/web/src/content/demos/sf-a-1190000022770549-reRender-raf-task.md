@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-a-1190000022770549-reRender-raf-task.html"
 legacyUrl: "/static/html/sf-a-1190000022770549-reRender-raf-task.html"
-category: "思否配套"
+category: "SegmentFault"
 badge: "思否"
 tags: ["legacy", "SegmentFault"]
 ---

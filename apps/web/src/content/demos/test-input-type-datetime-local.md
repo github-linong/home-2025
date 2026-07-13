@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-input-type-datetime-local.html"
 legacyUrl: "/static/html/test-input-type-datetime-local.html"
-category: "Bug 复现"
+category: "测试"
 badge: "Bug 复现"
 tags: ["legacy", "测试"]
 ---

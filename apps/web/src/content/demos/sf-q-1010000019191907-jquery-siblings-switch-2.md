@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-q-1010000019191907-jquery-siblings-switch-2.html"
 legacyUrl: "/static/html/sf-q-1010000019191907-jquery-siblings-switch-2.html"
-category: "思否配套"
+category: "SegmentFault"
 badge: "思否"
 tags: ["legacy", "SegmentFault"]
 ---

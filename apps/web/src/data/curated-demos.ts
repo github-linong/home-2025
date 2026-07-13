@@ -92,6 +92,24 @@ export const CURATED_DEMO_SECTIONS: CuratedSection[] = [
       "qrcode-20200408-jq22-yanshi22345",
     ],
   },
+  {
+    id: "whole-site",
+    title: "整站级演示",
+    description: "从旧站 static/project 迁入的完整前端工程：PWA、PDF 阅读器、大屏、模拟器、音视频与 Cocos 等。",
+    slugs: [
+      "project-pwa-20190625",
+      "project-pdfjs-es5-2.5.207",
+      "project-pdfh5-master",
+      "project-dashboard",
+      "project-Emulatrix-master",
+      "project-unlock-music-modern",
+      "project-h5player",
+      "project-cocos-vuecli-demo",
+      "project-cocos-physices-example",
+      "project-PPTXjs-1.21.1",
+      "project-vue-cli-build-axios",
+    ],
+  },
 ];
 
 /** Flat set of curated slugs for badge / filter use */

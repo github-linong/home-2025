@@ -1,0 +1,7 @@
+$i: 12;
+@while $i < 40 {
+    .fz-#{$i} {
+        @include px2px(font-size, $i);
+    }
+    $i: $i + 2;
+}

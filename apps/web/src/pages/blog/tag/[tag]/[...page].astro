@@ -28,8 +28,8 @@ const params = Astro.params;
 <BaseLayout title={"Blog - " + params.tag} sideBarActiveItemID="blog">
   <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
     <div class="text-3xl w-full font-bold sm:w-auto">Blog - {params.tag}</div>
-    <a href={`/blog/search?tag=${encodeURIComponent(params.tag ?? "")}`} class="btn btn-outline btn-sm">
-      在标签内搜索
+    <a href={`/search/?tag=${encodeURIComponent(params.tag ?? "")}`} class="btn btn-outline btn-sm">
+      统一搜索（含项目）
     </a>
   </div>
   {

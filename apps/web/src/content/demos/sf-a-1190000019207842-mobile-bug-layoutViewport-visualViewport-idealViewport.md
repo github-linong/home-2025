@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-a-1190000019207842-mobile-bug-layoutViewport-visualViewport-idealViewport.html"
 legacyUrl: "/static/html/sf-a-1190000019207842-mobile-bug-layoutViewport-visualViewport-idealViewport.html"
-category: "思否配套"
+category: "SegmentFault"
 badge: "精选"
 tags: ["legacy", "SegmentFault", "精选"]
 ---

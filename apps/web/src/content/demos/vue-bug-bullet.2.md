@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vue-bug-bullet.2.html"
 legacyUrl: "/static/html/vue-bug-bullet.2.html"
-category: "Vue 示例"
+category: "Vue"
 badge: "博客配套"
 tags: ["legacy", "Vue", "博客配套"]
 relatedPosts: ["sf-1190000037465717"]

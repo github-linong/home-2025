@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/clipboard-api-async.html"
 legacyUrl: "/static/html/clipboard-api-async.html"
-category: "交互/事件"
+category: "交互"
 badge: "精选"
 tags: ["legacy", "交互", "精选"]
 ---

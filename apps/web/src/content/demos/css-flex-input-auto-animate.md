@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/css-flex-input-auto-animate.html"
 legacyUrl: "/static/html/css-flex-input-auto-animate.html"
-category: "CSS 布局"
+category: "CSS"
 badge: "实验"
 tags: ["legacy", "CSS"]
 ---

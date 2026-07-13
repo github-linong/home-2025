@@ -15,13 +15,13 @@ export function pagefindIntegration() {
     hooks: {
       "astro:build:done": async ({ dir, logger }) => {
         const distDir = dir.pathname;
-        const glob = "blog/*/index.html";
+        const glob = "{blog,demos}/*/index.html";
         try {
           execSync(
             `node "${pagefindBin}" --site "${distDir}" --glob "${glob}" --force-language zh`,
             { stdio: "inherit" }
           );
-          logger.info("[pagefind] indexed blog posts");
+          logger.info("[pagefind] indexed blog posts and demos");
         } catch (error) {
           logger.error(`[pagefind] indexing failed: ${error.message}`);
           throw error;

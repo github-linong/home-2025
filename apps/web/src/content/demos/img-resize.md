@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/img-resize.html"
 legacyUrl: "/static/html/img-resize.html"
-category: "文件/AI"
+category: "文件 IO"
 badge: "实验"
 tags: ["legacy", "文件 IO"]
 ---

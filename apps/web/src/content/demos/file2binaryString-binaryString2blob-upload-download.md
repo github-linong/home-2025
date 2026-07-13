@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/file2binaryString-binaryString2blob-upload-download.html"
 legacyUrl: "/static/html/file2binaryString-binaryString2blob-upload-download.html"
-category: "文件/AI"
+category: "文件 IO"
 badge: "实验"
 tags: ["legacy", "文件 IO"]
 ---

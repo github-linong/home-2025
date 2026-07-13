@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/meipian-quanzi-20190923-data-show.html"
 legacyUrl: "/static/html/meipian-quanzi-20190923-data-show.html"
-category: "前端实验"
+category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---

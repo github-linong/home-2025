@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/flex.html"
 legacyUrl: "/static/html/flex.html"
-category: "CSS 布局"
+category: "CSS"
 badge: "实验"
 tags: ["legacy", "CSS"]
 ---

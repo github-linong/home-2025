@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-article-ajax-axios-content-type-mime-form.html"
 legacyUrl: "/static/html/sf-article-ajax-axios-content-type-mime-form.html"
-category: "思否配套"
+category: "SegmentFault"
 badge: "思否"
 tags: ["legacy", "SegmentFault"]
 ---

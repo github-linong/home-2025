@@ -8,3 +8,7 @@ apps/web/node_modules/
 apps/api/node_modules/
 apps/web/dist/
 apps/api/dist/
+
+# Large migrated whole-site demos (restore with: npm run migrate:static-projects)
+apps/web/public/demos/project/
+apps/web/public/demos/pdf/

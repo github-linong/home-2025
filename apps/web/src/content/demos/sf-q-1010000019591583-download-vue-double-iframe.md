@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-q-1010000019591583-download-vue-double-iframe.html"
 legacyUrl: "/static/html/sf-q-1010000019591583-download-vue-double-iframe.html"
-category: "思否配套"
+category: "SegmentFault"
 badge: "思否"
 tags: ["legacy", "SegmentFault"]
 ---

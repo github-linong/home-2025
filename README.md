@@ -1,6 +1,6 @@
 # Personal Site (lilnong.top)
 
-Monorepo migrated from [lilnong.top](https://www.lilnong.top): **Astrofy** static frontend + **Hono** API (auth reserved) + **MySQL**.
+Monorepo migrated from [lilnong.top](https://www.lilnong.top): **Astrofy** static frontend + **Express** legacy API (home-2023 compatible) + optional **MySQL**.
 
 ## Structure
 
@@ -8,10 +8,9 @@ Monorepo migrated from [lilnong.top](https://www.lilnong.top): **Astrofy** stati
 personal-site/
 ├── apps/
 │   ├── web/          # Astrofy — blog, demos, about (static)
-│   └── api/          # Hono — OAuth + invite stubs, future features
+│   └── api/          # Express — home-2023 path-compatible API
 ├── deploy/           # docker-compose, nginx, mysql init
-├── demos/            # (optional) source for larger web demos
-└── scripts/          # deploy & invite helpers
+└── scripts/          # deploy & migrate helpers
 ```
 
 ## Local development
@@ -24,16 +23,20 @@ npm run dev:web
 # → http://localhost:4321
 
 # Terminal 2 — API
+cp .env.example .env   # fill Baidu / WeChat / Face++ / Tencent / Mongo as needed
 npm install --prefix apps/api
 npm run dev:api
 # → http://localhost:3001/api/health
 ```
 
+Legacy demo endpoints (same paths as old Node app): `/upload*`, `/proxy`, `/CORS/*`, `/vapi/*`, `/api3/*`, `/wx/*`, …
+
 ## Build
 
 ```bash
 npm run build:web    # output: apps/web/dist/
-npm run build:api    # output: apps/api/dist/
+# API is plain Node (no build step): npm start --prefix apps/api
+npm test --prefix apps/api
 ```
 
 ## Content (Git)
@@ -56,24 +59,20 @@ Add a markdown file under `content/demos/` with frontmatter:
 
 Web demos: put static build under `public/demos/your-demo/`.
 
-## Auth (reserved)
-
-- Public pages need **no login**.
-- API stubs: `/api/auth/*`, `/login`, `/invite/:token`
-- Set `AUTH_ENABLED=true` and OAuth env vars when ready.
-- Schema: `deploy/mysql/init.sql`
-
 ## Production (Docker)
 
 ```bash
 cp .env.example .env
 npm run build:web
 cd deploy && docker compose up -d
-# → http://localhost:8080 (nginx serves static + proxies API)
+# → http://localhost:8080 (nginx serves static + proxies legacy API paths)
 ```
 
 Point your domain to the server, terminate TLS at nginx/Caddy on the host.
 
+See `apps/api/README.md` for API layout and env vars.
+
 ## Based on
 
 - [Astrofy](https://github.com/manuelernestog/astrofy) (MIT) — customized for demos, removed store/CV from nav.
+- Legacy API behavior from [home-2023](https://github.com/github-linong/home-2023).

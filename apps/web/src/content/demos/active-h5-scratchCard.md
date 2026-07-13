@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/active-h5-scratchCard.html"
 legacyUrl: "/static/html/active-h5-scratchCard.html"
-category: "前端实验"
+category: "实验"
 badge: "精选"
 tags: ["legacy", "实验", "精选"]
 ---

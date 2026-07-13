@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/fe-file-upload-ajax-XMLHTTPRequest-progress.html"
 legacyUrl: "/static/html/fe-file-upload-ajax-XMLHTTPRequest-progress.html"
-category: "前端实验"
+category: "实验"
 badge: "精选"
 tags: ["legacy", "实验", "精选"]
 ---

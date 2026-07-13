@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vue-virtual-scroll-list.html"
 legacyUrl: "/static/html/vue-virtual-scroll-list.html"
-category: "Vue 示例"
+category: "Vue"
 badge: "实验"
 tags: ["legacy", "Vue"]
 ---

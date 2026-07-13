@@ -1,23 +1,37 @@
 {
   "name": "@personal-site/api",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "type": "module",
+  "description": "Legacy lilnong Express API (home-2023 compatible paths)",
+  "main": "src/server.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "start": "node dist/index.js",
-    "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "dependencies": {
-    "@hono/node-server": "^1.14.4",
+    "ali-oss": "^6.23.0",
+    "axios": "^1.10.0",
+    "base64-js": "^1.5.1",
+    "body-parser": "^1.20.3",
+    "browser-id3-writer": "^4.4.0",
     "dotenv": "^16.5.0",
-    "hono": "^4.8.3",
-    "mysql2": "^3.14.1"
-  },
-  "devDependencies": {
-    "@types/node": "^22.15.32",
-    "tsx": "^4.20.3",
-    "typescript": "^5.8.3"
+    "encoding": "^0.1.13",
+    "express": "^4.21.2",
+    "fontmin": "^1.1.0",
+    "gulp-rename": "^2.0.0",
+    "iconv-lite": "^0.6.3",
+    "log4js": "^6.9.1",
+    "md5": "^2.3.0",
+    "mime-types": "^2.1.35",
+    "mongodb": "^6.17.0",
+    "multer": "^1.4.5-lts.2",
+    "music-metadata": "^7.14.0",
+    "request": "^2.88.2",
+    "sha1": "^1.1.1",
+    "tencentcloud-sdk-nodejs": "^4.1.118"
   }
 }

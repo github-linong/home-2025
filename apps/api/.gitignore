@@ -1,0 +1,11 @@
+node_modules/
+data/uploads/*
+data/fontmin/*
+data/logs/*
+data/felog/*
+!data/uploads/.gitkeep
+!data/fontmin/.gitkeep
+!data/logs/.gitkeep
+!data/felog/.gitkeep
+.env
+*.log

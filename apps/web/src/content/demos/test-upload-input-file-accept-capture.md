@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-upload-input-file-accept-capture.html"
 legacyUrl: "/static/html/test-upload-input-file-accept-capture.html"
-category: "Bug 复现"
+category: "测试"
 badge: "Bug 复现"
 tags: ["legacy", "测试"]
 ---

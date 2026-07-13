@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-1190000020625420-file-FileReader-blob.html"
 legacyUrl: "/static/html/sf-1190000020625420-file-FileReader-blob.html"
-category: "思否配套"
+category: "SegmentFault"
 badge: "博客配套"
 tags: ["legacy", "SegmentFault", "博客配套"]
 relatedPosts: ["sf-1190000020625420"]

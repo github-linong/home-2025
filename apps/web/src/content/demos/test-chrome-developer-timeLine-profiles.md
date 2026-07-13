@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-chrome-developer-timeLine-profiles.html"
 legacyUrl: "/static/html/test-chrome-developer-timeLine-profiles.html"
-category: "Bug 复现"
+category: "测试"
 badge: "Bug 复现"
 tags: ["legacy", "测试"]
 ---

@@ -39,10 +39,15 @@ const isLegacy = demo.tags?.includes("legacy");
 <BaseLayout
   title={demo.title}
   sideBarActiveItemID="demos"
-  mainClass="p-6 pt-10 w-full max-w-[100vw] lg:max-w-[1200px]"
 >
-  <article class="prose max-w-none">
+  <article class="prose max-w-none" data-pagefind-body>
     <div class="not-prose mb-6">
+      <span data-pagefind-meta="title" class="hidden">{demo.title}</span>
+      <span data-pagefind-meta="description" class="hidden">{demo.description}</span>
+      {demo.badge && <span data-pagefind-meta="badge" class="hidden">{demo.badge}</span>}
+      {demo.category && <span data-pagefind-meta="category" class="hidden">{demo.category}</span>}
+      {demo.category && <span data-pagefind-filter={`tag:${demo.category}`} class="hidden" />}
+      {demo.tags?.map((tag) => <span data-pagefind-filter={`tag:${tag}`} class="hidden" />)}
       <a href={isLegacy ? "/demos/archive/" : "/demos/"} class="link link-hover text-sm" data-astro-reload>
         ← {isLegacy ? "Demo 归档" : "项目展示"}
       </a>
@@ -50,11 +55,19 @@ const isLegacy = demo.tags?.includes("legacy");
       <p class="text-lg opacity-80 mt-2">{demo.description}</p>
       <div class="flex flex-wrap gap-2 mt-4">
         <span class="badge badge-primary">{typeLabels[demo.type] ?? demo.type}</span>
-        {demo.category && <span class="badge badge-secondary">{demo.category}</span>}
+        {
+          demo.category && (
+            <a class="badge badge-secondary" href={`/search/?tag=${encodeURIComponent(demo.category)}`}>
+              {demo.category}
+            </a>
+          )
+        }
         {demo.badge && <span class="badge badge-outline">{demo.badge}</span>}
         {
           demo.tags?.map((tag) => (
-            <span class="badge badge-ghost">{tag}</span>
+            <a class="badge badge-ghost" href={`/search/?tag=${encodeURIComponent(tag)}`}>
+              {tag}
+            </a>
           ))
         }
       </div>

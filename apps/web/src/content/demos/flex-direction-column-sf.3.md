@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/flex-direction-column-sf.3.html"
 legacyUrl: "/static/html/flex-direction-column-sf.3.html"
-category: "CSS 布局"
+category: "CSS"
 badge: "博客配套"
 tags: ["legacy", "CSS", "博客配套"]
 relatedPosts: ["sf-1190000037452855"]

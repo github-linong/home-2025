@@ -1,0 +1,429 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+import { buildBlogSearchIndex, buildUnifiedTagCounts } from "../lib/buildBlogSearchIndex";
+import { buildDemoSearchIndex } from "../lib/buildDemoSearchIndex";
+import { canonicalizeLabels, canonicalizeTag } from "../data/tag-canonical";
+
+const posts = await getCollection("blog");
+const demos = await getCollection("demos");
+
+const blogIndex = buildBlogSearchIndex(posts).map((item) => ({
+  ...item,
+  kind: "blog" as const,
+  category: undefined as string | undefined,
+  relatedPosts: 0,
+  slug: undefined as string | undefined,
+  tags: canonicalizeLabels(item.tags ?? []),
+}));
+
+const demoIndex = buildDemoSearchIndex(demos).map((item) => ({
+  ...item,
+  kind: "demo" as const,
+  source: undefined as string | undefined,
+  category: canonicalizeTag(item.category) ?? item.category,
+  tags: canonicalizeLabels([...(item.tags ?? []), item.category]),
+}));
+
+const searchIndex = [...blogIndex, ...demoIndex];
+const tagCounts = buildUnifiedTagCounts(searchIndex.map((item) => item.tags));
+
+const blogCount = blogIndex.length;
+const demoCount = demoIndex.length;
+---
+
+<BaseLayout
+  title="搜索"
+  sideBarActiveItemID="search"
+>
+  <div class="not-prose site-search" data-pagefind-ignore>
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold">搜索</h1>
+      <p class="mt-2 text-base-content/70">
+        博客 {blogCount} 篇 · 项目 {demoCount} 个。博客与项目共用同一套标准标签。
+      </p>
+    </div>
+
+    <form id="search-form" class="mb-4 flex flex-col gap-3 sm:flex-row" role="search">
+      <label class="input input-bordered flex grow items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
+        </svg>
+        <input
+          id="search-input"
+          name="q"
+          type="search"
+          class="grow bg-transparent outline-none"
+          placeholder="搜索博客与项目…"
+          autocomplete="off"
+        />
+      </label>
+      <button type="submit" class="btn btn-primary">搜索</button>
+      <button type="button" id="search-clear" class="btn btn-ghost">清除</button>
+    </form>
+
+    <div class="mb-4">
+      <div class="mb-2 text-sm font-medium text-base-content/60">类型</div>
+      <div id="type-filters" class="flex flex-wrap gap-2"></div>
+    </div>
+
+    <div class="mb-6">
+      <div class="mb-2 text-sm font-medium text-base-content/60">标签</div>
+      <div id="tag-filters" class="flex flex-wrap gap-2"></div>
+    </div>
+
+    <p id="search-status" class="mb-2 hidden text-xs text-base-content/50"></p>
+    <p id="search-summary" class="mb-4 text-sm text-base-content/60"></p>
+
+    <ul id="search-results" class="space-y-0"></ul>
+
+    <div id="search-empty" class="hidden rounded-lg border border-base-300 bg-base-200/50 p-6 text-center text-base-content/70">
+      没有匹配结果，试试其他关键词、类型或标签。
+    </div>
+  </div>
+</BaseLayout>
+
+<script define:vars={{ searchIndex, tagCounts, blogCount, demoCount }}>
+  const form = document.getElementById("search-form");
+  const input = document.getElementById("search-input");
+  const clearBtn = document.getElementById("search-clear");
+  const typeFilters = document.getElementById("type-filters");
+  const tagFilters = document.getElementById("tag-filters");
+  const resultsEl = document.getElementById("search-results");
+  const summaryEl = document.getElementById("search-summary");
+  const statusEl = document.getElementById("search-status");
+  const emptyEl = document.getElementById("search-empty");
+
+  /** @type {'' | 'blog' | 'demo'} */
+  let activeType = "";
+  let activeTag = "";
+  let pagefindReady = false;
+  let pagefindApi = null;
+
+  function normalize(text) {
+    return String(text || "").toLowerCase().trim();
+  }
+
+  function itemLabels(item) {
+    return item.tags || [];
+  }
+
+  function matchesTag(item, tag) {
+    return itemLabels(item).includes(tag);
+  }
+
+  function syncUrl(q, type, tag) {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (type) params.set("type", type);
+    if (tag) params.set("tag", tag);
+    const query = params.toString();
+    const next = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+    window.history.replaceState({}, "", next);
+  }
+
+  async function initPagefind() {
+    if (pagefindReady) return pagefindApi;
+    try {
+      const mod = await import("/pagefind/pagefind.js");
+      pagefindApi = await mod.pagefind;
+      pagefindReady = true;
+      statusEl.classList.add("hidden");
+      return pagefindApi;
+    } catch {
+      pagefindReady = false;
+      statusEl.textContent = "全文索引未就绪，当前搜索标题、摘要与标签（生产构建后可全文检索）。";
+      statusEl.classList.remove("hidden");
+      return null;
+    }
+  }
+
+  function filterMetadata(q, type, tag) {
+    const keyword = normalize(q);
+    let items = searchIndex;
+
+    if (type) items = items.filter((item) => item.kind === type);
+    if (tag) items = items.filter((item) => matchesTag(item, tag));
+
+    if (keyword) {
+      items = items.filter((item) => {
+        const haystack = [
+          item.title,
+          item.description,
+          item.badge,
+          item.category,
+          item.slug,
+          item.type,
+          item.kind,
+          item.source,
+          ...itemLabels(item),
+        ]
+          .filter(Boolean)
+          .map(normalize)
+          .join(" ");
+        return haystack.includes(keyword);
+      });
+    }
+
+    return items;
+  }
+
+  function renderTypeFilters() {
+    typeFilters.innerHTML = "";
+    const options = [
+      { value: "", label: `全部 (${blogCount + demoCount})` },
+      { value: "blog", label: `博客 (${blogCount})` },
+      { value: "demo", label: `项目 (${demoCount})` },
+    ];
+    for (const opt of options) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `badge badge-lg cursor-pointer ${activeType === opt.value ? "badge-primary" : "badge-outline"}`;
+      btn.textContent = opt.label;
+      btn.addEventListener("click", () => {
+        activeType = opt.value;
+        runSearch();
+      });
+      typeFilters.appendChild(btn);
+    }
+  }
+
+  function renderChipGroup(container, items, activeValue, onSelect, allLabel) {
+    container.innerHTML = "";
+    const allBtn = document.createElement("button");
+    allBtn.type = "button";
+    allBtn.className = `badge badge-lg cursor-pointer ${activeValue ? "badge-outline" : "badge-primary"}`;
+    allBtn.textContent = allLabel;
+    allBtn.addEventListener("click", () => onSelect(""));
+    container.appendChild(allBtn);
+
+    for (const { tag, count } of items) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `badge badge-lg cursor-pointer ${activeValue === tag ? "badge-primary" : "badge-outline"}`;
+      btn.textContent = `${tag} (${count})`;
+      btn.addEventListener("click", () => onSelect(activeValue === tag ? "" : tag));
+      container.appendChild(btn);
+    }
+  }
+
+  function renderFilters() {
+    renderTypeFilters();
+    renderChipGroup(tagFilters, tagCounts, activeTag, (value) => {
+      activeTag = value;
+      runSearch();
+    }, "全部标签");
+  }
+
+  function escapeHtml(text) {
+    return String(text)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function renderResults(items, q, type, tag, mode) {
+    resultsEl.innerHTML = "";
+
+    const parts = [];
+    if (q) parts.push(`关键词「${q}」`);
+    if (type === "blog") parts.push("博客");
+    if (type === "demo") parts.push("项目");
+    if (tag) parts.push(`标签「${tag}」`);
+    const modeLabel = mode === "pagefind" ? "全文" : "元数据";
+    summaryEl.textContent = parts.length
+      ? `${parts.join(" · ")} — 找到 ${items.length} 条（${modeLabel}）`
+      : `输入关键词，或点选类型 / 标签开始筛选`;
+
+    if (items.length === 0 && (q || type || tag)) {
+      emptyEl.classList.remove("hidden");
+      return;
+    }
+
+    emptyEl.classList.add("hidden");
+    if (!q && !type && !tag) return;
+
+    for (const item of items) {
+      const li = document.createElement("li");
+      li.className = "border-b border-base-300 py-4";
+
+      const kindLabel = item.kind === "demo" ? "项目" : "博客";
+      const meta = [
+        `<span class="badge badge-outline badge-sm">${kindLabel}</span>`,
+      ];
+      if (item.category) {
+        meta.push(`<span class="badge badge-ghost badge-sm">${escapeHtml(item.category)}</span>`);
+      }
+      if (item.badge) {
+        meta.push(`<span class="badge badge-secondary badge-sm">${escapeHtml(item.badge)}</span>`);
+      }
+      if (item.kind === "demo" && item.relatedPosts > 0) {
+        meta.push(`<span class="text-xs opacity-60">${item.relatedPosts} 篇相关文章</span>`);
+      }
+
+      const tagHtml = itemLabels(item)
+        .filter((t) => t !== "legacy")
+        .slice(0, 8)
+        .map(
+          (t) =>
+            `<button type="button" data-tag="${escapeHtml(t)}" class="badge badge-ghost badge-sm cursor-pointer">${escapeHtml(t)}</button>`,
+        )
+        .join(" ");
+
+      li.innerHTML = `
+        <a href="${escapeHtml(item.url)}" class="block no-underline hover:opacity-90" data-astro-reload>
+          <h2 class="text-lg font-semibold leading-snug text-base-content">${escapeHtml(item.title)}</h2>
+          <p class="mt-1 text-sm text-base-content/70 line-clamp-3">${escapeHtml(item.excerpt || item.description || "")}</p>
+          <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-base-content/50">
+            ${item.pubDate ? `<time>${new Date(item.pubDate).toLocaleDateString("zh-CN")}</time>` : ""}
+            ${meta.join(" ")}
+          </div>
+        </a>
+        ${tagHtml ? `<div class="mt-2 flex flex-wrap gap-1">${tagHtml}</div>` : ""}
+      `;
+
+      li.querySelectorAll("[data-tag]").forEach((btn) => {
+        btn.addEventListener("click", (event) => {
+          event.preventDefault();
+          activeTag = btn.getAttribute("data-tag") || "";
+          runSearch();
+        });
+      });
+
+      resultsEl.appendChild(li);
+    }
+  }
+
+  function metadataByUrl(url) {
+    const normalized = url.endsWith("/") ? url : `${url}/`;
+    return searchIndex.find((item) => {
+      const itemUrl = item.url.endsWith("/") ? item.url : `${item.url}/`;
+      return itemUrl === normalized || item.url === url;
+    });
+  }
+
+  function isSearchableContentUrl(url) {
+    if (url.includes("/blog/search") || url.includes("/demos/search") || url.includes("/search")) return false;
+    if (url.includes("/demos/html/") || url.includes("/demos/archive")) return false;
+    return url.includes("/blog/") || url.includes("/demos/");
+  }
+
+  async function searchWithPagefind(q, type, tag) {
+    const api = await initPagefind();
+    if (!api) return null;
+
+    if (!q && (type || tag)) {
+      return filterMetadata("", type, tag).map((item) => ({
+        ...item,
+        excerpt: item.description,
+      }));
+    }
+
+    if (!q) return [];
+
+    const options = {};
+    if (tag) options.filters = { tag };
+
+    const response = await api.search(q, options);
+    if (!response) return [];
+
+    const items = [];
+    for (const result of response.results) {
+      const data = await result.data();
+      const url = data.url.replace(location.origin, "");
+      if (!isSearchableContentUrl(url)) continue;
+
+      const meta = metadataByUrl(url);
+      if (!meta) continue;
+      if (type && meta.kind !== type) continue;
+      if (tag && !matchesTag(meta, tag)) continue;
+
+      items.push({
+        ...meta,
+        title: data.meta?.title || meta.title || url,
+        excerpt: data.excerpt || meta.description || "",
+        url: meta.url || url,
+      });
+    }
+    return items;
+  }
+
+  async function runSearch() {
+    const q = input.value.trim();
+    syncUrl(q, activeType, activeTag);
+    renderFilters();
+
+    if (!q && !activeType && !activeTag) {
+      renderResults([], q, activeType, activeTag, "metadata");
+      return;
+    }
+
+    const pagefindItems = await searchWithPagefind(q, activeType, activeTag);
+    if (pagefindItems !== null && q && pagefindReady) {
+      renderResults(pagefindItems, q, activeType, activeTag, "pagefind");
+      return;
+    }
+
+    renderResults(
+      filterMetadata(q, activeType, activeTag).map((item) => ({
+        ...item,
+        excerpt: item.description,
+      })),
+      q,
+      activeType,
+      activeTag,
+      "metadata",
+    );
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  input.value = params.get("q") || "";
+  const typeParam = params.get("type") || "";
+  activeType = typeParam === "blog" || typeParam === "demo" ? typeParam : "";
+  if (params.get("from") === "blog") activeType = "blog";
+  if (params.get("from") === "demo") activeType = "demo";
+  // Prefer tag; accept legacy `cat` / old category names via aliases baked into index.
+  activeTag = params.get("tag") || params.get("cat") || "";
+  // Client-side alias map for old bookmark URLs (kept in sync with tag-canonical.ts).
+  const TAG_ALIASES = {
+    "前端实验": "实验",
+    "思否配套": "SegmentFault",
+    "Bug 复现": "测试",
+    "移动端/H5": "移动端",
+    "Vue 示例": "Vue",
+    "React 示例": "React",
+    "图形/媒体": "图形",
+    "文件/AI": "文件 IO",
+    "表单/输入": "表单",
+    "CSS 布局": "CSS",
+    "PDF/文档": "PDF",
+    "交互/事件": "交互",
+    "网络/HTTP": "HTTP",
+    "正则表达式": "正则",
+  };
+  if (TAG_ALIASES[activeTag]) activeTag = TAG_ALIASES[activeTag];
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    runSearch();
+  });
+
+  clearBtn.addEventListener("click", () => {
+    input.value = "";
+    activeType = "";
+    activeTag = "";
+    runSearch();
+  });
+
+  let debounceTimer;
+  input.addEventListener("input", () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(runSearch, 250);
+  });
+
+  initPagefind().finally(() => {
+    renderFilters();
+    runSearch();
+  });
+</script>

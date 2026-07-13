@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/waterfall.html"
 legacyUrl: "/static/html/waterfall.html"
-category: "CSS 布局"
+category: "CSS"
 badge: "博客配套"
 tags: ["legacy", "CSS", "博客配套"]
 relatedPosts: ["sf-1190000040345879"]

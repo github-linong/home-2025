@@ -10,10 +10,6 @@ const allDemos = (await getCollection("demos"))
 const q = Astro.url.searchParams.get("q")?.toLowerCase().trim() ?? "";
 const cat = Astro.url.searchParams.get("cat")?.trim() ?? "";
 
-const categories = [...new Set(allDemos.map((d) => d.data.category).filter(Boolean))].sort(
-  (a, b) => a!.localeCompare(b!, "zh"),
-);
-
 const filtered = allDemos.filter((d) => {
   if (cat && d.data.category !== cat) return false;
   if (!q) return true;
@@ -27,16 +23,16 @@ const filtered = allDemos.filter((d) => {
 <BaseLayout
   title="Demo 归档"
   sideBarActiveItemID="demos"
-  mainClass="p-6 pt-10 w-full max-w-[100vw] lg:max-w-[1200px]"
 >
   <div class="not-prose">
     <a href="/demos" class="link link-hover text-sm" data-astro-reload>← 项目展示</a>
     <h1 class="text-3xl font-bold mt-2">Demo 归档</h1>
     <p class="opacity-80 mt-2 mb-4">
-      共 {allDemos.length} 个历史交互示例，按名称排序。点击标题进入项目页预览并查看关联文章。
+      共 {allDemos.length} 个历史交互示例，按名称排序。需要按标签筛选时请用
+      <a href="/search/?type=demo" class="link" data-astro-reload>统一搜索</a>。
     </p>
 
-    <form method="get" class="flex flex-wrap gap-2 mb-4 max-w-3xl">
+    <form method="get" action="/search/" class="flex flex-wrap gap-2 mb-4 max-w-3xl">
       <input
         type="search"
         name="q"
@@ -44,17 +40,10 @@ const filtered = allDemos.filter((d) => {
         placeholder="搜索标题、描述、标签…"
         class="input input-bordered flex-1 min-w-[200px]"
       />
-      <select name="cat" class="select select-bordered">
-        <option value="">全部分类</option>
-        {
-          categories.map((c) => (
-            <option value={c} selected={cat === c}>
-              {c}
-            </option>
-          ))
-        }
-      </select>
-      <button type="submit" class="btn btn-primary">筛选</button>
+      <input type="hidden" name="type" value="demo" />
+      {cat && <input type="hidden" name="tag" value={cat} />}
+      <button type="submit" class="btn btn-primary">去搜索</button>
+      <a href="/search/?type=demo" class="btn btn-outline">标签筛选</a>
       {(q || cat) && <a href="/demos/archive/" class="btn btn-ghost">清除</a>}
     </form>
 

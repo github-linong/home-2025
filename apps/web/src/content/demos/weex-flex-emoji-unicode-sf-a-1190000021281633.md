@@ -5,7 +5,7 @@ pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/weex-flex-emoji-unicode-sf-a-1190000021281633.html"
 legacyUrl: "/static/html/weex-flex-emoji-unicode-sf-a-1190000021281633.html"
-category: "前端实验"
+category: "实验"
 badge: "博客配套"
 tags: ["legacy", "实验", "博客配套"]
 relatedPosts: ["sf-1190000021281633"]
