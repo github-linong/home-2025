@@ -1,6 +1,6 @@
 ---
 title: "Colorv Group"
-description: "前端实验交互示例：Colorv Group。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Colorv Group。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/colorv-group.html"

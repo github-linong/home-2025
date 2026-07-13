@@ -1,6 +1,6 @@
 ---
-title: "Animate Transition Rotate"
-description: "Bug 复现交互示例：Animate Transition Rotate。历史前端实验与 Bug 复现页。"
+title: "Animate 旋转过渡 · 测试"
+description: "旋转过渡测试页。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-animate-transition-rotate.html"

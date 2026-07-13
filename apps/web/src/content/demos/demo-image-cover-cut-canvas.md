@@ -1,6 +1,6 @@
 ---
 title: "图片封面裁剪 Canvas"
-description: "file 读 blob img 加载 blob img.onload 获取基本信息，渲染界面"
+description: "图形交互示例：图片封面裁剪 Canvas。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/demo-image-cover-cut-canvas.html"

@@ -1,6 +1,6 @@
 ---
-title: "FontInflation.html"
-description: "Text Autosizer(文本自调) Font Inflation(字体膨胀) 字体显示尺寸比CSS中指定尺寸大。Chrome自行放大页面字体的大小。"
+title: "FontInflation · 测试页"
+description: "测试交互示例：FontInflation · 测试页。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-FontInflation.html"

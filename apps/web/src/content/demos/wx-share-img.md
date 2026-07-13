@@ -1,6 +1,6 @@
 ---
 title: "Wx Share Img"
-description: "移动端/H5交互示例：Wx Share Img。历史前端实验与 Bug 复现页。"
+description: "移动端交互示例：Wx Share Img。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/wx-share-img.html"

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="./falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/echarts/4.1.0.rc2/echarts.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title></title>
+</head>
+<body>
+	<button onclick="init(undefined, 'Hour', undefined)">小时</button>
+	<button onclick="init(undefined, 'Day', undefined)">天</button>
+	<button onclick="init(undefined, 'Week', undefined)">周</button>
+	<div id="main" style="width: 600px;height:400px;"></div>
+	<script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main'));
+
+// data = {
+// "data":{
+//     "deviceCode":"c6bd45982f4ea9670d57921c",
+//     "latest":{
+//         "PM25":1,
+//         "humidity":32,
+//         "reportDateTime":"2018-09-06T00:00:00",
+//         "temperature":24.0
+        
+//     },
+//     "records":[
+//         {"PM25":23,"humidity":52,
+//         "reportDateTime":"2018-08-31T00:00:00",
+//         "temperature":26.503845},
+//         {"PM25":2,"humidity":48,
+//         "reportDateTime":"2018-09-03T00:00:00",
+//         "temperature":24.23889},
+//         {"PM25":6,"humidity":43,"reportDateTime":"2018-09-04T00:00:00","temperature":23.55027},{"PM25":12,"humidity":39,"reportDateTime":"2018-09-05T00:00:00","temperature":24.84951},{"PM25":5,"humidity":34,"reportDateTime":"2018-09-06T00:00:00","temperature":24.51994}]},"message":"","page":0,"success":true,"total":0,"totalPages":0}
+	function init(deviceCode, intervalUnit, intervalNum){
+		// ○ deviceCode - 设备编号
+		// ○ intervalUnit - 间隔单位为周/天/小时，参数值(Week | Day | Hour)
+		// ○ intervalNum - 获取的历史数据时间长度
+		deviceCode = deviceCode || 'c6bd45982f4ea9670d57921c';
+		intervalUnit = intervalUnit || 'Week';
+		intervalNum = intervalNum || 1;
+		$.ajax({
+			url: '/proxy',
+			data: {
+				url: `http://voice.hificat.com:8080/smarthome.IMCPlatform/device/v1.0/fetchLastDays.action?deviceCode=${deviceCode}&intervalUnit=${intervalUnit}&intervalNum=${intervalNum}`
+			},
+			type: "post"
+		}).then(function(data){
+			data = data.data;
+			var xAxis = data.data.records.map(v=>v.reportDateTime);
+			var legend=['PM25','humidity','temperature']
+			var PM25 = data.data.records.map(v=>v.PM25);
+			var humidity = data.data.records.map(v=>v.humidity);
+			var temperature = data.data.records.map(v=>v.temperature);
+			option = {
+			    title: {
+			        text: '折线图堆叠'
+			    },
+			    tooltip: {
+			        trigger: 'axis'
+			    },
+			    legend: {
+			        data: legend//['邮件营销','联盟广告','视频广告','直接访问','搜索引擎']
+			    },
+			    grid: {
+			        left: '3%',
+			        right: '4%',
+			        bottom: '3%',
+			        containLabel: true
+			    },
+			    toolbox: {
+			        feature: {
+			            saveAsImage: {}
+			        }
+			    },
+			    xAxis: {
+			        type: 'category',
+			        boundaryGap: false,
+			        data: xAxis//['周一','周二','周三','周四','周五','周六','周日']
+			    },
+			    yAxis: {
+			        type: 'value'
+			    },
+			    series: [
+			        {
+			            name: 'PM25',
+			            type:'line',
+			            data: PM25//[120, 132, 101, 134, 90, 230, 210]
+			        },
+			        {
+			            name: 'humidity',
+			            type:'line',
+			            data: humidity//[120, 132, 101, 134, 90, 230, 210]
+			        },
+			        {
+			            name: 'temperature',
+			            type:'line',
+			            data: temperature//[120, 132, 101, 134, 90, 230, 210]
+			        }
+			    ]
+			};
+
+		    // 使用刚指定的配置项和数据显示图表。
+		    myChart.setOption(option);
+		})
+	}
+	init();
+    </script>
+</body>
+</html>

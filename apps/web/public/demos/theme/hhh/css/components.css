@@ -1,0 +1,31 @@
+/** created by wzq 自定义组件样式 **/
+
+/** emotionPicker **/
+.emotionItem{
+	width:24px; height:24px;
+}
+.emotionPicker {
+	width: 120px;
+	height: 120px;
+	position:absolute;
+	background-color:white;
+	padding:5px;
+	border:1px solid black;
+}
+
+/**回到顶端按钮**/
+.toTopButton
+{
+	position: fixed;
+	right: 50px;
+	bottom: 90px;
+	cursor: pointer;
+	width: 48px; height: 48px;
+	background: url("../images/toTopBtn.png") no-repeat;
+}
+.CompileButton{position: fixed;
+	right: 50px;
+	bottom: 30px;
+	cursor: pointer;
+	width: 48px; height: 48px;
+	background: url("../images/toTopBtn.png") 0 -58px no-repeat;}

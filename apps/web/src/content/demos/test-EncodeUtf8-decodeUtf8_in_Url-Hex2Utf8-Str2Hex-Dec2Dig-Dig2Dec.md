@@ -1,6 +1,6 @@
 ---
 title: "EncodeUtf8 DecodeUtf8_in_Url Hex2Utf8 Str2Hex Dec2Dig Dig2Dec"
-description: "https://segmentfault.com/q/1010000019450740"
+description: "测试交互示例：EncodeUtf8 DecodeUtf8_in_Url Hex2Utf8 Str2Hex Dec2Dig Dig2Dec。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-EncodeUtf8-decodeUtf8_in_Url-Hex2Utf8-Str2Hex-Dec2Dig-Dig2Dec.html"

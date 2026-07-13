@@ -1,0 +1,10 @@
+/** created by wzq 提示框使用样式 **/
+.xy-tooltip{
+	background-repeat:no-repeat; background-size:100% 100%; 
+	background-image:url('tooltipBG.png'); 
+	padding:15px; 
+	font-size:14px; 
+	color:#666; 
+	position:absolute; 
+	max-width:245px;
+}

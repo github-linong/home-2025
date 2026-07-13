@@ -12,3 +12,14 @@ apps/api/dist/
 # Large migrated whole-site demos (restore with: npm run migrate:static-projects)
 apps/web/public/demos/project/
 apps/web/public/demos/pdf/
+
+# Theme large media lives on OSS static/theme/ (see migrate:theme:media)
+apps/web/public/demos/theme/**/*.mp4
+apps/web/public/demos/theme/**/*.mka
+apps/web/public/demos/theme/**/*.mp3
+
+# Extra fonts synced from OSS private/fonts — keep only font.ttf in git
+apps/api/assets/fonts/*
+!apps/api/assets/fonts/font.ttf
+!apps/api/assets/fonts/.gitkeep
+

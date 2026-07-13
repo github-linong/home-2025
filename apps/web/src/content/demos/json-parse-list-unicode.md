@@ -1,6 +1,6 @@
 ---
 title: "Json Parse List Unicode"
-description: "前端实验交互示例：Json Parse List Unicode。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Json Parse List Unicode。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/json-parse-list-unicode.html"

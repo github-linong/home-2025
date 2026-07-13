@@ -1,6 +1,6 @@
 ---
 title: "Css Position Sticky"
-description: "Bug 复现交互示例：Css Position Sticky。历史前端实验与 Bug 复现页。"
+description: "测试交互示例：Css Position Sticky。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-css-position-sticky.html"

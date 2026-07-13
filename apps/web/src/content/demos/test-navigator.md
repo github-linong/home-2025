@@ -1,6 +1,6 @@
 ---
-title: "navigator遍历"
-description: "Bug 复现交互示例：navigator遍历。历史前端实验与 Bug 复现页。"
+title: "navigator 遍历 · 测试"
+description: "navigator 测试页。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-navigator.html"

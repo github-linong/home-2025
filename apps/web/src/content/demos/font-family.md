@@ -1,6 +1,6 @@
 ---
 title: "Font Family"
-description: "图形/媒体交互示例：Font Family。历史前端实验与 Bug 复现页。"
+description: "图形交互示例：Font Family。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/font-family.html"

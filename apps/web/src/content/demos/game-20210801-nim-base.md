@@ -1,6 +1,6 @@
 ---
-title: "上传前预览文件"
-description: "一次只能从一堆石子中拿去，不能同时从两堆或三堆中拿 每次最少拿1个，最多可以把该堆拿光 双方轮流"
+title: "Game 20210801 Nim Base"
+description: "实验交互示例：Game 20210801 Nim Base。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/game-20210801-nim-base.html"

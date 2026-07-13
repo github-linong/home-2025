@@ -1,6 +1,6 @@
 ---
 title: "Download Content Disposition Attachment"
-description: "https://www.lilnong.top/static/html/_template.html https://www.lilnong.top/download/html/_template.html https://www.lilnong.top/download/html/_templat"
+description: "文件 IO交互示例：Download Content Disposition Attachment。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/download-content-disposition-attachment.html"

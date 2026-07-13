@@ -1,6 +1,6 @@
 ---
 title: "Mobile Download"
-description: "2596452 18006847 下载2596452（缓存）"
+description: "SegmentFault交互示例：Mobile Download。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-q-1010000019195726-mobile-download.html"

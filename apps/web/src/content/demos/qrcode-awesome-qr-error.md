@@ -1,6 +1,6 @@
 ---
 title: "Qrcode Awesome Qr Error"
-description: "二维码交互示例：Qrcode Awesome Qr Error。历史前端实验与 Bug 复现页。"
+description: "二维码交互示例：Qrcode Awesome Qr Error。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/qrcode-awesome-qr-error.html"

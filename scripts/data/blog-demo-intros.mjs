@@ -172,11 +172,11 @@ export const BLOG_DEMO_INTROS = {
 
   'flex-direction-column-sf': {
     summary:
-      '用 Flex column 实现垂直方向两端对齐 / 空间分配的基础版。系列共 4 个变体，便于对照。',
+      '仅 display:flex + flex-direction:column。博客系列起点，尚未做两端对齐或撑开。',
     howToTest: [
-      '调整容器高度，观察主轴两端对齐效果。',
-      '增减子项数量，确认分布策略。',
-      '与 .1 / .2 / .3 变体对比差异点。',
+      '调浏览器高度，看头/内容/底是否仍贴在一起（本页会）。',
+      '打开 .1 对比两端对齐效果。',
+      '对照博客 sf-1190000037452855。',
     ],
     docs: [
       { label: 'MDN: flex-direction', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/flex-direction' },
@@ -185,37 +185,42 @@ export const BLOG_DEMO_INTROS = {
     ],
   },
   'flex-direction-column-sf.1': {
-    summary: 'Flex 垂直两端对齐变体 1：在基础版上调整间距或子项尺寸策略。',
+    summary:
+      '在 column 基础上加 justify-content: space-between，头底两端对齐；微调位置较难。',
     howToTest: [
-      '与 flex-direction-column-sf 对照布局差异。',
-      '改变视口高度，确认两端对齐仍成立。',
-      '检查是否出现溢出滚动。',
+      '与基础版并排，看背景色/间距分布。',
+      '改 min-height，确认仍两端贴齐。',
+      '想微调内容偏上时，体会本方案不好控。',
     ],
     docs: [
-      { label: 'MDN: align-items', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/align-items' },
+      { label: 'MDN: justify-content', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/justify-content' },
       { label: 'MDN: CSS Flexible Box Layout', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_flexible_box_layout' },
     ],
   },
   'flex-direction-column-sf.2': {
-    summary: 'Flex 垂直两端对齐变体 2：进一步调整 flex 分配或嵌套结构。',
+    summary:
+      '中间 section 用 flex:1 撑开，并 display:flex + align-items:center 让内容垂直居中。',
     howToTest: [
-      '对比变体 1 的间距与拉伸行为。',
-      '子项内容变长时检查压缩（flex-shrink）。',
+      '对比 .1：绿块是否铺满中间。',
+      '增减中间文案行数，看是否仍居中且不压头底。',
+      '高度不足时是否出现整体滚动。',
     ],
     docs: [
-      { label: 'MDN: flex-grow', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/flex-grow' },
-      { label: 'MDN: flex-shrink', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/flex-shrink' },
+      { label: 'MDN: flex', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/flex' },
+      { label: 'MDN: align-items', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/align-items' },
     ],
   },
   'flex-direction-column-sf.3': {
-    summary: 'Flex 垂直两端对齐变体 3：系列最终对照页，适合并排打开四个 URL 肉眼对比。',
+    summary:
+      '内容上下各插 flexempty（flex:1 1 20px），用可伸缩空白控制上下留白比例。',
     howToTest: [
-      '四个变体并排打开，记录各自适用场景。',
-      '在移动端矮屏下验证是否可用。',
+      '看青色空白是否上下对称分配。',
+      '改下方空白 flex-grow，确认内容上移。',
+      '与博客结论对照：比单纯 space-between 更好调。',
     ],
     docs: [
-      { label: 'MDN: CSS Flexible Box Layout', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_flexible_box_layout' },
-      { label: 'CSS Flexbox 规范', url: 'https://www.w3.org/TR/css-flexbox-1/' },
+      { label: 'MDN: flex-grow', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/flex-grow' },
+      { label: 'MDN: flex-basis', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/flex-basis' },
     ],
   },
 

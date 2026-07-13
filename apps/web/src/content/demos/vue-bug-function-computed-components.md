@@ -1,6 +1,6 @@
 ---
 title: "Vue Bug Function Computed Components"
-description: "错误方案，内部不可以使用方法 错误方案，内部不可以值比对 正确方案，放入组件"
+description: "Vue交互示例：Vue Bug Function Computed Components。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vue-bug-function-computed-components.html"

@@ -1,6 +1,6 @@
 ---
 title: "Font Family Monospacedfont"
-description: "1默认行 （1）测试段落 (1)测试段落 （2）测试段落 (2)测试段落"
+description: "测试交互示例：Font Family Monospacedfont。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-font-family-monospacedfont.html"

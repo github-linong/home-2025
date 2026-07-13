@@ -1,6 +1,6 @@
 ---
 title: "Download Vue Double Iframe"
-description: "思否配套交互示例：Download Vue Double Iframe。思否文章/问答配套演示页。"
+description: "SegmentFault交互示例：Download Vue Double Iframe。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-q-1010000019591583-download-vue-double-iframe.html"

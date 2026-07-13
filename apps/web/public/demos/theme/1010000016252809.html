@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="./falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title></title>
+	<style type="text/css">
+		html, body {
+		    width: 100%;
+		    height: 100%;
+		}
+
+		.wrap {
+		    width: 300%;
+		    height: 100%;
+		    background: rgba(222, 123, 32, 0.4);
+		}
+	</style>
+</head>
+<body>
+    <div class="wrap"></div>
+    <script type="text/javascript">
+    	var _warp = document.querySelector('.wrap')
+    	setInterval(()=>{
+	    	_warp.innerHTML=`
+	    	<p>window.outerWidth ${window.outerWidth}</p>
+	    	<p>window.outerHeight ${window.outerHeight}</p>
+	    	<p>window.innerWidth ${window.innerWidth}</p>
+	    	<p>window.innerHeight ${window.innerHeight}</p>
+	    	<p>_warp.offsetWidth ${_warp.offsetWidth}</p>
+	    	<p>_warp.offsetHeight ${_warp.offsetHeight}</p>
+	    	`
+    	}, 200)
+    </script>
+</body>
+</html>

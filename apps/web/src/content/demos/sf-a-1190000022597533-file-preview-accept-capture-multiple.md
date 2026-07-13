@@ -1,6 +1,6 @@
 ---
-title: "上传前预览文件"
-description: "清空 accept accept: false"
+title: "上传前预览 · accept/capture/multiple"
+description: "SegmentFault交互示例：上传前预览 · accept/capture/multiple。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-a-1190000022597533-file-preview-accept-capture-multiple.html"

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta name="x5-fullscreen" content="true">
+	<meta name="full-screen" content="yes">
+	<title>滚动事件</title>
+	<style type="text/css">
+		*{
+			padding: 0;margin: 0;
+		}
+		html,body,*{
+			/*touch-action: none;*/
+			/*touch-action: pan-x;*/
+		}
+		html,body,#app{
+			/*touch-action: pan-y*/
+		}
+		#app{
+			/*height: 90vh;*/
+			overflow-y: auto; 
+			touch-action: auto;
+		}
+		#console{
+			/*height: 10vh;*/
+		}
+
+		#loading{
+			overflow: hidden;height: 0px;transition: height 1s cubic-bezier(.26,1.2,.91,1.05);
+			background: rgba(240, 245, 239, .4);text-align: center;
+		}
+		.item{
+			overflow: hidden;
+			height: 50px;
+			padding: 10px;
+		}
+		.item img{
+			float: left;
+			height: 50px;
+		}
+		.item p{
+			line-height: 25px;
+		}
+
+		html, body {
+	        width: 100%;
+	        height: 100%;
+	    }
+	    #container {
+	        height: 100%;
+	    }
+	</style>
+</head>
+<body id="wrapper">
+	<div id="container">
+		
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+	</div>
+	<!-- <div id="console">preventoverscrolljs----https://github.com/yuanzm/preventoverscrolljs</div> -->
+
+	<div id="app">
+		<div id="loading">
+			继续加油
+		</div>
+		<div id="item-box">
+			<div class="item">
+				<img src="https://picsum.photos/400/800/?image=1">
+				<p>name</p>
+				<p>desc</p>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		!function a(b,c,d){function e(g,h){if(!c[g]){if(!b[g]){var i="function"==typeof require&&require;if(!h&&i)return i(g,!0);if(f)return f(g,!0);var j=new Error("Cannot find module '"+g+"'");throw j.code="MODULE_NOT_FOUND",j}var k=c[g]={exports:{}};b[g][0].call(k.exports,function(a){var c=b[g][1][a];return e(c?c:a)},k,k.exports,a,b,c,d)}return c[g].exports}for(var f="function"==typeof require&&require,g=0;g<d.length;g++)e(d[g]);return e}({1:[function(a,b,c){b.exports=a("./lib/preventoverscroll")},{"./lib/preventoverscroll":2}],2:[function(a,b,c){function d(a){this.config=e.extend(i,a||{}),this.init()}var e=a("./util"),f=document,g=window,h={},i={list:[],cClass:"prevent_over_scroll_container",styleId:"prevent_over_scroll_style",styleStr:"{overflow-y: scroll; -webkit-overflow-scrolling: touch;}"};d.prototype={constructor:d,init:function(){this._initStyle(),this._initstartMoveMap.call(this),this._bindEvent(this.config.list)},_initStyle:function(){var a,b,c,d=this.config.list,g=this;if(e.checkDeviceType("ios")){for(a=0,b=d.length;b>a;a++){if(c=f.getElementById(d[a]),!c)throw"";c.className+=g.config.cClass}this._appendStyle()}},_appendStyle:function(){if(!document.getElementById(this.config.styleId)){var a=f.createElement("style"),b="."+this.config.cClass+this.config.styleStr;b+=" html, body {width: 100%; height: 100;}",a.id=this.config.styleId,a.innerHTML=b,f.getElementsByTagName("head")[0].appendChild(a)}},_initstartMoveMap:function(){for(var a=this.config.list,b=0,c=a.length;c>b;b++)h[a[b]]=0},_startMove:function(a){var a=a||g.event;h[this.id]=a.touches[0].clientY},_preventMove:function(a){var b="11",a=a||window.event,c=this,d=a.touches[0].clientY,e=h[c.id],f=c.scrollTop,g=c.offsetHeight,i=c.scrollHeight;if(0===f?b=g>=i?"00":"01":f+g>=i&&(b="10"),"11"!=b){var j=d-e>0?"10":"01";if(!(parseInt(b,2)&parseInt(j,2)))return a.preventDefault(),void a.stopPropagation()}},_bindEvent:function(a){for(var b,c,d=this,f=0,g=a.length;g>f;f++){if(b=document.getElementById(a[f]),!b)throw c="elem "+a[f]+"is not exist!";e.addEvent(b,"touchstart",d._startMove),e.addEvent(b,"touchmove",d._preventMove)}},push:function(a){var b;a in h||(this.config.list.push(a),h[a]=0,b=f.getElementById(a),b.className+=this.config.cClass,this._bindEvent([a]))},pop:function(a){var b=this,c=f.getElementById(a);delete h[a],e.removeEvent(c,"touchstart",b.startMove),e.removeEvent(c,"touchmove",b._preventMove)}},b.exports={PreventOverScroll:d}},{"./util":3}],3:[function(a,b,c){function d(a){var b=navigator.userAgent,c=/(Android)/i.test(b),d=/(iPhone|iPad|iPod|iOS)/i.test(b)&&!c;return"ios"==a?d:c}function e(a,b,c){a.addEventListener?a.addEventListener(b,c,!1):a.attachEvent?a.attachEvent("on"+b,c):a["on"+b]=c}function f(a,b,c){a.removeEventListener?a.removeEventListener(b,c,!1):a.detachEvent?a.detachEvent("on"+b,c):a["on"+b]=null}function g(a,b){var c,d=Object.prototype.toString;return"Null"===b&&null===a||"Undefined"===b&&a===c||d.call(a).slice(8,-1)===b}function h(a,b){for(var c in a){var d=a[c];a===d||c in b||(g(d,"Object")?b[c]=h(d,b[c]||{}):g(d,"Array")?(b[c]=[],b[c]=h(d,b[c]||[])):b[c]=d)}return b}var i={checkDeviceType:d,addEvent:e,removeEvent:f,extend:h};b.exports=i},{}],4:[function(a,b,c){window.PreventOverScroll=a("./index.js").PreventOverScroll},{"./index.js":1}]},{},[4]);
+
+	</script>
+	<script type="text/javascript">
+		// // 滚动加载
+		// ;(()=>{
+		// 	var list = [];
+		// 	var loadList = (len = 10) => {
+		// 			setTimeout(()=>{
+		// 				for(var i =0; i < len; i++){
+		// 					var _num = Math.floor(Math.random()* 999)
+		// 					list.push(`
+		// 						<div class="item">
+		// 							<img src="https://picsum.photos/400/800/?image=${_num}">
+		// 							<p>${_num}</p>
+		// 							<p>${Math.floor(Math.random()* 999)}-${_num}</p>
+		// 						</div>
+		// 					`)
+		// 					document.querySelector('#item-box').innerHTML = list.join('');
+		// 				}
+		// 			},1000)
+		// 	}
+		// 	loadList(30);
+
+		// 	// 去抖
+		// 	var debounce = function (fn, delay) {
+		// 	  var timer = null;
+		// 	  return function () {
+		// 	    var context = this;
+		// 	    var args = arguments;
+		// 	    clearTimeout(timer);
+		// 	    timer = setTimeout(function () {
+		// 	      fn.apply(context, args);
+		// 	    }, delay);
+		// 	  };
+		// 	}
+		// 	var local = {
+		// 		//dom映射
+		// 		dom: {
+		// 			app: document.querySelector('#app'),
+		// 			loading: document.querySelector('#loading'),
+		// 		},
+		// 		//滚动加载配置项
+		// 		scroll: {
+		// 			offsetScroll: 400, //滚动加载,据底高度
+		// 			scrollHeight: app.scrollHeight,
+		// 			offsetHeight: app.offsetHeight,
+		// 			scrollTop: app.scrollTop,
+		// 		},
+		// 		eventScroll_fun(e) {
+		// 			var _old = local.scroll.scrollTop;
+		// 			local.scroll.scrollHeight = app.scrollHeight;
+		// 			local.scroll.offsetHeight = app.offsetHeight;
+		// 			local.scroll.scrollTop = app.scrollTop;
+
+		// 			if(local.scroll.scrollTop + local.scroll.offsetScroll > local.scroll.scrollHeight - local.scroll.offsetHeight && _old<local.scroll.scrollTop){
+		// 				// console.log(true)
+		// 				local.scrollCallback();
+		// 			}
+		// 		},
+		// 		eventScroll(){
+		// 			local.dom.app.addEventListener('scroll', local.eventScroll_fun);
+		// 		},
+		// 		touch: {
+		// 			startY: 0,
+		// 			loadingHeight: 0,
+		// 			loadingStart: 0,
+		// 			loadingAnimate: false,
+		// 		},
+		// 		eventTouch_fun(e) {
+		// 			// e.preventDefault()
+		// 			// e.stopPropagation()
+		// 			// local.scroll.scrollHeight = app.scrollHeight;
+		// 			// local.scroll.offsetHeight = app.offsetHeight;
+		// 			// local.scroll.scrollTop = app.scrollTop;
+		// 			// if(local.scroll.scrollTop === 0){ 
+		// 			// 	app.scrollTop = 1;
+		// 			// }else if(local.scroll.scrollHeight === local.scroll.offsetHeight+local.scroll.scrollTop){
+		// 			// 	app.scrollTop = local.scroll.scrollTop - 1; 
+		// 			// }
+		// 			if(e.touches[1] || local.touch.loadingAnimate) return;
+		// 			var _move = (e) => {
+		// 		        e._isScroller = true; 
+		// 				var _tag = e.touches[0].pageY - local.touch.startY;//正数向下，负数向上
+		// 				if(local.dom.app.scrollTop == 0 && _tag >= 0 ){
+		// 					if(!local.touch.loadingStart) local.touch.loadingStart = e.touches[0].pageY;
+		// 					local.touch.loadingHeight = Math.min(Math.max(_tag-local.touch.loadingStart, 0), 200)
+		// 					local.dom.loading.style.height = Math.min(local.touch.loadingHeight, 50)+'px';
+		// 					if(local.touch.loadingHeight == 200){
+		// 						local.dom.loading.innerText = '松手就加载';
+		// 					}else{
+		// 						local.dom.loading.innerText = '下拉刷新';
+		// 					}
+		// 				}
+		// 			}
+		// 			var _end = (e) => {
+		// 				local.touch.loadingStart = 0;
+		// 				if(local.touch.loadingHeight == 200){
+		// 					loading.innerText = '加载中.....';
+		// 					local.touch.loadingAnimate = true;
+		// 					setTimeout(()=>{
+		// 						local.touchCallback();
+		// 						local.touch.loadingAnimate = false;
+		// 						local.touch.loadingHeight = 0;
+		// 						loading.style.height = local.touch.loadingHeight+'px';
+		// 					},1000)
+		// 				}else{
+		// 					local.touch.loadingHeight = 0;
+		// 					loading.style.height = local.touch.loadingHeight+'px';
+		// 				}
+		// 				local.dom.app.removeEventListener('touchmove', _move);
+		// 				local.dom.app.removeEventListener('touchend', _end);
+		// 			}
+		// 			local.dom.app.addEventListener('touchmove', _move);
+		// 			local.dom.app.addEventListener('touchend', _end);
+		// 		},
+		// 		eventTouch(){
+		// 			// var startY = local.touch.startY;
+		// 			// local.dom.app.parentElement.addEventListener('touchmove', e=>{
+		// 			// 	var _old = startY;
+		// 			// 	startY = e.touches[0].pageY;
+		// 			// 	local.scroll.scrollTop = app.scrollTop;
+		// 			// 	document.querySelector('#console').innerText = (local.scroll.scrollTop + '-' + 2 + `--${startY}<${_old}`);
+		// 			// 	if(local.scroll.scrollTop<2 && startY>=_old){
+		// 			// 		e.preventDefault()
+		// 			// 	}
+		// 			// });
+		// 			// document.querySelector('body').addEventListener('touchstart', function (ev) {ev.preventDefault();});
+		// 			local.dom.app.addEventListener('touchstart', local.eventTouch_fun);
+		// 			// document.body.addEventListener('touchmove', (evt) => {if(!evt._isScroller){evt.preventDefault();}}); 
+		// 		},
+		// 		init(){
+		// 			// this.stopDrop();
+		// 			this.eventScroll();
+		// 			this.eventTouch();
+		// 		},
+		// 		touchCallback(){
+		// 			console.log('下拉')
+		// 		},
+		// 		scrollCallback: debounce(()=>{
+		// 			console.log('滚动')
+		// 		}, 100),
+		// 		/**
+		// 		 * 禁止浏览器下拉回弹
+		// 		 */
+		// 		stopDrop() {
+		// 		    var lastY;//最后一次y坐标点
+		// 		    document.querySelector('body').addEventListener('touchstart', function(event) {
+		// 		        lastY = e.changedTouches[0].clientY;//点击屏幕时记录最后一次Y度坐标。
+		// 		    });
+		// 		    document.querySelector('body').addEventListener('touchmove', function(event) {
+		// 		        var y = e.changedTouches[0].clientY;
+		// 		        var st = app.scrollTop; //滚动条高度  
+		// 		        if (y >= lastY && st <= 10) {//如果滚动条高度小于0，可以理解为到顶了，且是下拉情况下，阻止touchmove事件。
+		// 		            lastY = y;
+		// 		            event.preventDefault();
+		// 		        }
+		// 		        lastY = y;
+				 
+		// 		    });
+		// 		}
+		// 	}
+		// 	local.init();
+		// })()
+
+		// var div = document.querySelector('body');
+
+		// div.addEventListener('touchstart', function(e) {
+		//     var e = e || window.event;
+		//     var str = '';
+		//     for(var i in e.touches[0]){
+		//     	console.log(str += i+'-'+ e.touches[0][i]+'<br>')
+		//     }
+		//     // console.log(window.LN_e = e.touches);
+		//     // console.log(e.touches[0].target);
+		//     // console.log(e.touches[0].identifier);
+		//     // console.log(e.touches[0].clientY);
+		//     document.querySelector('#console').innerHTML = str
+		// }, false)
+
+
+	    var ua = navigator.userAgent,
+	        isWechat = (/micromessenger/gi).test(ua), //微信
+	        isQQ = (/qq/gi).test(ua), //qq
+	        isvvlive = (/vvlive/gi).test(ua), // VV 直播
+	        isAndroid = (/android/gi).test(ua), //安卓
+	        isIOS = (/iphone|ipad|ipod|itouch/gi).test(ua); // IOS
+
+		// var outer = (  isAndroid // do it yourself
+		//              ? 'wrapper'
+		//              : 'container' );
+		// var list = [outer];
+		// var prevent = new PreventOverScroll({
+		//     list: list
+		// });
+		var list = ['container'];
+		var prevent = new PreventOverScroll({
+		    list: list
+		});
+	</script>
+</body>
+</html>

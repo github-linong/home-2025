@@ -1,6 +1,6 @@
 ---
 title: "Unix Timestamp"
-description: "当前unix时间戳（秒） 当前 js 时间戳（毫秒） unixToString"
+description: "实验交互示例：Unix Timestamp。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/unix-timestamp.html"

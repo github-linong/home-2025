@@ -1,6 +1,6 @@
 ---
 title: "Input Nativefind Like Nativesearch Inputserach"
-description: "表单/输入交互示例：Input Nativefind Like Nativesearch Inputserach。历史前端实验与 Bug 复现页。"
+description: "表单交互示例：Input Nativefind Like Nativesearch Inputserach。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/input-nativefind-like-nativesearch-inputserach.html"

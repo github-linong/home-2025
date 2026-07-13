@@ -1,0 +1,13 @@
+@charset "utf-8";
+/* CSS Document */
+.ui-form button:hover,.integral_btn-group input[type="button"]:hover ,input[type="submit"]:hover {background:#085086 !important;}
+.fast-entry .selected{background-color:#0198d5;}
+.location_2{background: url(../hxhimg/location_2.png) 390px 0 no-repeat !important;}
+input[type=checkbox]:checked, input[type=radio]:checked{content:url(../hxhimg/orange_2.png) !important;}
+input[type=radio]:checked{content:url(../hxhimg/orange_4.png) !important;}
+.fast-entry li{background: url(../hxhimg/sep.png) right center no-repeat;}
+/**评价**/
+.star_bg{background: url(../hxhimg/star.png) repeat-x;}
+.star:hover{background: url(../hxhimg/star.png) repeat-x 0 -25px !important;}
+.score:checked + .star{background: url(../hxhimg/star.png) repeat-x 0 -25px;}
+.star-2{background:url(../hxhimg/star_2.png) no-repeat;}

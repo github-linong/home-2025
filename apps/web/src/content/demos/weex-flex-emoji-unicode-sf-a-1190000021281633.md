@@ -1,6 +1,6 @@
 ---
 title: "Weex Flex Emoji Unicode Sf A 1190000021281633"
-description: "下面这个是我直接复制到HTML中 😂😂😂😂😂🐶😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂🐷恩😂🐨😏😝💋🌸🐳你好，阳光💃💃💃💃演的电影了🎬，我\", \"我爱钱生钱💰 下面这个是直接输出"
+description: "实验交互示例：Weex Flex Emoji Unicode Sf A 1190000021281633。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/weex-flex-emoji-unicode-sf-a-1190000021281633.html"

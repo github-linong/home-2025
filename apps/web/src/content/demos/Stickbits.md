@@ -1,6 +1,6 @@
 ---
-title: "上传前预览文件"
-description: "Check out Stickbits on Github Child 1 Child 1"
+title: "Stickbits"
+description: "实验交互示例：Stickbits。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/Stickbits.html"

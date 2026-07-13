@@ -1,6 +1,6 @@
 ---
-title: "上传前预览文件"
-description: "前端实验交互示例：上传前预览文件。历史前端实验与 Bug 复现页。"
+title: "Close Autosave Password Double"
+description: "实验交互示例：Close Autosave Password Double。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/close-autosave-password-double.html"

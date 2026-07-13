@@ -1,6 +1,6 @@
 ---
 title: "Script Error Same Origin Policy 1"
-description: "src=\"../js/scripterror.js\" 无跨域限制单页面 src=\"https://www.lilnong.top/static/js/scripterror.js?1\""
+description: "SegmentFault交互示例：Script Error Same Origin Policy 1。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-a-1190000019815534-Script-error-Same-origin-policy-1.html"

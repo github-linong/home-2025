@@ -1,6 +1,6 @@
 ---
 title: "Dpr Img Test"
-description: "now: devicePixelRatio: getBoundingClientRect().width:"
+description: "实验交互示例：Dpr Img Test。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/dpr-img-test.html"

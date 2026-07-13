@@ -1,27 +1,39 @@
 ---
-title: "基于 Flex 实现两端对齐垂直布局"
-description: "我是头部，我希望我不管大小屏幕都在最上面 我是内容，我希望我在屏幕的中间显示，我不希望我压住其他内容，我希望一屏可以展示这个页面 我是底部，我希望我可以据底，如果屏幕超出了，我滑动可见。"
+title: "Flex 垂直布局 · space-between"
+description: "在 column 基础上加 justify-content: space-between，头底两端对齐；微调位置较难。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/flex-direction-column-sf.1.html"
 legacyUrl: "/static/html/flex-direction-column-sf.1.html"
 category: "CSS"
 badge: "博客配套"
-tags: ["legacy", "CSS", "博客配套"]
+tags: ["legacy", "CSS", "博客配套", "Flex"]
 relatedPosts: ["sf-1190000037452855"]
 ---
 
 ## 简介
 
-Flex 垂直两端对齐变体 1：在基础版上调整间距或子项尺寸策略。
+相对基础版，关键多了一行：
+
+```css
+#app { justify-content: space-between; }
+```
+
+头在上、底在下、中间块被推开。文章里也对比了 `space-around` / `space-evenly`。
+
+## 与系列其它页的差异
+
+- **vs 基础版**：主轴方向开始分配剩余空间。
+- **vs `.2`**：本页靠容器 `justify-content`；`.2` 靠中间 `section` 自己 `flex:1` 撑开。
+- **vs `.3`**：本页不能单独调「上空白 vs 下空白」比例；`.3` 用两块空白 flex 项更灵活。
 
 ## 如何测试验证
 
-1. 与 flex-direction-column-sf 对照布局差异。
-2. 改变视口高度，确认两端对齐仍成立。
-3. 检查是否出现溢出滚动。
+1. 与基础版并排，看背景色/间距分布。
+2. 改 `min-height`，确认仍两端贴齐。
+3. 想微调内容偏上时，体会本方案不好控（文章结论）。
 
 ## 相关规范与文档
 
-- [MDN: align-items](https://developer.mozilla.org/en-US/docs/Web/CSS/align-items)
+- [MDN: justify-content](https://developer.mozilla.org/en-US/docs/Web/CSS/justify-content)
 - [MDN: CSS Flexible Box Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_flexible_box_layout)

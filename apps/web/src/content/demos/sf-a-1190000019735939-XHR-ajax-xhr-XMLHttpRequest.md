@@ -1,6 +1,6 @@
 ---
 title: "XHR Ajax Xhr XMLHttpRequest"
-description: "发送get 发送get(a=1&b=2)-send中 发送get(a=1&b=2)-open中"
+description: "SegmentFault交互示例：XHR Ajax Xhr XMLHttpRequest。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-a-1190000019735939-XHR-ajax-xhr-XMLHttpRequest.html"

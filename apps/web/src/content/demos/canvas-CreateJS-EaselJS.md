@@ -1,6 +1,6 @@
 ---
 title: "Canvas CreateJS EaselJS"
-description: "https://github.com/CreateJS/EaselJS"
+description: "图形交互示例：Canvas CreateJS EaselJS。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/canvas-CreateJS-EaselJS.html"

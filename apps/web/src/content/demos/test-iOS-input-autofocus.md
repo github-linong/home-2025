@@ -1,6 +1,6 @@
 ---
-title: "iOS_input_autofocus"
-description: "遗憾的是在iOS上这个方案不好用 遗憾的是在这个方案不好用 遗憾的是在这个方案不好用"
+title: "iOS input autofocus · 测试"
+description: "iOS autofocus 测试页。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-iOS-input-autofocus.html"

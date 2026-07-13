@@ -1,6 +1,6 @@
 ---
 title: "Meta Link Favicon Icon SetTimeout Change"
-description: "延时修改 favicon 。 生成一个<link rel=\"icon\" href=\"\" >"
+description: "实验交互示例：Meta Link Favicon Icon SetTimeout Change。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/meta-link-favicon-icon-setTimeout-change.html"

@@ -1,6 +1,6 @@
 ---
 title: "Download File Change Name"
-description: "https://www.lilnong.top/static/img/avator/avator-18.jpg"
+description: "测试交互示例：Download File Change Name。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-download-file-change-name.html"

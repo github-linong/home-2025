@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="./falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title></title>
+</head>
+<body>
+	<a href="./test_opener.html">普通打开</a>
+
+	<a href="./test_opener.html" target="_blank">打开 _blank</a>
+
+	<a href="./test_opener.html" target="_blank" rel="noopener">打开 _blank noopener</a>
+
+	<a href="./test_opener.html" target="_blank" rel="noreferrer">打开 _blank noreferrer</a>
+
+	<a href="./test_opener.html" target="_blank" rel="nofollow">打开 _blank nofollow</a>
+
+	<a href="javascript:openUrl(./test_opener.html);">打开 openUrl</a>
+
+	<script type="text/javascript">
+		console.log(opener)
+		function openUrl(url) {
+		  var newTab = window.open();
+		  newTab.opener = null;
+		  newTab.location = url;
+		}
+	</script>
+	<ul>
+		<li>参考目录</li>
+		<li>http://web.jobbole.com/95159/    危险的 target=”_blank” 与 “opener”</li>
+		<li>http://www.w3school.com.cn/jsref/prop_win_opener.asp     HTML DOM opener 属性</li>
+		<li>https://developer.mozilla.org/zh-CN/docs/Web/API/Window/opener   window.opener</li>
+
+	</ul>
+</body>
+</html>

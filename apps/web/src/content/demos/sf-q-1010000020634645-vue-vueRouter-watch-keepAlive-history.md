@@ -1,6 +1,6 @@
 ---
-title: "Hello App!"
-description: "思否配套交互示例：Hello App!。思否文章/问答配套演示页。"
+title: "Vue VueRouter Watch KeepAlive History"
+description: "SegmentFault交互示例：Vue VueRouter Watch KeepAlive History。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-q-1010000020634645-vue-vueRouter-watch-keepAlive-history.html"

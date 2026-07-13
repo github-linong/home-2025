@@ -1,6 +1,6 @@
 ---
 title: "Axios Report"
-description: "get请求方式1 config-method-params"
+description: "HTTP交互示例：Axios Report。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/axios-report.html"

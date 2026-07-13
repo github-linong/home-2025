@@ -1,6 +1,6 @@
 ---
-title: "上传前预览文件"
-description: "Thumbnails Document Outline Attachments"
+title: "Pdf Es5 Viewer"
+description: "PDF交互示例：Pdf Es5 Viewer。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/pdf-es5-viewer.html"

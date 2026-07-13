@@ -1,6 +1,6 @@
 ---
-title: "上传前预览文件"
-description: "2020年11月12日15:10:31 https://segmentfault.com/a/1190000037493676 你现在可以玩下这 5 个 CSS 新功能"
+title: "Features Css Subgrid"
+description: "实验交互示例：Features Css Subgrid。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/features-css-subgrid.html"

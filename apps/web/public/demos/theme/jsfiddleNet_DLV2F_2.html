@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="./falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/1.6.4/jquery.min.js"></script>
+</head>
+<body>
+	<input>
+	<p id="click">Click handler
+	<p id="click-timeout">Click handler setting timeout
+	<p id="mousedown">Mousedown handler
+	<p id="mousedown-timeout">Mousedown handler setting timeout
+	<p id="mouseup">Mouseup handler
+	<p id="mouseup-timeout">Mouseup handler setting timeout
+	<script type="text/javascript">
+		function focus() {
+		    $('input').focus();
+		}
+		$(focus);
+		$(function() {
+		    $(document.body).load(focus);
+		    $('#click').click(focus);
+		    $('#click-timeout').click(function() {
+		        setTimeout(focus);
+		    });
+		    $('#mousedown').mousedown(focus);
+		    $('#mousedown-timeout').mousedown(function() {
+		        setTimeout(focus);
+		    });
+		    $('#mouseup').mouseup(focus);
+		    $('#mouseup-timeout').mouseup(function() {
+		        setTimeout(focus);
+		    });
+		});
+	</script>
+</body>
+</html>

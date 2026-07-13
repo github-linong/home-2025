@@ -1,6 +1,6 @@
 ---
 title: "Mobile Autoplay Audio"
-description: "移动端/H5交互示例：Mobile Autoplay Audio。历史前端实验与 Bug 复现页。"
+description: "移动端交互示例：Mobile Autoplay Audio。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/mobile-autoplay-audio.html"

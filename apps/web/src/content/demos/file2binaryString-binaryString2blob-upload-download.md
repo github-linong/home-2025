@@ -1,6 +1,6 @@
 ---
 title: "File2binaryString BinaryString2blob Upload Download"
-description: "文件/AI交互示例：File2binaryString BinaryString2blob Upload Download。历史前端实验与 Bug 复现页。"
+description: "文件 IO交互示例：File2binaryString BinaryString2blob Upload Download。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/file2binaryString-binaryString2blob-upload-download.html"

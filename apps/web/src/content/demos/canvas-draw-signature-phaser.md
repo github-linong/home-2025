@@ -1,6 +1,6 @@
 ---
-title: "canvas 实现签名功能"
-description: "图形/媒体交互示例：canvas 实现签名功能。历史前端实验与 Bug 复现页。"
+title: "Canvas 签名 · Phaser"
+description: "Canvas 签名 · Phaser 实现。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/canvas-draw-signature-phaser.html"

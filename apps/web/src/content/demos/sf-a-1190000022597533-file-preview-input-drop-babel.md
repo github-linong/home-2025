@@ -1,6 +1,6 @@
 ---
-title: "上传前预览文件"
-description: "将文件拖到此处，或 点击上传 文件基本信息"
+title: "上传前预览 · Babel 版"
+description: "SegmentFault交互示例：上传前预览 · Babel 版。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-a-1190000022597533-file-preview-input-drop-babel.html"

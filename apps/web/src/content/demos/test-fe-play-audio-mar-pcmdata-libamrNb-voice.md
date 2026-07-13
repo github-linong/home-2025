@@ -1,6 +1,6 @@
 ---
-title: "前端播放amr音频"
-description: "http://www.cnblogs.com/yuhongda0315/p/5224188.html"
+title: "AMR 音频播放 · pcmdata/libamr"
+description: "前端播放 AMR（pcmdata + libamrNb）。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-fe-play-audio-mar-pcmdata-libamrNb-voice.html"

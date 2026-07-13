@@ -1,6 +1,6 @@
 ---
-title: "键盘兼容性测试"
-description: "返回目录 切换position input"
+title: "移动端键盘兼容"
+description: "移动端交互示例：移动端键盘兼容。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/mobile-keyboard-test.html"

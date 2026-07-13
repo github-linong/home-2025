@@ -1,6 +1,6 @@
 ---
-title: "test-es6"
-description: "Bug 复现交互示例：test-es6。历史前端实验与 Bug 复现页。"
+title: "Es6"
+description: "测试交互示例：Es6。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-es6.html"

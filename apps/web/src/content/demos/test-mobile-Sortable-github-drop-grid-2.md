@@ -1,6 +1,6 @@
 ---
-title: "Sortable 测试"
-description: "https://github.com/SortableJS/Sortable Grid Example"
+title: "Sortable 移动端 · 网格 2"
+description: "测试交互示例：Sortable 移动端 · 网格 2。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-mobile-Sortable-github-drop-grid-2.html"

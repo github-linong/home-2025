@@ -1,6 +1,6 @@
 ---
-title: "消息发送框"
-description: "消息发送框，iframe，保留焦点，发送图标，发送图片，@好友 发现iframe不好控制焦点样式，准备使用 方案2"
+title: "消息发送框 · 图标通话"
+description: "实验交互示例：消息发送框 · 图标通话。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/chat-sendbox-icon-img-call.html"

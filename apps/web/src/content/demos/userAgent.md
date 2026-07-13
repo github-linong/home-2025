@@ -1,6 +1,6 @@
 ---
-title: "UserAgent"
-description: "reload() navigator.userAgent navigator.connection.effectiveType"
+title: "UserAgent 解析"
+description: "UA 字符串解析。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/userAgent.html"

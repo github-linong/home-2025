@@ -1,6 +1,6 @@
 ---
 title: "Kroom"
-description: "颜值极高 920110633 现成观众[1]"
+description: "实验交互示例：Kroom。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/kroom.html"

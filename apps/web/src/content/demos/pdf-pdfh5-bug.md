@@ -1,6 +1,6 @@
 ---
-title: "上传前预览文件"
-description: "PDF/文档交互示例：上传前预览文件。历史前端实验与 Bug 复现页。"
+title: "Pdf Pdfh5 Bug"
+description: "PDF交互示例：Pdf Pdfh5 Bug。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/pdf-pdfh5-bug.html"

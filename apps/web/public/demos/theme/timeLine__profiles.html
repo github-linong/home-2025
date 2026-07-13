@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>timeLine学习</title>
+</head>
+<body>
+<p>https://www.imooc.com/article/13489 </p>
+<p>https://github.com/zhansingsong/js-leakage-patterns/blob/master/%E5%B8%B8%E8%A7%81%E7%9A%84JavaScript%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/%E5%B8%B8%E8%A7%81%E7%9A%84JavaScript%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2.md</p>
+	<div>
+		<button id="button_1_start">开始</button><button id="button_1_end">暂停</button>
+		<script type="text/javascript" style="display:block;white-space: pre-wrap;">
+			var _clearInterval_test1 = -1
+			function test1(){
+		    	var x = []
+				var grow = function(){
+			        x.push(new Array(1000000))
+			    }
+			    _clearInterval_test1 = setInterval(function(){
+			        grow()
+			    },1000)
+			}
+			document.querySelector('#button_1_start').addEventListener('click', ()=>{
+				clearInterval(_clearInterval_test1)
+				test1()
+			})
+			document.querySelector('#button_1_end').addEventListener('click', ()=>{
+				clearInterval(_clearInterval_test1)
+			})
+		</script>
+	</div>
+	<div>
+		<button id="button_2_start">开始</button><button id="button_2_end">暂停</button>
+		<script type="text/javascript" style="display:block;white-space: pre-wrap;">
+			var _clearInterval_test2 = -1
+			function test2(){
+				var grow = function(){
+			    	var x = []
+			        x.push(new Array(1000000))
+			    }
+			    _clearInterval_test2 = setInterval(function(){
+			        grow()
+			    },1000)
+			}
+			document.querySelector('#button_2_start').addEventListener('click', ()=>{
+				clearInterval(_clearInterval_test2)
+				test2()
+			})
+			document.querySelector('#button_2_end').addEventListener('click', ()=>{
+				clearInterval(_clearInterval_test2)
+			})
+		</script>
+	</div>
+	<div>
+		<button id="button_3_start">开始</button><button id="button_3_end">暂停</button>
+		<script type="text/javascript" style="display:block;white-space: pre-wrap;">
+			var _clearInterval_test3 = -1
+			function test3(){
+				var run = function(){
+
+				    var d = [];
+
+				    for(var i = 0; i<100000; i++){
+
+				        d.push(Math.random())
+				    }
+
+				}
+
+				_clearInterval_test3 = setInterval(function(){
+				    run()
+				},100);
+			}
+			document.querySelector('#button_3_start').addEventListener('click', ()=>{
+				clearInterval(_clearInterval_test3)
+				test3()
+			})
+			document.querySelector('#button_3_end').addEventListener('click', ()=>{
+				clearInterval(_clearInterval_test3)
+			})
+		</script>
+	</div>
+	<div>
+		<button id="button_4_start">开始</button><button id="button_4_end">暂停</button>
+		<script type="text/javascript" style="display:block;white-space: pre-wrap;">
+			var _clearInterval_test4 = -1
+			function test4(){
+				var run = function(){
+				    var d = [];
+				    for(var i = 0; i<100000; i++){
+				        d.push(Math.random())
+				    }
+				    console.log(d)
+				}
+
+				_clearInterval_test4 = setInterval(function(){
+				    run()
+				},100);
+			}
+			document.querySelector('#button_4_start').addEventListener('click', ()=>{
+				clearInterval(_clearInterval_test4)
+				test4()
+			})
+			document.querySelector('#button_4_end').addEventListener('click', ()=>{
+				clearInterval(_clearInterval_test4)
+			})
+		</script>
+	</div>
+</body>
+</html>

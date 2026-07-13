@@ -1,6 +1,6 @@
 ---
-title: "上传前预览文件"
-description: "前端实验交互示例：上传前预览文件。"
+title: "_template"
+description: "实验交互示例：_template。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/_template.html"

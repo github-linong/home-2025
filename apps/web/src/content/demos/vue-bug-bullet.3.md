@@ -1,6 +1,6 @@
 ---
-title: "Vue 实现弹幕效果"
-description: "Vue 示例交互示例：Vue 实现弹幕效果。"
+title: "Vue 弹幕 Bug · 对比页"
+description: "iframe 并排嵌入 .1 / .2，便于对照复现与修复。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vue-bug-bullet.3.html"

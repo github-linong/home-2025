@@ -1,6 +1,6 @@
 ---
 title: "Demo Download Native"
-description: "原生download下载测试 原生download下载测试 file1 原生download下载测试 file2"
+description: "SegmentFault交互示例：Demo Download Native。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-article-demo-download-native.html"

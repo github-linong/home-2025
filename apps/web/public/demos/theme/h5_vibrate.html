@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta charset="utf-8">
+</head>
+<body>
+	<pre>
+		navigator.vibrate = navigator.vibrate ||  navigator.webkitVibrate || navigator.mozVibrate || navigator.msVibrate;
+		navigator.vibrate(3);
+	</pre>
+	<div id="clog">	</div>
+	<script type="text/javascript">
+		vibrate = navigator.vibrate ||  navigator.webkitVibrate || navigator.mozVibrate || navigator.msVibrate;
+		clog.innerHTML = vibrate ;
+		vibrate(3);
+	</script>
+</body>
+</html>

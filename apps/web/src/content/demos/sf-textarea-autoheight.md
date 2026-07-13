@@ -1,6 +1,6 @@
 ---
 title: "Sf Textarea Autoheight"
-description: "textarea 自动高度 通过textarea来输入内容"
+description: "SegmentFault交互示例：Sf Textarea Autoheight。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-textarea-autoheight.html"

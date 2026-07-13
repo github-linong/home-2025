@@ -1,6 +1,6 @@
 ---
 title: "Demo Avatar Chat Group Static After Before"
-description: "思否配套交互示例：Demo Avatar Chat Group Static After Before。思否文章/问答配套演示页。"
+description: "SegmentFault交互示例：Demo Avatar Chat Group Static After Before。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-article-demo-avatar-chat-group-static-after-before.html"

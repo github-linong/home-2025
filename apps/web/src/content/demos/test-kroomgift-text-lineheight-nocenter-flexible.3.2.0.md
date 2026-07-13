@@ -1,6 +1,6 @@
 ---
-title: "歌房专属礼物-bug-Android-字体不居中"
-description: "reload line-height + vw line-height + span-block + vw"
+title: "歌房礼物行高 · flexible 3.2.0"
+description: "歌房礼物行高 · flexible 3.2.0。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-kroomgift-text-lineheight-nocenter-flexible.3.2.0.html"

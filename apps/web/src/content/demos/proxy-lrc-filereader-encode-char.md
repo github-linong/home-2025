@@ -1,6 +1,6 @@
 ---
 title: "Proxy Lrc Filereader Encode Char"
-description: "前端实验交互示例：Proxy Lrc Filereader Encode Char。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Proxy Lrc Filereader Encode Char。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/proxy-lrc-filereader-encode-char.html"

@@ -1,6 +1,6 @@
 ---
-title: "deviceorientation 实现摇一摇功能"
-description: "实时 deviceorientation 实时 max(deviceorientation - historydeviceorientation)"
+title: "deviceorientation 摇一摇"
+description: "实时 deviceorientation 差值检测摇一摇。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/h5-vue-deviceorientation.html"

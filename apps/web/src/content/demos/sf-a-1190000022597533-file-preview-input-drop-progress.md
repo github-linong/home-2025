@@ -1,6 +1,6 @@
 ---
-title: "上传前预览文件"
-description: "上传前预览文件 v0.1 支持预览：音频、视频、图片、文本、json v0.2（2020-12-30） 支持预览：PDF。"
+title: "上传前预览 · 带进度"
+description: "SegmentFault交互示例：上传前预览 · 带进度。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-a-1190000022597533-file-preview-input-drop-progress.html"

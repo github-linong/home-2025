@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+	<title>安卓应用市场-华为，小米，oppo，vivo，魅族</title>
+	<style type="text/css">
+		div{
+			background: green;
+			margin: 10px;
+			text-align: center;
+			font-size: 18px;
+			line-height: 50px;
+		}
+	</style>
+	<script type="text/javascript" src="https://music.51vv.com/wx/m/vv-base/js/source/vconsole.min.js"></script>
+</head>
+<body>
+	<div onclick="a1()">vivo</div>
+	<div onclick="a2()">oppo</div>
+	<div onclick="a3()">华为</div>
+	<div onclick="a4()">小米</div>
+	<div onclick="a5()">魅族</div>
+	<div onclick="a6()">三星</div>
+	<div onclick="a7()">ios应用宝-进家族</div>
+	<div onclick="a8()">android应用宝-进家族</div>
+	<ul id="ua"></ul>
+	<script type="text/javascript">
+		document.getElementById('ua').innerHTML = navigator.userAgent;
+		function a1() {
+			window.open('market://details?id=com.vv51.mvbox&th_name=com.vv51.mvbox');
+			console.log(navigator.userAgent);
+		}
+		function a2() {
+			window.open('market://details?id=com.vv51.mvbox&caller=com.vv51.mvbox');
+			console.log(navigator.userAgent);
+		}
+		function a3() {
+			window.open('market://details?id=com.vv51.mvbox&th_name=com.vv51.mvbox');
+			console.log(navigator.userAgent);
+		}
+		function a4() {
+			location.href = 'market://details?id=com.vv51.mvbox&th_name=com.vv51.mvbox';
+			console.log(navigator.userAgent);
+		}
+		function a5() {
+			location.href = 'market://details?id=com.vv51.mvbox&caller=com.vv51.mvbox';
+			console.log(navigator.userAgent);
+		}
+		function a6() {
+			if ((/samsung/gi).test(navigator.userAgent)) {
+				location.href = 'http://www.samsungapps.com/appquery/appDetail.as?appId=com.vv51.mvbox';
+			}
+			console.log(navigator.userAgent);
+		}
+		function a7() {
+			var a = 'vvMusic://param=' + JSON.stringify({"openType":10,"familyID":543});
+			console.log('http://a.app.qq.com/o/simple.jsp?pkgname=com.vv51.mvbox&ios_scheme=' + encodeURIComponent(a));
+			location.href = 'http://a.app.qq.com/o/simple.jsp?pkgname=com.vv51.mvbox&ios_scheme=' + encodeURIComponent(a);
+		}
+		function a8() {
+			var a = 'vvmusic://vvmusic.cn/app?user=2&moduleName=familyHome&param=' + JSON.stringify({"familyId":543});
+			console.log('http://a.app.qq.com/o/simple.jsp?pkgname=com.vv51.mvbox&android_schema=' + encodeURIComponent(a));
+			location.href = 'http://a.app.qq.com/o/simple.jsp?pkgname=com.vv51.mvbox&android_schema=' + encodeURIComponent(a);
+		}
+		var isTouch = "ontouchstart" in window || navigator.msMaxTouchPoints ? true:false;
+		console.log('isTouch='+isTouch)
+	</script>
+	<script type="text/javascript" src="https://music.51vv.com/wx/m/vv-base/js/source/jquery-1.8.3.js"></script>
+	<script type="text/javascript">
+		$.ajax({
+		    type: 'HEAD', // 获取头信息，type=HEAD即可
+		    url : 'https://music.51vv.com/sodnew/family/square/queryTopFamilies.htm',
+		    //url:"http://device.qq.com/cgi-bin/device_cgi/remote_bind_get_Verify",
+		    complete: function( xhr,data ){
+		        // 获取相关Http Response header
+		        var wpoInfo = {
+		            // 服务器端时间
+		            "date" : xhr.getResponseHeader('Date'),
+		            // 如果开启了gzip，会返回这个东西
+		            "contentEncoding" : xhr.getResponseHeader('Content-Encoding'),
+		            // keep-alive ？ close？
+		            "connection" : xhr.getResponseHeader('Connection'),
+		            // 响应长度
+		            "contentLength" : xhr.getResponseHeader('content-length'),
+		            // 服务器类型，apache？lighttpd？
+		            "server" : xhr.getResponseHeader('Server'),
+		            "vary" : xhr.getResponseHeader('Vary'),
+		            "transferEncoding" : xhr.getResponseHeader('Transfer-Encoding'),
+		            // text/html ? text/xml?
+		            "contentType" : xhr.getResponseHeader('Content-Type'),
+		            "cacheControl" : xhr.getResponseHeader('Cache-Control'),
+		            // 生命周期？
+		            "exprires" : xhr.getResponseHeader('Exprires'),
+		            "lastModified" : xhr.getResponseHeader('Last-Modified'),
+		            "x-wap-profile" : xhr.getResponseHeader('x-wap-profile'),
+		            "X-Wap-Profile" : xhr.getResponseHeader('X-Wap-Profile'),
+		            "X-WAP-PROFILE" : xhr.getResponseHeader('X-WAP-PROFILE')
+		        };
+		        console.log(xhr.getAllResponseHeaders());
+		        console.log(wpoInfo);
+		    }
+		});
+	</script>
+</body>
+</html>

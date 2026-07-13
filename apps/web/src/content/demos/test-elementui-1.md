@@ -1,6 +1,6 @@
 ---
 title: "Elementui 1"
-description: "Bug 复现交互示例：Elementui 1。历史前端实验与 Bug 复现页。"
+description: "测试交互示例：Elementui 1。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-elementui-1.html"

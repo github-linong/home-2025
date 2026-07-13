@@ -1,6 +1,6 @@
 ---
 title: "Vue Erp Test"
-description: "Vue 示例交互示例：Vue Erp Test。"
+description: "Vue交互示例：Vue Erp Test。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vue-erp-test.html"

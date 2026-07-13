@@ -1,6 +1,6 @@
 ---
 title: "Pwa Test Native"
-description: "PWA交互示例：Pwa Test Native。历史前端实验与 Bug 复现页。"
+description: "PWA交互示例：Pwa Test Native。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/pwa-test-native.html"

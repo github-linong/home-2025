@@ -1,6 +1,6 @@
 ---
-title: "Fe Injection Html Script Tag"
-description: "前端实验交互示例：Fe Injection Html Script Tag。历史前端实验与 Bug 复现页。"
+title: "HTML script 注入"
+description: "动态注入 script 标签实验。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/fe-injection-html-script-tag.html"

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>isComposing</title>
+	<meta charset="utf-8">
+</head>
+<body>
+	<input type="text" id="inputTest" maxlength="4"/>
+	<p>
+	  inputLength:<label id="inputLength"></label>
+	</p>
+	<script type="text/javascript">
+		inputTest.addEventListener('input',function(event){
+		  // console.log('input', event.isComposing, event.keyCode);
+		  if(event.isComposing == false){
+		    inputLength.innerText = this.value.length
+		  }
+		})
+
+		inputTest.addEventListener('compositionend',function(event){
+		  // console.log('compositionend', event.isComposing);
+		  inputLength.innerText = this.value.length
+		});
+
+	</script>
+	<script type="text/html" style="display: block;white-space: pre;color: #0cc;">
+		<input type="text" id="inputTest" maxlength="4"/>
+		<p>
+		  inputLength:<label id="inputLength"></label>
+		</p>
+		<script type="text/javascript">
+			inputTest.addEventListener('input',function(event){
+			  // console.log('input', event.isComposing, event.keyCode);
+			  if(event.isComposing == false){
+			    inputLength.innerText = this.value.length
+			  }
+			})
+
+			inputTest.addEventListener('compositionend',function(event){
+			  // console.log('compositionend', event.isComposing);
+			  inputLength.innerText = this.value.length
+			});
+		<script>
+	</script>
+</body>
+</html>

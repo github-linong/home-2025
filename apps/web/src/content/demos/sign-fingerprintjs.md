@@ -1,6 +1,6 @@
 ---
-title: "上传前预览文件"
-description: "visitorId: BrowserLeaks: visitorId:"
+title: "Sign Fingerprintjs"
+description: "实验交互示例：Sign Fingerprintjs。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sign-fingerprintjs.html"

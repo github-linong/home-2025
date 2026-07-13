@@ -86,8 +86,29 @@ router.get("/jgq/*", (_req, res) => {
   res.send("当前路径废弃。微信：LN4518。QQ：920110633");
 });
 
+/** Resolve a font file under assets/fonts (synced from OSS private/fonts). */
+function resolveFontSource(fontQuery) {
+  const fontsDir = path.join(config.paths.assets, "fonts");
+  const requested = String(fontQuery || "").trim();
+  if (!requested || requested === "font" || requested === "default") {
+    return config.paths.fontSource;
+  }
+  // Allow "kaiti" / "kaiti.ttf" / basename only — reject path traversal
+  const base = path.basename(requested).replace(/[^a-zA-Z0-9._-]/g, "");
+  if (!base) return config.paths.fontSource;
+  const candidates = [
+    path.join(fontsDir, base),
+    path.join(fontsDir, `${base}.ttf`),
+    path.join(fontsDir, `${base}.otf`),
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p) && p.startsWith(fontsDir + path.sep)) return p;
+  }
+  return null;
+}
+
 router.use("/createfont", (req, res) => {
-  console.log("/createfont", req.query.txt, req.body);
+  console.log("/createfont", req.query.txt, req.query.font, req.body);
   let Fontmin;
   let rename;
   try {
@@ -100,16 +121,25 @@ router.use("/createfont", (req, res) => {
     });
   }
 
+  const fontSource = resolveFontSource(req.query.font || (req.body && req.body.font));
+  if (!fontSource) {
+    return res.json({
+      state: 2000,
+      data: `font not found: ${req.query.font || ""}. Sync private/fonts via scripts/sync-fonts-from-oss.sh`,
+    });
+  }
+
   const txt =
     (req.query.txt || req.body.txt || "") +
     'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789~!@#$%^&*()-_+=|[]{};:\\"\',<.>/?。？！，、；：“”‘（）《》〈〉【】『』「」﹃﹄〔〕…—～￥';
-  const txtMD5 = md5(txt);
+  const fontKey = path.basename(fontSource).replace(/\.(ttf|otf)$/i, "");
+  const txtMD5 = md5(`${fontKey}:${txt}`);
   const returnURL = `${config.publicBaseUrl}/static/fontmin/${txtMD5}`;
 
   fs.mkdirSync(config.paths.fontmin, { recursive: true });
 
   new Fontmin()
-    .src(config.paths.fontSource)
+    .src(fontSource)
     .use(rename(`${txtMD5}.ttf`))
     .use(Fontmin.glyph({ text: txt, hinting: false }))
     .use(Fontmin.ttf2eot())
@@ -126,6 +156,7 @@ router.use("/createfont", (req, res) => {
         state: 1000,
         url: `${returnURL}.ttf`,
         cssUrl: `${returnURL}.css`,
+        font: fontKey,
       });
     });
 });

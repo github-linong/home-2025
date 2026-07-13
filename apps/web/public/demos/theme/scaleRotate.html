@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<title>移动端双指放大旋转</title>
+	<script type="text/javascript" src="./falseReport.js"></script>
+	<style type="">
+		#d1{
+			width: 100px;
+			height: 100px;
+			background-color: 	#0cc;
+		}
+	</style>
+</head>
+<body>
+	<p>移动端双指放大旋转</p>
+	<p>https://segmentfault.com/q/1010000015209926</p>
+	<div class="drag" style="
+        background: url('https://ss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=988279975,1210033778&fm=58');
+        background-size: cover;
+        width: 200px;
+        height: 200px;
+        position: absolute;
+        top: 100px;
+        left: 180px;
+        transform: scale(1) rotate(0deg);
+        color: #fff;"
+    >
+    </div>
+	<script>
+		var now = [], start = [], scale = 1, rotation = 0 , sPageX = 0, sPageY = 0;
+	 	var box = document.querySelector(".drag");
+        var boxGesture = setGesture(box); 
+            boxGesture.gesturestart = function(){  //双指开始
+            };
+            boxGesture.gesturemove = function(e){  //双指移动
+                scale = e.scale;
+                rotation = e.rotation;
+                box.style.transform = "scale("+scale+") rotate("+rotation+"deg)";//改变目标元素的大小和角度
+            };
+            boxGesture.gestureend = function(){  //双指结束
+            };
+        var _oldscale = 1,_oldrotate = 0;
+          function setGesture(el){
+            var obj = {}; //定义一个对象
+            var istouch = false;
+            
+            el.addEventListener("touchstart", function(e) {
+                if(e.touches.length >= 2) {  //判断是否有两个点在屏幕上
+                    istouch = true;
+                    start = e.touches;  //得到第一组两个点
+                    obj.gesturestart && obj.gesturestart.call(el); //执行gesturestart方法
+
+                    _oldscale = +scale;
+                    _oldrotate = +rotation;
+                };
+            },false);
+            el.addEventListener("touchmove", function(e) {
+                e.preventDefault();
+                if(e.touches.length >= 2 && istouch) {
+                    now = e.touches;  //得到第二组两个点
+                    scale = getDistance(now[0],now[1]) / getDistance(start[0], start[1]); //得到缩放比例
+                    rotation = getAngle(now[0],now[1]) - getAngle(start[0],start[1]);  //得到旋转角度
+                    obj.gesturemove && obj.gesturemove.call(el, {
+                        scale: _oldscale * scale.toFixed(2),
+                        rotation: +_oldrotate+ +rotation.toFixed(2)
+                    });  //执行gesturemove方法
+                };
+            },false);
+            el.addEventListener("touchend", function(e){
+                if(istouch){
+                    istouch = false;
+                    obj.gestureend && obj.gestureend.call(el);  //执行gestureend方法
+                };
+            },false);
+            return obj;
+          }
+          function getDistance(p1, p2) {
+              var x = p2.pageX - p1.pageX,
+                  y = p2.pageY - p1.pageY;
+              return Math.sqrt((x * x) + (y * y));
+          }
+          function getAngle(p1, p2) {
+              var x = p1.pageX - p2.pageX,
+                  y = p1.pageY- p2.pageY;
+              return Math.atan2(y, x) * 180 / Math.PI;
+          }
+
+	</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 ---
 title: "Svg Data Background Img Download"
-description: "jsrun 测试地址 svgToCssBackground 的转换地址 单纯svg"
+description: "图形交互示例：Svg Data Background Img Download。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/svg-data-background-img-download.html"

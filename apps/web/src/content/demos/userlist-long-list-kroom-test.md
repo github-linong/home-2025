@@ -1,6 +1,6 @@
 ---
-title: "自建比赛页面fixed元素丢失测试"
-description: "前端实验交互示例：自建比赛页面fixed元素丢失测试。历史前端实验与 Bug 复现页。"
+title: "长列表 fixed 丢失 · kroom"
+description: "实验交互示例：长列表 fixed 丢失 · kroom。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/userlist-long-list-kroom-test.html"

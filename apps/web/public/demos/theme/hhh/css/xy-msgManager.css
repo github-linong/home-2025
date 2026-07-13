@@ -1,0 +1,56 @@
+/** created by wzq 消息管理相关页面使用样式 **/
+.xy-msgManager-msgList > li
+{
+	margin-bottom:15px;
+}
+.xy-msgManager-msgContentContainer
+{
+	padding:15px;
+	border:1px solid #e7e7eb;
+}
+.xy-msgManager-msgReplyContainer
+{
+	padding:15px 30px;
+	border:1px solid #e7e7eb;
+}
+.xy-msgManager-msgContentContainer + .xy-msgManager-msgReplyContainer
+{
+	border-top:none;
+}
+.xy-msgManager-msgReplyInputArea {
+	width: 100%;
+	height: 205px;
+	padding: 20px;
+	display: block;
+	border: none;
+}
+.xy-msgManager-msgInfo
+{
+	margin-left:10px;
+	display:inline-block;	
+}
+.xy-msgManager-msgInfo > div:first-child
+{
+	margin-bottom:10px;
+}
+.xy-msgManager-newMsgAlertBar
+{
+	background-color:#cdeefd;
+	line-height:40px;
+	text-align:center;
+	margin-bottom:15px;
+}
+.xy-msgManager-searchBar
+{
+	margin-bottom:15px;	
+	line-height:30px;
+}
+.xy-msgManager-searchBarElem
+{
+	margin-right:30px;
+	display:inline-block;
+}
+.xy-msgManager-searchBarElem > *
+{
+	margin-right:15px;	
+}

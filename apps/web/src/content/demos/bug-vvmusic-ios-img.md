@@ -1,6 +1,6 @@
 ---
 title: "Bug Vvmusic Ios Img"
-description: "Bug 复现交互示例：Bug Vvmusic Ios Img。历史前端实验与 Bug 复现页。"
+description: "Bug交互示例：Bug Vvmusic Ios Img。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/bug-vvmusic-ios-img.html"

@@ -1,6 +1,6 @@
 ---
-title: "使用canvas捕获video视频"
-description: "音视频交互示例：使用canvas捕获video视频。历史前端实验与 Bug 复现页。"
+title: "video → canvas · 20210115"
+description: "video→canvas 捕获（2021-01-15 迭代）。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/video2canvas-20210115.html"

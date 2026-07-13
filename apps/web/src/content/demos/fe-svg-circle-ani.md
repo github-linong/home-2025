@@ -1,6 +1,6 @@
 ---
 title: "Fe Svg Circle Ani"
-description: "图形/媒体交互示例：Fe Svg Circle Ani。历史前端实验与 Bug 复现页。"
+description: "图形交互示例：Fe Svg Circle Ani。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/fe-svg-circle-ani.html"

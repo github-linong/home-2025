@@ -1,6 +1,6 @@
 ---
 title: "Qrc Tran Test HexToUtf8"
-description: "前端实验交互示例：Qrc Tran Test HexToUtf8。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Qrc Tran Test HexToUtf8。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/qrc-tran-test-hexToUtf8.html"

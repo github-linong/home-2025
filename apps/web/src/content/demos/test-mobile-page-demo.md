@@ -1,6 +1,6 @@
 ---
-title: "全部订单"
-description: "Bug 复现交互示例：全部订单。历史前端实验与 Bug 复现页。"
+title: "全部订单 · 移动页测试"
+description: "移动端订单页测试。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-mobile-page-demo.html"

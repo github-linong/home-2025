@@ -1,6 +1,6 @@
 ---
-title: "https://github.com/Bilibili/flv.js"
-description: "Bug 复现交互示例：https://github.com/Bilibili/flv.js。历史前端实验与 Bug 复现页。"
+title: "flv.js · 测试"
+description: "flv.js 测试页。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-flvjs-github.html"

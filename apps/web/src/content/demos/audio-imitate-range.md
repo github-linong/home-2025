@@ -1,6 +1,6 @@
 ---
 title: "Audio Imitate Range"
-description: "音视频交互示例：Audio Imitate Range。历史前端实验与 Bug 复现页。"
+description: "音视频交互示例：Audio Imitate Range。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/audio-imitate-range.html"

@@ -1,6 +1,6 @@
 ---
-title: "Vue 中 v-if 和 v-show 的使用"
-description: "isShow: value: v-show"
+title: "v-if / v-show Bug 复现"
+description: "Vue交互示例：v-if / v-show Bug 复现。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vue-vif-vshow-bug.html"

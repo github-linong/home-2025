@@ -1,6 +1,6 @@
 ---
 title: "Websocket"
-description: "WebSocket交互示例：Websocket。历史前端实验与 Bug 复现页。"
+description: "WebSocket交互示例：Websocket。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/websocket.html"

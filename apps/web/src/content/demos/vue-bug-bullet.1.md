@@ -1,6 +1,6 @@
 ---
-title: "Vue 实现弹幕效果"
-description: "Vue 示例交互示例：Vue 实现弹幕效果。"
+title: "Vue 弹幕 Bug · 复现（:key=idx）"
+description: "弹幕列表用 :key=\"idx\" 复现错乱；博客配套问题版。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vue-bug-bullet.1.html"

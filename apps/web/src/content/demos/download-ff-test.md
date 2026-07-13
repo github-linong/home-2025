@@ -1,6 +1,6 @@
 ---
 title: "Download Ff Test"
-description: "URL http URL https URL //"
+description: "文件 IO交互示例：Download Ff Test。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/download-ff-test.html"

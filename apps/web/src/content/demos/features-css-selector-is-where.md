@@ -1,6 +1,6 @@
 ---
-title: "上传前预览文件"
-description: "class1-1 div span ispan"
+title: "Features Css Selector Is Where"
+description: "实验交互示例：Features Css Selector Is Where。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/features-css-selector-is-where.html"

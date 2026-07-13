@@ -1,6 +1,6 @@
 ---
-title: "测试平台 new Date"
-description: "Bug 复现交互示例：测试平台 new Date。历史前端实验与 Bug 复现页。"
+title: "移动端 Date · iOS/Android"
+description: "测试交互示例：移动端 Date · iOS/Android。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-mobile-date-ios-android.html"

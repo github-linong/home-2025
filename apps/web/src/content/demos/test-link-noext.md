@@ -1,6 +1,6 @@
 ---
 title: "Link Noext"
-description: "Bug 复现交互示例：Link Noext。历史前端实验与 Bug 复现页。"
+description: "测试交互示例：Link Noext。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-link-noext.html"

@@ -1,6 +1,6 @@
 ---
 title: "Performance Time SetTimeout SetInterval Time Starttime Changetime"
-description: "前端实验交互示例：Performance Time SetTimeout SetInterval Time Starttime Changetime。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Performance Time SetTimeout SetInterval Time Starttime Changetime。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/performance-time-setTimeout-setInterval-time-starttime-changetime.html"

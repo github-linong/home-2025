@@ -1,6 +1,6 @@
 ---
 title: "DOM HTML Test Demo"
-description: "Element.getAttributeNode() app.getAttributeNode() dispatchEvent"
+description: "SegmentFault交互示例：DOM HTML Test Demo。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-article-1190000019520438-DOM-HTML-test-demo.html"

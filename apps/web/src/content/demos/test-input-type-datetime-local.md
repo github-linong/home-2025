@@ -1,6 +1,6 @@
 ---
-title: "时区测试"
-description: "test: formmat: filterformmat:"
+title: "input datetime-local 测试"
+description: "测试交互示例：input datetime-local 测试。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-input-type-datetime-local.html"

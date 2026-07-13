@@ -1,6 +1,6 @@
 ---
 title: "Sf Canvas Souce In Img Radious Download"
-description: "思否配套交互示例：Sf Canvas Souce In Img Radious Download。思否文章/问答配套演示页。"
+description: "SegmentFault交互示例：Sf Canvas Souce In Img Radious Download。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-canvas-souce-in-img-radious-download.html"

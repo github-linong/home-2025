@@ -1,6 +1,6 @@
 ---
 title: "Ifamre Nesting Reload"
-description: "Bug 复现交互示例：Ifamre Nesting Reload。历史前端实验与 Bug 复现页。"
+description: "测试交互示例：Ifamre Nesting Reload。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-ifamre-Nesting-reload.html"

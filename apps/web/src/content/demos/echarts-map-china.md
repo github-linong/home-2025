@@ -1,6 +1,6 @@
 ---
 title: "Echarts Map China"
-description: "前端实验交互示例：Echarts Map China。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Echarts Map China。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/echarts-map-china.html"

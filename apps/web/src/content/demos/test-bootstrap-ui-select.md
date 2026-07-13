@@ -1,6 +1,6 @@
 ---
-title: "Hello"
-description: "Bug 复现交互示例：Hello。历史前端实验与 Bug 复现页。"
+title: "Bootstrap Ui Select"
+description: "测试交互示例：Bootstrap Ui Select。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-bootstrap-ui-select.html"

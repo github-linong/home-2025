@@ -1,6 +1,6 @@
 ---
-title: "仅用于学习"
-description: "前端实验交互示例：仅用于学习。历史前端实验与 Bug 复现页。"
+title: "拉勾课程笔记 Demo · 46-3"
+description: "实验交互示例：拉勾课程笔记 Demo · 46-3。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/lagou-46-3.html"

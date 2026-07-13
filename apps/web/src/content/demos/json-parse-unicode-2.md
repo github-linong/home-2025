@@ -1,6 +1,6 @@
 ---
 title: "Json Parse Unicode 2"
-description: "前端实验交互示例：Json Parse Unicode 2。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Json Parse Unicode 2。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/json-parse-unicode-2.html"

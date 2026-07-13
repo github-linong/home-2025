@@ -1,6 +1,6 @@
 ---
-title: "使用canvas捕获video视频"
-description: "音视频交互示例：使用canvas捕获video视频。历史前端实验与 Bug 复现页。"
+title: "video → canvas · attribute"
+description: "带额外 attribute / 属性控制的 video→canvas。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/video2canvas-attribute.html"

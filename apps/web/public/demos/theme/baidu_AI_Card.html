@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<style type="text/css">
+		*{padding:0;margin:0;}
+		input{
+			width:0;height:0;overflow: hidden;
+		}
+		img{
+			/*width: 100vw;*/display: block;
+			/*line-height: 30vh;min-height: 30vh;*/
+			max-width: 100vw;min-height: 100px;line-height: 100px;
+			text-align: center;background-color: #ccc
+		}
+	</style>
+</head>
+<body>
+	<label for="file">
+		<img alt="请选择图片上传" id="prview">
+		<!-- <img id="newPrview"> -->
+	</label>
+	<label for="file1">
+		<img alt="请选择图片上传_测试" id="prview">
+		<!-- <img id="newPrview"> -->
+	</label>
+	<p id="filesDetails"></p>
+	<div id="console">
+		
+	</div>
+	<!-- <canvas id="canvas"></canvas> -->
+	<input id="file" type="file" name="file" accept="image/*" capture="camera">
+	<input id="file1" type="file" name="file1" accept="image/*">
+	<script type="text/javascript">
+		var _prviewDOM = document.querySelector('#prview');
+		// var _newPrviewDOM = document.querySelector('#newPrview');
+		var _canvasDOM = document.querySelector('#canvas');
+		var _fileDOM =document.querySelector('#file')
+		_fileDOM.onchange = function(){
+			if(this.value!=''){
+				var _file = this.files[0];
+				var formData = new FormData;
+				formData.append('file', _file)
+				formData.append('opacid', 'LN')
+				$.ajax({url:'/upload',type:'POST',data: formData,contentType: false,processData: false,cache: false,
+	        	success(data){
+	        		if(data.error_code){
+	        			document.querySelector('#console').innerHTML = JSON.stringify(data);
+	        		}else{
+	        			document.querySelector('#console').innerHTML = Object.getOwnPropertyNames(data.data.words_result).map(v=>v+':'+data.data.words_result[v].words).join('<br>')
+	        		}
+	        	}})
+
+				document.querySelector('#filesDetails').innerHTML = '文件大小'+_file.size;
+				var fr=new FileReader();
+				fr.onload=function () {
+					// var _base64 = '';
+					// _prviewDOM.src = _base64 = this.result;
+					_prviewDOM.src = this.result;
+				};
+				fr.readAsDataURL(_file);
+				this.value = '';
+			}
+		}
+		_prviewDOM.onload = function(){
+			var _base64 = this.src;
+			// $.ajax({
+			// 	url:'/api/insert',type:'POST',
+			// 	data: {
+	  //             base64: encodeURI(_base64.replace(/(data:image\/png;base64,)|(data:image\/jpeg;base64,)/,''))
+	  //           },
+	  //       	success(data){
+	  //       		if(data.error_code){
+	  //       			document.querySelector('#console').innerHTML = JSON.stringify(data);
+	  //       		}else{
+	  //       			document.querySelector('#console').innerHTML = Object.getOwnPropertyNames(data.data.words_result).map(v=>v+':'+data.data.words_result[v].words).join('<br>')
+	  //       		}
+	  //       	}
+   //      	})
+		}
+	</script>
+</body>
+</html>

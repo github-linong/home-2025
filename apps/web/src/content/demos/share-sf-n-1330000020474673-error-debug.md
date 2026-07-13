@@ -1,6 +1,6 @@
 ---
 title: "Share Sf N 1330000020474673 Error Debug"
-description: "前端实验交互示例：Share Sf N 1330000020474673 Error Debug。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Share Sf N 1330000020474673 Error Debug。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/share-sf-n-1330000020474673-error-debug.html"

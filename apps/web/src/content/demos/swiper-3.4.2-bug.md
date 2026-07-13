@@ -1,6 +1,6 @@
 ---
 title: "Swiper 3.4.2 Bug"
-description: "7848973 《web端上传mv》 []ood别登我号\"\"&![]"
+description: "实验交互示例：Swiper 3.4.2 Bug。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/swiper-3.4.2-bug.html"

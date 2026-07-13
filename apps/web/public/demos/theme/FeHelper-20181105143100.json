@@ -1,0 +1,162 @@
+[{
+        "resultData": [
+            [{
+                    "applicationId": "5bdaa7a854d0c39e599f30b1",
+                    "applicationName": "channe-access",
+                    "nextApplicationName": "claim-balance",
+                    "asyncFlag": 0,
+                    "action": 1
+                },
+                {
+                    "applicationId": 32,
+                    "applicationName": "claim-balance",
+                    "nextApplicationName": "claim-manager",
+                    "asyncFlag": 0,
+                    "action": 1
+                },
+                {
+                    "applicationId": 33,
+                    "applicationName": "claim-manager",
+                    "nextApplicationName": "",
+                    "asyncFlag": 1,
+                    "action": 1
+                }
+            ],
+            [{
+                    "applicationId": "5bdaa7a854d0c39e599f30b1",
+                    "applicationName": "channe-access",
+                    "nextApplicationName": "claim-balance",
+                    "asyncFlag": 0,
+                    "action": 1
+                },
+                {
+                    "applicationId": 32,
+                    "applicationName": "claim-balance",
+                    "nextApplicationName": "claim-bussiness",
+                    "asyncFlag": 0,
+                    "action": 1
+                },
+                {
+                    "applicationId": 43,
+                    "applicationName": "claim-bussiness",
+                    "nextApplicationName": "data-exchange",
+                    "asyncFlag": 1,
+                    "action": 1
+                },
+                {
+                    "applicationId": 44,
+                    "applicationName": "data-exchange",
+                    "nextApplicationName": "",
+                    "asyncFlag": 1,
+                    "action": 0
+                }
+            ]
+        ],
+        "resultState": "0",
+        "startTime": "2018-11-02 17:00:00:000",
+        "endTime": "",
+        "totalTime": 0,
+        "serialNo": "12345",
+        "errNode": "data-exchange"
+    },
+    {
+        "resultData": [
+            [{
+                    "applicationId": "5bdaa7a854d0c39e599f30b8",
+                    "applicationName": "channe-access",
+                    "nextApplicationName": "claim-balance",
+                    "asyncFlag": 0,
+                    "action": 1
+                },
+                {
+                    "applicationId": 32,
+                    "applicationName": "claim-balance",
+                    "nextApplicationName": "claim-bussiness",
+                    "asyncFlag": 0,
+                    "action": 1
+                },
+                {
+                    "applicationId": 43,
+                    "applicationName": "claim-bussiness",
+                    "nextApplicationName": "data-exchange",
+                    "asyncFlag": 1,
+                    "action": 1
+                },
+                {
+                    "applicationId": 44,
+                    "applicationName": "data-exchange",
+                    "nextApplicationName": "",
+                    "asyncFlag": 1,
+                    "action": 1
+                }
+            ]
+        ],
+        "resultState": "1",
+        "startTime": "2018-11-02 17:00:00:000",
+        "endTime": "2018-11-02 17:00:00:300",
+        "totalTime": 300,
+        "serialNo": "123456",
+        "errNode": ""
+    },
+    {
+        "resultData": [
+            [{
+                    "applicationId": "5bdaa7a854d0c39e599f30b9",
+                    "applicationName": "channe-access",
+                    "nextApplicationName": "claim-balance",
+                    "asyncFlag": 0,
+                    "action": 1
+                },
+                {
+                    "applicationId": 32,
+                    "applicationName": "claim-balance",
+                    "nextApplicationName": "claim-manager",
+                    "asyncFlag": 0,
+                    "action": 1
+                },
+                {
+                    "applicationId": 33,
+                    "applicationName": "claim-manager",
+                    "nextApplicationName": "null",
+                    "asyncFlag": 1,
+                    "action": 1
+                }
+            ],
+            [{
+                    "applicationId": "5bdaa7a854d0c39e599f30b9",
+                    "applicationName": "channe-access",
+                    "nextApplicationName": "claim-balance",
+                    "asyncFlag": 0,
+                    "action": 1
+                },
+                {
+                    "applicationId": 32,
+                    "applicationName": "claim-balance",
+                    "nextApplicationName": "claim-bussiness",
+                    "asyncFlag": 0,
+                    "action": 1
+                },
+                {
+                    "applicationId": 43,
+                    "applicationName": "claim-bussiness",
+                    "nextApplicationName": "data-exchange",
+                    "asyncFlag": 1,
+                    "action": 1
+                },
+                {
+                    "applicationId": 44,
+                    "applicationName": "data-exchange",
+                    "nextApplicationName": "",
+                    "asyncFlag": 1,
+                    "action": 1
+                }
+            ]
+        ],
+        "resultState": "1",
+        "startTime": "2018-11-02 17:00:00:000",
+        "endTime": "2018-11-02 17:00:00:400",
+        "totalTime": 400,
+        "serialNo": "1234567",
+        "errNode": ""
+    }
+]

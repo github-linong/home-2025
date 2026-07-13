@@ -1,6 +1,6 @@
 ---
-title: "用于学习，别瞎搞呀"
-description: "前端实验交互示例：用于学习，别瞎搞呀。历史前端实验与 Bug 复现页。"
+title: "Geturl Douyin Video"
+description: "实验交互示例：Geturl Douyin Video。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/geturl-douyin-video.html"

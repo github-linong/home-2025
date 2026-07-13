@@ -1,6 +1,6 @@
 ---
 title: "JPlayer"
-description: "Bug 复现交互示例：JPlayer。历史前端实验与 Bug 复现页。"
+description: "测试交互示例：JPlayer。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-jPlayer.html"

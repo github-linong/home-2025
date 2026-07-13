@@ -1,6 +1,6 @@
 ---
-title: "移动端适配"
-description: "window.location.reload(); 参考文献 http://efe.baidu.com/blog/mobile-fixed-layout/?qq-pf-to=pcqq.group"
+title: "移动端 fixed + input Bug"
+description: "theme：fixed 与 input 组合 Bug。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-mobile-fixed-input-BUG.html"

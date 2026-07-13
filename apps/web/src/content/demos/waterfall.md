@@ -1,6 +1,6 @@
 ---
 title: "瀑布流布局"
-description: "CSS 布局交互示例：瀑布流布局。"
+description: "CSS交互示例：瀑布流布局。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/waterfall.html"

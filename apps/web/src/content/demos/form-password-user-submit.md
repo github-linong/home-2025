@@ -1,6 +1,6 @@
 ---
-title: "post"
-description: "get get user1 解决方案,记录是否第一次，如果不是，不填充无用input"
+title: "Form Password User Submit"
+description: "表单交互示例：Form Password User Submit。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/form-password-user-submit.html"

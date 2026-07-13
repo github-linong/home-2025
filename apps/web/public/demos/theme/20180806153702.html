@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		img{
+			width: 50%;
+		}
+	</style>
+</head>
+<body>
+<img src="./20180806153702.jpg"><img src="./20180806153702_1.jpg">
+	<!-- <div>
+		<img src="./20180806153702.jpg">
+	</div>
+	<div>
+		<img src="./20180806153702_1.jpg">
+	</div> -->
+	<script type="text/javascript">
+		Array.from(document.querySelectorAll('img')).forEach(node=>{
+			node.addEventListener('click', ()=>{
+				// Array.from(document.querySelectorAll('img')).forEach(node=>{
+					node.style.transform=='scale(-1, 1)'?(node.style.transform='scale(1,1)'):(node.style.transform='scale(-1,1)')
+				// })
+			})
+		})
+	</script>
+</body>
+</html>

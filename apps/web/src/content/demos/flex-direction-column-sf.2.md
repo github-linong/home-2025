@@ -1,26 +1,42 @@
 ---
-title: "基于 Flex 实现两端对齐垂直布局"
-description: "我是头部，我希望我不管大小屏幕都在最上面 我是内容，我希望我在屏幕的中间显示，我不希望我压住其他内容，我希望一屏可以展示这个页面 我是底部，我希望我可以据底，如果屏幕超出了，我滑动可见。"
+title: "Flex 垂直布局 · section flex:1 居中"
+description: "中间 section 用 flex:1 撑开，并 display:flex + align-items:center 让内容垂直居中。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/flex-direction-column-sf.2.html"
 legacyUrl: "/static/html/flex-direction-column-sf.2.html"
 category: "CSS"
 badge: "博客配套"
-tags: ["legacy", "CSS", "博客配套"]
+tags: ["legacy", "CSS", "博客配套", "Flex"]
 relatedPosts: ["sf-1190000037452855"]
 ---
 
 ## 简介
 
-Flex 垂直两端对齐变体 2：进一步调整 flex 分配或嵌套结构。
+相对 `.1`，不再用 `justify-content: space-between`，改为：
+
+```css
+#app section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+```
+
+中间区域吃掉剩余高度，内容在该区域内垂直居中。文章提醒：看背景色就能和 `space-between` 方案区分开。
+
+## 与系列其它页的差异
+
+- **vs `.1`**：剩余空间落在绿色 `section` 上，而不是三块之间的「缝」。
+- **vs `.3`**：本页只有一块可伸缩区域；`.3` 把伸缩拆成上下两块空白，内容块本身不 `flex:1`。
 
 ## 如何测试验证
 
-1. 对比变体 1 的间距与拉伸行为。
-2. 子项内容变长时检查压缩（flex-shrink）。
+1. 对比 `.1`：绿块是否铺满中间。
+2. 增减中间文案行数，看是否仍居中且不压头底。
+3. 高度不足时是否出现整体滚动。
 
 ## 相关规范与文档
 
-- [MDN: flex-grow](https://developer.mozilla.org/en-US/docs/Web/CSS/flex-grow)
-- [MDN: flex-shrink](https://developer.mozilla.org/en-US/docs/Web/CSS/flex-shrink)
+- [MDN: flex](https://developer.mozilla.org/en-US/docs/Web/CSS/flex)
+- [MDN: align-items](https://developer.mozilla.org/en-US/docs/Web/CSS/align-items)

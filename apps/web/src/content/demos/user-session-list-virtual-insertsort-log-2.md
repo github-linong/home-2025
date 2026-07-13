@@ -1,6 +1,6 @@
 ---
 title: "User Session List Virtual Insertsort Log 2"
-description: "前端实验交互示例：User Session List Virtual Insertsort Log 2。"
+description: "实验交互示例：User Session List Virtual Insertsort Log 2。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/user-session-list-virtual-insertsort-log-2.html"

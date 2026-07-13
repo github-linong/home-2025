@@ -1,6 +1,6 @@
 ---
 title: "Video_m"
-description: "Bug 复现交互示例：Video_m。历史前端实验与 Bug 复现页。"
+description: "测试交互示例：Video_m。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-video_m.html"

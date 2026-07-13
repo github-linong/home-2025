@@ -1,6 +1,6 @@
 ---
 title: "Herook Group"
-description: "前端实验交互示例：Herook Group。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Herook Group。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/herook-group.html"

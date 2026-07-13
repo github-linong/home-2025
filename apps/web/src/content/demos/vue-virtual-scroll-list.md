@@ -1,6 +1,6 @@
 ---
 title: "Vue Virtual Scroll List"
-description: "Vue 示例交互示例：Vue Virtual Scroll List。历史前端实验与 Bug 复现页。"
+description: "Vue交互示例：Vue Virtual Scroll List。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vue-virtual-scroll-list.html"

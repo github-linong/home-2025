@@ -1,6 +1,6 @@
 ---
 title: "剪贴板 execCommand 复制"
-description: "copy-touchstart copy-touchend copy-click"
+description: "交互交互示例：剪贴板 execCommand 复制。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/copy-execCommand.html"

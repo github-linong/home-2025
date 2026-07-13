@@ -1,6 +1,6 @@
 ---
 title: "Css Flex Input Auto Animate"
-description: "默认居中，无内容居中 有焦点变长，居左 有内容变长，居左"
+description: "CSS交互示例：Css Flex Input Auto Animate。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/css-flex-input-auto-animate.html"

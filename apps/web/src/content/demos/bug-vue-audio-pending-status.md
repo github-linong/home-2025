@@ -1,6 +1,6 @@
 ---
 title: "Vue Audio Pending 状态复现"
-description: "idx++ inputValue: Date.now()::"
+description: "Bug交互示例：Vue Audio Pending 状态复现。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/bug-vue-audio-pending-status.html"

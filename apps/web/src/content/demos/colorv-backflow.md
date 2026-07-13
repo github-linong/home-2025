@@ -1,6 +1,6 @@
 ---
 title: "Colorv Backflow"
-description: "酷狗唱唱 a.app.qq.com 酷狗唱唱 getUniversal 酷狗唱唱"
+description: "实验交互示例：Colorv Backflow。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/colorv-backflow.html"

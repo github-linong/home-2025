@@ -1,0 +1,53 @@
+.handler {color: #2077d1;}
+.handler a {color: #2077d1;}
+.ui-dialog-footer button.ui-dialog-autofocus {background: #2077d1; border-color: #2077d1;}
+.ui-require {color: #2077d1;}
+.ui-form .tips {color: #2077d1;}
+.ui-button {background: #2077d1;}
+.highLight {color: #2077d1;}
+#warpper .header {border-top: 6px solid #2077d1;}
+#warpper .slider .selected {background: #2077d1;}
+#warpper .workspace {background: #2077d1;}
+.ui-tab .selected { border-bottom: 2px solid #2077d1;}
+.filedSet .carList li {color: #2077d1;}
+a.a-upload{background:#2077d1;}
+a.a-upload-2{color:#2077d1;}
+.ui-form .add-but{color:#2077d1;}
+.Explain-picture a.Explain-upload{color:#2077d1;}
+.xy-nav > .selected{border-bottom:2px solid #2077d1;}
+.ParameterDefinition{color:#2077d1;}
+ul.topic li.no a{color:#2077d1;}
+.handler {color: #2077d1;}
+.handler a {color: #2077d1;}
+.editBtn {color: #2077d1 !important;}
+.Ecouponlink{color:#2077d1 !important;}
+.NewEcoupon{color:#2077d1 !important;}
+.orangeText/** 橙色文字 **/
+{color:#2077d1;}
+.insertStarBefore:before/** 在文字前面加上橙色的星号 **/
+{color:#2077d1;}
+.xy-button{background:#2077d1;}
+.operateLinkContainer{color:#2077d1;}
+/****文章列表****/
+.face_icon,.star_icon{background:url(../czkimg/face_icon.png) center -40px no-repeat;}
+.face_icon-2,.star_icon-2{background:url(../czkimg/face_icon.png) center 0 no-repeat;}
+.star_icon-2{background:url(../czkimg/star_icon.png) center 0 no-repeat;}
+.fast-entry span.icon-3{background:url(../czkimg/icon.png) -626px 20px no-repeat !important;}
+input[type=checkbox]:checked,input[type=radio]:checked{content:url(../czkimg/orange_2.png);}
+input[type=radio]:checked{content:url(../czkimg/orange_4.png);}
+.fast-entry li {background: url(../czkimg/sep.png) right center no-repeat;}
+.xy-radio label:before{background:url("../czkimg/xy-radioOrange.png") no-repeat; background-position:0px 0px;}
+
+/** 资讯文章修改**/
+.FloatingBox li i{background:url(../czkimg/FloatingBox.png) -41px 0 no-repeat; vertical-align:middle;}
+
+.FloatingBox li:hover{color:#2077d1;}
+.FloatingBox li:hover i{background:url(../czkimg/FloatingBox.png) no-repeat;}
+.PreviewLeft::-webkit-scrollbar-thumb{background-color:#2077d1;}  
+.PreviewRight .topic{color:#2077d1;}
+.PreviewRight .topic i{background:url(../czkimg/FloatingBox.png) no-repeat;}
+.PreviewRight .topic i.PreviewIcon1{background-position:0 -158px;}
+.PreviewRight .topic i.PreviewIcon2{background-position:-40px -158px;}
+
+
+

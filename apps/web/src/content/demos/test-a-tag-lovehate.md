@@ -1,6 +1,6 @@
 ---
 title: "A Tag Lovehate"
-description: "Bug 复现交互示例：A Tag Lovehate。历史前端实验与 Bug 复现页。"
+description: "测试交互示例：A Tag Lovehate。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-a-tag-lovehate.html"

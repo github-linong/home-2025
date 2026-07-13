@@ -1,6 +1,6 @@
 ---
 title: "Elementui Checkbox Group Search"
-description: "全选功能Demo listChecked1:"
+description: "实验交互示例：Elementui Checkbox Group Search。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/elementui-checkbox-group-search.html"

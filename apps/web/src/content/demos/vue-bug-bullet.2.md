@@ -1,6 +1,6 @@
 ---
-title: "Vue 实现弹幕效果"
-description: "Vue 示例交互示例：Vue 实现弹幕效果。"
+title: "Vue 弹幕 Bug · 修复（:key=id）"
+description: "改为 :key=\"item.id\" 的修复版，对照 .1 复现路径验证。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vue-bug-bullet.2.html"

@@ -1,6 +1,6 @@
 ---
 title: "H5 Geolocation"
-description: "移动端/H5交互示例：H5 Geolocation。历史前端实验与 Bug 复现页。"
+description: "移动端交互示例：H5 Geolocation。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/h5-geolocation.html"

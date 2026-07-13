@@ -1,6 +1,6 @@
 ---
 title: "qart.js 艺术二维码"
-description: "https://github.com/kciter/qart.js http://www.jq22.com/jquery-info12691"
+description: "二维码交互示例：qart.js 艺术二维码。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/qrcode-20200408-qart-jq22-jqueryinfo12691.html"

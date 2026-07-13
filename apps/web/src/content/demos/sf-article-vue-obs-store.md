@@ -1,6 +1,6 @@
 ---
 title: "Vue Obs Store"
-description: "思否配套交互示例：Vue Obs Store。思否文章/问答配套演示页。"
+description: "SegmentFault交互示例：Vue Obs Store。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-article-vue-obs-store.html"

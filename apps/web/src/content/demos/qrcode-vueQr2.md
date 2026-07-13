@@ -1,6 +1,6 @@
 ---
 title: "Qrcode VueQr2"
-description: "二维码交互示例：Qrcode VueQr2。历史前端实验与 Bug 复现页。"
+description: "二维码交互示例：Qrcode VueQr2。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/qrcode-vueQr2.html"

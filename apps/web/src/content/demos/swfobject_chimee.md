@@ -1,6 +1,6 @@
 ---
-title: "H1"
-description: "SWFObject ChimeePlayer native video"
+title: "Swfobject_chimee"
+description: "实验交互示例：Swfobject_chimee。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/swfobject_chimee.html"

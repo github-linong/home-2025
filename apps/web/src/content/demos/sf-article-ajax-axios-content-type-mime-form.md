@@ -1,6 +1,6 @@
 ---
 title: "Ajax Axios Content Type Mime Form"
-description: "注意打开持续日志，这样方便看 默认 get 无enctype get application/x-www-form-urlencoded"
+description: "SegmentFault交互示例：Ajax Axios Content Type Mime Form。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-article-ajax-axios-content-type-mime-form.html"

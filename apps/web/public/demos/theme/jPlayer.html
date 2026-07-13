@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+	<script src="https://cdn.bootcss.com/jplayer/2.9.2/jplayer/jquery.jplayer.min.js"></script>
+</head>
+<body>
+	<script type="text/javascript">
+	 $(document).ready(function(){
+	  $("#jquery_jplayer_1").jPlayer({
+	   ready: function () {
+	    $(this).jPlayer("setMedia", {
+	     mka: "./90335115-0.mka"
+	    });
+	   },
+	   swfPath: "https://cdn.bootcss.com/jplayer/2.9.2/jplayer/jquery.jplayer.swf",
+	   supplied: "mka"
+	  });
+	 });
+	</script>
+	<div id="jquery_jplayer_1"></div>
+	<div id="jp_container_1">
+	 <a href="#" class="jp-play">Play</a>
+	 <a href="#" class="jp-pause">Pause</a>
+	</div>
+</body>
+</html>

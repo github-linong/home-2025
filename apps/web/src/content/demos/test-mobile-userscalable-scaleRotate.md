@@ -1,6 +1,6 @@
 ---
-title: "移动端双指放大旋转"
-description: "移动端双指放大旋转 https://segmentfault.com/q/1010000015209926"
+title: "双指放大旋转 · userscalable"
+description: "测试交互示例：双指放大旋转 · userscalable。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-mobile-userscalable-scaleRotate.html"

@@ -1,6 +1,6 @@
 ---
-title: "滚动事件"
-description: "Bug 复现交互示例：滚动事件。历史前端实验与 Bug 复现页。"
+title: "移动端滚动事件 · 测试"
+description: "移动端滚动测试页。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-mobile-scroll.html"

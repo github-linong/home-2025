@@ -1,6 +1,6 @@
 ---
-title: "上传前预览文件"
-description: "Bug 复现交互示例：上传前预览文件。历史前端实验与 Bug 复现页。"
+title: "Animation"
+description: "测试交互示例：Animation。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-animation.html"

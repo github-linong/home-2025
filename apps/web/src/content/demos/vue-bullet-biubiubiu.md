@@ -1,6 +1,6 @@
 ---
 title: "Vue 弹幕效果"
-description: "Vue 示例交互示例：Vue 弹幕效果。"
+description: "Vue交互示例：Vue 弹幕效果。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vue-bullet-biubiubiu.html"

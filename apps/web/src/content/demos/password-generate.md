@@ -1,6 +1,6 @@
 ---
 title: "Password Generate"
-description: "前端实验交互示例：Password Generate。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Password Generate。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/password-generate.html"

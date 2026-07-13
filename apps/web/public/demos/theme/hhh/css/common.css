@@ -1,0 +1,401 @@
+/** created by wzq 通用样式 **/
+
+/** =================================原生================================= **/
+body
+{
+	font-family:"microsoft yahei";
+	background:white;
+	color:#222;
+	font-size:14px;
+	padding:18px;
+	margin:0;
+}
+a
+{
+	cursor:pointer;
+	text-decoration:none;
+	color:inherit;
+}
+select/** 此项目中的下拉框都是带背景的 **/
+{
+	padding-left:6px; padding-right:6px;
+	background:url(../img/select-icon.png) 95% center no-repeat;
+	-webkit-appearance:none;
+	font:inherit;
+}
+input
+{
+	padding-left:6px; padding-right:6px;
+	font:inherit;
+	height:32px;
+}
+label
+{
+	display:inline-block;
+	vertical-align:middle;
+}
+textarea,select,input
+{
+	box-sizing:border-box;
+	resize:none;
+	border:1px solid #ccc;
+}
+ul
+{
+	padding:0;
+	list-style-type:none;
+}
+/** =================================单选按钮================================= **/
+.xy-radio/**使用一个div包裹一个radio和一个lable，然后对该div使用该样式**/
+{
+	
+}
+.xy-radio input
+{
+	display:none;
+}
+.xy-radio label
+{
+
+	font:inherit;
+	cursor: pointer;
+}
+.xy-radio label:before
+{
+	content:"";
+	display:inline-block; vertical-align:middle;
+	width:16px; height:16px; padding-right:10px;
+	background:url("../img/xy-radioOrange.png") no-repeat;
+	background-position:0px 0px;
+}
+.xy-radio input:checked + label:before
+{
+	content:"";
+	display:inline-block; vertical-align:middle;
+	width:16px; height:16px; padding-right:10px;
+	background:url("../img/xy-radioOrange.png") no-repeat;
+	background-position:0px -16px;
+}
+/** =================================面板================================= **/
+.xy-location {
+  margin-bottom: 18px;
+  padding-left: 8px;
+  border-left:4px solid #6B6B6B;
+}
+.xy-panel
+{
+	overflow:hidden;
+	border:1px solid #CCC;
+}
+.xy-panel .xy-panelTop,/** 面板头部及尾部区域 **/
+.xy-panel .xy-panelBottom
+{
+	height:40px;
+	line-height:40px;
+}
+.xy-panel .xy-panelContent/** 面板内容区域 **/
+{
+	padding:10px;
+}
+.xy-panelTop + .xy-panelContent
+{
+	border-top:1px solid #CCC;
+}
+.xy-titlebar {
+	font:inherit; 
+	color:#333;
+	background: #f4f5f9;
+	display:-webkit-box;
+	display:flex;
+	-webkit-box-pack:justify;
+	justify-content:space-between;
+}
+.xy-titlebar > *
+{
+	white-space:nowrap;
+	overflow:hidden;
+	box-sizing:border-box;
+}
+.xy-titlebar .xy-titlebar-left{
+	text-align:left;
+	padding-left:10px;
+}
+.xy-titlebar .xy-titlebar-right {
+	text-align:right;
+	padding-right:10px;
+}
+.xy-titlebar .xy-titlebar-middle {
+	text-align:center;
+	font-weight:bold;
+}
+.xy-panelContent + .xy-panelBottom
+{
+	border-top:1px solid #CCC;
+}
+.xy-titlebar-left > *,
+.xy-titlebar-right > *,
+.xy-panelBottom > *
+{
+	vertical-align:middle;
+}
+
+/** =================================表单================================= **/
+.formRow/** 表单内每行都应该使用该css **/
+{
+	line-height:30px;
+	display:-webkit-box;
+	display:flex;
+}
+.formCol/** 表单内每列都应该使用该css **/
+{
+	text-align:right;
+	vertical-align:top;
+	-webkit-box-flex:1;
+	flex:1;
+}
+/** 最常用的'标题-内容'格式行，标题和内容区域都占一定百分比的宽度，然后标题内容右对齐，内容区域左对齐 **/
+.normalRow .formCol:nth-child(1)
+{
+	-webkit-box-flex:1;
+	flex:1;
+	text-align:right;
+	padding-right:20px;
+}
+.normalRow .formCol:nth-child(2)
+{
+	-webkit-box-flex:4.6;
+	flex:4.6;
+	text-align:left;
+}
+.formCol > *
+{
+	font:inherit;
+}
+.formRow select,
+.formRow input[type="text"]
+{
+	width:270px;
+}
+.formRow textarea
+{
+	height:115px;
+}
+/** =================================表格================================= **/
+.xy-table{border-collapse:collapse;}
+.xy-table.fixedTable{table-layout:fixed;}/**加上fixedTable的表格各单元格宽度都是相等的**/
+.borderedTable th,/**加上borderedTable的表格各单元格都会有灰色边框出现**/
+.borderedTable td{
+	border: 1px solid #e7e7eb;
+}
+.bottomBorderedTable th,/**加上bottomBorderedTable的表格各单元格都会有灰色底边框出现**/
+.bottomBorderedTable td{
+	border-bottom: 1px solid #e7e7eb;
+}
+.xy-table th,
+.xy-table td{
+  line-height: 20px;
+  padding: 10px 8px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+.xy-table th
+{
+	background-color:#f4f5f9;
+}
+/** =================================自定义组件================================= **/
+
+
+/** 导航条 **/
+.xy-nav{
+  font-size:0;
+  border-bottom:1px solid #e7e8eb;
+  margin-bottom:15px;
+}
+.xy-nav > *{
+  display:inline-block;
+  line-height:30px;
+  font-size:14px;
+  padding:0 20px;
+	cursor:pointer;
+}
+.xy-nav > .selected
+{
+	border-bottom:2px solid #e66819;	
+}
+.xy-nav-content{display:none;}
+.xy-nav-content.current{display:block;}
+
+/** 图表 **/
+.xy-chartContainer
+{
+	width:870px; height:340px;
+}
+
+/** 页码导航 **/
+.xy-pageNavigator
+{
+	line-height:32px;
+}
+
+
+/** =================================布局================================= **/
+.xy-row
+{
+	display:-webkit-box;
+	display:flex;
+}
+.xy-row > *
+{
+	-webkit-box-flex:1;
+	flex:1;
+	max-width:100%;
+	display:block;
+}
+.hAlignCenterRow
+{
+	display:-webkit-box;
+	display:flex;
+	-webkit-box-pack:center;
+	justify-content:center;
+}
+.hAlignBalanceRow
+{
+	display:-webkit-box;
+	display:flex;
+	-webkit-box-pack:justify;
+	justify-content:space-between;
+}
+.autoWidthRowElem
+{
+	-webkit-box-flex: initial;
+	flex: initial;
+	width:auto;
+}
+.hAlignCenterDiv
+{
+	text-align:center;
+}
+.hAlignCenterDiv > *
+{
+	margin:auto;
+}
+.vAlignTopRow
+{
+	-webkit-box-align:start;
+	align-items:flex-start;
+}
+.bottomMarginContainer > *
+{
+	margin-bottom:15px;	
+}
+
+/** =================================边框背景================================= **/
+.grayBorderBottom{border-bottom:1px solid #e7e7eb;}
+.selectIndicatorBG{background:url(../img/select-icon.png) 95% center no-repeat;}
+.grayBG{background-color:#f4f5f9;}
+.grayBorder{border:1px solid #e7e7eb;}
+.fullBackgroundImage{background-repeat:no-repeat;background-size:100% 100%;}
+.xyLogo{
+	background:url("../img/logo.png"); background-repeat:no-repeat; background-size:100% 100%; 
+	width: 124px; height: 45px; display: inline-block;
+}
+/** =================================文本================================= **/
+.orangeText/** 橙色文字 **/
+{color:#fe7f30;}
+.grayText/** 橙色文字 **/
+{color:#999;}
+.blueText/** 蓝色文字 **/
+{color:#014cd6;}
+
+.insertStarBefore:before/** 在文字前面加上橙色的星号 **/
+{
+	content:"＊";
+	color:#fe7f30;
+	font-size:15px;
+	vertical-align:middle;
+}
+
+.normalTextarea
+{
+	width:95%;
+	height:115px;
+}
+
+/** =================================图片按钮================================= **/
+.xy-button{
+	color:#fff;
+	font-size:14px;
+	border:0;
+	line-height:32px;
+	height:32px;//该值和Input的默认高度一致
+	line-height:32px;
+	border-radius:5px;
+	background:#fe7f30;
+	cursor:pointer;
+	font-family:"microsoft yahei";
+	box-sizing:border-box;
+	display:inline-block;
+	padding-left:20px; padding-right:20px;
+	text-align:center;
+}
+.xy-button.widerBtn
+{
+	width:100px;
+	padding:0;
+}
+.xy-button.themeWhite
+{
+	background: #FFF;
+	border:1px solid #e5e5e5;
+	color: #222;
+}
+.xy-imgButton
+{
+	vertical-align:middle;
+	cursor:pointer;
+}
+.xy-fileSelectBtn
+{
+	position:relative;
+	overflow:hidden;
+}
+.xy-fileSelectBtn > input
+{
+	position:absolute; 
+	right:0; top:0;
+	opacity:0; filter:alpha(opacity=0);
+	cursor:pointer;
+}
+/** =================================通用================================= **/
+.fullWidth
+{
+	width:100%;	
+}
+.noPadding
+{
+	padding:0 !important;	
+}
+.abosuluteCenter
+{
+	position: absolute;
+	margin: auto;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+
+/** =================================定制================================= **/
+/**操作面板，如'修改|删除'这样子的**/
+.operateLinkContainer
+{
+	line-height:inherit;
+	color:#fe7f30;
+}
+.operateLinkContainer > *:nth-child(2n):before
+{
+	content:"| ";
+}

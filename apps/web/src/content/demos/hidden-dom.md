@@ -1,6 +1,6 @@
 ---
 title: "隐藏 DOM 元素测试"
-description: "隐藏页面元素测试DEMO 切换 transition: #"
+description: "实验交互示例：隐藏 DOM 元素测试。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/hidden-dom.html"

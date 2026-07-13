@@ -1,6 +1,6 @@
 ---
 title: "Create Image Cavnas"
-description: "前端实验交互示例：Create Image Cavnas。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Create Image Cavnas。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/create-image-cavnas.html"

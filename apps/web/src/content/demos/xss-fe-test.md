@@ -1,6 +1,6 @@
 ---
 title: "Xss Fe Test"
-description: "前端实验交互示例：Xss Fe Test。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Xss Fe Test。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/xss-fe-test.html"

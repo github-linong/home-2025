@@ -1,6 +1,6 @@
 ---
 title: "Canvas 刮刮卡"
-description: "图形/媒体交互示例：Canvas 刮刮卡。历史前端实验与 Bug 复现页。"
+description: "图形交互示例：Canvas 刮刮卡。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/canvas-active-h5-scratchCard.html"

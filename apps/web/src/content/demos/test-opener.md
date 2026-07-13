@@ -1,6 +1,6 @@
 ---
 title: "Opener"
-description: "普通打开 打开 _blank 打开 _blank noopener"
+description: "测试交互示例：Opener。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-opener.html"

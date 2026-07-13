@@ -1,6 +1,6 @@
 ---
 title: "Input number 校验 Bug 复现"
-description: "BUG 复现 type改为text 空白测试"
+description: "表单交互示例：Input number 校验 Bug 复现。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/input-number-validity.html"

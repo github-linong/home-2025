@@ -1,6 +1,6 @@
 ---
 title: "Event Demo 1190000019433644"
-description: "冒泡阶段触发事件 div1 div1-1"
+description: "SegmentFault交互示例：Event Demo 1190000019433644。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-article-event-demo-1190000019433644.html"

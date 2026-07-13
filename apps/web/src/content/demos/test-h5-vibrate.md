@@ -1,6 +1,6 @@
 ---
 title: "H5 Vibrate"
-description: "navigator.vibrate = navigator.vibrate || navigator.webkitVibrate || navigator.mozVibrate || navigator.msVibrate; navi"
+description: "测试交互示例：H5 Vibrate。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-h5-vibrate.html"

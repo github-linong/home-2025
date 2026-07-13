@@ -1,6 +1,6 @@
 ---
-title: "自建比赛页面fixed元素丢失测试"
-description: "3{position: static;} 1{position: absolute;} 4{position: relative;}"
+title: "微信/QQ position:fixed"
+description: "移动端交互示例：微信/QQ position:fixed。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/wx-qq-position-fixed.html"

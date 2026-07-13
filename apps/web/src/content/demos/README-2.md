@@ -1,6 +1,6 @@
 ---
-title: "html 目录指引"
-description: "null 1010000013101269.html 1010000021527976-img-onload.html"
+title: "html 目录指引 · 2"
+description: "静态 html 目录说明变体。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/README-2.html"

@@ -1,6 +1,6 @@
 ---
 title: "Element Ui Checkbox Group"
-description: "前端实验交互示例：Element Ui Checkbox Group。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Element Ui Checkbox Group。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/element-ui-checkbox-group.html"

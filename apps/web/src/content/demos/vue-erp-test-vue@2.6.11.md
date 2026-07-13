@@ -1,6 +1,6 @@
 ---
 title: "Vue ERP 插槽示例 (2.6.11)"
-description: "Vue 示例交互示例：Vue ERP 插槽示例 (2.6.11)。"
+description: "Vue交互示例：Vue ERP 插槽示例 (2.6.11)。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vue-erp-test-vue@2.6.11.html"

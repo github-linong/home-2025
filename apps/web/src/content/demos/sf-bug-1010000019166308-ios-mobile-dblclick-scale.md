@@ -1,6 +1,6 @@
 ---
 title: "Sf Bug 1010000019166308 Ios Mobile Dblclick Scale"
-description: "ios设备safair，禁止双击放大问题 https://segmentfault.com/q/1010000019166308 bug?"
+description: "SegmentFault交互示例：Sf Bug 1010000019166308 Ios Mobile Dblclick Scale。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-bug-1010000019166308-ios-mobile-dblclick-scale.html"

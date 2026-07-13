@@ -1,6 +1,6 @@
 ---
 title: "Swfobject_video"
-description: "前端实验交互示例：Swfobject_video。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Swfobject_video。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/swfobject_video.html"

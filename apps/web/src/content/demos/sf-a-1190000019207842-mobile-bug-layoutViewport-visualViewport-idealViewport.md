@@ -1,6 +1,6 @@
 ---
 title: "移动端三种 Viewport 对比"
-description: "https://segmentfault.com/a/1190000019207842 关于移动端适配，你必须要知道的 width: 100px width: 300px"
+description: "SegmentFault交互示例：移动端三种 Viewport 对比。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-a-1190000019207842-mobile-bug-layoutViewport-visualViewport-idealViewport.html"

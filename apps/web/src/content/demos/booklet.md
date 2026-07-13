@@ -1,6 +1,6 @@
 ---
 title: "Booklet"
-description: "前端实验交互示例：Booklet。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Booklet。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/booklet.html"

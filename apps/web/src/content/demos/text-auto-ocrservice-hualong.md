@@ -1,6 +1,6 @@
 ---
-title: "有次数限制，请不要刷我接口"
-description: "前端实验交互示例：有次数限制，请不要刷我接口。历史前端实验与 Bug 复现页。"
+title: "Text Auto Ocrservice Hualong"
+description: "实验交互示例：Text Auto Ocrservice Hualong。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/text-auto-ocrservice-hualong.html"

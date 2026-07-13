@@ -1,6 +1,6 @@
 ---
 title: "Bug Test Img Upload Cut"
-description: "Bug 复现交互示例：Bug Test Img Upload Cut。历史前端实验与 Bug 复现页。"
+description: "Bug交互示例：Bug Test Img Upload Cut。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/bug-test-img-upload-cut.html"

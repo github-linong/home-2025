@@ -1,6 +1,6 @@
 ---
-title: "我们同时监听放电状态和电池等级和剩余事件的事件"
-description: "Bug 复现交互示例：我们同时监听放电状态和电池等级和剩余事件的事件。历史前端实验与 Bug 复现页。"
+title: "Battery Status API · 测试"
+description: "getBattery 测试页。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-h5-getBattery.html"

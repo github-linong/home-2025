@@ -1,6 +1,6 @@
 ---
 title: "Iframe Newtork Onerror"
-description: "前端实验交互示例：Iframe Newtork Onerror。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Iframe Newtork Onerror。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/iframe-newtork-onerror.html"

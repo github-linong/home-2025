@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>移动端适配</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+</head>
+<body>
+	<button onclick="	window.location.reload();">	window.location.reload();</button>
+	<ul>
+		<li>参考文献</li>
+		<li>https://github.com/amfe/article/issues/17</li>
+		<li>https://www.w3cplus.com/css/vw-for-layout.html</li>
+		<li>https://github.com/amfe/lib-flexible/tree/master</li>
+		<li>http://www.w3cplus.com/css/viewports.html  viewports剖析</li>
+	</ul>
+	<ul>
+		<li>window.devicePixelRatio <span id="devicePixelRatio_DOM"></span></li>
+	</ul>
+	<h1>移动端视频</h1>
+	<video controls src="/static/theme/v1705221.mp4" ></video>
+	<script type="text/javascript">
+		setTimeout(function(){
+			devicePixelRatio_DOM.innerText = window.devicePixelRatio
+		})
+		// setTimeout(function(){
+		// 	window.location.reload();
+		// },5000)
+	</script>
+</body>
+</html>

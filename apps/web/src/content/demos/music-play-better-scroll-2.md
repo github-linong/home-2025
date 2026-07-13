@@ -1,6 +1,6 @@
 ---
 title: "Music Play Better Scroll 2"
-description: "前端实验交互示例：Music Play Better Scroll 2。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Music Play Better Scroll 2。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/music-play-better-scroll-2.html"

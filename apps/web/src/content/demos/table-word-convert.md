@@ -1,6 +1,6 @@
 ---
 title: "Table Word Convert"
-description: "前端实验交互示例：Table Word Convert。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Table Word Convert。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/table-word-convert.html"

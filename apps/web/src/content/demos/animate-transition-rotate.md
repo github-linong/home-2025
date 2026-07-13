@@ -1,6 +1,6 @@
 ---
-title: "Animate Transition Rotate"
-description: "前端实验交互示例：Animate Transition Rotate。历史前端实验与 Bug 复现页。"
+title: "Animate 旋转过渡"
+description: "CSS animate / transition 旋转。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/animate-transition-rotate.html"

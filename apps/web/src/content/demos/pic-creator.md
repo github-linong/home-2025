@@ -1,6 +1,6 @@
 ---
-title: "图片生成器"
-description: "前端实验交互示例：图片生成器。历史前端实验与 Bug 复现页。"
+title: "Pic Creator"
+description: "实验交互示例：Pic Creator。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/pic-creator.html"

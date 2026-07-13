@@ -1,6 +1,6 @@
 ---
 title: "Vant@2.6 Vue@2.2 VantCell Click Bug"
-description: "前端实验交互示例：Vant@2.6 Vue@2.2 VantCell Click Bug。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Vant@2.6 Vue@2.2 VantCell Click Bug。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vant@2.6-vue@2.2-vantCell-click-bug.html"

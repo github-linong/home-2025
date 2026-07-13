@@ -1,6 +1,6 @@
 ---
 title: "摇一摇 + 震动 + 音频"
-description: "摇一摇 完整DEMO - 摇一摇手机， ，为分数统计"
+description: "SegmentFault交互示例：摇一摇 + 震动 + 音频。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-a-1190000022552442-shake-devicemotion-vibrate-audio.html"

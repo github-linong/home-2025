@@ -1,6 +1,6 @@
 ---
-title: "screenOrientationLock.html"
-description: "Item 1 Item 2 Item 3"
+title: "屏幕方向锁定 · 测试"
+description: "screenOrientationLock 测试页。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-screenOrientationLock.html"

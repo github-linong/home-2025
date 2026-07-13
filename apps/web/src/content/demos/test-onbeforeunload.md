@@ -1,6 +1,6 @@
 ---
 title: "Onbeforeunload"
-description: "Bug 复现交互示例：Onbeforeunload。历史前端实验与 Bug 复现页。"
+description: "测试交互示例：Onbeforeunload。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-onbeforeunload.html"

@@ -1,6 +1,6 @@
 ---
 title: "White Sapce"
-description: "方案一:textarea输入，textarea显示 方案二：v-html、innerHTML、.html() value:"
+description: "实验交互示例：White Sapce。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/white-sapce.html"

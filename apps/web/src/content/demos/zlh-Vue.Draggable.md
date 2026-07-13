@@ -1,6 +1,6 @@
 ---
 title: "Vue.Draggable 拖拽排序"
-description: "list: 统计: / 8 . => /8"
+description: "实验交互示例：Vue.Draggable 拖拽排序。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/zlh-Vue.Draggable.html"

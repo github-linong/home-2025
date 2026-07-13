@@ -1,6 +1,6 @@
 ---
-title: "deviceorientation 实现摇一摇功能"
-description: "实时 deviceorientation"
+title: "deviceorientation 摇一摇 · 阈值"
+description: "带阈值的 deviceorientation 摇一摇。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/h5-vue-deviceorientation-threshold.html"

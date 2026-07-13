@@ -1,6 +1,6 @@
 ---
-title: "无序数据显示为有序柱状图"
-description: "两秒以后会怼进来一批数据全当ajax返回的异步数据。 add list.length:"
+title: "无序数据有序柱状图 · async"
+description: "SegmentFault交互示例：无序数据有序柱状图 · async。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-q-1010000038765159-list-sort-max-rate-async.html"

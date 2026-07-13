@@ -1,6 +1,6 @@
 ---
 title: "Meipian Quanzi 20190923 Data Show"
-description: "前端实验交互示例：Meipian Quanzi 20190923 Data Show。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Meipian Quanzi 20190923 Data Show。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/meipian-quanzi-20190923-data-show.html"

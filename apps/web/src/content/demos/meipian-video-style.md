@@ -1,6 +1,6 @@
 ---
 title: "Meipian Video Style"
-description: "前端实验交互示例：Meipian Video Style。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Meipian Video Style。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/meipian-video-style.html"

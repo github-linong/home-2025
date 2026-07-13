@@ -1,6 +1,6 @@
 ---
 title: "Adaptation IPhoneX"
-description: "Bug 复现交互示例：Adaptation IPhoneX。历史前端实验与 Bug 复现页。"
+description: "测试交互示例：Adaptation IPhoneX。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-adaptation-iPhoneX.html"

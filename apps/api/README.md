@@ -19,8 +19,15 @@ npm test
 - `src/routes/` — route modules (`upload`, `cors-demo`, `proxy`, `wechat`, `douyin`, `music`=/vapi, `legacy-api`=/api/*, …)
 - `src/services/` — Baidu token, Mongo helper
 - `vendor/decrypt/` — unlock-music decrypt used by `/vapi/tkmUrl2m4a`
-- `assets/` — favicon, MP verify, xss.js, merge template, invitation client, font
+- `assets/` — favicon, MP verify, xss.js, merge template, invitation client, default `fonts/font.ttf`
 - `data/` — uploads / fontmin / logs (gitignored)
+
+### Fonts (`/createfont`)
+
+- Default source: `assets/fonts/font.ttf` (in git).
+- Full legacy set (楷体 / 毛体 / …) lives on OSS **`private/fonts/`** (not public-read, not in git).
+- Sync to this host: `OSS_*=... npm run sync:fonts:from-oss` (or set `FONT_DEST=/opt/lilnong-api/assets/fonts`).
+- Optional query: `/createfont?txt=你好&font=kaiti` (basename under `assets/fonts/`).
 
 ## Key paths preserved
 

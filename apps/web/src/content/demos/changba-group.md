@@ -1,6 +1,6 @@
 ---
 title: "Changba Group"
-description: "前端实验交互示例：Changba Group。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Changba Group。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/changba-group.html"

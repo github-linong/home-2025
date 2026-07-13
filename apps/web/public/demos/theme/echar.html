@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script type="text/javascript" src="./falseReport.js"></script>
+
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/4.1.0/echarts.js"></script>
+    <script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+
+
+    <title>Document</title>
+    <!-- <script src="./jquery-1.11.3.min.js"></script> -->
+    <!-- <script src="./echarts.js"></script> -->
+    <!-- <script src="./ehar.js"></script> -->
+</head>
+<body>
+    <!-- <div id="main" style="width: 600px;height:400px;"></div> -->
+</body>
+    <div id="main0" style="width: 600px;height:400px;">1</div>
+    <div id="main1" style="width: 600px;height:400px;">12</div>
+    <script type="text/javascript">
+    // window.arr = [];
+    //     $.ajax({
+    //         url:'./FeHelper-20181105143100.json',
+    //         type:'GET',
+    //         dataType:'JSON',
+    //         success:function(data){
+                
+    //             // 区分成功和失败的服务链
+    //             var successArr=[],failArr=[];
+    //             for(var i=0;i<data.length;i++){
+    //                 if(data[i].errNode==''){
+    //                     successArr.push(data[i].resultData)
+    //                 }else{
+    //                     failArr.push(data[i].resultData)
+    //                 }
+    //             }
+
+    //             console.log('successArr',successArr)
+    //             console.log('fail',failArr)
+                
+    //             // 遍历成功的服务链数组
+    //             let htmlStr='',appId='';
+    //             // var datas=[],links=[];
+    //             for(var i=0;i<successArr.length;i++){
+    //                 let appId='';
+    //                 console.log(successArr[i])
+
+    //                 var linkObj=null,links=[],dataObj=null,datas=[],x=50,y=50;
+    //                 // var linkObj=null,dataObj=null,x=50,y=50;
+    //                 // 添加echarts容器
+    //                 appId='main'+i;
+    //                 htmlStr=htmlStr+`<div id="${appId}" style="width: 600px;height:400px;">11</div>`;
+    //                 $("body").html(htmlStr);
+    //                 // 遍历数组 拼接echarts所需数据
+    //                 $.each(successArr[i],function(index,ele){
+    //                     if(ele.asyncFlag==0){
+    //                         dataObj={name:ele.applicationName,x:x+=50,y};
+    //                     }else{
+    //                         dataObj={name:ele.applicationName,x:x+=50,y:y-=50}
+    //                     }
+    //                     datas.push(dataObj);
+    
+    //                     linkObj={source:ele.applicationName,target:ele.nextApplicationName};
+    //                     links.push(linkObj)
+    //                 })
+    //                 // 调用echarts
+    //                 // console.log("datas",datas)
+    //                 // var returnBoolean=echartsTest([{"x":100,"y":0},{"x":150,"y":-50}],[{},{}],appId)
+    //                 // console.log(returnBoolean)
+    //                 // // id [{"x":100,"y":0},{"x":150,"y":-50}] [{},{}] main1
+    //                 // if(returnBoolean){
+    //                 //     i++;
+    //                 //     // console.log(i)
+    //                 // }
+    //                 // setTimeout(()=>{
+    //                     echartsTest([{"x":100,"y":0},{"x":150,"y":-50}],[{},{}],appId)
+    //                 // }, 1000*i)
+    //             }
+    //         }
+    //     })
+    // var charts=[];
+    // function echartsTest(datas,links,id){
+    //     console.log(`id`+$(`#${id}`).length, JSON.stringify(datas),JSON.stringify(links),id)
+    //     // if(id == 'main1') {return true;}
+    //     // 基于准备好的dom，初始化echarts实例
+    //     var _id=id;
+    //     // console.log(_id)
+    //     id = echarts.init($(`#${id}`).get(0));
+
+    //     // 指定图表的配置项和数据
+    //     _id = {
+    //         title: {
+    //             text: 'demo'
+    //         },
+    //         tooltip: {},
+    //         animationDurationUpdate: 1500,
+    //         animationEasingUpdate: 'quinticInOut',
+    //         series : [{
+    //             type: 'graph',
+    //             layout: 'none',
+    //             symbolSize: 50,
+    //             roam: true,
+    //             label: {
+    //                 normal: {
+    //                     show: true
+    //                 }
+    //             },
+    //             edgeSymbol: ['circle', 'arrow'],
+    //             edgeSymbolSize: [4, 10],
+    //             edgeLabel: {
+    //                 normal: {
+    //                     textStyle: {
+    //                         fontSize: 20
+    //                     }
+    //                 }
+    //             },
+    //             data: datas,
+    //             // links: [],
+    //             links: links,
+    //             lineStyle: {
+    //             normal: {
+    //                 opacity: 0.9,
+    //                 width: 2,
+    //                 curveness: 0,
+    //                 curveness: 0.2
+    //                 }
+    //             }
+    //         }]
+        
+    //     };
+
+    //     // 使用刚指定的配置项和数据显示图表。
+    //     if (id && typeof id === "object") {
+            
+    //         id.setOption(_id, true);
+    //         // console.log(id)
+            
+    //         // charts.push(id);
+    //         // console.log('charts',id)
+
+    //         // window.onresize=function(){
+    //         //     for(var i=0;i<charts.length;i++){
+    //         //         charts[i].resize();
+    //         //     }
+    //         // }
+    //         console.log(window.arr.push(id,_id))
+    //         return id;
+    //     }
+    //     // return true;
+        
+    // }
+    </script>
+    <script type="text/javascript">
+        window.arr = [];
+        echartsTest([{"x":100,"y":0},{"x":150,"y":-50}],[{},{}],'main0')
+        echartsTest([{"x":100,"y":0},{"x":150,"y":-50}],[{},{}],'main1')
+        function echartsTest(datas,links,id){
+            console.log(`id`+$(`#${id}`).length, JSON.stringify(datas),JSON.stringify(links),id)
+            // if(id == 'main1') {return true;}
+            // 基于准备好的dom，初始化echarts实例
+            var _id=id;
+            // console.log(_id)
+            id = echarts.init($(`#${id}`).get(0));
+
+            // 指定图表的配置项和数据
+            _id = {
+                title: {
+                    text: 'demo'
+                },
+                tooltip: {},
+                animationDurationUpdate: 1500,
+                animationEasingUpdate: 'quinticInOut',
+                series : [{
+                    type: 'graph',
+                    layout: 'none',
+                    symbolSize: 50,
+                    roam: true,
+                    label: {
+                        normal: {
+                            show: true
+                        }
+                    },
+                    edgeSymbol: ['circle', 'arrow'],
+                    edgeSymbolSize: [4, 10],
+                    edgeLabel: {
+                        normal: {
+                            textStyle: {
+                                fontSize: 20
+                            }
+                        }
+                    },
+                    data: datas,
+                    // links: [],
+                    links: links,
+                    lineStyle: {
+                    normal: {
+                        opacity: 0.9,
+                        width: 2,
+                        curveness: 0,
+                        curveness: 0.2
+                        }
+                    }
+                }]
+            
+            };
+
+            // 使用刚指定的配置项和数据显示图表。
+            if (id && typeof id === "object") {
+                
+                id.setOption(_id, true);
+                // console.log(id)
+                
+                // charts.push(id);
+                // console.log('charts',id)
+
+                // window.onresize=function(){
+                //     for(var i=0;i<charts.length;i++){
+                //         charts[i].resize();
+                //     }
+                // }
+                console.log(window.arr.push(id,_id))
+                return id;
+            }
+            // return true;
+            
+        }
+    </script>
+    <script>
+    !(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+    with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+    })(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+    </script>
+</html>

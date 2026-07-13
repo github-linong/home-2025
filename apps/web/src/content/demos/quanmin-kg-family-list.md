@@ -1,6 +1,6 @@
 ---
 title: "Quanmin Kg Family List"
-description: "前端实验交互示例：Quanmin Kg Family List。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Quanmin Kg Family List。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/quanmin-kg-family-list.html"

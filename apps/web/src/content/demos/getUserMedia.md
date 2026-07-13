@@ -1,6 +1,6 @@
 ---
 title: "GetUserMedia"
-description: "录制音频 暂停音频 音频-getTracks"
+description: "实验交互示例：GetUserMedia。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/getUserMedia.html"

@@ -1,6 +1,6 @@
 ---
 title: "H5 API Track Tag"
-description: "移动端/H5交互示例：H5 API Track Tag。历史前端实验与 Bug 复现页。"
+description: "移动端交互示例：H5 API Track Tag。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/H5-API-track-tag.html"

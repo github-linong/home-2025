@@ -1,0 +1,305 @@
+<html><head>
+    <meta charset="utf-8">
+    <title>星悦系统管理后台</title>
+    <link rel="stylesheet" type="text/css" href="css/ui-dialog.css ">
+    <link rel="stylesheet" type="text/css" href="css/car_mall.css ">
+<!--    <link rel="stylesheet" type="text/css" href="css/datetimepicker.css  ">-->
+
+    <link rel="stylesheet" type="text/css" href="css/spectrum.css ">
+   
+
+<style>
+    .car-index-tab td {
+        overflow: inherit;
+        text-overflow: inherit;
+        white-space: inherit;
+    }
+
+    .out-exc {
+        color: #207BD2;
+        cursor: pointer;
+        float: right;
+        position: relative;
+        right: 30px;
+        height: 30px;
+        line-height: 30px;
+    }
+
+    .sync_car_type {
+        cursor: pointer;
+        float: right;
+        position: relative;
+        right: 30px;
+        height: 30px;
+        line-height: 30px;
+    }
+
+    select {
+        background: #F4F5F9;
+        border: none;
+        font-size: 14px;
+        height: 30px;
+        line-height: 30px;
+    }
+
+    option {
+        width: 100%;
+        background: #FFFFFF;
+        border: 1px solid #F4F5F9;
+        border-top: none;
+    }
+
+    .bz-confirm {
+        width: 400px;
+        border: 1px solid #ccc;
+        background: #fff;
+        position: absolute;
+        top: 30%;
+        left: 35%;
+    }
+
+    .bz-top {
+        height: 40px;
+        line-height: 40px;
+        background: #E7E8EB;
+        font-size: 16px;
+        padding-left: 15px;
+    }
+
+    .bz-top img {
+        width: 15px;
+        height: 15px;
+        float: right;
+        cursor: pointer;
+        position: relative;
+        right: 25px;
+        top: 12px;
+    }
+
+    .bz-cont {
+        text-align: center;
+    }
+
+    .bz-cont .bz-content {
+        display: inline-block;
+        width: 340px;
+        height: 100px;
+        border: 1px solid #ccc;
+        margin-top: 15px;
+        padding: 10px;
+    }
+
+    .bz-btn {
+        height: 55px;
+        line-height: 55px;
+    }
+
+    .bz-btn span {
+        display: inline-block;
+        background: #0D6FB8;
+        width: 100px;
+        height: 30px;
+        line-height: 30px;
+        color: #fff;
+        text-align: center;
+        border-radius: 5px;
+        float: right;
+        position: relative;
+        right: 20px;
+        margin-top: 15px;
+        cursor: pointer;
+    }
+
+    td.car-now img {
+        width: 80px;
+        height: 44px;
+    }
+.no_pic_text{
+	    float: left;
+    position: relative;
+    top: 60px;
+    left: 73px;
+}
+    .BrandTable, .BrandTable thead tr table, .BrandTable2 {
+        width: 100%;
+    }
+
+    .tab-now-2 {
+        height: 80px;
+    }
+
+    .BrandTable2 tr {
+        height: 80px;
+    }
+
+    .car-price input {
+        display: inline-block;
+        width: 50px;
+        height: 20px;
+        text-align: center;
+    }
+
+    td.car-img img {
+          
+    border: 1px solid #ccc;
+   /* position: relative;*/
+    left: 47px;
+    top: 30px;
+    z-index: 100;
+    z-index: 100;
+    /* border: 1px solid #ccc; */
+    display: inline-block;
+    border: none;
+        
+    }
+.imgCont {
+    width: 80px;
+    height: 80px;
+    position: relative;
+    top: 50px;
+    left: 0;
+    right: 0;
+    margin: auto;
+}
+    span.sep {
+        text-align: center;
+        color: #0D6FB8;
+    }
+
+    .BrandTable td a {
+        color: #2077d1;
+        margin-left: .3rem;
+        margin-right: .4rem;
+    }
+
+    td.car-img input {
+        display: inline-block;
+        width: 80px;
+        height: 80px;
+        position: relative;
+        left: -1px;
+        top: -30px;
+        z-index: 111;
+        opacity: 0;
+    }
+
+    .btn_change_save {
+        display: none;
+    }
+
+    .car-price-input-border {
+        border: none;
+    }
+
+    .bz_calc_word {
+        text-align: right;
+        padding: 0 25px;
+        position: relative;
+        top: -20px;
+        color: #ccc;
+    }
+</style>
+</head>
+<body style="">
+<div class="content car_mall_sale" style="background:#FFF;">
+    <div class="ui-tab">
+        <ul class="ul-tab-menu">
+            <li class="tab-item ">
+                <a href="/part/index.php?m=Admin&amp;c=CarMall&amp;a=new_car_clues">新车线索<span class="tab-num new_car_clues_num" style="">14</span></a>
+            </li>
+            <li class="tab-item selected">
+                <a href="/part/index.php?m=Admin&amp;c=CarMall&amp;a=on_sale_car_type">在售车型<span class="tab-num on_sale_num" style="">1</span></a>
+            </li>
+            <li class="tab-item ">
+                <a href="/part/index.php?m=Admin&amp;c=CarMall&amp;a=stop_sell_car_type">停售车型<span class="tab-num stop_sell_num" style="">49</span></a>
+            </li>
+        </ul>
+    </div>
+    <script>
+        nav_count();
+        function nav_count() {
+            $.ajax({
+                url: "/part/index.php?m=Admin&c=CarMall&a=ajax_nav_count",
+                type: 'post',
+                dataType: 'json',
+                success: function (re) {
+                    $(".new_car_clues_num").show().text(re.rowCount_new_car_clues);
+                    $(".on_sale_num").show().text(re.rowCount_on_sale);
+                    $(".stop_sell_num").show().text(re.rowCount_stop_sell);
+                }
+            })
+        }
+    </script>
+<!--在售车型-->
+<div class="mo1122 mo1122-1">
+    <table class="BrandTable">
+        <thead>
+        <tr>
+            <th>生产商</th>
+            <th>
+                <table>
+                    <tbody><tr><th class="pct14">车型</th>
+                    <th class="pct14">价格区间（万元）</th>
+                    <th class="pct14">主图</th>
+                    <th class="pct14">操作</th>
+                </tr></tbody></table>
+            </th>
+        </tr>
+        </thead>
+
+        <tbody class="car_type_content" id="content"><tr>
+    <td class="car-now pct14"><img src="http://chezhike-img-hd1.oss-cn-hangzhou.aliyuncs.com/carImg/brand/20.jpg" alt="">
+        <p>北京现代</p>
+                <a href="javascript:void(0);" class="top btn_change_brand_top" data-brand-id="20">置顶</a>
+            </td>
+    <!--首字母跨列-->
+    <td colspan="5">
+        <table class="BrandTable2 tab" style="border:none;">
+                        <tbody><tr>
+                <td class="car-name pct14">第九代索纳塔</td>
+                <td class="car-price pct14">
+                    <input type="text" class="price-start car-price-input-border" value="10.00">~
+                    <input type="text" class="price-end car-price-input-border" value="20.00">
+                </td>
+                <td class="car-img pct14">
+                   <div class="imgCont" style="/* width: 80px; *//* height: 80px; */">
+                   	                         <img src="http://chezhike-img-hd1.oss-cn-hangzhou.aliyuncs.com/test2.chezhike.cn/carImg/carType/265.jpg" class="car_type_img_265" alt="" style="height: 80px;">
+                                       </div>
+                    <!--<span class="no_pic_265 no_pic_text">暂无图片</span>-->
+                    <input type="file" name="" class="car_type_upload" data-id="265" value="">
+                </td>
+                <td class="car-dosom pct14" id="car-dosom" data-id="265" data-brand-id="20">
+                    <a href="javascript:void(0);" class="btn_change_info">修改</a>
+                    <a href="javascript:void(0);" class="btn_change_save" style="display: none;">保存</a>
+                    <span class="sep sep1">|</span>
+                    <a href="javascript:void(0);" class="btn_change_cancel" style="display: none;">取消</a>
+                    <a href="javascript:void(0);" class="btn_change_status">下架</a>
+                                        <span class="sep sep2">|</span>
+                    <a href="javascript:void(0);" class="top btn_change_top">置顶</a>
+                                    </td>
+            </tr>
+                    </tbody></table>
+    </td>
+</tr>
+</tbody>
+    </table>
+</div>
+<!--描述：分页-->
+<div style="text-align:right;">
+    <select class="ui-select" id="pageSize" style="width:85px; border-radius:5px; float:left; margin-top:10px;">
+        <option value="10">显示10条</option>
+        <option value="15">显示15条</option>
+        <option value="20">显示20条</option>
+    </select>
+    <span>共 <span id="rowCount">1</span> 条数据</span>
+    <div class="pagination inline-block">
+        <a href="javascript:void(0)" class="prev" id="prev">◀</a>
+        <span><i class="cur" id="currentPage">1</i>/<i class="total" id="totalPage">1</i></span>
+        <a href="javascript:void(0)" class="next" id="next">▶</a>
+        <input type="text" class="page" id="go">
+        <button type="button" id="jump">跳转</button>
+    </div>
+</div>
+</div>
+
+</body></html>

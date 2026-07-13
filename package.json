@@ -18,6 +18,10 @@
     "migrate:static-html": "node scripts/migrate-static-html-demos.mjs",
     "migrate:static-html:next": "node scripts/migrate-static-html-demos.mjs --limit 1",
     "migrate:static-projects": "node scripts/migrate-static-projects.mjs",
+    "migrate:theme": "node scripts/migrate-theme-demos.mjs",
+    "migrate:theme:media": "node scripts/migrate-theme-demos.mjs --upload-media",
+    "sync:fonts:to-oss": "bash scripts/sync-fonts-to-oss.sh",
+    "sync:fonts:from-oss": "bash scripts/sync-fonts-from-oss.sh",
     "generate:demo-entries": "node scripts/generate-legacy-demo-entries.mjs",
     "deploy:web": "bash scripts/deploy-web.sh",
     "test:api": "npm test --prefix apps/api"

@@ -1,6 +1,6 @@
 ---
 title: "Json Parse Unicode 4 Result"
-description: "前端实验交互示例：Json Parse Unicode 4 Result。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Json Parse Unicode 4 Result。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/json-parse-unicode-4-result.html"

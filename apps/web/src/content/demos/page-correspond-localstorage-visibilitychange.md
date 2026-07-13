@@ -1,6 +1,6 @@
 ---
-title: "页面通信storage测试"
-description: "前端实验交互示例：页面通信storage测试。历史前端实验与 Bug 复现页。"
+title: "跨页通信 · storage+visibility"
+description: "实验交互示例：跨页通信 · storage+visibility。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/page-correspond-localstorage-visibilitychange.html"

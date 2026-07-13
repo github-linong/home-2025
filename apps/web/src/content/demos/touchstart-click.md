@@ -1,6 +1,6 @@
 ---
 title: "Touch 击穿与 300ms 延迟"
-description: "我是个鬼东西 我是个鬼东西 relative 我是个鬼东西 absolute"
+description: "交互交互示例：Touch 击穿与 300ms 延迟。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/touchstart-click.html"

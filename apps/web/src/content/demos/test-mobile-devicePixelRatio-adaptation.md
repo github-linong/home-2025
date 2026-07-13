@@ -1,6 +1,6 @@
 ---
-title: "移动端适配"
-description: "window.location.reload(); 参考文献 https://github.com/amfe/article/issues/17"
+title: "移动端 DPR 适配"
+description: "theme：devicePixelRatio 适配。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-mobile-devicePixelRatio-adaptation.html"

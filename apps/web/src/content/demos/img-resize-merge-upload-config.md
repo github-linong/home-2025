@@ -1,6 +1,6 @@
 ---
 title: "人脸融合上传配置"
-description: "merge_degree: face_type:"
+description: "文件 IO交互示例：人脸融合上传配置。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/img-resize-merge-upload-config.html"

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<script type="text/javascript" src="./falseReport.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script>
+	  // 初始化
+	  var vConsole = new VConsole();
+	  console.log('Hello world');
+	</script>
+	<title></title>
+</head>
+<body>
+	<script type="text/javascript">
+		// window.onbeforeunload = function(e){
+		//     var msg="真的要离开么？";
+		//     e.returnValue=msg;
+		//     return msg;
+		// };
+
+		window.addEventListener('beforeunload', function(e) {
+		  var confirmationMessage = '确定退出吗？';
+
+		  setTimeout(() => {
+		    console.log('我没有退出哦');
+		    // callback
+		  }, 0);
+
+		  (e || window.event).returnValue = confirmationMessage; // Gecko and Trident
+		  return confirmationMessage; // Gecko and WebKit
+		});
+	</script>
+</body>
+</html>	

@@ -1,6 +1,6 @@
 ---
-title: "上传前预览文件"
-description: "前端实验交互示例：上传前预览文件。历史前端实验与 Bug 复现页。"
+title: "Game 20210801 Nim Image"
+description: "实验交互示例：Game 20210801 Nim Image。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/game-20210801-nim-image.html"

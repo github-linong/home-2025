@@ -1,6 +1,6 @@
 ---
 title: "Sf 1190000020625420 File FileReader Blob"
-description: "表单选择 input 文件名称 文件大小"
+description: "SegmentFault交互示例：Sf 1190000020625420 File FileReader Blob。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-1190000020625420-file-FileReader-blob.html"

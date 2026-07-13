@@ -1,6 +1,6 @@
 ---
 title: "Native Client Upload Base"
-description: "前端实验交互示例：Native Client Upload Base。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Native Client Upload Base。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/native-client-upload-base.html"

@@ -1,6 +1,6 @@
 ---
 title: "Autocomplete"
-description: "First name: Last name: E-mail:"
+description: "测试交互示例：Autocomplete。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-autocomplete.html"

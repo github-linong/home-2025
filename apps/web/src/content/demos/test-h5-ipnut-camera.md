@@ -1,6 +1,6 @@
 ---
 title: "H5 Ipnut Camera"
-description: "Bug 复现交互示例：H5 Ipnut Camera。历史前端实验与 Bug 复现页。"
+description: "测试交互示例：H5 Ipnut Camera。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-h5-ipnut-camera.html"

@@ -1,6 +1,6 @@
 ---
 title: "EXIF 图片元数据读取"
-description: "https://cdn.bootcss.com/exif-js/2.3.0/exif.js https://github.com/exif-js/exif-js/ https://www.sojson.com/image/exif.html"
+description: "图形交互示例：EXIF 图片元数据读取。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/exif.html"

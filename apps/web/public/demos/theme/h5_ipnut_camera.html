@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+</head>
+<body>
+	<input type="file" accept="image/*" capture="camera">
+	<img src="" alt="" id="showImage"/>
+	<script type="text/javascript">
+		document.querySelector('input').addEventListener('change', function (event) { 
+		  reader = new FileReader();
+		  reader.onload = (function (file) {
+		        return function (e) {
+		           // console.info(this.result); //这个就是base64的数据了
+		            var showImage=document.querySelector("#showImage");
+		            showImage.src=this.result;
+		        };
+		    })(document.querySelector('input').files[0]);
+		    reader.readAsDataURL(document.querySelector('input').files[0]);
+		})
+
+	</script>
+</body>
+</html>

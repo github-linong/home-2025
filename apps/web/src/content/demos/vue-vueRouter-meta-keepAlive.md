@@ -1,6 +1,6 @@
 ---
 title: "Vue VueRouter Meta KeepAlive"
-description: "Vue 示例交互示例：Vue VueRouter Meta KeepAlive。历史前端实验与 Bug 复现页。"
+description: "Vue交互示例：Vue VueRouter Meta KeepAlive。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/vue-vueRouter-meta-keepAlive.html"

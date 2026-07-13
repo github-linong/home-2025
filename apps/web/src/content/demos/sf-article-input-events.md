@@ -1,6 +1,6 @@
 ---
 title: "Input Events"
-description: "全量事件监听 全量事件监听2 keydown"
+description: "SegmentFault交互示例：Input Events。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-article-input-events.html"

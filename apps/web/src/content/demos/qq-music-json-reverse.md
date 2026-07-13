@@ -1,6 +1,6 @@
 ---
 title: "Qq Music Json Reverse"
-description: "获取分类 https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_tag_conf.fcg?g_tk=5381&loginUin=0&hostUin=0&format=json&inCharset 获取详情 https://c.y.qq.com/splcl"
+description: "实验交互示例：Qq Music Json Reverse。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/qq-music-json-reverse.html"

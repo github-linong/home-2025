@@ -1,6 +1,6 @@
 ---
-title: "实现表格列操作"
-description: "前端实验交互示例：实现表格列操作。历史前端实验与 Bug 复现页。"
+title: "表格列操作 · 副本"
+description: "播放列表表格列操作副本页。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/playlist-table-auto-col copy.html"

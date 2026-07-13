@@ -1,6 +1,6 @@
 ---
-title: "滚动事件"
-description: "Bug 复现交互示例：滚动事件。历史前端实验与 Bug 复现页。"
+title: "preventOverscroll · 测试"
+description: "preventOverscroll.js 测试。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/test-preventoverscrolljs.html"

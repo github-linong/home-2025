@@ -1,6 +1,6 @@
 ---
 title: "Sf 1190000037538101 Html Input Attribute Type Pattern Min Max Minlength Maxlengt"
-description: "type=\"text\" type=\"number\" type=\"search\""
+description: "SegmentFault交互示例：Sf 1190000037538101 Html Input Attribute Type Pattern Min Max Minlength Maxlengt。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-1190000037538101-html-input-attribute-type-pattern-min-max-minlength-maxlength.html"

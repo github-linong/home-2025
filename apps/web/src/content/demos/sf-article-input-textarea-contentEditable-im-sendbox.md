@@ -1,6 +1,6 @@
 ---
-title: "测试文案"
-description: "-webkit-user-modify: inherit; -webkit-user-modify: initial; -webkit-user-modify: read-only;"
+title: "IM 发送框 contentEditable"
+description: "SegmentFault交互示例：IM 发送框 contentEditable。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/sf-article-input-textarea-contentEditable-im-sendbox.html"

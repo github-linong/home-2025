@@ -1,6 +1,6 @@
 ---
 title: "Json Prase Unicode 3 Error"
-description: "前端实验交互示例：Json Prase Unicode 3 Error。历史前端实验与 Bug 复现页。"
+description: "实验交互示例：Json Prase Unicode 3 Error。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/json-prase-unicode-3-error.html"

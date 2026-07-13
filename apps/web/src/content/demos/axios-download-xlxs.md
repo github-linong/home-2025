@@ -1,6 +1,6 @@
 ---
 title: "Axios Download Xlxs"
-description: "网络/HTTP交互示例：Axios Download Xlxs。历史前端实验与 Bug 复现页。"
+description: "HTTP交互示例：Axios Download Xlxs。"
 pubDate: "2019-06-01"
 type: web
 demoUrl: "/demos/html/axios-download-xlxs.html"
