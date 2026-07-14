@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>img 转视频</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="e8UKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="400" height="400"></canvas>
+    <a id="download" download="download.mp4">下载</a>
+    <script>
+      const canvas = document.querySelector("#canvas");
+
+      const ctx = canvas.getContext("2d");
+
+      function loadImage(src) {
+        return new Promise(function (r) {
+          const img = new Image();
+          img.onload = () => {
+            r(img);
+          };
+          img.crossOrigin="crossOrigin"
+          img.src = src;
+        });
+      }
+
+      function record(canvas, len) {
+        var recordedChunks = [];
+        return new Promise(function (res, rej) {
+          var stream = canvas.captureStream(25 /*fps*/);
+          mediaRecorder = new MediaRecorder(stream, {
+            mimeType: "video/webm; codecs=vp9",
+          });
+
+          mediaRecorder.start(len || 4000);
+
+          mediaRecorder.ondataavailable = function (event) {
+            recordedChunks.push(event.data);
+            if (mediaRecorder.state === "recording") {
+              mediaRecorder.stop();
+            }
+          };
+
+          mediaRecorder.onstop = function (event) {
+            var blob = new Blob(recordedChunks, { type: "video/webm" });
+            var url = URL.createObjectURL(blob);
+            res(url);
+          };
+        });
+      }
+
+      const start = async () => {
+        const img1 = await loadImage("https://cors-www.lilnong.top/static/img/avator/avator-15.jpg");
+        const img2 = await loadImage("https://cors-www.lilnong.top/static/img/avator/avator-16.jpg");
+
+        let flag = false;
+        setInterval(() => {
+          flag = !flag;
+          ctx.drawImage(flag ? img1 : img2, 0, 0, 400, 400);
+        }, 1000);
+        const url = await record(canvas);
+        alert("完成");
+        document.querySelector("a").href = url;
+      };
+      start();
+    </script>
+<script>
+
+</script>
+</body>
+</html>

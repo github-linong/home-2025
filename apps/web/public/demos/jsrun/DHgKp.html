@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://cn.vuejs.org/v2/guide/instance.html#%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%9B%BE%E7%A4%BA</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="DHgKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app1">
+</div>
+<div id="app2">
+</div>
+<script>
+var app1_tem1 = {
+  template: '<div>app1_tem1</div>',
+  created: () => console.log('app1_tem1')
+}
+var a = new Vue({
+  el: '#app1',
+  template: '<div>app1<A1></A1></div>',
+  created: () => console.log('app1'),
+  components: {
+    'A1': app1_tem1
+  },
+  methods: {
+    test: () => {
+      console.log(Date.now())
+    }
+  }
+})
+a.test();
+var app2_tem1 = {
+  template: '<div>app2_tem1</div>',
+  mounted: () => console.log('app2_tem1')
+}
+new Vue({
+  el: '#app2',
+  template: '<div>app2<A1></A1></div>',
+  mounted: () => console.log('app2'),
+  components: {
+    'A1': app2_tem1
+  }
+})
+</script>
+</body>
+</html>

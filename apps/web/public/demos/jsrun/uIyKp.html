@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>svg 五边形测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="uIyKp" />
+  <style>
+.demo-svg { display: block; }
+.demo-polygon { fill: #41B883; }
+.demo-circle {
+  fill: transparent;
+  stroke: #35495E;
+}
+.demo-range-input {
+  display: block;
+  width: 100%;
+  margin-bottom: 15px;
+}
+.warp{
+  height: 200px
+}
+#app{
+  border: 1px solid #f00;
+}
+  </style>
+</head>
+<body>
+<div>
+  <input type="number" id="point1" value="100" />
+  <input type="number" id="point2" value="100" />
+  <input type="number" id="point3" value="100" />
+  <input type="number" id="point4" value="100" />
+  <input type="number" id="point5" value="100" />
+</div>
+<svg id="app" width="200" height="200">
+  <polygon points="
+  0,0
+  100,0
+  200,100
+  100,100"></polygon> 
+</svg>
+<svg width="200" height="200" class="demo-svg warp">
+  <polygon points="100,10.899999999999991 175.32367609057616,75.52585404550416 145.49457852743743,162.61791536462093 71.43363673858582,139.31822592662246 41.795341202736594,81.08815994425322" class="demo-polygon" style="fill: #41B883;"></polygon> 
+  <circle cx="100" cy="100" r="90" class="demo-circle" style="fill: transparent;stroke: #35495E;"></circle>
+</svg>
+
+<img class=" warp" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' class='demo-svg warp'%3E %3Cpolygon points='100,10.899999999999991 175.32367609057616,75.52585404550416 145.49457852743743,162.61791536462093 71.43363673858582,139.31822592662246 41.795341202736594,81.08815994425322' class='demo-polygon' style='fill: %2341B883;'%3E%3C/polygon%3E %3Ccircle cx='100' cy='100' r='90' class='demo-circle' style='fill: transparent;stroke: %2335495E;'%3E%3C/circle%3E %3C/svg%3E" alt="" />
+
+<div class=" warp" style="background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' class='demo-svg warp'%3E %3Cpolygon points='100,10.899999999999991 175.32367609057616,75.52585404550416 145.49457852743743,162.61791536462093 71.43363673858582,139.31822592662246 41.795341202736594,81.08815994425322' class='demo-polygon' style='fill: %2341B883;'%3E%3C/polygon%3E %3Ccircle cx='100' cy='100' r='90' class='demo-circle' style='fill: transparent;stroke: %2335495E;'%3E%3C/circle%3E %3C/svg%3E&quot;);"></div>
+<script>
+var r = 100;
+var point={x:100,y:100};
+function getPoint(angle,r = 100){
+  var x1 = point.x + r * Math.cos(angle * Math.PI /180) 
+  //x1=x0+r*cos(ao*3.14/180)
+  var y1 = point.y + r * Math.sin(angle * Math.PI /180) 
+  //y1=y0+r*sin(ao*3.14/180)
+  return `${x1},${y1}`
+}
+console.log(getPoint(90))
+console.log(getPoint(180))
+// app.children[0].points.clear()
+showImg = function(){
+app.children[0].setAttribute('points', `${getPoint(72*0 - 90, +point1.value)} ${getPoint(72*1 - 90, +point2.value)} ${getPoint(72*2 - 90, +point3.value)} ${getPoint(72*3 - 90, +point4.value)} ${getPoint(72*4 - 90, +point5.value)}`)
+}
+showImg();
+point1.addEventListener('input', showImg);
+point2.addEventListener('input', showImg);
+point3.addEventListener('input', showImg);
+point4.addEventListener('input', showImg);
+point5.addEventListener('input', showImg);
+</script>
+</body>
+</html>

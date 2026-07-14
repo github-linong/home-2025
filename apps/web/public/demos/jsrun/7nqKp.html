@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>js 单击模拟双击</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="7NQKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<button id="btn">按钮</button>
+<button id="btn2">按钮2</button>
+<script>
+    btnCount = 0;
+    btnTimeout = 0;
+    btn.onclick = ()=>{
+        console.log('被单击了，但是不会触发事件', Date.now())
+        btnCount++;
+        if(!btnTimeout){
+            btnTimeout = setTimeout(()=>{
+                console.log(`触发事件，共被单击${btnCount}次`, Date.now())
+                btnTimeout = 0;
+                btnCount = 0;
+            }, 300)
+        }
+    }
+</script>
+<script>
+    btn2.onclick = ()=>console.log('单击')
+    btn2.ondblclick = ()=>console.log('双击')
+    btn2.ondoubleclick = ()=>console.log('双击 doubleclick')
+    
+</script>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000018267649</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="uWXKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<div id="app">
+  <div :style="style">{{style}}</div>
+  <button @click="addLeft">addLeft</button>
+  <button @click="addTop">addTop</button>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data(){
+    return {
+    	left: 100,
+      top: 100
+    }
+  },
+  mounted(){
+    document.addEventListener('keydown', e=>{
+  		console.log(e,e.keyCode)
+      if(e.keyCode == 39){
+        this.left+=50
+      }else if(e.keyCode == 37){
+        this.left-=50
+      }else if(e.keyCode == 38){
+        this.top-=50
+      }else if(e.keyCode == 40){
+        this.top+=50
+      }
+		})
+  },
+  methods:{
+    addLeft(){
+      this.left+=50;
+    },
+    addTop(){
+      this.top+=50;
+    },
+  },
+	computed:{
+    style(){
+      return {
+        left: this.left+'px',
+        top: this.top+'px'
+      }
+    }
+  }
+})
+
+</script>
+</body>
+</html>

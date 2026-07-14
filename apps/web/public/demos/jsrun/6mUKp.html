@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>查看 vue computed 的 dep</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="6mUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<div id="app">
+    {{1}}
+</div>
+<script>
+    vm = new Vue({
+        el: '#app',
+        data(){
+            return {
+                a: 1,
+                b: 2,
+            }
+        },
+        watch: {
+            a(){
+                top.console.log('watch', 'a', arguments)
+            },
+            b(){
+                top.console.log('watch', 'b', arguments)
+            }
+        },
+        computed: {
+            c1(){
+                top.console.log('computed', 'c1', arguments)
+                return this.a
+            },
+            c2(){
+                top.console.log('computed', 'c2', arguments)
+                return this.b
+            },
+            c3(){
+                top.console.log('computed', 'c3', arguments)
+                return this.a + this.b
+            },
+            c4(){
+                let val = Math.random();
+                if(val < )
+            }
+        }
+    })
+    top.console.log(top.vm = vm)
+</script>
+<script>
+
+</script>
+</body>
+</html>

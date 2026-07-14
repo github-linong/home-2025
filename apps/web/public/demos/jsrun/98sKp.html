@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000042718426?_ea=273455451</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="98sKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<table id="table">
+    <tr>
+        <th>来源</th>
+        <th>系统</th>
+        <th>时间戳</th>
+        <th>自己实现 format</th>
+    </tr>
+    <tbody id="tbody">
+
+    </tbody>
+</table>
+<style>
+    table,td,th{
+            border-collapse: collapse;
+        /* widtd: 10px; */
+        border: 1px solid #cce9e9;
+        padding: 8px;
+    }
+</style>
+<script>
+
+    date = new Date(1667080800000-1);
+    top?.console?.clear();
+    let data = []
+    for(var i=0; i<30; i++){
+        item = [
+            'for', 
+            date, 
+            date.getTime(),
+            `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+            `${date.getUTCFullYear()}-${date.getUTCMonth()+1}-${date.getUTCDate()} ${date.getUTCHours()}:${date.getUTCMinutes()}:${date.getUTCSeconds()}`
+        ]
+        data.push(item)
+        top?.console?.log(...item)
+        date.setTime(date.getTime() + 1000 * 60 * 60 / 2);
+    }
+    tbody.innerHTML = data.map(v=>{
+        return `
+    <tr>
+        ${v.map(v=>`<td>${v}</td>`).join('')}
+    </tr>`
+    }).join('')
+</script>
+<script>
+
+</script>
+</body>
+</html>

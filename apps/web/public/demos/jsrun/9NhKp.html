@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue测试，组件v-model</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="9NhKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- <div id="app">
+  {{1}}
+      <el-row>
+        <var-exp :data-source="val1"></var-exp>
+      </el-row>
+    </div> -->
+
+<div id="app">
+  <h1>{{anchor}}</h1>
+  <h2><v_children v-model="anchor"></v_children></h2>
+</div>
+<script>
+var children = {
+  template: `
+		<div>
+			{{value}}
+			{{anchor}}
+		</div>
+	`,
+  data(){
+    return {
+      anchor: 'LN'
+    }
+  },
+  prop:{
+    value: String
+  }
+}
+new Vue({
+  el: '#app',
+  data(){
+    return {
+      anchor: 'li'
+    }
+  },
+  components:{
+    v_children: children
+  }
+});
+
+// 			    Vue.component("var-exp", {
+// /*			    	data:function(){
+// 			    		return {
+// 			    			data:"ceshi"
+// 			    		}
+// 			    	},*/
+// 			    	 props: ["dataSource"],
+// 			        methods:{
+// 			    		focusHandle:function(){
+// 			    			console.log("focus",arguments);
+// 			    		},
+// 			    		changeHandle:function(){
+// 			    			console.log("change",arguments);
+// 			    		},
+// 			    		inputHandle:function(){
+// 			    			console.log("input",arguments);
+// 			    		}
+// 			    	},
+// 			    	template:`
+// 			    	 <el-col :span="8">				
+// 	                    <el-input placeholder="请输入内容" v-bind:value="dataSource" v-on:change="changeHandle($event)" 
+// 	                    v-on:input="changeHandle($event)" v-on:focus="focusHandle($event,dataSource)"></el-input>
+// 	                </el-col>
+// 			    	`
+// 			    });
+// 			    var vm = new Vue({
+// 			    	el:"#app",
+// 			    	data:function(){
+// 			    		return {
+// 			    			val1:'ceshi'
+// 			    		}
+// 			    	}
+			    // })
+</script>
+</body>
+</html>

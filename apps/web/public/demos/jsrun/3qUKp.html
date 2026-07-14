@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>echarts-gauge</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="3qUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.1.2/echarts.min.js"></script>
+<div id="app">
+
+</div>    <div id="main" style="width: 600px;height:400px;"></div>
+ 
+ <style>
+     #main{border: 1px solid #f00;}
+ </style>
+<script>
+      var myChart = echarts.init(document.getElementById('main'));
+    list = [
+// {money: "0", color: '#FF6E76'},
+{money: "1", color: '#FF6E76'},
+// {money: "0", color: '#FDDD60'},
+{money: "2", color: '#FDDD60'},
+// {money: "0", color: '#58D9F9'},
+{money: "3", color: '#58D9F9'},
+{money: "4.1", color: '#7CFFB2'}
+    // 4: {money: "0.00"}
+]
+// list = [
+//     {money: "19623.11", color: '#FF6E76'},
+//     {money: "10010.00", color: '#FDDD60'},
+//     {money: "3417.12", color: '#58D9F9'}
+// ]
+sum = list.reduce((s,n)=>{
+    s = s + (+n.money)
+    n._sum = s
+    return s
+}, 0)
+// console.log(list)
+
+// console.log('圆心：（300，200），', '半径：170')
+width = main.offsetWidth;
+height = main.offsetHeight;
+x = width /2
+y = height / 2
+r = 160
+getPointer = (deg) => {
+    return [ x + r * Math.cos(deg* Math.PI / -180), y + r * Math.sin(deg* Math.PI / -180) ]
+    return [ 300 + 160 * Math.cos(deg* Math.PI / -180), 200 + 160 * Math.sin(deg* Math.PI / -180) ]
+    return [ 300 + 170 * Math.cos(deg* Math.PI / -180), 200 + 170 * Math.sin(deg* Math.PI / -180) ]
+}
+// console.log(0, getPointer(0))
+// console.log(45, getPointer(45))
+// console.log(90, getPointer(90))
+
+option = {
+    series: [{
+        type: 'gauge',
+        startAngle: 200,
+        endAngle: -20,
+        min: 0,
+        max: 1,
+        splitNumber: 100,
+        axisLine: {
+            lineStyle: {
+                // width: 6,
+                color: list.map(v=>[v._sum/sum, v.color])
+                // [
+                //     [0.25, '#FF6E76'],
+                //     [0.5, '#FDDD60'],
+                //     [0.75, '#58D9F9'],
+                //     [1, '#7CFFB2']
+                // ]
+            }
+        },
+        pointer: {
+            icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
+            length: '12%',
+            width: 0,
+            // offsetCenter: [0, '-60%'],
+            itemStyle: {
+                color: 'auto'
+            }
+        },
+        axisTick: {
+            length: 12,
+            lineStyle: {
+                color: 'auto',
+                width: 1
+            }
+        },
+        splitLine: {
+            // length: 20,
+            length: 1,
+            distance: -40,
+            lineStyle: {
+                color: 'auto',
+                width: 1
+            },
+            show: false
+        },
+        axisLabel: {
+            color: '#464646',
+            show: false,
+            // fontSize: 20,
+            // distance: -50,
+            // distance: -12,
+             backgroundColor: '#f00',
+             rotate: 60,
+            formatter: function (value) {
+                // return '<div></div>'
+                var idx = list.map((v,i,arr)=>(arr[i-1]?._sum || 0) + v.money /2 ).map(v=>(v/sum * 100 >>> 0)/100).indexOf(value)
+                if(idx != -1){
+                    return ((((list[idx].money/sum)*10000>>0)/100)>>>0)+'%'
+                    return idx
+                    return list[idx].money
+                }
+                // console.log(value)
+                // if (value === 0.875) {
+                //     return '优';
+                // }
+                // else if (value === 0.625) {
+                //     return '中';
+                // }
+                // else if (value === 0.375) {
+                //     return '良';
+                // }
+                // else if (value === 0.125) {
+                //     return '差';
+                // }
+            }
+        },
+        title: {
+            // offsetCenter: [0, '-20%'],
+            fontSize: 30
+        },
+        detail: {
+            fontSize: 50,
+            offsetCenter: [0, '0%'],
+            valueAnimation: true,
+            formatter: function (value) {
+                return (value).toFixed(2)// + '分';
+            },
+            color: 'auto'
+        },
+        data: [
+        {
+            value: sum,
+            // name: '成绩评定'
+        }
+        // ,{
+        //     value: 0.50,
+        //     name: '成绩评定'
+        // }
+        ],
+        markPoint:{
+            symbol: 'circle',
+            symbolSize: 10,
+            symbolSize: 0,
+            data: [
+                // {
+                //     name: '圆心',
+                //     x: 300,
+                //     y: 200,
+                //     label: {show: true}
+                //     // x: 20,
+                //     // y: 20
+                // },
+                // {
+                //     name: '边界',
+                //     x: 150,
+                //     y: 200,
+                //     label: {show: true}
+                //     // x: 20,
+                //     // y: 20
+                // },
+                // {
+                //     name: '圆上一点起始位置',
+                //     x: 130,
+                //     y: 200,
+                //     label: {show: true}
+                //     // x: 20,
+                //     // y: 20
+                // },
+                // ...(
+                //     [0, 10, 30, 45, 60, 90, 125, 150, 180].map(v=>{
+                //         let pointer = getPointer(v)
+                //         return {
+                //                 name: v,
+                //                 x: pointer[0] >>> 0,
+                //                 y: pointer[1] >>> 0,
+                //                 itemStyle: {
+                //                     color: `rgba(255,0,0,${((v+30)/180).toFixed(2)})`
+                //                 },
+                                
+                //                 label: {show: true,formatter: v.toString(),color: '#0f0'}
+                //                 // x: 20,
+                //                 // y: 20
+                //             }
+                //     })
+                // ),
+                ...(
+                    list.map(v=>{
+                        // let sum 
+                        // let pointer = getPointer( 180 - 180 * (v._sum/sum - v.money/sum/2) )
+                        let pointer = getPointer( 200 - 220 * (v._sum/sum - v.money/sum/2) )
+                        rotateDegTextBase  = (v._sum/sum - v.money/sum/2);
+                        
+                        // console.log(v, (rotateDegTextBase * 100) >> 0, (rotateDegTextBase - .5))
+                        return {
+                                name: v.money/sum,
+                                x: pointer[0] >>> 0,
+                                y: pointer[1] >>> 0,
+                                itemStyle: {
+                                    color: `rgba(255,0,0,${((v+30)/180).toFixed(2)})`
+                                },
+                                label: {
+                                    show: true,
+                                    // rotate: 180 * (v._sum/sum - v.money/sum/2) - 90,
+                                    // rotate: 180 * (-v._sum/sum) + 90,
+                                    // rotate: -50,
+                                    // 50 => 0 => 90
+                                    // 30 => 50 => 130
+                                    // 80 => -50 => 40
+                                    // 0,100 => 90 => 180
+
+                                    rotate: 360  - (rotateDegTextBase - .5) * 220,
+                                    // 50 -> 0  => 0 => 90
+                                    // 30 -> -20 => 50 => 130
+                                    // 80 -> 30 => -50 => 40
+                                    // 0,100 -> -50,50 => 90 => 180
+                                    
+                                    formatter: (( v.money/sum * 100) >>> 0)+'%',
+
+                                    // color: v.color,
+                                    color: '#fff',
+                                    fontSize: 14,
+                                    textShadowColor: '#000',
+                                    // textShadowColor: '#000',
+                                    textShadowBlur: 2,
+                                    // textShadowWidth: 2,
+                                    // textBorderColor: '#fff',
+                                    textBorderColor:v.color,
+                                    textBorderWidth: 2,
+
+                                    // shadowColor: '#ff0ff0',
+                                    // shadowBlur: 20,
+                                    // color: '#00f'
+                                }
+                                // x: 20,
+                                // y: 20
+                            }
+                    })
+                )
+            ]
+        }
+    }]
+};
+// x1   =   x0   +   r   *   cos( a )
+// y1   =   y0   +   r   *   sin( a )
+
+// console.log(option)
+      myChart.setOption(option);
+</script>
+<script>
+
+</script>
+</body>
+</html>

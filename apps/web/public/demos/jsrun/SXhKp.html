@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>大转盘游戏</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="SXhKp" />
+  <style>
+#arc{
+  width: 200px;
+  height: 200px;
+  background: #f00;
+  border-radius: 50%;
+  position:relative;
+}
+#arc div{
+  position: absolute;
+  left: 0;top:0;
+  left: calc(100px);
+  transform-origin: 0 100px;
+}
+  </style>
+  <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+</head>
+<body>
+<div id="app">
+  <div id="arc" :style="arcStyle"><div v-for="i in num" :style="{transform: 'rotate('+((i-1)*45+22.5)+'deg)'}">{{i}}</div></div>
+  <p>{{rotateArc}} {{rotateNum}}</p>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    rotateArc: 0,
+    num: 8
+  },
+  mounted(){
+    setInterval(()=>{
+      this.rotateArc += 1
+    }, 100)
+  },
+  computed:{
+    arcStyle(){
+      return {
+        transform: 'rotate('+this.rotateArc+'deg)'
+      }
+    },
+    rotateNum(){
+      return (8-(this.rotateArc % 360) / 45).toFixed() || 8
+    }
+  }
+})
+</script>
+</body>
+</html>

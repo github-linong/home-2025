@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>原生 curd</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="eSEKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+
+</div>
+
+<script>
+    const list = [{id: 1,value1: 'abc'},{id: 1,value1: 'ddd'}];
+    renderHeader = () => {
+        return `<div>
+            <button class="add">新增</button>
+        </div>`
+    }
+    renderSelectOptions = (list = [], value) => {
+        return list.map(v=>`<option value="${v.value}" ${v.value === value?'selected':''}>${v.label}</option>`)
+    }
+    renderSelect = (list, value)=>{
+        return `
+            <select>
+                ${
+                    renderSelectOptions(
+                        list,
+                        value
+                    )
+                }
+            </select>
+        `
+    }
+    renderContent = (list = []) => {
+        return `<table>
+            <tr>
+                <td>序号</td>
+                <td>select</td>
+                <td>input</td>
+            </tr>
+            ${(list.map((v,idx)=>`
+            <tr>
+                <td>${idx}</td>
+                <td>
+                    ${renderSelect([{label: 'abc',value: 'abc'},{label: 'ddd',value: 'ddd'}], v.value1)}
+                </td>
+                <td>input</td>
+            </tr>`))}
+        </table>`
+    }
+    console.log(`
+        ${renderHeader()}
+        ${renderContent()}
+        ${renderContent([{id: 1,value1: 'abc'},{id: 1,value1: 'ddd'}])}
+    `)
+    app.innerHTML = `
+        ${renderHeader()}
+        ${renderContent()}
+        ${renderContent([{id: 1,value1: 'abc'},{id: 1,value1: 'ddd'}])}
+    `
+    app.addEventListener('click', (e)=>{
+        // console.log(e.target)
+        const target = e.target
+        if(target?.classList.contains('add')){
+            console.log('事件委托')
+            list.push({id: Math.random(), value1: Math.random()>0.5?'abc':'ddd'})
+            app.innerHTML = `
+                ${renderHeader()}
+                ${renderContent()}
+                ${renderContent(list)}
+            `
+        }
+        
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

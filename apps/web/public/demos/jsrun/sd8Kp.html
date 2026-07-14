@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RxJS 测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="sd8Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- <script src="https://cdn.bootcdn.net/ajax/libs/rxjs/7.3.0/rxjs.umd.min.js"></script> -->
+<!-- <script src="https://cdn.bootcdn.net/ajax/libs/rxjs/6.6.7/rxjs.umd.min.js"></script> -->
+<script src="https://cdn.bootcdn.net/ajax/libs/rxjs/5.5.9/Rx.min.js"></script>
+<!-- <script src="https://cdn.bootcdn.net/ajax/libs/rxjs/4.1.0/rx.all.js"></script> -->
+<script>
+    top.console.clear();
+    top.console.log(Date.now());
+    const Observable = Rx.Observable;
+    const source$ = new Observable((obs) => {
+        top.console.log('Observable', Date.now())
+        let i = 0;
+        setInterval(()=>{
+            top.console.log('obs.next(i++)', Date.now())
+            obs.next(i++);
+        }, 500);
+        setTimeout(()=>{
+            top.console.log('obs.complete()', Date.now())
+            obs.complete();
+        }, 5000)
+    })
+    const observer = (key = '', i) => {
+        top.console.log('接收数据', key, i, Date.now())
+    }
+
+    source$.subscribe(observer.bind(undefined, 'user1'))
+    source$.subscribe(observer.bind(undefined, 'user2'))
+    setTimeout(()=>{
+        source$.subscribe(observer.bind(undefined, 'user3'))
+    }, 2000)
+    source$.skip(4).take(5).subscribe(observer.bind(undefined, 'user4'))
+</script>
+<script>
+    // switchAll
+    // mergeAll
+    // 
+</script>
+<script>
+
+</script>
+</body>
+</html>

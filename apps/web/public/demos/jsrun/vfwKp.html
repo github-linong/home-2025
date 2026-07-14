@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000037795729</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="vfwKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<style>
+    *{min-height: 100px;min-width: 100px;}
+    body{background: rgba(0,0,0,.1)}
+    div{background: rgba(0,0,0,.1)}
+
+    .ani{animation: rotate 3s linear 10000}
+    @keyframes rotate{
+        0%{transform: rotate(0deg);}
+        100%{transform: rotate(360deg);}
+    }
+</style>
+<div style="overflow: scroll" id="div">
+    <div class="ani"></div>
+</div>
+<div style="overflow: scroll" id="div1">
+    <div class="ani"></div>
+</div>
+<div style="overflow: scroll" id="div2">
+    <div class="ani" style="transform-origin: 0 0;"></div>
+</div>
+<script>
+    setInterval(()=>{
+        div.style.height = div.scrollHeight + 'px'
+    }, 30)
+
+    setInterval(()=>{
+        div1.style.height = Math.max(parseInt(div1.style.height) || 0, div1.scrollHeight) + 'px'
+    }, 30)
+    
+    setInterval(()=>{
+        div2.style.height = div2.scrollHeight + 'px'
+    }, 30)
+</script>
+<script>
+
+</script>
+</body>
+</html>

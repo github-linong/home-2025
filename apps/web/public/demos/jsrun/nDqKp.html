@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>http://leafletjs.com/examples/quick-start/</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="nDqKp" />
+  <style>
+#mapid { height: 180px; }
+  </style>
+</head>
+<body>
+<div id="mapid"></div>
+<script>
+var mymap = L.map('mapid').setView([50.5, 30.5], 13);
+L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+    attribution: '',
+    maxZoom: 18,
+    id: 'mapbox.streets',
+    accessToken: 'YOUR_MAPBOX_ACCESS_TOKEN'
+}).addTo(mymap);
+// mymap.bindTooltip("my tooltip text").openTooltip();
+L.marker([50.5, 30.5]).addTo(mymap);
+
+var latlngs = [[37, -109.05],[41, -109.03],[41, -102.05],[37, -102.04]];
+var polygon = L.polygon(latlngs, {color: 'red',attribution: '©Mapbox'}).addTo(mymap);
+// zoom the mymap to the polygon
+mymap.fitBounds(polygon.getBounds());
+
+// polygon.bindTooltip("1,1,2,2").openTooltip();
+L.tooltip( {attribution: '©Mapbo1x'})//.addTo();
+polygon.bindTooltip(L.tooltip( {})).openTooltip();
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>拖拽测试，</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="vXJKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<ul>
+    <li>1</li>
+    <li>2</li>
+    <li id="li">3</li>
+</ul>
+<input id="input" type="">
+<style>
+    li{
+        -webkit-user-drag: element;
+        user-select: none;
+    }
+</style>
+<script>
+    // li.ondrag=()=>{
+    //     top.console.log('ondrag', input)
+    // }
+    // li.ondragend=(e)=>{
+    //     top.console.log('ondragend',e,{toElemnet:e.toElement}, input)
+    // }
+    // li.ondrop=(e)=>{
+    //     top.console.log('ondrop',e,{toElemnet:e.toElement}, input)
+    // }
+    input.ondragover=(e)=>{
+        e.preventDefault();
+        // top.console.log('ondragover', input)
+    }
+    input.ondrop=(e)=>{
+        top.console.log('ondrop', e, input)
+        input.value = e.
+    }
+</script>
+
+let dragged = null;
+
+const source = document.getElementById("draggable");
+source.addEventListener("dragstart", (event) => {
+  // 保存被拖动元素的引用
+  dragged = event.target;
+});
+
+const target = document.getElementById("droptarget");
+target.addEventListener("dragover", (event) => {
+  // 阻止默认行为以允许放置
+  event.preventDefault();
+});
+
+target.addEventListener("drop", (event) => {
+  // 阻止默认行为（会作为某些元素的链接打开）
+  event.preventDefault();
+  // 将被拖动的元素移动到选定的放置目标
+  if (event.target.className === "dropzone") {
+    dragged.parentNode.removeChild(dragged);
+    event.target.appendChild(dragged);
+  }
+});
+<script>
+
+</script>
+</body>
+</html>

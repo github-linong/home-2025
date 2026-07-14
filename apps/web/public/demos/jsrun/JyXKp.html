@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://www.yuque.com/fe9/basic/khrne0</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="JyXKp" />
+  <style>
+#draggable {
+			width: 200px;
+			height: 20px;
+			text-align: center;
+			background: white;
+		}
+
+		.dropzone {
+			width: 200px;
+			height: 20px;
+			background: blueviolet;
+			margin-bottom: 10px;
+			padding: 10px;
+		}
+  </style>
+</head>
+<body>
+<ul id="myMenu" style="position: absolute;visibility: hidden;background-color: silver">
+  <li>111</li>
+  <li>222</li>
+  <li>333</li>
+</ul>
+
+
+<div class="dropzone">
+		<div id="draggable" draggable="true" ondragstart="event.dataTransfer.setData('text/plain',null)">
+			This div is draggable
+		</div>
+	</div>
+	<div class="dropzone"></div>
+	<div class="dropzone"></div>
+	<div class="dropzone"></div>
+<script>
+ var menu = document.getElementById('myMenu')
+  document.addEventListener('contextmenu', (event) => {
+    event.preventDefault()
+    menu.style.left = event.clientX + 'px'
+    menu.style.top = event.clientY + 'px'
+    menu.style.visibility = 'visible'
+  }, false)
+  document.addEventListener('click', (event) => {
+    menu.style.visibility = 'hidden'
+  }, false)
+  
+  
+  const script = document.createElement('script')
+script.addEventListener('readystatechange', function eventListener(event) {
+  console.log(event.readyState)
+  if (event.readyState === 'loaded' || event.readyState === 'complete') { // hack 的手段，浏览器自身的问题
+    script.removeEventListener('readystatechange', eventListener)
+  }
+})
+
+script.src = 'example.js'
+document.body.appendChild(script)
+
+
+window.onload = function () {
+			var dragged
+
+			document.addEventListener("dragstart", function (event) {
+				dragged = event.target
+			}, false)
+
+			document.addEventListener("dragover", function (event) {
+				// prevent default to allow drop
+				event.preventDefault()
+			}, false)
+
+			document.addEventListener("drop", function (event) {
+				// prevent default action (open as link for some elements)
+				event.preventDefault()
+				if (event.target.className == "dropzone") {
+					dragged.parentNode.removeChild(dragged)
+					event.target.appendChild(dragged)
+				}
+			}, false)
+		}
+</script>
+</body>
+</html>

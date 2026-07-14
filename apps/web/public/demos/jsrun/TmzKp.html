@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>图片放大 cropper</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="TmzKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <button @click="lookImgId(showImgUrl1,'1')">证件照片 {{showImgUrl1}}
+</button>
+    <button @click="lookImgId(showImgUrl2,'1')">学历照片 {{showImgUrl2}}</button>
+	<div class="mantle my-edit-mantle imgLook" v-show="imgLookId">
+		<div style="background-color: #FFF; padding: 20px; border-radius: 10px;">
+			<div v-if="showImgUrl.length>0" class="signImgList operaImg">
+				<div v-for="(itemImg, i) in showImgUrl" :key="itemImg">
+					<img  :src="itemImg" alt="" id="image">
+                    <div class="btn-show" v-show="btnOperation">
+                        <button class="edit-btn grend" @click="bigImg('itemImg', $event)">放大</button>
+                        <button class="edit-btn grend" @click="bigImg('itemImg', $event, -1)">缩小</button>
+                        <button class="edit-btn grend" @click="rotateImg('itemImg')">旋转</button>
+                        <button class="edit-btn grend" @click="resetImg('itemImg')">重置</button>
+                    </div>
+                </div>
+            </div>
+            <span v-else>暂无数据</span>
+            <!-- 弹框信息 -->
+            <div class="edit-btm">
+                
+                <button class="edit-btn grend" @click="hide('imgLookId')">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<link href="https://cdn.bootcdn.net/ajax/libs/cropper/4.0.0/cropper.min.css" rel="stylesheet">
+<script src="https://cdn.bootcdn.net/ajax/libs/cropper/4.0.0/cropper.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery-cropper/1.0.1/jquery-cropper.min.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+imgLookId: false,
+btnOperation: false,
+showImgUrl:[],
+    showImgUrl1:[
+    "//cors-www.lilnong.top/static/img/avator/avator-17.jpg",
+"//cors-www.lilnong.top/static/img/avator/avator-16.jpg",
+"//cors-www.lilnong.top/static/img/avator/avator-15.jpg"
+],showImgUrl2:[
+    "//cors-www.lilnong.top/static/img/avator/avator-11.jpg",
+"//cors-www.lilnong.top/static/img/avator/avator-12.jpg",
+"//cors-www.lilnong.top/static/img/avator/avator-13.jpg"
+]
+            }
+        },
+        methods: {
+            lookImgId(val,operationType) {
+                this.imgLookId = true;
+                this.showImgUrl=val
+                this.btnOperation = true;
+            },
+            initCropper(event){
+                if(!event.target.$image){
+                    event.target.$el = $(event.target).parent().parent().children('img')
+                    event.target.$image = $(event.target.$el);
+                    event.target.$image.cropper({
+                        aspectRatio: 16 / 9,
+                        viewMode:1,
+                        autoCrop:false,//是否允许在初始化时自动裁剪图片
+                        guides:false,//是否显示裁剪框的虚线。
+                        background:false,//是否在容器内显示网格背景。
+                    })
+                }
+            },
+            /* 放大，转向,重置*/
+            bigImg:function(val, event, value = 1){
+                // console.log(event)
+                this.initCropper(event);
+                setTimeout(()=>{
+                    $($(event.target).parent().parent().children('img'))
+                    .cropper("zoom", .5 * Math.random() * value);
+                }, 100)
+            },
+            rotateImg:function(val){
+                this.initCropper(event);
+                setTimeout(()=>{
+                    $($(event.target).parent().parent().children('img'))
+                    .cropper("rotate",90)
+                }, 100)
+            },
+            resetImg:function(val){
+                this.initCropper(event);
+                setTimeout(()=>{
+                    $($(event.target).parent().parent().children('img'))
+                    .cropper("reset")
+                }, 100)
+            },
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue beforeDestroy</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="KU9Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+    <div id="app">
+        <div>{{flag}} <button @click="flag=!flag">flag=!flag</button></div>
+        <component-a v-if="flag"></component-a>
+        <component-b v-else></component-b>
+    </div>
+    <script>
+        a = {template: '<div>a</div>',beforeDestroy(){console.log('a', 'beforeDestroy')}}
+        b = {template: '<div>b</div>',beforeDestroy(){console.log('b', 'beforeDestroy')}}
+        new Vue({
+            el: '#app',
+            data(){
+                return {
+                    flag: false
+                }
+            },
+            components: {
+                'component-a': a,
+                'component-b': b
+            }
+        })
+    </script>
+<script>
+
+</script>
+</body>
+</html>

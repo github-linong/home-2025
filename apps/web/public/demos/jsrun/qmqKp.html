@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000013525275</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="qmqKp" />
+  <style>
+.red {
+  color: red;
+}
+
+#app {
+  padding-top: 10px;
+}
+
+@media screen and (min-width: 1200px) {
+  #app {
+    overflow: hidden;
+    width: 70%;
+    margin: 0 auto;
+    position: relative;
+  }
+}
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true"
+  v-for="obj in textobj.buttom">
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="headingOne">
+        <h4 class="panel-title">
+          <a role="button" data-toggle="collapse" data-parent="#accordion" :href="obj.newsflash_id|href"
+          aria-expanded="true" :aria-controls="obj.newsflash_id">
+            <span :class="{red:obj.rank}">
+              {{obj.content|capitalize}}
+            </span>
+          </a>
+        </h4>
+      </div>
+      <div :id="obj.newsflash_id" class="panel-collapse collapse" role="tabpanel"
+      :aria-labelledby="obj.newsflash_id">
+        <div class="panel-body">
+          <span>
+            {{obj.issue_time|newtime}}
+          </span>
+          <br />
+          {{obj.content}}
+          <!--{{obj.}}-->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+var datanew = '0';
+var arr = [];
+var now = new Date();
+var yue, ri;
+var now_time;
+if ((now.getMonth() + 1).toString().length <= 1) {
+  yue = '0' + (now.getMonth() + 1);
+} else {
+  yue = (now.getMonth() + 1);
+}
+if (now.getDate().toString().length <= 1) {
+  ri = '0' + now.getDate();
+} else {
+  ri = now.getDate();
+}
+now_time = now.getFullYear() + "-" + yue + "-" + ri;
+function showMsgNotification(title, msg) {
+  var Notification = window.Notification || window.mozNotification || window.webkitNotification;
+  if (Notification) { //支持桌面通知
+    if (Notification.permission == "granted") { //已经允许通知
+      var instance = new Notification(title, {
+        body: vm.$data.textobjone.slice(vm.$data.textobjone.indexOf('】') + 1),
+        icon: "https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2491159484,629486152&fm=27&gp=0.jpg"
+      });
+      setTimeout(function() {
+        instance.close();
+      },80000);
+      instance.onclick = function() {
+        window.location.href = vm.$data;
+        instance.close();
+      }
+    }
+  } else { //不支持(IE等)
+    var index = 0;
+    clearInterval(timer);
+    timer = setInterval(function() {
+      if (index % 2) {
+        $('title').text('【　　　】' + title); //这里是中文全角空格，其他不行
+      } else {
+        $('title').text('【新消息】' + title);
+      }
+      index++;
+      if (index > 20) {
+        clearInterval(timer);
+      }
+    }, 500);
+  }
+}
+var vm = new Vue({
+  el: '#app',
+  data: {
+    text: '',
+    textobj: '',
+    textobjone: ''
+  },
+  watch: {
+    textobjone: {
+      handler: function(val, oldVal) {
+        console.log(1);
+        showMsgNotification(this.notice);
+      },
+      deep: true
+    }
+  },
+  created: function() {},
+  methods: function() {},
+  computed: {
+    //数据
+    today: function() {
+      for (var i in this.text.data) {
+        return this.text.data[i];
+      }
+    },
+    //通知-最新数据标题
+    notice: function() {
+      return this.textobjone.slice(1, this.textobjone.lastIndexOf('】'));
+    },
+    //通知内容
+    content: function() {
+      return this.textobj.slice(this.textobj.indexOf('】'));
+    }
+  },
+  filters: {
+    //过滤
+    capitalize: function(value) {
+      if (!value) return '';
+      value = value.toString();
+      return value.slice(1, value.indexOf('】'));
+    },
+    href: function(value) {
+      return '#' + value;
+    },
+    newtime: function(t) {
+      var ts = arguments[0] || 0;
+      var t, y, m, d, h, i, s;
+      t = ts ? new Date(ts * 1000) : new Date();
+      y = t.getFullYear();
+      m = t.getMonth() + 1;
+      d = t.getDate();
+      h = t.getHours();
+      i = t.getMinutes();
+      s = t.getSeconds();
+      // 可根据需要在这里定义时间格式  
+      return y + '-' + (m < 10 ? '0' + m: m) + '-' + (d < 10 ? '0' + d: d) + ' ' + (h < 10 ? '0' + h: h) + ':' + (i < 10 ? '0' + i: i) + ':' + (s < 10 ? '0' + s: s);
+    }
+  }
+})
+</script>
+</body>
+</html>

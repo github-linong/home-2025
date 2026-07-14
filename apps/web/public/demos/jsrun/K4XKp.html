@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000019117325</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="K4XKp" />
+  <style>
+.insert-div{
+  border: 1px solid #f00;
+  height: 30px;
+}
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="content-wrapper" v-insert-div>
+    <div v-for="item in list" :key="item" class="item-wrapper">
+      <div class="img-wrapper">
+        <img src="./a01.png" class="response-img">
+      </div>
+      <p class="text-wrapper">
+        <span>YINAGU 2019气质连衣裙...</span>
+        <span>¥ 299</span>
+      </p>
+    </div>
+  </div>
+</div>
+<script>
+// 注册一个全局自定义指令 `v-focus`
+Vue.directive('insert-div', {
+  // 当被绑定的元素插入到 DOM 中时……
+  inserted: function (el) {
+    // 聚焦元素
+    // el.focus()
+    // console.log(el, el.appendChild)
+    var div = document.createElement('div')
+    div.classList.add('insert-div')
+    el.appendChild(div.cloneNode())
+    el.appendChild(div.cloneNode())
+    el.appendChild(div.cloneNode())
+    
+    el.append(div.cloneNode())
+  }
+})
+new Vue({
+  el: '#app',
+  data(){
+    return{
+      list: [{}]
+    }
+  }
+})
+</script>
+</body>
+</html>

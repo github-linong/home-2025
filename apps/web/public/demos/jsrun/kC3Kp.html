@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue table</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="kC3Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.1/index.min.js"></script>
+<link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.1/theme-chalk/index.css" rel="stylesheet">
+<div id="app">
+    {{currentType}}
+    <ul>
+        <li v-for="item in list">
+            <input type="checkbox" :disabled="currentType && item.type != currentType" v-model="item.checked">{{item}}
+        </li>
+    </ul>
+</div>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                list: [
+                    {type: 1,checked: false},
+                    {type: 1,checked: false},
+                    {type: 2,checked: false},
+                    {type: 3,checked: false},
+                    {type: 3,checked: false},
+                    {type: 1,checked: false},
+                    {type: 1,checked: false},
+                    {type: 1,checked: false},
+                    {type: 2,checked: false},
+                    {type: 3,checked: false},
+                    {type: 3,checked: false},
+                    {type: 1,checked: false},
+                ]
+            }
+        },
+        computed:{
+            currentType(){
+                return this.list.find(v=>v.checked)?.type
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

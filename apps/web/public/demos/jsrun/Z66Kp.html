@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue-下拉菜单</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="Z66Kp" />
+  <style>
+    .item {
+      border:1px solid #333;
+      padding:10px 20px;
+      margin:5px;
+      background-color: #f5f5f5; 
+    }
+    .item-bd {
+        display: none;
+    }
+    .item.open .item-bd {display: block;}
+  </style>
+</head>
+<body>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js">
+</script>
+<div id="app">
+	<div id="list">
+		<div class="item" v-for="(item, index) in items" 
+            @click="toggle(item)" 
+            :class="{'open':item.show}">
+			<div class="item-hd">{{index}}</div>
+			<div class="item-bd">{{item.content}}</div>
+		</div>
+	</div>
+</div>
+<script>
+new Vue({
+    el: '#list',
+    data: {
+        items: [{
+            content: 'aaaaaaaaaa',
+        }, {
+            content: 'bbbbbbbbbb',
+        }, {
+            content: 'cccccccccc',
+        }]
+    },
+    methods: {
+        toggle: function (item) {
+            Vue.set(item, 'show', !item.show);
+        }
+    }
+})
+</script>
+</body>
+</html>

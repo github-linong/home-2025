@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000039768955</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="EY3Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<div id="app">
+    <button @click="add">add</button>
+    <div id="box">
+        <div  v-for="(item, idx) in list">
+            <button @click="remove(item, idx)">remove</button>{{item.idx}}.{{item.key}}
+        </div>
+    </div>
+</div>
+<script>
+    var count = 1;
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                list: []
+            }
+        },
+        created(){
+            this.add();
+        },
+        mounted(){
+
+    document.getElementById('box')
+        .addEventListener("DOMSubtreeModified", 
+        function(e){
+            console.log(e.target.children.length);
+        }, false);
+        },
+        methods: {
+            add(){
+                this.list.push({
+                    idx: count++,
+                    key: Date.now(),
+                })
+            },
+            remove(item, idx){
+                this.list.splice(idx, 1)
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

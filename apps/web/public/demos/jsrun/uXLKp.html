@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>flex 垂直布局</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="uXLKp" />
+  <style>
+*{padding:0;margin:0;box-sizing: border-box;}
+html,body{
+    height: 100%;
+}
+div{
+    background: rgba(255,0,0,.2);padding: 10px;
+}
+
+  </style>
+</head>
+<body>
+<div style="min-height: 100%;display:flex;">
+    <div style="display:flex;flex-direction: column;min-height:100%;">
+        <div>header</div>
+        <div>content1</div>
+        <div>content2</div>
+        <div>content3</div>
+        <div>
+            <div>content4-1</div>
+            <div>content4-2</div>
+            <div>content4-3</div>
+        </div>
+        <div>content5</div>
+        <div>content6</div>
+        <div style="margin-top: auto">footer</div>
+    </div>
+    <div style="display:flex;flex-direction: column;min-height:100%;">
+        <div>header</div>
+        <div style="margin: auto">
+            <div>content1</div>
+            <div>content2</div>
+            <div>content3</div>
+            <div>
+                <div>content4-1</div>
+                <div>content4-2</div>
+                <div>content4-3</div>
+            </div>
+            <div>content5</div>
+            <div>content6</div>
+        </div>
+        <div>footer</div>
+    </div>
+    <div style="display:flex;flex-direction: column;min-height:100%;">
+        <div>header</div>
+        <div style="height: 50px;flex: 1 0 auto;"></div>
+        <div>
+            <div>content1</div>
+            <div>content2</div>
+            <div>content3</div>
+            <div>
+                <div>content4-1</div>
+                <div>content4-2</div>
+                <div>content4-3</div>
+            </div>
+            <div>content5</div>
+            <div>content6</div>
+        </div>
+        <div style="height: 50px;flex: 3 0 auto;"></div>
+        <div>footer</div>
+    </div>
+</div>
+<script>
+
+</script>
+</body>
+</html>

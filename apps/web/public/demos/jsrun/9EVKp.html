@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>拖放DOM大小</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="9EVKp" />
+  <style>
+#resize {
+  width: 5px;
+  height: 100vh;
+  cursor: w-resize;
+}
+
+.main {
+    display: flex;
+}
+
+.box {
+    flex: 1 1 auto;
+    background: #E6A23C;
+}
+  </style>
+  <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+</head>
+<body>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js">
+</script>
+<div id="app">
+    <div class="main">
+        <div :style="{ width: detailWidth + 'px' }">
+            <el-menu default-active="2" class="el-menu-vertical-demo">
+                <el-submenu index="1">
+                    <template slot="title">
+                        <i class="el-icon-location"></i>
+                <span>导航一</span>
+                </template>
+                <el-menu-item-group>
+                <template slot="title">分组一</template>
+                <el-menu-item index="1-1">选项1</el-menu-item>
+                <el-menu-item index="1-2">选项2</el-menu-item>
+                </el-menu-item-group>
+                <el-menu-item-group title="分组2">
+                <el-menu-item index="1-3">选项3</el-menu-item>
+                </el-menu-item-group>
+                <el-submenu index="1-4">
+                <template slot="title">选项4</template>
+                <el-menu-item index="1-4-1">选项1</el-menu-item>
+                </el-submenu>
+            </el-submenu>
+            <el-menu-item index="2">
+                <i class="el-icon-menu"></i>
+                <span slot="title">导航二</span>
+            </el-menu-item>
+            <el-menu-item index="3" disabled>
+                <i class="el-icon-document"></i>
+                <span slot="title">导航三</span>
+            </el-menu-item>
+            <el-menu-item index="4">
+                <i class="el-icon-setting"></i>
+                <span slot="title">导航四</span>
+            </el-menu-item>
+            </el-menu>
+        </div>
+        <div id="resize"></div>
+        <div class="box"></div>
+    </div>
+</div>
+<script>
+tag = false
+new Vue({
+    el: '#app',
+    data() {
+        return {
+            detailWidth:200
+        }
+    },
+    methods: {
+        dragControllerDiv() {
+            // 保留this引用
+            let data = this
+            let resize = document.getElementById('resize')
+            let menu = document.getElementsByClassName('el-menu')
+            resize.onmousedown = function (e) {
+                // 颜色改变提醒
+                resize.style.background = '#818181'
+                let startX = e.clientX
+                resize.left = resize.offsetLeft
+                top.console.log(e.clientX, resize.left)
+                document.onmousemove = function (e) {
+                    // 计算并应用位移量
+                    let endX = e.clientX
+                    let moveLen = endX - startX
+                    console.log(moveLen)
+                    // startX = endX
+                    data.detailWidth = resize.left+moveLen
+                    if (data.detailWidth < 200) {
+                        data.detailWidth = 200
+                    }
+                    data.$emit("width", data.detailWidth)
+                    console.log(' data.detailWidth',  data.detailWidth)
+                    if(!tag && (data.detailWidth == 200)) {
+                        data.$message("不能再缩放了")
+                        tag = true;
+                        setTimeout(v=>tag = false, 3000)
+                    }
+                }
+                document.onmouseup = function () {
+                    // 颜色恢复
+                    resize.style.background = ''
+                    document.onmousemove = null
+                    document.onmouseup = null
+                }
+                return false
+            }
+        },
+    },
+    mounted() {
+        this.dragControllerDiv()
+    }
+})
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://www.cnblogs.com/leona-d/p/6047654.html</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="FeXKp" />
+  <style>
+/*建立一个带圆角的矩形，并使用线性渐变将其从左到底透明渐变到深绿色，然后使用2D旋转矩形*/
+        .corner:before{
+          content: '';
+          position: absolute;
+          top: 0; right: 0;
+          background:
+          linear-gradient(to left bottom,transparent 50%, rgba(0,0,0,.2) 0, rgba(0,0,0,.4)) 100% 0 no-repeat; 
+          /*线性渐变：从左到底（也就是从左边到最底部，斜切过来），
+            透明50%的宽度渐变到rgba(0,0,0,.2) 0,，再到rgba(0,0,0,.4))
+            background-size：100% 0
+            不重复或平铺 
+          */
+          width: 1.73em; height: 3em;
+          transform: translateY(-1.3em) rotate(-30deg);
+          /*translateY(-1.3em)：y轴方向平移-1.3em，就向上移动出去了一点
+              rotate(-30deg)：  平面旋转-30度
+          */
+          transform-origin: bottom right;
+          border-bottom-left-radius: inherit;
+          box-shadow: -.2em .2em .3em -.1em rgba(0,0,0,.15);
+        }
+        /*原理其实就是一个带切角的圆角矩形与一个小圆角矩形旋转拼合而成*/
+  </style>
+</head>
+<body>
+<div class="corner"></div>
+<script>
+
+</script>
+</body>
+</html>

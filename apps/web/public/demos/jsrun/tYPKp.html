@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>svg-icon</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="tYPKp" />
+  <style>
+.cu-hero-container {
+    background: url(https://p1-ofp.static.pub/fes/cms/2022/04/13/zkv31rjom40cso7mfvqmmzkm9gj84x529636.jpg);
+    background-size: cover;
+    min-height: 250px;
+    background-position: center;
+    position: relative;
+}
+
+.cu-hero-text {
+    position: absolute;
+    bottom: 0px;
+    height: 125px;
+    background: rgba(0, 0, 0, 0.8);
+    width: 100%;
+    color: white;
+    padding: 20px;
+    font-size: 30px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.cu-sec1 {
+    max-width: 1920px;
+    margin: auto;
+}
+
+.cu-tile {
+    width: 90%;
+    max-width: 350px;
+    text-align: center;
+    border: 1px solid black;
+    border-radius: 6px;
+    margin: 10px auto;
+    cursor: pointer;
+    color: inherit;
+}
+
+.cu-tile-icon {
+    padding: 20px;
+}
+
+.injected-svg {
+    width: 50px;
+    height: 50px;
+}
+
+.cu-tile-head {
+    font-size: 22px;
+    line-height: 1.3;
+}
+
+.cu-tile-subhead {
+    font-size: 18px;
+    padding: 5px 0px 15px;
+}
+
+.cu-tile:hover {
+    cursor: pointer;
+    border: 1px solid #0d5c91;
+    box-shadow: 0px 0px 9px #00000059;
+    transition: .1s;
+}
+
+.cu-tile:hover * {
+    color: #0d5c91;
+    fill: #0d5c91;
+}
+
+.cu-s1-heading {
+    font-size: 35px;
+    padding: 50px 20px 30px;
+    text-align: center;
+}
+
+.cu-s1-subhead {
+    font-size: 26px;
+    text-align: center;
+    padding: 0px 20px 20px;
+}
+
+.c1-header {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 2px solid black;
+    color: #0d5c91;
+    padding-top: 30px;
+}
+
+.c1-head-left {
+    padding-left: 25px;
+    cursor: pointer;
+    display: flex;
+    color: #555;
+}
+
+.c1-head-l-item:hover {
+    color: #0d5c91;
+}
+
+.c1-head-l-item.cu-active:hover {
+    color: inherit;
+}
+
+.c1-head-right {
+    padding-right: 25px;
+}
+
+.c1-head-r-item,
+.c1-head-l-item {
+    cursor: pointer;
+}
+
+.c1-container {
+    margin-top: 30px;
+}
+
+.cu-s1-c1 .cu-s1-tile-cont {
+    margin-top: 30px;
+}
+
+.c2-help-days {
+    padding: 0;
+    font-size: 18px;
+    margin: 3px auto;
+}
+
+.c2-help-number {
+    margin: 10px auto;
+    display: block;
+    padding: 15px 30px;
+    border: 1px solid;
+    text-align: center;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: normal;
+    text-transform: capitalize;
+    font-weight: 700;
+    transition: all ease-in .2s;
+    font-size: 16px;
+    width: fit-content;
+    color: white;
+    background-color: #0d5c91;
+}
+
+button.c2-help-number {
+    margin: 10px auto;
+    display: block;
+    padding: 15px 30px;
+    border: 1px solid;
+    text-align: center;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: normal;
+    text-transform: capitalize;
+    font-weight: 700;
+    transition: all ease-in .2s;
+    font-size: 16px;
+    color: white;
+    background-color: #0d5c91;
+    width: 25%;
+    height: 25%;
+    cursor: pointer;
+    position: relative;
+    left: 38%;
+}
+
+.c2-help-number:hover {
+    color: #0d5c91;
+    background-color: white;
+}
+
+button.c2-help-number:hover {
+    color: #0d5c91;
+    background-color: white;
+}
+
+.c2-tile-container {
+    margin: 30px 0px 0px;
+}
+
+.c2-tile {
+    border: 1px solid #ccc;
+    background-color: #f8f8f8;
+    border-radius: 9px;
+    padding: 15px;
+    width: 90%;
+    margin: auto;
+    margin-bottom: 20px;
+}
+
+.c2-help-number br {
+    display: none;
+}
+
+.c2-heading-text {
+    display: none;
+}
+
+.c2-tile-container .c2-tile-desc,
+.c2-tile-container .cu-tile-head {
+    text-align: center;
+}
+
+.cu-tile-text {
+    padding: 0px 5px;
+}
+
+.cu-sec2 {
+    background-color: rgb(248, 248, 248);
+    padding-bottom: 30px;
+    margin-top: 30px;
+}
+
+.cu-s1-c1,
+.cu-s1-c2 {
+    display: none;
+}
+
+@media only screen and (max-width: 759px) {
+    .cu-tile {
+        display: flex;
+        align-items: center;
+    }
+    .cu-tile-text {
+        text-align: left;
+    }
+    .cu-tile-subhead {
+        padding: 0px;
+    }
+    .cu-tile {
+        display: flex;
+        align-items: center;
+    }
+    .cu-tile-text {
+        text-align: left;
+    }
+    .cu-s1-c1 .cu-tile-icon {
+        display: none;
+    }
+    .cu-s1-c1 .cu-tile-text {
+        padding: 20px;
+        text-align: center;
+        width: 100%;
+    }
+    .c2-tile .cu-tile-icon {
+        display: none;
+    }
+    .cu-sec2 .cu-tile-icon {
+        display: none;
+    }
+    .cu-sec2 .cu-tile-text {
+        padding: 10px 20px;
+        text-align: center;
+        width: 100%;
+    }
+}
+
+@media only screen and (min-width: 760px) {
+    .cu-hero-container {
+        background: url(https://p4-ofp.static.pub/fes/cms/2022/04/06/onbkpskgucjc4xw37e3xcdlf6rpvup227738.jpg);
+        background-size: cover;
+        background-position: right;
+    }
+    .cu-hero-text {
+        bottom: unset;
+        height: 100%;
+        width: 50%;
+        padding: 102.5px 20px 20px 10%;
+        text-align: unset;
+    }
+    .cu-s1-tile-cont {
+        display: flex;
+        justify-content: center;
+        flex-flow: wrap;
+    }
+    .cu-tile {
+        width: 20%;
+        margin: 10px;
+        min-width: 200px;
+    }
+    .cu-sec1 .cu-tile {
+        min-height: 210px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .cu-tile-text {
+        padding: 0px 5px;
+    }
+    .c2-heading-text {
+        display: block;
+        margin: 30px 10px;
+        font-size: 28px;
+    }
+    .c2-tile {
+        background-color: unset;
+        border: unset;
+        max-width: 25%;
+        margin: 0px 0px 20px;
+        text-align: center;
+    }
+    .c2-tile-container {
+        display: flex;
+        justify-content: center;
+    }
+    a#help-number {
+        background-color: unset;
+        padding: 0px;
+        color: #0d5c91;
+        border: unset;
+        font-size: 24px;
+        font-weight: 400;
+        line-height: 1.4;
+    }
+    .c2-help-number br {
+        display: block;
+    }
+    .cu-sec2 .cu-tile {
+        width: 10%;
+    }
+}
+
+le {
+    width: 10%;
+}
+
+
+}
+  </style>
+</head>
+<body>
+<section class="">
+	<div class="cu-sec1">
+		<div class="cu-s1-heading">How can we help?</div>
+		<div class="cu-changing-sec sec1-display">
+			<div class="cu-s1-subhead">Please choose one of the following options:</div>
+			<!-- Level1 title -->
+			<div class="cu-s1-tile-cont">
+				<div class="cu-tile for-sales-tile">
+					<div class="cu-tile-icon">
+						<svg xmlns="http://www.w3.org/2000/svg" id="icon_shopping_savings_circle_140" data-name="icon/shopping/savings/circle/140"
+						 width="1em" height="1em" viewBox="0 0 139.8 139.8" class="injected-svg" data-src="data:image/svg+xml,%3csvg id='icon_shopping_savings_circle_140' data-name='icon/shopping/savings/circle/140' xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 139.8 139.8'%3e %3cg id='icon-border_circle' data-name='icon-border/circle'%3e %3cpath id='Path_20230' data-name='Path 20230' d='M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z' transform='translate(-1 -1)'/%3e %3c/g%3e %3cg id='icon' transform='translate(-1 -1)'%3e %3cpath id='Path_20817' data-name='Path 20817' d='M103.072,34.5h.028a3.463,3.463,0,0,1,3.5,3.5v.057l-.906,31.917-.053.211a4.985,4.985,0,0,1-.776,1.624l-.11.165L62.7,114.031,27.074,78.3,68.986,36.386a3.25,3.25,0,0,1,2.381-.986ZM101.71,69.319l.875-30.8-30.95.879L32.726,78.3,62.7,108.369l38.94-38.94C101.667,69.39,101.691,69.352,101.71,69.319Z'/%3e %3cpath id='Ellipse_97' data-name='Ellipse 97' d='M5.3-2A7.3,7.3,0,1,1-2,5.3,7.308,7.308,0,0,1,5.3-2Zm0,10.6A3.3,3.3,0,1,0,2,5.3,3.3,3.3,0,0,0,5.3,8.6Z' transform='translate(84.9 45.5)'/%3e %3cpath id='Ellipse_98' data-name='Ellipse 98' d='M4.3-2A6.3,6.3,0,1,1-2,4.3,6.307,6.307,0,0,1,4.3-2Zm0,8.6A2.3,2.3,0,1,0,2,4.3,2.3,2.3,0,0,0,4.3,6.6Z' transform='translate(62 80.6)'/%3e %3cpath id='Ellipse_99' data-name='Ellipse 99' d='M4.3-2A6.3,6.3,0,1,1-2,4.3,6.307,6.307,0,0,1,4.3-2Zm0,8.6A2.3,2.3,0,1,0,2,4.3,2.3,2.3,0,0,0,4.3,6.6Z' transform='translate(62 60.7)'/%3e %3cpath id='Line_348' data-name='Line 348' d='M33.2,2H0V-2H33.2Z' transform='translate(49.7 74.7)'/%3e %3c/g%3e %3c/svg%3e"
+						 xmlns:xlink="http://www.w3.org/1999/xlink">
+							<g id="icon-border_circle" data-name="icon-border/circle">
+								<path id="Path_20230-1" data-name="Path 20230" d="M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z"
+								 transform="translate(-1 -1)"></path>
+							</g>
+							<g id="icon" transform="translate(-1 -1)">
+								<path id="Path_20817-2" data-name="Path 20817" d="M103.072,34.5h.028a3.463,3.463,0,0,1,3.5,3.5v.057l-.906,31.917-.053.211a4.985,4.985,0,0,1-.776,1.624l-.11.165L62.7,114.031,27.074,78.3,68.986,36.386a3.25,3.25,0,0,1,2.381-.986ZM101.71,69.319l.875-30.8-30.95.879L32.726,78.3,62.7,108.369l38.94-38.94C101.667,69.39,101.691,69.352,101.71,69.319Z">
+								</path>
+								<path id="Ellipse_97-3" data-name="Ellipse 97" d="M5.3-2A7.3,7.3,0,1,1-2,5.3,7.308,7.308,0,0,1,5.3-2Zm0,10.6A3.3,3.3,0,1,0,2,5.3,3.3,3.3,0,0,0,5.3,8.6Z"
+								 transform="translate(84.9 45.5)"></path>
+								<path id="Ellipse_98-4" data-name="Ellipse 98" d="M4.3-2A6.3,6.3,0,1,1-2,4.3,6.307,6.307,0,0,1,4.3-2Zm0,8.6A2.3,2.3,0,1,0,2,4.3,2.3,2.3,0,0,0,4.3,6.6Z"
+								 transform="translate(62 80.6)"></path>
+								<path id="Ellipse_99-5" data-name="Ellipse 99" d="M4.3-2A6.3,6.3,0,1,1-2,4.3,6.307,6.307,0,0,1,4.3-2Zm0,8.6A2.3,2.3,0,1,0,2,4.3,2.3,2.3,0,0,0,4.3,6.6Z"
+								 transform="translate(62 60.7)"></path>
+								<path id="Line_348-6" data-name="Line 348" d="M33.2,2H0V-2H33.2Z" transform="translate(49.7 74.7)"></path>
+							</g>
+						</svg>
+					</div>
+					<div class="cu-tile-text">
+						<div class="cu-tile-head">Place an order or <br>Product Questions</div>
+                        <div class="cu-tile-subhead">Sales</div>
+                    </div>
+                </div>
+                <div class="cu-tile for-care-tile">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" id="icon_shopping_cart_circle_140" data-name="icon/shopping/cart/circle/140" width="1em" height="1em" viewBox="0 0 139.8 139.8" class="injected-svg" data-src="data:image/svg+xml,%3csvg id='icon_shopping_cart_circle_140' data-name='icon/shopping/cart/circle/140' xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 139.8 139.8'%3e %3cg id='icon-border_circle' data-name='icon-border/circle'%3e %3cpath id='Path_20230' data-name='Path 20230' d='M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z' transform='translate(-1 -1)'/%3e %3c/g%3e %3cg id='icon_shopping_cart_90' data-name='icon/shopping/cart/90' transform='translate(37 35)'%3e %3cpath id='Shape' d='M12.618,11.96A8.838,8.838,0,1,0,21.456,20.8,8.848,8.848,0,0,0,12.618,11.96Zm0,12.373A3.535,3.535,0,1,1,16.153,20.8,3.539,3.539,0,0,1,12.618,24.333Z' transform='translate(12.661 40.364)'/%3e %3cpath id='Shape-2' data-name='Shape' d='M18.6,11.96A8.838,8.838,0,1,0,27.436,20.8,8.848,8.848,0,0,0,18.6,11.96Zm0,12.373A3.535,3.535,0,1,1,22.133,20.8,3.539,3.539,0,0,1,18.6,24.333Z' transform='translate(32.842 40.364)'/%3e %3cpath id='Shape-3' data-name='Shape' d='M64.924,16.781a2.578,2.578,0,0,0-2.017-.973H17.78L15.437,3.967a2.577,2.577,0,0,0-2.064-2.034L3.064.043a2.577,2.577,0,1,0-.929,5.07l8.586,1.574,7.563,38.228a2.578,2.578,0,0,0,2.528,2.077H56.893a2.576,2.576,0,0,0,2.511-2l6.014-26.03A2.576,2.576,0,0,0,64.924,16.781ZM54.844,41.838H22.929L18.8,20.963H59.666Z' transform='translate(-0.022 0)'/%3e %3c/g%3e %3c/svg%3e"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">
+                      <g id="icon-border_circle" data-name="icon-border/circle">
+                          <path id="Path_20230-7" data-name="Path 20230"
+                              d="M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z"
+                              transform="translate(-1 -1)"></path>
+                      </g>
+                      <g id="icon_shopping_cart_90" data-name="icon/shopping/cart/90"
+                          transform="translate(37 35)">
+                          <path id="Shape-8"
+                              d="M12.618,11.96A8.838,8.838,0,1,0,21.456,20.8,8.848,8.848,0,0,0,12.618,11.96Zm0,12.373A3.535,3.535,0,1,1,16.153,20.8,3.539,3.539,0,0,1,12.618,24.333Z"
+                              transform="translate(12.661 40.364)"></path>
+                          <path id="Shape-2-9" data-name="Shape"
+                              d="M18.6,11.96A8.838,8.838,0,1,0,27.436,20.8,8.848,8.848,0,0,0,18.6,11.96Zm0,12.373A3.535,3.535,0,1,1,22.133,20.8,3.539,3.539,0,0,1,18.6,24.333Z"
+                              transform="translate(32.842 40.364)"></path>
+                          <path id="Shape-3-10" data-name="Shape"
+                              d="M64.924,16.781a2.578,2.578,0,0,0-2.017-.973H17.78L15.437,3.967a2.577,2.577,0,0,0-2.064-2.034L3.064.043a2.577,2.577,0,1,0-.929,5.07l8.586,1.574,7.563,38.228a2.578,2.578,0,0,0,2.528,2.077H56.893a2.576,2.576,0,0,0,2.511-2l6.014-26.03A2.576,2.576,0,0,0,64.924,16.781ZM54.844,41.838H22.929L18.8,20.963H59.666Z"
+                              transform="translate(-0.022 0)"></path>
+                      </g>
+                  </svg>
+                    </div>
+                    <div class="cu-tile-text">
+                        <div class="cu-tile-head"> Existing order, Returns</div>
+                        <div class="cu-tile-subhead">Customer Support</div>
+                    </div>
+                </div>
+                <div class="cu-tile for-warranty-tile">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" id="icon_services_premier_circle_140" data-name="icon/services/premier/circle/140" width="1em" height="1em" viewBox="0 0 139.8 139.8" class="injected-svg" data-src="data:image/svg+xml,%3csvg id='icon_services_premier_circle_140' data-name='icon/services/premier/circle/140' xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 139.8 139.8'%3e %3cg id='icon-border_circle' data-name='icon-border/circle'%3e %3cpath id='Path_20230' data-name='Path 20230' d='M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z' transform='translate(-1 -1)'/%3e %3c/g%3e %3cpath id='Fill-4' d='M27.548,91.044H23.129V89.493a2.2,2.2,0,0,1,.046-.448L26.01,75.374a2.208,2.208,0,0,1,1.626-1.694l21.619-5.423.22-4.63a17.242,17.242,0,0,1-5.712-7.4A28.968,28.968,0,0,1,41.6,44.911c0-5.677,1.5-10.542,4.344-14.069a15.269,15.269,0,0,1,12.327-5.7,16.016,16.016,0,0,1,12.51,5.67c3,3.571,4.584,8.447,4.584,14.1a28.372,28.372,0,0,1-2.278,11.5,17.141,17.141,0,0,1-6.008,7.41l.22,4.641,7.487,2.911-1.6,4.119L64.36,72.061a2.21,2.21,0,0,1-1.406-1.955l-.352-7.4a2.21,2.21,0,0,1,1.18-2.061c4.42-2.32,7.166-8.35,7.166-15.734,0-9.328-4.975-15.355-12.676-15.355-7.557,0-12.252,5.883-12.252,15.355,0,7.266,2.608,13.251,6.807,15.617a2.21,2.21,0,0,1,1.122,2.03l-.359,7.548a2.208,2.208,0,0,1-1.67,2.038L30.055,77.629,27.548,89.719Z' transform='translate(-0.315 -1.328)'/%3e %3cpath id='Fill-6' d='M93.954,87.6l2.2,3.721,3.493-2.063L97.486,85.6,98.5,84.4a10.225,10.225,0,0,0,1.781-3.059l.528-1.426,4.317-.044-.041-4.057-4.248.043-.531-1.479a10.157,10.157,0,0,0-1.754-3.068l-.975-1.171L99.7,66.38l-3.534-1.992-2.085,3.7-1.545-.278A10.14,10.14,0,0,0,89,67.8l-1.5.259-2.2-3.721L81.8,66.4l2.159,3.654-1.011,1.2a10.292,10.292,0,0,0-1.094,1.574,10.417,10.417,0,0,0-.687,1.483l-.528,1.428-4.318.044.041,4.057,4.249-.043.531,1.478A10.145,10.145,0,0,0,82.9,84.342l.975,1.172-2.12,3.761,3.534,1.992,2.084-3.7,1.546.278a10.116,10.116,0,0,0,3.532.011Zm.643,9.773L91.657,92.4a14.489,14.489,0,0,1-1.93,0l-2.76,4.893L75.735,90.954l2.839-5.033a14.426,14.426,0,0,1-.96-1.674l-5.619.056-.131-12.894,5.78-.059q.175-.351.367-.691c.186-.332.388-.658.6-.976l-2.859-4.838,11.1-6.56,2.94,4.975a14.658,14.658,0,0,1,1.93,0l2.759-4.893L105.715,64.7l-2.838,5.033a14.873,14.873,0,0,1,.961,1.674l5.618-.057.131,12.895-5.781.059q-.173.351-.366.691-.281.5-.6.976l2.859,4.838Z' transform='translate(-0.98 -1.78)'/%3e %3cpath id='Fill-8' d='M90.921,82.761h-.039A4.729,4.729,0,0,1,90.92,73.3h.039a4.729,4.729,0,0,1-.038,9.457' transform='translate(-1.176 -1.984)'/%3e %3cpath id='Fill-10' d='M90.272,107.116A29.7,29.7,0,0,1,60.627,78.641l4.415-.182a25.282,25.282,0,1,0,24.217-26.3l-.182-4.415a29.7,29.7,0,1,1,2.451,59.35q-.629.025-1.256.026' transform='translate(-0.827 -1.636)'/%3e %3cpath id='Fill-12' d='M92.636,59.443,83.28,49.812l9.63-9.356,3.079,3.17L89.529,49.9,95.8,56.364Z' transform='translate(-1.136 -1.537)'/%3e %3c/svg%3e"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">
+                      <g id="icon-border_circle" data-name="icon-border/circle">
+                          <path id="Path_20230-11" data-name="Path 20230"
+                              d="M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z"
+                              transform="translate(-1 -1)"></path>
+                      </g>
+                      <path id="Fill-4-12"
+                          d="M27.548,91.044H23.129V89.493a2.2,2.2,0,0,1,.046-.448L26.01,75.374a2.208,2.208,0,0,1,1.626-1.694l21.619-5.423.22-4.63a17.242,17.242,0,0,1-5.712-7.4A28.968,28.968,0,0,1,41.6,44.911c0-5.677,1.5-10.542,4.344-14.069a15.269,15.269,0,0,1,12.327-5.7,16.016,16.016,0,0,1,12.51,5.67c3,3.571,4.584,8.447,4.584,14.1a28.372,28.372,0,0,1-2.278,11.5,17.141,17.141,0,0,1-6.008,7.41l.22,4.641,7.487,2.911-1.6,4.119L64.36,72.061a2.21,2.21,0,0,1-1.406-1.955l-.352-7.4a2.21,2.21,0,0,1,1.18-2.061c4.42-2.32,7.166-8.35,7.166-15.734,0-9.328-4.975-15.355-12.676-15.355-7.557,0-12.252,5.883-12.252,15.355,0,7.266,2.608,13.251,6.807,15.617a2.21,2.21,0,0,1,1.122,2.03l-.359,7.548a2.208,2.208,0,0,1-1.67,2.038L30.055,77.629,27.548,89.719Z"
+                          transform="translate(-0.315 -1.328)"></path>
+                      <path id="Fill-6-13"
+                          d="M93.954,87.6l2.2,3.721,3.493-2.063L97.486,85.6,98.5,84.4a10.225,10.225,0,0,0,1.781-3.059l.528-1.426,4.317-.044-.041-4.057-4.248.043-.531-1.479a10.157,10.157,0,0,0-1.754-3.068l-.975-1.171L99.7,66.38l-3.534-1.992-2.085,3.7-1.545-.278A10.14,10.14,0,0,0,89,67.8l-1.5.259-2.2-3.721L81.8,66.4l2.159,3.654-1.011,1.2a10.292,10.292,0,0,0-1.094,1.574,10.417,10.417,0,0,0-.687,1.483l-.528,1.428-4.318.044.041,4.057,4.249-.043.531,1.478A10.145,10.145,0,0,0,82.9,84.342l.975,1.172-2.12,3.761,3.534,1.992,2.084-3.7,1.546.278a10.116,10.116,0,0,0,3.532.011Zm.643,9.773L91.657,92.4a14.489,14.489,0,0,1-1.93,0l-2.76,4.893L75.735,90.954l2.839-5.033a14.426,14.426,0,0,1-.96-1.674l-5.619.056-.131-12.894,5.78-.059q.175-.351.367-.691c.186-.332.388-.658.6-.976l-2.859-4.838,11.1-6.56,2.94,4.975a14.658,14.658,0,0,1,1.93,0l2.759-4.893L105.715,64.7l-2.838,5.033a14.873,14.873,0,0,1,.961,1.674l5.618-.057.131,12.895-5.781.059q-.173.351-.366.691-.281.5-.6.976l2.859,4.838Z"
+                          transform="translate(-0.98 -1.78)"></path>
+                      <path id="Fill-8-14"
+                          d="M90.921,82.761h-.039A4.729,4.729,0,0,1,90.92,73.3h.039a4.729,4.729,0,0,1-.038,9.457"
+                          transform="translate(-1.176 -1.984)"></path>
+                      <path id="Fill-10-15"
+                          d="M90.272,107.116A29.7,29.7,0,0,1,60.627,78.641l4.415-.182a25.282,25.282,0,1,0,24.217-26.3l-.182-4.415a29.7,29.7,0,1,1,2.451,59.35q-.629.025-1.256.026"
+                          transform="translate(-0.827 -1.636)"></path>
+                      <path id="Fill-12-16"
+                          d="M92.636,59.443,83.28,49.812l9.63-9.356,3.079,3.17L89.529,49.9,95.8,56.364Z"
+                          transform="translate(-1.136 -1.537)"></path>
+                  </svg>
+                    </div>
+                    <div class="cu-tile-text">
+                        <div class="cu-tile-head">Warranty or Technical services</div>
+                        <div class="cu-tile-subhead">Lenovo Services</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Level2- Place an order-->
+        <div class="cu-s1-c1 sales-home-buss sec1-display">
+            <div class="c1-header">
+                <div class="c1-head-left">
+                    <div class="c1-head-l-item for-sales-tile cu-active">Sales</div>
+                </div>
+                <div class="c1-head-right">
+                    <div class="c1-head-r-item">
+                        &nbsp;Home
+                    </div>
+                </div>
+            </div>
+            <div class="cu-s1-tile-cont c1-container">
+                <div class="cu-tile for-sales-home">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="icon_segments_home_circle_140" data-name="icon/segments/home/circle/140" width="1em" height="1em" viewBox="0 0 139.8 139.8" class="injected-svg" data-src="data:image/svg+xml,%3csvg id='icon_segments_home_circle_140' data-name='icon/segments/home/circle/140' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='1em' height='1em' viewBox='0 0 139.8 139.8'%3e %3cdefs%3e %3cclipPath id='clip-path'%3e %3cpath id='Path_21084' data-name='Path 21084' d='M71.149-5.156a1.306,1.306,0,0,0-.867,1.229V9.553a3.908,3.908,0,0,1-3.9,3.9H11.714a3.908,3.908,0,0,1-3.9-3.9V-3.928A1.3,1.3,0,0,0,6.94-5.156,6.5,6.5,0,0,1,2.6-11.271a6.455,6.455,0,0,1,2.028-4.722,6.456,6.456,0,0,1,4.477-1.786c.117,0,.234.005.354.01a6.827,6.827,0,0,1,6.156,6.94v7.367a1.311,1.311,0,0,0,.492,1.023,1.312,1.312,0,0,0,1.109.245,95.78,95.78,0,0,1,43.656,0,1.33,1.33,0,0,0,1.106-.245,1.3,1.3,0,0,0,.492-1.023v-7.367a6.827,6.827,0,0,1,6.156-6.94,6.458,6.458,0,0,1,4.831,1.775,6.455,6.455,0,0,1,2.028,4.722,6.5,6.5,0,0,1-4.339,6.115ZM59.87,18.664h2.6v-2.6h-2.6Zm-44.252,0h2.6v-2.6h-2.6Zm-2.6-42.95A9.122,9.122,0,0,1,22.126-33.4h33.84a9.122,9.122,0,0,1,9.111,9.111v4.849a9.714,9.714,0,0,0-5.206,8.608v5.737a98.537,98.537,0,0,0-41.649,0v-5.737a9.714,9.714,0,0,0-5.206-8.608ZM75.252-17.88a9.115,9.115,0,0,0-6.76-2.489c-.279.016-.541.088-.812.13v-4.048A11.728,11.728,0,0,0,55.966-36H22.126A11.728,11.728,0,0,0,10.412-24.286v4.048c-.271-.042-.536-.115-.815-.13A9.13,9.13,0,0,0,2.84-17.88,9.038,9.038,0,0,0,0-11.271,9.115,9.115,0,0,0,5.206-3.058V9.553a6.517,6.517,0,0,0,6.508,6.508h1.3v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9H57.267v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9h1.3a6.517,6.517,0,0,0,6.508-6.508V-3.058a9.107,9.107,0,0,0,5.206-8.213,9.038,9.038,0,0,0-2.84-6.609Z' transform='translate(0 36)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-2'%3e %3crect id='Rectangle_1562' data-name='Rectangle 1562' width='81.279' height='60.561'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-3'%3e %3cpath id='Path_21083' data-name='Path 21083' d='M0,21.373H78.092V-36H0Z' transform='translate(0 36)'/%3e %3c/clipPath%3e %3c/defs%3e %3cg id='icon-border_circle' data-name='icon-border/circle'%3e %3cpath id='Path_20230' data-name='Path 20230' d='M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z' transform='translate(-1 -1)'/%3e %3c/g%3e %3cg id='icon'%3e %3cg id='Group_17106' data-name='Group 17106' transform='translate(31 41)' clip-path='url(%23clip-path)'%3e %3cg id='Group_17105' data-name='Group 17105' transform='translate(-1.594 -1.594)' style='mix-blend-mode: normal;isolation: isolate'%3e %3cg id='Group_17104' data-name='Group 17104' clip-path='url(%23clip-path-2)'%3e %3cg id='Group_17103' data-name='Group 17103' transform='translate(1.594 1.594)' clip-path='url(%23clip-path-3)'%3e %3cpath id='Path_21082' data-name='Path 21082' d='M-1-37H80.279V23.561H-1Z' transform='translate(-0.594 35.406)'/%3e %3c/g%3e %3c/g%3e %3c/g%3e %3c/g%3e %3c/g%3e %3c/svg%3e">
+                  <defs>
+                      <clipPath id="clip-path-244xxxx">
+                          <path id="Path_21084-247" data-name="Path 21084" d="M71.149-5.156a1.306,1.306,0,0,0-.867,1.229V9.553a3.908,3.908,0,0,1-3.9,3.9H11.714a3.908,3.908,0,0,1-3.9-3.9V-3.928A1.3,1.3,0,0,0,6.94-5.156,6.5,6.5,0,0,1,2.6-11.271a6.455,6.455,0,0,1,2.028-4.722,6.456,6.456,0,0,1,4.477-1.786c.117,0,.234.005.354.01a6.827,6.827,0,0,1,6.156,6.94v7.367a1.311,1.311,0,0,0,.492,1.023,1.312,1.312,0,0,0,1.109.245,95.78,95.78,0,0,1,43.656,0,1.33,1.33,0,0,0,1.106-.245,1.3,1.3,0,0,0,.492-1.023v-7.367a6.827,6.827,0,0,1,6.156-6.94,6.458,6.458,0,0,1,4.831,1.775,6.455,6.455,0,0,1,2.028,4.722,6.5,6.5,0,0,1-4.339,6.115ZM59.87,18.664h2.6v-2.6h-2.6Zm-44.252,0h2.6v-2.6h-2.6Zm-2.6-42.95A9.122,9.122,0,0,1,22.126-33.4h33.84a9.122,9.122,0,0,1,9.111,9.111v4.849a9.714,9.714,0,0,0-5.206,8.608v5.737a98.537,98.537,0,0,0-41.649,0v-5.737a9.714,9.714,0,0,0-5.206-8.608ZM75.252-17.88a9.115,9.115,0,0,0-6.76-2.489c-.279.016-.541.088-.812.13v-4.048A11.728,11.728,0,0,0,55.966-36H22.126A11.728,11.728,0,0,0,10.412-24.286v4.048c-.271-.042-.536-.115-.815-.13A9.13,9.13,0,0,0,2.84-17.88,9.038,9.038,0,0,0,0-11.271,9.115,9.115,0,0,0,5.206-3.058V9.553a6.517,6.517,0,0,0,6.508,6.508h1.3v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9H57.267v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9h1.3a6.517,6.517,0,0,0,6.508-6.508V-3.058a9.107,9.107,0,0,0,5.206-8.213,9.038,9.038,0,0,0-2.84-6.609Z" transform="translate(0 36)"></path>
+                      </clipPath>
+                      <clipPath id="clip-path-2-245">
+                          <rect id="Rectangle_1562" data-name="Rectangle 1562" width="81.279" height="60.561">
+                          </rect>
+                      </clipPath>
+                      <clipPath id="clip-path-3-246">
+                          <path id="Path_21083-248" data-name="Path 21083" d="M0,21.373H78.092V-36H0Z" transform="translate(0 36)"></path>
+                      </clipPath>
+                  </defs>
+                  <g id="icon-border_circle" data-name="icon-border/circle">
+                      <path id="Path_20230-249" data-name="Path 20230" d="M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z" transform="translate(-1 -1)"></path>
+                  </g>
+                  <g id="icon">
+                      <g id="Group_17106" data-name="Group 17106" transform="translate(31 41)" clip-path="url(#clip-path-244xxxx)">
+                          <g id="Group_17105" data-name="Group 17105" transform="translate(-1.594 -1.594)" style="mix-blend-mode: normal;isolation: isolate">
+                              <g id="Group_17104" data-name="Group 17104" clip-path="url(#clip-path-2-245)">
+                                  <g id="Group_17103" data-name="Group 17103" transform="translate(1.594 1.594)" clip-path="url(#clip-path-3-246)">
+                                      <path id="Path_21082-250" data-name="Path 21082" d="M-1-37H80.279V23.561H-1Z" transform="translate(-0.594 35.406)"> 
+                                      </path>
+                                  </g>
+                              </g>
+                          </g>
+                      </g>
+                  </g>
+              </svg>
+                    </div>
+                    <div class="cu-tile-text">
+                        <div class="cu-tile-head">For Your Home</div>
+                    </div>
+                </div>
+                <div class="cu-tile for-sales-buss">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" id="icon_product-category_case_circle_140" data-name="icon/product-category/case/circle/140" width="1em" height="1em" viewBox="0 0 139.8 139.8" class="injected-svg" data-src="data:image/svg+xml,%3csvg id='icon_product-category_case_circle_140' data-name='icon/product-category/case/circle/140' xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 139.8 139.8'%3e %3cg id='icon-border_circle' data-name='icon-border/circle'%3e %3cpath id='Path_20230' data-name='Path 20230' d='M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z' transform='translate(-1 -1)'/%3e %3c/g%3e %3cg id='Group_16930' data-name='Group 16930' transform='translate(49.301 77.899)'%3e %3cpath id='Path_20785' data-name='Path 20785' d='M104.9,105H36.8a7.762,7.762,0,0,1-7.7-7.7V50.1a7.762,7.762,0,0,1,7.7-7.7H105a7.762,7.762,0,0,1,7.7,7.7V97.364a7.918,7.918,0,0,1-2.322,5.362A7.7,7.7,0,0,1,104.9,105ZM36.8,46.4a3.763,3.763,0,0,0-3.7,3.7V97.3a3.763,3.763,0,0,0,3.7,3.7h68.1a3.723,3.723,0,0,0,2.648-1.1,3.931,3.931,0,0,0,1.152-2.634V50.1a3.763,3.763,0,0,0-3.7-3.7Z' transform='translate(-50.3 -78.9)'/%3e %3cpath id='Path_20786' data-name='Path 20786' d='M104.9,81.3H36.8a7.762,7.762,0,0,1-7.7-7.7V50.1a7.762,7.762,0,0,1,7.7-7.7H105a7.762,7.762,0,0,1,7.7,7.7V73.764A7.762,7.762,0,0,1,104.9,81.3ZM36.8,46.4a3.763,3.763,0,0,0-3.7,3.7V73.6a3.763,3.763,0,0,0,3.7,3.7h68.1a3.764,3.764,0,0,0,3.8-3.635V50.1a3.763,3.763,0,0,0-3.7-3.7Z' transform='translate(-50.3 -78.9)'/%3e %3cpath id='Path_20787' data-name='Path 20787' d='M85.4,43.1h-4V35.9H60.3v7.2h-4V35.3a3.364,3.364,0,0,1,3.4-3.4H82a3.364,3.364,0,0,1,3.4,3.4Z' transform='translate(-50.3 -78.9)'/%3e %3cpath id='Path_20788' data-name='Path 20788' d='M56.5,89.2H53.1a4.805,4.805,0,0,1-4.8-4.8V78.9h4v5.5a.792.792,0,0,0,.8.8h3.4a.792.792,0,0,0,.8-.8V78.9h4v5.5A4.805,4.805,0,0,1,56.5,89.2Z' transform='translate(-50.3 -78.9)'/%3e %3cpath id='Path_20789' data-name='Path 20789' d='M88.7,89.2H85.3a4.805,4.805,0,0,1-4.8-4.8V78.9h4v5.5a.792.792,0,0,0,.8.8h3.4a.792.792,0,0,0,.8-.8V78.9h4v5.5A4.805,4.805,0,0,1,88.7,89.2Z' transform='translate(-50.3 -78.9)'/%3e %3c/g%3e %3c/svg%3e"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">
+                      <g id="icon-border_circle" data-name="icon-border/circle">
+                          <path id="Path_20230-118" data-name="Path 20230"
+                              d="M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z"
+                              transform="translate(-1 -1)"></path>
+                      </g>
+                      <g id="Group_16930" data-name="Group 16930" transform="translate(49.301 77.899)">
+                          <path id="Path_20785-119" data-name="Path 20785"
+                              d="M104.9,105H36.8a7.762,7.762,0,0,1-7.7-7.7V50.1a7.762,7.762,0,0,1,7.7-7.7H105a7.762,7.762,0,0,1,7.7,7.7V97.364a7.918,7.918,0,0,1-2.322,5.362A7.7,7.7,0,0,1,104.9,105ZM36.8,46.4a3.763,3.763,0,0,0-3.7,3.7V97.3a3.763,3.763,0,0,0,3.7,3.7h68.1a3.723,3.723,0,0,0,2.648-1.1,3.931,3.931,0,0,0,1.152-2.634V50.1a3.763,3.763,0,0,0-3.7-3.7Z"
+                              transform="translate(-50.3 -78.9)"></path>
+                          <path id="Path_20786-120" data-name="Path 20786"
+                              d="M104.9,81.3H36.8a7.762,7.762,0,0,1-7.7-7.7V50.1a7.762,7.762,0,0,1,7.7-7.7H105a7.762,7.762,0,0,1,7.7,7.7V73.764A7.762,7.762,0,0,1,104.9,81.3ZM36.8,46.4a3.763,3.763,0,0,0-3.7,3.7V73.6a3.763,3.763,0,0,0,3.7,3.7h68.1a3.764,3.764,0,0,0,3.8-3.635V50.1a3.763,3.763,0,0,0-3.7-3.7Z"
+                              transform="translate(-50.3 -78.9)"></path>
+                          <path id="Path_20787-121" data-name="Path 20787"
+                              d="M85.4,43.1h-4V35.9H60.3v7.2h-4V35.3a3.364,3.364,0,0,1,3.4-3.4H82a3.364,3.364,0,0,1,3.4,3.4Z"
+                              transform="translate(-50.3 -78.9)"></path>
+                          <path id="Path_20788-122" data-name="Path 20788"
+                              d="M56.5,89.2H53.1a4.805,4.805,0,0,1-4.8-4.8V78.9h4v5.5a.792.792,0,0,0,.8.8h3.4a.792.792,0,0,0,.8-.8V78.9h4v5.5A4.805,4.805,0,0,1,56.5,89.2Z"
+                              transform="translate(-50.3 -78.9)"></path>
+                          <path id="Path_20789-123" data-name="Path 20789"
+                              d="M88.7,89.2H85.3a4.805,4.805,0,0,1-4.8-4.8V78.9h4v5.5a.792.792,0,0,0,.8.8h3.4a.792.792,0,0,0,.8-.8V78.9h4v5.5A4.805,4.805,0,0,1,88.7,89.2Z"
+                              transform="translate(-50.3 -78.9)"></path>
+                      </g>
+                  </svg>
+                    </div>
+                    <div class="cu-tile-text">
+                        <div class="cu-tile-head">For Your Business</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="cu-s1-c2 sales-home-info sec1-display">
+            <div class="c1-header">
+                <div class="c1-head-left">
+                    <div class="c1-head-l-item for-sales-tile">Sales</div>
+                    &nbsp;>&nbsp;
+                    <div class="c1-head-l-item for-sales-home cu-active">Home Sales</div>
+                </div>
+                <div class="c1-head-right">
+                    <div class="c1-head-r-item">
+                        &nbsp;Home
+                    </div>
+                </div>
+            </div>
+            <div class="c2-heading-text">Lenovo Home Sales</div>
+            <div class="c2-tile-container">
+                <div class="c2-tile">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" width="1em" height="1em" x="0px" y="0px" viewBox="0 0 141.7 141.7" style="enable-background:new 0 0 141.7 141.7;" xml:space="preserve" class="injected-svg"
+                            data-src="data:image/svg+xml,%3c!-- Generator: Adobe Illustrator 26.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0) --%3e %3csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='1em' height='1em' x='0px' y='0px' viewBox='0 0 141.7 141.7' style='enable-background:new 0 0 141.7 141.7;' xml:space='preserve'%3e %3cg id='icon'%3e %3c/g%3e %3cg id='Icon_KEYLINE'%3e %3cpath d='M70.9,5.3c36.1,0,65.5,29.4,65.5,65.5s-29.4,65.5-65.5,65.5S5.4,106.9,5.4,70.8C5.3,34.7,34.7,5.3,70.9,5.3 M70.9,1 C32.3,1,1,32.3,1,70.9s31.3,69.9,69.9,69.9s69.9-31.3,69.9-69.9S109.5,1,70.9,1L70.9,1z'/%3e %3c/g%3e %3cg%3e %3cg%3e %3cpath d='M80.8,111.9c-6.6,0-13.1-2.6-17.9-7.4l-29-29c-7.1-7.1-9.4-17.8-5.7-27.2l0.3-0.7c1.3-3.3,3.2-6.2,5.7-8.7l3.5-3.5 c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-0.7,0.7-1.1,1.7-1.1,2.7c0,1,0.4,1.9,1.1,2.7l20.6,20.6 c1.5,1.5,3.9,1.5,5.3,0l3.5-3.5c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-2.5,2.5-5.4,4.4-8.7,5.7 l-0.7,0.3C87.1,111.3,83.9,111.9,80.8,111.9z M43.4,37.4c-1,0-1.9,0.4-2.7,1.1L37.3,42c-2.1,2.1-3.7,4.5-4.7,7.2l-0.3,0.7 c-3,7.8-1.2,16.6,4.7,22.5l29,29c5.9,5.9,14.7,7.8,22.5,4.7l0.7-0.3c2.7-1.1,5.2-2.7,7.2-4.7l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3 l-8.3-8.3c-1.5-1.5-3.8-1.5-5.3,0l-3.5,3.5c-3.1,3.2-8.3,3.2-11.4,0L50.8,67c-1.5-1.5-2.4-3.6-2.4-5.7c0-2.2,0.8-4.2,2.4-5.7 l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3l-8.3-8.3C45.3,37.8,44.4,37.4,43.4,37.4z'/%3e %3c/g%3e %3cg%3e %3cpath d='M91.5,70.5l-4.3-0.7c0.9-5.2-0.8-10.4-4.5-14.1c-3.7-3.7-9-5.4-14.1-4.5l-0.7-4.3c6.5-1.1,13.2,1,17.9,5.7 C90.5,57.3,92.6,64,91.5,70.5z'/%3e %3c/g%3e %3cg%3e %3cpath d='M103.9,72.9l-4.3-0.7c1.6-9.2-1.4-18.7-8-25.3c-6.6-6.6-16.1-9.6-25.3-8l-0.7-4.3c10.6-1.8,21.5,1.6,29.1,9.2 C102.3,51.3,105.7,62.2,103.9,72.9z'/%3e %3c/g%3e %3c/g%3e %3c/svg%3e">
+                      <g id="icon"> </g>
+                      <g id="Icon_KEYLINE">
+                          <path
+                              d="M70.9,5.3c36.1,0,65.5,29.4,65.5,65.5s-29.4,65.5-65.5,65.5S5.4,106.9,5.4,70.8C5.3,34.7,34.7,5.3,70.9,5.3 M70.9,1 C32.3,1,1,32.3,1,70.9s31.3,69.9,69.9,69.9s69.9-31.3,69.9-69.9S109.5,1,70.9,1L70.9,1z">
+                          </path>
+                      </g>
+                      <g>
+                          <g>
+                              <path
+                                  d="M80.8,111.9c-6.6,0-13.1-2.6-17.9-7.4l-29-29c-7.1-7.1-9.4-17.8-5.7-27.2l0.3-0.7c1.3-3.3,3.2-6.2,5.7-8.7l3.5-3.5 c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-0.7,0.7-1.1,1.7-1.1,2.7c0,1,0.4,1.9,1.1,2.7l20.6,20.6 c1.5,1.5,3.9,1.5,5.3,0l3.5-3.5c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-2.5,2.5-5.4,4.4-8.7,5.7 l-0.7,0.3C87.1,111.3,83.9,111.9,80.8,111.9z M43.4,37.4c-1,0-1.9,0.4-2.7,1.1L37.3,42c-2.1,2.1-3.7,4.5-4.7,7.2l-0.3,0.7 c-3,7.8-1.2,16.6,4.7,22.5l29,29c5.9,5.9,14.7,7.8,22.5,4.7l0.7-0.3c2.7-1.1,5.2-2.7,7.2-4.7l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3 l-8.3-8.3c-1.5-1.5-3.8-1.5-5.3,0l-3.5,3.5c-3.1,3.2-8.3,3.2-11.4,0L50.8,67c-1.5-1.5-2.4-3.6-2.4-5.7c0-2.2,0.8-4.2,2.4-5.7 l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3l-8.3-8.3C45.3,37.8,44.4,37.4,43.4,37.4z">
+                              </path>
+                          </g>
+                          <g>
+                              <path
+                                  d="M91.5,70.5l-4.3-0.7c0.9-5.2-0.8-10.4-4.5-14.1c-3.7-3.7-9-5.4-14.1-4.5l-0.7-4.3c6.5-1.1,13.2,1,17.9,5.7 C90.5,57.3,92.6,64,91.5,70.5z">
+                              </path>
+                          </g>
+                          <g>
+                              <path
+                                  d="M103.9,72.9l-4.3-0.7c1.6-9.2-1.4-18.7-8-25.3c-6.6-6.6-16.1-9.6-25.3-8l-0.7-4.3c10.6-1.8,21.5,1.6,29.1,9.2 C102.3,51.3,105.7,62.2,103.9,72.9z">
+                              </path>
+                          </g>
+                      </g>
+                  </svg>
+                    </div>
+                    <div class="cu-tile-head">Phone Sales Hours</div>
+                    <div class="c2-tile-desc">
+                        <p class="c2-help-days"><strong>Monday-Sun:</strong> 24 hr</p>
+                        <a id="help-number" class="c2-help-number" href="tel:+01256 7745 77">01256 7745
+                      77<br>&nbsp;</a>
+                    </div>
+                </div>
+                <div class="c2-tile">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="icon_shopping_contact_circle_140" data-name="icon/shopping/contact/circle/140" width="1em" height="1em" viewBox="0 0 139.8 139.8" class="injected-svg" data-src="data:image/svg+xml,%3csvg id='icon_shopping_contact_circle_140' data-name='icon/shopping/contact/circle/140' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='1em' height='1em' viewBox='0 0 139.8 139.8'%3e %3cdefs%3e %3cclipPath id='clip-path'%3e %3cpath id='Path_22052' data-name='Path 22052' d='M21.775-14.625V14.564h11.12a5.344,5.344,0,0,0,5.212-5.212V-9.413a5.344,5.344,0,0,0-5.212-5.212Zm11.12,32.664H21.775A3.283,3.283,0,0,1,18.3,14.564V-14.625A3.283,3.283,0,0,1,21.775-18.1h11.12a8.6,8.6,0,0,1,8.687,8.687V9.352a8.6,8.6,0,0,1-8.687,8.687Z' transform='translate(-18.3 18.1)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-2'%3e %3cpath id='Path_22054' data-name='Path 22054' d='M8.688-14.625A5.344,5.344,0,0,0,3.475-9.413V9.352a5.344,5.344,0,0,0,5.212,5.212h11.12V-14.625Zm11.12,32.664H8.688A8.6,8.6,0,0,1,0,9.352V-9.413A8.6,8.6,0,0,1,8.688-18.1h11.12a3.283,3.283,0,0,1,3.475,3.475V14.564a3.482,3.482,0,0,1-3.475,3.475Z' transform='translate(0 18.1)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-3'%3e %3cpath id='Path_22056' data-name='Path 22056' d='M18.39,14.534,17,11.407C24.992,7.585,29.51,1.677,33.68-8.4l3.127,1.39C32.29,4.11,27.077,10.365,18.39,14.534' transform='translate(-17 8.4)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-4'%3e %3cpath id='Path_22058' data-name='Path 22058' d='M4.23,4.579H3.535A1.549,1.549,0,0,1,2.493,2.494C9.443-15.923,21.605-26,37.59-26,53.227-26,65.737-15.923,72.339,2.494A1.457,1.457,0,0,1,71.3,4.579a1.457,1.457,0,0,1-2.085-1.042C64.694-8.278,55.659-22.525,37.59-22.525S10.485-8.278,5.968,3.537A2.955,2.955,0,0,1,4.23,4.579' transform='translate(-2.363 26)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-5'%3e %3cpath id='Path_22060' data-name='Path 22060' d='M17.2-.425a3.127,3.127,0,1,0,0,6.255H27.627a3.127,3.127,0,1,0,0-6.255ZM27.627,9.3H17.2a6.6,6.6,0,0,1-6.6-6.6,6.835,6.835,0,0,1,6.6-6.6H27.627a6.6,6.6,0,1,1,0,13.2Z' transform='translate(-10.6 3.9)'/%3e %3c/clipPath%3e %3c/defs%3e %3cg id='icon-border_circle' data-name='icon-border/circle'%3e %3cpath id='Path_20230' data-name='Path 20230' d='M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z' transform='translate(-1 -1)'/%3e %3c/g%3e %3cg id='icon_shopping_contact_90' data-name='icon/shopping/contact/90' transform='translate(26.464 24.899)'%3e %3cg id='Group_17449' data-name='Group 17449' transform='translate(63.591 27.452)' clip-path='url(%23clip-path)'%3e %3cpath id='Path_22051' data-name='Path 22051' d='M17.3-19.1H47.532V23.989H17.3Z' transform='translate(-20.775 15.625)'/%3e %3c/g%3e %3cg id='Group_17450' data-name='Group 17450' transform='translate(0 27.452)' clip-path='url(%23clip-path-2)'%3e %3cpath id='Path_22053' data-name='Path 22053' d='M-1-19.1H29.232V23.989H-1Z' transform='translate(-2.475 15.625)'/%3e %3c/g%3e %3cg id='Group_17451' data-name='Group 17451' transform='translate(59.073 61.159)' clip-path='url(%23clip-path-3)'%3e %3cpath id='Path_22055' data-name='Path 22055' d='M16-9.4H42.757V20.484H16Z' transform='translate(-19.475 5.925)'/%3e %3c/g%3e %3cg id='Group_17452' data-name='Group 17452' transform='translate(8.209)' clip-path='url(%23clip-path-4)'%3e %3cpath id='Path_22057' data-name='Path 22057' d='M1.3-27H78.791V10.877H1.3Z' transform='translate(-4.992 23.525)'/%3e %3c/g%3e %3cg id='Group_17453' data-name='Group 17453' transform='translate(36.834 76.796)' clip-path='url(%23clip-path-5)'%3e %3cpath id='Path_22059' data-name='Path 22059' d='M9.6-4.9H40.18V15.254H9.6Z' transform='translate(-13.075 1.425)'/%3e %3c/g%3e %3c/g%3e %3c/svg%3e">
+                      <defs>
+                          <clipPath id="clip-path-373">
+                              <path id="Path_22052-378" data-name="Path 22052"
+                                  d="M21.775-14.625V14.564h11.12a5.344,5.344,0,0,0,5.212-5.212V-9.413a5.344,5.344,0,0,0-5.212-5.212Zm11.12,32.664H21.775A3.283,3.283,0,0,1,18.3,14.564V-14.625A3.283,3.283,0,0,1,21.775-18.1h11.12a8.6,8.6,0,0,1,8.687,8.687V9.352a8.6,8.6,0,0,1-8.687,8.687Z"
+                                  transform="translate(-18.3 18.1)"></path>
+                          </clipPath>
+                          <clipPath id="clip-path-2-374">
+                              <path id="Path_22054-379" data-name="Path 22054"
+                                  d="M8.688-14.625A5.344,5.344,0,0,0,3.475-9.413V9.352a5.344,5.344,0,0,0,5.212,5.212h11.12V-14.625Zm11.12,32.664H8.688A8.6,8.6,0,0,1,0,9.352V-9.413A8.6,8.6,0,0,1,8.688-18.1h11.12a3.283,3.283,0,0,1,3.475,3.475V14.564a3.482,3.482,0,0,1-3.475,3.475Z"
+                                  transform="translate(0 18.1)"></path>
+                          </clipPath>
+                          <clipPath id="clip-path-3-375">
+                              <path id="Path_22056-380" data-name="Path 22056"
+                                  d="M18.39,14.534,17,11.407C24.992,7.585,29.51,1.677,33.68-8.4l3.127,1.39C32.29,4.11,27.077,10.365,18.39,14.534"
+                                  transform="translate(-17 8.4)"></path>
+                          </clipPath>
+                          <clipPath id="clip-path-4-376">
+                              <path id="Path_22058-381" data-name="Path 22058"
+                                  d="M4.23,4.579H3.535A1.549,1.549,0,0,1,2.493,2.494C9.443-15.923,21.605-26,37.59-26,53.227-26,65.737-15.923,72.339,2.494A1.457,1.457,0,0,1,71.3,4.579a1.457,1.457,0,0,1-2.085-1.042C64.694-8.278,55.659-22.525,37.59-22.525S10.485-8.278,5.968,3.537A2.955,2.955,0,0,1,4.23,4.579"
+                                  transform="translate(-2.363 26)"></path>
+                          </clipPath>
+                          <clipPath id="clip-path-5-377">
+                              <path id="Path_22060-382" data-name="Path 22060"
+                                  d="M17.2-.425a3.127,3.127,0,1,0,0,6.255H27.627a3.127,3.127,0,1,0,0-6.255ZM27.627,9.3H17.2a6.6,6.6,0,0,1-6.6-6.6,6.835,6.835,0,0,1,6.6-6.6H27.627a6.6,6.6,0,1,1,0,13.2Z"
+                                  transform="translate(-10.6 3.9)"></path>
+                          </clipPath>
+                      </defs>
+                      <g id="icon-border_circle" data-name="icon-border/circle">
+                          <path id="Path_20230-383" data-name="Path 20230"
+                              d="M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z"
+                              transform="translate(-1 -1)"></path>
+                      </g>
+                      <g id="icon_shopping_contact_90" data-name="icon/shopping/contact/90"
+                          transform="translate(26.464 24.899)">
+                          <g id="Group_17449" data-name="Group 17449" transform="translate(63.591 27.452)"
+                              clip-path="url(#clip-path-373)">
+                              <path id="Path_22051-384" data-name="Path 22051" d="M17.3-19.1H47.532V23.989H17.3Z"
+                                  transform="translate(-20.775 15.625)">
+                              </path>
+                          </g>
+                          <g id="Group_17450" data-name="Group 17450" transform="translate(0 27.452)"
+                              clip-path="url(#clip-path-2-374)">
+                              <path id="Path_22053-385" data-name="Path 22053" d="M-1-19.1H29.232V23.989H-1Z"
+                                  transform="translate(-2.475 15.625)">
+                              </path>
+                          </g>
+                          <g id="Group_17451" data-name="Group 17451" transform="translate(59.073 61.159)"
+                              clip-path="url(#clip-path-3-375)">
+                              <path id="Path_22055-386" data-name="Path 22055" d="M16-9.4H42.757V20.484H16Z"
+                                  transform="translate(-19.475 5.925)">
+                              </path>
+                          </g>
+                          <g id="Group_17452" data-name="Group 17452" transform="translate(8.209)"
+                              clip-path="url(#clip-path-4-376)">
+                              <path id="Path_22057-387" data-name="Path 22057" d="M1.3-27H78.791V10.877H1.3Z"
+                                  transform="translate(-4.992 23.525)">
+                              </path>
+                          </g>
+                          <g id="Group_17453" data-name="Group 17453" transform="translate(36.834 76.796)"
+                              clip-path="url(#clip-path-5-377)">
+                              <path id="Path_22059-388" data-name="Path 22059" d="M9.6-4.9H40.18V15.254H9.6Z"
+                                  transform="translate(-13.075 1.425)">
+                              </path>
+                          </g>
+                      </g>
+                  </svg>
+                    </div>
+                    <div class="cu-tile-head">Chat Sales Hours</div>
+                    <div class="c2-tile-desc">
+                        <p class="c2-help-days"><strong>Monday-Thursday:</strong> 8:00AM-6:00PM</p>
+                        <p class="c2-help-days"><strong>Friday:</strong> 8:00AM-4:00PM</p>
+                        <a class="c2-help-number" href="#" onclick="sfMastheadLiveAgentChat.startSupportChat()">Chat
+                      Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="cu-s1-c2 sales-buss-info sec1-display">
+            <div class="c1-header">
+                <div class="c1-head-left">
+                    <div class="c1-head-l-item for-sales-tile ">Sales</div>
+                    &nbsp;>&nbsp;
+                    <div class="c1-head-l-item for-sales-buss cu-active">Lenovo Small Business Sales</div>
+                </div>
+                <div class="c1-head-right">
+                    <div class="c1-head-r-item">
+                        &nbsp;Home
+                    </div>
+                </div>
+            </div>
+            <div class="c2-heading-text">Lenovo Small Business Sales</div>
+            <div class="c2-tile-container">
+                <div class="c2-tile">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" width="1em" height="1em" x="0px" y="0px" viewBox="0 0 141.7 141.7" style="enable-background:new 0 0 141.7 141.7;" xml:space="preserve" class="injected-svg"
+                            data-src="data:image/svg+xml,%3c!-- Generator: Adobe Illustrator 26.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0) --%3e %3csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='1em' height='1em' x='0px' y='0px' viewBox='0 0 141.7 141.7' style='enable-background:new 0 0 141.7 141.7;' xml:space='preserve'%3e %3cg id='icon'%3e %3c/g%3e %3cg id='Icon_KEYLINE'%3e %3cpath d='M70.9,5.3c36.1,0,65.5,29.4,65.5,65.5s-29.4,65.5-65.5,65.5S5.4,106.9,5.4,70.8C5.3,34.7,34.7,5.3,70.9,5.3 M70.9,1 C32.3,1,1,32.3,1,70.9s31.3,69.9,69.9,69.9s69.9-31.3,69.9-69.9S109.5,1,70.9,1L70.9,1z'/%3e %3c/g%3e %3cg%3e %3cg%3e %3cpath d='M80.8,111.9c-6.6,0-13.1-2.6-17.9-7.4l-29-29c-7.1-7.1-9.4-17.8-5.7-27.2l0.3-0.7c1.3-3.3,3.2-6.2,5.7-8.7l3.5-3.5 c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-0.7,0.7-1.1,1.7-1.1,2.7c0,1,0.4,1.9,1.1,2.7l20.6,20.6 c1.5,1.5,3.9,1.5,5.3,0l3.5-3.5c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-2.5,2.5-5.4,4.4-8.7,5.7 l-0.7,0.3C87.1,111.3,83.9,111.9,80.8,111.9z M43.4,37.4c-1,0-1.9,0.4-2.7,1.1L37.3,42c-2.1,2.1-3.7,4.5-4.7,7.2l-0.3,0.7 c-3,7.8-1.2,16.6,4.7,22.5l29,29c5.9,5.9,14.7,7.8,22.5,4.7l0.7-0.3c2.7-1.1,5.2-2.7,7.2-4.7l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3 l-8.3-8.3c-1.5-1.5-3.8-1.5-5.3,0l-3.5,3.5c-3.1,3.2-8.3,3.2-11.4,0L50.8,67c-1.5-1.5-2.4-3.6-2.4-5.7c0-2.2,0.8-4.2,2.4-5.7 l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3l-8.3-8.3C45.3,37.8,44.4,37.4,43.4,37.4z'/%3e %3c/g%3e %3cg%3e %3cpath d='M91.5,70.5l-4.3-0.7c0.9-5.2-0.8-10.4-4.5-14.1c-3.7-3.7-9-5.4-14.1-4.5l-0.7-4.3c6.5-1.1,13.2,1,17.9,5.7 C90.5,57.3,92.6,64,91.5,70.5z'/%3e %3c/g%3e %3cg%3e %3cpath d='M103.9,72.9l-4.3-0.7c1.6-9.2-1.4-18.7-8-25.3c-6.6-6.6-16.1-9.6-25.3-8l-0.7-4.3c10.6-1.8,21.5,1.6,29.1,9.2 C102.3,51.3,105.7,62.2,103.9,72.9z'/%3e %3c/g%3e %3c/g%3e %3c/svg%3e">
+                      <g id="icon"> </g>
+                      <g id="Icon_KEYLINE">
+                          <path
+                              d="M70.9,5.3c36.1,0,65.5,29.4,65.5,65.5s-29.4,65.5-65.5,65.5S5.4,106.9,5.4,70.8C5.3,34.7,34.7,5.3,70.9,5.3 M70.9,1 C32.3,1,1,32.3,1,70.9s31.3,69.9,69.9,69.9s69.9-31.3,69.9-69.9S109.5,1,70.9,1L70.9,1z">
+                          </path>
+                      </g>
+                      <g>
+                          <g>
+                              <path
+                                  d="M80.8,111.9c-6.6,0-13.1-2.6-17.9-7.4l-29-29c-7.1-7.1-9.4-17.8-5.7-27.2l0.3-0.7c1.3-3.3,3.2-6.2,5.7-8.7l3.5-3.5 c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-0.7,0.7-1.1,1.7-1.1,2.7c0,1,0.4,1.9,1.1,2.7l20.6,20.6 c1.5,1.5,3.9,1.5,5.3,0l3.5-3.5c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-2.5,2.5-5.4,4.4-8.7,5.7 l-0.7,0.3C87.1,111.3,83.9,111.9,80.8,111.9z M43.4,37.4c-1,0-1.9,0.4-2.7,1.1L37.3,42c-2.1,2.1-3.7,4.5-4.7,7.2l-0.3,0.7 c-3,7.8-1.2,16.6,4.7,22.5l29,29c5.9,5.9,14.7,7.8,22.5,4.7l0.7-0.3c2.7-1.1,5.2-2.7,7.2-4.7l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3 l-8.3-8.3c-1.5-1.5-3.8-1.5-5.3,0l-3.5,3.5c-3.1,3.2-8.3,3.2-11.4,0L50.8,67c-1.5-1.5-2.4-3.6-2.4-5.7c0-2.2,0.8-4.2,2.4-5.7 l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3l-8.3-8.3C45.3,37.8,44.4,37.4,43.4,37.4z">
+                              </path>
+                          </g>
+                          <g>
+                              <path
+                                  d="M91.5,70.5l-4.3-0.7c0.9-5.2-0.8-10.4-4.5-14.1c-3.7-3.7-9-5.4-14.1-4.5l-0.7-4.3c6.5-1.1,13.2,1,17.9,5.7 C90.5,57.3,92.6,64,91.5,70.5z">
+                              </path>
+                          </g>
+                          <g>
+                              <path
+                                  d="M103.9,72.9l-4.3-0.7c1.6-9.2-1.4-18.7-8-25.3c-6.6-6.6-16.1-9.6-25.3-8l-0.7-4.3c10.6-1.8,21.5,1.6,29.1,9.2 C102.3,51.3,105.7,62.2,103.9,72.9z">
+                              </path>
+                          </g>
+                      </g>
+                  </svg>
+                    </div>
+                    <div class="cu-tile-head">Phone Sales Hours</div>
+                    <div class="c2-tile-desc">
+                        <p class="c2-help-days"><strong>Monday-Sun:</strong> 24 hr</p>
+                        <a id="help-number" class="c2-help-number" href="tel:+01256 7747 74">01256 7747
+                      74<br>&nbsp;</a>
+                    </div>
+                </div>
+                <div class="c2-tile">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="icon_shopping_contact_circle_140" data-name="icon/shopping/contact/circle/140" width="1em" height="1em" viewBox="0 0 139.8 139.8" class="injected-svg" data-src="data:image/svg+xml,%3csvg id='icon_shopping_contact_circle_140' data-name='icon/shopping/contact/circle/140' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='1em' height='1em' viewBox='0 0 139.8 139.8'%3e %3cdefs%3e %3cclipPath id='clip-path'%3e %3cpath id='Path_22052' data-name='Path 22052' d='M21.775-14.625V14.564h11.12a5.344,5.344,0,0,0,5.212-5.212V-9.413a5.344,5.344,0,0,0-5.212-5.212Zm11.12,32.664H21.775A3.283,3.283,0,0,1,18.3,14.564V-14.625A3.283,3.283,0,0,1,21.775-18.1h11.12a8.6,8.6,0,0,1,8.687,8.687V9.352a8.6,8.6,0,0,1-8.687,8.687Z' transform='translate(-18.3 18.1)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-2'%3e %3cpath id='Path_22054' data-name='Path 22054' d='M8.688-14.625A5.344,5.344,0,0,0,3.475-9.413V9.352a5.344,5.344,0,0,0,5.212,5.212h11.12V-14.625Zm11.12,32.664H8.688A8.6,8.6,0,0,1,0,9.352V-9.413A8.6,8.6,0,0,1,8.688-18.1h11.12a3.283,3.283,0,0,1,3.475,3.475V14.564a3.482,3.482,0,0,1-3.475,3.475Z' transform='translate(0 18.1)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-3'%3e %3cpath id='Path_22056' data-name='Path 22056' d='M18.39,14.534,17,11.407C24.992,7.585,29.51,1.677,33.68-8.4l3.127,1.39C32.29,4.11,27.077,10.365,18.39,14.534' transform='translate(-17 8.4)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-4'%3e %3cpath id='Path_22058' data-name='Path 22058' d='M4.23,4.579H3.535A1.549,1.549,0,0,1,2.493,2.494C9.443-15.923,21.605-26,37.59-26,53.227-26,65.737-15.923,72.339,2.494A1.457,1.457,0,0,1,71.3,4.579a1.457,1.457,0,0,1-2.085-1.042C64.694-8.278,55.659-22.525,37.59-22.525S10.485-8.278,5.968,3.537A2.955,2.955,0,0,1,4.23,4.579' transform='translate(-2.363 26)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-5'%3e %3cpath id='Path_22060' data-name='Path 22060' d='M17.2-.425a3.127,3.127,0,1,0,0,6.255H27.627a3.127,3.127,0,1,0,0-6.255ZM27.627,9.3H17.2a6.6,6.6,0,0,1-6.6-6.6,6.835,6.835,0,0,1,6.6-6.6H27.627a6.6,6.6,0,1,1,0,13.2Z' transform='translate(-10.6 3.9)'/%3e %3c/clipPath%3e %3c/defs%3e %3cg id='icon-border_circle' data-name='icon-border/circle'%3e %3cpath id='Path_20230' data-name='Path 20230' d='M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z' transform='translate(-1 -1)'/%3e %3c/g%3e %3cg id='icon_shopping_contact_90' data-name='icon/shopping/contact/90' transform='translate(26.464 24.899)'%3e %3cg id='Group_17449' data-name='Group 17449' transform='translate(63.591 27.452)' clip-path='url(%23clip-path)'%3e %3cpath id='Path_22051' data-name='Path 22051' d='M17.3-19.1H47.532V23.989H17.3Z' transform='translate(-20.775 15.625)'/%3e %3c/g%3e %3cg id='Group_17450' data-name='Group 17450' transform='translate(0 27.452)' clip-path='url(%23clip-path-2)'%3e %3cpath id='Path_22053' data-name='Path 22053' d='M-1-19.1H29.232V23.989H-1Z' transform='translate(-2.475 15.625)'/%3e %3c/g%3e %3cg id='Group_17451' data-name='Group 17451' transform='translate(59.073 61.159)' clip-path='url(%23clip-path-3)'%3e %3cpath id='Path_22055' data-name='Path 22055' d='M16-9.4H42.757V20.484H16Z' transform='translate(-19.475 5.925)'/%3e %3c/g%3e %3cg id='Group_17452' data-name='Group 17452' transform='translate(8.209)' clip-path='url(%23clip-path-4)'%3e %3cpath id='Path_22057' data-name='Path 22057' d='M1.3-27H78.791V10.877H1.3Z' transform='translate(-4.992 23.525)'/%3e %3c/g%3e %3cg id='Group_17453' data-name='Group 17453' transform='translate(36.834 76.796)' clip-path='url(%23clip-path-5)'%3e %3cpath id='Path_22059' data-name='Path 22059' d='M9.6-4.9H40.18V15.254H9.6Z' transform='translate(-13.075 1.425)'/%3e %3c/g%3e %3c/g%3e %3c/svg%3e">
+                      <defs>
+                          <clipPath id="clip-path-1786">
+                              <path id="Path_22052-1791" data-name="Path 22052"
+                                  d="M21.775-14.625V14.564h11.12a5.344,5.344,0,0,0,5.212-5.212V-9.413a5.344,5.344,0,0,0-5.212-5.212Zm11.12,32.664H21.775A3.283,3.283,0,0,1,18.3,14.564V-14.625A3.283,3.283,0,0,1,21.775-18.1h11.12a8.6,8.6,0,0,1,8.687,8.687V9.352a8.6,8.6,0,0,1-8.687,8.687Z"
+                                  transform="translate(-18.3 18.1)"></path>
+                          </clipPath>
+                          <clipPath id="clip-path-2-1787">
+                              <path id="Path_22054-1792" data-name="Path 22054"
+                                  d="M8.688-14.625A5.344,5.344,0,0,0,3.475-9.413V9.352a5.344,5.344,0,0,0,5.212,5.212h11.12V-14.625Zm11.12,32.664H8.688A8.6,8.6,0,0,1,0,9.352V-9.413A8.6,8.6,0,0,1,8.688-18.1h11.12a3.283,3.283,0,0,1,3.475,3.475V14.564a3.482,3.482,0,0,1-3.475,3.475Z"
+                                  transform="translate(0 18.1)"></path>
+                          </clipPath>
+                          <clipPath id="clip-path-3-1788">
+                              <path id="Path_22056-1793" data-name="Path 22056"
+                                  d="M18.39,14.534,17,11.407C24.992,7.585,29.51,1.677,33.68-8.4l3.127,1.39C32.29,4.11,27.077,10.365,18.39,14.534"
+                                  transform="translate(-17 8.4)"></path>
+                          </clipPath>
+                          <clipPath id="clip-path-4-1789">
+                              <path id="Path_22058-1794" data-name="Path 22058"
+                                  d="M4.23,4.579H3.535A1.549,1.549,0,0,1,2.493,2.494C9.443-15.923,21.605-26,37.59-26,53.227-26,65.737-15.923,72.339,2.494A1.457,1.457,0,0,1,71.3,4.579a1.457,1.457,0,0,1-2.085-1.042C64.694-8.278,55.659-22.525,37.59-22.525S10.485-8.278,5.968,3.537A2.955,2.955,0,0,1,4.23,4.579"
+                                  transform="translate(-2.363 26)"></path>
+                          </clipPath>
+                          <clipPath id="clip-path-5-1790">
+                              <path id="Path_22060-1795" data-name="Path 22060"
+                                  d="M17.2-.425a3.127,3.127,0,1,0,0,6.255H27.627a3.127,3.127,0,1,0,0-6.255ZM27.627,9.3H17.2a6.6,6.6,0,0,1-6.6-6.6,6.835,6.835,0,0,1,6.6-6.6H27.627a6.6,6.6,0,1,1,0,13.2Z"
+                                  transform="translate(-10.6 3.9)"></path>
+                          </clipPath>
+                      </defs>
+                      <g id="icon-border_circle" data-name="icon-border/circle">
+                          <path id="Path_20230-1796" data-name="Path 20230"
+                              d="M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z"
+                              transform="translate(-1 -1)"></path>
+                      </g>
+                      <g id="icon_shopping_contact_90" data-name="icon/shopping/contact/90"
+                          transform="translate(26.464 24.899)">
+                          <g id="Group_17449" data-name="Group 17449" transform="translate(63.591 27.452)"
+                              clip-path="url(#clip-path-1786)">
+                              <path id="Path_22051-1797" data-name="Path 22051" d="M17.3-19.1H47.532V23.989H17.3Z"
+                                  transform="translate(-20.775 15.625)">
+                              </path>
+                          </g>
+                          <g id="Group_17450" data-name="Group 17450" transform="translate(0 27.452)"
+                              clip-path="url(#clip-path-2-1787)">
+                              <path id="Path_22053-1798" data-name="Path 22053" d="M-1-19.1H29.232V23.989H-1Z"
+                                  transform="translate(-2.475 15.625)">
+                              </path>
+                          </g>
+                          <g id="Group_17451" data-name="Group 17451" transform="translate(59.073 61.159)"
+                              clip-path="url(#clip-path-3-1788)">
+                              <path id="Path_22055-1799" data-name="Path 22055" d="M16-9.4H42.757V20.484H16Z"
+                                  transform="translate(-19.475 5.925)">
+                              </path>
+                          </g>
+                          <g id="Group_17452" data-name="Group 17452" transform="translate(8.209)"
+                              clip-path="url(#clip-path-4-1789)">
+                              <path id="Path_22057-1800" data-name="Path 22057" d="M1.3-27H78.791V10.877H1.3Z"
+                                  transform="translate(-4.992 23.525)">
+                              </path>
+                          </g>
+                          <g id="Group_17453" data-name="Group 17453" transform="translate(36.834 76.796)"
+                              clip-path="url(#clip-path-5-1790)">
+                              <path id="Path_22059-1801" data-name="Path 22059" d="M9.6-4.9H40.18V15.254H9.6Z"
+                                  transform="translate(-13.075 1.425)">
+                              </path>
+                          </g>
+                      </g>
+                  </svg>
+                    </div>
+                    <div class="cu-tile-head">Chat Sales Hours</div>
+                    <div class="c2-tile-desc">
+                        <p class="c2-help-days"><strong>Monday-Thursday:</strong> 8:00AM-6:00PM</p>
+                        <p class="c2-help-days"><strong>Friday:</strong> 8:00AM-4:00PM</p>
+                        <a class="c2-help-number" href="#" onclick="sfMastheadLiveAgentChat.startSupportChat()">Chat
+                      Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Existing customer first layout-->
+        <div class="cu-s1-c1 care-home-buss sec1-display">
+            <div class="c1-header">
+                <div class="c1-head-left">
+                    <div class="c1-head-l-item for-care-tile cu-active">Customer Care</div>
+                </div>
+                <div class="c1-head-right">
+                    <div class="c1-head-r-item">
+                        &nbsp;Home </div>
+                </div>
+            </div>
+            <div class="cu-s1-tile-cont c1-container">
+                <div class="cu-tile for-care-home">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="icon_segments_home_circle_140" data-name="icon/segments/home/circle/140" width="1em" height="1em" viewBox="0 0 139.8 139.8" class="injected-svg" data-src="data:image/svg+xml,%3csvg id='icon_segments_home_circle_140' data-name='icon/segments/home/circle/140' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='1em' height='1em' viewBox='0 0 139.8 139.8'%3e %3cdefs%3e %3cclipPath id='clip-path'%3e %3cpath id='Path_21084' data-name='Path 21084' d='M71.149-5.156a1.306,1.306,0,0,0-.867,1.229V9.553a3.908,3.908,0,0,1-3.9,3.9H11.714a3.908,3.908,0,0,1-3.9-3.9V-3.928A1.3,1.3,0,0,0,6.94-5.156,6.5,6.5,0,0,1,2.6-11.271a6.455,6.455,0,0,1,2.028-4.722,6.456,6.456,0,0,1,4.477-1.786c.117,0,.234.005.354.01a6.827,6.827,0,0,1,6.156,6.94v7.367a1.311,1.311,0,0,0,.492,1.023,1.312,1.312,0,0,0,1.109.245,95.78,95.78,0,0,1,43.656,0,1.33,1.33,0,0,0,1.106-.245,1.3,1.3,0,0,0,.492-1.023v-7.367a6.827,6.827,0,0,1,6.156-6.94,6.458,6.458,0,0,1,4.831,1.775,6.455,6.455,0,0,1,2.028,4.722,6.5,6.5,0,0,1-4.339,6.115ZM59.87,18.664h2.6v-2.6h-2.6Zm-44.252,0h2.6v-2.6h-2.6Zm-2.6-42.95A9.122,9.122,0,0,1,22.126-33.4h33.84a9.122,9.122,0,0,1,9.111,9.111v4.849a9.714,9.714,0,0,0-5.206,8.608v5.737a98.537,98.537,0,0,0-41.649,0v-5.737a9.714,9.714,0,0,0-5.206-8.608ZM75.252-17.88a9.115,9.115,0,0,0-6.76-2.489c-.279.016-.541.088-.812.13v-4.048A11.728,11.728,0,0,0,55.966-36H22.126A11.728,11.728,0,0,0,10.412-24.286v4.048c-.271-.042-.536-.115-.815-.13A9.13,9.13,0,0,0,2.84-17.88,9.038,9.038,0,0,0,0-11.271,9.115,9.115,0,0,0,5.206-3.058V9.553a6.517,6.517,0,0,0,6.508,6.508h1.3v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9H57.267v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9h1.3a6.517,6.517,0,0,0,6.508-6.508V-3.058a9.107,9.107,0,0,0,5.206-8.213,9.038,9.038,0,0,0-2.84-6.609Z' transform='translate(0 36)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-2'%3e %3crect id='Rectangle_1562' data-name='Rectangle 1562' width='81.279' height='60.561'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-3'%3e %3cpath id='Path_21083' data-name='Path 21083' d='M0,21.373H78.092V-36H0Z' transform='translate(0 36)'/%3e %3c/clipPath%3e %3c/defs%3e %3cg id='icon-border_circle' data-name='icon-border/circle'%3e %3cpath id='Path_20230' data-name='Path 20230' d='M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z' transform='translate(-1 -1)'/%3e %3c/g%3e %3cg id='icon'%3e %3cg id='Group_17106' data-name='Group 17106' transform='translate(31 41)' clip-path='url(%23clip-path)'%3e %3cg id='Group_17105' data-name='Group 17105' transform='translate(-1.594 -1.594)' style='mix-blend-mode: normal;isolation: isolate'%3e %3cg id='Group_17104' data-name='Group 17104' clip-path='url(%23clip-path-2)'%3e %3cg id='Group_17103' data-name='Group 17103' transform='translate(1.594 1.594)' clip-path='url(%23clip-path-3)'%3e %3cpath id='Path_21082' data-name='Path 21082' d='M-1-37H80.279V23.561H-1Z' transform='translate(-0.594 35.406)'/%3e %3c/g%3e %3c/g%3e %3c/g%3e %3c/g%3e %3c/g%3e %3c/svg%3e">
+                      <defs>
+                          <clipPath id="clip-path-1234">
+                              <path id="Path_21084-1237" data-name="Path 21084"
+                                  d="M71.149-5.156a1.306,1.306,0,0,0-.867,1.229V9.553a3.908,3.908,0,0,1-3.9,3.9H11.714a3.908,3.908,0,0,1-3.9-3.9V-3.928A1.3,1.3,0,0,0,6.94-5.156,6.5,6.5,0,0,1,2.6-11.271a6.455,6.455,0,0,1,2.028-4.722,6.456,6.456,0,0,1,4.477-1.786c.117,0,.234.005.354.01a6.827,6.827,0,0,1,6.156,6.94v7.367a1.311,1.311,0,0,0,.492,1.023,1.312,1.312,0,0,0,1.109.245,95.78,95.78,0,0,1,43.656,0,1.33,1.33,0,0,0,1.106-.245,1.3,1.3,0,0,0,.492-1.023v-7.367a6.827,6.827,0,0,1,6.156-6.94,6.458,6.458,0,0,1,4.831,1.775,6.455,6.455,0,0,1,2.028,4.722,6.5,6.5,0,0,1-4.339,6.115ZM59.87,18.664h2.6v-2.6h-2.6Zm-44.252,0h2.6v-2.6h-2.6Zm-2.6-42.95A9.122,9.122,0,0,1,22.126-33.4h33.84a9.122,9.122,0,0,1,9.111,9.111v4.849a9.714,9.714,0,0,0-5.206,8.608v5.737a98.537,98.537,0,0,0-41.649,0v-5.737a9.714,9.714,0,0,0-5.206-8.608ZM75.252-17.88a9.115,9.115,0,0,0-6.76-2.489c-.279.016-.541.088-.812.13v-4.048A11.728,11.728,0,0,0,55.966-36H22.126A11.728,11.728,0,0,0,10.412-24.286v4.048c-.271-.042-.536-.115-.815-.13A9.13,9.13,0,0,0,2.84-17.88,9.038,9.038,0,0,0,0-11.271,9.115,9.115,0,0,0,5.206-3.058V9.553a6.517,6.517,0,0,0,6.508,6.508h1.3v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9H57.267v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9h1.3a6.517,6.517,0,0,0,6.508-6.508V-3.058a9.107,9.107,0,0,0,5.206-8.213,9.038,9.038,0,0,0-2.84-6.609Z"
+                                  transform="translate(0 36)"></path>
+                          </clipPath>
+                          <clipPath id="clip-path-2-1235">
+                              <rect id="Rectangle_1562" data-name="Rectangle 1562" width="81.279" height="60.561">
+                              </rect>
+                          </clipPath>
+                          <clipPath id="clip-path-3-1236">
+                              <path id="Path_21083-1238" data-name="Path 21083" d="M0,21.373H78.092V-36H0Z"
+                                  transform="translate(0 36)"></path>
+                          </clipPath>
+                      </defs>
+                      <g id="icon-border_circle" data-name="icon-border/circle">
+                          <path id="Path_20230-1239" data-name="Path 20230"
+                              d="M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z"
+                              transform="translate(-1 -1)"></path>
+                      </g>
+                      <g id="icon">
+                          <g id="Group_17106" data-name="Group 17106" transform="translate(31 41)"
+                              clip-path="url(#clip-path-1234)">
+                              <g id="Group_17105" data-name="Group 17105" transform="translate(-1.594 -1.594)"
+                                  style="mix-blend-mode: normal;isolation: isolate">
+                                  <g id="Group_17104" data-name="Group 17104" clip-path="url(#clip-path-2-1235)">
+                                      <g id="Group_17103" data-name="Group 17103"
+                                          transform="translate(1.594 1.594)" clip-path="url(#clip-path-3-1236)">
+                                          <path id="Path_21082-1240" data-name="Path 21082"
+                                              d="M-1-37H80.279V23.561H-1Z" transform="translate(-0.594 35.406)">
+                                          </path>
+                                      </g>
+                                  </g>
+                              </g>
+                          </g>
+                      </g>
+                  </svg>
+                    </div>
+                    <div class="cu-tile-text">
+                        <div class="cu-tile-head">For Your Home</div>
+                    </div>
+                </div>
+                <div class="cu-tile for-care-buss">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" id="icon_product-category_case_circle_140" data-name="icon/product-category/case/circle/140" width="1em" height="1em" viewBox="0 0 139.8 139.8" class="injected-svg" data-src="data:image/svg+xml,%3csvg id='icon_product-category_case_circle_140' data-name='icon/product-category/case/circle/140' xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 139.8 139.8'%3e %3cg id='icon-border_circle' data-name='icon-border/circle'%3e %3cpath id='Path_20230' data-name='Path 20230' d='M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z' transform='translate(-1 -1)'/%3e %3c/g%3e %3cg id='Group_16930' data-name='Group 16930' transform='translate(49.301 77.899)'%3e %3cpath id='Path_20785' data-name='Path 20785' d='M104.9,105H36.8a7.762,7.762,0,0,1-7.7-7.7V50.1a7.762,7.762,0,0,1,7.7-7.7H105a7.762,7.762,0,0,1,7.7,7.7V97.364a7.918,7.918,0,0,1-2.322,5.362A7.7,7.7,0,0,1,104.9,105ZM36.8,46.4a3.763,3.763,0,0,0-3.7,3.7V97.3a3.763,3.763,0,0,0,3.7,3.7h68.1a3.723,3.723,0,0,0,2.648-1.1,3.931,3.931,0,0,0,1.152-2.634V50.1a3.763,3.763,0,0,0-3.7-3.7Z' transform='translate(-50.3 -78.9)'/%3e %3cpath id='Path_20786' data-name='Path 20786' d='M104.9,81.3H36.8a7.762,7.762,0,0,1-7.7-7.7V50.1a7.762,7.762,0,0,1,7.7-7.7H105a7.762,7.762,0,0,1,7.7,7.7V73.764A7.762,7.762,0,0,1,104.9,81.3ZM36.8,46.4a3.763,3.763,0,0,0-3.7,3.7V73.6a3.763,3.763,0,0,0,3.7,3.7h68.1a3.764,3.764,0,0,0,3.8-3.635V50.1a3.763,3.763,0,0,0-3.7-3.7Z' transform='translate(-50.3 -78.9)'/%3e %3cpath id='Path_20787' data-name='Path 20787' d='M85.4,43.1h-4V35.9H60.3v7.2h-4V35.3a3.364,3.364,0,0,1,3.4-3.4H82a3.364,3.364,0,0,1,3.4,3.4Z' transform='translate(-50.3 -78.9)'/%3e %3cpath id='Path_20788' data-name='Path 20788' d='M56.5,89.2H53.1a4.805,4.805,0,0,1-4.8-4.8V78.9h4v5.5a.792.792,0,0,0,.8.8h3.4a.792.792,0,0,0,.8-.8V78.9h4v5.5A4.805,4.805,0,0,1,56.5,89.2Z' transform='translate(-50.3 -78.9)'/%3e %3cpath id='Path_20789' data-name='Path 20789' d='M88.7,89.2H85.3a4.805,4.805,0,0,1-4.8-4.8V78.9h4v5.5a.792.792,0,0,0,.8.8h3.4a.792.792,0,0,0,.8-.8V78.9h4v5.5A4.805,4.805,0,0,1,88.7,89.2Z' transform='translate(-50.3 -78.9)'/%3e %3c/g%3e %3c/svg%3e"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">
+                      <g id="icon-border_circle" data-name="icon-border/circle">
+                          <path id="Path_20230-118" data-name="Path 20230"
+                              d="M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z"
+                              transform="translate(-1 -1)"></path>
+                      </g>
+                      <g id="Group_16930" data-name="Group 16930" transform="translate(49.301 77.899)">
+                          <path id="Path_20785-119" data-name="Path 20785"
+                              d="M104.9,105H36.8a7.762,7.762,0,0,1-7.7-7.7V50.1a7.762,7.762,0,0,1,7.7-7.7H105a7.762,7.762,0,0,1,7.7,7.7V97.364a7.918,7.918,0,0,1-2.322,5.362A7.7,7.7,0,0,1,104.9,105ZM36.8,46.4a3.763,3.763,0,0,0-3.7,3.7V97.3a3.763,3.763,0,0,0,3.7,3.7h68.1a3.723,3.723,0,0,0,2.648-1.1,3.931,3.931,0,0,0,1.152-2.634V50.1a3.763,3.763,0,0,0-3.7-3.7Z"
+                              transform="translate(-50.3 -78.9)"></path>
+                          <path id="Path_20786-120" data-name="Path 20786"
+                              d="M104.9,81.3H36.8a7.762,7.762,0,0,1-7.7-7.7V50.1a7.762,7.762,0,0,1,7.7-7.7H105a7.762,7.762,0,0,1,7.7,7.7V73.764A7.762,7.762,0,0,1,104.9,81.3ZM36.8,46.4a3.763,3.763,0,0,0-3.7,3.7V73.6a3.763,3.763,0,0,0,3.7,3.7h68.1a3.764,3.764,0,0,0,3.8-3.635V50.1a3.763,3.763,0,0,0-3.7-3.7Z"
+                              transform="translate(-50.3 -78.9)"></path>
+                          <path id="Path_20787-121" data-name="Path 20787"
+                              d="M85.4,43.1h-4V35.9H60.3v7.2h-4V35.3a3.364,3.364,0,0,1,3.4-3.4H82a3.364,3.364,0,0,1,3.4,3.4Z"
+                              transform="translate(-50.3 -78.9)"></path>
+                          <path id="Path_20788-122" data-name="Path 20788"
+                              d="M56.5,89.2H53.1a4.805,4.805,0,0,1-4.8-4.8V78.9h4v5.5a.792.792,0,0,0,.8.8h3.4a.792.792,0,0,0,.8-.8V78.9h4v5.5A4.805,4.805,0,0,1,56.5,89.2Z"
+                              transform="translate(-50.3 -78.9)"></path>
+                          <path id="Path_20789-123" data-name="Path 20789"
+                              d="M88.7,89.2H85.3a4.805,4.805,0,0,1-4.8-4.8V78.9h4v5.5a.792.792,0,0,0,.8.8h3.4a.792.792,0,0,0,.8-.8V78.9h4v5.5A4.805,4.805,0,0,1,88.7,89.2Z"
+                              transform="translate(-50.3 -78.9)"></path>
+                      </g>
+                  </svg>
+                    </div>
+                    <div class="cu-tile-text">
+                        <div class="cu-tile-head">For Your Business</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- customer Third layout-- for your home -->
+        <div class="cu-s1-c2 care-home-info sec1-display">
+            <div class="c1-header">
+                <div class="c1-head-left">
+                    <div class="c1-head-l-item for-care-tile">Customer Care</div>
+                    &nbsp;>&nbsp;
+                    <div class="c1-head-l-item cu-active">For Your Home</div>
+                </div>
+                <div class="c1-head-right">
+                    <div class="c1-head-r-item">&nbsp;Home
+                    </div>
+                </div>
+            </div>
+            <div class="c2-heading-text">Lenovo Customer Care</div>
+            <div class="c2-tile-container">
+                <div class="c2-tile">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" width="1em" height="1em" x="0px" y="0px" viewBox="0 0 141.7 141.7" style="enable-background:new 0 0 141.7 141.7;" xml:space="preserve" class="injected-svg"
+                            data-src="data:image/svg+xml,%3c!-- Generator: Adobe Illustrator 26.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0) --%3e %3csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='1em' height='1em' x='0px' y='0px' viewBox='0 0 141.7 141.7' style='enable-background:new 0 0 141.7 141.7;' xml:space='preserve'%3e %3cg id='icon'%3e %3c/g%3e %3cg id='Icon_KEYLINE'%3e %3cpath d='M70.9,5.3c36.1,0,65.5,29.4,65.5,65.5s-29.4,65.5-65.5,65.5S5.4,106.9,5.4,70.8C5.3,34.7,34.7,5.3,70.9,5.3 M70.9,1 C32.3,1,1,32.3,1,70.9s31.3,69.9,69.9,69.9s69.9-31.3,69.9-69.9S109.5,1,70.9,1L70.9,1z'/%3e %3c/g%3e %3cg%3e %3cg%3e %3cpath d='M80.8,111.9c-6.6,0-13.1-2.6-17.9-7.4l-29-29c-7.1-7.1-9.4-17.8-5.7-27.2l0.3-0.7c1.3-3.3,3.2-6.2,5.7-8.7l3.5-3.5 c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-0.7,0.7-1.1,1.7-1.1,2.7c0,1,0.4,1.9,1.1,2.7l20.6,20.6 c1.5,1.5,3.9,1.5,5.3,0l3.5-3.5c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-2.5,2.5-5.4,4.4-8.7,5.7 l-0.7,0.3C87.1,111.3,83.9,111.9,80.8,111.9z M43.4,37.4c-1,0-1.9,0.4-2.7,1.1L37.3,42c-2.1,2.1-3.7,4.5-4.7,7.2l-0.3,0.7 c-3,7.8-1.2,16.6,4.7,22.5l29,29c5.9,5.9,14.7,7.8,22.5,4.7l0.7-0.3c2.7-1.1,5.2-2.7,7.2-4.7l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3 l-8.3-8.3c-1.5-1.5-3.8-1.5-5.3,0l-3.5,3.5c-3.1,3.2-8.3,3.2-11.4,0L50.8,67c-1.5-1.5-2.4-3.6-2.4-5.7c0-2.2,0.8-4.2,2.4-5.7 l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3l-8.3-8.3C45.3,37.8,44.4,37.4,43.4,37.4z'/%3e %3c/g%3e %3cg%3e %3cpath d='M91.5,70.5l-4.3-0.7c0.9-5.2-0.8-10.4-4.5-14.1c-3.7-3.7-9-5.4-14.1-4.5l-0.7-4.3c6.5-1.1,13.2,1,17.9,5.7 C90.5,57.3,92.6,64,91.5,70.5z'/%3e %3c/g%3e %3cg%3e %3cpath d='M103.9,72.9l-4.3-0.7c1.6-9.2-1.4-18.7-8-25.3c-6.6-6.6-16.1-9.6-25.3-8l-0.7-4.3c10.6-1.8,21.5,1.6,29.1,9.2 C102.3,51.3,105.7,62.2,103.9,72.9z'/%3e %3c/g%3e %3c/g%3e %3c/svg%3e">
+                      <g id="icon"> </g>
+                      <g id="Icon_KEYLINE">
+                          <path
+                              d="M70.9,5.3c36.1,0,65.5,29.4,65.5,65.5s-29.4,65.5-65.5,65.5S5.4,106.9,5.4,70.8C5.3,34.7,34.7,5.3,70.9,5.3 M70.9,1 C32.3,1,1,32.3,1,70.9s31.3,69.9,69.9,69.9s69.9-31.3,69.9-69.9S109.5,1,70.9,1L70.9,1z">
+                          </path>
+                      </g>
+                      <g>
+                          <g>
+                              <path
+                                  d="M80.8,111.9c-6.6,0-13.1-2.6-17.9-7.4l-29-29c-7.1-7.1-9.4-17.8-5.7-27.2l0.3-0.7c1.3-3.3,3.2-6.2,5.7-8.7l3.5-3.5 c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-0.7,0.7-1.1,1.7-1.1,2.7c0,1,0.4,1.9,1.1,2.7l20.6,20.6 c1.5,1.5,3.9,1.5,5.3,0l3.5-3.5c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-2.5,2.5-5.4,4.4-8.7,5.7 l-0.7,0.3C87.1,111.3,83.9,111.9,80.8,111.9z M43.4,37.4c-1,0-1.9,0.4-2.7,1.1L37.3,42c-2.1,2.1-3.7,4.5-4.7,7.2l-0.3,0.7 c-3,7.8-1.2,16.6,4.7,22.5l29,29c5.9,5.9,14.7,7.8,22.5,4.7l0.7-0.3c2.7-1.1,5.2-2.7,7.2-4.7l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3 l-8.3-8.3c-1.5-1.5-3.8-1.5-5.3,0l-3.5,3.5c-3.1,3.2-8.3,3.2-11.4,0L50.8,67c-1.5-1.5-2.4-3.6-2.4-5.7c0-2.2,0.8-4.2,2.4-5.7 l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3l-8.3-8.3C45.3,37.8,44.4,37.4,43.4,37.4z">
+                              </path>
+                          </g>
+                          <g>
+                              <path
+                                  d="M91.5,70.5l-4.3-0.7c0.9-5.2-0.8-10.4-4.5-14.1c-3.7-3.7-9-5.4-14.1-4.5l-0.7-4.3c6.5-1.1,13.2,1,17.9,5.7 C90.5,57.3,92.6,64,91.5,70.5z">
+                              </path>
+                          </g>
+                          <g>
+                              <path
+                                  d="M103.9,72.9l-4.3-0.7c1.6-9.2-1.4-18.7-8-25.3c-6.6-6.6-16.1-9.6-25.3-8l-0.7-4.3c10.6-1.8,21.5,1.6,29.1,9.2 C102.3,51.3,105.7,62.2,103.9,72.9z">
+                              </path>
+                          </g>
+                      </g>
+                  </svg>
+                    </div>
+                    <div class="cu-tile-head">Phone Support Hours</div>
+                    <div class="c2-tile-desc">
+                        <p class="c2-help-days"><strong>Monday-Sun:</strong> 24 hr</p>
+                        <a id="help-number" class="c2-help-number" href="tel:020 3014 0095">020 3014
+                      0095</a>
+                    </div>
+                </div>
+                <div class="c2-tile">
+                    <div class="cu-tile-icon">
+                        <img src="//static.lenovo.com/we/images/email-icon.png" class="injected-svg">
+                    </div>
+                    <div class="cu-tile-head">Email Support</div>
+                    <div class="c2-tile-desc">
+                        <p class="c2-help-days"><strong>Monday-Thursday:</strong> 8:00AM-6:00PM</p>
+                        <p class="c2-help-days"><strong>Friday:</strong> 8:00AM-4:00PM</p>
+                        <a class="c2-help-number" href="#">Email Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- customer Third layout-- for your business -->
+        <div class="cu-s1-c2 care-buss-info sec1-display">
+            <div class="c1-header">
+                <div class="c1-head-left">
+                    <div class="c1-head-l-item for-care-tile">Customer Care</div>
+                    &nbsp;>&nbsp;
+                    <div class="c1-head-l-item cu-active">Small Business</div>
+                </div>
+                <div class="c1-head-right">
+                    <div class="c1-head-r-item">
+                        &nbsp;Home </div>
+                </div>
+            </div>
+            <div class="c2-heading-text">Lenovo Customer Care</div>
+            <div class="c2-tile-container">
+                <div class="c2-tile">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" width="1em" height="1em" x="0px" y="0px" viewBox="0 0 141.7 141.7" style="enable-background:new 0 0 141.7 141.7;" xml:space="preserve" class="injected-svg"
+                            data-src="data:image/svg+xml,%3c!-- Generator: Adobe Illustrator 26.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0) --%3e %3csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='1em' height='1em' x='0px' y='0px' viewBox='0 0 141.7 141.7' style='enable-background:new 0 0 141.7 141.7;' xml:space='preserve'%3e %3cg id='icon'%3e %3c/g%3e %3cg id='Icon_KEYLINE'%3e %3cpath d='M70.9,5.3c36.1,0,65.5,29.4,65.5,65.5s-29.4,65.5-65.5,65.5S5.4,106.9,5.4,70.8C5.3,34.7,34.7,5.3,70.9,5.3 M70.9,1 C32.3,1,1,32.3,1,70.9s31.3,69.9,69.9,69.9s69.9-31.3,69.9-69.9S109.5,1,70.9,1L70.9,1z'/%3e %3c/g%3e %3cg%3e %3cg%3e %3cpath d='M80.8,111.9c-6.6,0-13.1-2.6-17.9-7.4l-29-29c-7.1-7.1-9.4-17.8-5.7-27.2l0.3-0.7c1.3-3.3,3.2-6.2,5.7-8.7l3.5-3.5 c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-0.7,0.7-1.1,1.7-1.1,2.7c0,1,0.4,1.9,1.1,2.7l20.6,20.6 c1.5,1.5,3.9,1.5,5.3,0l3.5-3.5c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-2.5,2.5-5.4,4.4-8.7,5.7 l-0.7,0.3C87.1,111.3,83.9,111.9,80.8,111.9z M43.4,37.4c-1,0-1.9,0.4-2.7,1.1L37.3,42c-2.1,2.1-3.7,4.5-4.7,7.2l-0.3,0.7 c-3,7.8-1.2,16.6,4.7,22.5l29,29c5.9,5.9,14.7,7.8,22.5,4.7l0.7-0.3c2.7-1.1,5.2-2.7,7.2-4.7l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3 l-8.3-8.3c-1.5-1.5-3.8-1.5-5.3,0l-3.5,3.5c-3.1,3.2-8.3,3.2-11.4,0L50.8,67c-1.5-1.5-2.4-3.6-2.4-5.7c0-2.2,0.8-4.2,2.4-5.7 l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3l-8.3-8.3C45.3,37.8,44.4,37.4,43.4,37.4z'/%3e %3c/g%3e %3cg%3e %3cpath d='M91.5,70.5l-4.3-0.7c0.9-5.2-0.8-10.4-4.5-14.1c-3.7-3.7-9-5.4-14.1-4.5l-0.7-4.3c6.5-1.1,13.2,1,17.9,5.7 C90.5,57.3,92.6,64,91.5,70.5z'/%3e %3c/g%3e %3cg%3e %3cpath d='M103.9,72.9l-4.3-0.7c1.6-9.2-1.4-18.7-8-25.3c-6.6-6.6-16.1-9.6-25.3-8l-0.7-4.3c10.6-1.8,21.5,1.6,29.1,9.2 C102.3,51.3,105.7,62.2,103.9,72.9z'/%3e %3c/g%3e %3c/g%3e %3c/svg%3e">
+                      <g id="icon"> </g>
+                      <g id="Icon_KEYLINE">
+                          <path
+                              d="M70.9,5.3c36.1,0,65.5,29.4,65.5,65.5s-29.4,65.5-65.5,65.5S5.4,106.9,5.4,70.8C5.3,34.7,34.7,5.3,70.9,5.3 M70.9,1 C32.3,1,1,32.3,1,70.9s31.3,69.9,69.9,69.9s69.9-31.3,69.9-69.9S109.5,1,70.9,1L70.9,1z">
+                          </path>
+                      </g>
+                      <g>
+                          <g>
+                              <path
+                                  d="M80.8,111.9c-6.6,0-13.1-2.6-17.9-7.4l-29-29c-7.1-7.1-9.4-17.8-5.7-27.2l0.3-0.7c1.3-3.3,3.2-6.2,5.7-8.7l3.5-3.5 c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-0.7,0.7-1.1,1.7-1.1,2.7c0,1,0.4,1.9,1.1,2.7l20.6,20.6 c1.5,1.5,3.9,1.5,5.3,0l3.5-3.5c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-2.5,2.5-5.4,4.4-8.7,5.7 l-0.7,0.3C87.1,111.3,83.9,111.9,80.8,111.9z M43.4,37.4c-1,0-1.9,0.4-2.7,1.1L37.3,42c-2.1,2.1-3.7,4.5-4.7,7.2l-0.3,0.7 c-3,7.8-1.2,16.6,4.7,22.5l29,29c5.9,5.9,14.7,7.8,22.5,4.7l0.7-0.3c2.7-1.1,5.2-2.7,7.2-4.7l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3 l-8.3-8.3c-1.5-1.5-3.8-1.5-5.3,0l-3.5,3.5c-3.1,3.2-8.3,3.2-11.4,0L50.8,67c-1.5-1.5-2.4-3.6-2.4-5.7c0-2.2,0.8-4.2,2.4-5.7 l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3l-8.3-8.3C45.3,37.8,44.4,37.4,43.4,37.4z">
+                              </path>
+                          </g>
+                          <g>
+                              <path
+                                  d="M91.5,70.5l-4.3-0.7c0.9-5.2-0.8-10.4-4.5-14.1c-3.7-3.7-9-5.4-14.1-4.5l-0.7-4.3c6.5-1.1,13.2,1,17.9,5.7 C90.5,57.3,92.6,64,91.5,70.5z">
+                              </path>
+                          </g>
+                          <g>
+                              <path
+                                  d="M103.9,72.9l-4.3-0.7c1.6-9.2-1.4-18.7-8-25.3c-6.6-6.6-16.1-9.6-25.3-8l-0.7-4.3c10.6-1.8,21.5,1.6,29.1,9.2 C102.3,51.3,105.7,62.2,103.9,72.9z">
+                              </path>
+                          </g>
+                      </g>
+                  </svg>
+                    </div>
+                    <div class="cu-tile-head">Phone Support Hours</div>
+                    <div class="c2-tile-desc">
+                        <p class="c2-help-days"><strong>Monday-Sun:</strong> 24 hr</p>
+                        <a id="help-number" class="c2-help-number" href="tel:020 3014 0095">020 3014
+                      0095</a>
+                    </div>
+                </div>
+                <div class="c2-tile">
+                    <div class="cu-tile-icon">
+                        <img src="//static.lenovo.com/we/images/email-icon.png" class="injected-svg">
+                    </div>
+                    <div class="cu-tile-head">Email Support</div>
+                    <div class="c2-tile-desc">
+                        <p class="c2-help-days"><strong>Monday-Thursday:</strong> 8:00AM-6:00PM</p>
+                        <p class="c2-help-days"><strong>Friday:</strong> 8:00AM-4:00PM</p>
+                        <a class="c2-help-number" href="#">Email Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Warranty start -->
+        <div class="cu-s1-c1 warranty-home-buss sec1-display">
+            <div class="c1-header">
+                <div class="c1-head-left">
+                    <div class="c1-head-l-item for-warranty-tile cu-active">Warranty</div>
+                </div>
+                <div class="c1-head-right">
+                    <div class="c1-head-r-item">
+                        &nbsp;Home
+                    </div>
+                </div>
+            </div>
+            <div class="cu-s1-tile-cont c1-container">
+                <div class="cu-tile for-warranty-home">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg"  xmlns:xlink="http://www.w3.org/1999/xlink" id="icon_segments_home_circle_140" data-name="icon/segments/home/circle/140" width="1em" height="1em" viewBox="0 0 139.8 139.8" class="injected-svg" data-src="data:image/svg+xml,%3csvg id='icon_segments_home_circle_140' data-name='icon/segments/home/circle/140' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='1em' height='1em' viewBox='0 0 139.8 139.8'%3e %3cdefs%3e %3cclipPath id='clip-path'%3e %3cpath id='Path_21084' data-name='Path 21084' d='M71.149-5.156a1.306,1.306,0,0,0-.867,1.229V9.553a3.908,3.908,0,0,1-3.9,3.9H11.714a3.908,3.908,0,0,1-3.9-3.9V-3.928A1.3,1.3,0,0,0,6.94-5.156,6.5,6.5,0,0,1,2.6-11.271a6.455,6.455,0,0,1,2.028-4.722,6.456,6.456,0,0,1,4.477-1.786c.117,0,.234.005.354.01a6.827,6.827,0,0,1,6.156,6.94v7.367a1.311,1.311,0,0,0,.492,1.023,1.312,1.312,0,0,0,1.109.245,95.78,95.78,0,0,1,43.656,0,1.33,1.33,0,0,0,1.106-.245,1.3,1.3,0,0,0,.492-1.023v-7.367a6.827,6.827,0,0,1,6.156-6.94,6.458,6.458,0,0,1,4.831,1.775,6.455,6.455,0,0,1,2.028,4.722,6.5,6.5,0,0,1-4.339,6.115ZM59.87,18.664h2.6v-2.6h-2.6Zm-44.252,0h2.6v-2.6h-2.6Zm-2.6-42.95A9.122,9.122,0,0,1,22.126-33.4h33.84a9.122,9.122,0,0,1,9.111,9.111v4.849a9.714,9.714,0,0,0-5.206,8.608v5.737a98.537,98.537,0,0,0-41.649,0v-5.737a9.714,9.714,0,0,0-5.206-8.608ZM75.252-17.88a9.115,9.115,0,0,0-6.76-2.489c-.279.016-.541.088-.812.13v-4.048A11.728,11.728,0,0,0,55.966-36H22.126A11.728,11.728,0,0,0,10.412-24.286v4.048c-.271-.042-.536-.115-.815-.13A9.13,9.13,0,0,0,2.84-17.88,9.038,9.038,0,0,0,0-11.271,9.115,9.115,0,0,0,5.206-3.058V9.553a6.517,6.517,0,0,0,6.508,6.508h1.3v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9H57.267v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9h1.3a6.517,6.517,0,0,0,6.508-6.508V-3.058a9.107,9.107,0,0,0,5.206-8.213,9.038,9.038,0,0,0-2.84-6.609Z' transform='translate(0 36)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-2'%3e %3crect id='Rectangle_1562' data-name='Rectangle 1562' width='81.279' height='60.561'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-3'%3e %3cpath id='Path_21083' data-name='Path 21083' d='M0,21.373H78.092V-36H0Z' transform='translate(0 36)'/%3e %3c/clipPath%3e %3c/defs%3e %3cg id='icon-border_circle' data-name='icon-border/circle'%3e %3cpath id='Path_20230' data-name='Path 20230' d='M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z' transform='translate(-1 -1)'/%3e %3c/g%3e %3cg id='icon'%3e %3cg id='Group_17106' data-name='Group 17106' transform='translate(31 41)' clip-path='url(%23clip-path)'%3e %3cg id='Group_17105' data-name='Group 17105' transform='translate(-1.594 -1.594)' style='mix-blend-mode: normal;isolation: isolate'%3e %3cg id='Group_17104' data-name='Group 17104' clip-path='url(%23clip-path-2)'%3e %3cg id='Group_17103' data-name='Group 17103' transform='translate(1.594 1.594)' clip-path='url(%23clip-path-3)'%3e %3cpath id='Path_21082' data-name='Path 21082' d='M-1-37H80.279V23.561H-1Z' transform='translate(-0.594 35.406)'/%3e %3c/g%3e %3c/g%3e %3c/g%3e %3c/g%3e %3c/g%3e %3c/svg%3e"> <defs> <clipPath id="clip-path-244"> <path id="Path_21084-247" data-name="Path 21084" d="M71.149-5.156a1.306,1.306,0,0,0-.867,1.229V9.553a3.908,3.908,0,0,1-3.9,3.9H11.714a3.908,3.908,0,0,1-3.9-3.9V-3.928A1.3,1.3,0,0,0,6.94-5.156,6.5,6.5,0,0,1,2.6-11.271a6.455,6.455,0,0,1,2.028-4.722,6.456,6.456,0,0,1,4.477-1.786c.117,0,.234.005.354.01a6.827,6.827,0,0,1,6.156,6.94v7.367a1.311,1.311,0,0,0,.492,1.023,1.312,1.312,0,0,0,1.109.245,95.78,95.78,0,0,1,43.656,0,1.33,1.33,0,0,0,1.106-.245,1.3,1.3,0,0,0,.492-1.023v-7.367a6.827,6.827,0,0,1,6.156-6.94,6.458,6.458,0,0,1,4.831,1.775,6.455,6.455,0,0,1,2.028,4.722,6.5,6.5,0,0,1-4.339,6.115ZM59.87,18.664h2.6v-2.6h-2.6Zm-44.252,0h2.6v-2.6h-2.6Zm-2.6-42.95A9.122,9.122,0,0,1,22.126-33.4h33.84a9.122,9.122,0,0,1,9.111,9.111v4.849a9.714,9.714,0,0,0-5.206,8.608v5.737a98.537,98.537,0,0,0-41.649,0v-5.737a9.714,9.714,0,0,0-5.206-8.608ZM75.252-17.88a9.115,9.115,0,0,0-6.76-2.489c-.279.016-.541.088-.812.13v-4.048A11.728,11.728,0,0,0,55.966-36H22.126A11.728,11.728,0,0,0,10.412-24.286v4.048c-.271-.042-.536-.115-.815-.13A9.13,9.13,0,0,0,2.84-17.88,9.038,9.038,0,0,0,0-11.271,9.115,9.115,0,0,0,5.206-3.058V9.553a6.517,6.517,0,0,0,6.508,6.508h1.3v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9H57.267v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9h1.3a6.517,6.517,0,0,0,6.508-6.508V-3.058a9.107,9.107,0,0,0,5.206-8.213,9.038,9.038,0,0,0-2.84-6.609Z" transform="translate(0 36)"></path> </clipPath> <clipPath id="clip-path-2-245"> <rect id="Rectangle_1562" data-name="Rectangle 1562" width="81.279" height="60.561"></rect> </clipPath> <clipPath id="clip-path-3-246"> <path id="Path_21083-248" data-name="Path 21083" d="M0,21.373H78.092V-36H0Z" transform="translate(0 36)"></path> </clipPath> </defs> <g id="icon-border_circle" data-name="icon-border/circle"> <path id="Path_20230-249" data-name="Path 20230" d="M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z" transform="translate(-1 -1)"></path> </g> <g id="icon"> <g id="Group_17106" data-name="Group 17106" transform="translate(31 41)" clip-path="url(#clip-path-244)"> <g id="Group_17105" data-name="Group 17105" transform="translate(-1.594 -1.594)" style="mix-blend-mode: normal;isolation: isolate"> <g id="Group_17104" data-name="Group 17104" clip-path="url(#clip-path-2-245)"> <g id="Group_17103" data-name="Group 17103" transform="translate(1.594 1.594)" clip-path="url(#clip-path-3-246)"> <path id="Path_21082-250" data-name="Path 21082" d="M-1-37H80.279V23.561H-1Z" transform="translate(-0.594 35.406)"></path> </g> </g> </g> </g> </g> </svg>
+                    </div>
+                    <div class="cu-tile-text">
+                        <div class="cu-tile-head">For Your Home</div>
+                    </div>
+                </div>
+                <div class="cu-tile for-warranty-buss">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" id="icon_product-category_case_circle_140" data-name="icon/product-category/case/circle/140" width="1em" height="1em" viewBox="0 0 139.8 139.8" class="injected-svg" data-src="data:image/svg+xml,%3csvg id='icon_product-category_case_circle_140' data-name='icon/product-category/case/circle/140' xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 139.8 139.8'%3e %3cg id='icon-border_circle' data-name='icon-border/circle'%3e %3cpath id='Path_20230' data-name='Path 20230' d='M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z' transform='translate(-1 -1)'/%3e %3c/g%3e %3cg id='Group_16930' data-name='Group 16930' transform='translate(49.301 77.899)'%3e %3cpath id='Path_20785' data-name='Path 20785' d='M104.9,105H36.8a7.762,7.762,0,0,1-7.7-7.7V50.1a7.762,7.762,0,0,1,7.7-7.7H105a7.762,7.762,0,0,1,7.7,7.7V97.364a7.918,7.918,0,0,1-2.322,5.362A7.7,7.7,0,0,1,104.9,105ZM36.8,46.4a3.763,3.763,0,0,0-3.7,3.7V97.3a3.763,3.763,0,0,0,3.7,3.7h68.1a3.723,3.723,0,0,0,2.648-1.1,3.931,3.931,0,0,0,1.152-2.634V50.1a3.763,3.763,0,0,0-3.7-3.7Z' transform='translate(-50.3 -78.9)'/%3e %3cpath id='Path_20786' data-name='Path 20786' d='M104.9,81.3H36.8a7.762,7.762,0,0,1-7.7-7.7V50.1a7.762,7.762,0,0,1,7.7-7.7H105a7.762,7.762,0,0,1,7.7,7.7V73.764A7.762,7.762,0,0,1,104.9,81.3ZM36.8,46.4a3.763,3.763,0,0,0-3.7,3.7V73.6a3.763,3.763,0,0,0,3.7,3.7h68.1a3.764,3.764,0,0,0,3.8-3.635V50.1a3.763,3.763,0,0,0-3.7-3.7Z' transform='translate(-50.3 -78.9)'/%3e %3cpath id='Path_20787' data-name='Path 20787' d='M85.4,43.1h-4V35.9H60.3v7.2h-4V35.3a3.364,3.364,0,0,1,3.4-3.4H82a3.364,3.364,0,0,1,3.4,3.4Z' transform='translate(-50.3 -78.9)'/%3e %3cpath id='Path_20788' data-name='Path 20788' d='M56.5,89.2H53.1a4.805,4.805,0,0,1-4.8-4.8V78.9h4v5.5a.792.792,0,0,0,.8.8h3.4a.792.792,0,0,0,.8-.8V78.9h4v5.5A4.805,4.805,0,0,1,56.5,89.2Z' transform='translate(-50.3 -78.9)'/%3e %3cpath id='Path_20789' data-name='Path 20789' d='M88.7,89.2H85.3a4.805,4.805,0,0,1-4.8-4.8V78.9h4v5.5a.792.792,0,0,0,.8.8h3.4a.792.792,0,0,0,.8-.8V78.9h4v5.5A4.805,4.805,0,0,1,88.7,89.2Z' transform='translate(-50.3 -78.9)'/%3e %3c/g%3e %3c/svg%3e"
+                            xmlns:xlink="http://www.w3.org/1999/xlink"> <g id="icon-border_circle" data-name="icon-border/circle"> <path id="Path_20230-118" data-name="Path 20230" d="M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z" transform="translate(-1 -1)"></path> </g> <g id="Group_16930" data-name="Group 16930" transform="translate(49.301 77.899)"> <path id="Path_20785-119" data-name="Path 20785" d="M104.9,105H36.8a7.762,7.762,0,0,1-7.7-7.7V50.1a7.762,7.762,0,0,1,7.7-7.7H105a7.762,7.762,0,0,1,7.7,7.7V97.364a7.918,7.918,0,0,1-2.322,5.362A7.7,7.7,0,0,1,104.9,105ZM36.8,46.4a3.763,3.763,0,0,0-3.7,3.7V97.3a3.763,3.763,0,0,0,3.7,3.7h68.1a3.723,3.723,0,0,0,2.648-1.1,3.931,3.931,0,0,0,1.152-2.634V50.1a3.763,3.763,0,0,0-3.7-3.7Z" transform="translate(-50.3 -78.9)"></path> <path id="Path_20786-120" data-name="Path 20786" d="M104.9,81.3H36.8a7.762,7.762,0,0,1-7.7-7.7V50.1a7.762,7.762,0,0,1,7.7-7.7H105a7.762,7.762,0,0,1,7.7,7.7V73.764A7.762,7.762,0,0,1,104.9,81.3ZM36.8,46.4a3.763,3.763,0,0,0-3.7,3.7V73.6a3.763,3.763,0,0,0,3.7,3.7h68.1a3.764,3.764,0,0,0,3.8-3.635V50.1a3.763,3.763,0,0,0-3.7-3.7Z" transform="translate(-50.3 -78.9)"></path> <path id="Path_20787-121" data-name="Path 20787" d="M85.4,43.1h-4V35.9H60.3v7.2h-4V35.3a3.364,3.364,0,0,1,3.4-3.4H82a3.364,3.364,0,0,1,3.4,3.4Z" transform="translate(-50.3 -78.9)"></path> <path id="Path_20788-122" data-name="Path 20788" d="M56.5,89.2H53.1a4.805,4.805,0,0,1-4.8-4.8V78.9h4v5.5a.792.792,0,0,0,.8.8h3.4a.792.792,0,0,0,.8-.8V78.9h4v5.5A4.805,4.805,0,0,1,56.5,89.2Z" transform="translate(-50.3 -78.9)"></path> <path id="Path_20789-123" data-name="Path 20789" d="M88.7,89.2H85.3a4.805,4.805,0,0,1-4.8-4.8V78.9h4v5.5a.792.792,0,0,0,.8.8h3.4a.792.792,0,0,0,.8-.8V78.9h4v5.5A4.805,4.805,0,0,1,88.7,89.2Z" transform="translate(-50.3 -78.9)"></path> </g> </svg>
+                    </div>
+                    <div class="cu-tile-text">
+                        <div class="cu-tile-head">For Your Business</div>
+                    </div>
+                </div>
+                <a href="//www.lenovopartnerhub.com/web/lenovo-global-site/support-contacts" class="cu-tile">
+                    <div class="cu-tile-icon">
+                        <img src="//static.lenovo.com/we/images/reseller-icon.png?a" class="injected-svg">
+                    </div>
+                    <div class="cu-tile-text">
+                        <div class="cu-tile-head">For Resellers/Partners</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="cu-s1-c2 warranty-home-info sec1-display">
+            <div class="c1-header">
+                <div class="c1-head-left">
+                    <div class="c1-head-l-item for-warranty-tile">Warranty</div>
+                    &nbsp;>&nbsp;
+                    <div class="c1-head-l-item for-warranty-home cu-active">Home Warranty</div>
+                </div>
+                <div class="c1-head-right">
+                    <div class="c1-head-r-item">
+                        &nbsp;Home</div>
+                </div>
+            </div>
+            <div class="c2-heading-text">Lenovo Home Warranty</div>
+            <div class="c2-tile-container">
+                <div class="c2-tile">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" width="1em" height="1em" x="0px" y="0px" viewBox="0 0 141.7 141.7" style="enable-background:new 0 0 141.7 141.7;" xml:space="preserve" class="injected-svg"
+                            data-src="data:image/svg+xml,%3c!-- Generator: Adobe Illustrator 26.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0) --%3e %3csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='1em' height='1em' x='0px' y='0px' viewBox='0 0 141.7 141.7' style='enable-background:new 0 0 141.7 141.7;' xml:space='preserve'%3e %3cg id='icon'%3e %3c/g%3e %3cg id='Icon_KEYLINE'%3e %3cpath d='M70.9,5.3c36.1,0,65.5,29.4,65.5,65.5s-29.4,65.5-65.5,65.5S5.4,106.9,5.4,70.8C5.3,34.7,34.7,5.3,70.9,5.3 M70.9,1 C32.3,1,1,32.3,1,70.9s31.3,69.9,69.9,69.9s69.9-31.3,69.9-69.9S109.5,1,70.9,1L70.9,1z'/%3e %3c/g%3e %3cg%3e %3cg%3e %3cpath d='M80.8,111.9c-6.6,0-13.1-2.6-17.9-7.4l-29-29c-7.1-7.1-9.4-17.8-5.7-27.2l0.3-0.7c1.3-3.3,3.2-6.2,5.7-8.7l3.5-3.5 c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-0.7,0.7-1.1,1.7-1.1,2.7c0,1,0.4,1.9,1.1,2.7l20.6,20.6 c1.5,1.5,3.9,1.5,5.3,0l3.5-3.5c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-2.5,2.5-5.4,4.4-8.7,5.7 l-0.7,0.3C87.1,111.3,83.9,111.9,80.8,111.9z M43.4,37.4c-1,0-1.9,0.4-2.7,1.1L37.3,42c-2.1,2.1-3.7,4.5-4.7,7.2l-0.3,0.7 c-3,7.8-1.2,16.6,4.7,22.5l29,29c5.9,5.9,14.7,7.8,22.5,4.7l0.7-0.3c2.7-1.1,5.2-2.7,7.2-4.7l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3 l-8.3-8.3c-1.5-1.5-3.8-1.5-5.3,0l-3.5,3.5c-3.1,3.2-8.3,3.2-11.4,0L50.8,67c-1.5-1.5-2.4-3.6-2.4-5.7c0-2.2,0.8-4.2,2.4-5.7 l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3l-8.3-8.3C45.3,37.8,44.4,37.4,43.4,37.4z'/%3e %3c/g%3e %3cg%3e %3cpath d='M91.5,70.5l-4.3-0.7c0.9-5.2-0.8-10.4-4.5-14.1c-3.7-3.7-9-5.4-14.1-4.5l-0.7-4.3c6.5-1.1,13.2,1,17.9,5.7 C90.5,57.3,92.6,64,91.5,70.5z'/%3e %3c/g%3e %3cg%3e %3cpath d='M103.9,72.9l-4.3-0.7c1.6-9.2-1.4-18.7-8-25.3c-6.6-6.6-16.1-9.6-25.3-8l-0.7-4.3c10.6-1.8,21.5,1.6,29.1,9.2 C102.3,51.3,105.7,62.2,103.9,72.9z'/%3e %3c/g%3e %3c/g%3e %3c/svg%3e"> <g id="icon"> </g> <g id="Icon_KEYLINE"> <path d="M70.9,5.3c36.1,0,65.5,29.4,65.5,65.5s-29.4,65.5-65.5,65.5S5.4,106.9,5.4,70.8C5.3,34.7,34.7,5.3,70.9,5.3 M70.9,1 C32.3,1,1,32.3,1,70.9s31.3,69.9,69.9,69.9s69.9-31.3,69.9-69.9S109.5,1,70.9,1L70.9,1z"></path> </g> <g> <g> <path d="M80.8,111.9c-6.6,0-13.1-2.6-17.9-7.4l-29-29c-7.1-7.1-9.4-17.8-5.7-27.2l0.3-0.7c1.3-3.3,3.2-6.2,5.7-8.7l3.5-3.5 c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-0.7,0.7-1.1,1.7-1.1,2.7c0,1,0.4,1.9,1.1,2.7l20.6,20.6 c1.5,1.5,3.9,1.5,5.3,0l3.5-3.5c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-2.5,2.5-5.4,4.4-8.7,5.7 l-0.7,0.3C87.1,111.3,83.9,111.9,80.8,111.9z M43.4,37.4c-1,0-1.9,0.4-2.7,1.1L37.3,42c-2.1,2.1-3.7,4.5-4.7,7.2l-0.3,0.7 c-3,7.8-1.2,16.6,4.7,22.5l29,29c5.9,5.9,14.7,7.8,22.5,4.7l0.7-0.3c2.7-1.1,5.2-2.7,7.2-4.7l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3 l-8.3-8.3c-1.5-1.5-3.8-1.5-5.3,0l-3.5,3.5c-3.1,3.2-8.3,3.2-11.4,0L50.8,67c-1.5-1.5-2.4-3.6-2.4-5.7c0-2.2,0.8-4.2,2.4-5.7 l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3l-8.3-8.3C45.3,37.8,44.4,37.4,43.4,37.4z"></path> </g> <g> <path d="M91.5,70.5l-4.3-0.7c0.9-5.2-0.8-10.4-4.5-14.1c-3.7-3.7-9-5.4-14.1-4.5l-0.7-4.3c6.5-1.1,13.2,1,17.9,5.7 C90.5,57.3,92.6,64,91.5,70.5z"></path> </g> <g> <path d="M103.9,72.9l-4.3-0.7c1.6-9.2-1.4-18.7-8-25.3c-6.6-6.6-16.1-9.6-25.3-8l-0.7-4.3c10.6-1.8,21.5,1.6,29.1,9.2 C102.3,51.3,105.7,62.2,103.9,72.9z"></path> </g> </g> </svg>
+                    </div>
+                    <div class="cu-tile-head">Phone Warranty Hours</div>
+                    <div class="c2-tile-desc">
+                        <p class="c2-help-days"><strong>Monday-Sun:</strong> 24 hr</p>
+                        <a id="help-number" class="c2-help-number" href="tel:+01256 7745 77">01256 7745 77<br>&nbsp;</a>
+                    </div>
+                </div>
+                <div class="c2-tile">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="icon_shopping_contact_circle_140" data-name="icon/shopping/contact/circle/140" width="1em" height="1em" viewBox="0 0 139.8 139.8" class="injected-svg" data-src="data:image/svg+xml,%3csvg id='icon_shopping_contact_circle_140' data-name='icon/shopping/contact/circle/140' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='1em' height='1em' viewBox='0 0 139.8 139.8'%3e %3cdefs%3e %3cclipPath id='clip-path'%3e %3cpath id='Path_22052' data-name='Path 22052' d='M21.775-14.625V14.564h11.12a5.344,5.344,0,0,0,5.212-5.212V-9.413a5.344,5.344,0,0,0-5.212-5.212Zm11.12,32.664H21.775A3.283,3.283,0,0,1,18.3,14.564V-14.625A3.283,3.283,0,0,1,21.775-18.1h11.12a8.6,8.6,0,0,1,8.687,8.687V9.352a8.6,8.6,0,0,1-8.687,8.687Z' transform='translate(-18.3 18.1)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-2'%3e %3cpath id='Path_22054' data-name='Path 22054' d='M8.688-14.625A5.344,5.344,0,0,0,3.475-9.413V9.352a5.344,5.344,0,0,0,5.212,5.212h11.12V-14.625Zm11.12,32.664H8.688A8.6,8.6,0,0,1,0,9.352V-9.413A8.6,8.6,0,0,1,8.688-18.1h11.12a3.283,3.283,0,0,1,3.475,3.475V14.564a3.482,3.482,0,0,1-3.475,3.475Z' transform='translate(0 18.1)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-3'%3e %3cpath id='Path_22056' data-name='Path 22056' d='M18.39,14.534,17,11.407C24.992,7.585,29.51,1.677,33.68-8.4l3.127,1.39C32.29,4.11,27.077,10.365,18.39,14.534' transform='translate(-17 8.4)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-4'%3e %3cpath id='Path_22058' data-name='Path 22058' d='M4.23,4.579H3.535A1.549,1.549,0,0,1,2.493,2.494C9.443-15.923,21.605-26,37.59-26,53.227-26,65.737-15.923,72.339,2.494A1.457,1.457,0,0,1,71.3,4.579a1.457,1.457,0,0,1-2.085-1.042C64.694-8.278,55.659-22.525,37.59-22.525S10.485-8.278,5.968,3.537A2.955,2.955,0,0,1,4.23,4.579' transform='translate(-2.363 26)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-5'%3e %3cpath id='Path_22060' data-name='Path 22060' d='M17.2-.425a3.127,3.127,0,1,0,0,6.255H27.627a3.127,3.127,0,1,0,0-6.255ZM27.627,9.3H17.2a6.6,6.6,0,0,1-6.6-6.6,6.835,6.835,0,0,1,6.6-6.6H27.627a6.6,6.6,0,1,1,0,13.2Z' transform='translate(-10.6 3.9)'/%3e %3c/clipPath%3e %3c/defs%3e %3cg id='icon-border_circle' data-name='icon-border/circle'%3e %3cpath id='Path_20230' data-name='Path 20230' d='M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z' transform='translate(-1 -1)'/%3e %3c/g%3e %3cg id='icon_shopping_contact_90' data-name='icon/shopping/contact/90' transform='translate(26.464 24.899)'%3e %3cg id='Group_17449' data-name='Group 17449' transform='translate(63.591 27.452)' clip-path='url(%23clip-path)'%3e %3cpath id='Path_22051' data-name='Path 22051' d='M17.3-19.1H47.532V23.989H17.3Z' transform='translate(-20.775 15.625)'/%3e %3c/g%3e %3cg id='Group_17450' data-name='Group 17450' transform='translate(0 27.452)' clip-path='url(%23clip-path-2)'%3e %3cpath id='Path_22053' data-name='Path 22053' d='M-1-19.1H29.232V23.989H-1Z' transform='translate(-2.475 15.625)'/%3e %3c/g%3e %3cg id='Group_17451' data-name='Group 17451' transform='translate(59.073 61.159)' clip-path='url(%23clip-path-3)'%3e %3cpath id='Path_22055' data-name='Path 22055' d='M16-9.4H42.757V20.484H16Z' transform='translate(-19.475 5.925)'/%3e %3c/g%3e %3cg id='Group_17452' data-name='Group 17452' transform='translate(8.209)' clip-path='url(%23clip-path-4)'%3e %3cpath id='Path_22057' data-name='Path 22057' d='M1.3-27H78.791V10.877H1.3Z' transform='translate(-4.992 23.525)'/%3e %3c/g%3e %3cg id='Group_17453' data-name='Group 17453' transform='translate(36.834 76.796)' clip-path='url(%23clip-path-5)'%3e %3cpath id='Path_22059' data-name='Path 22059' d='M9.6-4.9H40.18V15.254H9.6Z' transform='translate(-13.075 1.425)'/%3e %3c/g%3e %3c/g%3e %3c/svg%3e"> <defs> <clipPath id="clip-path-373"> <path id="Path_22052-378" data-name="Path 22052" d="M21.775-14.625V14.564h11.12a5.344,5.344,0,0,0,5.212-5.212V-9.413a5.344,5.344,0,0,0-5.212-5.212Zm11.12,32.664H21.775A3.283,3.283,0,0,1,18.3,14.564V-14.625A3.283,3.283,0,0,1,21.775-18.1h11.12a8.6,8.6,0,0,1,8.687,8.687V9.352a8.6,8.6,0,0,1-8.687,8.687Z" transform="translate(-18.3 18.1)"></path> </clipPath> <clipPath id="clip-path-2-374"> <path id="Path_22054-379" data-name="Path 22054" d="M8.688-14.625A5.344,5.344,0,0,0,3.475-9.413V9.352a5.344,5.344,0,0,0,5.212,5.212h11.12V-14.625Zm11.12,32.664H8.688A8.6,8.6,0,0,1,0,9.352V-9.413A8.6,8.6,0,0,1,8.688-18.1h11.12a3.283,3.283,0,0,1,3.475,3.475V14.564a3.482,3.482,0,0,1-3.475,3.475Z" transform="translate(0 18.1)"></path> </clipPath> <clipPath id="clip-path-3-375"> <path id="Path_22056-380" data-name="Path 22056" d="M18.39,14.534,17,11.407C24.992,7.585,29.51,1.677,33.68-8.4l3.127,1.39C32.29,4.11,27.077,10.365,18.39,14.534" transform="translate(-17 8.4)"></path> </clipPath> <clipPath id="clip-path-4-376"> <path id="Path_22058-381" data-name="Path 22058" d="M4.23,4.579H3.535A1.549,1.549,0,0,1,2.493,2.494C9.443-15.923,21.605-26,37.59-26,53.227-26,65.737-15.923,72.339,2.494A1.457,1.457,0,0,1,71.3,4.579a1.457,1.457,0,0,1-2.085-1.042C64.694-8.278,55.659-22.525,37.59-22.525S10.485-8.278,5.968,3.537A2.955,2.955,0,0,1,4.23,4.579" transform="translate(-2.363 26)"></path> </clipPath> <clipPath id="clip-path-5-377"> <path id="Path_22060-382" data-name="Path 22060" d="M17.2-.425a3.127,3.127,0,1,0,0,6.255H27.627a3.127,3.127,0,1,0,0-6.255ZM27.627,9.3H17.2a6.6,6.6,0,0,1-6.6-6.6,6.835,6.835,0,0,1,6.6-6.6H27.627a6.6,6.6,0,1,1,0,13.2Z" transform="translate(-10.6 3.9)"></path> </clipPath> </defs> <g id="icon-border_circle" data-name="icon-border/circle"> <path id="Path_20230-383" data-name="Path 20230" d="M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z" transform="translate(-1 -1)"></path> </g> <g id="icon_shopping_contact_90" data-name="icon/shopping/contact/90" transform="translate(26.464 24.899)"> <g id="Group_17449" data-name="Group 17449" transform="translate(63.591 27.452)" clip-path="url(#clip-path-373)"> <path id="Path_22051-384" data-name="Path 22051" d="M17.3-19.1H47.532V23.989H17.3Z" transform="translate(-20.775 15.625)"></path> </g> <g id="Group_17450" data-name="Group 17450" transform="translate(0 27.452)" clip-path="url(#clip-path-2-374)"> <path id="Path_22053-385" data-name="Path 22053" d="M-1-19.1H29.232V23.989H-1Z" transform="translate(-2.475 15.625)"></path> </g> <g id="Group_17451" data-name="Group 17451" transform="translate(59.073 61.159)" clip-path="url(#clip-path-3-375)"> <path id="Path_22055-386" data-name="Path 22055" d="M16-9.4H42.757V20.484H16Z" transform="translate(-19.475 5.925)"></path> </g> <g id="Group_17452" data-name="Group 17452" transform="translate(8.209)" clip-path="url(#clip-path-4-376)"> <path id="Path_22057-387" data-name="Path 22057" d="M1.3-27H78.791V10.877H1.3Z" transform="translate(-4.992 23.525)"></path> </g> <g id="Group_17453" data-name="Group 17453" transform="translate(36.834 76.796)" clip-path="url(#clip-path-5-377)"> <path id="Path_22059-388" data-name="Path 22059" d="M9.6-4.9H40.18V15.254H9.6Z" transform="translate(-13.075 1.425)"></path> </g> </g> </svg>
+                    </div>
+                    <div class="cu-tile-head">Chat Warranty Hours</div>
+                    <div class="c2-tile-desc">
+                        <p class="c2-help-days"><strong>Monday-Thursday:</strong> 8:00AM-6:00PM</p>
+                        <p class="c2-help-days"><strong>Friday:</strong> 8:00AM-4:00PM</p>
+                        <a class="c2-help-number" href="#" onclick="sfMastheadLiveAgentChat.startSupportChat()">Chat Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="cu-s1-c2 warranty-buss-info sec1-display">
+            <div class="c1-header">
+                <div class="c1-head-left">
+                    <div class="c1-head-l-item for-warranty-tile ">Warranty</div>
+                    &nbsp;>&nbsp;
+                    <div class="c1-head-l-item for-warranty-buss cu-active">Lenovo Small Business Warranty</div>
+                </div>
+                <div class="c1-head-right">
+                    <div class="c1-head-r-item">
+                        &nbsp;Home</div>
+                </div>
+            </div>
+            <div class="c2-heading-text">Lenovo Small Business Warranty</div>
+            <div class="c2-tile-container">
+                <div class="c2-tile">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" width="1em" height="1em" x="0px" y="0px" viewBox="0 0 141.7 141.7" style="enable-background:new 0 0 141.7 141.7;" xml:space="preserve" class="injected-svg"
+                            data-src="data:image/svg+xml,%3c!-- Generator: Adobe Illustrator 26.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0) --%3e %3csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='1em' height='1em' x='0px' y='0px' viewBox='0 0 141.7 141.7' style='enable-background:new 0 0 141.7 141.7;' xml:space='preserve'%3e %3cg id='icon'%3e %3c/g%3e %3cg id='Icon_KEYLINE'%3e %3cpath d='M70.9,5.3c36.1,0,65.5,29.4,65.5,65.5s-29.4,65.5-65.5,65.5S5.4,106.9,5.4,70.8C5.3,34.7,34.7,5.3,70.9,5.3 M70.9,1 C32.3,1,1,32.3,1,70.9s31.3,69.9,69.9,69.9s69.9-31.3,69.9-69.9S109.5,1,70.9,1L70.9,1z'/%3e %3c/g%3e %3cg%3e %3cg%3e %3cpath d='M80.8,111.9c-6.6,0-13.1-2.6-17.9-7.4l-29-29c-7.1-7.1-9.4-17.8-5.7-27.2l0.3-0.7c1.3-3.3,3.2-6.2,5.7-8.7l3.5-3.5 c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-0.7,0.7-1.1,1.7-1.1,2.7c0,1,0.4,1.9,1.1,2.7l20.6,20.6 c1.5,1.5,3.9,1.5,5.3,0l3.5-3.5c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-2.5,2.5-5.4,4.4-8.7,5.7 l-0.7,0.3C87.1,111.3,83.9,111.9,80.8,111.9z M43.4,37.4c-1,0-1.9,0.4-2.7,1.1L37.3,42c-2.1,2.1-3.7,4.5-4.7,7.2l-0.3,0.7 c-3,7.8-1.2,16.6,4.7,22.5l29,29c5.9,5.9,14.7,7.8,22.5,4.7l0.7-0.3c2.7-1.1,5.2-2.7,7.2-4.7l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3 l-8.3-8.3c-1.5-1.5-3.8-1.5-5.3,0l-3.5,3.5c-3.1,3.2-8.3,3.2-11.4,0L50.8,67c-1.5-1.5-2.4-3.6-2.4-5.7c0-2.2,0.8-4.2,2.4-5.7 l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3l-8.3-8.3C45.3,37.8,44.4,37.4,43.4,37.4z'/%3e %3c/g%3e %3cg%3e %3cpath d='M91.5,70.5l-4.3-0.7c0.9-5.2-0.8-10.4-4.5-14.1c-3.7-3.7-9-5.4-14.1-4.5l-0.7-4.3c6.5-1.1,13.2,1,17.9,5.7 C90.5,57.3,92.6,64,91.5,70.5z'/%3e %3c/g%3e %3cg%3e %3cpath d='M103.9,72.9l-4.3-0.7c1.6-9.2-1.4-18.7-8-25.3c-6.6-6.6-16.1-9.6-25.3-8l-0.7-4.3c10.6-1.8,21.5,1.6,29.1,9.2 C102.3,51.3,105.7,62.2,103.9,72.9z'/%3e %3c/g%3e %3c/g%3e %3c/svg%3e"> <g id="icon"> </g> <g id="Icon_KEYLINE"> <path d="M70.9,5.3c36.1,0,65.5,29.4,65.5,65.5s-29.4,65.5-65.5,65.5S5.4,106.9,5.4,70.8C5.3,34.7,34.7,5.3,70.9,5.3 M70.9,1 C32.3,1,1,32.3,1,70.9s31.3,69.9,69.9,69.9s69.9-31.3,69.9-69.9S109.5,1,70.9,1L70.9,1z"></path> </g> <g> <g> <path d="M80.8,111.9c-6.6,0-13.1-2.6-17.9-7.4l-29-29c-7.1-7.1-9.4-17.8-5.7-27.2l0.3-0.7c1.3-3.3,3.2-6.2,5.7-8.7l3.5-3.5 c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-0.7,0.7-1.1,1.7-1.1,2.7c0,1,0.4,1.9,1.1,2.7l20.6,20.6 c1.5,1.5,3.9,1.5,5.3,0l3.5-3.5c3.2-3.2,8.3-3.2,11.4,0l8.3,8.3c3.2,3.2,3.2,8.3,0,11.4l-3.5,3.5c-2.5,2.5-5.4,4.4-8.7,5.7 l-0.7,0.3C87.1,111.3,83.9,111.9,80.8,111.9z M43.4,37.4c-1,0-1.9,0.4-2.7,1.1L37.3,42c-2.1,2.1-3.7,4.5-4.7,7.2l-0.3,0.7 c-3,7.8-1.2,16.6,4.7,22.5l29,29c5.9,5.9,14.7,7.8,22.5,4.7l0.7-0.3c2.7-1.1,5.2-2.7,7.2-4.7l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3 l-8.3-8.3c-1.5-1.5-3.8-1.5-5.3,0l-3.5,3.5c-3.1,3.2-8.3,3.2-11.4,0L50.8,67c-1.5-1.5-2.4-3.6-2.4-5.7c0-2.2,0.8-4.2,2.4-5.7 l3.5-3.5c1.5-1.5,1.5-3.8,0-5.3l-8.3-8.3C45.3,37.8,44.4,37.4,43.4,37.4z"></path> </g> <g> <path d="M91.5,70.5l-4.3-0.7c0.9-5.2-0.8-10.4-4.5-14.1c-3.7-3.7-9-5.4-14.1-4.5l-0.7-4.3c6.5-1.1,13.2,1,17.9,5.7 C90.5,57.3,92.6,64,91.5,70.5z"></path> </g> <g> <path d="M103.9,72.9l-4.3-0.7c1.6-9.2-1.4-18.7-8-25.3c-6.6-6.6-16.1-9.6-25.3-8l-0.7-4.3c10.6-1.8,21.5,1.6,29.1,9.2 C102.3,51.3,105.7,62.2,103.9,72.9z"></path> </g> </g> </svg>
+                    </div>
+                    <div class="cu-tile-head">Phone Warranty Hours</div>
+                    <div class="c2-tile-desc">
+                        <p class="c2-help-days"><strong>Monday-Sun:</strong> 24 hr</p>
+                        <a id="help-number" class="c2-help-number" href="tel:+01256 7747 74">01256 7747 74<br>&nbsp;</a>
+                    </div>
+                </div>
+                <div class="c2-tile">
+                    <div class="cu-tile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="icon_shopping_contact_circle_140" data-name="icon/shopping/contact/circle/140" width="1em" height="1em" viewBox="0 0 139.8 139.8" class="injected-svg" data-src="data:image/svg+xml,%3csvg id='icon_shopping_contact_circle_140' data-name='icon/shopping/contact/circle/140' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='1em' height='1em' viewBox='0 0 139.8 139.8'%3e %3cdefs%3e %3cclipPath id='clip-path'%3e %3cpath id='Path_22052' data-name='Path 22052' d='M21.775-14.625V14.564h11.12a5.344,5.344,0,0,0,5.212-5.212V-9.413a5.344,5.344,0,0,0-5.212-5.212Zm11.12,32.664H21.775A3.283,3.283,0,0,1,18.3,14.564V-14.625A3.283,3.283,0,0,1,21.775-18.1h11.12a8.6,8.6,0,0,1,8.687,8.687V9.352a8.6,8.6,0,0,1-8.687,8.687Z' transform='translate(-18.3 18.1)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-2'%3e %3cpath id='Path_22054' data-name='Path 22054' d='M8.688-14.625A5.344,5.344,0,0,0,3.475-9.413V9.352a5.344,5.344,0,0,0,5.212,5.212h11.12V-14.625Zm11.12,32.664H8.688A8.6,8.6,0,0,1,0,9.352V-9.413A8.6,8.6,0,0,1,8.688-18.1h11.12a3.283,3.283,0,0,1,3.475,3.475V14.564a3.482,3.482,0,0,1-3.475,3.475Z' transform='translate(0 18.1)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-3'%3e %3cpath id='Path_22056' data-name='Path 22056' d='M18.39,14.534,17,11.407C24.992,7.585,29.51,1.677,33.68-8.4l3.127,1.39C32.29,4.11,27.077,10.365,18.39,14.534' transform='translate(-17 8.4)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-4'%3e %3cpath id='Path_22058' data-name='Path 22058' d='M4.23,4.579H3.535A1.549,1.549,0,0,1,2.493,2.494C9.443-15.923,21.605-26,37.59-26,53.227-26,65.737-15.923,72.339,2.494A1.457,1.457,0,0,1,71.3,4.579a1.457,1.457,0,0,1-2.085-1.042C64.694-8.278,55.659-22.525,37.59-22.525S10.485-8.278,5.968,3.537A2.955,2.955,0,0,1,4.23,4.579' transform='translate(-2.363 26)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-5'%3e %3cpath id='Path_22060' data-name='Path 22060' d='M17.2-.425a3.127,3.127,0,1,0,0,6.255H27.627a3.127,3.127,0,1,0,0-6.255ZM27.627,9.3H17.2a6.6,6.6,0,0,1-6.6-6.6,6.835,6.835,0,0,1,6.6-6.6H27.627a6.6,6.6,0,1,1,0,13.2Z' transform='translate(-10.6 3.9)'/%3e %3c/clipPath%3e %3c/defs%3e %3cg id='icon-border_circle' data-name='icon-border/circle'%3e %3cpath id='Path_20230' data-name='Path 20230' d='M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z' transform='translate(-1 -1)'/%3e %3c/g%3e %3cg id='icon_shopping_contact_90' data-name='icon/shopping/contact/90' transform='translate(26.464 24.899)'%3e %3cg id='Group_17449' data-name='Group 17449' transform='translate(63.591 27.452)' clip-path='url(%23clip-path)'%3e %3cpath id='Path_22051' data-name='Path 22051' d='M17.3-19.1H47.532V23.989H17.3Z' transform='translate(-20.775 15.625)'/%3e %3c/g%3e %3cg id='Group_17450' data-name='Group 17450' transform='translate(0 27.452)' clip-path='url(%23clip-path-2)'%3e %3cpath id='Path_22053' data-name='Path 22053' d='M-1-19.1H29.232V23.989H-1Z' transform='translate(-2.475 15.625)'/%3e %3c/g%3e %3cg id='Group_17451' data-name='Group 17451' transform='translate(59.073 61.159)' clip-path='url(%23clip-path-3)'%3e %3cpath id='Path_22055' data-name='Path 22055' d='M16-9.4H42.757V20.484H16Z' transform='translate(-19.475 5.925)'/%3e %3c/g%3e %3cg id='Group_17452' data-name='Group 17452' transform='translate(8.209)' clip-path='url(%23clip-path-4)'%3e %3cpath id='Path_22057' data-name='Path 22057' d='M1.3-27H78.791V10.877H1.3Z' transform='translate(-4.992 23.525)'/%3e %3c/g%3e %3cg id='Group_17453' data-name='Group 17453' transform='translate(36.834 76.796)' clip-path='url(%23clip-path-5)'%3e %3cpath id='Path_22059' data-name='Path 22059' d='M9.6-4.9H40.18V15.254H9.6Z' transform='translate(-13.075 1.425)'/%3e %3c/g%3e %3c/g%3e %3c/svg%3e"> <defs> <clipPath id="clip-path-1786"> <path id="Path_22052-1791" data-name="Path 22052" d="M21.775-14.625V14.564h11.12a5.344,5.344,0,0,0,5.212-5.212V-9.413a5.344,5.344,0,0,0-5.212-5.212Zm11.12,32.664H21.775A3.283,3.283,0,0,1,18.3,14.564V-14.625A3.283,3.283,0,0,1,21.775-18.1h11.12a8.6,8.6,0,0,1,8.687,8.687V9.352a8.6,8.6,0,0,1-8.687,8.687Z" transform="translate(-18.3 18.1)"></path> </clipPath> <clipPath id="clip-path-2-1787"> <path id="Path_22054-1792" data-name="Path 22054" d="M8.688-14.625A5.344,5.344,0,0,0,3.475-9.413V9.352a5.344,5.344,0,0,0,5.212,5.212h11.12V-14.625Zm11.12,32.664H8.688A8.6,8.6,0,0,1,0,9.352V-9.413A8.6,8.6,0,0,1,8.688-18.1h11.12a3.283,3.283,0,0,1,3.475,3.475V14.564a3.482,3.482,0,0,1-3.475,3.475Z" transform="translate(0 18.1)"></path> </clipPath> <clipPath id="clip-path-3-1788"> <path id="Path_22056-1793" data-name="Path 22056" d="M18.39,14.534,17,11.407C24.992,7.585,29.51,1.677,33.68-8.4l3.127,1.39C32.29,4.11,27.077,10.365,18.39,14.534" transform="translate(-17 8.4)"></path> </clipPath> <clipPath id="clip-path-4-1789"> <path id="Path_22058-1794" data-name="Path 22058" d="M4.23,4.579H3.535A1.549,1.549,0,0,1,2.493,2.494C9.443-15.923,21.605-26,37.59-26,53.227-26,65.737-15.923,72.339,2.494A1.457,1.457,0,0,1,71.3,4.579a1.457,1.457,0,0,1-2.085-1.042C64.694-8.278,55.659-22.525,37.59-22.525S10.485-8.278,5.968,3.537A2.955,2.955,0,0,1,4.23,4.579" transform="translate(-2.363 26)"></path> </clipPath> <clipPath id="clip-path-5-1790"> <path id="Path_22060-1795" data-name="Path 22060" d="M17.2-.425a3.127,3.127,0,1,0,0,6.255H27.627a3.127,3.127,0,1,0,0-6.255ZM27.627,9.3H17.2a6.6,6.6,0,0,1-6.6-6.6,6.835,6.835,0,0,1,6.6-6.6H27.627a6.6,6.6,0,1,1,0,13.2Z" transform="translate(-10.6 3.9)"></path> </clipPath> </defs> <g id="icon-border_circle" data-name="icon-border/circle"> <path id="Path_20230-1796" data-name="Path 20230" d="M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z" transform="translate(-1 -1)"></path> </g> <g id="icon_shopping_contact_90" data-name="icon/shopping/contact/90" transform="translate(26.464 24.899)"> <g id="Group_17449" data-name="Group 17449" transform="translate(63.591 27.452)" clip-path="url(#clip-path-1786)"> <path id="Path_22051-1797" data-name="Path 22051" d="M17.3-19.1H47.532V23.989H17.3Z" transform="translate(-20.775 15.625)"></path> </g> <g id="Group_17450" data-name="Group 17450" transform="translate(0 27.452)" clip-path="url(#clip-path-2-1787)"> <path id="Path_22053-1798" data-name="Path 22053" d="M-1-19.1H29.232V23.989H-1Z" transform="translate(-2.475 15.625)"></path> </g> <g id="Group_17451" data-name="Group 17451" transform="translate(59.073 61.159)" clip-path="url(#clip-path-3-1788)"> <path id="Path_22055-1799" data-name="Path 22055" d="M16-9.4H42.757V20.484H16Z" transform="translate(-19.475 5.925)"></path> </g> <g id="Group_17452" data-name="Group 17452" transform="translate(8.209)" clip-path="url(#clip-path-4-1789)"> <path id="Path_22057-1800" data-name="Path 22057" d="M1.3-27H78.791V10.877H1.3Z" transform="translate(-4.992 23.525)"></path> </g> <g id="Group_17453" data-name="Group 17453" transform="translate(36.834 76.796)" clip-path="url(#clip-path-5-1790)"> <path id="Path_22059-1801" data-name="Path 22059" d="M9.6-4.9H40.18V15.254H9.6Z" transform="translate(-13.075 1.425)"></path> </g> </g> </svg>
+                    </div>
+                    <div class="cu-tile-head">Chat Warranty Hours</div>
+                    <div class="c2-tile-desc">
+                        <p class="c2-help-days"><strong>Monday-Thursday:</strong> 8:00AM-6:00PM</p>
+                        <p class="c2-help-days"><strong>Friday:</strong> 8:00AM-4:00PM</p>
+                        <a class="c2-help-number" href="#" onclick="sfMastheadLiveAgentChat.startSupportChat()">Chat Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- warranty end -->
+    </div>
+</section>
+
+<div id="app">
+    <style>
+        #app svg{
+            /* display: none; */
+        }
+    </style>
+	<svg
+     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="icon_segments_home_circle_140" data-name="icon/segments/home/circle/140"
+	 width="1em" height="1em" viewBox="0 0 139.8 139.8" class="injected-svg" data-src="data:image/svg+xml,%3csvg id='icon_segments_home_circle_140' data-name='icon/segments/home/circle/140' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='1em' height='1em' viewBox='0 0 139.8 139.8'%3e %3cdefs%3e %3cclipPath id='clip-path'%3e %3cpath id='Path_21084' data-name='Path 21084' d='M71.149-5.156a1.306,1.306,0,0,0-.867,1.229V9.553a3.908,3.908,0,0,1-3.9,3.9H11.714a3.908,3.908,0,0,1-3.9-3.9V-3.928A1.3,1.3,0,0,0,6.94-5.156,6.5,6.5,0,0,1,2.6-11.271a6.455,6.455,0,0,1,2.028-4.722,6.456,6.456,0,0,1,4.477-1.786c.117,0,.234.005.354.01a6.827,6.827,0,0,1,6.156,6.94v7.367a1.311,1.311,0,0,0,.492,1.023,1.312,1.312,0,0,0,1.109.245,95.78,95.78,0,0,1,43.656,0,1.33,1.33,0,0,0,1.106-.245,1.3,1.3,0,0,0,.492-1.023v-7.367a6.827,6.827,0,0,1,6.156-6.94,6.458,6.458,0,0,1,4.831,1.775,6.455,6.455,0,0,1,2.028,4.722,6.5,6.5,0,0,1-4.339,6.115ZM59.87,18.664h2.6v-2.6h-2.6Zm-44.252,0h2.6v-2.6h-2.6Zm-2.6-42.95A9.122,9.122,0,0,1,22.126-33.4h33.84a9.122,9.122,0,0,1,9.111,9.111v4.849a9.714,9.714,0,0,0-5.206,8.608v5.737a98.537,98.537,0,0,0-41.649,0v-5.737a9.714,9.714,0,0,0-5.206-8.608ZM75.252-17.88a9.115,9.115,0,0,0-6.76-2.489c-.279.016-.541.088-.812.13v-4.048A11.728,11.728,0,0,0,55.966-36H22.126A11.728,11.728,0,0,0,10.412-24.286v4.048c-.271-.042-.536-.115-.815-.13A9.13,9.13,0,0,0,2.84-17.88,9.038,9.038,0,0,0,0-11.271,9.115,9.115,0,0,0,5.206-3.058V9.553a6.517,6.517,0,0,0,6.508,6.508h1.3v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9H57.267v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9h1.3a6.517,6.517,0,0,0,6.508-6.508V-3.058a9.107,9.107,0,0,0,5.206-8.213,9.038,9.038,0,0,0-2.84-6.609Z' transform='translate(0 36)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-2'%3e %3crect id='Rectangle_1562' data-name='Rectangle 1562' width='81.279' height='60.561'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-3'%3e %3cpath id='Path_21083' data-name='Path 21083' d='M0,21.373H78.092V-36H0Z' transform='translate(0 36)'/%3e %3c/clipPath%3e %3c/defs%3e %3cg id='icon-border_circle' data-name='icon-border/circle'%3e %3cpath id='Path_20230' data-name='Path 20230' d='M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z' transform='translate(-1 -1)'/%3e %3c/g%3e %3cg id='icon'%3e %3cg id='Group_17106' data-name='Group 17106' transform='translate(31 41)' clip-path='url(%23clip-path)'%3e %3cg id='Group_17105' data-name='Group 17105' transform='translate(-1.594 -1.594)' style='mix-blend-mode: normal;isolation: isolate'%3e %3cg id='Group_17104' data-name='Group 17104' clip-path='url(%23clip-path-2)'%3e %3cg id='Group_17103' data-name='Group 17103' transform='translate(1.594 1.594)' clip-path='url(%23clip-path-3)'%3e %3cpath id='Path_21082' data-name='Path 21082' d='M-1-37H80.279V23.561H-1Z' transform='translate(-0.594 35.406)'/%3e %3c/g%3e %3c/g%3e %3c/g%3e %3c/g%3e %3c/g%3e %3c/svg%3e">
+		<defs>
+			<clipPath id="clip-path-244bsbsbsbs">
+				<path id="Path_21084-247" data-name="Path 21084" d="M71.149-5.156a1.306,1.306,0,0,0-.867,1.229V9.553a3.908,3.908,0,0,1-3.9,3.9H11.714a3.908,3.908,0,0,1-3.9-3.9V-3.928A1.3,1.3,0,0,0,6.94-5.156,6.5,6.5,0,0,1,2.6-11.271a6.455,6.455,0,0,1,2.028-4.722,6.456,6.456,0,0,1,4.477-1.786c.117,0,.234.005.354.01a6.827,6.827,0,0,1,6.156,6.94v7.367a1.311,1.311,0,0,0,.492,1.023,1.312,1.312,0,0,0,1.109.245,95.78,95.78,0,0,1,43.656,0,1.33,1.33,0,0,0,1.106-.245,1.3,1.3,0,0,0,.492-1.023v-7.367a6.827,6.827,0,0,1,6.156-6.94,6.458,6.458,0,0,1,4.831,1.775,6.455,6.455,0,0,1,2.028,4.722,6.5,6.5,0,0,1-4.339,6.115ZM59.87,18.664h2.6v-2.6h-2.6Zm-44.252,0h2.6v-2.6h-2.6Zm-2.6-42.95A9.122,9.122,0,0,1,22.126-33.4h33.84a9.122,9.122,0,0,1,9.111,9.111v4.849a9.714,9.714,0,0,0-5.206,8.608v5.737a98.537,98.537,0,0,0-41.649,0v-5.737a9.714,9.714,0,0,0-5.206-8.608ZM75.252-17.88a9.115,9.115,0,0,0-6.76-2.489c-.279.016-.541.088-.812.13v-4.048A11.728,11.728,0,0,0,55.966-36H22.126A11.728,11.728,0,0,0,10.412-24.286v4.048c-.271-.042-.536-.115-.815-.13A9.13,9.13,0,0,0,2.84-17.88,9.038,9.038,0,0,0,0-11.271,9.115,9.115,0,0,0,5.206-3.058V9.553a6.517,6.517,0,0,0,6.508,6.508h1.3v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9H57.267v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9h1.3a6.517,6.517,0,0,0,6.508-6.508V-3.058a9.107,9.107,0,0,0,5.206-8.213,9.038,9.038,0,0,0-2.84-6.609Z"
+				 transform="translate(0 36)"></path>
+			</clipPath>
+			<clipPath id="clip-path-2-245">
+				<rect id="Rectangle_1562" data-name="Rectangle 1562" width="81.279" height="60.561"></rect>
+			</clipPath>
+			<clipPath id="clip-path-3-246">
+				<path id="Path_21083-248" data-name="Path 21083" d="M0,21.373H78.092V-36H0Z" transform="translate(0 36)"></path>
+			</clipPath>
+		</defs>
+		<g id="icon-border_circle" data-name="icon-border/circle">
+			<path id="Path_20230-249" data-name="Path 20230" d="M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z"
+			 transform="translate(-1 -1)"></path>
+		</g>
+		<g id="icon">
+			<g id="Group_17106" data-name="Group 17106" transform="translate(31 41)" clip-path="url(#clip-path-244bsbsbsbs)">
+				<g id="Group_17105" data-name="Group 17105" transform="translate(-1.594 -1.594)" style="mix-blend-mode: normal;isolation: isolate">
+					<g id="Group_17104" data-name="Group 17104" clip-path="url(#clip-path-2-245)">
+						<g id="Group_17103" data-name="Group 17103" transform="translate(1.594 1.594)" clip-path="url(#clip-path-3-246)">
+							<path id="Path_21082-250" data-name="Path 21082" d="M-1-37H80.279V23.561H-1Z" transform="translate(-0.594 35.406)"></path>
+						</g>
+					</g>
+				</g>
+			</g>
+		</g>
+	</svg>
+	<svg
+     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="icon_segments_home_circle_140" data-name="icon/segments/home/circle/140"
+	 width="1em" height="1em" viewBox="0 0 139.8 139.8" class="injected-svg" data-src="data:image/svg+xml,%3csvg id='icon_segments_home_circle_140' data-name='icon/segments/home/circle/140' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='1em' height='1em' viewBox='0 0 139.8 139.8'%3e %3cdefs%3e %3cclipPath id='clip-path'%3e %3cpath id='Path_21084' data-name='Path 21084' d='M71.149-5.156a1.306,1.306,0,0,0-.867,1.229V9.553a3.908,3.908,0,0,1-3.9,3.9H11.714a3.908,3.908,0,0,1-3.9-3.9V-3.928A1.3,1.3,0,0,0,6.94-5.156,6.5,6.5,0,0,1,2.6-11.271a6.455,6.455,0,0,1,2.028-4.722,6.456,6.456,0,0,1,4.477-1.786c.117,0,.234.005.354.01a6.827,6.827,0,0,1,6.156,6.94v7.367a1.311,1.311,0,0,0,.492,1.023,1.312,1.312,0,0,0,1.109.245,95.78,95.78,0,0,1,43.656,0,1.33,1.33,0,0,0,1.106-.245,1.3,1.3,0,0,0,.492-1.023v-7.367a6.827,6.827,0,0,1,6.156-6.94,6.458,6.458,0,0,1,4.831,1.775,6.455,6.455,0,0,1,2.028,4.722,6.5,6.5,0,0,1-4.339,6.115ZM59.87,18.664h2.6v-2.6h-2.6Zm-44.252,0h2.6v-2.6h-2.6Zm-2.6-42.95A9.122,9.122,0,0,1,22.126-33.4h33.84a9.122,9.122,0,0,1,9.111,9.111v4.849a9.714,9.714,0,0,0-5.206,8.608v5.737a98.537,98.537,0,0,0-41.649,0v-5.737a9.714,9.714,0,0,0-5.206-8.608ZM75.252-17.88a9.115,9.115,0,0,0-6.76-2.489c-.279.016-.541.088-.812.13v-4.048A11.728,11.728,0,0,0,55.966-36H22.126A11.728,11.728,0,0,0,10.412-24.286v4.048c-.271-.042-.536-.115-.815-.13A9.13,9.13,0,0,0,2.84-17.88,9.038,9.038,0,0,0,0-11.271,9.115,9.115,0,0,0,5.206-3.058V9.553a6.517,6.517,0,0,0,6.508,6.508h1.3v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9H57.267v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9h1.3a6.517,6.517,0,0,0,6.508-6.508V-3.058a9.107,9.107,0,0,0,5.206-8.213,9.038,9.038,0,0,0-2.84-6.609Z' transform='translate(0 36)'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-2'%3e %3crect id='Rectangle_1562' data-name='Rectangle 1562' width='81.279' height='60.561'/%3e %3c/clipPath%3e %3cclipPath id='clip-path-3'%3e %3cpath id='Path_21083' data-name='Path 21083' d='M0,21.373H78.092V-36H0Z' transform='translate(0 36)'/%3e %3c/clipPath%3e %3c/defs%3e %3cg id='icon-border_circle' data-name='icon-border/circle'%3e %3cpath id='Path_20230' data-name='Path 20230' d='M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z' transform='translate(-1 -1)'/%3e %3c/g%3e %3cg id='icon'%3e %3cg id='Group_17106' data-name='Group 17106' transform='translate(31 41)' clip-path='url(%23clip-path)'%3e %3cg id='Group_17105' data-name='Group 17105' transform='translate(-1.594 -1.594)' style='mix-blend-mode: normal;isolation: isolate'%3e %3cg id='Group_17104' data-name='Group 17104' clip-path='url(%23clip-path-2)'%3e %3cg id='Group_17103' data-name='Group 17103' transform='translate(1.594 1.594)' clip-path='url(%23clip-path-3)'%3e %3cpath id='Path_21082' data-name='Path 21082' d='M-1-37H80.279V23.561H-1Z' transform='translate(-0.594 35.406)'/%3e %3c/g%3e %3c/g%3e %3c/g%3e %3c/g%3e %3c/g%3e %3c/svg%3e">
+		<defs>
+			<clipPath id="clip-path-244">
+				<path id="Path_21084-247" data-name="Path 21084" d="M71.149-5.156a1.306,1.306,0,0,0-.867,1.229V9.553a3.908,3.908,0,0,1-3.9,3.9H11.714a3.908,3.908,0,0,1-3.9-3.9V-3.928A1.3,1.3,0,0,0,6.94-5.156,6.5,6.5,0,0,1,2.6-11.271a6.455,6.455,0,0,1,2.028-4.722,6.456,6.456,0,0,1,4.477-1.786c.117,0,.234.005.354.01a6.827,6.827,0,0,1,6.156,6.94v7.367a1.311,1.311,0,0,0,.492,1.023,1.312,1.312,0,0,0,1.109.245,95.78,95.78,0,0,1,43.656,0,1.33,1.33,0,0,0,1.106-.245,1.3,1.3,0,0,0,.492-1.023v-7.367a6.827,6.827,0,0,1,6.156-6.94,6.458,6.458,0,0,1,4.831,1.775,6.455,6.455,0,0,1,2.028,4.722,6.5,6.5,0,0,1-4.339,6.115ZM59.87,18.664h2.6v-2.6h-2.6Zm-44.252,0h2.6v-2.6h-2.6Zm-2.6-42.95A9.122,9.122,0,0,1,22.126-33.4h33.84a9.122,9.122,0,0,1,9.111,9.111v4.849a9.714,9.714,0,0,0-5.206,8.608v5.737a98.537,98.537,0,0,0-41.649,0v-5.737a9.714,9.714,0,0,0-5.206-8.608ZM75.252-17.88a9.115,9.115,0,0,0-6.76-2.489c-.279.016-.541.088-.812.13v-4.048A11.728,11.728,0,0,0,55.966-36H22.126A11.728,11.728,0,0,0,10.412-24.286v4.048c-.271-.042-.536-.115-.815-.13A9.13,9.13,0,0,0,2.84-17.88,9.038,9.038,0,0,0,0-11.271,9.115,9.115,0,0,0,5.206-3.058V9.553a6.517,6.517,0,0,0,6.508,6.508h1.3v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9H57.267v3.9a1.3,1.3,0,0,0,1.3,1.3h5.206a1.3,1.3,0,0,0,1.3-1.3v-3.9h1.3a6.517,6.517,0,0,0,6.508-6.508V-3.058a9.107,9.107,0,0,0,5.206-8.213,9.038,9.038,0,0,0-2.84-6.609Z"
+				 transform="translate(0 36)"></path>
+			</clipPath>
+			<clipPath id="clip-path-2-245">
+				<rect id="Rectangle_1562" data-name="Rectangle 1562" width="81.279" height="60.561"></rect>
+			</clipPath>
+			<clipPath id="clip-path-3-246">
+				<path id="Path_21083-248" data-name="Path 21083" d="M0,21.373H78.092V-36H0Z" transform="translate(0 36)"></path>
+			</clipPath>
+		</defs>
+		<g id="icon-border_circle" data-name="icon-border/circle">
+			<path id="Path_20230-249" data-name="Path 20230" d="M70.9,5.3A65.5,65.5,0,1,1,5.4,70.8,65.6,65.6,0,0,1,70.9,5.3m0-4.3a69.9,69.9,0,1,0,69.9,69.9A69.906,69.906,0,0,0,70.9,1Z"
+			 transform="translate(-1 -1)"></path>
+		</g>
+		<g id="icon">
+			<g id="Group_17106" data-name="Group 17106" transform="translate(31 41)" clip-path="url(#clip-path-244)">
+				<g id="Group_17105" data-name="Group 17105" transform="translate(-1.594 -1.594)" style="mix-blend-mode: normal;isolation: isolate">
+					<g id="Group_17104" data-name="Group 17104" clip-path="url(#clip-path-2-245)">
+						<g id="Group_17103" data-name="Group 17103" transform="translate(1.594 1.594)" clip-path="url(#clip-path-3-246)">
+							<path id="Path_21082-250" data-name="Path 21082" d="M-1-37H80.279V23.561H-1Z" transform="translate(-0.594 35.406)"></path>
+						</g>
+					</g>
+				</g>
+			</g>
+		</g>
+	</svg>
+</div>
+<script>
+$(document).ready(function() {
+    function getUrlVars() {
+        var vars = [],
+            hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for (var i = 0; i < hashes.length; i++) {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+        }
+        return vars;
+    }
+    var proposed_tab = getUrlVars()["directto"];
+    if (proposed_tab) { tab_switcher(proposed_tab); }
+
+    function tab_switcher(current_tab) {
+        var block_title = $('.' + current_tab).length;
+        if (block_title > 0) {
+            $('.sec1-display').hide();
+            $('.' + current_tab).show();
+        }
+    }
+    $('.for-sales-tile').on('click', function() {
+        $('.sec1-display').hide();
+        $('.sales-home-buss').show();
+    });
+    $('.for-sales-home').on('click', function() {
+        $('.sec1-display').hide();
+        $('.sales-home-info').show();
+    });
+    $('.for-sales-buss').on('click', function() {
+        $('.sec1-display').hide();
+        $('.sales-buss-info').show();
+    });
+    $('.for-edu-buss').on('click', function() {
+        $('.sec1-display').hide();
+        $('.sales-edu-info').show();
+    });
+    $('.c1-head-r-item').on('click', function() {
+        $('.sec1-display').hide();
+        $('.cu-changing-sec').show();
+    });
+    $('.for-care-tile').on('click', function() {
+        $('.sec1-display').hide();
+        $('.care-home-buss').show();
+    });
+    $('.for-care-home').on('click', function() {
+        $('.sec1-display').hide();
+        $('.care-home-info').show();
+    });
+    $('.for-care-buss').on('click', function() {
+        $('.sec1-display').hide();
+        $('.care-buss-info').show();
+    });
+    // warranty start
+    $('.for-warranty-tile').on('click', function() {
+        $('.sec1-display').hide();
+        $('.warranty-home-buss').show();
+    });
+    $('.for-warranty-home').on('click', function() {
+        $('.sec1-display').hide();
+        $('.warranty-home-info').show();
+    });
+    $('.for-warranty-buss').on('click', function() {
+        $('.sec1-display').hide();
+        $('.warranty-buss-info').show();
+    });
+    // warranty end
+});
+try {
+    $(document).ready(function() {
+        (function(u, t, d) {
+            var i = d.createElement(t);
+            i.type = 'text/javascript';
+            i.async = true;
+            i.src = '//' + u;
+            var s = d.getElementsByTagName(t)[0];
+            s.parentNode.insertBefore(i, s);
+        })('us-sandbox3-track.inside-graph.com/gtm/IN-1001027/include.js', 'script', document);
+        $(".c2-help-number").on("click", function(e) { console.log('on click chatNowJS...');
+            e.stopPropagation();
+            $("#inside_liveChatTab").click(); });
+    })
+} catch (error) {}
+</script>
+</body>
+</html>

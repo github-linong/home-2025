@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AES 加密解密</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="jnIKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div>
+        txt: <input v-model="txt">
+        <br>
+        key: <input v-model="key">
+        parse: {{keyParse}}
+        <br>
+        iv: <input v-model="iv">
+        parse: {{ivParse}}
+    </div>
+    <div>
+        encrypt:{{txtEncrypt}}
+    </div>
+    <div>
+        decrypt:{{txtDecrypt}}
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+<!-- <script src="https://cdn.bootcdn.net/ajax/libs/crypto-js/4.0.0/aes.min.js"></script> -->
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<script>
+    const key = CryptoJS.enc.Utf8.parse("1234123412ABCDEF");  //十六位十六进制数作为密钥
+    const iv = CryptoJS.enc.Utf8.parse('ABCDEF1234123412');   //十六位十六进制数作为密钥偏移量
+    
+    //解密方法
+    function Decrypt(word) {
+        let encryptedHexStr = CryptoJS.enc.Hex.parse(word);
+        let srcs = CryptoJS.enc.Base64.stringify(encryptedHexStr);
+        let decrypt = CryptoJS.AES.decrypt(srcs, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+        let decryptedStr = decrypt.toString(CryptoJS.enc.Utf8);
+        return decryptedStr.toString();
+    }
+    
+    //加密方法
+    function Encrypt(word) {
+        let srcs = CryptoJS.enc.Utf8.parse(word);
+        let encrypted = CryptoJS.AES.encrypt(srcs, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+        return encrypted.ciphertext.toString().toUpperCase();
+    }
+</script>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                txt: 'www.lilnong.top',
+                key: '1234123412ABCDEF',
+                iv: 'ABCDEF1234123412'
+                // txtEncrypt: '',
+            }
+        },
+        computed:{
+            keyParse(){
+                return  CryptoJS.enc.Utf8.parse(this.key)
+            },
+            ivParse(){
+                return  CryptoJS.enc.Utf8.parse(this.iv)
+            },
+            txtEncrypt(){
+                return Encrypt(this.txt)
+            },
+            txtDecrypt(){
+                return Decrypt(this.txtEncrypt)
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

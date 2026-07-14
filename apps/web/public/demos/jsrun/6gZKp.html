@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>二维grid布局</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="6gZKp" />
+  <style>
+body {
+    min-width: 550px;
+
+}
+#container{    height: 200px;    display: grid;    grid-template-columns:1fr 1fr 1fr 1fr;    grid-template-rows:1fr 1fr 1fr;    grid-template-areas:"one one two three"    "four four two three"    "five five five three";}
+.column-1{    grid-area:one;    background-color: #F8594C;}
+.column-2{grid-area:two;background-color: #FFA29B;}
+.column-3{grid-area:three;background-color: #318B98;}
+.column-4{    grid-area:four;    background-color: #E73123;}
+.column-5{    grid-area:five;    background-color: #ABE646;}
+
+#container1{    height: 200px;    display: grid;    grid-template-columns:2fr 1fr 1fr;    grid-template-rows:1fr 1fr 1fr;    grid-template-areas:"one two three"    "four two three"    "five five three";}
+.column-11{    grid-area:one;    background-color: #F8594C;}
+.column-21{grid-area:two;background-color: #FFA29B;}
+.column-31{grid-area:three;background-color: #318B98;}
+.column-41{    grid-area:four;    background-color: #E73123;}
+.column-51{    grid-area:five;    background-color: #ABE646;}
+  </style>
+</head>
+<body>
+<div id="container">
+    <div class="column-1">one</div>
+    <div class="column-2">two</div>
+    <div class="column-3">three</div>
+    <div class="column-4">four</div>
+    <div class="column-5">five</div>
+</div>
+<hr />
+<div id="container1">
+    <div class="column-11">one</div>
+    <div class="column-21">two</div>
+    <div class="column-31">three</div>
+    <div class="column-41">four</div>
+    <div class="column-51">five</div>
+</div>
+<script>
+
+</script>
+</body>
+</html>

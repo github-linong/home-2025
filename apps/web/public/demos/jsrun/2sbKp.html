@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>v-model自定义组件</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="2sbKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <input type="text" v-model="input"/>{{input}}
+  <br />
+  <ln-child v-model="input"></ln-child>
+  <ln-child :value="input" @input="input = $event"></ln-child>
+  <hr />
+  <ln-divchild v-model="input"></ln-divchild>
+  <hr />
+  <ln-divchild2 v-model="input"></ln-divchild2>
+</div>
+<script>
+Vue.component('ln-child',{
+  props: ['value'],
+  data(){return{}},
+  template: '<div><input :value="value" @input="inputHandler">{{value}}</div>',
+  methods:{
+    inputHandler(e){
+      this.$emit('input', e.target.value)
+    }
+  }
+})
+Vue.component('ln-divchild',{
+  props: ['value'],
+  data(){return{}},
+  template: '<div contentEditable v-text="value" @input="inputHandler"></div>',
+  methods:{
+    inputHandler(e){
+      this.$emit('input', e.target.innerText)
+    }
+  }
+})
+Vue.component('ln-divchild2',{
+  props: ['value'],
+  data(){return{}},
+  template: '<div contentEditable ref="editor" @input="inputHandler"></div>',
+  mounted(){
+    this.$refs.editor.innerText = this.value
+  },
+  watch:{
+    // value(value){
+    //   if(value!=this.$refs.editor.innerText){
+    //     this.$refs.editor.innerText = value
+    //   }
+    // }
+    value: {
+      handler: function value(value){
+        if(value!=this.$refs.editor.innerText){
+          this.$refs.editor.innerText = value
+        }
+      },
+      immediate: true
+    }
+  },
+  methods:{
+    inputHandler(e){
+      this.$emit('input', e.target.innerText)
+    }
+  }
+})
+new Vue({
+  el: '#app',
+  data(){
+    return{ 
+    	input: '海底捞啊海底捞'
+    }
+  }
+})
+</script>
+</body>
+</html>

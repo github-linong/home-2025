@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>video 缩放测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="MV9Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<p>拖拽测试1</p>
+<p class="drag dragstart">拖拽测试2 drag dragstart</p>
+<p draggable="false">拖拽测试3 draggable</p>
+<script>
+    Array.from(document.querySelectorAll('.dragstart')).forEach(item => {
+        item.addEventListener('dragstart', ()=>{
+            return false;
+        })
+    })
+    Array.from(document.querySelectorAll('.drag')).forEach(item => {
+        item.addEventListener('drag', ()=>{
+            return false;
+        })
+    })
+</script>
+
+<video 
+class="video"
+src="http://www.lilnong.top/static/video/video.mp4" 
+style="width: 100px;height: 100px;position: relative;border: 1px solid #f00;"></video>
+
+<script>
+
+let arr = document.getElementsByClassName("video");
+  for (let i = 0; i < arr.length; i++) {
+    let dragResizeDiv = arr[i];
+    dragResizeDiv.addEventListener("mousedown", e => {
+      // client返回的是在可视区的x，y坐标
+      console.log(e.clientX, e.clientY);
+      //page 返回的是相对于文档页面的的x，y坐标（滚动条）
+      console.log(e.pageX, e.pageY);
+      // screen返回的是相对于电脑屏幕的x，y坐标
+      console.log(e.screenX, e.screenY);
+      console.log(dragResizeDiv.offsetLeft, dragResizeDiv.offsetTop);
+      console.log(dragResizeDiv.offsetWidth, dragResizeDiv.offsetHeight);
+
+      let mouseDownX = e.clientX;
+      let mouseDownY = e.clientY;
+      let clickBoxLeft = dragResizeDiv.offsetLeft; // 元素距左边界的距离
+      let clickBoxTop = dragResizeDiv.offsetTop; // 元素距上边界的距离
+      let clickBoxWeight = dragResizeDiv.offsetWidth; // 元素实际宽度
+      let clickBoxHeight = dragResizeDiv.offsetHeight; // 元素实际高度
+
+      let direction = 0;
+      if (
+        clickBoxLeft < mouseDownX &&
+        mouseDownX < clickBoxLeft + 20 &&
+        clickBoxTop < mouseDownY &&
+        mouseDownY < clickBoxTop + 20
+      ) {
+        console.log("这里是获取div的左上角");
+        direction = "leftTopCorner";
+      } else if (
+        clickBoxLeft < mouseDownX &&
+        mouseDownX < clickBoxLeft + 20 &&
+        clickBoxTop + clickBoxHeight - 20 < mouseDownY &&
+        mouseDownY < clickBoxTop + clickBoxHeight
+      ) {
+        console.log("这里是获取div的左下角");
+        direction = "leftBottomCorner";
+      } else if (
+        clickBoxLeft + clickBoxWeight - 20 < mouseDownX &&
+        mouseDownX < clickBoxLeft + clickBoxWeight &&
+        clickBoxTop < mouseDownY &&
+        mouseDownY < clickBoxTop + 20
+      ) {
+        console.log("这里是获取div的右上角");
+        direction = "rightTopCorner";
+      } else if (
+        clickBoxLeft + clickBoxWeight - 20 < mouseDownX &&
+        mouseDownX < clickBoxLeft + clickBoxWeight &&
+        clickBoxTop + clickBoxHeight - 20 < mouseDownY &&
+        mouseDownY < clickBoxTop + clickBoxHeight
+      ) {
+        console.log("这里是获取div的右下角");
+        direction = "rightBottomCorner";
+      } else if (
+        clickBoxLeft + 20 < mouseDownX &&
+        mouseDownX < clickBoxLeft + clickBoxWeight - 20 &&
+        clickBoxTop + 20 < mouseDownY &&
+        mouseDownY < clickBoxTop + clickBoxHeight - 20
+      ) {
+        console.log("如果是在中间位置，则实现拖动功能");
+        direction = "drag";
+      }
+
+      document.onmousemove = function(e) {
+        let xx = e.clientX; // 获取实时鼠标坐标x
+        let yy = e.clientY; // 获取实时鼠标坐标y
+        if (direction === "leftTopCorner") {
+          if (xx > 0 && yy > 0) {
+            console.log("这个判断是为了当实时的鼠标坐标移出左上角时，左上角不能缩放，下边有其他三个角的限制判断");
+            dragResizeDiv.style.height =
+              clickBoxHeight + mouseDownY - yy + "px";
+            dragResizeDiv.style.width =
+              ((clickBoxHeight + mouseDownY - yy) * 3) / 2 + "px";
+            dragResizeDiv.style.left = xx + "px";
+            dragResizeDiv.style.top = yy + "px";
+            console.log("dragResizeDiv.style.top", dragResizeDiv.style.top);
+          }
+        } else if (direction === "leftBottomCorner") {
+          if (
+            xx > 0 &&
+            clickBoxTop + ((clickBoxWeight + mouseDownX - xx) * 2) / 3 <
+              document.documentElement.clientHeight
+          ) {
+            console.log("leftBottomCorner");
+            dragResizeDiv.style.width =
+              clickBoxWeight + mouseDownX - xx + "px";
+            dragResizeDiv.style.height =
+              ((clickBoxWeight + mouseDownX - xx) * 2) / 3 + "px";
+            dragResizeDiv.style.left = xx + "px";
+            dragResizeDiv.style.top = clickBoxTop + "px";
+          }
+        } else if (direction === "rightTopCorner") {
+          console.log("rightTopCorner");
+          if (yy > 0 && xx < document.documentElement.clientWidth) {
+            dragResizeDiv.style.width =
+              clickBoxWeight + xx - mouseDownX + "px";
+            dragResizeDiv.style.height =
+              ((clickBoxWeight + xx - mouseDownX) * 2) / 3 + "px";
+            dragResizeDiv.style.left = clickBoxLeft + "px";
+            dragResizeDiv.style.top = yy + "px";
+          }
+        } else if (direction === "rightBottomCorner") {
+          console.log("rightBottomCorner", clickBoxTop, clickBoxLeft);
+          if (
+            xx < document.documentElement.clientWidth &&
+            clickBoxTop + ((clickBoxWeight + xx - mouseDownX) * 2) / 3 <
+              document.documentElement.clientHeight
+          ) {
+            dragResizeDiv.style.width =
+              clickBoxWeight + xx - mouseDownX + "px";
+            dragResizeDiv.style.left = clickBoxLeft + "px";
+            dragResizeDiv.style.height =
+              ((clickBoxWeight + xx - mouseDownX) * 2) / 3 + "px";
+            dragResizeDiv.style.top = clickBoxTop + "px";
+          }
+        } else if (direction === "drag") {
+          console.log("drag");
+          dragResizeDiv.style.left = xx - mouseDownX + clickBoxLeft + "px";
+          dragResizeDiv.style.top = yy - mouseDownY + clickBoxTop + "px";
+        }
+        return false; //这里为了避免抖动
+      };
+      document.onmouseup = function() {
+        document.onmousemove = null;
+        document.onmouseup = null;
+      };
+      if (e.preventDefault) {
+        e.preventDefault();
+      }
+    });
+
+  }
+
+</script>
+<script>
+
+</script>
+</body>
+</html>

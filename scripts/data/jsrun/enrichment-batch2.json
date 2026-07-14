@@ -1,0 +1,402 @@
+[
+  {
+    "slug": "jsrun-guWKp",
+    "title": "弹幕滚动与 DOM 池复用",
+    "description": "用通道与 DOM 池实现弹幕从右向左滚动，并支持输入框发送自定义弹幕。",
+    "tags": [
+      "弹幕",
+      "CSS transition",
+      "DOM复用",
+      "原生JS",
+      "前端动画"
+    ],
+    "intro": "页面在沙漠背景上用 10 条通道、每通道最多 6 个 span 组成 DOM 池，通过 CSS transition 让弹幕从右划到左。预设弹幕池含《琵琶行》等文案与「2333333」，划出后回收到对应通道池。底部输入框可把文案推入弹幕池，点击「发送」或按 Enter 均可。",
+    "steps": [
+      "打开页面，观察多通道弹幕自动从右向左滚动。",
+      "在底部输入框输入文字，点击「发送」，确认新弹幕随后出现。",
+      "再输入文字后按 Enter，确认同样进入弹幕池并发射。",
+      "注意较长弹幕会占用通道更久，通道满时需等待有可用 DOM 后再发。"
+    ],
+    "docs": [
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/guWKp"
+      }
+    ],
+    "notes": "背景图依赖外部静态资源；弹幕速度按固定 7s transition，未按宽度等比调速。"
+  },
+  {
+    "slug": "jsrun-cCXKp",
+    "title": "Vue 时间轮盘结构草稿",
+    "description": "用 Vue 渲染秒、分、时三段数字列表，对应抖音风格时间轮盘屏保思路。",
+    "tags": [
+      "Vue",
+      "时间轮盘",
+      "屏保",
+      "模板渲染",
+      "前端"
+    ],
+    "intro": "页面用 Vue 在 #app 内渲染 seconds/minutes/hours 三段：分别循环输出「0秒…」「0分…」「0时…」，数据为 60、60、24。Markdown 称其为抖音时间轮盘屏保小 DEMO，并链到掘金文章。当前 HTML 无样式，也未引入 Vue 脚本。",
+    "steps": [
+      "打开页面，查看是否渲染出秒/分/时三段标签文字。",
+      "若控制台报 Vue 未定义，说明独立打开时依赖缺失。",
+      "对照掘金原文理解完整轮盘视觉与动画应有的样式与交互。",
+      "对比本文件与文章实现差异：此处多为数据与模板骨架。"
+    ],
+    "docs": [
+      {
+        "label": "掘金原文",
+        "url": "https://juejin.im/post/5cbdbea3f265da037875967f"
+      },
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/cCXKp"
+      }
+    ],
+    "notes": "HTML 内无 script 引入 Vue，style 为空；独立打开通常无法运行完整轮盘效果。"
+  },
+  {
+    "slug": "jsrun-HxWKp",
+    "title": "Flex 图标与多行文本对比",
+    "description": "对比普通流式、默认 Flex、以及逐字 wrap 的 Flex，观察图标旁多行中文排版差异。",
+    "tags": [
+      "CSS",
+      "Flexbox",
+      "多行文本",
+      "图文混排",
+      "Vue"
+    ],
+    "intro": "标题为「flex 实现图标加多行文本功能」。页面分三块：默认流式布局、默认 Flex、带 flex-wrap 且把字符串拆成单字 span 的 Flex。每块左侧有两个 logo 图，右侧为长文本。MD 说明灵感来自 Weex 限制文字长度的场景。",
+    "steps": [
+      "打开页面，查看「默认的流式布局」中图片与文字如何换行。",
+      "对比「默认的Flex布局」：图标与整段文字作为 flex 子项时的挤占方式。",
+      "查看「处理的Flex布局」：文字被拆成单字后配合 flex-wrap 的换行效果。",
+      "注意当前文案出现乱码「恩」等字符，属迁移编码问题，不影响布局对比意图。"
+    ],
+    "docs": [
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/HxWKp"
+      }
+    ],
+    "notes": "未引入 Vue CDN，独立打开可能报错；中文串已损坏；logo 来自 cdn.jsrun.top，可能失效。"
+  },
+  {
+    "slug": "jsrun-YnhKp",
+    "title": "CSS 翻页簿实验（残片）",
+    "description": "原先尝试做纸张翻页/Turn.js 翻书效果，迁移后正文与脚本几乎全部被注释。",
+    "tags": [
+      "翻页动画",
+      "CSS",
+      "Turn.js",
+      "前端实验",
+      "迁移残片"
+    ],
+    "intro": "标题指向掘金翻页相关文章。HTML 中纸张结构、next-page 按钮、Turn.js 初始化及自写翻页脚本均被注释；style 区域仅为「服务异常，请稍候再试」文本。当前打开几乎是空白页，可视为未完成或损坏的历史片段。",
+    "steps": [
+      "打开页面，确认可视区域基本为空。",
+      "在源码中搜索被注释的 .paper / #flipbook 结构，了解原设计意图。",
+      "对照掘金文章阅读完整翻页实现思路。",
+      "不要期待本页有可交互的翻书效果。"
+    ],
+    "docs": [
+      {
+        "label": "掘金原文",
+        "url": "https://juejin.im/post/5b82ac63e51d4538c362233f"
+      },
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/YnhKp"
+      }
+    ],
+    "notes": "演示内容几乎全部注释，且 style 异常；不能作为可运行翻页 Demo。"
+  },
+  {
+    "slug": "jsrun-be9Kp",
+    "title": "CSS 流动边框多种实现",
+    "description": "演示锥形渐变旋转、四边渐变位移动画，以及矩形移动、边长控制和 clip 裁剪等多种流动边框。",
+    "tags": [
+      "CSS动画",
+      "边框",
+      "conic-gradient",
+      "clip",
+      "Keyframe"
+    ],
+    "intro": "针对「怎么用 CSS 做流动边框」的问答实践。页首用 conic-gradient 背景旋转制造边缘流光；另有四边 linear-gradient 位移方案。后半三节分别：双伪元素矩形移动、四边缘长度生长、clip 裁剪显示环绕边框；悬停可改背景色。",
+    "steps": [
+      "打开页面，观察顶部小方块是否有锥形渐变旋转形成的流动边。",
+      "查看「按钮」四周的四段渐变边框是否沿周长流动。",
+      "对照三个标题区块：矩形移动、四边长度、clip 裁剪，观察动画差异。",
+      "将鼠标悬停在 border-flow / border-flow2 上，确认边框区域背景色变为浅珊瑚色。"
+    ],
+    "docs": [
+      {
+        "label": "SegmentFault 提问",
+        "url": "https://segmentfault.com/q/1010000041123027"
+      },
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/be9Kp"
+      }
+    ],
+    "notes": "锥形方案注释强调容器宜为正方形，否则视觉速度会不均匀。"
+  },
+  {
+    "slug": "jsrun-3nTKp",
+    "title": "导航下划线跟随选中项",
+    "description": "纯 CSS 利用伪元素与兄弟选择器，让导航下划线在选中项间滑动跟随。",
+    "tags": [
+      "CSS",
+      "导航",
+      "下划线动画",
+      "伪元素",
+      "Vue"
+    ],
+    "intro": "横向 flex 导航列表由 Vue 生成约 20 项（Mock.js 中文名）。点击切换 selected。下划线由 li::before 的 border-bottom 控制：选中项宽度铺满并延迟展开，其后兄弟项 left 归零，从而形成跟随滑动的视觉。风格参考 CodePen 相关实现。",
+    "steps": [
+      "打开页面，确认默认第一项带底部下划线。",
+      "依次点击不同导航文字，观察下划线是否滑动到新选中项。",
+      "按住某项观察 :active 黑底白字反馈。",
+      "对比长短文案项，确认下划线宽度随项宽变化。"
+    ],
+    "docs": [
+      {
+        "label": "CodePen 参考",
+        "url": "https://codepen.io/Chokcoco/pen/PRJvLN"
+      },
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/3nTKp"
+      }
+    ],
+    "notes": "依赖 bootcdn 的 Vue 与 Mock.js；无网络时列表可能无法生成。"
+  },
+  {
+    "slug": "jsrun-KAQKp",
+    "title": "intro.js 表单引导测试",
+    "description": "在 Element UI 添加 Feed 弹窗流程中嵌入 intro.js，试验无按钮步进式新手引导。",
+    "tags": [
+      "intro.js",
+      "Element UI",
+      "Vue",
+      "新手引导",
+      "表单交互"
+    ],
+    "intro": "页面为「添加」按钮与弹窗表单（名称、父目录、链接）。首次进入若 localStorage 无 autoIntro，会自动开引导：隐藏步数/按钮/进度，依赖 blur/change/确定触发 nextStep。引导进行中限制非高亮区指针事件，高亮区可操作。",
+    "steps": [
+      "首次打开（或清掉 localStorage 的 autoIntro）观察是否自动进入引导态。",
+      "点击「添加」打开对话框，看高亮是否落到名称等表单项。",
+      "在名称输入后失焦、选择父目录、填写链接失焦，确认引导进入下一步。",
+      "点「确定」完成最后一步；退出后 introState 应变回未引导。"
+    ],
+    "docs": [
+      {
+        "label": "intro.js",
+        "url": "https://introjs.com/"
+      },
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/KAQKp"
+      }
+    ],
+    "notes": "部分 CDN/raw GitHub 主题可能失效；引导依赖 introState 与自定义样式，属试验代码而非完整产品。"
+  },
+  {
+    "slug": "jsrun-PmQKp",
+    "title": "driver.js 添加 Feed 引导",
+    "description": "用 driver.js 高亮「添加」按钮并串联弹窗内多字段，测试多步产品引导。",
+    "tags": [
+      "driver.js",
+      "Element UI",
+      "Vue",
+      "新手引导",
+      "产品引导"
+    ],
+    "intro": "与 intro.js 版场景类似的 Feed 订阅表单。Driver 先高亮「添加」；onNext 里 preventMove 后打开弹窗再 moveNext。随后 defineSteps 覆盖名称、父目录、链接与确定按钮。是否自动开取决于 localStorage autoIntro。",
+    "steps": [
+      "清除 localStorage 的 autoIntro 后刷新，确认「添加」被高亮并出现说明气泡。",
+      "按引导进入下一步或点击「添加」，确认对话框打开且引导继续。",
+      "逐步查看名称、父目录、链接、确定按钮上的引导文案。",
+      "注意最后一步指向不存在的 #third-element-introduction，可能异常或无效。"
+    ],
+    "docs": [
+      {
+        "label": "driver.js",
+        "url": "https://driverjs.com/"
+      },
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/PmQKp"
+      }
+    ],
+    "notes": "unpkg 的 driver.js 旧版 API（new Driver）；末步选择器不存在；仍残留未启用的 vue-introjs 注释代码。"
+  },
+  {
+    "slug": "jsrun-CMQKp",
+    "title": "鼠标悬停聚焦高亮元素",
+    "description": "监听 mouseover，给当前元素加超大 box-shadow，形成聚光灯式遮罩高亮。",
+    "tags": [
+      "DOM",
+      "聚焦",
+      "box-shadow",
+      "交互原型",
+      "前端"
+    ],
+    "intro": "页面散落多组列表（含 absolute/fixed/relative）。运行逻辑在 body 上监听 mouseover：去掉上一目标的 lilnong-focus，给当前目标加上该类；该类用极大扩散的半透明黑影实现聚焦。顶部虽有 click/mouseover/none 单选且引入 Popper，但现有脚本未读取单选，也未创建 tooltip。",
+    "steps": [
+      "打开页面，把鼠标移到任意列表文字上。",
+      "确认当前元素被高亮，四周出现大范围暗色遮罩。",
+      "移到其他元素，确认高亮跟随切换。",
+      "可尝试点顶部 radio，观察实际仍只有悬停聚焦在工作。"
+    ],
+    "docs": [
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/CMQKp"
+      }
+    ],
+    "notes": "eventName 单选与 Popper/#tooltip 未接入；MD 写「mouseover 自带写样式」与现行脚本一致。"
+  },
+  {
+    "slug": "jsrun-sfQKp",
+    "title": "扫雷地图与邻雷计数",
+    "description": "Vue 生成 10×10 棋盘，随机布雷并用负数展示邻雷数，点击可翻开与蔓延。",
+    "tags": [
+      "扫雷",
+      "算法",
+      "Vue",
+      "游戏",
+      "矩阵"
+    ],
+    "intro": "状态约定：0 未翻空格，负数表示邻雷数，1 已翻开，2 为雷。初始化随机放雷并计算邻雷。点击非雷格将格子标为已翻开；若原值为 0 则向四向递归蔓延。雷格以粉背景显示，数值也直接画在格子上，偏算法可视而非完整隐蔽玩法。",
+    "steps": [
+      "打开页面，查看 10×10 格网及可能显示的雷（2）与负数邻雷提示。",
+      "点击值为 0 的格子，观察是否变为 1 并向四周自动翻开。",
+      "点击带负数的安全格，确认只翻开该格而不扩散。",
+      "点击雷格（值为 2）时手动点击不会触发翻开逻辑（自动蔓延会跳过雷）。"
+    ],
+    "docs": [
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/sfQKp"
+      }
+    ],
+    "notes": "雷与数字初始即可见，无胜负结算与插旗；依赖 Vue CDN。"
+  },
+  {
+    "slug": "jsrun-ya9Kp",
+    "title": "随机转账与贫富分化模拟",
+    "description": "100 人各持 100 元，每人每轮随机转出 2 元，用柱状图观察财富两极分化。",
+    "tags": [
+      "模拟",
+      "统计可视化",
+      "贫富差距",
+      "原生JS",
+      "随机过程"
+    ],
+    "intro": "说明文案：近乎平等的随机转账下，时间越长差距越大。默认每人 100 元；平等模式、5 个富二代（200）、5 个穷人（2）可切换。定时交易与刷新图表；另有加速/减速改变每周期交易次数。柱高表示余额，下方显示排序后金额序列。",
+    "steps": [
+      "打开页面，默认平等模式应已开始，观察蓝色柱高变化。",
+      "点击「5个富二代」或「5个穷人」重启，对比初始分布差异。",
+      "多次点「加速」或「加速 += 30」，看柱状分布拉开速度。",
+      "点「减速」降低 forCount，观察更新变缓。"
+    ],
+    "docs": [
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/ya9Kp"
+      }
+    ],
+    "notes": "deal 允许余额为负（未校验是否够 2 元）；内层循环复用变量 i，加速逻辑存在缺陷。"
+  },
+  {
+    "slug": "jsrun-cUUKp",
+    "title": "点阵心形标记生成器",
+    "description": "在 20×20 网格上点选打标签，上方格子按标记播放进场动画并铺头像图。",
+    "tags": [
+      "Vue",
+      "点阵",
+      "动画",
+      "localStorage",
+      "前端工具"
+    ],
+    "intro": "上下两块 20×20 网格。下方点击写入当前标签索引到 tagHash；上方对已标记格加动画类并请求头像图。标签历史写入 localStorage（LN_XING_JSON）。可用按钮切换标签索引，以及「删除/新节点」（当前都把 currentTag 设为 -1）。",
+    "steps": [
+      "打开页面，在下方网格点击若干格，看颜色是否按标签变化。",
+      "观察上方对应格子是否陆续出现进场动画与头像底图。",
+      "点击下方标签索引按钮切换 currentTag，再点新格子验证分组。",
+      "刷新页面，确认 localStorage 能恢复上次标记（若浏览器允许）。"
+    ],
+    "docs": [
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/cUUKp"
+      }
+    ],
+    "notes": "头像 URL 为 http 外链可能失效或被混合内容拦截；「删除/新节点」文案与行为不完全对应。"
+  },
+  {
+    "slug": "jsrun-avDKp",
+    "title": "Canvas 可见水印与通道解码示意",
+    "description": "上传图片后绘制半透明文字水印，并用按通道奇偶重映射的方式示意解码。",
+    "tags": [
+      "Canvas",
+      "水印",
+      "图像处理",
+      "前端安全",
+      "隐私"
+    ],
+    "intro": "选择本地图片后展示原图，再生成带「lilnong.top」文字的水印图（含更低透明度偏移文字）。decodeWatermark 按指定颜色通道奇偶把像素拉成 0/255，用于观察信息痕迹。OpenCV.js 频域暗水印整段已注释，当前为 Canvas 可见水印+简易解码示意。",
+    "steps": [
+      "点击文件选择，上传一张本地图片。",
+      "确认出现原图与写有 lilnong.top 的水印图。",
+      "查看第三张解码结果图，观察对比度被放大后的痕迹。",
+      "对照 MD 中的 OpenCV 文章链接理解完整暗水印方案（本页未启用）。"
+    ],
+    "docs": [
+      {
+        "label": "参考文章 ainyi",
+        "url": "https://ainyi.com/154"
+      },
+      {
+        "label": "腾讯云相关文",
+        "url": "https://cloud.tencent.com/developer/article/2058152"
+      },
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/avDKp"
+      }
+    ],
+    "notes": "OpenCV 实现整段注释未跑；现行是可见水印加 alpha/通道奇偶示意，非完整频域暗水印。"
+  },
+  {
+    "slug": "jsrun-VsUKp",
+    "title": "ECharts GL 三维饼/环图",
+    "description": "用 echarts-gl 的 surface 参数方程绘制林地/草地/耕地三维饼图，支持点击与悬停。",
+    "tags": [
+      "ECharts",
+      "ECharts GL",
+      "3D",
+      "数据可视化",
+      "Vue"
+    ],
+    "intro": "Vue 组件在 400×200 容器内初始化图表。数据为林地、草地、耕地面积及配色；getPie3D 生成 parametric surface 扇区，内径比约 0.8。图例显示名称与占比。点击可选中扇区位移，悬停略放大；视角旋转/缩放/平移灵敏度均为 0。",
+    "steps": [
+      "打开页面，确认出现三维饼/环图与顶部图例百分比。",
+      "将鼠标移到某一扇区，观察是否轻微放大高亮。",
+      "点击扇区，确认选中时外移；再点子可取消或切换。",
+      "移出图表区域，确认悬停高亮会取消。"
+    ],
+    "docs": [
+      {
+        "label": "ECharts",
+        "url": "https://echarts.apache.org/"
+      },
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/VsUKp"
+      }
+    ],
+    "notes": "tooltip formatter 被改成几乎空内容；依赖 bootcdn 的 Vue、echarts、echarts-gl。"
+  }
+]

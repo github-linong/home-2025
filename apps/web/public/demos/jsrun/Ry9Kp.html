@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>sortable 排序。</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="Ry9Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/Sortable/1.14.0/Sortable.js"></script>
+
+<div id="app">
+    <ul id="sortWrap">
+        <li 
+            class="sort-item" 
+            v-for="item in list" 
+            :key="item.id" 
+            @click="item.checked=true"
+        >{{item}}</li>
+    </ul>
+    <div style="    white-space: pre-wrap;">
+        {{JSON.stringify(list.map(item=>JSON.stringify(item,null,0)), null, 4)}}
+    </div>
+</div>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                list: []
+            }
+        },
+        created(){
+            for(var i = 0; i < 10; i++){
+                this.list.push({
+                    id: i,
+                    val: Math.random(),
+                    checked: false
+                })
+            }
+        },
+        mounted(){
+            this.initSort();
+        },
+        methods:{
+            initSort(){
+                var el =  document.querySelector('#sortWrap')
+                var that = this;
+                Sortable.create(el, {
+                    delay: 100,
+                    sort: !0,
+                    forceFallback: !0,
+                    scrollSensitivity: 100,
+                    animation: 150,
+                    ghostClass: "gift-ghost-item",
+                    chosenClass: "gift-chosen-item",
+                    onEnd: function(t) {
+                        that.list.splice(
+                            t.newIndex, 
+                            0, 
+                            that.list.splice(t.oldIndex, 1)[0]
+                        )
+                    }
+                })
+
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

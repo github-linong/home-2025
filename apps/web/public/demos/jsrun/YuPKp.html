@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>svg show</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="YuPKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+
+</div>
+<script>
+    fetch(`//cors-www.lilnong.top/static/svg/`)
+        .then(v=>v.text())
+        .then(v=>{
+            // top.v = v;
+            // top.console.log(v, v.match(/href="["]+"/g))
+            window.list = v.match(/href="([^"]+)"/g).map(v=>v.slice(6, -1))
+            return v
+        }).then(v=>{
+            // top.window.list = 
+                window.list = window.list.map(v=>`//cors-www.lilnong.top/static/svg/${v}`)
+                window.list.forEach(v=>{
+                    el = document.createElement('div')
+                    img = new Image()
+                    img.src = v
+                    el.appendChild(img)
+                    el.append(decodeURIComponent(v).replace('//cors-www.lilnong.top/static/svg/', ''))
+                    app.appendChild(el)
+                })
+                
+            return v;
+        })
+        // .then(console.log)
+
+    document.body.onclick = ()=>{
+        // console.log(event.target)
+        el = event.target;
+        src = event.target.src;
+        fetch(src)
+            .then(v=>v.text())
+            .then(v=>v.replace(`<?xml version="1.0" standalone="no"?>`, ''))
+            .then(v=>{
+                console.clear();
+                console.log(v)
+                return v
+            })
+    }
+</script>
+
+<style>
+    #app{
+        display: flex;
+        flex-wrap: wrap;
+    }
+    #app > div{
+        display: flex;
+        flex-direction: column;
+        width: 200px;
+        word-break: break-all;
+        margin: 10px;
+        padding: 10px;
+        flex: auto;
+
+        align-items: center;
+    }
+    #app > div > img{
+        max-width: 40px;max-height: 40px;
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

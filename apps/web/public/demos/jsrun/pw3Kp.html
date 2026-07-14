@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue组件通信</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="pw3Kp" />
+  <style>
+#app {
+    width: 100%;
+    height: 100%;
+}
+
+.breadcrumb_box .bdb-item-box {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+}
+
+.breadcrumb_box .bdb-item-box .children_menu {
+    cursor: pointer;
+    box-sizing: border-box;
+    position: absolute;
+    left: 0;
+    top: 20px;
+    display: block;
+    content: "";
+    width: 235px;
+    min-height: 250px;
+    background: #ffffff;
+    box-shadow: 0 4px 4px -4px rgba(0, 0, 0, 0.1), 0 5px 10px 1px rgba(0, 0, 0, 0.06), 0 -4px 14px 1px rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    z-index: 10;
+}
+
+.breadcrumb_box .bdb-item-box .children_menu .cf-input {
+    width: 211px;
+    background: #FFFFFF;
+    border-radius: 4px;
+    margin: 10px 0 5px 10px;
+}
+
+.breadcrumb_box .bdb-item-box .children_menu .children_menu_item {
+    padding-left: 10px;
+    height: 40px;
+    line-height: 40px;
+}
+
+.breadcrumb_box .bdb-item-box .children_menu .children_menu_item:hover {
+    color: #3A84FB;
+    background: #F5F7FB;
+}
+
+.breadcrumb_box .bdb-item-box .children_menu .active-text {
+    color: #3A84FB;
+}
+
+.breadcrumb_box .bdb-item-box .cf_el-icon {
+    cursor: pointer;
+}
+  </style>
+</head>
+<body>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+<div id="app">
+  <child to="我的选项卡" :data-breadcrumb.sync="configBreadcrumb"></child>
+  <!-- <el-button>按钮</el-button> -->
+</div>
+<script>
+
+const clickOutside = {
+    bind: function (el, binding, vnode) {
+        el.clickOutsideEvent = function (event) {
+            console.log(el)
+            console.log(event.target)
+            //检查点击是在外面的el和他的子元素
+                console.log('start')
+            // if (!(el == event.target || el.contains(event.target))) {
+            //     console.log('true')
+            //     console.log(vnode.context[binding.expression])
+            //     // 如果是，则调用属性值中提供的方法
+            //     // setTimeout(v=>vnode.context[binding.expression](event))
+            //     vnode.context[binding.expression]((el == event.target || el.contains(event.target)))
+            // }
+            vnode.context[binding.expression](!(el == event.target || el.contains(event.target)))
+        }
+        document.body.addEventListener('click', el.clickOutsideEvent)
+    },
+    unbind: function (el) {
+        document.body.removeEventListener('click', el.clickOutsideEvent)
+    },
+}
+Vue.directive('clickOutside', clickOutside)
+
+Vue.component('child', {
+    template: `
+    <div class="breadcrumb_box">
+    <el-breadcrumb separator="/">
+      <template v-for="(item, idx) in dataBreadcrumb">
+        <el-breadcrumb-item :key="idx">
+          <div class="bdb-item-box">
+            <div @click="checkOclickDOMlist" 
+                v-click-outside="hideBox"
+            >
+                <span class="breadcrumb_text" :class="{'active-text': showChildren}">{{ item.name }}</span>
+                <i 
+                v-if="item.children.length > 0" 
+                class="cf_el-icon"
+                :class="showChildren? 'el-icon-caret-top':'el-icon-caret-bottom'" 
+                
+                >
+                </i>
+            </div>
+            <div class="children_menu" v-if="item.children.length > 0 && showChildren">
+              <el-input @focus="search=true" @blur="search=false" class="cf-input" placeholder="请输入内容" v-model="input" clearable>
+                 <i slot="prefix" class="el-input__icon el-icon-search"></i>
+              </el-input>
+              <div 
+              v-if="search"
+                  v-for="item in item.children"
+                  class="children_menu_item" 
+                  @click="hanldeOnclickItem(item.name)" 
+                  :class="item.name==breadcrumbTextActive?'active-text':''"
+                  :key="item.name"
+              >
+                {{ item.name }}
+              </div>
+            </div>
+          </div>
+        </el-breadcrumb-item>
+      </template>
+    </el-breadcrumb>
+  </div>
+	`,
+    props: ["dataBreadcrumb", "to"],
+    data() {
+        return {
+            input: "",
+            search: false,
+            showChildren: false,
+            breadcrumbTextActive: ""
+        }
+    },
+    methods: {
+        hanldeOnclickItem(name) {
+            this.breadcrumbTextActive = name
+        },
+        checkOclickDOMlist() {
+            this.showChildren = !this.showChildren
+        },
+        hideBox(bool) {
+            this.showChildren = bool;
+            // console.log(this.search, this.showChildren)
+            // if (this.search == true) {
+            //     this.showChildren = true;
+            // } else {
+            //     this.showChildren = false;
+            // }
+        }
+    }
+})
+
+
+new Vue({
+    el: '#app',
+    data: {
+        num: 10,
+        configBreadcrumb: [{
+            name: '啊飒飒的',
+            children: [
+                { name: '阿萨达萨达撒的sad撒' },
+                { name: '阿斯顿撒旦' },
+                { name: '1121321' },
+                { name: '阿是的飒飒大萨达萨达' },
+                { name: '飒飒大萨达' },
+            ],
+        },
+        {
+            name: '阿达的的萨达',
+            children: [
+                { name: '啊大大打算的撒打算的' },
+                { name: '阿萨德撒大多数的' },
+                { name: '收支持下创造性' },
+                { name: '交换机' },
+                { name: 'iuiyuytu味儿' },
+            ],
+        },]
+    },
+    methods: {
+        increa() {
+            this.num++;
+        },
+        decrea() {
+            this.num--;
+        }
+    }
+})
+</script>
+</body>
+</html>

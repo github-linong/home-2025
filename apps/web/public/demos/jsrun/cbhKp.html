@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>sort动画</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="cbhKp" />
+  <style>
+#app{
+  background: #fff;
+  height: 300px;
+}
+#app div{
+  float: left;
+  background: #000;
+  color: rgba(0,0,0,0);
+  width: 5px;
+  margin-right: 1px;
+}
+  </style>
+</head>
+<body>
+<div id="app">
+  <!-- <div v-for="item in aniArr[0]" :style="{height: item/max*95+'%'}">{{item}}</div> -->
+  <div v-for="item in aniArr[0]" :style="{height: item/max*95+1+'%'}"></div>
+</div>
+<script>
+var arr = [];
+
+new Vue({
+  el: "#app",
+  data:{
+    aniArr:[],
+    max: -Infinity,
+    min: Infinity,
+  },
+  methods:{
+    startSort(){
+      arr = [70, 7, 56, 77, 57, 58, 26, 42, 39, 85, 75, 68, 94, 79, 72, 80, 85, 18, 26, 38];
+      arr = new Array(50).fill(1).map(v=>Math.random())
+      this.max = Math.max(...arr);
+      this.min = Math.min(...arr);
+      arr.sort((n,m)=>{
+        // console.log(arr.join())
+        this.aniArr.push(arr.join().split(','))
+        return n-m;
+      });
+      var _interval = setInterval(()=>{
+        if(this.aniArr.length < 2){
+          clearInterval(_interval);
+          return ;
+        }
+        // console.log(this.aniArr.shift());
+        this.aniArr.shift();
+      },100)
+    }
+  },
+  mounted(){
+    this.startSort();
+  }
+})
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>进度条测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="IiqKp" />
+  <style>
+html {background-color: #dde6f0;}
+#loading {
+  width: 100px;height: 100px;margin: 30px auto;
+  position: relative;
+}
+.outer-shadow, .inner-shadow {
+  z-index: 6;position: absolute;
+  width: 100%;height: 100%;
+  border-radius: 100%;/* background-color: #0cc; */
+}
+
+.inner-shadow {
+  top: 50%;  left: 50%;  width: 60px;  height: 60px;  margin-left: -30px;  margin-top: -30px;
+  border-radius: 100%;  background-color: #dde6f0;
+}
+
+.hold {
+  position: absolute;
+  width: 100%;height: 100%;
+  clip: rect(0px, 100px, 100px, 50px);
+  border-radius: 100%;background-color: #fff;
+  overflow:hidden
+}
+
+.pie {
+  background-color: #f50;
+  position: absolute;
+  width: 100%;height: 100%;
+  clip: rect(0px, 50px, 100px, 0px);
+}
+
+#left .pie {
+  z-index: 1;
+  -webkit-animation: left 1s linear both;
+}
+
+@-webkit-keyframes left {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(180deg);
+  }
+}
+#right {
+  z-index: 3;
+  -webkit-transform: rotate(180deg);
+}
+
+#right .pie {
+  -webkit-animation: right 1s linear both;
+  -webkit-animation-delay: 1s;
+}
+
+@keyframes right {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(90deg);
+  }
+}
+
+  </style>
+</head>
+<body>
+<div id='loading'>
+  <div class='outer-shadow'></div>
+  <div class='inner-shadow'></div>
+  <!-- <div class='timer'> -->
+    <div class='hold' id='left'>
+      <div class='pie'></div>
+    </div>
+    <div class='hold' id='right'>
+      <div class='pie'></div>
+    </div>
+  <!-- </div> -->
+</div>
+<script>
+
+</script>
+</body>
+</html>

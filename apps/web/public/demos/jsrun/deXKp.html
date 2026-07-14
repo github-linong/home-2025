@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/a/1190000018605820</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="deXKp" />
+  <style>
+#img{
+  max-width:100px;max-height:100px;
+}
+  </style>
+</head>
+<body>
+<a href="https://segmentfault.com/a/1190000018605820">文章地址--AJAX 的进阶使用（Blob、ArrayBuffer、FormData、Document、JSON、Text）</a>
+<p>请问，ajax post请求返回的response data是content-type:'某一文件类型'的二进制数据，可以用URL.createObjectURL()生成blob放在< a >标签里下载么？</p>
+  <input type="file" id="file"/>
+  <img id="img"/>
+  <a href="" id="a" download="download-ln">点击下载</a>
+<script>
+// document.querySelector('#img').style.display = 'none'
+// document.querySelector('#a').style.display = 'none'
+fetch('//cdn.jsrun.top/css/img/logo.png')
+  .then(v=>v.blob())
+  .then(v=>{
+  	var _url = URL.createObjectURL(v)
+    document.querySelector('#img').src=_url
+    document.querySelector('#a').href=_url
+	})
+document.querySelector('#file').onchange = function(){
+  if(this.files){
+    var _url = URL.createObjectURL(this.files[0]);
+    document.querySelector('#img').src=_url
+    document.querySelector('#a').href=_url
+  }
+}
+</script>
+</body>
+</html>

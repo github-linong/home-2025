@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>图片加水印</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="WZGKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<input type="file" id="fileEl" accept="image/*">
+<input type="range" id="xGapEl" min="1" max="640" value="100">
+<input type="range" id="yGapEl" min="1" max="640" value="50">
+<input type="range" id="rotationEl" min="1" max="720" value="330">
+<div>
+    <canvas style="max-width: 640px;border:1px solid #f00;width: 100%" id="canvasEl"></canvas>
+</div>
+<script>
+    const addWatermark = (text = 'Watermark', color = 'rgba(0, 0, 0, 0.5)', xGap = 100, yGap = 50, rotation = -30) => {
+        const image = new Image()
+        image.src = imageUrl.value
+        image.onload = () => {
+            const ctx = canvas.value.getContext('2d')
+            canvas.value.width = image.width
+            canvas.value.height = image.height
+            ctx.drawImage(image, 0, 0)
+            ctx.font = '20px Arial'
+            ctx.fillStyle = color
+            const radians = (Math.PI / 180) * rotation // Convert degrees to radians
+            for (let x = 0; x < canvas.value.width; x += xGap) {
+            for (let y = 0; y < canvas.value.height; y += yGap) {
+                // console.log("x=", x, "y=", y)
+                ctx.save()
+                ctx.translate(x, y)
+                ctx.rotate(radians)
+                ctx.fillText(text, 0, 0)
+                ctx.restore()
+            }
+            }
+
+        }
+    }
+</script>
+<script>
+    fileEl.onchange = ()=>{
+        file = fileEl.files[0]
+        if(file){
+            imageUrl = {value: URL.createObjectURL(file)}
+            canvas = {value: canvasEl}
+            addWatermark()
+        }
+        fileEl.value = ''
+    }
+    yGapEl.oninput=()=>{
+        addWatermark ( 'Watermark',  'rgba(0, 0, 0, 0.5)',  +xGapEl.value,  +yGapEl.value,  +rotationEl.value)
+    }
+    rotationEl.oninput=()=>{
+        addWatermark ( 'Watermark',  'rgba(0, 0, 0, 0.5)',  +xGapEl.value,  +yGapEl.value,  +rotationEl.value)
+    }
+    xGapEl.oninput=()=>{
+        addWatermark ( 'Watermark',  'rgba(0, 0, 0, 0.5)',  +xGapEl.value,  +yGapEl.value,  +rotationEl.value)
+    }
+</script>
+<script>
+
+</script>
+</body>
+</html>

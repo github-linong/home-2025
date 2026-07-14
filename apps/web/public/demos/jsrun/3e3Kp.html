@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue 表单组件</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="3e3Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.1/index.min.js"></script>
+<link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.1/theme-chalk/index.min.css" rel="stylesheet">
+
+
+<div id="app">
+    
+    <!-- <div>
+        <div v-for="(item, itemkey) in data">
+            <button @click="remove(data, item, itemkey)">remove</button>
+            <input v-model="item.title">
+            <input v-model="item.key">
+            <select v-model="item.type">
+                <option v-for="option in typeList">{{option}}</option>
+            </select>
+            <input v-model="item.value" v-if="item.type == 'string'">
+            <input v-model.number="item.value" v-else-if="item.type == 'int'" type="number">
+            <input v-model.number="item.value" v-else-if="item.type == 'float'" type="number">
+            <input v-model="item.value" v-else-if="item.type == 'file'" type="file">
+            <select  v-else-if="item.type == 'select'" v-model="item.value">
+                <option v-for="option in item.options" :value="option.value">{{option.label}}</option>
+            </select>
+            <input v-model="item.value" v-else-if="item.type == 'bool'" type="checkbox">
+        </div>
+    </div> -->
+    <vv-form :data="data" type="array2object"></vv-form>
+    <hr>
+    <div>
+        <div v-for="item in data">
+            <span>{{item.title}}</span>
+            :
+            <span>{{item.value}}</span>
+        </div>
+    </div>
+    <hr>
+    <pre>{{dataHash}}</pre>
+    <pre>{{dataJSON}}</pre>
+</div>
+<script>
+    var defaultValue = [
+        {
+            "title": "提示文案",
+            "key": "id",
+            "type": "string",
+            "value": "10"
+        },
+        {
+            title: '模板支持输入源的类型',
+            key: 'supportType',
+            type: 'select',
+            options: [
+                {value: 1, label: '仅支持相机输入',},
+                {value: 2, label: '仅支持相册输入',},
+                {value: 3, label: '支持相机和相册输入',},
+            ],
+            value: 1,
+        },
+        {
+            title: '美摄特效强度',
+            key: 'intensity',
+            type: 'float',
+            value: '1.0',
+            tips: '如果是package类型，需要与美摄videofx文件和lic文件同名，不带后缀。如果是buildin类型则在是固定的内置特效名，如Segmentation（背景分割）'
+        },
+        {
+            title: '该特效是否改变原始内容',
+            key: 'isChangeDetectArea',
+            type: 'bool',
+            value: true,
+            tips: '该特效是否改变了视频区域，如变形、翻转、改变大小等，如果改变，后续处理可能需要重新进行识别。'
+        },
+        {
+            title: '特效文件',
+            type: 'file',
+            // value: ''
+        },
+			{
+				title: '相册输入片段列表',
+				key: 'inputs',
+				type: 'list',
+				payload: [
+					{
+						title: '片段id',
+						key: 'id',
+						type: 'text',
+						// value: ''
+					},
+					{
+						title: '片段位置',
+						key: 'index',
+						type: 'text',
+						// value: ''
+					},
+					{
+						title: '片段类型',
+						key: 'sourcetype',
+						type: 'select',
+						options: [
+							{value: 1, label: '图片',},
+							{value: 2, label: '视频',}
+						],
+						// value: 1
+					},
+					{
+						title: '片段入点',
+						key: 'inPoint',
+						type: 'text',
+						// value: '',
+						tips: '片段在什么事件开始播放，单位微秒',
+					},
+					{
+						title: '片段时长',
+						key: 'duration',
+						type: 'text',
+						// value: '',
+						tips: '片段播放时长，如果选取的是视频，则视频不能小于该时长，单位微秒'
+					},
+					{
+						title: '片段是否静音',
+						key: 'isMute',
+						type: 'text',
+						// value: ''
+					},
+				],
+                value: [],
+				value1: {
+					id: '',
+					index: '',
+					sourcetype: '',
+					inPoint: '',
+					duration: '',
+					isMute: '',
+				}
+			},
+    ]
+</script>
+<script>
+    Vue.component('vv-form', {
+        props: [
+            'data', // 当前 list
+            'type', // 当前 list 类型
+            "returnValue", // 当前返回
+        ],
+        data(){
+            return {
+                addkey: 'id',
+                typeList: ['string','int','float','file','bool','select','list','object'],
+                // data: defaultValue,
+            }
+        },
+        template: `
+           <ul>
+                <input v-model="addkey"><button @click="add">add</button>
+                <li v-for="(item, itemkey) in data">
+                    <button @click="remove(data, item, itemkey)">remove</button>
+                    <input v-model="item.title">
+                    <input v-model="item.key">
+                    <select v-model="item.type">
+                        <option v-for="option in typeList">{{option}}</option>
+                    </select>
+                    <input v-model="item.value" v-if="item.type == 'string'">
+                    <input v-model.number="item.value" v-else-if="item.type == 'int'" type="number">
+                    <input v-model.number="item.value" v-else-if="item.type == 'float'" type="number">
+                    <input v-model="item.value" v-else-if="item.type == 'file'" type="file">
+                    <select  v-else-if="item.type == 'select'" v-model="item.value">
+                        <option v-for="option in item.options" :value="option.value">{{option.label}}</option>
+                    </select>
+                    <input v-model="item.value" v-else-if="item.type == 'bool'" type="checkbox">
+                    <vv-form :data="item.value" v-else-if="item.type == 'list'"></vv-form>
+                </li>
+            </ul> 
+        `,
+        methods:{
+            add(){
+                this.addkey = this.addkey.trim();
+                if(!this.addkey) return new Error('key不能为空');
+                if(this.data.find(item => item.key == this.addkey)) return new Error('key不能重复');
+                this.data.push({
+                    title: '提示文案',
+                    key: this.addkey,
+                    type: 'string',
+                    value: '',
+                })
+            },
+            remove(data, item, itemkey){
+                data.splice(itemkey,1)
+            }
+        }
+    })
+</script>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                addkey: 'id',
+                typeList: ['string','int','float','file','bool','select','list','object'],
+                data: defaultValue,
+            }
+        },
+        computed:{
+            dataJSON(){
+                return JSON.stringify(this.data, null, 4);
+            },
+            dataHash(){
+                return this.data.reduce((s,n)=>{
+                    s[n.key]=n.value;
+                    return s;
+                },{})
+            }
+        },
+        methods:{
+            add(){
+                this.addkey = this.addkey.trim();
+                if(!this.addkey) return new Error('key不能为空');
+                if(this.data.find(item => item.key == this.addkey)) return new Error('key不能重复');
+                this.data.push({
+                    title: '提示文案',
+                    key: this.addkey,
+                    type: 'string',
+                    value: '',
+                })
+            },
+            remove(data, item, itemkey){
+                data.splice(itemkey,1)
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

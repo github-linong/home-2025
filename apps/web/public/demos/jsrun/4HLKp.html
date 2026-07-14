@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>elementui tree 修改</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="4HLKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<div id="app">
+    <el-tree
+    :data="data"
+    show-checkbox
+    default-expand-all
+    node-key="id"
+    ref="tree"
+    highlight-current
+    :props="defaultProps">
+    </el-tree>
+
+    <hr>
+    <v-deep :data="data"></v-deep>
+    
+    <hr>
+    <v-deep :data="data">
+        <input type="radio">
+    </v-deep>
+</div>
+<script>
+Vue.component('v-deep', {
+    props: ['data'],
+    data(){
+        return {}
+    },
+    mounted(){
+        // console.log(this.$slots.default);
+        // console.log(this.$scopedSlots);
+        
+    },
+    components:{
+        slotComponent:{
+            render(createElement){
+                // https://element.eleme.cn/#/zh-CN/component/tree
+                // https://github.com/ElemeFE/element/blob/dev/packages/tree/src/tree-node.vue
+                // this.$slots.default
+                // console.log(this.$parent.$slots)
+                // console.log(this.$parent.$slots.default)
+                // return createElement('div', this.$parent.$scopedSlots.default)
+            //      parent.renderContent
+            //   ? parent.renderContent.call(parent._renderProxy, h, { _self: tree.$vnode.context, node, data, store })
+            //   : tree.$scopedSlots.default
+            //     ? tree.$scopedSlots.default({ node, data })
+            //     : <span class="el-tree-node__label">{ node.label }</span>
+                console.log(this.$scopedSlots.default)
+                return createElement('div'); 
+                return this.$scopedSlots.default
+                    ? this.$scopedSlots.default({})
+                    : createElement('div')
+            }
+        }
+    },
+    template: `
+        <div>
+            <div></div>
+            <div v-for="item in data">
+                <div v-if="item.children&&item.children.length">
+                    <v-deep :data="item.children">
+                        <template v-if="$slots && $slots.default">
+                            <slotComponent></slotComponent>
+                        </template>
+                    </v-deep>
+                </div>
+                <div v-else>
+                    <slot>
+                        <input type="checkbox">
+                    </slot>
+                    {{item.label}}
+                </div>
+            </div>
+        </div>
+    `
+})
+new Vue({
+    el: '#app',
+    methods: {
+      getCheckedNodes() {
+        console.log(this.$refs.tree.getCheckedNodes());
+      },
+      getCheckedKeys() {
+        console.log(this.$refs.tree.getCheckedKeys());
+      },
+      setCheckedNodes() {
+        this.$refs.tree.setCheckedNodes([{
+          id: 5,
+          label: '二级 2-1'
+        }, {
+          id: 9,
+          label: '三级 1-1-1'
+        }]);
+      },
+      setCheckedKeys() {
+        this.$refs.tree.setCheckedKeys([3]);
+      },
+      resetChecked() {
+        this.$refs.tree.setCheckedKeys([]);
+      },
+      renderContent(){
+          return ''
+      }
+    },
+
+    data() {
+      return {
+        data: [{
+          id: 1,
+          label: '一级 1',
+          children: [{
+            id: 4,
+            label: '二级 1-1',
+            children: [{
+              id: 9,
+              label: '三级 1-1-1'
+            }, {
+              id: 10,
+              label: '三级 1-1-2'
+            }]
+          }]
+        }, {
+          id: 2,
+          label: '一级 2',
+          children: [{
+            id: 5,
+            label: '二级 2-1'
+          }, {
+            id: 6,
+            label: '二级 2-2'
+          }]
+        }, {
+          id: 3,
+          label: '一级 3',
+          children: []
+        }],
+        defaultProps: {
+          children: 'children',
+          label: 'label'
+        }
+      };
+    }
+  })
+</script>
+</body>
+</html>

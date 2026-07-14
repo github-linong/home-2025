@@ -1,18 +1,63 @@
 ---
 const { sideBarActiveItemID } = Astro.props;
 const activeClass = "bg-base-300";
+
+const items = [
+  { id: "home", href: "/", label: "首页" },
+  { id: "blog", href: "/blog/", label: "博客" },
+  { id: "search", href: "/search/", label: "搜索" },
+  { id: "demos", href: "/demos", label: "项目" },
+  { id: "about", href: "/about", label: "关于" },
+  { id: "sf-archive", href: "/archive/segmentfault", label: "思否归档" },
+];
 ---
 
-<ul class="menu grow shrink menu-md overflow-y-auto">
-    <li><a class="py-3 text-base" id="home" href="/">首页</a></li>
-    <li><a class="py-3 text-base" id="blog" href="/blog/">博客</a></li>
-    <li><a class="py-3 text-base" id="search" href="/search/">搜索</a></li>
-    <li><a class="py-3 text-base" id="demos" href="/demos">项目</a></li>
-    <li><a class="py-3 text-base" id="about" href="/about">关于</a></li>
-    <li><a class="py-3 text-base" href="/archive/segmentfault">思否归档</a></li>
+<ul
+  class="menu grow shrink menu-md overflow-y-auto"
+  data-sidebar-menu
+  data-active-id={sideBarActiveItemID ?? ""}
+  data-active-class={activeClass}
+>
+  {
+    items.map((item) => (
+      <li>
+        <a
+          class:list={["py-3", "text-base", sideBarActiveItemID === item.id && activeClass]}
+          id={item.id}
+          href={item.href}
+          data-nav-id={item.id}
+        >
+          {item.label}
+        </a>
+      </li>
+    ))
+  }
 </ul>
 
-<script define:vars={{ sideBarActiveItemID: sideBarActiveItemID, activeClass: activeClass }}>
-const activeItemElem = document.getElementById(sideBarActiveItemID);
-activeItemElem && activeItemElem.classList.add(activeClass);
+<script>
+  function syncSidebarNav() {
+    const menu = document.querySelector("[data-sidebar-menu]");
+    if (!menu) return;
+
+    const activeId = menu.getAttribute("data-active-id") || "";
+    const activeClass = menu.getAttribute("data-active-class") || "bg-base-300";
+
+    menu.querySelectorAll("a[data-nav-id]").forEach((link) => {
+      const on = link.getAttribute("data-nav-id") === activeId;
+      link.classList.toggle(activeClass, on);
+    });
+
+    const searchLink = menu.querySelector("#search");
+    if (searchLink && searchLink.dataset.preserveBound !== "1") {
+      searchLink.dataset.preserveBound = "1";
+      // Stay on current /search/?tag=… — bare href="/search/" would wipe filters.
+      searchLink.addEventListener("click", (event) => {
+        const path = window.location.pathname.replace(/\/+$/, "") || "/";
+        if (path === "/search") event.preventDefault();
+      });
+    }
+  }
+
+  syncSidebarNav();
+  document.addEventListener("astro:page-load", syncSidebarNav);
 </script>

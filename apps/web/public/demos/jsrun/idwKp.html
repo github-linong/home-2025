@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>这种效果一般怎样写，有点像轮播图，点击我想吃的时候把当前食物放进餐盘</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="idwKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div class="wrap">
+        <div class="main">
+            <img class="avatar main-avatar-position--1" src="https://www.lilnong.top/static/img/avator/avator-17.jpg" alt="">
+        </div>
+        <div class="swiper flex">
+            <div class="swiper-prev">《</div>
+            <div class="swiper-item-wrap flex-1">
+                <div class="swiper-item">
+                    <img class="avatar" src="https://www.lilnong.top/static/img/avator/avator-17.jpg" alt="">
+                </div>
+                <div class="swiper-item">
+                    <img class="avatar" src="https://www.lilnong.top/static/img/avator/avator-21.jpg" alt="">
+                </div>
+                <div class="swiper-item">
+                    <img class="avatar" src="https://www.lilnong.top/static/img/avator/avator-7.jpg" alt="">
+                </div>
+                <div class="swiper-item">
+                    <img class="avatar" src="https://www.lilnong.top/static/img/avator/avator-8.jpg" alt="">
+                </div>
+            </div>
+            <div class="swiper-prev">》</div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .wrap{
+        position: relative;overflow: hidden;
+        width: 300px;
+        height: 300px;
+        background: #f00
+    }
+    .main{
+        width: 80%;height:80%;margin: 10%;position: relative;
+        background: #ff0;
+        border-radius: 50%;
+    }
+    .swiper{
+        position: absolute;
+        top:0;right:0;bottom:0;left:0;
+        background: rgba(0,0,0,.5)
+    }
+    .flex{display: flex;}
+    .flex-1{flex: 1;}
+    .avatar{
+        width: 50px;height: 50px;object-fit: cover;
+    }
+    .main-avatar-position--1{
+        position: absolute;
+        left: 20%;top: 30%;
+        animation: scale 1s infinite, move 1s infinite reverse;
+    }
+    @keyframes scale{
+        0%{transform: scale(2)}
+        100%{transform: scale(1)}
+    }
+    @keyframes move{
+        100%{left: 50%;top: 50%;}
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

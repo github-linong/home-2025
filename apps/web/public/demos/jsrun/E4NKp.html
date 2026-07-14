@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>字符跳动效果</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="E4NKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<h2>font-size 动画</h2>
+<div class="demo demo-1">
+	<span class="demo-item">前</span>
+    <span class="demo-item">端</span>
+    <span class="demo-item">linong</span>
+</div>
+<style>
+    .demo-1{
+        border: 1px solid #f00;
+        height: 40px;
+    }
+    .demo-1 .demo-item{
+        animation: demo-1-fontsize 1s infinite;
+    }
+    @keyframes demo-1-fontsize{
+        0{font-size: 12px;}
+        100%{font-size: 24px;}
+    }
+</style>
+<hr>
+<h2>延时</h2>
+<div class="demo demo-2">
+	<span class="demo-item">前</span>
+    <span class="demo-item">端</span>
+    <span class="demo-item">linong</span>
+</div>
+<style>
+    .demo-2{
+        border: 1px solid #f00;
+        height: 40px;
+        font-size: 12px;
+    }
+    .demo-2 .demo-item{
+        animation: demo-2-fontsize 3s infinite;
+    }
+    .demo-2 .demo-item:nth-child(2){
+        animation: demo-2-fontsize 3s infinite 1s;
+    }
+    .demo-2 .demo-item:nth-child(3){
+        animation: demo-2-fontsize 3s infinite 2s;
+    }
+    @keyframes demo-2-fontsize{
+        0{font-size: 12px;}
+        33%{font-size: 24px;}
+        50%{font-size: 12px;}
+    }
+</style>
+<hr>
+<h2>vertical-align: top;</h2>
+<div class="demo demo-3">
+	<span class="demo-item">前</span>
+    <span class="demo-item">端</span>
+    <span class="demo-item">linong</span>
+</div>
+<style>
+    .demo-3{
+        border: 1px solid #f00;
+        height: 40px;
+        font-size: 12px;
+    }
+    .demo-3 .demo-item{
+        animation: demo-3-fontsize 3s infinite;
+        vertical-align: top;
+    }
+    .demo-3 .demo-item:nth-child(2){
+        animation: demo-3-fontsize 3s infinite 1s;
+    }
+    .demo-3 .demo-item:nth-child(3){
+        animation: demo-3-fontsize 3s infinite 2s;
+    }
+    @keyframes demo-3-fontsize{
+        0{font-size: 12px;}
+        33%{font-size: 24px;}
+        45%{font-size: 12px;}
+    }
+</style>
+<hr>
+<h2>vertical-align: middle;</h2>
+<div class="demo demo-5">
+	<span class="demo-item">前</span>
+    <span class="demo-item">端</span>
+    <span class="demo-item">linong</span>
+</div>
+<style>
+    .demo-5{
+        border: 1px solid #f00;
+        height: 40px;
+        font-size: 12px;
+    }
+    .demo-5 .demo-item{
+        animation: demo-5-fontsize 3s infinite;
+        vertical-align: middle;
+    }
+    .demo-5 .demo-item:nth-child(2){
+        animation: demo-5-fontsize 3s infinite 1s;
+    }
+    .demo-5 .demo-item:nth-child(3){
+        animation: demo-5-fontsize 3s infinite 2s;
+    }
+    @keyframes demo-5-fontsize{
+        0{font-size: 12px;}
+        33%{font-size: 24px;}
+        45%{font-size: 12px;}
+    }
+</style>
+<hr>
+<h2>flex</h2>
+<div class="demo demo-6">
+	<span class="demo-item">前</span>
+    <span class="demo-item">端</span>
+    <span class="demo-item">linong</span>
+</div>
+<style>
+    .demo-6{
+        border: 1px solid #f00;
+        height: 40px;
+        font-size: 12px;
+    }
+    .demo-6 .demo-item{
+        animation: demo-6-fontsize 3s infinite;
+        vertical-align: top;
+    }
+    .demo-6 .demo-item:nth-child(2){
+        animation: demo-6-fontsize 3s infinite 1s;
+    }
+    .demo-6 .demo-item:nth-child(3){
+        animation: demo-6-fontsize 3s infinite 2s;
+    }
+    @keyframes demo-6-fontsize{
+        0{font-size: 12px;}
+        33%{font-size: 24px;}
+        45%{font-size: 12px;}
+    }
+</style>
+<hr>
+<h2>transform 动画</h2>
+<div class="demo demo-4">
+	<span class="demo-item">前</span>
+    <span class="demo-item">端</span>
+    <span class="demo-item">linong</span>
+</div>
+<style>
+    .demo-4{
+        border: 1px solid #f00;
+        height: 40px;
+        font-size: 12px;
+        display: flex;
+    }
+    .demo-4 .demo-item{
+        animation: demo-4-scale 3s infinite;
+        flex: 0 0 3em;
+        text-align:center;
+        display:flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .demo-4 .demo-item:nth-child(2){
+        animation: demo-4-scale 3s infinite 1s;
+    }
+    .demo-4 .demo-item:nth-child(3){
+        animation: demo-4-scale 3s infinite 2s;
+    }
+    @keyframes demo-4-scale{
+        0{transform: scale(1);transform-origin: center center;padding: 0;}
+        33%{transform: scale(2);transform-origin: center center;padding: 0;}
+        45%{transform: scale(1);transform-origin: center center;padding: 0;}
+    }
+</style>
+<hr>
+<h2>transform 动画</h2>
+<div class="demo demo-4">
+	<span class="demo-item">前</span>
+    <span class="demo-item">端</span>
+    <span class="demo-item">linong</span>
+</div>
+<style>
+    .demo-4{
+        border: 1px solid #f00;
+        height: 40px;
+        font-size: 12px;
+        display: flex;
+    }
+    .demo-4 .demo-item{
+        animation: demo-4-scale 3s infinite;
+        flex: 0 0 3em;
+        text-align:center;
+        display:flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .demo-4 .demo-item:nth-child(2){
+        animation: demo-4-scale 3s infinite 1s;
+    }
+    .demo-4 .demo-item:nth-child(3){
+        animation: demo-4-scale 3s infinite 2s;
+    }
+    @keyframes demo-4-scale{
+        0{transform: scale(1);transform-origin: center center;padding: 0;}
+        33%{transform: scale(2);transform-origin: center center;padding: 1em;}
+        45%{transform: scale(1);transform-origin: center center;padding: 0;}
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>扫雷，开启算法</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="sfQKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<style class="">
+    .game-row{
+        display: flex;
+    }
+    .game-col{
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #cef;
+        cursor: pointer;
+    }
+    .game-col[data-state="2"]{
+        background: #fcc;
+    }
+</style>
+<div id="app">
+    <!-- {{gameMap}} -->
+    <div v-for="(row, rowIdx) in gameMap" class="game-row">
+        <div v-for="(col, colIdx) in row"  
+            class="game-col" 
+            :data-state="gameMap[rowIdx][colIdx]"
+            @click="clickHandler(rowIdx, colIdx)">
+                {{col}}
+        </div>
+    </div>
+</div>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                // 游戏状态 0未开始 1已开始 2胜利 3失败
+                state: 0, 
+                // 最后单击的元素
+                active: [-1, -1],
+                // 
+                gameLen: 10,
+                gameLevel: 1,
+                gameMap: Array.from({length: 10}).map(v=>Array.from({length: 10}).map(v=>0))
+            }
+        },
+        created(){
+            this.init();
+        },
+        methods: {
+            init(){
+                this.initMap();
+                this.initMine();
+                this.state = 1;
+            },
+            initMap(){
+                this.gameMap = Array.from({length: this.gameLen}).map(v=>Array.from({length: this.gameLen}).map(v=>0))
+            },
+            initMine(){
+                let i = 0;
+                let end = this.gameLen * this.gameLevel;
+                while(i < end){
+                    let x = Math.random() * this.gameLen >>> 0;
+                    let y = Math.random() * this.gameLen >>> 0;
+                    if(this.gameMap[x][y] === 0){
+                        this.gameMap[x][y] = 2;
+                        i++;
+                    }
+                }
+                this.gameMap.forEach((row, rowIdx)=>{
+                    row.forEach((col, colIdx)=>{
+                        this.computedNum(rowIdx, colIdx)
+                    })
+                })
+                this.gameMap = JSON.parse(JSON.stringify(this.gameMap))
+            },
+            clickHandler(rowIdx, colIdx, isAuto = false){
+                if(this.gameMap[rowIdx]?.[colIdx] != undefined){
+                    const currentValue = this.gameMap[rowIdx][colIdx];
+                    if(this.state == 0){
+                        this.init();
+                    }else if(this.state == 1){
+                        if(currentValue === 2 && !isAuto){
+
+                        }else if(currentValue <= 0){
+                            this.gameMap[rowIdx][colIdx] = 1;
+                            if(currentValue === 0){
+                                this.clickHandler(rowIdx+1, colIdx, true);
+                                this.clickHandler(rowIdx-1, colIdx, true);
+                                this.clickHandler(rowIdx, colIdx+1, true);
+                                this.clickHandler(rowIdx, colIdx-1, true);
+                            }
+                            // if(!isAuto){
+                            //     this.clickHandler(rowIdx+1, colIdx, true);
+                            //     this.clickHandler(rowIdx-1, colIdx, true);
+                            //     this.clickHandler(rowIdx, colIdx+1, true);
+                            //     this.clickHandler(rowIdx, colIdx-1, true);
+                            // }
+                        }
+                    }
+                    this.gameMap = JSON.parse(JSON.stringify(this.gameMap))
+                }
+            },
+            computedNum(rowIdx, colIdx){
+                if(this.gameMap[rowIdx][colIdx] === 0){
+                    this.gameMap[rowIdx][colIdx] = -[
+                        this.gameMap[rowIdx-1]?.[colIdx] === 2,
+                        // this.gameMap[rowIdx][colIdx]
+                        this.gameMap[rowIdx+1]?.[colIdx] === 2,
+                        this.gameMap[rowIdx-1]?.[colIdx-1] === 2,
+                        this.gameMap[rowIdx]?.[colIdx-1] === 2,
+                        this.gameMap[rowIdx+1]?.[colIdx-1] === 2,
+                        this.gameMap[rowIdx-1]?.[colIdx+1] === 2,
+                        this.gameMap[rowIdx]?.[colIdx+1] === 2,
+                        this.gameMap[rowIdx+1]?.[colIdx+1] === 2,
+                    ].filter(v=>v).length
+                }
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

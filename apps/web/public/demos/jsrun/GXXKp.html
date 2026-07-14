@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>canvas切开图片测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="GXXKp" />
+  <style>
+canvas{
+  border: 1px solid #f00;
+}
+  </style>
+</head>
+<body>
+<canvas width="300" height="200"></canvas>
+<script>
+var canvas = document.querySelector('canvas')
+var context = canvas.getContext('2d')
+
+var img = new Image();
+img.onload = function () {
+    // context.drawImage(this, 0, 0, 300, 200);
+    // 然后获取中间100*100区域数据
+  //   var imageData = context.getImageData(0, 0, 300, 200);
+  // console.log(imageData)
+  //   var length = imageData.data.length;
+  //   // for (var index = 0; index < length; index += 4) {
+  //   //     var r = imageData.data[index];
+  //   //     var g = imageData.data[index + 1];
+  //   //     var b = imageData.data[index + 2];
+  //   //     // 计算灰度
+  //   //     var gray = r * 0.299 + g * 0.587 + b * 0.114;
+  //   //     imageData.data[index] = gray;
+  //   //     imageData.data[index + 1] = gray;
+  //   //     imageData.data[index + 2] = gray;
+  //   // }
+  context.beginPath();
+  context.strokeStyle = 'blue';
+  context.moveTo(60, 20);
+	context.lineTo(220, 100);
+	context.lineTo(0, 100);
+  // context.stroke();
+  	context.clip('nonzero');
+  	context.clip('evenodd');
+    // 填充图片
+    context.drawImage(img, 0, 0, 300, 200);
+    // 更新新数据
+    // context.putImageData(imageData, 75, 34);
+};
+img.src = '/res/css/img/embed/logo-dark.png';
+</script>
+</body>
+</html>

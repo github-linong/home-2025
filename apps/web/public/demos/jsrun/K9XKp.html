@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>上传图片-预览图片-input-upload-file</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="K9XKp" />
+  <style>
+input{
+  width:100%;
+}
+.videowarp{
+  width:50%;float:left
+}
+.videowarp video{
+  width:100%;
+}
+img{
+  width: 100px;
+}
+  </style>
+</head>
+<body>
+<input type="file" id="fileInput" />
+<img src="" id="img_createObjectURL" alt="" />
+<div class="waitUpload videowarp">
+</div>
+<script>
+document.querySelector('#fileInput').addEventListener('change', function() {
+  var reader = new FileReader();
+  reader.onload = (evt) => {
+    $('.waitUpload').html('<div class="videoCtn"><img src="' + evt.target.result + '" controls></div>');
+  };
+  
+  img_createObjectURL.src=URL.createObjectURL(fileInput.files[0])
+  reader.readAsDataURL(this.files[0]);
+	//$(this).val('');
+})
+</script>
+</body>
+</html>

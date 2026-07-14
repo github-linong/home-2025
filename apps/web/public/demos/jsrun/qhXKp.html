@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/a/1190000018088062</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="qhXKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<!-- <section class="memory-game" id="app">
+  <div class="memory-card" v-for="(item, i) in arr" :class="[item]" :style="{top: (i>>2)*55+'px',left: (i%4)*55+'px'}"></div>
+</section> -->
+<section id="app" class="memory-game"><div class="memory-card react" style="top: 0px; left: 0px;"></div><div class="memory-card react" style="top: 0px; left: 55px;"></div><div class="memory-card react" style="top: 0px; left: 110px;"></div><div class="memory-card react" style="top: 0px; left: 165px;"></div><div class="memory-card h5--1" style="top: 55px; left: 0px;"></div><div class="memory-card h5--1" style="top: 55px; left: 55px;"></div><div class="memory-card h5--1" style="top: 55px; left: 110px;"></div><div class="memory-card h5--1" style="top: 55px; left: 165px;"></div><div class="memory-card h5--2" style="top: 110px; left: 0px;"></div><div class="memory-card h5--2" style="top: 110px; left: 55px;"></div><div class="memory-card h5--2" style="top: 110px; left: 110px;"></div><div class="memory-card h5--2" style="top: 110px; left: 165px;"></div><div class="memory-card h5--3" style="top: 165px; left: 0px;"></div><div class="memory-card h5--3" style="top: 165px; left: 55px;"></div><div class="memory-card h5--3" style="top: 165px; left: 110px;"></div><div class="memory-card h5--3" style="top: 165px; left: 165px;"></div></section>
+<script>
+// new Vue({
+//   el: '#app',
+//   data: {
+//     arr: ['react','react','react','react','h5--1','h5--1','h5--1','h5--1','h5--2','h5--2','h5--2','h5--2','h5--3','h5--3','h5--3','h5--3']
+//   }
+// })
+setTimeout(()=>{
+  Array.from(document.querySelectorAll('.memory-card')).forEach(v=>{
+    v.addEventListener('click',el=>{
+      v.classList.add('flip');
+      setTimeout(()=>{
+         v.classList.remove('flip');
+      },1000)
+    })
+  })
+},1000)
+</script>
+</body>
+</html>

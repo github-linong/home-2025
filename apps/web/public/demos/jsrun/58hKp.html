@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1590000016864292?_ea=4937364</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="58hKp" />
+  <style>
+div{
+  padding-left: 20px;
+}
+button{
+  display:none;
+}
+h1:hover button{
+  display: inline-block
+}
+  </style>
+</head>
+<body>
+<div id="app">
+  <ln-tree :node="tree"></ln-tree>
+</div>
+<script>
+tree={
+  txt: 'root',
+  children: [
+    {
+      txt: 'title_1',
+    },
+    {
+      txt: 'title_2',
+      children: [{
+        txt: 'title_2_1',
+      	children: [{
+          txt: 'title_2_1_1',
+        }]
+      }]
+    }
+  ]
+}
+treeCompent = {
+  props:{
+    node: Object,
+  },
+  data(){
+    return {
+      open: false,
+    }
+  },
+  methods:{
+    switchShow(){
+      this.open = !this.open;
+    }
+  },
+  computed:{
+    nodeIcon(){
+      if(this.node.children){
+        return this.open?'-':'+'
+      }else{
+        return ' '
+      }
+    }
+  },
+  template: `
+		<div>
+			<h1 @click="switchShow">{{nodeIcon}}{{node.txt}} <button>编辑</button><button>查看</button><button>删除</button></h1>
+			<template v-if="node.children && open"> 
+				<ln-tree v-for="item in node.children" :node="item"></ln-tree>
+			</template>
+			
+		</div>
+	`
+}
+Vue.component('ln-tree', treeCompent);
+new Vue({
+  el: '#app',
+  data: {
+    tree: tree
+  }
+})
+</script>
+</body>
+</html>

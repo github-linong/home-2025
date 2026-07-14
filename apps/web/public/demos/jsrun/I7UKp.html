@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>应用 先于 组件</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="I7UKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<div id="wrap" class="wrap">
+    <div id="app1">
+    {{'vue'}} 案例一：先Vue.component()注册组件，然后渲染
+    <component1></component1>
+</div>
+<script>
+    Vue.component('component1',{
+        template: `<div>{{'component1'}} component1</div>`
+    })
+    new Vue({
+        el: '#app1'
+    })
+</script>
+<div id="app2">
+    {{'vue'}} 案例二：先components: {component2: {}}注册组件，然后渲染
+    <component2></component2>
+</div>
+<script>
+    new Vue({
+        components: {
+            component2: {
+                template: `<div>{{'component2'}} component2</div>`
+            }
+        },
+        el: '#app2'
+    })
+</script>
+<div id="app3">
+    {{'vue'}} 案例三：先components: {component3: Promise}注册组件，然后渲染
+    <component3></component3>
+</div>
+<script>
+    new Vue({
+        components: {
+            // component3: new Promise(function(resolve){
+            //     setTimeout(()=>{
+            //         resolve({
+            //             template: `<div>{{'component3'}} component3</div>`
+            //         })
+            //     })
+            // })
+            component3: (function(resolve){
+                setTimeout(()=>{
+                    resolve({
+                        template: `<div>{{'component3'}} component3</div>`
+                    })
+                }, 1000)
+            })
+        },
+        el: '#app3'
+    })
+</script>
+<div id="app4">
+    {{'vue'}} 案例四：先components: {component4: Promise}注册组件，然后渲染。测试插槽渲染顺序。
+    
+    <br> <b>这里有问题。如果component4是个异步组件，那么渲染component4slot会特别慢</b>
+    <component4>
+        <component4slot></component4slot>
+    </component4>
+</div>
+<script>
+    new Vue({
+        created: function(){top.console.log('created', 'app4', Date.now())},
+        components: {
+            component4: (function(resolve){
+                setTimeout(()=>{
+                    resolve({
+                        created: function(){top.console.log('created', 'component4', Date.now())},
+                        template: `<div>{{'component4'}} component4 <slot></slot></div>`
+                    })
+                }, 1000)
+            }),
+            component4slot: {
+                created: function(){top.console.log('created', 'component4slot', Date.now())},
+                template: `<div>{{'component4slot'}} component4slot</div>`
+            }
+        },
+        el: '#app4'
+    })
+</script>
+<div id="app5">
+    {{'vue'}} 案例五：先Vue.component(component5, Promise)注册组件，然后渲染。测试插槽渲染顺序。
+    
+    <br> <b>这里有问题。如果component5是个异步组件，那么渲染component5slot会特别慢</b>
+    <component5>
+        <component5slot></component5slot>
+    </component5>
+</div>
+<script>
+    Vue.component('component5', function(resolve){
+                setTimeout(()=>{
+                    resolve({
+                        created: function(){top.console.log('created', 'component5', Date.now())},
+                        template: `<div>{{'component5'}} component5 <slot></slot></div>`
+                    })
+                }, 1000)
+            })
+    new Vue({
+        created: function(){top.console.log('created', 'app5', Date.now())},
+        components: {
+            component5slot: {
+                created: function(){top.console.log('created', 'component5slot', Date.now())},
+                template: `<div>{{'component5slot'}} component5slot</div>`
+            }
+        },
+        el: '#app5'
+    })
+</script>
+<div id="app6">
+    {{'vue'}} 案例六：先渲染,后Vue.component(component6, Promise)注册组件。测试插槽渲染顺序。
+    
+    <br> <b>这里会发现，component6没有被渲染成功</b>，
+    <dl>
+        <dt>这里有几个想法</dt>
+        <dd>先定义，然后 promise. 但是这样延时，需要考虑并行方案</dd>
+        <dd>componend is 做 loading 状态</dd>
+        <dd>尝试让组件于slot并行渲染</dd>
+    </dl>
+    <component6>
+        <component6slot></component6slot>
+    </component6>
+</div>
+<script>
+    setTimeout(()=>{
+        Vue.component('component6', function(resolve){
+            setTimeout(()=>{
+                resolve({
+                    created: function(){top.console.log('created', 'component6', Date.now())},
+                    template: `<div>{{'component6'}} component6 <slot></slot></div>`
+                })
+            }, 1000)
+        })
+    }, 500)
+    new Vue({
+        created: function(){top.console.log('created', 'app6', Date.now())},
+        components: {
+            component6slot: {
+                created: function(){top.console.log('created', 'component6slot', Date.now())},
+                template: `<div>{{'component6slot'}} component6slot</div>`
+            }
+        },
+        el: '#app6'
+    })
+</script>
+<div id="app7">
+    {{'vue'}} 案例七：先渲染,后Vue.component(component6, Promise)注册组件。测试插槽渲染顺序。
+    
+    <br>{{componentName}} <b>使用 component 并没有成功的复用 slot。</b>
+    <button @click="componentName='component7'">componentName='component7'</button>
+    <button @click="componentName='div'">componentName='div'</button>
+    <component :is="componentName">
+        <keep-alive>
+            <component7slot></component7slot>
+        </keep-alive>
+    </component>
+</div>
+<script>
+    setTimeout(()=>{
+        // Vue.component('component7', function(resolve){
+        //     // setTimeout(()=>{
+        //         resolve({
+        //             created: function(){top.console.log('created', 'component7', Date.now())},
+        //             template: `<div>{{'component7'}} component7 <slot></slot></div>`
+        //         })
+        //     // }, 1000)
+        // })
+        Vue.component('component7', {
+            created: function(){top.console.log('created', 'component7', Date.now())},
+            template: `<div>{{'component7'}} component7 <slot></slot></div>`
+        })
+        setTimeout(()=>vm7.componentName="component7")
+    }, 500);
+    vm7 = new Vue({
+        created: function(){top.console.log('created', 'app7', Date.now())},
+        data(){
+            return {componentName: 'div'}
+        },
+        components: {
+            component7slot: {
+                created: function(){top.console.log('created', 'component7slot', Date.now())},
+                template: `<div>{{'component7slot'}} component7slot</div>`
+            }
+        },
+        el: '#app7'
+    })
+</script>
+</div>
+
+<style>
+    .wrap{
+        display: flex;
+        flex-direction: column-reverse;
+    }
+    .wrap [id^="app"]{
+
+    }
+    [id^="app"]{
+        margin-top: 10px;
+        border-top: 1px solid #333;
+        padding-top: 10px;
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

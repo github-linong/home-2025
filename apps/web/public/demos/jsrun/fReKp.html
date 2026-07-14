@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>keep-alive 动态缓存</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="fReKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.5.3/vue-router.js"></script>
+
+<div id="app">
+    <div>
+        list: {{list}}
+        <ol>
+            <li v-for="(item, idx) in list" :key="item">
+                {{item}} <button @click="list.splice(idx, 1)">x</button>
+            </li>
+        </ol>
+    </div>
+    <div class="box">
+        <div class="left">
+            <ul>
+                <li v-for="item in navList">
+                    <router-link :to="{path: `/${item}`}" >Go to {{item}}</router-link>
+                </li>
+            </ul>
+        </div>
+        <div class="right">
+            <keep-alive :include="list">
+              <router-view></router-view>
+            </keep-alive>
+        </div>
+    </div>
+</div>
+<style>
+    .box{display: flex;}
+</style>
+<script>
+const ComponentA = { name: 'ComponentA', template: '<div>A {{new Date().toLocaleString()}}</div>' }
+const ComponentB = { name: 'ComponentB', template: '<div>B {{new Date().toLocaleString()}}</div>' }
+const ComponentC = { name: 'ComponentC', template: '<div>C {{new Date().toLocaleString()}}</div>' }
+const routes = [
+  { path: '/a', component: ComponentA },
+  { path: '/b', component: ComponentB },
+  { path: '/c', component: ComponentC }
+]
+const router = new VueRouter({
+  routes // (缩写) 相当于 routes: routes
+})
+</script>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                list: [],
+                navList: [
+                    'a',
+                    'b',
+                    'c'
+                ]
+            }
+        },
+        watch: {
+            '$route': function(){
+                top.console.log(this. $route);
+                const componentName = this.$route.matched[0].components.default.name;
+                if(!this.list.includes(componentName)){
+                    this.list.push(componentName)
+                }
+                
+            }
+        },
+        router
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

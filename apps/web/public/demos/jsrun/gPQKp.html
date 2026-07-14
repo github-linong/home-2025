@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue 异步数据展示</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="gPQKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js">
+
+</script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js">
+
+</script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js">
+
+</script>
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js">
+
+</script>
+
+
+<div id="app">
+	<ul>
+		<li v-for="item in list">
+			{{item}}
+		</li>
+	</ul>
+</div>
+<script>
+	ajax = function(req,rsp,timeout = 1000){
+            console.log('ajax')
+            return new Promise(function(reslove){
+                setTimeout(()=>reslove(rsp), timeout)
+            })
+        }
+
+</script>
+<script>
+	vm = new Vue({
+            el: '#app',
+            data(){
+                return {
+                    list: [],
+                    hash: {},
+                }
+            },
+            async mounted(){
+                await this.getList();
+                this.handleBudgetList()
+            },
+            methods: {
+                async getList(){
+                    const list = await ajax('xxx', [
+                        {budgetCostCenterCode: 123, budgetAccountCode: 456, count:1 },
+                        {budgetCostCenterCode: 1234, budgetAccountCode: 456, count:2 },
+                        {budgetCostCenterCode: 123, budgetAccountCode: 4456, count:3 },
+                        {budgetCostCenterCode: 123, budgetAccountCode: 4456, count:4 },
+                    ], 600)
+                    return this.list = list;
+                },
+                handleUniq(data) {
+                    // if(data.length == 0) return []
+                    let dataList = data
+                    const dict = {};
+                    for (const item of dataList) {
+                        dict[item.budgetCostCenterCode + ',' + item.budgetAccountCode] = item;
+                    }
+                    dataList = Object.values(dict);
+                    return dataList
+                },
+                async handleBudgetList() {
+                    let newList = JSON.parse(JSON.stringify(this.list))
+                    console.log('newList', newList)
+                    // 将拷贝的数据， 进行去重操作
+                    newList = this.handleUniq(newList)
+                    newList.forEach(async item => {
+                        console.log(item)
+                         if(item.budgetCostCenterCode) {
+                            item.budgetSsvShow = await ajax([id1, id2], {
+                                info: Math.random()
+                            }, Math.random() * 2000)
+                        }
+                         if(item.budgetAccountCode) {
+
+                         }
+                    })
+                    
+                },
+                async getInfo(item){
+                    const [id1, id2] = item.split(',')
+                    this.hash[id1][id2] = await ajax([id1, id2], {
+                        info: Math.random()
+                    }, Math.random() * 2000)
+                }
+                
+            }
+        })
+
+</script>
+<script>
+
+</script>
+</body>
+</html>

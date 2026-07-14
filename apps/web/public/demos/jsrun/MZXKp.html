@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/a/1190000017854473?_ea=6151369</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="MZXKp" />
+  <style>
+canvas{
+  border: 1px solid #f00;
+}
+img{
+  width:300px;
+}
+  </style>
+</head>
+<body>
+<canvas></canvas>
+<img src="https://www.lilnong.top/static/img/Chrysanthemum.jpg" alt="" />
+<!-- <img src="https://www.lilnong.top/static/img/Penguins.jpg" alt="" /> -->
+<a href="https://www.lilnong.top/static/html/fe-image-getcolor-canvas.html" target="_blank">demo yemian</a>
+<script>
+var canvas = document.querySelector('canvas');
+var context = canvas.getContext('2d');
+var _image = document.querySelector('img');
+// console.dir(context);
+// context.drawImage(_image,0,0,300,150);
+context.drawImage(_image,0,0,1,1);
+context.getImageData(0,0,1,1);
+
+
+// 跨域问题
+// var xhr = new XMLHttpRequest();
+// xhr.onload = function () {
+//     var url = URL.createObjectURL(this.response);
+//     var img = new Image();
+//     img.onload = function () {
+//         // 此时你就可以使用canvas对img为所欲为了
+//         // ... code ...
+//       	context.drawImage(img,0,0,1,1);
+//         // 图片用完后记得释放内存
+//         URL.revokeObjectURL(url);
+//     };
+//     img.src = url;
+// };
+// xhr.open('GET', 'https://www.lilnong.top/static/img/Penguins.jpg', true);
+// xhr.responseType = 'blob';
+// xhr.send();
+</script>
+</body>
+</html>

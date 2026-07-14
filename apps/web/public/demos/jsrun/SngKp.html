@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>双列表过滤</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="SngKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  
+</div>
+<script>
+arr=[
+    {
+       type: 1,
+       children: [{
+	      state: 0
+       }]
+    },
+    {
+       type: 1,
+       children: []
+    },
+    {
+       type: 1,
+       children: [{
+	      state: 1
+       },{
+	      state: 1
+       },{
+	      state: 1
+       }]
+    },
+    {
+       type: 1,
+       children: [{
+	      state: 1
+       },{
+	      state: 1
+       },{
+	      state: 0
+       }]
+    },
+    {
+       type: 0,
+       children: [{
+	      state: 0
+       }]
+    },
+    {
+       type: 0,
+       children: []
+    },
+    {
+       type: 0,
+       children: [{
+	      state: 1
+       },{
+	      state: 1
+       },{
+	      state: 1
+       }]
+    },
+    {
+       type: 0,
+       children: [{
+	      state: 1
+       },{
+	      state: 2
+       },{
+	      state: 0
+       }]
+    },
+	
+];
+app.innerHTML +=JSON.stringify(arr)+'<hr>'
+arr_type_list = Array.from(new Set(arr.map(v=>v.type)));
+app.innerHTML +=JSON.stringify(arr_type_list)+'<hr>'
+arr_state_list = Array.from(new Set([].concat(...arr.map(v=>v.children.map(v1=>v1.state)))));
+app.innerHTML +=JSON.stringify(arr_state_list)+'<hr>'
+typeTag = ''//type 筛选选项
+stateTag = ''//state 筛选选项
+options=[{
+  tagName: 'type',
+  value: typeTag,
+  fun: (val)=>{
+    return val == this.value
+  }
+},{
+  tagName: 'state',
+  value: stateTag,
+  fun: (val)=>{
+    return val == this.value
+  }
+}]
+datalist = arr.filter(v=>{
+  // 不是全部结果集。
+  //如果type和state都不筛选就是全结果集。
+  if(options.every(v=>!v.value)) return true;
+  v.children
+	return v.children.length
+})
+app.innerHTML +=JSON.stringify(datalist)+'<hr>'
+</script>
+</body>
+</html>

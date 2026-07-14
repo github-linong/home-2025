@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue3</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="QgTKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/3.1.5/vue.global.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/element-plus/1.0.2-beta.65/index.full.js"></script>
+<!-- <link href="https://cdn.bootcdn.net/ajax/libs/element-plus/1.0.2-beta.65/theme-chalk/base.css" rel="stylesheet"> -->
+<link href="https://cdn.bootcdn.net/ajax/libs/element-plus/1.0.2-beta.65/theme-chalk/index.css" rel="stylesheet">
+<div id="app">
+    <div id="list-demo">
+        <button @click="add">Add</button>
+        <button @click="remove">Remove</button>
+        <transition-group name="list" tag="p">
+            <div v-for="item in items" :key="item" class="list-item">
+            {{ item }}
+            </div>
+        </transition-group>
+    </div>
+    <div id="flip-list-demo">
+        <button @click="shuffle">Shuffle</button>
+        <transition-group name="flip-list" tag="p">
+            <div v-for="item in items" :key="item"  class="list-item">
+            {{ item }}
+            </div>
+        </transition-group>
+    </div>
+</div>
+<div id="app2">
+    vue3 
+    单独使用,绑定对象里的属性
+    <el-input-number v-model="ruleForm.testValue" :step="1" step-strictl></el-input-number>
+
+    <el-form :model="ruleForm2" ref="ruleForm2" label-position="left">
+
+        <el-form-item label="表单组件内,绑定对象里的属性">
+        <el-input-number v-model="ruleForm2.testValue" :step="1" step-strictly></el-input-number>
+        </el-form-item>
+
+        <el-form-item label="表单组件内,绑定非对象里的属性">
+        <el-input-number v-model="testValue2" :step="1" step-strictly></el-input-number>
+        </el-form-item>
+
+    </el-form>
+</div>
+<style>
+    .list-item {
+        display: inline-block;
+        margin-right: 10px;
+    }
+    .list-enter-active,
+    .list-leave-active ,
+    .list-move {
+        transition: all 1s ease;
+    }
+    .list-enter-from,
+    .list-leave-to {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    .flip-list-move {
+        transition: transform 0.8s ease;
+    }
+</style>
+
+<script type="modules">
+    
+import {
+  reactive,
+  ref
+} from 'vue'
+export default ({
+  el: '#app2',
+  setup () {
+    const testValue2 = ref(900)
+    const ruleForm = reactive({
+      testValue: 100
+    })
+    const ruleForm2 = reactive({
+      testValue: 200
+    })
+    return {
+      testValue2,
+      ruleForm,
+      ruleForm2
+    }
+  }
+})
+</script>
+<script>
+    const Demo = {
+    data() {
+        return {
+            items: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            nextNum: 10
+        }
+    },
+    methods: {
+        shuffle() {
+            this.items = _.shuffle(this.items)
+        },
+        randomIndex() {
+            return Math.floor(Math.random() * this.items.length)
+        },
+        add() {
+            this.items.splice(this.randomIndex(), 0, this.nextNum++)
+        },
+        remove() {
+            this.items.splice(this.randomIndex(), 1)
+        }
+    }
+}
+
+    Vue.createApp(Demo).mount('#app')
+</script>
+<script>
+
+</script>
+</body>
+</html>

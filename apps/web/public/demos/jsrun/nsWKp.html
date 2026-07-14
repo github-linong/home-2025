@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="nsWKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <!-- <p>所有推荐位置:{{typeList}}</p> -->
+  <!-- <p>已选推荐位置:{{myTypeList}}</p> -->
+  <!-- <p>已选推荐位置hash:{{myTypeListHash}}</p> -->
+  <!-- <p>所有推荐位置计算:{{typeListComputed}}</p> -->
+  <!-- <p>最终输出结果:{{typeListResult}}</p> -->
+  <div>
+    推荐频道：
+    <div v-for="item in typeListComputed">
+      {{item.name}}
+      <input type="radio" v-model="item.radiovalue" value="" />
+      <input type="radio" v-model="item.radiovalue" value="0" />
+      <input type="radio" v-model="item.radiovalue" value="1" />
+      <input type="radio" v-model="item.radiovalue" value="2" />
+    </div>
+  </div>
+</div>
+
+
+
+<hr />
+<hr />
+<hr />
+
+<div id="app1">
+  <!-- <p>所有推荐位置:{{typeList}}</p> -->
+  <!-- <p>已选推荐位置:{{myTypeList}}</p> -->
+  <!-- <p>已选推荐位置hash:{{myTypeListHash}}</p> -->
+  <!-- <p>所有推荐位置计算:{{typeListComputed}}</p> -->
+  <p>最终输出结果:{{typeListResult}}</p>
+  <div>
+    推荐频道：
+    <div v-for="item in typeListComputed">
+      {{item.name}}
+      <input type="checkbox" :checked="item.radiovalue != ''" @change="changeHandler($event, item)"/>
+      <input type="radio" v-model="item.radiovalue" value="0" />
+      <input type="radio" v-model="item.radiovalue" value="1" />
+      <input type="radio" v-model="item.radiovalue" value="2" />
+    </div>
+  </div>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data(){
+    return {
+      typeList: [
+        {id: 1, name: '推荐'},
+        {id: 2, name: '视频'},
+        {id: 3, name: '音频'},
+        {id: 4, name: '文章'},
+        {id: 5, name: '最热'},
+        {id: 6, name: '最新'}
+      ],
+      myTypeList:[
+        {id: 1, name: '推荐', value: '1'},
+        {id: 4, name: '文章', value: '2'},
+      ]
+    }
+  },
+  computed:{
+    typeListResult(){
+      return this.typeList.filter(v=>v.radiovalue)
+    },
+    typeListComputed(){
+      this.typeList.forEach(v=>{
+        this.$set(v,'radiovalue','') 
+        if(this.myTypeListHash[v.id]){ 
+        	this.$set(v,'radiovalue',this.myTypeListHash[v.id].value) 
+        }
+      })
+      return this.typeList
+    },
+    myTypeListHash(){
+      var obj = {};
+      this.myTypeList.forEach(v=>{
+        obj[v.id] = v
+      })
+      return obj
+    }
+  }
+});
+
+
+
+new Vue({
+  el: '#app1',
+  data(){
+    return {
+      typeList: [
+        // {id: 1, name: '推荐'},
+        // {id: 2, name: '视频'},
+        // {id: 3, name: '音频'},
+        // {id: 4, name: '文章'},
+        // {id: 5, name: '最热'},
+        // {id: 6, name: '最新'}
+      ],
+      myTypeList:[
+        // {id: 1, name: '推荐', value: '1'},
+        // {id: 4, name: '文章', value: '2'},
+      ]
+    }
+  },
+  created(){
+    setTimeout(v=>{
+      this.typeList = [
+        {id: 1, name: '推荐'},
+        {id: 2, name: '视频'},
+        {id: 3, name: '音频'},
+        {id: 4, name: '文章'},
+        {id: 5, name: '最热'},
+        {id: 6, name: '最新'}
+      ];
+    },1000)
+    setTimeout(v=>{
+      this.myTypeList = [
+        {id: 1, name: '推荐', value: '1'},
+        {id: 4, name: '文章', value: '2'},
+      ]
+    },1500)
+  },
+  methods:{
+    changeHandler(e, item){
+      if(e.target.checked){
+        item.radiovalue = '0'
+      }else{
+        item.radiovalue = ''
+      }
+      console.log(e.target.value, e.target.checked)
+    }
+  },
+  computed:{
+    typeListResult(){
+      return this.typeList.filter(v=>v.radiovalue)
+    },
+    typeListComputed(){
+      this.typeList.forEach(v=>{
+        this.$set(v,'radiovalue','') 
+        var item = this.myTypeList.find(item=>item.id == v.id)
+//         是否在自己的已选中，存在
+        if(item){ 
+        	this.$set(v,'radiovalue',item.value) 
+        }
+      })
+      return this.typeList
+    },
+    myTypeListHash(){
+      // var obj = {};
+      // this.myTypeList.forEach(v=>{
+      //   obj[v.id] = v
+      // })
+      // return obj
+    }
+  }
+})
+</script>
+</body>
+</html>

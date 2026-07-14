@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>flex 平分区间测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="BM8Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div class="flex" id="wrap">
+    <div class="item">我是内容1</div>
+    <div class="item-line"></div>
+    <div class="item">我是内容2</div>
+    <div class="item-line"></div>
+    <div class="item">我是内容3</div>
+    <div class="item-line"></div>
+</div>
+<div id="clog"></div>
+<style>
+    .flex{display: flex;}
+    .item-line{flex: 1 1 0;position: relative;background: red;}
+    .item-line:after{content: '';position: absolute;left: 50%;top:0;bottom:0;width: 1px;background: #0f0;}
+    .item-line:last-child{display:none;}
+
+    .item{width: 40px;}
+    .item:first-child{width: 80px;}
+</style>
+<script>
+    setInterval(v=>{
+        arr = []
+        Array.from(wrap.children).forEach((item)=>{
+            arr.push(item.offsetWidth)
+        })
+        clog.innerText = arr.join('\n')
+    }, 100)
+</script>
+<script>
+
+</script>
+</body>
+</html>

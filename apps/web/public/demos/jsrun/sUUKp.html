@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>照片渲染成心</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="sUUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<canvas id="canvas">
+
+</canvas>
+<style>
+
+</style>
+<script>
+    // arr = `
+    //     ${`0`.repeat(16)}
+    // `.repeat(16)
+    // app.innerHTML = arr
+    str = `
+        0000010001000000 
+        0000111011100000 
+        0001111111110000 
+        0011100100001000 
+        0111000100001100 
+        0110000100001100 
+        0111100100001100 
+        0011100100001000 
+        0001100100010000 
+        0000111111100000 
+        0000011111000000 
+        0000001110000000 
+        0000000000000000 
+        0000000000000000 
+        0000000000000000 
+        0000000000000000
+    `
+    canvas = document.querySelector('#canvas')
+    ctx = canvas.getContext('2d')
+    initCanvas = () => {
+        canvas.width = (30 + 10) * 16
+        canvas.height = (30 + 10) * 16
+        ctx.fillRect(0,0,canvas.width,canvas.height)
+    }
+    initCanvas();
+    drawImage = () => {
+        arr = str.split('\n').map(v=>v.trim()).filter(v=>v).map(v=>v.split(''));
+        // console.log(arr)
+        arr.forEach((arr1, i)=>{
+            arr1.forEach((arr2, j)=>{
+                if(arr2 == '0'){
+                    ctx.fillStyle="#f00";
+                    ctx.fillRect(j * 40 + 5,i * 40 + 5,30,30)
+                }else{
+                    ctx.fillStyle="#ff0";
+                    ctx.fillRect(j * 40 + 5,i * 40 + 5,30,30)
+                }
+            })
+        })
+    }
+    drawImage();
+</script>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue elementui select</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="N6zKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://unpkg.com/vue@2.6.14/dist/vue.js">
+
+</script>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js">
+
+</script>
+
+<div id="app">
+    <!-- <div>
+        {{value1}}
+    </div> -->
+	<el-select v-model="value1" placeholder="请选择">
+		<el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+		</el-option>
+	</el-select>
+	<el-select v-if="value1 === '选项1'" v-model="value2" placeholder="请选择">
+		<el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+		</el-option>
+	</el-select>
+	<el-select v-if="value1 === '选项1' || value1 === '选项2'"  v-model="value3" placeholder="请选择">
+		<el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+		</el-option>
+	</el-select>
+</div>
+<style>
+    #app{
+        display: flex;
+    }
+    .el-select{
+        width: 100%;
+    }
+</style>
+<script>
+	new Vue({
+        el: '#app',
+    data() {
+      return {
+        options: [{
+          value: '选项1',
+          label: '黄金糕'
+        }, {
+          value: '选项2',
+          label: '双皮奶'
+        }, {
+          value: '选项3',
+          label: '蚵仔煎'
+        }, {
+          value: '选项4',
+          label: '龙须面'
+        }, {
+          value: '选项5',
+          label: '北京烤鸭'
+        }],
+        value1: '',
+        value2: '',
+        value3: ''
+      }
+    }
+  })
+
+</script>
+<script>
+
+</script>
+</body>
+</html>

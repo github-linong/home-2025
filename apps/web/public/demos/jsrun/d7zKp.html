@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue template 转 render</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="d7zKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<!-- <script src="https://cdn.bootcdn.net/ajax/libs/babel-core/6.1.9/browser.js"></script> -->
+<script src="https://cdn.bootcdn.net/ajax/libs/babel-standalone/6.7.7/babel.min.js"></script>
+<div id="app">
+    <textarea v-model="template"></textarea>
+    <pre>{{render}}</pre>
+</div>
+<style>
+    #app{display: flex;}
+    #app > *{
+        min-width: 200px;
+        max-width: 100vw;
+        overflow: auto;
+        flex: auto;
+    }
+</style>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                template: '<div>{{1}}</div>',
+                render: ''
+            }
+        },
+        watch: {
+            template:{
+                immediate: true,
+                handler(){
+                    // this.render = Vue.compile(this.template).toString()
+                    let input = Vue.compile('<textarea v-model="template"></textarea>').render.toString()
+                    this.render =  input;
+                    // this.render  = Babel.transform(input, { presets: ['es2015','stage-1','stage-2','stage-3'] }).code
+                        // .replace(/,/g,',\n')
+                        // .replace(/{/g,'{\n')
+                        // .replace(/}/g,'}\n')
+                }
+            }
+        }
+        
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

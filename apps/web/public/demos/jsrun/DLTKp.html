@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ccccc1</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="DLTKp" />
+  <style>
+.draw-box{
+          position: relative;
+        }
+        #cav{
+          position: relative;
+          z-index: 1;
+          box-sizing: content-box;
+        }
+        .draw-img{
+          display: block;
+          position: absolute;
+          z-index: 0;
+          left: 0;
+          top: 0;
+        }
+  </style>
+</head>
+<body>
+<div>
+  <div class="draw-box">
+    <canvas id="cav"></canvas>
+    <img class="draw-img" src="https://pic1.zhimg.com/90/v2-b703e5158ba820157b39337ee211ec5f_250x0.jpg?source=31184dd1" style="background:yellow;width:500px;height:500px" />
+  </div>
+</div>
+<script>
+function MyPaint(id,color='red'){
+        var canvas = document.getElementById(id)
+        this.canvas = canvas;
+        this.color = color;
+        this.ctx = this.canvas.getContext('2d');
+        this.p1= {};
+        this.p2 = {};
+        this.p3 = {};
+        this.rectList = [];
+        document.querySelector('.draw-img').onload = function () {
+          canvas.width = this.width
+          canvas.height = this.height
+        }
+    }
+ 
+    MyPaint.prototype.paintRect = function(){
+        var myPaint = this;
+        this.canvas.addEventListener('mousedown',function(e){
+            this.p1.x = e.offsetX;
+            this.p1.y = e.offsetY;
+            function paint(event){
+                myDrect(event);
+                myPaint.rectList.forEach(v=>paintRect(v.p1, v.p2))
+            }
+            this.canvas.addEventListener("mousemove",paint);
+            this.canvas.addEventListener("mouseup",function mouseup(e2){
+                console.log(myPaint.p1, myPaint.p2)
+                myPaint.rectList.push(JSON.parse(JSON.stringify({p1:myPaint.p1, p2: myPaint.p2})))
+                this.removeEventListener("mousemove",paint);
+                this.removeEventListener("mouseup",mouseup);
+            })
+ 
+        }.bind(this));
+ 
+        function myDrect(e){
+            myPaint.p2.x = e.offsetX;
+            myPaint.p2.y = e.offsetY;
+            myPaint.ctx.width = myPaint.width;
+            myPaint.ctx.height = myPaint.height;
+            myPaint.ctx.fillStyle = '#FF0000';
+            myPaint.ctx.strokeStyle = '#FF0000';
+            myPaint.ctx.clearRect(0,0,myPaint.canvas.width,myPaint.canvas.height);
+           
+            paintRect(myPaint.p1, myPaint.p2)
+        }
+        function paintRect(p1, p2){
+            myPaint.ctx.beginPath();
+            var width = Math.abs(p1.x-p2.x);
+            var height = Math.abs(p1.y-p2.y);
+            if(p2.x>=p1.x){
+                if(p2.y>=p1.y){
+                    myPaint.ctx.rect(p1.x,p1.y,width,height);
+                }else{
+                    myPaint.ctx.rect(p1.x,p1.y,width,-height);
+                }
+            }else{
+                if(p2.y>=p1.y){
+                    myPaint.ctx.rect(p1.x,p1.y,-width,height);
+                }else{
+                    myPaint.ctx.rect(p1.x,p1.y,-width,-height);
+                }
+ 
+            }
+            myPaint.ctx.stroke();
+            myPaint.ctx.save();
+        }
+    }
+ 
+    var mp = new MyPaint('cav');
+    mp.paintRect();
+</script>
+</body>
+</html>

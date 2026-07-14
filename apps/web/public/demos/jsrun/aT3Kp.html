@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>canvas 导出背景色</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="aT3Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<img id="img" src="" alt="">
+<script>
+    ctx = canvas.getContext('2d');
+    ctx.font="30px sans-serif"
+    ctx.fillText('前端linong', 40, 40)
+    var imgdata = canvas.toDataURL('image/png');
+
+    img.src = imgdata; 
+    img.onload = function(){
+        ctx.fillStyle="#fff"
+        ctx.fillRect(0, 0,canvas.width,canvas.height);
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    
+        imgdata = canvas.toDataURL('image/jpeg');
+        img.src = imgdata
+    }
+</script>
+<script>
+
+</script>
+</body>
+</html>

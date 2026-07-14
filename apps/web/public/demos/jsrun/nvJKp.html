@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>在canvas监听鼠标右键，如何屏蔽默认的菜单？</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="nvJKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<canvas id="myCanvas" 
+        style="background-color: yellow;" 
+        width="400" 
+        height="400">
+</canvas>
+<canvas id="myCanvas1" 
+        style="background-color: yellow;" 
+        width="400" 
+        height="400">
+</canvas><canvas id="myCanvas2" 
+        style="background-color: yellow;" 
+        width="400" 
+        height="400">
+</canvas>
+<script>
+const el=document.getElementById('myCanvas')
+
+const onRightClick=(e)=>{
+    e.stopPropagation()
+    e.preventDefault() 
+    return false;
+}
+
+myCanvas1.addEventListener('contextmenu',onRightClick)
+myCanvas2.oncontextmenu = onRightClick
+</script>
+<script>
+
+</script>
+</body>
+</html>

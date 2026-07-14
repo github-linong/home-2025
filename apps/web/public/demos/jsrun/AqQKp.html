@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>数据 map 处理</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="AqQKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script>
+	data = [{"phase":"01","currentxq":false,"weekend":"22-01-28","isHoliday":0,"campusid":1615,"remark":"1","xqgb":"01","termcode":"212201","weekList":[{"week":1,"today":false,"start":"21-07-12","end":"21-07-18","weekName":"第1周"},{"week":2,"today":false,"start":"21-07-19","end":"21-07-25","weekName":"第2周"},{"week":3,"today":false,"start":"21-07-26","end":"21-08-01","weekName":"第3周"}],"termid":16425,"weeknum":29,"weekbegin":"21-07-12 00:00:00.0","schoolYearName":"21-22学年","xqmc":"21-22学年上学期","schoolAllYearName":"21-22学年","schoolYear":"21-22","id":16425,"xqbm":"212201","termName":"21-22学年上学期","schoolAllYear":"21-22","schoolYearCodeName":"2122学年","schoolYearCode":"2122"},{"phase":"02","currentxq":true,"weekend":"22-06-30","isHoliday":0,"campusid":1615,"remark":"","xqgb":"02","termcode":"212202","weekList":[{"week":1,"today":false,"start":"22-02-09","end":"22-02-13","weekName":"第1周"},{"week":2,"today":false,"start":"22-02-14","end":"22-02-20","weekName":"第2周"},{"week":3,"today":false,"start":"22-02-21","end":"22-02-27","weekName":"第3周"},{"week":4,"today":false,"start":"22-02-28","end":"22-03-06","weekName":"第4周"}],"termid":16426,"weeknum":21,"weekbegin":"22-02-09 00:00:00.0","schoolYearName":"21-22学年","xqmc":"21-22学年下学期","schoolAllYearName":"21-22学年","schoolYear":"21-22","id":16426,"xqbm":"212202","termName":"21-22学年下学期","schoolAllYear":"21-22","schoolYearCodeName":"2122学年","schoolYearCode":"2122"}]
+    top.console.log(data);
+
+    console.log(data.map(v=>v.schoolYearName));
+    console.log(data.map(v=>v.termName));
+    console.log(data.map(v=>v.weekList.map(v=>v.weekName)));
+    console.log(data.map(v=>({text:v.xqmc, children: v.weekList.map(v=>({text: v.weekName}))})));
+
+</script>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000013519297</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="SrqKp" />
+  <style>
+ul{width: 100px;border: 1px solid #f00;min-height: 300px;position:relative;list-style:none}
+li.last{position:absolute;bottom: 0;left:0;right:0;background: #eee}
+ul:nth-child(1){float: left}
+ul:nth-child(2){float: left}
+
+
+div{clear:both;}
+  </style>
+</head>
+<body>
+<ul id="ulLeft">
+  <li> <input type="checkbox">1</li>
+  <li> <input type="checkbox">2</li>
+  <li> <input type="checkbox">3</li>
+  <li> <input type="checkbox">4</li>
+  <li> <input type="checkbox">5</li>
+  <li> <input type="checkbox">6</li>
+  <li class="last">全选</li>
+</ul>
+<ul  id="ulRight">
+  <li> <input type="checkbox">7</li>
+  <li> <input type="checkbox">6</li>
+  <li class="last">全选</li>
+</ul>
+<div>
+  <button id="left">左移</button>
+  <button id="right">右移</button>
+</div>
+<script>
+var UL = document.querySelector('#ulLeft');
+var UR = document.querySelector('#ulRight');
+var BL = document.querySelector('#left');
+var BR = document.querySelector('#right');
+var lasts = document.querySelectorAll('.last');
+BL.addEventListener('click', function(){
+  UR.querySelectorAll(':checked').forEach(function(item){
+    UL.appendChild(item.parentNode)
+  });
+})
+BR.addEventListener('click', function(){
+  UL.querySelectorAll(':checked').forEach(function(item){
+    UR.appendChild(item.parentNode)
+  });
+})
+lasts.forEach(function(item){
+  item.addEventListener('click', function(){
+    this.parentNode.querySelectorAll('input').forEach(function(item){
+      item.checked = true;
+    })
+  })
+})
+</script>
+</body>
+</html>

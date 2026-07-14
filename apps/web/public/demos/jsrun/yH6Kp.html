@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>解一道泰康的拔高面试题：面积占比</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="yH6Kp" />
+  <style>
+canvas{
+    transform: scale(1,-1)
+}
+  </style>
+  <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+</head>
+<body>
+<canvas id="canvas" width="100" height="100"></canvas>
+<p id="eraseRate"></p>
+<button id="fill">覆盖</button>
+<script>
+ctx = canvas.getContext('2d');
+ctx.beginPath();
+ctx.moveTo(0, 0);ctx.lineTo(100, 0);ctx.lineTo(100, 100);ctx.lineTo(0, 100);
+ctx.fill();
+
+linearr = [];
+clearRectTag = false;
+
+clearRectLen = 10
+clearRectLen2 = clearRectLen / 2
+clearRectCanvas = ((e)=>{
+// clearRectCanvas = _.throttle((e)=>{
+  ctx.beginPath();
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.arc(e.x, e.y, e.r || clearRectLen, 0, Math.PI * 2);
+  ctx.fill();
+// }, 50)
+})
+function saveLines(e){
+  linearr.push({x: e.x, y: e.y});
+}
+canvas.addEventListener('mousedown', (e)=>{
+  clearRectTag = true
+  clearRectCanvas(e)
+  saveLines(e)
+})
+canvas.addEventListener('mousemove', (e)=>{
+  if(clearRectTag){
+    saveLines(e)
+    clearRectCanvas(e)
+  }
+})
+canvas.addEventListener('mouseup', (e)=>{
+  clearRectTag = false
+})
+canvas.addEventListener('mouseout', (e)=>{
+  clearRectTag = false
+})
+
+setInterval(v=>{
+  var imageData = ctx.getImageData(0, 0, 100, 100).data;
+  var eraseTotal = 0;
+  var step = 1*4;//步长精度
+  for (var i = 3, len = imageData.length; i < len; i += step) {
+    if (imageData[i] === 0) {
+        eraseTotal++;
+    }
+  }
+  eraseRate.innerText = (eraseTotal/(len/step))
+}, 1000)
+
+;[
+    {type: 'round', x: 60, y: 95, r: 15},
+    {type: 'round', x: 50, y: 80, r: 15},
+    {type: 'round', x: 20, y: 30, r: 15},
+    {type: 'round', x: 70, y: 50, r: 15},
+    {type: 'round', x: 80, y: 25, r: 15}
+].forEach(clearRectCanvas)
+</script>
+</body>
+</html>

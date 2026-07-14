@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/a/1190000018646029</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="4syKp" />
+  <style>
+
+.warp{background: #111;height: 300px;margin: 10px;}
+.block{  width: 200px;  height: 200px;  background: #a0a;color: #fff;word-break: break-all;}
+
+.demo1 .block{
+  margin: auto;
+}
+
+.demo2{
+  position: relative;
+}
+.demo2 .block{
+  position: absolute;
+  left: 0;top: 0;right: 0;bottom: 0;margin: auto;
+}
+
+.demo3{
+  position: relative;
+}
+.demo3 .block{
+  position: absolute;
+  left: 50%;top: 50%;margin-top:-100px;margin-left: -100px;
+}
+
+.demo3-1{
+  position: relative;
+}
+
+.demo3-1 .block-warp{
+  position: absolute;
+  left: 50%;top: 50%;width: 200px;  height: 200px;
+}
+.demo3-1 .block{
+  position: absolute;
+  left: -50%;top: -50%;
+}
+
+.demo4{
+  position: relative;
+}
+.demo4 .block{
+  position: absolute;
+  left: 50%;top: 50%;transform: translate(-50%,-50%);
+}
+  </style>
+</head>
+<body>
+<div class="warp demo1">
+  <div class="block ">
+    margin: auto; 水平居中，自动分配剩余空间，但是正常情况下，只有水平方向有剩余空间。
+  </div>
+</div>
+<div class="warp demo2">
+  <div class="block ">
+    position:fixed;top:0;right:0;bottom:0;left:0; 垂直水平居中，这个方法有个要点，就是定宽定高，不然就占满了。当然还有要 margin:auto 来分配剩余空间才可以。
+  </div>
+</div>
+<div class="warp demo3">
+  <div class="block ">
+    position:absolute;left:50%;margin-left:负一半宽度;top:50%;margin-top:负一半宽度 垂直水平居中，left 是基于父级来设置的，所以需要用 margin 再拉回来，也需要定宽高。
+  </div>
+</div>
+<div class="warp demo3-1">
+  <div class="block-warp">
+    <div class="block ">
+      外部增加一层，内部还是50%
+    </div>
+  </div>
+</div>
+<div class="warp demo3">
+  <div class="block-warp">
+    <div class="block ">
+      position:absolute;left:50%;top:50%;transform: translate(-50%,-50%); 垂直水平居中,这个方案是上一个方案的优化版本，translate是基于自己的宽高来现实，所以可以用 -50% 来拉回。
+    </div>
+  </div>
+</div>
+<script>
+
+</script>
+</body>
+</html>

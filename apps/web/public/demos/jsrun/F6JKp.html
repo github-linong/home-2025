@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>拖动缩放demo</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="F6JKp" />
+  <style>
+.layoutView{
+    overflow: hidden;
+    width:300px;
+    height: 300px;
+    border: 1px solid #000;
+    position: relative;
+}
+.draggable {
+    z-index: 1;
+    position: absolute;
+    background-color: red;
+}
+  </style>
+</head>
+<body>
+<div id="app">
+      <button @click="screenNum = 1">screenNum = 1</button>
+      <button @click="screenNum = 2">screenNum = 2</button>
+      <button @click="screenNum = 0.5">screenNum = 0.5</button>
+    <div class='layoutView' ref="canvasRef" id="canvasRef">
+        <div ref="divRef" class="draggable" id="divRef">
+            <div class="timeWeather">
+                <div class="city">广州市</div>
+                <div class="weather"><p>晴</p><p>20 ℃</p></div>
+                <div class="timeDiv">
+                <div class="hour">11:00</div>
+                <div class="day">2023-08-24 星期四</div>
+                </div>
+            </div>
+        </div>
+    </div>  
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+var message = new Vue({
+  el: "#app",
+  data: {
+    screenNum:1,//缩放等级
+  },
+  mounted(){
+    // 获取canvas和div元素的引用
+    // const canvas = this.$refs.canvasRef;
+    // const div = this.$refs.divRef;
+    const canvas = document.getElementById('canvasRef')
+    const div = document.getElementById('divRef')
+    div.style.width = 1024 + 'px';
+    div.style.height = 768 + 'px';
+    div.style.width = 100 + 'px';
+    div.style.height = 100 + 'px';
+    
+    // 调用拖动函数，传入div元素和canvas元素的引用
+    this.draggable(div, canvas);
+
+    // 调用缩放函数，传入div元素和canvas元素的引用
+    this.zoomable(div, canvas);
+  },
+  methods:{
+    //拖动
+    draggable(element, canvas) {
+      let that = this
+      var isDragging = false;
+      var minLeft = 20;
+      var minTop = 20;
+      // 鼠标按下时的初始位置
+      var lastX = 0;
+      var lastY = 0;
+
+      // 鼠标按下时，计算初始位置和设置鼠标移动事件
+      element.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        element.style.cursor = 'grabbing';
+        e.preventDefault();
+        document.addEventListener('mousemove', moveElement);
+      });
+      // 鼠标松开时，移除鼠标移动事件
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        element.style.cursor = 'grab';
+      });
+
+      // 鼠标移动时，计算元素的新位置并设置
+      function moveElement(e) {
+        if (!isDragging) return;
+        var deltaX = e.clientX - lastX;
+        var deltaY = e.clientY - lastY;
+        var newLeft = element.offsetLeft + deltaX;
+        var newTop = element.offsetTop + deltaY;
+        console.log((minLeft * that.screenNum), minLeft,that.screenNum)
+        // newLeft = Math.max(-element.clientWidth*that.screenNum + minLeft, newLeft);
+        // newLeft = Math.min(canvas.clientWidth - (minLeft * that.screenNum), newLeft);
+        // newTop = Math.max(-element.clientHeight*that.screenNum + minTop, newTop);
+        // newTop = Math.min(canvas.clientHeight - minTop, newTop);
+        // console.log('2222',newLeft,newTop);
+
+        element.style.left = newLeft + 'px';
+        element.style.top = newTop + 'px';
+
+        lastX = e.clientX;
+        lastY = e.clientY;
+      }
+    },
+    //滚轮缩放
+    zoomable(element, canvas) {
+      let that = this
+      canvas.addEventListener('wheel', function(e) {
+        // var scaleFactor = 1.1;
+        // var newWidth = element.clientWidth * (e.deltaY > 0 ? 1 / scaleFactor : scaleFactor);
+        // var newHeight = element.clientHeight * (e.deltaY > 0 ? 1 / scaleFactor : scaleFactor);
+        // if(newWidth < 100) return
+        // newWidth = Math.min(1920, newWidth);
+        // newHeight = Math.min(1080, newHeight);
+        // element.style.width = newWidth + 'px';
+        // element.style.height = newHeight + 'px';
+        // e.preventDefault();
+
+        // 阻止默认的滚轮事件，以防止整个页面滚动
+        e.preventDefault();
+        // 获取鼠标滚轮的变化值
+        var delta = e.deltaY || e.detail || e.wheelDelta;
+        // 根据鼠标位置以及滚轮变化值进行放大缩小操作
+        if (delta < 0) {
+          that.screenNum+=0.1
+          // 放大div元素
+          element.style.transform = `scale(${that.screenNum})`;
+        } else {
+          //不能无限缩小
+          if(that.screenNum <=0.2) return
+          that.screenNum-=0.1
+          // 缩小div元素
+          element.style.transform = `scale(${that.screenNum})`;
+        }
+      });
+    },
+  }
+})
+
+</script>
+</body>
+</html>

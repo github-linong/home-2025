@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000038187630</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="UVwKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div>
+        <div>
+        <input ref="range" id="range"
+                type="range"
+                :max="max"
+                :min="min"
+                :step="step"
+                :value="value">
+        </div>
+        <div>
+        <p>value:{{value}}</p>
+        <p>backgroundSize:{{backgroundSize}}</p>
+        <p>step:{{step}}</p>
+
+        </div>
+    </div>
+</div>
+
+<script>
+new Vue({
+  el: '#app',
+  data () {
+    return {
+      value: 0,
+      backgroundSize: '',
+      max: 100,
+      min: 1,
+      // max: 1.5,
+      // min: 1,
+      step: 0.01
+    }
+  },
+  mounted () {
+    this.fn()
+  },
+  methods: {
+    fn () {
+      var range = this.$refs.range
+      let that = this;
+      range.onmousemove = function () {
+        that.value = range.value
+        //max:100,min:1
+        that.backgroundSize = that.value + '%100%'
+
+        //max:1.5,min:1
+        // that.backgroundSize = range.value * (1 / 0.015).toFixed(2) + '%100%'
+        range.style.backgroundSize = that.backgroundSize;
+      }
+    }
+  }
+})
+</script>
+<style>
+input[type="range"] {
+  -webkit-appearance: none;
+  /* 去除默认样式 */
+  background: -webkit-linear-gradient(#2e9cfb, #2e9cfb) no-repeat, #E5E5E5;
+  background-size: 0 100%;
+  width: 300px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+/* 去除获取焦点时的边框 */
+input[type="range"]:focus {
+  outline: none;
+}
+
+/* chrome自定义滑动轨道 */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+}
+
+/* chrome自定义滑块 */
+input[type="range"]::-webkit-slider-thumb {
+  position: relative;
+  top: -8px;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.2);
+  border: 2px solid #70B8FF;
+}
+</style>
+
+
+
+<div id="app1">
+    <div>
+        <div>
+        <input ref="range"  id="range"
+                type="range"
+                :max="max"
+                :min="min"
+                :step="step"
+                :value="value">
+        </div>
+        <div>
+        <p>value:{{value}}</p>
+        <p>backgroundSize:{{backgroundSize}}</p>
+        <p>step:{{step}}</p>
+
+        </div>
+    </div>
+</div>
+
+<script>
+new Vue({
+  el: '#app1',
+  data () {
+    return {
+      value: 0,
+      backgroundSize: '',
+      max: 1.5,
+      min: 1,
+      // max: 1.5,
+      // min: 1,
+      step: 0.01
+    }
+  },
+  mounted () {
+    this.fn()
+  },
+  methods: {
+    fn () {
+      var range = this.$refs.range//document.getElementById("range");
+      let that = this;
+      range.onmousemove = function () {
+        that.value = range.value
+        //max:100,min:1
+        that.backgroundSize = (that.value - that.min)/(that.max - that.min) * 100 + '%100%'
+
+        //max:1.5,min:1
+        // that.backgroundSize = range.value * (1 / 0.015).toFixed(2) + '%100%'
+        range.style.backgroundSize = that.backgroundSize;
+      }
+    }
+  }
+})
+</script>
+<script>
+
+</script>
+</body>
+</html>

@@ -202,7 +202,11 @@ const demoCount = demoIndex.length;
       btn.type = "button";
       btn.className = `badge badge-lg cursor-pointer ${activeValue === tag ? "badge-primary" : "badge-outline"}`;
       btn.textContent = `${tag} (${count})`;
-      btn.addEventListener("click", () => onSelect(activeValue === tag ? "" : tag));
+      // Keep selection on re-click; only「全部标签」/「清除」clears the filter.
+      btn.addEventListener("click", () => {
+        if (activeValue === tag) return;
+        onSelect(tag);
+      });
       container.appendChild(btn);
     }
   }

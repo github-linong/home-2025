@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>导航，CSS实现，下划线跟随效果</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="3nTKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <ul>
+        <li v-for="(item, idx) in list" :class="{selected: current == idx}" @click="current = idx">{{item}}</li>
+    </ul>
+</div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+
+	<script src="https://cdn.bootcdn.net/ajax/libs/Mock.js/1.0.1-beta3/mock-min.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                current: 0,
+                list: Array.from({length: 20}).map((v,i)=>{
+                    return Mock.mock('@cname')
+                    str = '';
+                    for(var j = 0; j < i;j++){
+                        // [\u4E00-\u9FA5]
+                        // parseInt('9FA5', 16) == 40869
+                        // parseInt('4E00', 16) == 19968
+                        str+= String.fromCharCode(Math.random() * (40869 - 19968) + 19968)
+                    }
+                    return str;
+                })
+            }
+        }
+    })
+</script>
+<style>
+    ul {
+        display: flex;
+        /* position: absolute; */
+        /* width: 800px; */
+        /* top: 50%; */
+        /* left: 50%; */
+        /* transform: translate(-50%, -50%); */
+    }
+
+    li {
+        position: relative;
+        padding: 10px 20px;
+        font-size: 24px;
+        color: #000;
+        /* line-height: 1; */
+        transition: 0.2s all linear;
+        cursor: pointer;
+        min-width: 3em;
+        display:flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    li::before {
+        content: "";
+        position: absolute;
+        /* top: 0; */
+        left: 100%;
+        width: 0;
+        /* height: 100%; */
+        bottom:0;
+        border-bottom: 2px solid #000;
+        transition: 0.2s all linear;
+    }
+
+    li.selected::before
+    /* ,li:hover::before  */
+    {
+        width: 100%;
+        /* top: 0; */
+        left: 0;
+        transition-delay: 0.1s;
+        /* border-bottom-color: #000; */
+        /* z-index: -1; */
+    }
+
+    li.selected ~ li::before
+    /* ,li:hover ~ li::before  */
+    {
+        left: 0;
+    }
+
+    li:active {
+        background: #000;
+        color: #fff;
+    }
+
+</style>
+<script>
+
+</script>
+</body>
+</html>

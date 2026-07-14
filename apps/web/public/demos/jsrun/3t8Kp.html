@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>tree 操作</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="3t8Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script>
+    deep = function(list, cb, parentNode){
+        list?.forEach(node=>{
+            cb(node, parentNode);
+            deep(node.childList || node.childNodes, cb, node)
+        })
+    }
+    // deep(treeList, (node, parentNode)=>{
+    //     node.id = node.name = Math.random();
+    //     node.parentId = parentNode?.id
+    // })
+</script>
+<script>
+    treeList = [{"id":1,"name":1,"itemType":"0","childList":[{"id":2,"name":2,"parentId":1,"itemType":"0","childList":[{"id":3,"name":3,"parentId":2,"itemType":"0","childList":[{"id":4,"name":4,"parentId":3,"itemType":"0","childList":[{"id":5,"name":5,"parentId":4,"itemType":"0","childList":[{"id":6,"name":6,"parentId":5,"itemType":"1","childList":[{"id":7,"name":7,"parentId":6,"itemType":"2"},{"id":8,"name":8,"parentId":6,"itemType":"2"},{"id":9,"name":9,"parentId":6,"itemType":"2"},{"id":10,"name":10,"parentId":6,"itemType":"2"},{"id":11,"name":11,"parentId":6,"itemType":"2"},{"id":12,"name":12,"parentId":6,"itemType":"2"}]}]}]}]}]},{"id":13,"name":13,"parentId":1,"itemType":"0","childList":[{"id":14,"name":14,"parentId":13,"itemType":"0","childList":[{"id":15,"name":15,"parentId":14,"itemType":"2"},{"id":16,"name":16,"parentId":14,"itemType":"2"},{"id":17,"name":17,"parentId":14,"itemType":"2"},{"id":18,"name":18,"parentId":14,"itemType":"2"},{"id":19,"name":19,"parentId":14,"itemType":"2"},{"id":20,"name":20,"parentId":14,"itemType":"2"},{"id":21,"name":21,"parentId":14,"itemType":"2"},{"id":22,"name":22,"parentId":14,"itemType":"2"}]}]}]}]
+</script>
+<script src="https://cdn.bootcss.com/vue/2.6.14/vue.min.js"></script>
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+<style>
+    .flex{display: flex;}
+    .flex-item{flex: 1;border: 1px solid #f00;}
+</style>
+<div id="app">
+    <div>{{defaultExpandedKeys}}</div>
+    <div class="flex">
+        <el-tree
+            ref="leftTree"
+            class="flex-item" 
+            node-key="id"
+            :data="treeListLeft" 
+            :props="defaultProps"
+            accordion
+            :default-expanded-keys="defaultExpandedKeys"
+            :current-node-key="currentNodeKey"
+        >
+        <span class="custom-tree-node" slot-scope="{ node, data }">
+            <span>{{ node.label }}</span>
+            <span>
+            <el-button
+                type="text"
+                size="mini"
+                @click.stop="left2right(node, data)">
+                >
+            </el-button>
+            </span>
+        </span>
+        </el-tree>
+        <el-tree
+            class="flex-item" 
+            node-key="rightId"
+            :data="treeListRight" 
+            :props="defaultProps" 
+            @node-click="handleNodeClick"
+        >
+            <span class="custom-tree-node" slot-scope="{ node, data }">
+                <span>{{ node.label }}</span>
+                <span>
+                <el-button
+                    type="text"
+                    size="mini"
+                    @click.stop="rightAdd(node, data)">
+                    +
+                </el-button>
+                <el-button
+                    type="text"
+                    size="mini"
+                    @click.stop="rightRemove(node, data)">
+                    -
+                </el-button>
+                </span>
+            </span>
+        </el-tree>
+    </div>
+    <div style="white-space: pre;">
+        <!-- {{treeListRight}} -->
+    </div>
+</div>
+<script>
+    // 直接用于拷贝的节点
+    let treeOriginFindById = {}
+    // 双向树，用于查找
+    let treeList2 = JSON.parse(JSON.stringify(treeList));
+    // 双向树的便捷查找。只能用于查找，不能用于拷贝
+    let tree2OriginFindById = {}
+    // 用于生产右面的随机id
+    let rightId = 0;
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                treeListLeft: JSON.parse(JSON.stringify(treeList)),
+                treeListRight: [],
+                defaultExpandedKeys: [],
+                currentNodeKey: null,
+                defaultProps: {
+                    children: 'childList',
+                    label: 'name'
+                }
+            }
+        },
+        created(){
+            deep(treeList, (node, parentNode)=>{
+                treeOriginFindById[node.id] = JSON.parse(JSON.stringify(node))
+            })
+            // top.console.log(treeOriginFindById)
+            deep(treeList2, (node, parentNode)=>{
+                tree2OriginFindById[node.id] = (node)
+                node.parentNode = parentNode;
+            })
+            // top.console.log(treeList2, tree2OriginFindById)
+        },
+        methods: {
+            handleNodeClick(data) {
+                // top.console.log('handleNodeClick', arguments);
+                const id = data.id
+                this.defaultExpandedKeys = [id]
+                this.currentNodeKey = id
+                
+                let node = tree2OriginFindById[id];
+                let nodeIds = [];
+                while(node){
+                    nodeIds.push(node.id)
+                    node = node.parentNode;
+                }
+                this.defaultExpandedKeys = nodeIds
+                this.treeListLeft.forEach((node)=>{
+                    let rootNode = this.$refs.leftTree.getNode(node.id);
+                    top.console.log(rootNode)
+                    rootNode.expanded = false;
+                    deep(rootNode.childNodes, (node)=>{
+                        node.expanded = false;
+                    })
+                })
+                // this.$refs.leftTree.setCurrentKey(data.id)
+            },
+            left2right(node, data){
+                // top.console.log('left2right', arguments);
+                const checkID = node.id;
+                console.log(checkID)
+                const checkList = [];
+                let checkNode = tree2OriginFindById[checkID];
+                while(checkNode){
+                    checkList.unshift(checkNode)
+                    checkNode = checkNode.parentNode
+                }
+                let treeListRight = this.treeListRight;
+                checkList.forEach((node, idx)=>{
+                    const id = node.id;
+                    let findResult = treeListRight.find(v=>v.id == node.id);
+                    if(findResult){
+                        // 暂时应该不用处理。
+                    }else{
+                        findResult = JSON.parse(JSON.stringify(treeOriginFindById[id]))
+                        findResult.rightId = ++rightId;
+                        treeListRight.push(findResult)
+                        if(idx < checkList.length - 1){
+                            findResult.childList = [];
+                        }else{
+                            deep(findResult.childList, (node)=>{
+                                node.rightId = ++rightId;
+                            })
+                        }
+                    }
+                    
+                    treeListRight = findResult.childList
+
+                })
+                // while(checkNode){
+                //     checkList.push(checkNode)
+                //     checkNode = checkNode.parentNode
+                // }
+                // let resultNode = checkList.reduce((s,v)=>{
+                //     let node = JSON.parse(JSON.stringify(
+                //         treeOriginFindById[v.id]
+                //     ))
+                //     if(s) node.childList = [s];
+                //     return node;
+                //     // return s
+                // },null)
+                top.console.log('checkList', checkList)
+                // top.console.log('resultNode', resultNode)
+                
+            },
+            rightAdd(node, data){
+                top.console.log('rightAdd', arguments);
+
+                deep(this.treeListRight, (deepNode, parentNode)=>{
+                    if(data == deepNode){
+                        top.console.log('data == deepNode', node, data)
+                        top.console.log('data == deepNode', deepNode, parentNode)
+                        if(parentNode){
+                            parentNode?.childList?.push(
+                                JSON.parse(JSON.stringify(
+                                    data
+                                ))
+                            )
+                        }else{
+                            this.treeListRight?.push(
+                                JSON.parse(JSON.stringify(
+                                    data
+                                ))
+                            )
+                        }
+                    }
+                })
+            },
+            rightRemove(node, data){
+                top.console.log('rightRemove', arguments);
+                deep(this.treeListRight, (deepNode, parentNode)=>{
+                    if(data == deepNode){
+                        let list = parentNode?.childList || this.treeListRight || [];
+                        let idx = list.findIndex(item => item == data);
+                        if(idx != -1){
+                            list.splice(idx, 1)
+                        }
+                        // if(parentNode){
+                        //     parentNode?.childList?.push(
+                        //         JSON.parse(JSON.stringify(
+                        //             data
+                        //         ))
+                        //     )
+                        // }else{
+                        //     this.treeListRight?.push(
+                        //         JSON.parse(JSON.stringify(
+                        //             data
+                        //         ))
+                        //     )
+                        // }
+                    }
+                })
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

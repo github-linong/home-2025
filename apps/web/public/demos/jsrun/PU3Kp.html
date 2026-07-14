@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>如何动态渲染vue中的元素</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="PU3Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <h1>add_enterprise <button @click="add_enterprise">add_enterprise</button></h1>
+    <div v-for="item in company">
+        <ul>
+            <li v-for="key in companyKeys">{{key}}:<input type="" v-model="item[key]"></li>
+        </ul>
+    </div>
+    <div>
+        personal:{{personal}}
+    </div>
+    <div>
+        company:{{company}}
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                num:0,
+                company: [],//第一个数组
+                personal: [],//第二个数组
+                companyKeys: ['name','truename','credit','department','account','mobile','operator',]
+            }
+        },
+        mounted(){
+            this.add_enterprise();
+            this.add_person();
+        },
+        methods: {
+            add_enterprise(){   //第一个有6个输入框
+                this.num +=1
+                this.company.push({
+                    enterprise_lx: false,
+                    name: '',
+                    truename: '',
+                    credit: '',
+                    department: '',
+                    account: '',
+                    mobile: '',
+                    sort: 0,
+                    operator: ''
+                });
+            },
+            add_person(){ // 有三个输入框
+                this.personal.push({
+                    personal_lx: false,
+                    name: '',
+                    mobile: '',
+                    sort: 0
+                });
+            },
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

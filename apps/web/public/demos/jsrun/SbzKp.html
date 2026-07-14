@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>el-table lazy load</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="SbzKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+<div id="app">
+    
+     <el-table
+	    :data="tableData1"
+	    style="width: 100%"
+	    row-key="id"
+	    border
+	    lazy
+	    :load="load"
+	    :tree-props="{children: 'children', hasChildren: 'hasChildren'}" 
+        @row-click="rowClick">
+	    <el-table-column
+	      prop="date"
+	      label="日期"
+	      width="180">
+	    </el-table-column>
+	    <el-table-column
+	      prop="name"
+	      label="姓名"
+	      width="180">
+	    </el-table-column>
+	    <el-table-column
+	      prop="address"
+	      label="地址">
+	    </el-table-column>
+	  </el-table>
+</div>
+<style>
+  .demo-table-expand {
+    font-size: 0;
+  }
+  .demo-table-expand label {
+    width: 90px;
+    color: #99a9bf;
+  }
+  .demo-table-expand .el-form-item {
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 50%;
+  }
+</style>
+
+<script>
+  new Vue( {
+      el: '#app',
+    data() {
+      return {
+       tableData1: [{
+		          id: 1,
+		          date: '2016-05-02',
+		          name: '王小虎',
+		          address: '上海市普陀区金沙江路 1518 弄'
+		        }, {
+		          id: 2,
+		          date: '2016-05-04',
+		          name: '王小虎',
+		          address: '上海市普陀区金沙江路 1517 弄'
+		        }, {
+		          id: 3,
+		          date: '2016-05-01',
+		          name: '王小虎',
+		          address: '上海市普陀区金沙江路 1519 弄',
+		          hasChildren: true
+		        }, {
+		          id: 4,
+		          date: '2016-05-03',
+		          name: '王小虎',
+		          address: '上海市普陀区金沙江路 1516 弄'
+		        }]
+      }
+    },
+    methods: {
+         rowClick(row, column, event){
+        top.console.log (event.target, event.currentTarget)
+      },
+		load(tree, treeNode, resolve) {
+		        setTimeout(() => {
+		          resolve([
+		            {
+		              id: 31,
+		              date: '2016-05-01',
+		              name: '王小虎',
+		              address: '上海市普陀区金沙江路 1519 弄'
+		            }, {
+		              id: 32,
+		              date: '2016-05-01',
+		              name: '王小虎',
+		              address: '上海市普陀区金沙江路 1519 弄'
+		            }
+		          ])
+		        }, 1000)
+		      },
+    }
+  })
+</script>
+<script>
+
+</script>
+</body>
+</html>

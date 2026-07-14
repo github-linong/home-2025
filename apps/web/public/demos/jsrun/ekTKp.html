@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vuex 保存状态</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="ekTKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.0-beta.7/vue.global.js"></script> -->
+
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js"></script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>	
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.js"></script>
+
+
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+
+	<!-- <script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script> -->
+	<!-- <script type="text/javascript">new VConsole()</script> -->
+    <div id="app">
+        1: {{1}} <br>
+        a: {{a}} <br>
+        $store.state.b: {{$store.state.b}} <br>
+        <button @click="clog">save</button>
+        <button @click="$router.push({name:'abc'})">$router.push({name:'abc'})</button>
+        <button @click="$router.push({path: '/foo1', query: {a:1}})">$router.push({path: '/foo1', query: {a:1}})</button>
+        <button @click="$router.push({path: '/foo1', query: {a:2}})">$router.push({path: '/foo1', query: {a:2}})</button>
+        <button @click="$router.push({name:'abc',params:{id: 1,abc:2}})">$router.push({name:'abc',query:{id: 1,abc:2}})</button>
+
+  <h1>Hello App!</h1>
+  <p>
+    <!-- 使用 router-link 组件来导航. -->
+    <!-- 通过传入 `to` 属性指定链接. -->
+    <!-- <router-link> 默认会被渲染成一个 `<a>` 标签 -->
+    <router-link to="/foo">Go to Foo</router-link>
+    <router-link to="/bar">Go to Bar</router-link>
+  </p>
+  <div>
+      {{$route}}
+  </div>
+  <!-- 路由出口 -->
+  <!-- 路由匹配到的组件将渲染在这里 -->
+  <router-view></router-view>
+    </div>
+    <script>
+        Vue.use(Vuex)
+        // 0. 如果使用模块化机制编程，导入Vue和VueRouter，要调用 Vue.use(VueRouter)
+
+// 1. 定义 (路由) 组件。
+// 可以从其他文件 import 进来
+const Foo = { template: '<div>foo <div>{{1}}</div></div>' }
+const Bar = { template: '<div>bar</div>' }
+const Foo1 = { template: '<div>Foo1{{$route.query}}</div>', mounted(){console.log('mounted')} }
+
+// 2. 定义路由
+// 每个路由应该映射一个组件。 其中"component" 可以是
+// 通过 Vue.extend() 创建的组件构造器，
+// 或者，只是一个组件配置对象。
+// 我们晚点再讨论嵌套路由。
+const routes = [
+  { name: 'Foo1', path: '/Foo1', component: Foo1 },
+  { name: 'foo', path: '/foo', component: Foo },
+  { name: 'abc', path: '/foo/:id/:abc', component: Foo },
+  { path: '/bar', component: Bar }
+]
+
+// 3. 创建 router 实例，然后传 `routes` 配置
+// 你还可以传别的配置参数, 不过先这么简单着吧。
+const router = new VueRouter({
+  routes // (缩写) 相当于 routes: routes
+})
+
+        const store = new Vuex.Store({
+            state: {
+                count: 0,
+                b: 3,
+                c: {c:1},
+                d: [12,3,4,5],
+                b: [{c:1},{d:2}],
+                b: 3
+            },
+            mutations: {
+                increment (state) {
+                    state.count++
+                }
+            }
+        })
+        new Vue({
+            el: '#app',
+            store: store,
+
+  router,
+            data(){
+                return {
+                    a: 2
+                }
+            },
+            methods: {
+                clog(){
+                    console.log(JSON.stringify(this.$store.state))
+                }
+            }
+        })
+    </script>
+<script>
+
+</script>
+</body>
+</html>

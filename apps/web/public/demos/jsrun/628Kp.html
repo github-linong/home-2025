@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>react 学习</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="628Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="hello-example"></div>
+<!-- <script src="https://cdn.bootcdn.net/ajax/libs/react/18.0.0-alpha-310187264-20210716/umd/react.development.js"></script> -->
+
+<script src="https://cdn.bootcdn.net/ajax/libs/react/17.0.2/umd/react.development.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/react-dom/17.0.2/umd/react-dom.development.js"></script>
+
+
+<!-- <script src="https://cdn.bootcdn.net/ajax/libs/react/17.0.2/umd/react.profiling.min.js"></script> -->
+<!-- <script src="https://cdn.bootcdn.net/ajax/libs/react/17.0.2/umd/react.production.min.js"></script> -->
+
+<script>
+class HelloMessage extends React.Component {
+  render() {
+    return React.createElement(
+      "div",
+      null,
+      "Hello ",
+      this.props.name,
+      React.createElement(
+        'button',
+        { onClick: () => this.setState({ liked: true }) },
+        'Like'
+        )
+    );
+  }
+}
+
+ReactDOM.render(
+    React.createElement(
+        HelloMessage, { name: "Taylor" }
+    ), 
+    document.getElementById('hello-example')
+);
+</script>
+<hr>
+<div id="app1"></div>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+<script type="text/babel">
+
+class HelloMessage1 extends React.Component {
+  constructor(){
+     super();
+     this.state = {liked: false}
+     top.console.log('constructor', arguments, this&&this.state)
+  }
+
+  static getDerivedStateFromProps(){
+    top.console.log('static getDerivedStateFromProps', arguments,    this&&this.state)
+    return {fromPropsValue: 1}
+  }
+
+  render() {
+    top.console.log('render', arguments,    this&&this.state)
+    return (
+        <button onClick={() => this.setState({ liked: true })}>
+            Like this.liked
+        </button>
+        )
+  }
+
+  componentDidMount(){
+    top.console.log('componentDidMount', arguments,    this&&this.state)
+
+  }
+
+  shouldComponentUpdate(){
+    top.console.log('shouldComponentUpdate', arguments,    this&&this.state)
+    return true;
+  }
+
+  getSnapshotBeforeUpdate(){
+    top.console.log('getSnapshotBeforeUpdate', arguments,    this&&this.state)
+    return null
+  }
+
+  componentDidUpdate(){
+    top.console.log('componentDidUpdate', arguments,    this&&this.state)
+  }
+
+  componentWillUnmount(){
+    top.console.log('componentWillUnmount', arguments,    this&&this.state)
+  }
+}
+ReactDOM.render(
+    React.createElement(
+        HelloMessage1, { name: "Taylor" }
+    ), 
+    document.getElementById('app1')
+);
+
+</script>
+<script>
+
+</script>
+</body>
+</html>

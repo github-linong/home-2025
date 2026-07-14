@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>拖拽111111</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="IhIKp" />
+  <style>
+		.dargwrap {
+			border: 1px solid #f00;
+			padding: 10px;
+			margin: 10px;
+			display: flex;
+		}
+
+		.dargwrap .ul {
+			margin: 10px;
+			padding: 10px;
+			list-style: none;
+        }
+        .dargwrap .ul .list-group-item span {
+                display: list-item;
+        }
+        .ul:nth-child(2)> .list-group-item span{
+            border: 1px solid red;
+            margin-left: 10px;
+        }
+        .data {
+            border: 1px solid #f00;
+            margin-right: 10px;
+        }
+        .data .list-group-item {
+            margin-bottom: 10px;
+        }
+        .warp {
+            width: 100%;
+            border: 1px solid red;
+        }
+        .list666 {
+            display: flex;
+            flex-flow: wrap;
+        }
+        .list_flow {
+            height: 50px;
+            overflow: hidden;
+        }
+        .list666 .list-group-item {
+            height: 20px;
+            border: 1px solid pink;
+            margin: 5px 10px 5px 0;
+        }
+  </style>
+</head>
+<body>
+<div id="app">
+        offsetHeight:{{offsetHeight}}<br>
+        scrollHeight:{{scrollHeight}}<br>
+        是否超出:{{isHeightOver}}<br>
+        <p> 监听: {{conditionItemDOM}}</p>
+		<div class="dargwrap">
+            <div class="data">
+                <draggable class="dragArea list-group ul" :list="list"
+                    :move="moveHandle"
+                    :group="{ name: 'people', pull: 'clone', put: false }">
+                    <div class="list-group-item" v-for="element in list" :key="element">
+                        <span>{{ element }}</span>
+                    </div>
+                </draggable>
+            </div>
+            <div class="warp">
+                <draggable ref="listDOM" class="dragArea list-group ul list666" :class="isShow ? 'list_flow': ''" :list="list1" group="people" @change="log">
+                    <div class="list-group-item" v-for="element in list1" :key="element">
+                        <span>{{ element }}</span>
+                    </div>
+                </draggable>
+            </div>
+             <el-button style="height: 50px;" @click="isShow = !isShow">查看更多</el-button>
+		</div>
+	</div>
+<style>
+    div{border: 1px solid #0f0;}
+</style>
+<script>
+new Vue({
+			el: '#app',
+			data() {
+				return {
+					list: [
+						'aaa人教大法师长长长长长长长长长长长长长',
+						'222长常长长常常',
+						'33长常长常常长常常长常常长常常长常常长常常长常常',
+						'55长常常长常常qq长常常',
+						'66长常常长常常长常常44',
+						'77苟寿',
+						'88大兴西北',
+						'aaa人教大法师长',
+						'222长常长长常常',
+						'33长常长常常长常常',
+						'44长常长常常长常常',
+						'55长常常长常常qq长常常',
+						'66长常常长常常长常常44',
+						'77苟寿',
+						'88大兴西北',
+					],
+					list1: [],
+					list2: [],
+                    conditionItemDOM: "",
+                    isShow: true,
+                    offsetHeight:0,
+                    scrollHeight:0,
+                    
+				}
+			},
+            mounted(){
+                setInterval(v=>{
+                    this.offsetHeight = this.$refs.listDOM.$el.offsetHeight
+                    this.scrollHeight = this.$refs.listDOM.$el.scrollHeight
+                }, 100)
+            },
+			computed:{
+				moveHandle_bindthis(){
+					return this.moveHandle.bind(this)
+                },
+                isHeightOver(){
+                    return this.scrollHeight > this.offsetHeight
+                }
+			},
+			methods: {
+				log: function (evt) {
+					window.console.log(evt);
+				},
+				moveHandle(ctx){
+					console.log(arguments, this)
+                    this.handleListenerDOM()
+					var key = ctx.draggedContext.element
+					if(this.list1.includes(key) || this.list2.includes(key)){
+						return false
+					}
+					return true
+				},
+                handleListenerDOM() {
+                    this.$nextTick(() => {
+                        this.conditionItemDOM = this.$refs.listDOM.offsetHeight > this.$refs.listDOM.scrollWidth
+                    })
+                },
+			},
+		})
+</script>
+</body>
+</html>

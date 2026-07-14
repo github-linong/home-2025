@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>grid 测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="Lp8Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div class="grid">
+    <div class="grid-item">1</div>
+    <div class="grid-item">2</div>
+    <div class="grid-item">3</div>
+    <div class="grid-item">4</div>
+    <div class="grid-item">5</div>
+</div>
+<style>
+    .grid{
+        display: grid;
+        grid-template-columns: repeat(3, 33.33%);
+        grid-template-rows: repeat(3, 100px);
+        /* grid-template-columns: 100px 100px 100px; */
+        /* grid-template-rows: 100px 100px 100px; */
+        grid-template-areas: 'a a b'
+                            'd e b'
+                            'd c c';
+        color: #fff;
+    }
+    .grid-item{background: #600;grid-area: a;}
+    .grid-item:nth-child(2){background: #060;grid-area: b}
+    .grid-item:nth-child(3){background: #006;grid-area: c}
+    .grid-item:nth-child(4){background: #099;grid-area: d}
+    .grid-item:nth-child(5){background: #909;grid-area: e}
+</style>
+<script>
+
+</script>
+</body>
+</html>

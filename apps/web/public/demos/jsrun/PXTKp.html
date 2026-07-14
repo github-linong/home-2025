@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Array.from</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="PXTKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js">
+</script>
+<div id="app">
+
+    <div v-for="item in obj">
+        {{item.test}}
+    </div>
+
+	<el-button @click="test">点击对象合成数组</el-button>
+	<span :key="test">{{listValue}}</span>
+    
+    <hr>
+
+
+    <div>需要排序的对象list: <br/>{{list}}}</div>
+    <br/>
+    <div>排序规则["name", "afe", "test"] => {name:"", afe:"", test:""}</div>
+
+
+    <div v-for='item in ["name", "afe", "test"]'>
+        {{list[item]}}
+    </div>
+</div>
+<script>
+new Vue({
+    el: '#app',
+    data() {
+        return {
+            radio: '',
+            value1: '',
+            value2: '',
+            listValue: [],
+            obj: {
+                "0": {
+                    test: "1231321",
+                    child: []
+                },
+                "1": {
+                    test: "sadsdad",
+                    child: [1, 2, 2, 2, 3, 4]
+                }
+            },
+            list: {
+                test: {
+                    name:"asdsadsadsa-test"
+                },
+                name: {
+                    name: "sadsadsadsad-name"
+                },
+                afe: {
+                    name: "sadsadsadsadsadasd-afe"
+                }
+            }
+        }
+    },
+    watch: {
+        radio(val) {
+            if (val) {
+                this.value1 = this.value2 = ''
+            }
+        },
+        value1(val) {
+            if (val) {
+                this.radio = ''
+            }
+        },
+        value2(val) {
+            if (val) {
+                this.radio = ''
+            }
+        }
+    },
+    methods: {
+        test() {
+            let arrayLike = {
+                "0": {
+                    test: "1231321",
+                    child: []
+                },
+                "1": {
+                    test: "sadsdad",
+                    child: [1, 2, 2, 2, 3, 4]
+                }
+            }
+            const len = Object.keys(arrayLike).length
+            arrayLike.length = len
+            //    this.listValue = Array.from(arrayLike)
+            this.listValue = Array.from(arrayLike)
+
+
+        }
+    }
+})
+</script>
+</body>
+</html>

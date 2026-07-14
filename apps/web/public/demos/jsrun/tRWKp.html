@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000021494166</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="tRWKp" />
+  <style>
+canvas{
+  border: 1px solid #f00;
+}
+  </style>
+</head>
+<body>
+<canvas></canvas>
+<input type="text" id="input" value="0"/>
+<button id="btn">绘制</button>
+<button id="btnRandom">随机角度绘制 360*Math.random()</button>
+
+<canvas id="canvas2"></canvas>
+<script>
+canvas = document.querySelector('canvas')
+ctx = canvas.getContext('2d');
+ctx.arc(50,50,50,0, Math.PI)
+ctx.stroke();
+// ctx.setTransform()
+ctx.translate(50,50)
+ctx.rotate(45* Math.PI / 180);
+// ctx.strokeText('>', 50-5, 50+3+50);
+ctx.strokeText('>', 0, 53);
+
+ctx.setTransform()
+ctx.translate(50,50)
+ctx.rotate(0* Math.PI / 180);
+ctx.strokeText('>', 0, 53);
+
+ctx.setTransform()
+ctx.translate(50,50)
+ctx.rotate(10* Math.PI / 180);
+ctx.strokeText('>', 0, 53);
+
+drawImg = function(deg = 0){
+  ctx.setTransform()
+  ctx.translate(50,50)
+  ctx.rotate(deg* Math.PI / 180);
+  ctx.strokeText('>', 0, 53);
+}
+btn.onclick=function(){
+  drawImg(Number(input.value))
+}
+btnRandom.onclick=function(){
+  drawImg(360*Math.random())
+}
+
+canvas2 = document.querySelector('#canvas2')
+ctx2 = canvas2.getContext('2d');
+drawImg2 = function(deg = 0){
+  ctx2.clearRect(0,0,300,300)
+  ctx2.setTransform()
+  ctx2.beginPath();
+	ctx2.arc(50,50,40,0, Math.PI)
+	ctx2.stroke();
+  ctx2.setTransform()
+  ctx2.translate(50,50)
+  ctx2.rotate(deg* Math.PI / 180);
+  ctx2.strokeText('>', 0, 43);
+}
+drawImg2();
+canvas2Deg = 90;
+stepDeg = 2;
+setInterval(v=>{
+  drawImg2(canvas2Deg-=stepDeg)
+},16)
+</script>
+</body>
+</html>

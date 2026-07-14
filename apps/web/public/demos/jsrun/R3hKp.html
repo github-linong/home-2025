@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>视口操作，DOM</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="R3hKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<!-- <canvas id="cvs">
+  
+</canvas> -->
+
+<div class="warp">
+  <div class="view"></div>
+</div>
+<script>
+// document.querySelector('.warp').addEventListener('mousemove', (e)=>{
+document.body.addEventListener('mousemove', (e)=>{
+// if(!e.target.classList.contains('warp'))return;
+  console.log(e, e.offsetX, e.offsetY, e.target, e.layerX, e.layerY);
+  document.querySelector('.view').style.left = (e.x-50-1000)+'px';
+  document.querySelector('.view').style.top = (e.y-50-1000)+'px';
+})
+// var imgData;
+// var c=document.getElementById("cvs");
+// var ctx=c.getContext("2d");
+// var img = new Image();
+// // img.crossOrigin = 'anonymous';
+// img.crossOrigin="anonymous";
+// img.src='http://cdn.jsrun.net/css/img/logo.png';
+// img.onload = ()=>{
+//   ctx.drawImage(img,0,0,100,100);
+//   imgData=ctx.createImageData(0,0);
+//   // ctx.save();
+//   // ctx.rect(20,20,150,100);
+// 	// ctx.stroke();
+//   // ctx.restore(save_img)
+//   putImage()
+// }
+// putImage = (x=0,y=0)=>{
+//   ctx.putImageData(imgData,0,0);
+//   ctx.lineWidth=100;
+//   ctx.strokeRect(x,y,150,150);
+// }
+
+</script>
+</body>
+</html>

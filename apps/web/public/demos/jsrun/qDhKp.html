@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rx.js学习</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="qDhKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- <script src="https://cdn.bootcss.com/rxjs/6.3.3/rxjs.umd.min.js"></script> -->
+
+<script src="https://cdn.bootcss.com/rxjs/4.1.0/rx.all.js"></script>
+<p>https://www.bootcdn.cn/rxjs/</p>
+<p>https://github.com/Reactive-Extensions/RxJS</p>
+<hr />
+<div>
+  <p>requestStream.subscribe 订阅</p>
+  <p>Rx.Observable.create 所做的是自定义一个流, 这个流会通知其每个观察者(或者说其"订阅者" )</p>
+  <p>Rx.Observable.fromPromise(promise) 把一个 Promise 转换成一个 Observable.</p>
+  <p>flatMap与map
+    <br>
+    flatMap 返回data
+    <br />
+    map 返回 fromPromise对象
+  </p>
+  <p>Rx.Observable.fromEvent(refreshButton, 'click'); 监听DOM的click事件</p>
+  <p>Rx.Observable.merge 合并两个流</p>
+</div>
+<script>
+// var requestStream = Rx.Observable.just('https://api.github.com/users')
+// requestStream.map(v=>console.log(v,'requestStream.map'))
+// requestStream.flatMap(v=>console.log(v,'requestStream.flatMap'))
+// requestStream.subscribe(function(requestUrl) {
+//   // 执行该请求
+//   jQuery.getJSON(requestUrl, function(responseData) {
+//     // ...
+//     console.log('jQuery.getJSON', responseData)
+//   });
+// })
+// requestStream.subscribe(function(requestUrl) {
+//   // 执行该请求
+//   var responseStream = Rx.Observable.create(function (observer) {
+//     jQuery.getJSON(requestUrl)
+//     .done(function(response) { observer.onNext(response); })
+//     .fail(function(jqXHR, status, error) { observer.onError(error); })
+//     .always(function() { observer.onCompleted(); });
+//   });
+
+//   responseStream.subscribe(function(response) {
+//     // 对回复做一些处理
+//     console.log('responseStream.subscribe', response)
+//   });
+// })
+// console.log(requestStream);
+
+
+/////////////////////////////////////////////////////
+
+// var requestStream = Rx.Observable.just('https://api.github.com/users');
+
+// var responseStream = requestStream
+//   .flatMap(function(requestUrl) {
+//     console.log(requestUrl)
+//     return Rx.Observable.fromPromise(jQuery.getJSON(requestUrl));
+//   });
+// console.log('responseStream.subscribe', Date.now())
+// setTimeout(()=>{
+//   console.log('responseStream.subscribe', Date.now())
+//   responseStream.subscribe(function(response) {
+//     // 按你设想的方式渲染 `response` 为 DOM
+//     console.log(response)
+//   });
+// },1000)
+
+
+/////////////////////////////////////////////////////
+
+// var requestStream = Rx.Observable.just('https://api.github.com/users');
+
+// var responseStream = requestStream
+//   .map(function(requestUrl) {
+//     console.log(requestUrl)
+//     return Rx.Observable.fromPromise(jQuery.getJSON(requestUrl));
+//   });
+// console.log('responseStream.subscribe', Date.now())
+// setTimeout(()=>{
+//   console.log('responseStream.subscribe', Date.now())
+//   responseStream.subscribe(function(response) {
+//     // 按你设想的方式渲染 `response` 为 DOM
+//     console.log(response)
+//   });
+// },1000)
+
+/////////////////////////////////////////////////////////////////
+// var refreshButton = document.querySelector('.refresh');
+// var refreshClickStream = Rx.Observable.fromEvent(refreshButton, 'click');
+
+//////////////////////////////
+// var requestStream = refreshClickStream
+//   .map(function() {
+//     var randomOffset = Math.floor(Math.random()*500);
+//     return 'https://api.github.com/users?since=' + randomOffset;
+//   })
+//   .merge(Rx.Observable.just('https://api.github.com/users'));
+
+//
+// var requestStream = refreshClickStream
+//   .map(function() {
+//     var randomOffset = Math.floor(Math.random()*500);
+//     return 'https://api.github.com/users?since=' + randomOffset;
+//   })
+//
+var requestStream = refreshClickStream.startWith('startup click')
+  .map(function() {
+    var randomOffset = Math.floor(Math.random()*500);
+    return 'https://api.github.com/users?since=' + randomOffset;
+  });
+  .startWith('https://api.github.com/users');
+
+</script>
+</body>
+</html>

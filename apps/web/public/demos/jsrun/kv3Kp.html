@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>css高度变化让其产生动画</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="kv3Kp" />
+  <style>
+#app {
+    display: flex;
+}
+
+.no_hiide {
+    max-height: 500px;overflow: hidden;
+    transition: max-height 1s ease-in;
+}
+
+.hiide {
+    /* overflow: hidden;
+    height: 90px; */
+    max-height: 90px;
+    overflow: hidden;
+    transition: max-height 1s ease-in;
+}
+
+*{transition: all 1s ease-in;}
+
+.text {
+
+}
+
+  </style>
+</head>
+<body>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js">
+</script>
+<div id="app">
+	<div class="no_hiide" :class="isfold?'hiide': ''">
+		<div v-for="i in 30">
+			<div class="text">内容{{i}}</div>
+		</div>
+	</div>
+	<div style="cursor: pointer;" @click="isfold=!isfold">{{isfold?'展开': '收起'}}</div>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data(){
+    return {
+      radio: '',
+      value1: '',
+      value2: '',
+      isfold: false
+    }
+  },
+  watch:{
+    radio(val){
+      if(val){
+        this.value1 = this.value2 = ''
+      }
+    },
+    value1(val){
+      if(val){
+        this.radio = ''
+      }
+    },
+    value2(val){
+      if(val){
+        this.radio = ''
+      }
+    }
+  }
+})
+</script>
+</body>
+</html>

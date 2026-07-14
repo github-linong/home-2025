@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>构建一个心生成器</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="cUUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<link rel="stylesheet" href="https://animate.style/animate.min.css">
+<div id="app">
+    <div v-for="item in len" class="row">
+        <div class="item col " v-for="item2 in len"
+            :class="{'item-animation': tagHash[`key_${item}_${item2}`]>0}"
+            
+            >
+            <div class="item-inner" :style="{backgroundImage: tagHash[`key_${item}_${item2}`]>0&&`url(${getImage()})`}"></div>
+        </div>
+    </div>
+    <div v-for="item in len" class="row">
+        <div class="item col" v-for="item2 in len" 
+            :style="{background: tagColorList[tagHash[`key_${item}_${item2}`]]}"
+            @click="setTag(`key_${item}_${item2}`, item, item2)">
+        </div>
+    </div>
+    <!-- {{pointList}} -->
+    <div>
+        {{currentTag}}
+        <button @click="currentTag = -1">删除</button>
+        <button @click="currentTag = -1">新节点</button>
+    </div>
+    
+    <div v-for="(item,idx) in pointList">
+        <button @click="currentTag = idx">{{idx}}</button>: {{item}}
+    </div>
+</div>
+<style>
+    .row{display: flex;}
+    .item{
+        width: 20px;
+        height: 20px;
+        margin: 2px;
+        background: #0cc;
+        flex: none;
+        /* background: center center no-repeat; */
+        background-size: cover;
+    }
+    .item-animation{
+        /* animate__animated */
+        -webkit-animation-duration: 1s;
+        animation-duration: 1s;
+        -webkit-animation-duration: var(--animate-duration);
+        animation-duration: var(--animate-duration);
+        -webkit-animation-fill-mode: both;
+        animation-fill-mode: both;
+        opacity: 0;
+        /* transform: scale(3); */
+    }
+    .item-animation.show .item-inner{
+        transform: scale(.25);
+    }
+    .item-inner{
+        width: 400%;height: 400%;
+        background-size: cover;
+        transform-origin: left top;
+        transition: 1s all;
+    }
+    /* animate__fadeInTopLeft */
+    /* 
+    animate__fadeIn
+    animate__fadeInDown
+    animate__fadeInDownBig
+    animate__fadeInLeft
+    animate__fadeInLeftBig
+    animate__fadeInRight
+    animate__fadeInRightBig
+    animate__fadeInUp
+    animate__fadeInUpBig
+    animate__fadeInTopLeft
+    animate__fadeInTopRight
+    animate__fadeInBottomLeft
+    animate__fadeInBottomRight 
+    */
+</style>
+<script>
+    animateList = [
+        'animate__fadeIn',
+        'animate__fadeInDown',
+        'animate__fadeInDownBig',
+        'animate__fadeInLeft',
+        'animate__fadeInLeftBig',
+        'animate__fadeInRight',
+        'animate__fadeInRightBig',
+        'animate__fadeInUp',
+        'animate__fadeInUpBig',
+        'animate__fadeInTopLeft',
+        'animate__fadeInTopRight',
+        'animate__fadeInBottomLeft',
+        'animate__fadeInBottomRight' ,
+    ]
+</script>
+<script>
+    historyList = localStorage.getItem('LN_XING_JSON');
+    top.console.log(historyList, localStorage)
+    if(historyList) historyList = JSON.parse(historyList);
+    historyList = historyList || [];
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                len: 20,
+                currentTag: 0,
+                tagHash: JSON.parse(JSON.stringify(historyList[historyList.length-1]||{})),
+                tagColorList: Array.from({length: 50}).fill('#f00').map((v,i,arr)=>`rgba(255,${Math.random()* 200},${Math.random()* 100},${(arr.length-i)/arr.length})`),
+
+            }
+        },
+        created(){
+            historyList.push({});
+            this.currentTag = this.pointList.length;
+            this.$nextTick(v=>{
+                list = Array.from(document.querySelectorAll('.item-animation'));
+                setInterval(()=>{
+                    item = list.splice(Math.random() * list.length >>> 0, 1)[0];
+                    item.classList.add(animateList[Math.random() * animateList.length >>> 0], 'show')
+                }, 200)
+            })
+        },
+        methods:{
+            getImage(){
+                return `http://www.lilnong.top/static/img/avator/avator-${Math.random()*20>>>0}.jpg`
+            },
+            setTag(str, row, col){
+                this.$set(
+                    this.tagHash, 
+                    `${str}`,
+                    this.currentTag
+                );
+                historyList[historyList.length - 1] = this.tagHash
+                top.console.log(historyList)
+                localStorage.setItem('LN_XING_JSON', JSON.stringify(historyList))
+            }
+        },
+        computed:{
+            pointList(){
+                arr=[]
+                tagHash = this.tagHash
+                for(var i in tagHash){
+                    var item = tagHash[i];
+                    var _arr = arr[item] || [];
+                    arr[item] = _arr;
+                    _arr.push(i)
+                }
+                return arr
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

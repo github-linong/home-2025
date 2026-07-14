@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://github.com/Amterasu/editor</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="9UgKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  ok{{demo}}
+  <t1 value=" abc"></t1>
+</div>
+<script>
+var t1 = {
+  template: `<div>
+  <div>ok{{value}}</div>
+</div>`,
+  data() {
+    return {
+      currentValue: this.value
+    };
+  },
+  props: {
+    value: {
+      // input值
+      type: [String, Number],
+      default: ""
+    },
+  },
+  methods: {
+  },
+  computed: {
+  },
+  watch: {
+    value(newVal) {
+      this.currentValue = newVal;
+    }
+  }
+};
+
+new Vue({
+  el: '#app',
+  data: {
+    demo: ' LN'
+  },
+  components:{
+    t1
+  }
+})
+
+</script>
+</body>
+</html>

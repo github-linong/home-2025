@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1590000016479184</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="hqhKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <p>selectIndex{{selectIndex}}</p>
+  <p>oldSelectIndex{{oldSelectIndex}}</p>
+  <div>
+    <select  key="select5" name="" id="" v-model="selectIndex[0]" > <!--知识点：数据双向绑定：v-model-->
+      <!--:value="index"：获取当前option的下标；-->
+      <option :value="index" v-for="(item, index) in data">{{item.subject}}</option>
+    </select>
+    <!--知识点：input框禁止输入：disabled-->
+    <input type="text" v-model="defaultSelect[0]" disabled/>
+  </div>
+  <div>
+    <select  key="select4" name="" id="" v-model="selectIndex[1]"  v-if="(selectIndex[0]===0||selectIndex[0]) && data[selectIndex[0]]" >
+      <option :value="index" v-for="(item, index) in data[selectIndex[0]].childrena">{{item.version_name}}</option>
+    </select>
+    <select name="" id="" v-else></select>
+    <input type="text" v-model="defaultSelect[1]"  disabled/>
+  </div>
+  <div>
+    <select key="select1" name="" id="" v-model="selectIndex[2]" v-if="(selectIndex[1]===0||selectIndex[1]) && data[selectIndex[0]].childrena[selectIndex[1]]" >
+      <option :value="index" v-for="(item, index) in data[selectIndex[0]].childrena[selectIndex[1]].childrenb">{{item.grade_name}}</option>
+    </select>
+    <select name="" id="" v-else></select>
+    <input type="text" v-model="defaultSelect[2]"  disabled/>
+  </div>
+  <div>
+    <select key="select2" name="" id="" v-model="selectIndex[3]" v-if="(selectIndex[2]===0||selectIndex[2]) && data[selectIndex[0]].childrena[selectIndex[1]].childrenb[selectIndex[2]]" >
+      <option :value="index" v-for="(item, index) in data[selectIndex[0]].childrena[selectIndex[1]].childrenb[selectIndex[2]].childrenc">{{item.section}}</option>
+    </select>
+    <select name="" id="" v-else></select>
+    <input type="text" v-model="defaultSelect[3]"  disabled/>
+  </div>
+  <div>
+    <select  key="select3" name="" id="" v-model="selectIndex[4]" v-if="(selectIndex[3]===0||selectIndex[3]) && data[selectIndex[0]].childrena[selectIndex[1]].childrenb[selectIndex[2]].childrenc[selectIndex[3]]" >
+      <option :value="index" v-for="(item, index) in data[selectIndex[0]].childrena[selectIndex[1]].childrenb[selectIndex[2]].childrenc[selectIndex[3]].childrend">{{item.knows}}</option>
+    </select>
+    <select name="" id="" v-else></select>
+    <input type="text" v-model="defaultSelect[4]"  disabled/>
+  </div>
+  <!-- <div>
+    <p v-if="data[selectIndex[0]]">data{{data[selectIndex[0]].childrena}}</p>
+    <p>data{{data[selectIndex[0]]}}</p>
+    <p>data{{data}}</p>
+  </div> -->
+</div>
+<script>
+new Vue({
+    el: '#app',
+    data () {
+      return {
+        data: new Array(),
+        arrA: [],
+        selectIndex: [],
+        oldSelectIndex: [],
+        defaultSelect: ['语文','','','',''],
+      }
+    },
+    mounted() {
+      axios.get('http://www.mesdk.com/TP5_learning/progress/progress_book').then(response => {
+        var arrA = response.data.data;
+        var _arr = arrA;
+        var arr = [];
+        var key_arr = [
+          {
+            keys: ['relation_subject', 'subject'],
+            children: 'childrena'
+          },
+          {
+            keys: ['relation_version', 'version_name'],
+            children: 'childrenb'
+          },
+          {
+            keys: ['relation_grade', 'grade_name'],
+            children: 'childrenc'
+          },
+          {
+            keys: ['relation_section', 'section'],
+            children: 'childrend'
+          }
+        ];
+        _arr.forEach(v=>{
+          var _cache = arr;
+          key_arr.forEach(o=>{
+            var _index = _cache.findIndex(val=>val[o.keys[0]] == v[o.keys[0]])
+            if(!~_index){
+              var _obj = {}
+              o.keys.forEach(k=>{
+                _obj[k] = v[k]
+              })
+              _obj[o.children] = []
+              _cache.push(_obj)
+              _children = _obj;
+            }else{
+              _children = _cache[_index]
+            }
+            _cache = _children[o.children]
+          })
+          _cache.push({
+            "knowsid": v.knowsid,
+            "knows": v.knows,
+          })
+        })
+        this.data= arr
+        // console.log(JSON.parse(JSON.stringify(arr)))
+        this.data.forEach((v,i)=>{
+        if(v.subject === this.defaultSelect[0]){
+          this.selectIndex.splice(0,1,i)
+          v.childrena.forEach((v,i)=>{
+            if(v.version_name === this.defaultSelect[1]){
+              this.selectIndex.splice(1,1,i)
+              v.childrenb.forEach((v,i)=>{
+                if(v.grade_name === this.defaultSelect[2]){
+                  this.selectIndex.splice(2,1,i)
+                  v.childrenc.forEach((v,i)=>{
+                    if(v.section === this.defaultSelect[3]){
+                      this.selectIndex.splice(3,1,i)
+                      v.childrend.forEach((v,i)=>{
+                        if(v.knows === this.defaultSelect[4]){
+                          this.selectIndex.splice(4,1,i)
+                        }
+                      })
+                    }
+                  })
+                }
+              })
+            }
+          })
+        }
+      })
+      })
+
+    },
+    created(){
+    },
+      watch:{
+        selectIndex(val){
+          // val.forEach((v,i)=>{
+          //   if(this.oldSelectIndex[i] == v) return;
+          //   // console.log(v,i,this.oldSelectIndex[i])
+          //   // val.splice(i+1,1,'')
+          // })
+          var _index = val.findIndex((v,i)=>v != this.oldSelectIndex[i]);
+          // console.log(_index, val.length);
+          if(~_index&& _index < val.length - 1){
+            _index = _index+1
+            // console.log('-2-',_index, val.length - _index,new Array(val.length - _index).fill(undefined))
+            this.$nextTick(()=>{
+              this.selectIndex.splice(_index, 1, '')
+						})
+            
+          }
+          this.oldSelectIndex = val.slice(0)
+        }
+      }
+  })
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>隐藏显示控制，手风琴</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="6NhKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<div class="data_show ">
+  <h2>1</h2>
+  <p>内容</p>
+</div>
+<div class="data_show">
+  <h2>2</h2>
+  <p>内容2</p>
+</div>
+<div class="data_show">
+  <h2>3</h2>
+  <p>内容3</p>
+</div>
+<div class="data_show">
+  <h2>4</h2>
+  <p>内容4</p>
+</div>
+<div >
+  <h2>5无内容</h2>
+  <p>内容4</p>
+</div>
+<script>
+// $('.data_show').on('click', function(){
+//   $(this).addClass('show').siblings().removeClass('show')
+// }).eq(0).trigger('click')
+
+// var _all = document.querySelectorAll('.data_show')
+// _all.forEach(function(item){
+//   item.addEventListener('click', ()=>{
+//     _all.forEach(v=>v==item?item.classList.toggle('show'):v.classList.remove('show'));
+//   })
+// })
+// _all[0].click()
+// // document.addEventListener('click', )
+
+// var _old = null;
+// document.querySelectorAll('.data_show').forEach(function(item){
+//   item.addEventListener('click', ()=>{
+//     if(_old) _old.classList.remove('show');
+//     item.classList.add('show');
+//     _old = item;
+//   })
+// })
+// document.querySelectorAll('.data_show')[0].click()
+
+var _old = null;
+var findParent = (dom, cName)=>{
+  if(dom == document.body) return document.body
+  if(dom.classList.contains(cName)){
+    return dom;
+  }else{
+    return findParent(dom.parentNode, cName)
+  }
+}
+// document.addEventListener('click', (e)=>{
+//   var _target = findParent(e.target, 'data_show');
+//   if(!_target.classList.contains('data_show')) return 
+//   if(_old) _old.classList.remove('show');
+//   _target.classList.add('show');
+//   _old = _target;
+// })
+document.addEventListener('click', (e)=>{
+  var _target = findParent(e.target, 'data_show');
+  if(!_target.classList.contains('data_show')) return 
+  if(_old && _target!=_old) _old.classList.remove('show');
+  _target.classList.toggle('show');
+  _old = _target;
+})
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>canvas 3d 进度条</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="MGUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+    canvas = canvas;
+    ctx = canvas.getContext('2d');
+    draw = function(len){
+        ctx.clearRect(0,0,300,300)
+
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineTo(295,0);
+        ctx.lineWidth = 4;
+        ctx.strokeStyle="#ff0000";
+        ctx.closePath();
+        ctx.stroke();
+
+        for(let i = 0; i < len;i++){
+            let base = i * 30;
+            ctx.beginPath();
+            ctx.moveTo(base + 0,0);
+            ctx.lineTo(base + 20, 0);
+            ctx.lineTo(base + 26, 5);
+            ctx.lineTo(base + 26, 40);
+            ctx.lineTo(base + 4, 40);
+            ctx.lineTo(base + 0, 35);
+
+            var gradientLinear = ctx.createLinearGradient(0, 0, 0, 40);
+            gradientLinear.addColorStop(0, 'red');
+            gradientLinear.addColorStop(1, 'green');
+            ctx.fillStyle = gradientLinear;
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(5,5);
+        ctx.lineTo(300,5);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle="#ff0000";
+        ctx.closePath();
+        ctx.stroke();
+    }
+    idx = 0;
+    draw(idx)
+    setInterval(()=>{
+        idx = (idx + 1) % 10
+        draw(idx)
+    }, 500)
+    // draw(10)
+</script>
+<script>
+
+</script>
+</body>
+</html>

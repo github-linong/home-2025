@@ -1,0 +1,1594 @@
+[
+  {
+    "slug": "jsrun-DRYKp",
+    "title": "基于 HTML5 的跨容器拖放",
+    "description": "用原生 HTML5 Drag and Drop，把红色区域的可拖拽标签拖进绿色空容器。",
+    "tags": [
+      "交互",
+      "JavaScript"
+    ],
+    "intro": "演示原生 HTML5 拖放：元素设 draggable=\"true\"，在 dragstart 记录源节点，目标容器在 dragover 里 preventDefault，ondrop 时 appendChild 完成转移。标题虽写「排序」，实际是跨两个容器搬移，并非列表内重排。交互事件会打到控制台，便于对照生命周期。",
+    "steps": [
+      "在红色区域按住某个灰色标签开始拖动",
+      "拖到下方绿色空白区域，松开鼠标",
+      "确认该标签从红区消失并出现在绿区",
+      "打开开发者工具控制台，观察 ondragstart / ondragover / ondrop 日志",
+      "再拖其他标签进绿区，验证可连续追加"
+    ],
+    "docs": [
+      {
+        "label": "MDN: HTML 拖放 API",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/HTML_Drag_and_Drop_API"
+      },
+      {
+        "label": "MDN: DataTransfer",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/DataTransfer"
+      }
+    ],
+    "notes": "实际能力是跨容器拖放，不是同列表排序；需鼠标拖拽，触摸端可能不可用。"
+  },
+  {
+    "slug": "jsrun-f2iKp",
+    "title": "CSS position: sticky 粘性定位示例",
+    "description": "纵向滚动页中演示 sticky：顶部块 top:50px 吸附，分区标题吸顶直到离开所在 section。",
+    "tags": [
+      "CSS",
+      "交互",
+      "布局"
+    ],
+    "intro": "纯 CSS 演示 position: sticky（含 -webkit-sticky）。首段灰色块 sticky 且 top:50px；下方多个 section 内红色 h2 也 sticky、top:0，随滚动在各自 section 范围内吸顶。脚本仅把各 div 编号为 1、2、3…，便于观察粘性边界。",
+    "steps": [
+      "在 iframe 内向下滚动，观察顶部编号块是否在距顶约 50px 处「粘住」",
+      "继续滚，看吸顶块最终是否随内容滚走",
+      "滚到绿色边框的 section，观察红色「I am sticky」标题是否贴顶",
+      "跨到下一 section，确认上一标题释放、下一标题开始吸顶",
+      "对比奇数/偶数块底色，核对编号是否连续"
+    ],
+    "docs": [
+      {
+        "label": "MDN: position",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/position"
+      },
+      {
+        "label": "SegmentFault 相关讨论",
+        "url": "https://segmentfault.com/q/1010000011442574"
+      }
+    ],
+    "notes": "需在可滚动视口中看效果；sticky 父级若有 overflow:hidden 等限制会失效（本页用于对照常见坑）。"
+  },
+  {
+    "slug": "jsrun-fXZKp",
+    "title": "纯 CSS 瀑布流 / 多列布局骨架",
+    "description": "本意对比 column、flex、grid 与 masonry 类结构做纯 CSS 瀑布流，但迁移后样式丢失。",
+    "tags": [
+      "CSS",
+      "布局"
+    ],
+    "intro": "页面保留多种布局示意：.column 多列、.flexbox、.grid 页头页脚、以及不同高度的 .masonry/.item 块。标题与结构指向纯 CSS 瀑布流（多列/列流），脚本为空。当前 <style> 内容变成「服务异常，请稍候再试」，有效 CSS 已丢失，预览几乎无排版。",
+    "steps": [
+      "打开页面，确认标题仍为「纯CSS实现瀑布流布局」",
+      "查看源码中 .box.column / .flexbox / .grid / .masonry 等 HTML 骨架",
+      "注意 <style> 是否仅为错误文案而非规则",
+      "对比各块数字与「长文本」占位是否按列错落（当前通常不会）",
+      "若修复样式后，再对照 column / flex / grid / masonry 四块差异"
+    ],
+    "docs": [
+      {
+        "label": "W3CPlus：纯 CSS 实现瀑布流",
+        "url": "https://www.w3cplus.com/css/pure-css-create-masonry-layout.html"
+      },
+      {
+        "label": "MDN: CSS multi-column",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_multicol_layout"
+      }
+    ],
+    "notes": "关键：style 被「服务异常」占位覆盖，现场无可用布局样式，不可当完整瀑布流效果验收。"
+  },
+  {
+    "slug": "jsrun-YAqKp",
+    "title": "CSS shape-outside 模拟 iPhone X 刘海绕排",
+    "description": "用 shape-outside: polygon 让列表随滚动绕开刘海形轮廓，并附 clip-path 变形动画。",
+    "tags": [
+      "CSS",
+      "交互"
+    ],
+    "intro": "张鑫旭思路的实践：浮动透明条用 shape-outside: polygon 模拟刘海凹槽，滚动时用 JS 把 scrollTop 写进多边形坐标，让列表行随刘海位移。页首圆形图用 shape-outside: content-box 做环绕；底部 .ani 用 clip-path polygon 关键帧动画。",
+    "steps": [
+      "看顶部圆形图片旁文字是否沿圆形外侧绕排",
+      "在中间黑框列表内上下滚动",
+      "观察文字是否随滚动在左侧「躲开」刘海轮廓",
+      "对照半透明刘海图与实际生效的浮动 .shape",
+      "再看下方六边形渐变块的 clip-path 来回变形"
+    ],
+    "docs": [
+      {
+        "label": "张鑫旭：Shapes 与 iPhone X 刘海",
+        "url": "http://www.zhangxinxu.com/wordpress/2017/09/css-shapes-outside-iphone-x-head/"
+      },
+      {
+        "label": "MDN: shape-outside",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/shape-outside"
+      },
+      {
+        "label": "MDN: clip-path",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/clip-path"
+      }
+    ],
+    "notes": "刘海图 liu.png 若路径缺失则只见绕排不见贴图；部分外链 logo 可能失败。需在列表容器内滚动，非整页滚动。"
+  },
+  {
+    "slug": "jsrun-8diKp",
+    "title": "CSS :link / :visited 伪类与透明背景实验",
+    "description": "对比链接未访问/已访问/悬停/按下样式，并用不同 alpha 的背景测 :visited 限制。",
+    "tags": [
+      "CSS"
+    ],
+    "intro": "演示 a:link、:visited、:hover、:active 的颜色与字号变化，另加 a1–a4：在 link/visited 上设不同 rgba 背景。用于观察浏览器对 :visited 可改样式的限制（隐私相关），并非爱恨投票交互。",
+    "steps": [
+      "观察默认「Hello」为红色大字（:link）",
+      "点击某一链接后，看 :visited 是否变为蓝底红字等样式",
+      "悬停、按下时分别观察 :hover / :active",
+      "对比 Hello1–Hello4 点击前后背景是否可见差异",
+      "结合开发者工具查看各 class 的 :visited 规则哪些实际生效"
+    ],
+    "docs": [
+      {
+        "label": "MDN: :visited",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/:visited"
+      },
+      {
+        "label": "知乎相关专栏文",
+        "url": "https://zhuanlan.zhihu.com/p/29747893"
+      }
+    ],
+    "notes": "现代浏览器对 :visited 可应用样式有严格限制，部分背景差异可能看不见；标题 Love or hate 非功能描述。"
+  },
+  {
+    "slug": "jsrun-ZCqKp",
+    "title": "粘贴剪贴板图片即时预览",
+    "description": "监听 paste，用 clipboardData 取文件并用 FileReader 读成 DataURL 显示截图。",
+    "tags": [
+      "JavaScript",
+      "交互"
+    ],
+    "intro": "极简「截图粘贴预览」：在页面监听 paste，若 clipboardData.files 有文件则 FileReader.readAsDataURL，把结果赋给 img#showImage。含文本输入框便于聚焦；无实际上传服务，仅本地预览。",
+    "steps": [
+      "用系统截图或复制一张图片到剪贴板",
+      "点击页面空白或输入框获得焦点",
+      "按 Cmd/Ctrl+V 粘贴",
+      "确认下方 img 显示出刚粘贴的图",
+      "打开控制台查看 clipboardData 相关日志"
+    ],
+    "docs": [
+      {
+        "label": "MDN: ClipboardEvent.clipboardData",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/ClipboardEvent/clipboardData"
+      },
+      {
+        "label": "MDN: FileReader.readAsDataURL",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/FileReader/readAsDataURL"
+      }
+    ],
+    "notes": "无图片文件时粘贴会被忽略；需用户手势粘贴，不能纯自动演示。"
+  },
+  {
+    "slug": "jsrun-8dgKp",
+    "title": "Canvas 按网格拼贴爱心图案",
+    "description": "用二维 0/1 矩阵定爱心形状，随机从 CDN 拉图并延时 drawImage 拼成马赛克。",
+    "tags": [
+      "Canvas",
+      "图形",
+      "JavaScript"
+    ],
+    "intro": "并非可玩拼图，而是把 9×9 的 0/1 矩阵当作爱心点阵：为 1 的格子用 Image 加载 CDN 图，random 延时后 ctx.drawImage 画小方块。展示矩阵驱动布局 + 异步贴图；标题「拼图小程序」容易误解成交互拼图。",
+    "steps": [
+      "打开页面，等待画布上逐块出现小图",
+      "观察整体是否大致呈爱心轮廓",
+      "刷新多次，看贴图出现顺序是否随机变化",
+      "若 CDN 失败，画布可能空白或少块",
+      "在源码中对照 arr 矩阵与绘制位置关系"
+    ],
+    "docs": [
+      {
+        "label": "MDN: CanvasRenderingContext2D.drawImage",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/drawImage"
+      },
+      {
+        "label": "MDN: HTMLImageElement",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/HTMLImageElement/Image"
+      }
+    ],
+    "notes": "依赖七牛 CDN 图片；外链失效则看不到拼贴。无拖拽、交换等交互。"
+  },
+  {
+    "slug": "jsrun-SXhKp",
+    "title": "Vue 大转盘旋转与分区指示",
+    "description": "用 Vue 驱动圆形转盘持续旋转，并根据角度计算当前朝上分区编号。",
+    "tags": [
+      "Vue",
+      "游戏",
+      "CSS",
+      "动画"
+    ],
+    "intro": "八扇区分的简易转盘：v-for 生成分区标记，圆弧用 transform rotate；mounted 里 setInterval 累加 rotateArc，computed 用 rotate 样式与公式算当前扇区。演示绑定 + 变换动画，未见指针点击抽停逻辑。",
+    "steps": [
+      "打开页面看红色圆是否在持续旋转",
+      "观察圆上 1–8 分区标记是否绕圆心转动",
+      "看下方数字随旋转变化（角度与当前扇区）",
+      "用开发者工具改 data.num 或 rotateArc 观察反应",
+      "确认控制台是否有 Vue is not defined（依赖缺失时）"
+    ],
+    "docs": [
+      {
+        "label": "Vue 2 官方文档",
+        "url": "https://v2.cn.vuejs.org/v2/guide/"
+      },
+      {
+        "label": "MDN: transform",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/transform"
+      }
+    ],
+    "notes": "页面使用 new Vue 但未引入 Vue 脚本，通常会直接报错无法运行；需补 CDN 或全局 Vue 才能验收。"
+  },
+  {
+    "slug": "jsrun-aXhKp",
+    "title": "Canvas 圆弧绘制太极八卦图",
+    "description": "用多次 arc + fill 拼接半圆与阴阳鱼眼，在 canvas 上画出太极图。",
+    "tags": [
+      "Canvas",
+      "图形"
+    ],
+    "intro": "在 300×300 canvas 上用 beginPath/arc/fill 绘制：大圆上下半色、小半圆阴阳区、最小圆点鱼眼。展示弧段起止角（如 Math.PI/2）与填充色切换；第二块 canvas 脚本已注释，仅第一块生效。",
+    "steps": [
+      "打开页面查看左侧 canvas 是否出现红黑太极图",
+      "对照源码识别大圆、S 形半圆与两个小圆点",
+      "用开发者工具改 _r 或填充色后刷新对比",
+      "确认第二块 canvas 为空（绘制代码已注释）",
+      "缩放窗口确认为位图，非响应式矢量"
+    ],
+    "docs": [
+      {
+        "label": "MDN: CanvasRenderingContext2D.arc",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/arc"
+      },
+      {
+        "label": "MDN: Canvas 教程",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/Canvas_API/Tutorial"
+      }
+    ],
+    "notes": "静态绘制，无动画或交互；第二 canvas 未启用。"
+  },
+  {
+    "slug": "jsrun-DKbKp",
+    "title": "数字翻牌 / 滚动切换特效骨架",
+    "description": "多列 0–9 数字条按随机五位数切换 class，实现翻牌滚动所需 DOM，但样式与 jQuery 缺失。",
+    "tags": [
+      "动画",
+      "jQuery",
+      "JavaScript"
+    ],
+    "intro": "结构为多列 .number-item，每列含 0–9；每 2 秒生成随机五位数，给各列设 number-item--数字类，并用 #clog 显示目标数。典型「odomometer/翻牌」靠 CSS 位移实现，但 <style> 同样是「服务异常」占位，且使用 $ 却未引入 jQuery。",
+    "steps": [
+      "打开页面，看五列 0–9 是否垂直堆叠裸露",
+      "观察下方 #clog 是否约每 2 秒变一个五位数",
+      "看各列 class 是否变为 number-item--0…9",
+      "打开控制台确认是否报 $ is not defined",
+      "样式修复并引入 jQuery 后，再验收翻滚动画"
+    ],
+    "docs": [
+      {
+        "label": "jQuery 官方文档",
+        "url": "https://api.jquery.com/"
+      },
+      {
+        "label": "MDN: className",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/Element/className"
+      }
+    ],
+    "notes": "CSS 丢失 + 无 jQuery，当前几乎无视觉特效；只能验 DOM class 与目标数字文本。"
+  },
+  {
+    "slug": "jsrun-4tbKp",
+    "title": "Canvas 刮奖涂层与擦除比例",
+    "description": "用 destination-out 刮开涂层，统计透明像素占比，并支持轨迹回放与重新覆盖。",
+    "tags": [
+      "Canvas",
+      "JavaScript",
+      "交互"
+    ],
+    "intro": "刮刮乐原型：涂层 fill/贴图后，鼠标按下拖动以 destination-out 擦除（光标图）；定时 getImageData 算 alpha===0 比例；「自动」按预设轨迹回放，「覆盖」用 source-over 重填。依赖 _.throttle，页面未引入 lodash。",
+    "steps": [
+      "在 canvas 上按住鼠标刮开涂层，露出背景图",
+      "观察 #eraseRate 刮开比例是否升高",
+      "看「节点记录」是否追加鼠标轨迹点",
+      "点「覆盖」恢复遮罩后再刮一次",
+      "点「自动」看是否按轨迹自动刮开（若 _.throttle 报错则先看控制台）"
+    ],
+    "docs": [
+      {
+        "label": "MDN: globalCompositeOperation",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation"
+      },
+      {
+        "label": "MDN: getImageData",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/getImageData"
+      },
+      {
+        "label": "Lodash throttle",
+        "url": "https://lodash.com/docs/#throttle"
+      }
+    ],
+    "notes": "使用 _.throttle 但未引入 lodash，脚本可能中断；背景/笔刷图依赖 lilnong.top，可能失败；主要为鼠标事件。"
+  },
+  {
+    "slug": "jsrun-yH6Kp",
+    "title": "Canvas 重叠圆面积占比（面试题）",
+    "description": "用 destination-out 画多个圆挖空，再按透明像素占比估算重叠区域相对整幅画布的面积。",
+    "tags": [
+      "Canvas",
+      "算法"
+    ],
+    "intro": "针对「多圆重叠面积占比」类题：整幅先铺实色，再用 destination-out 画若干圆挖空；定时扫描 imageData alpha===0 像素占比显示在 eraseRate。canvas 用 transform: scale(1,-1) 翻转坐标系；也支持手工拖刮。fill 按钮未绑事件。",
+    "steps": [
+      "打开后看画布上是否已有多个圆形挖空",
+      "读 eraseRate，约为透明像素占全画布比例",
+      "在挖空区外再按住拖动，看比例是否上升",
+      "对照 transform: scale(1,-1) 理解 y 方向视觉翻转",
+      "点「覆盖」——当前脚本未绑定，预期通常无反应"
+    ],
+    "docs": [
+      {
+        "label": "MDN: getImageData",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/getImageData"
+      },
+      {
+        "label": "MDN: globalCompositeOperation",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation"
+      }
+    ],
+    "notes": "占比相对整幅 100×100 画布，非精确解析几何公式；「覆盖」按钮无监听器。"
+  },
+  {
+    "slug": "jsrun-k8iKp",
+    "title": "D3.js 树状图（行政区划）",
+    "description": "内联 D3 v3，用 layout.tree 与 svg.diagonal 绘制「中国→省→市」层级树。",
+    "tags": [
+      "D3",
+      "SVG",
+      "图形"
+    ],
+    "intro": "将 d3 打包进页面后，用 d3.layout.tree().size 计算节点，d3.svg.diagonal 画连线，SVG 节点为小矩形+文本。数据为省市区假树（浙江/广西/黑龙江/新疆等）。静态图，无折叠展开交互。",
+    "steps": [
+      "打开页面确认出现横向展开的树（根「中国」）",
+      "核对省份节点下是否有对应城市文字",
+      "沿灰色 link 路径看父子连线",
+      "用开发者工具检查生成的 svg/g/node",
+      "此示例无点击折叠，仅静态浏览即可"
+    ],
+    "docs": [
+      {
+        "label": "D3 官方站点",
+        "url": "https://d3js.org/"
+      },
+      {
+        "label": "Observable: d3-hierarchy",
+        "url": "https://d3js.org/d3-hierarchy"
+      }
+    ],
+    "notes": "内联的是偏 D3 v3 API（layout.tree / svg.diagonal）；文件体积大；无缩放拖拽等交互。"
+  },
+  {
+    "slug": "jsrun-mIhKp",
+    "title": "长标题省略与右侧图标宽度自适应",
+    "description": "对比 Flex、BFC/float 等方案：长文 ellipsis，右侧图标区宽度随数量自适应。",
+    "tags": [
+      "CSS",
+      "布局"
+    ],
+    "intro": "三组方案并排：Flex + text-overflow:ellipsis；inline-block/BFC 下图标 float:right；Flex 中图标白空间 nowrap。演示「文字可变省略、右侧徽章宽度随张数变化」。大量图标指向 jsrun CDN，常裂图。",
+    "steps": [
+      "对比第一组：长文+两图 / 长文+一图 / 短文+两图",
+      "看长文是否单行省略，图标是否仍靠右可见",
+      "再看中间 BFC/float 组图标是否靠右、文字是否省略",
+      "看第三组 flex 图标容器在一图/两图时宽度差",
+      "缩小 iframe 宽度，确认省略与挤占行为"
+    ],
+    "docs": [
+      {
+        "label": "MDN: text-overflow",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/text-overflow"
+      },
+      {
+        "label": "MDN: flex",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/flex"
+      },
+      {
+        "label": "CodePen 相关笔",
+        "url": "https://codepen.io/linong/pen/aRjwbe"
+      }
+    ],
+    "notes": "logo 多来自 cdn.jsrun.top / jsrun.net，易失效导致只见裂图；纯 CSS，无脚本。"
+  },
+  {
+    "slug": "jsrun-guWKp",
+    "title": "弹幕滚动与 DOM 池复用",
+    "description": "用通道与 DOM 池实现弹幕从右向左滚动，并支持输入框发送自定义弹幕。",
+    "tags": [
+      "交互",
+      "JavaScript",
+      "动画"
+    ],
+    "intro": "页面在沙漠背景上用 10 条通道、每通道最多 6 个 span 组成 DOM 池，通过 CSS transition 让弹幕从右划到左。预设弹幕池含《琵琶行》等文案与「2333333」，划出后回收到对应通道池。底部输入框可把文案推入弹幕池，点击「发送」或按 Enter 均可。",
+    "steps": [
+      "打开页面，观察多通道弹幕自动从右向左滚动。",
+      "在底部输入框输入文字，点击「发送」，确认新弹幕随后出现。",
+      "再输入文字后按 Enter，确认同样进入弹幕池并发射。",
+      "注意较长弹幕会占用通道更久，通道满时需等待有可用 DOM 后再发。"
+    ],
+    "docs": [
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/guWKp"
+      }
+    ],
+    "notes": "背景图依赖外部静态资源；弹幕速度按固定 7s transition，未按宽度等比调速。"
+  },
+  {
+    "slug": "jsrun-cCXKp",
+    "title": "Vue 时间轮盘结构草稿",
+    "description": "用 Vue 渲染秒、分、时三段数字列表，对应抖音风格时间轮盘屏保思路。",
+    "tags": [
+      "Vue"
+    ],
+    "intro": "页面用 Vue 在 #app 内渲染 seconds/minutes/hours 三段：分别循环输出「0秒…」「0分…」「0时…」，数据为 60、60、24。Markdown 称其为抖音时间轮盘屏保小 DEMO，并链到掘金文章。当前 HTML 无样式，也未引入 Vue 脚本。",
+    "steps": [
+      "打开页面，查看是否渲染出秒/分/时三段标签文字。",
+      "若控制台报 Vue 未定义，说明独立打开时依赖缺失。",
+      "对照掘金原文理解完整轮盘视觉与动画应有的样式与交互。",
+      "对比本文件与文章实现差异：此处多为数据与模板骨架。"
+    ],
+    "docs": [
+      {
+        "label": "掘金原文",
+        "url": "https://juejin.im/post/5cbdbea3f265da037875967f"
+      },
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/cCXKp"
+      }
+    ],
+    "notes": "HTML 内无 script 引入 Vue，style 为空；独立打开通常无法运行完整轮盘效果。"
+  },
+  {
+    "slug": "jsrun-HxWKp",
+    "title": "Flex 图标与多行文本对比",
+    "description": "对比普通流式、默认 Flex、以及逐字 wrap 的 Flex，观察图标旁多行中文排版差异。",
+    "tags": [
+      "CSS",
+      "Vue"
+    ],
+    "intro": "标题为「flex 实现图标加多行文本功能」。页面分三块：默认流式布局、默认 Flex、带 flex-wrap 且把字符串拆成单字 span 的 Flex。每块左侧有两个 logo 图，右侧为长文本。MD 说明灵感来自 Weex 限制文字长度的场景。",
+    "steps": [
+      "打开页面，查看「默认的流式布局」中图片与文字如何换行。",
+      "对比「默认的Flex布局」：图标与整段文字作为 flex 子项时的挤占方式。",
+      "查看「处理的Flex布局」：文字被拆成单字后配合 flex-wrap 的换行效果。",
+      "注意当前文案出现乱码「恩」等字符，属迁移编码问题，不影响布局对比意图。"
+    ],
+    "docs": [
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/HxWKp"
+      }
+    ],
+    "notes": "未引入 Vue CDN，独立打开可能报错；中文串已损坏；logo 来自 cdn.jsrun.top，可能失效。"
+  },
+  {
+    "slug": "jsrun-YnhKp",
+    "title": "CSS 翻页簿实验（残片）",
+    "description": "原先尝试做纸张翻页/Turn.js 翻书效果，迁移后正文与脚本几乎全部被注释。",
+    "tags": [
+      "动画",
+      "CSS",
+      "交互",
+      "实验"
+    ],
+    "intro": "标题指向掘金翻页相关文章。HTML 中纸张结构、next-page 按钮、Turn.js 初始化及自写翻页脚本均被注释；style 区域仅为「服务异常，请稍候再试」文本。当前打开几乎是空白页，可视为未完成或损坏的历史片段。",
+    "steps": [
+      "打开页面，确认可视区域基本为空。",
+      "在源码中搜索被注释的 .paper / #flipbook 结构，了解原设计意图。",
+      "对照掘金文章阅读完整翻页实现思路。",
+      "不要期待本页有可交互的翻书效果。"
+    ],
+    "docs": [
+      {
+        "label": "掘金原文",
+        "url": "https://juejin.im/post/5b82ac63e51d4538c362233f"
+      },
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/YnhKp"
+      }
+    ],
+    "notes": "演示内容几乎全部注释，且 style 异常；不能作为可运行翻页 Demo。"
+  },
+  {
+    "slug": "jsrun-be9Kp",
+    "title": "CSS 流动边框多种实现",
+    "description": "演示锥形渐变旋转、四边渐变位移动画，以及矩形移动、边长控制和 clip 裁剪等多种流动边框。",
+    "tags": [
+      "动画",
+      "CSS"
+    ],
+    "intro": "针对「怎么用 CSS 做流动边框」的问答实践。页首用 conic-gradient 背景旋转制造边缘流光；另有四边 linear-gradient 位移方案。后半三节分别：双伪元素矩形移动、四边缘长度生长、clip 裁剪显示环绕边框；悬停可改背景色。",
+    "steps": [
+      "打开页面，观察顶部小方块是否有锥形渐变旋转形成的流动边。",
+      "查看「按钮」四周的四段渐变边框是否沿周长流动。",
+      "对照三个标题区块：矩形移动、四边长度、clip 裁剪，观察动画差异。",
+      "将鼠标悬停在 border-flow / border-flow2 上，确认边框区域背景色变为浅珊瑚色。"
+    ],
+    "docs": [
+      {
+        "label": "SegmentFault 提问",
+        "url": "https://segmentfault.com/q/1010000041123027"
+      },
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/be9Kp"
+      }
+    ],
+    "notes": "锥形方案注释强调容器宜为正方形，否则视觉速度会不均匀。"
+  },
+  {
+    "slug": "jsrun-3nTKp",
+    "title": "导航下划线跟随选中项",
+    "description": "纯 CSS 利用伪元素与兄弟选择器，让导航下划线在选中项间滑动跟随。",
+    "tags": [
+      "CSS",
+      "交互",
+      "动画",
+      "Vue"
+    ],
+    "intro": "横向 flex 导航列表由 Vue 生成约 20 项（Mock.js 中文名）。点击切换 selected。下划线由 li::before 的 border-bottom 控制：选中项宽度铺满并延迟展开，其后兄弟项 left 归零，从而形成跟随滑动的视觉。风格参考 CodePen 相关实现。",
+    "steps": [
+      "打开页面，确认默认第一项带底部下划线。",
+      "依次点击不同导航文字，观察下划线是否滑动到新选中项。",
+      "按住某项观察 :active 黑底白字反馈。",
+      "对比长短文案项，确认下划线宽度随项宽变化。"
+    ],
+    "docs": [
+      {
+        "label": "CodePen 参考",
+        "url": "https://codepen.io/Chokcoco/pen/PRJvLN"
+      },
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/3nTKp"
+      }
+    ],
+    "notes": "依赖 bootcdn 的 Vue 与 Mock.js；无网络时列表可能无法生成。"
+  },
+  {
+    "slug": "jsrun-KAQKp",
+    "title": "intro.js 表单引导测试",
+    "description": "在 Element UI 添加 Feed 弹窗流程中嵌入 intro.js，试验无按钮步进式新手引导。",
+    "tags": [
+      "交互",
+      "Vue",
+      "表单"
+    ],
+    "intro": "页面为「添加」按钮与弹窗表单（名称、父目录、链接）。首次进入若 localStorage 无 autoIntro，会自动开引导：隐藏步数/按钮/进度，依赖 blur/change/确定触发 nextStep。引导进行中限制非高亮区指针事件，高亮区可操作。",
+    "steps": [
+      "首次打开（或清掉 localStorage 的 autoIntro）观察是否自动进入引导态。",
+      "点击「添加」打开对话框，看高亮是否落到名称等表单项。",
+      "在名称输入后失焦、选择父目录、填写链接失焦，确认引导进入下一步。",
+      "点「确定」完成最后一步；退出后 introState 应变回未引导。"
+    ],
+    "docs": [
+      {
+        "label": "intro.js",
+        "url": "https://introjs.com/"
+      },
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/KAQKp"
+      }
+    ],
+    "notes": "部分 CDN/raw GitHub 主题可能失效；引导依赖 introState 与自定义样式，属试验代码而非完整产品。"
+  },
+  {
+    "slug": "jsrun-PmQKp",
+    "title": "driver.js 添加 Feed 引导",
+    "description": "用 driver.js 高亮「添加」按钮并串联弹窗内多字段，测试多步产品引导。",
+    "tags": [
+      "交互",
+      "Vue"
+    ],
+    "intro": "与 intro.js 版场景类似的 Feed 订阅表单。Driver 先高亮「添加」；onNext 里 preventMove 后打开弹窗再 moveNext。随后 defineSteps 覆盖名称、父目录、链接与确定按钮。是否自动开取决于 localStorage autoIntro。",
+    "steps": [
+      "清除 localStorage 的 autoIntro 后刷新，确认「添加」被高亮并出现说明气泡。",
+      "按引导进入下一步或点击「添加」，确认对话框打开且引导继续。",
+      "逐步查看名称、父目录、链接、确定按钮上的引导文案。",
+      "注意最后一步指向不存在的 #third-element-introduction，可能异常或无效。"
+    ],
+    "docs": [
+      {
+        "label": "driver.js",
+        "url": "https://driverjs.com/"
+      },
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/PmQKp"
+      }
+    ],
+    "notes": "unpkg 的 driver.js 旧版 API（new Driver）；末步选择器不存在；仍残留未启用的 vue-introjs 注释代码。"
+  },
+  {
+    "slug": "jsrun-CMQKp",
+    "title": "鼠标悬停聚焦高亮元素",
+    "description": "监听 mouseover，给当前元素加超大 box-shadow，形成聚光灯式遮罩高亮。",
+    "tags": [
+      "JavaScript",
+      "交互",
+      "CSS"
+    ],
+    "intro": "页面散落多组列表（含 absolute/fixed/relative）。运行逻辑在 body 上监听 mouseover：去掉上一目标的 lilnong-focus，给当前目标加上该类；该类用极大扩散的半透明黑影实现聚焦。顶部虽有 click/mouseover/none 单选且引入 Popper，但现有脚本未读取单选，也未创建 tooltip。",
+    "steps": [
+      "打开页面，把鼠标移到任意列表文字上。",
+      "确认当前元素被高亮，四周出现大范围暗色遮罩。",
+      "移到其他元素，确认高亮跟随切换。",
+      "可尝试点顶部 radio，观察实际仍只有悬停聚焦在工作。"
+    ],
+    "docs": [
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/CMQKp"
+      }
+    ],
+    "notes": "eventName 单选与 Popper/#tooltip 未接入；MD 写「mouseover 自带写样式」与现行脚本一致。"
+  },
+  {
+    "slug": "jsrun-sfQKp",
+    "title": "扫雷地图与邻雷计数",
+    "description": "Vue 生成 10×10 棋盘，随机布雷并用负数展示邻雷数，点击可翻开与蔓延。",
+    "tags": [
+      "游戏",
+      "算法",
+      "Vue"
+    ],
+    "intro": "状态约定：0 未翻空格，负数表示邻雷数，1 已翻开，2 为雷。初始化随机放雷并计算邻雷。点击非雷格将格子标为已翻开；若原值为 0 则向四向递归蔓延。雷格以粉背景显示，数值也直接画在格子上，偏算法可视而非完整隐蔽玩法。",
+    "steps": [
+      "打开页面，查看 10×10 格网及可能显示的雷（2）与负数邻雷提示。",
+      "点击值为 0 的格子，观察是否变为 1 并向四周自动翻开。",
+      "点击带负数的安全格，确认只翻开该格而不扩散。",
+      "点击雷格（值为 2）时手动点击不会触发翻开逻辑（自动蔓延会跳过雷）。"
+    ],
+    "docs": [
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/sfQKp"
+      }
+    ],
+    "notes": "雷与数字初始即可见，无胜负结算与插旗；依赖 Vue CDN。"
+  },
+  {
+    "slug": "jsrun-ya9Kp",
+    "title": "随机转账与贫富分化模拟",
+    "description": "100 人各持 100 元，每人每轮随机转出 2 元，用柱状图观察财富两极分化。",
+    "tags": [
+      "算法",
+      "图形",
+      "JavaScript"
+    ],
+    "intro": "说明文案：近乎平等的随机转账下，时间越长差距越大。默认每人 100 元；平等模式、5 个富二代（200）、5 个穷人（2）可切换。定时交易与刷新图表；另有加速/减速改变每周期交易次数。柱高表示余额，下方显示排序后金额序列。",
+    "steps": [
+      "打开页面，默认平等模式应已开始，观察蓝色柱高变化。",
+      "点击「5个富二代」或「5个穷人」重启，对比初始分布差异。",
+      "多次点「加速」或「加速 += 30」，看柱状分布拉开速度。",
+      "点「减速」降低 forCount，观察更新变缓。"
+    ],
+    "docs": [
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/ya9Kp"
+      }
+    ],
+    "notes": "deal 允许余额为负（未校验是否够 2 元）；内层循环复用变量 i，加速逻辑存在缺陷。"
+  },
+  {
+    "slug": "jsrun-cUUKp",
+    "title": "点阵心形标记生成器",
+    "description": "在 20×20 网格上点选打标签，上方格子按标记播放进场动画并铺头像图。",
+    "tags": [
+      "Vue",
+      "图形",
+      "动画",
+      "JavaScript",
+      "工具"
+    ],
+    "intro": "上下两块 20×20 网格。下方点击写入当前标签索引到 tagHash；上方对已标记格加动画类并请求头像图。标签历史写入 localStorage（LN_XING_JSON）。可用按钮切换标签索引，以及「删除/新节点」（当前都把 currentTag 设为 -1）。",
+    "steps": [
+      "打开页面，在下方网格点击若干格，看颜色是否按标签变化。",
+      "观察上方对应格子是否陆续出现进场动画与头像底图。",
+      "点击下方标签索引按钮切换 currentTag，再点新格子验证分组。",
+      "刷新页面，确认 localStorage 能恢复上次标记（若浏览器允许）。"
+    ],
+    "docs": [
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/cUUKp"
+      }
+    ],
+    "notes": "头像 URL 为 http 外链可能失效或被混合内容拦截；「删除/新节点」文案与行为不完全对应。"
+  },
+  {
+    "slug": "jsrun-avDKp",
+    "title": "Canvas 可见水印与通道解码示意",
+    "description": "上传图片后绘制半透明文字水印，并用按通道奇偶重映射的方式示意解码。",
+    "tags": [
+      "Canvas",
+      "图形",
+      "工具"
+    ],
+    "intro": "选择本地图片后展示原图，再生成带「lilnong.top」文字的水印图（含更低透明度偏移文字）。decodeWatermark 按指定颜色通道奇偶把像素拉成 0/255，用于观察信息痕迹。OpenCV.js 频域暗水印整段已注释，当前为 Canvas 可见水印+简易解码示意。",
+    "steps": [
+      "点击文件选择，上传一张本地图片。",
+      "确认出现原图与写有 lilnong.top 的水印图。",
+      "查看第三张解码结果图，观察对比度被放大后的痕迹。",
+      "对照 MD 中的 OpenCV 文章链接理解完整暗水印方案（本页未启用）。"
+    ],
+    "docs": [
+      {
+        "label": "参考文章 ainyi",
+        "url": "https://ainyi.com/154"
+      },
+      {
+        "label": "腾讯云相关文",
+        "url": "https://cloud.tencent.com/developer/article/2058152"
+      },
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/avDKp"
+      }
+    ],
+    "notes": "OpenCV 实现整段注释未跑；现行是可见水印加 alpha/通道奇偶示意，非完整频域暗水印。"
+  },
+  {
+    "slug": "jsrun-VsUKp",
+    "title": "ECharts GL 三维饼/环图",
+    "description": "用 echarts-gl 的 surface 参数方程绘制林地/草地/耕地三维饼图，支持点击与悬停。",
+    "tags": [
+      "ECharts",
+      "图形",
+      "Vue"
+    ],
+    "intro": "Vue 组件在 400×200 容器内初始化图表。数据为林地、草地、耕地面积及配色；getPie3D 生成 parametric surface 扇区，内径比约 0.8。图例显示名称与占比。点击可选中扇区位移，悬停略放大；视角旋转/缩放/平移灵敏度均为 0。",
+    "steps": [
+      "打开页面，确认出现三维饼/环图与顶部图例百分比。",
+      "将鼠标移到某一扇区，观察是否轻微放大高亮。",
+      "点击扇区，确认选中时外移；再点子可取消或切换。",
+      "移出图表区域，确认悬停高亮会取消。"
+    ],
+    "docs": [
+      {
+        "label": "ECharts",
+        "url": "https://echarts.apache.org/"
+      },
+      {
+        "label": "原 JSRUN",
+        "url": "https://jsrun.net/VsUKp"
+      }
+    ],
+    "notes": "tooltip formatter 被改成几乎空内容；依赖 bootcdn 的 Vue、echarts、echarts-gl。"
+  },
+  {
+    "slug": "jsrun-BdIKp",
+    "title": "ECharts 径向决策树（预算超降）",
+    "description": "用 Vue 2 编辑各地区科目的预算与支出，ECharts tree（radial）按超降比例着色并持久化。",
+    "tags": [
+      "ECharts",
+      "Vue",
+      "图形",
+      "JavaScript"
+    ],
+    "intro": "演示将「事业部门 → 地区 → 科目」三级数据映射为 ECharts 径向树图。表格中修改预算/实际支出后，计算超降比例（budget/expenses - 1），超额（负值）标红，否则青色。数据写入 localStorage（键 www.lilnong.top-company），树底可用背景图并根据整体超降切换红色滤镜。",
+    "steps": [
+      "打开页面，查看径向树与地区/科目汇总表",
+      "在科目行修改 budget、expenses 数字输入",
+      "等待约 1 秒深监听汇总后，再点 setOptions 刷新树",
+      "确认超降为负时树节点与底部底座呈现红色",
+      "刷新页面，确认 localStorage 恢复了上次数据"
+    ],
+    "docs": [
+      {
+        "label": "ECharts Tree 系列",
+        "url": "https://echarts.apache.org/zh/option.html#series-tree"
+      },
+      {
+        "label": "Vue 2 侦听器",
+        "url": "https://v2.cn.vuejs.org/v2/api/#watch"
+      }
+    ],
+    "notes": "占比字段 expenses_mix 未在 watch 中赋值；初始化会生成 6 地区 × 14 科目的随机数据（若无缓存）。"
+  },
+  {
+    "slug": "jsrun-7NxKp",
+    "title": "Canvas 笔刷马赛克",
+    "description": "在图片上按住拖动，用 Canvas 从原图随机取样绘制马赛克块。",
+    "tags": [
+      "Canvas",
+      "图形",
+      "交互"
+    ],
+    "intro": "图片上方叠一层 canvas，按下鼠标/触摸后在移动时持续绘制。每个马赛克块边长为 20px，源区域取自原图随机位置，目标位置跟指针。支持 mousedown/mousemove 与 touchstart/touchmove。",
+    "steps": [
+      "等待图片加载完成（canvas 尺寸对齐图片）",
+      "在图上按住左键或手指开始涂抹",
+      "拖动观察随机纹理马赛克块出现",
+      "松开后停止绘制",
+      "改代码中 mosaicSize 可调整块大小"
+    ],
+    "docs": [
+      {
+        "label": "Canvas drawImage",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/drawImage"
+      }
+    ],
+    "notes": "迁移后丢失了源文件中 #mosaic-overlay 的 absolute 叠层样式；坐标用 clientX/Y，未减容器偏移，涂抹位置可能不准。"
+  },
+  {
+    "slug": "jsrun-PJNKp",
+    "title": "CSS 局部光照（径向渐变跟随鼠标）",
+    "description": "设置风格卡片上用 radial-gradient 与 CSS 变量实现聚光灯式局部高光。",
+    "tags": [
+      "CSS"
+    ],
+    "intro": "页面结构为黑色盒子上的「系统」设置项与绝对定位 .effect 层。原意是：mousemove 更新 --pt-x/--pt-y，effect 用 radial-gradient(circle at …) 在指针处形成白色光晕。半透明卡片边框/背景配合光晕，做出局部被照亮的观感（对应 SegmentFault 问题）。",
+    "steps": [
+      "对照标题与 .effect 层理解局部光照意图",
+      "在完整实现中移动鼠标，观察光斑跟随",
+      "查看 item 的半透明 border/background 如何「吃」到光",
+      "用开发者工具改 --pt-x/--pt-y 验证径向渐变圆心",
+      "阅读源站问题了解需求背景"
+    ],
+    "docs": [
+      {
+        "label": "SegmentFault 原问题",
+        "url": "https://segmentfault.com/q/1010000039359551"
+      },
+      {
+        "label": "CSS radial-gradient",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/gradient/radial-gradient"
+      },
+      {
+        "label": "CSS 自定义属性",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/Using_CSS_custom_properties"
+      }
+    ],
+    "notes": "当前 public HTML 仅剩结构，样式与 mousemove 脚本在迁移中丢失，页面上看不到光照；完整逻辑在 snippets/PJNKp/source.html。"
+  },
+  {
+    "slug": "jsrun-5bTKp",
+    "title": "Flex 蛇形走位布局",
+    "description": "把列表按行切分后，奇数行用 flex 反向排列，模拟蛇形折返顺序。",
+    "tags": [
+      "CSS",
+      "Vue",
+      "布局"
+    ],
+    "intro": "Vue 将 1–18 拆成「首行 1 个 + 之后每行 4 个」。.list 使用 flex-wrap；:nth-child(2n+1) 设为 row-reverse（首行强制 row）。伪元素 after 标「左/右/下/上」提示折返方向，演示纯 CSS 控制阅读顺序的蛇皮走位。",
+    "steps": [
+      "打开页面查看多行灰色格子与方向文字",
+      "对照 splitList：首行 1 项，其后每行最多 4 项",
+      "确认奇数行视觉顺序与偶数行相反",
+      "修改 list 长度（如 20）观察换行与末项「上」标记",
+      "在开发者工具切换 flex-direction 验证机制"
+    ],
+    "docs": [
+      {
+        "label": "flex-direction",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/flex-direction"
+      },
+      {
+        "label": ":nth-child",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/:nth-child"
+      }
+    ]
+  },
+  {
+    "slug": "jsrun-fReKp",
+    "title": "Vue keep-alive 动态 include 缓存",
+    "description": "按路由访问把组件名写入 include 列表，从列表删除即可销毁对应缓存。",
+    "tags": [
+      "Vue"
+    ],
+    "intro": "左侧链到 /a、/b、/c，右侧 keep-alive :include=\"list\" 包裹 router-view。组件名为 ComponentA/B/C，模板显示当前时间戳。路由变化时若组件名不在 list 则 push；点列表旁 x 可 splice 移除，从而失去缓存。验证：先访 A、B 再切换，时间不变即已缓存；删 A 后再进 A 会刷新时间。",
+    "steps": [
+      "点 Go to a，记录右侧时间戳",
+      "再进 b、切回 a，确认时间未变（已缓存）",
+      "在 list 旁点 x 删除 ComponentA",
+      "再次进入 a，确认时间更新（缓存已清）",
+      "对 b、c 重复验证 include 白名单效果"
+    ],
+    "docs": [
+      {
+        "label": "keep-alive include",
+        "url": "https://v2.cn.vuejs.org/v2/api/#keep-alive"
+      },
+      {
+        "label": "Vue Router",
+        "url": "https://v3.router.vuejs.org/zh/"
+      }
+    ],
+    "notes": "初次进入时 list 仍为空，该次渲染未必入缓存；再次进入同路由才会明显体现 include。"
+  },
+  {
+    "slug": "jsrun-468Kp",
+    "title": "SortableJS 与 Vue 列表同步排序",
+    "description": "Sortable 拖拽 ul 项后，在 onEnd 中 splice 同步 Vue 的 list 数组。",
+    "tags": [
+      "交互",
+      "Vue"
+    ],
+    "intro": "创建 10 条带 id/val/checked 的数据渲染列表。mounted 时对 #sortWrap 调用 Sortable.create（delay 100、animation 150 等）。拖拽结束后用 newIndex/oldIndex 对 list 做 splice 重排，下方 JSON 实时反映顺序。点击项会将 checked 置 true。",
+    "steps": [
+      "拖动列表项改变顺序",
+      "观察下方 JSON 数组顺序是否同步",
+      "点击某项，确认 checked 变为 true",
+      "尝试快速拖拽，感受 delay:100",
+      "在控制台打印 list 核对 id 序列"
+    ],
+    "docs": [
+      {
+        "label": "SortableJS",
+        "url": "https://github.com/SortableJS/Sortable"
+      },
+      {
+        "label": "Sortable onEnd",
+        "url": "https://github.com/SortableJS/Sortable#event-object-demo"
+      }
+    ]
+  },
+  {
+    "slug": "jsrun-JWLKp",
+    "title": "Vue.Draggable 勾选批量拖拽",
+    "description": "左侧源列表勾选多项后拖入目标列表，一次把所有勾选项批量放入。",
+    "tags": [
+      "交互",
+      "Vue"
+    ],
+    "intro": "三列：源 list（pull:clone、不可 put）、目标 list1/list2（同 group people）。源项可勾选；从源拖出时，change 回调把所有 checked 项一并 push 到 related 列表并取消勾选。moveHandle 记录拖拽上下文。标题虽写 jquery，实现核心是 Vue + Vue.Draggable。",
+    "steps": [
+      "在源列表勾选多个人名项",
+      "拖到 list1 或 list2 放下",
+      "确认所有勾选项都进入目标，且源勾选被清空",
+      "再试只拖一项对比行为",
+      "查看顶部 list/list1/list2 数据绑定"
+    ],
+    "docs": [
+      {
+        "label": "Vue.Draggable",
+        "url": "https://github.com/SortableJS/Vue.Draggable"
+      },
+      {
+        "label": "Sortable group",
+        "url": "https://github.com/SortableJS/Sortable#group-option"
+      }
+    ],
+    "notes": "当前 public HTML 未引入 Vue / Sortable / Vue.Draggable / ElementUI，直接打开会报错；完整依赖见 snippets/JWLKp。"
+  },
+  {
+    "slug": "jsrun-F6JKp",
+    "title": "面板内元素拖动与滚轮缩放",
+    "description": "在固定视口内拖动天气卡片，并用滚轮通过 transform:scale 缩放。",
+    "tags": [
+      "交互",
+      "Vue",
+      "CSS"
+    ],
+    "intro": "300×300 的 layoutView 内有绝对定位红色 draggable 块（示例城市天气文案）。mousedown + mousemove 改 left/top；在容器上监听 wheel，增减 screenNum（下限约 0.2）并设置 scale。按钮可强制 screenNum 为 1、2、0.5。边界限制相关代码被注释掉。",
+    "steps": [
+      "拖动红色方块在视口内移动",
+      "在视口上滚动滚轮放大/缩小",
+      "点 screenNum = 2 / 0.5 / 1 观察缩放",
+      "缩到约 0.2 时确认无法再缩小",
+      "打开控制台查看拖动时 screenNum 日志"
+    ],
+    "docs": [
+      {
+        "label": "CSS transform scale",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/transform-function/scale"
+      },
+      {
+        "label": "Element: wheel event",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/Element/wheel_event"
+      }
+    ]
+  },
+  {
+    "slug": "jsrun-9EVKp",
+    "title": "拖拽分割条调整侧栏宽度",
+    "description": "通过中间 resize 条拖动，动态改变 Element UI 菜单侧栏宽度（最小 200px）。",
+    "tags": [
+      "交互",
+      "布局",
+      "Vue"
+    ],
+    "intro": "左侧 el-menu 宽度绑定 detailWidth（初始 200），中间 5px 宽 #resize 捕获 mousedown，mousemove 用位移更新宽度；小于 200 强制回到 200，并短时提示「不能再缩放了」。右侧橙色 .box 占剩余空间。松开后清除 mousemove/mouseup。",
+    "steps": [
+      "按住中间细条向右拖，侧栏变宽",
+      "向左拖到不能再缩时看提示",
+      "松开后确认不再跟随鼠标",
+      "切换菜单展开项确认布局仍可用",
+      "在 Vue 数据中观察 detailWidth 变化"
+    ],
+    "docs": [
+      {
+        "label": "Element UI Menu",
+        "url": "https://element.eleme.cn/#/zh-CN/component/menu"
+      },
+      {
+        "label": "鼠标拖拽改宽思路",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/Element/mousemove_event"
+      }
+    ],
+    "notes": "页面只引入了 Element UI，未显式引入 Vue；若全局无 Vue，菜单与拖拽脚本无法运行。"
+  },
+  {
+    "slug": "jsrun-5r8Kp",
+    "title": "CSS 荡开涟漪动画",
+    "description": "多层圆形以错开延迟循环缩放淡出，衬托居中「琅琊榜」文字。",
+    "tags": [
+      "动画"
+    ],
+    "intro": "300×300 容器内四个圆形绝对居中，蓝色线性渐变背景。各自 5.2s linear infinite 动画，延迟分别为 -3.9s、-2.6s、-1.3s、0s，形成连续荡开。keyframes 从 scale(0.4) opacity 0 到放大再淡出。文字在上层 z-index:11。",
+    "steps": [
+      "打开页面观察四层圆依次荡开",
+      "注意圆与文字叠层关系",
+      "在开发者工具暂停动画查看关键帧",
+      "修改 animation-delay 观察相位变化",
+      "将时长从 5.2s 改短验证节奏"
+    ],
+    "docs": [
+      {
+        "label": "CSS @keyframes",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/@keyframes"
+      },
+      {
+        "label": "animation",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation"
+      }
+    ]
+  },
+  {
+    "slug": "jsrun-PuzKp",
+    "title": "多图预览放大缩小与旋转",
+    "description": "弹层展示多张图，用 CSS transform 的 scale/rotate 做放大、缩小、重置、旋转。",
+    "tags": [
+      "Vue",
+      "CSS",
+      "交互"
+    ],
+    "intro": "点「传图片」把预设头像 URL 列表填入 showImgUrl 并显示操作钮。每张图可放大（multiples+=0.25，上限 2）、缩小（下限 1）、重置、旋转（degs-=90）。样式绑定 rotate()+scale()。虽引入 Cropper/jQuery，业务代码未调用 Cropper 实例。",
+    "steps": [
+      "点击「传图片」打开预览",
+      "对某张图点「放大1」多次，观察上限约 2 倍",
+      "点「缩小1」「重置1」「旋转」",
+      "点「关闭」隐藏弹层",
+      "确认空列表时显示「暂无数据」"
+    ],
+    "docs": [
+      {
+        "label": "CSS transform",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/transform"
+      },
+      {
+        "label": "Cropper.js（本页未实际使用）",
+        "url": "https://github.com/fengyuanchen/cropperjs"
+      }
+    ],
+    "notes": "标题含 cropper，但放大逻辑纯 CSS；外链图片依赖 cors-www.lilnong.top 是否可访问。"
+  },
+  {
+    "slug": "jsrun-MdJKp",
+    "title": "piexifjs 写入 EXIF Orientation",
+    "description": "把 Canvas 导出为 JPEG，用 piexifjs 分别写入 Orientation 1–8 并展示。",
+    "tags": [
+      "JavaScript",
+      "Canvas"
+    ],
+    "intro": "先在 canvas 画矩形与文字，再 toBlob 得到 JPEG。handleFileSelect 构造 0th/Exif/GPS 字段，设置 ImageIFD.Orientation，dump 后 insert 进 DataURL，再以带边框区块显示 Orientation 数字与结果图。连续生成 1 到 8 共八张对照。",
+    "steps": [
+      "打开页面自动生成 8 个结果块",
+      "核对每块标注的 Orientation 值为 1–8",
+      "用看图/元数据工具检查方向标记（浏览器未必旋转显示）",
+      "阅读代码中 Make、DateTimeOriginal、GPS 等示例字段",
+      "换 Orientation 值重新导出做对比"
+    ],
+    "docs": [
+      {
+        "label": "piexifjs",
+        "url": "https://github.com/hMatoba/piexifjs"
+      },
+      {
+        "label": "EXIF Orientation",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement#does_not_honor_exif_orientation_data"
+      }
+    ]
+  },
+  {
+    "slug": "jsrun-XjxKp",
+    "title": "2048 AI（Alpha-Beta 搜素）",
+    "description": "移植 ovolve 2048-AI：评估函数 + 迭代加深 Alpha-Beta，用于择优走子。",
+    "tags": [
+      "游戏",
+      "算法"
+    ],
+    "intro": "内含 Tile/Grid 与 AI：eval 综合平滑度、单调性、空格与最大值；search 做 Alpha-Beta；iterativeDeep 在 minSearchTime(100ms) 内加深。run 循环尝试驱动外部页面按钮，并从 getMapThat 读盘面，调用 gameThat.moveUp/Right/Down/Left。本页无棋盘 UI，单独打开缺少游戏宿主。",
+    "steps": [
+      "阅读 AI.eval 与 search 理解评价与剪枝",
+      "确认 minSearchTime 与 getBest 迭代加深",
+      "在完整宿主页中观察自动走子（若可用）",
+      "对照上游 2048-AI 仓库理解算法",
+      "在控制台查看 run 打印的 DOM 探测结果"
+    ],
+    "docs": [
+      {
+        "label": "2048-AI 原项目",
+        "url": "http://ovolve.github.io/2048-AI/"
+      },
+      {
+        "label": "GitHub ovolve/2048-AI",
+        "url": "https://github.com/ovolve/2048-AI"
+      }
+    ],
+    "notes": "依赖 jQuery、$、getMapThat、gameThat 等外部全局；迁移页几乎只有算法与挂载钩子，单独预览无法玩完整 2048。"
+  },
+  {
+    "slug": "jsrun-yn9Kp",
+    "title": "Axios 自动重试与取消",
+    "description": "封装 axiosAutoTry：支持重试次数、超时重试、503 退避，以及 CancelToken 取消。",
+    "tags": [
+      "axios"
+    ],
+    "intro": "失败时若 __try_count>0 则递减并重试：ECONNABORTED（超时）立即递归；HTTP 503 随机延时 500–1000ms 后再试。五个按钮：普通请求、503 重试、5s 超时重试、CancelToken.source 取消、executor 取消。结果打到 top.console。",
+    "steps": [
+      "点 demo1 看普通成功/失败日志",
+      "点 demo2 观察 503 多次重试",
+      "点 demo3 结合 timeout:5000 看超时路径",
+      "点 demo4/demo5，约 1.5s 后取消，核对 isCancel",
+      "打开控制台过滤「重试请求」警告"
+    ],
+    "docs": [
+      {
+        "label": "Axios",
+        "url": "https://axios-http.com/zh/docs/intro"
+      },
+      {
+        "label": "Cancellation",
+        "url": "https://axios-http.com/zh/docs/cancellation"
+      }
+    ],
+    "notes": "请求打到 www.lilnong.top 的 cors/corsutils；离线或跨域失败时重试行为仍可从控制台理解。"
+  },
+  {
+    "slug": "jsrun-Zd8Kp",
+    "title": "粘贴与拖放内容识别",
+    "description": "演示在 textarea 上监听 paste/drop，解析 clipboardData 与 dataTransfer 中的 files 与 items 并预览。",
+    "tags": [
+      "JavaScript",
+      "交互",
+      "工具"
+    ],
+    "intro": "页面上方提供可复制的富文本与图片区域，下方是放置用的 textarea。粘贴或拖入内容后，会分别遍历 files 与 items：文件项生成 Blob URL 并展示名称、大小、类型（图片则缩略图），字符串项异步 getAsString 后写入全量预览区。适合排查不同来源（截图、文件、富文本）在剪贴板/拖放 API 中的差异。",
+    "steps": [
+      "从上方富文本或图片区域复制内容，或从系统选中文件",
+      "在红色边框的「放置区域」textarea 中粘贴或拖入",
+      "查看红色预览区中「文件预览」与「全量内容预览」的差异",
+      "打开控制台观察 types、files.length、items.length 等日志"
+    ],
+    "docs": [
+      {
+        "label": "ClipboardEvent.clipboardData",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/ClipboardEvent/clipboardData"
+      },
+      {
+        "label": "DataTransfer",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/DataTransfer"
+      },
+      {
+        "label": "URL.createObjectURL",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/URL/createObjectURL_static"
+      }
+    ],
+    "notes": "HTML 原标题为「识别优化」；拖拽相关事件做了 preventDefault，实际解析逻辑在 drop 与 paste 上。"
+  },
+  {
+    "slug": "jsrun-AegKp",
+    "title": "Vue 多选选中效果三种写法",
+    "description": "用三个并列 Vue 实例对比数组、对象映射、条目属性三种多选状态管理。",
+    "tags": [
+      "Vue",
+      "表单"
+    ],
+    "intro": "同一份 javascript/css/html/vue 列表被三个 app 共享。app_1 用 id 数组存选中并用 ~indexOf 判断；app_2 用对象键映射配合 $set/$delete；app_3 直接在 item 上挂 vv_selected。选中项文字变红（.selected）。可对照不同数据结构对勾选状态与渲染的影响。",
+    "steps": [
+      "分别点击三列列表项切换选中（再次点击取消）",
+      "观察每列上方展示的选中 id 列表是否同步变化",
+      "对比数组 splice、对象 $set/$delete、item 属性三种实现差异",
+      "注意三实例共享同一 _list 引用时 app_3 改写 item 可能影响其他列"
+    ],
+    "docs": [
+      {
+        "label": "Vue 2 列表渲染",
+        "url": "https://v2.cn.vuejs.org/v2/guide/list.html"
+      },
+      {
+        "label": "Vue.set / Vue.delete",
+        "url": "https://v2.cn.vuejs.org/v2/api/#Vue-set"
+      }
+    ],
+    "notes": "页面依赖全局 Vue，本地 HTML 未内嵌 Vue CDN。"
+  },
+  {
+    "slug": "jsrun-ypzKp",
+    "title": "Office 文件浏览器端预览",
+    "description": "选择本地 Word/PPT/Excel 等文件，用多个库在页面内渲染预览。",
+    "tags": [
+      "工具"
+    ],
+    "intro": "页面提供 file input，按 MIME 或扩展名分流：.docx（及部分 msWord）走 docx.renderAsync；.pptx 走 PPTXjs 的 pptxToHtml；.xlsx/.xls/.et/.csv/.xml 走 SheetJS 读 workbook 再 sheet_to_html。同时加载了 mammoth（代码中有 render_mammoth 但默认分支未走它）以及 Promise/JSZip 等依赖，体量较大。",
+    "steps": [
+      "点击文件选择控件，挑选 docx、pptx 或表格类文件",
+      "等待预览区渲染出文档、幻灯片或工作表 HTML",
+      "打开控制台查看 ext、workbook、docx finished 等日志",
+      "可对比不同格式与库的预览效果与限制"
+    ],
+    "docs": [
+      {
+        "label": "docx-preview",
+        "url": "https://www.npmjs.com/package/docx-preview"
+      },
+      {
+        "label": "SheetJS",
+        "url": "https://docs.sheetjs.com/"
+      },
+      {
+        "label": "mammoth.js",
+        "url": "https://www.npmjs.com/package/mammoth"
+      },
+      {
+        "label": "kkFileView",
+        "url": "https://kkfileview.keking.cn/zh-cn/docs/home.html"
+      }
+    ],
+    "notes": "依赖多个 CDN（unpkg、bootcdn、lilnong 静态资源、cdn.sheetjs.com），离线或跨域可能失败。.doc 等老格式分支被注释掉。"
+  },
+  {
+    "slug": "jsrun-vIzKp",
+    "title": "Flex/Calc/绝对定位底部固定对比",
+    "description": "对比多种 header-content-footer 布局在固定高度、max-height、min-height 下的底部固定表现。",
+    "tags": [
+      "CSS",
+      "布局"
+    ],
+    "intro": "四组方案并排展示：demo1 为纵 flex + footer absolute + 底 padding；同结构再演示 content 加 flex:auto；demo2 纯 flex 无 absolute；demo3 用 calc 限制 content 最大高度；demo4 头尾 absolute、content 全高加上下 padding。顶部固定「add」按钮可向所有 .content 追加 remove 按钮以观察溢出滚动。",
+    "steps": [
+      "先观察各组在默认 content 较少时 footer 是否贴底",
+      "点击 add 向各 content 追加按钮，观察滚动与 footer 位置",
+      "拖拽改变各 .body 尺寸（resize），对比 maxHeight/minHeight 变体",
+      "对照页面内中文说明理解 absolute、flex:auto、calc 的取舍"
+    ],
+    "docs": [
+      {
+        "label": "CSS Flexible Box",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_flexible_box_layout"
+      },
+      {
+        "label": "calc()",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/calc"
+      },
+      {
+        "label": "position",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/position"
+      }
+    ],
+    "notes": "Grid 方案（demo5）在 HTML 中已整段注释，当前不可见。"
+  },
+  {
+    "slug": "jsrun-QUzKp__98981",
+    "title": "SVG 路径描边与沿线运动动画",
+    "description": "汇总 SVG stroke-dasharray 流光描边与 CSS offset-path 沿线粒子动画片段。",
+    "tags": [
+      "SVG",
+      "动画",
+      "图形",
+      "Vue"
+    ],
+    "intro": "文件混入多份示例：顶部简单 path；中部是「信息机房应用成效」类 Vue/SFC 片段（tab 切换多组 polyline，g-rect-fill 用 dashoffset 做流动高亮）；底部是登录页风格的 SVG path + 多个 div 沿 offset-path 循环运动。含 CSDN 原文链接与版权声明。可直接运行并可见的主要是静态 SVG 与末段样式动画；Vue 模板依赖未引入的运行环境。",
+    "steps": [
+      "打开页面观察顶部 path 与独立 polyline 的描边流光动画",
+      "查看中部 Vue 模板中的 svgData 与 lineMove 关键帧实现思路",
+      "观察底部沿线运动元素（需浏览器支持 offset-path）",
+      "阅读文内 CSDN 链接了解大屏线条动画写法"
+    ],
+    "docs": [
+      {
+        "label": "CSDN 原文：SVG 线条动画",
+        "url": "https://blog.csdn.net/sunxiaobai1/article/details/122862625"
+      },
+      {
+        "label": "stroke-dasharray",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/SVG/Attribute/stroke-dasharray"
+      },
+      {
+        "label": "offset-path",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/offset-path"
+      }
+    ],
+    "notes": "meta slug 为 QUzKp；中间 Vue SFC（scoped less、组件 import）在纯 HTML 环境下无法完整运行。"
+  },
+  {
+    "slug": "jsrun-rfUKp",
+    "title": "固定宽度卡片自动换行过渡",
+    "description": "容器可缩放时，按列数重算 absolute 定位，用 CSS transition 实现换行动画。",
+    "tags": [
+      "Vue",
+      "布局",
+      "交互",
+      "动画",
+      "CSS"
+    ],
+    "intro": "对应 SegmentFault 问题：固定宽卡片在容器变宽时自动换行并带过渡。列表容器 relative 可 resize，子项 absolute；computed 按当前宽度算出每行列数，得到 left/top；定时读取 offsetWidth（对齐到 50px 网格）。item 有 transition: all 1s，宽度变化时位移动画可见。",
+    "steps": [
+      "观察红框列表中约 70 个半透明色块的网格排列",
+      "拖动手柄改变容器宽度，观察列数变化与位移动画",
+      "缩小宽度使每行卡片减少，确认过渡是否平滑",
+      "阅读 computed 中按宽度求 leftWidth、行/列索引的算法"
+    ],
+    "docs": [
+      {
+        "label": "SegmentFault 原问题",
+        "url": "https://segmentfault.com/q/1010000040884063"
+      },
+      {
+        "label": "CSS transition",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/transition"
+      }
+    ],
+    "notes": "HTML 原 title 为 SegmentFault URL；@resize 非标准事件，实际靠 setInterval 轮询宽度。"
+  },
+  {
+    "slug": "jsrun-ISgKp",
+    "title": "Vue 递归树形组件",
+    "description": "用自引用 item 组件实现可折叠、可增子节点的树形视图。",
+    "tags": [
+      "Vue",
+      "交互"
+    ],
+    "intro": "经典 Vue 树形 demo：item 模板内再渲染 item。文件夹由 children 数组判定；单击切换 open；双击叶子可变为文件夹并新增子项；文件夹下有「+」可添加。左侧竖线样式强化层级。适合学习组件递归与树数据就地修改。",
+    "steps": [
+      "点击带 [+/-] 的节点展开或折叠子树",
+      "双击叶子节点，将其变为文件夹并自动添加子项",
+      "在已展开文件夹底部点「+」添加 new stuff",
+      "对照 isFolder、toggle、changeType、addChild 理解递归结构"
+    ],
+    "docs": [
+      {
+        "label": "Vue 2 组件基础（递归）",
+        "url": "https://v2.cn.vuejs.org/v2/guide/components.html"
+      },
+      {
+        "label": "Vue.set",
+        "url": "https://v2.cn.vuejs.org/v2/api/#Vue-set"
+      }
+    ],
+    "notes": "依赖全局 Vue；本地 HTML 未内嵌 CDN。sketch 中另有 SegmentFault 关联描述。"
+  },
+  {
+    "slug": "jsrun-ezyKp",
+    "title": "端内 Upload 组件（客户端/H5 分流）",
+    "description": "封装 vv-upload：按 UA 与开关在 App 内客户端上传与 H5 file 输入间切换。",
+    "tags": [
+      "Vue",
+      "交互",
+      "JavaScript",
+      "工具"
+    ],
+    "intro": "自定义 vv-upload：默认 slot 文案「上传图片」，隐藏 file input（accept 默认 image/*）。根据 isClientAutoUpload、isClientUpload 等 props 计算 labelFor：端内客户端上传时返回 false 并走 uploadImage 分支占位逻辑，否则绑定 input id 走 H5 选文件。示例展示默认、带 slot、多个实例。适合对照混合 App 上传能力封装思路。",
+    "steps": [
+      "查看三个 vv-upload 实例的默认文案与自定义 slot",
+      "在浏览器中点击上传，确认走 H5 隐藏 file input",
+      "阅读 isIOS/isAndroid/isVVMusic 与 labelFor 计算逻辑",
+      "对照 props 思考端内自动分流与端外 H5 的开关组合"
+    ],
+    "docs": [
+      {
+        "label": "Vue 2 自定义组件",
+        "url": "https://v2.cn.vuejs.org/v2/guide/components-custom-events.html"
+      },
+      {
+        "label": "<input type=\"file\">",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/input/file"
+      }
+    ],
+    "notes": "客户端上传分支仅为占位（空 XHR）；inputChange 使用 e.files，标准事件应为 e.target.files。"
+  },
+  {
+    "slug": "jsrun-L5WKp",
+    "title": "df 输出解析为 Vue 进度条",
+    "description": "把 Linux df -h 风格文本拆成挂载点与占用，并用进度条可视化。",
+    "tags": [
+      "Vue",
+      "JavaScript",
+      "工具",
+      "图形"
+    ],
+    "intro": "data 中硬编码多行 df 输出；computed 跳过表头，用非空白正则拆字段，取出挂载点、Use%、Used/Size，渲染为左名称、中绿色进度条、右「已用/总量」。进度条宽度直接用 Use% 字符串（如 11%）。简洁示范：把 shell 文本变成前端可视化。",
+    "steps": [
+      "打开页面查看各挂载点对应的绿色进度条",
+      "对照右侧「Used/Size」与进度条宽度是否一致",
+      "阅读 coumputedData 中 match(/[^\\s]+/g) 的字段下标含义",
+      "可修改 data 中字符串模拟不同 Use% 再刷新观察"
+    ],
+    "docs": [
+      {
+        "label": "Vue 2 计算属性",
+        "url": "https://v2.cn.vuejs.org/v2/guide/computed.html"
+      },
+      {
+        "label": "df (Linux)",
+        "url": "https://man7.org/linux/man-pages/man1/df.1.html"
+      }
+    ],
+    "notes": "依赖全局 Vue；进度条 class 命名含拼写 coumputedData。"
+  },
+  {
+    "slug": "jsrun-PT3Kp",
+    "title": "不确定高度列表展开收起动画",
+    "description": "先测量 ul 实际高度再在固定矮高度与全高之间 transition，实现动态高度折叠。",
+    "tags": [
+      "Vue",
+      "动画",
+      "交互"
+    ],
+    "intro": "随机生成约 10–20 条 li，mounted 的 $nextTick 里记录 ul 真实 offsetHeight 并设为 style.height。点击「收缩/放出」在该全高与 3em 之间切换；ul 有 transition: all 0.5s 与 overflow:hidden。页面引入了 Element UI 样式/脚本但交互未使用其组件。解决「高度未知时不好做 CSS 动画」的常见手法。",
+    "steps": [
+      "进入页面等待列表按随机条数渲染并测定高度",
+      "点击「收缩/放出」观察列表高度过渡",
+      "再次点击恢复全高，确认动画连贯",
+      "打开控制台查看 testnum、showli 相关日志"
+    ],
+    "docs": [
+      {
+        "label": "Element.offsetHeight",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/HTMLElement/offsetHeight"
+      },
+      {
+        "label": "Vue 2 $nextTick",
+        "url": "https://v2.cn.vuejs.org/v2/api/#vm-nextTick"
+      }
+    ],
+    "notes": "依赖全局 Vue；Element UI 对本 demo 非必需。"
+  },
+  {
+    "slug": "jsrun-M3hKp",
+    "title": "Canvas 鼠标探照灯效果",
+    "description": "用 getImageData/putImageData 与径向渐变描边，随鼠标移动模拟探照灯遮罩。",
+    "tags": [
+      "Canvas",
+      "交互",
+      "图形"
+    ],
+    "intro": "Canvas 加载跨域 logo 图后 drawImage，再 getImageData。mousemove 时先 putImageData 还原，再以鼠标为圆心创建径向透明到黑色的粗线圆弧，形成周围压暗、中心相对透出的探照灯效果。HTML 标题写「视口操作，DOM」，实现主体是 Canvas 像素与渐变描边，而非 DOM 视口 API。",
+    "steps": [
+      "等待图片绘制到 canvas（需 logo 图可跨域加载）",
+      "在页面上移动鼠标，观察探照灯中心跟随",
+      "理解 putImage 中 createRadialGradient 与 arc stroke 的叠加",
+      "若画面空白，检查跨域与图片 URL 是否可访问"
+    ],
+    "docs": [
+      {
+        "label": "CanvasRenderingContext2D.getImageData",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/getImageData"
+      },
+      {
+        "label": "createRadialGradient",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/createRadialGradient"
+      }
+    ],
+    "notes": "依赖 http://cdn.jsrun.net 上的 logo；CORS 失败时 getImageData 会抛错。style 标签内误写了一句中文错误提示文本。"
+  },
+  {
+    "slug": "jsrun-yPiKp",
+    "title": "纯 CSS 按钮 Loading 菊花",
+    "description": "给按钮加 loading 类即可隐藏文字并显示无图片旋转菊花指示器。",
+    "tags": [
+      "CSS",
+      "动画"
+    ],
+    "intro": "源自张鑫旭微码示例：匹配 a/label 且 class 含 -btn，再加 .loading。::first-line 文字透明隐藏文案；::before 用多重 box-shadow 拼出八点菊花，steps(8) 的 spinZoom 动画缩放旋转。示例为带 -btn loading 的链接。无需图片或 JS。",
+    "steps": [
+      "打开页面观察链接上的旋转菊花与透明文字",
+      "阅读 .loading::before 的 box-shadow 八点布局",
+      "尝试去掉 loading 类（在控制台或本地改）恢复文字可见",
+      "对照 spinZoom 关键帧理解 steps 分步旋转"
+    ],
+    "docs": [
+      {
+        "label": "张鑫旭微码原页",
+        "url": "http://www.zhangxinxu.com/php/microCodeDetail.php?id=5"
+      },
+      {
+        "label": "CSS ::before",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/::before"
+      },
+      {
+        "label": "animation",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation"
+      }
+    ],
+    "notes": "HTML 原 title 为张鑫旭 URL；选择器要求 class 名包含 -btn。"
+  },
+  {
+    "slug": "jsrun-UbeKp",
+    "title": "Vue2/Vue3 共存与组件 API 化探索",
+    "description": "同页加载 Vue2 与 Vue3，挂载 Vue2 组件并草拟框架无关的 create/update/destroy API。",
+    "tags": [
+      "Vue"
+    ],
+    "intro": "先引入 Vue 2.6 存为 Vue2，再引入 Vue 3.2 全局构建。定义带 value/a/slots 的 vue2Data 组件，在 Vue2 中用 v-model、动态具名 slot 挂载。后续 getProps 读取 props 默认值，APIComponent 草拟 create/setOptions/setSlot/destory 与事件 on/once/emit/off（create 内仍为占位）。用于探索「用统一 API 在非 Vue3 环境消费 Vue2 组件」的方向。",
+    "steps": [
+      "打开控制台确认 Vue2、Vue3 版本并存",
+      "在 #vue2_1 区域点击按钮触发 input / input1 事件并看日志",
+      "阅读 getProps 如何从 props 定义推导初始值",
+      "查看 APIComponent 的状态机与待实现方法清单"
+    ],
+    "docs": [
+      {
+        "label": "Vue 2 文档",
+        "url": "https://v2.cn.vuejs.org/"
+      },
+      {
+        "label": "Vue 3 全局构建",
+        "url": "https://cn.vuejs.org/guide/quick-start.html"
+      },
+      {
+        "label": "相关 JSRUN：vue2InVue2",
+        "url": "https://jsrun.net/RM9Kp/edit"
+      }
+    ],
+    "notes": "标题含「vue3 使用 vue2」，本文件主体仍是 Vue2 挂载与 API 设计草稿；Vue3 变量已赋值但未完成桥接渲染。"
+  },
+  {
+    "slug": "jsrun-ANCKp",
+    "title": "上传前本地文件预览（拖放/粘贴）",
+    "description": "拖放、点击或粘贴文件后，在上传前本地预览并展示音频/视频/图片/文本/JSON/PDF/Excel 信息。",
+    "tags": [
+      "Vue",
+      "工具",
+      "JavaScript"
+    ],
+    "intro": "左侧虚线区支持点击选文件与拖放高亮；右侧展示 name/size/type/lastModified。analysisFile 按 MIME/扩展名分流：文本、JSON（尝试 parse）、音视频与图片用 Object URL 并读取时长/宽高；PDF 用 lilnong 上 pdf.js viewer iframe；xlsx/xls 用 XLSX 转各 sheet HTML。亦监听 paste。预览后会调用 uploadFile 向 /upload_any 提交（演示环境可能失败）。",
+    "steps": [
+      "将图片、音频、视频、pdf 或 xlsx 拖入虚线上传区",
+      "或点击「点击上传」选择文件，查看右侧基本信息与预览",
+      "复制含文件的剪贴板内容后在页面粘贴，确认是否触发预览",
+      "切换 Excel 多表标题查看不同 sheet 的 HTML 表格"
+    ],
+    "docs": [
+      {
+        "label": "PDF.js 相关测试页",
+        "url": "https://www.lilnong.top/static/html/pdfjs-test.html"
+      },
+      {
+        "label": "SheetJS",
+        "url": "https://docs.sheetjs.com/"
+      },
+      {
+        "label": "HTML Drag and Drop",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/HTML_Drag_and_Drop_API"
+      }
+    ],
+    "notes": "HTML 原 title 为路径式文件名；页面声明依赖 Element 图标类名与 XLSX 全局，完整能力需对应脚本在运行环境中可用。"
+  }
+]

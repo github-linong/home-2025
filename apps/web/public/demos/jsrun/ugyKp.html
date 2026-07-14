@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000019228517</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="ugyKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- 引入样式 -->
+<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+<!-- 引入组件库 -->
+<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+
+<div id="app">
+  <el-form :model="obj.task">
+    <el-form-item label="出题方式：">
+      <el-radio v-model="obj.task.createPracticeType" label="1">自动抽取</el-radio>
+      <el-radio v-model="obj.task.createPracticeType" label="2">手动抽取</el-radio>
+    </el-form-item>
+    <el-form-item label="题库类型：">
+      <el-checkbox-group style="margin-bottom: 20px" v-model="is_question_roid.type"
+                         @change="shouDongSelectType">
+        <el-checkbox v-for="(item,index) in childTypeList" @change="optFor(index,$event)"
+                     :label="item.dictCode" :key="index">
+          {{item.dictName}}
+        </el-checkbox>
+      </el-checkbox-group>
+    </el-form-item>
+  </el-form>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data: {
+     obj: {
+          task:{
+            endTime: '', //结束时间
+            name:'',   //名称
+            passMark:'',  //合格分数
+            startTime: '', //开始时间
+            totalCore:'',//总分
+            createPracticeType: '1',//1 自动抽题 2 手动抽题
+            status: '',// 1 正常 2 停用
+
+          },
+          ids: '', //用户id
+          practiceIds: '',//题目id
+          rule: []  //题目
+     },
+     is_question_roid:{
+       type: ''
+     },
+    childTypeList:[]
+  },
+  methods:{
+    shouDongSelectType(){}
+  }
+})
+</script>
+</body>
+</html>

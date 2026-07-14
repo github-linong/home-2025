@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue 插槽</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="ESLKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div v-for="item in list">
+        {{item}}
+        <span style="color: red">
+            <vv-b :user="item"></vv-b>
+        </span>
+        <span style="color: blue">
+            <vv-b v-slot="item" :user="item">
+                1.{{item.user}}.{{author}}
+            </vv-b>
+        </span>
+    </div>
+    <vv-a></vv-a>
+</div>
+<script>
+    Vue.component('vv-a', {
+        template: `
+            <div>
+                a1
+            </div>
+        `
+    })
+    Vue.component('vv-b', {
+        props: ['user'],
+        template: `
+            <span>
+                <slot :user="user">{{user}}</slot>
+            </span>
+        `
+    })
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                author: 'www.lilnong.top',
+                list: [1,2,3,4,5,6,7]
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

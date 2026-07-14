@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue render 测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="acQKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+
+    <div id="app">
+        <!-- <div>
+            <p>You clicked {{count}} times</p>
+            <button onClick={() => setCount(count + 1)}>
+                Click me
+            </button>
+        </div> -->
+    </div>
+    <script>
+        new Vue({
+            el: "#app",
+            data(){
+                return {
+                    count: 0
+                }
+            },
+            render(h){
+                this.$nextTick(()=>console.log('nextTick'))
+                console.log(`redner ${this.count}`)
+                return h('div',[
+                    h('p', `You clicked ${this.count} times`),
+                    h('button', {
+                        on: {
+                            click: () => this.count++
+                        }
+                    }, `Click me`),
+                ])
+            }
+        })
+    </script>
+<script>
+
+</script>
+</body>
+</html>

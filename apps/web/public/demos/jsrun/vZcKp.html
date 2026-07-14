@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>渲染是否会发生在微任务之间?</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="vZcKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    {1}
+</div>
+<button id="test1">同步修改，长任务阻塞渲染</button>
+<button id="test2">微任务占用（Promise.resolve），阻塞渲染</button>
+<button id="test3">宏任务占用（setTimeout），不阻塞渲染</button>
+<button id="test4">微任务占用（await），阻塞渲染</button>
+<script>
+    a = 1;
+    sleep = (time)=>{
+        const now = Date.now();
+        while(true){
+            if(Date.now() - time > now){
+                return
+            }
+        }
+    }
+</script>
+<script>
+    test1.onclick = ()=>{
+
+        console.log(performance.now(), '开始', a)
+        sleep(2000)
+        
+        app.innerHTML = a++;
+        app.innerHTML = a++;
+        app.innerHTML = a++;
+        app.innerHTML = a++;
+        console.log(performance.now(), '同步修改', a)
+
+        sleep(2000)
+        console.log(performance.now(), '同步修改， sleep 长任务占用', a)
+    }
+</script>
+<script>
+    test2.onclick = ()=>{
+        console.log(performance.now(), '开始', a)
+        app.innerHTML = a++;
+        app.innerHTML = a++;
+        app.innerHTML = a++;
+        app.innerHTML = a++;
+        const p = Promise.resolve();
+        p.then(()=>{
+            console.log(performance.now(), '微任务', a)
+            sleep(2000)
+            console.log(performance.now(), '微任务， sleep 长任务占用', a)
+        }).then(()=>{
+            console.log(performance.now(), '微任务', a)
+            sleep(2000)
+            console.log(performance.now(), '微任务， sleep 长任务占用', a)
+        }).then(()=>{
+            console.log(performance.now(), '微任务', a)
+            sleep(2000)
+            console.log(performance.now(), '微任务， sleep 长任务占用', a)
+        })
+    }
+</script>
+<script>
+    test3.onclick = ()=>{
+        console.log(performance.now(), '开始', a)
+        app.innerHTML = a++;
+        app.innerHTML = a++;
+        app.innerHTML = a++;
+        app.innerHTML = a++;
+        const p = Promise.resolve();
+        p.then(async ()=>{
+            console.log(performance.now(), '宏任务', a)
+            await new Promise(function(resolve){
+                app.innerHTML = a++;
+                setTimeout(()=>{
+                    sleep(2000);
+                    resolve();
+                })
+            })
+            console.log(performance.now(), '宏任务， sleep 长任务占用', a)
+        }).then(async ()=>{
+            console.log(performance.now(), '宏任务', a)
+            await new Promise(function(resolve){
+                app.innerHTML = a++;
+                setTimeout(()=>{
+                    sleep(2000);
+                    resolve();
+                })
+            })
+            console.log(performance.now(), '宏任务， sleep 长任务占用', a)
+        }).then(async ()=>{
+            console.log(performance.now(), '宏任务', a)
+            await new Promise(function(resolve){
+                app.innerHTML = a++;
+                setTimeout(()=>{
+                    sleep(2000);
+                    resolve();
+                })
+            })
+            console.log(performance.now(), '微任务， sleep 长任务占用', a)
+        })
+    }
+</script>
+<script>
+    test4.onclick = ()=>{
+        console.log(performance.now(), '开始', a)
+        app.innerHTML = a++;
+        app.innerHTML = a++;
+        app.innerHTML = a++;
+        app.innerHTML = a++;
+        const p = Promise.resolve();
+        p.then(async ()=>{
+            console.log(performance.now(), '微任务', a)
+            await new Promise(function(resolve){
+                sleep(2000);
+                resolve();
+            })
+            console.log(performance.now(), '微任务， sleep 长任务占用', a)
+        }).then(async ()=>{
+            console.log(performance.now(), '微任务', a)
+            await new Promise(function(resolve){
+                sleep(2000);
+                resolve();
+            })
+            console.log(performance.now(), '微任务， sleep 长任务占用', a)
+        }).then(async ()=>{
+            console.log(performance.now(), '微任务', a)
+            await new Promise(function(resolve){
+                sleep(2000);
+                resolve();
+            })
+            console.log(performance.now(), '微任务， sleep 长任务占用', a)
+        })
+    }
+</script>
+<script>
+
+</script>
+</body>
+</html>

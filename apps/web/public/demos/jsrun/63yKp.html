@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>angular audio</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="63yKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.staticfile.org/angular.js/1.4.6/angular.min.js"></script>
+<div ng-app="myApp" ng-controller="myCtrl">
+
+  名: <input type="text" ng-model="firstName"><br>
+  姓: <input type="text" ng-model="lastName"><br>
+  <br>
+  姓名: {{firstName + " " + lastName}}
+  <p>
+    srcUrl:{{srcUrl}}
+  </p>
+  <audio ng-src="{{srcUrl|trustUrl}}" autoplay controls></audio>
+  <button ng-click="random()">random</button>
+</div>
+<script>
+var app = angular.module('myApp', []);
+app.filter('trustUrl',function($sce){
+        return function (input) {
+            return $sce.trustAsResourceUrl(input);
+        }
+});
+app.controller('myCtrl', function($scope) {
+  	//console.log($scope.trustAsResourceUrl)
+  	var list = [
+      'https://www.lilnong.top/static/audio/1547430913173SXD5LH4UW.mp3',
+      'https://www.lilnong.top/static/audio/1547430960867SSD0MSW4C.mp3',
+      'https://www.lilnong.top/static/audio/1547431017873AEOMCJAY4.mp3',
+    ]
+    $scope.srcUrl = ""
+    var idx = 0
+    $scope.random = function(){
+      $scope.srcUrl = list[idx = (idx + 1) % 3];
+      console.log($scope.srcUrl)
+    }
+    $scope.firstName = "John";
+    $scope.lastName = "Doe";
+});
+</script>
+</body>
+</html>

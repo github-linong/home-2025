@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>进度条 vue</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="L5WKp" />
+  <style>
+.progress{display:flex;padding: 10px;}
+.progress-prev{width: 6em;overflow:hidden}
+.progress-next{width: 7em;overflow:hidden}
+.progress-context{flex: 1;border-radius:100px;margin: 0 10px;overflow:hidden;}
+.progress-context span{display:block;border-radius:100px;background:#e6a23c;text-indent:.5em}
+.progress-context-1{background: #67c23a}
+  </style>
+  <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+</head>
+<body>
+<div id="app">
+  <div class="progress" v-for="item in coumputedData">
+    <div class="progress-prev" :title="item.name">{{item.name}}</div>
+    <div class="progress-context progress-context-1">
+      <span :style="{width: item.use}">{{item.use}}</span>
+    </div>
+    <div class="progress-next">{{item.useText}}</div>
+  </div>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data(){
+    return {
+      data: [
+        "Filesystem      Size  Used Avail Use% Mounted on",
+        "udev            413M     0  413M   0% /dev",
+        "tmpfs            87M  9.4M   78M  11% /run",
+        "/dev/vda1        50G  4.6G   43G  10% /",
+        "tmpfs           433M   24K  433M   1% /dev/shm",
+        "tmpfs           5.0M     0  5.0M   0% /run/lock",
+        "tmpfs           433M     0  433M   0% /sys/fs/cgroup",
+        "tmpfs            87M     0   87M   0% /run/user/500"
+      ]
+    }
+  },
+  computed:{
+    coumputedData(){
+      var arr = []
+      for(var i = 1;i<this.data.length;i++){
+        // var item = this.data[i].split(' ').filter(v=>v)
+        var item = this.data[i].match(/[^\s]+/g)
+        arr.push({
+          name: item[5],//名称
+          use: (item[4]),//parseInt(item[4]),//已用比例
+          useText: `${item[2]}/${item[1]}`
+        })
+      }
+      return arr
+    }
+  }
+})
+</script>
+</body>
+</html>

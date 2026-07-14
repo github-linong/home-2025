@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>grid 实现布局切换</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="AzLKp" />
+  <style>
+#app{
+    display: grid;
+    grid-template-columns: 200px auto;
+    grid-template-rows: 30px auto;
+    grid-template-areas: "nav nav"
+                     "left right";
+}
+.nav{grid-column-start: 1; grid-column-end: 3;}
+/* .left{grid-row-start: 1; grid-row-end: 3;} */
+
+div{background: rgba(255,0,0,.1)}
+.nav{background: rgba(255,255,0,.1)}
+.left{background: rgba(255,0,255,.1)}
+.right{background: rgba(0,255,255,.1)}
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="nav">nav</div>
+  <div class="left">left</div>
+  <div class="right">right</div>
+</div>
+<script>
+
+</script>
+</body>
+</html>

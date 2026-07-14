@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>导出 csv</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="2vUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+        <button @click="exportCSV">exportCSV</button>
+    
+    </div>
+    
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+    <script>
+        export_json_to_excel = ({header,data,filename}) => {
+            // console.log(header);
+            // console.log(data);
+            const BOM = '\uFEFF';
+            var el = document.createElement('a');
+            el.download = `${filename || '示例'}.xls`;
+            el.target="_blank";
+            str = ''
+            str = header.join(',')+'\n';
+            str += data.map(v=>v.join(',')).join('\n')
+            // str = header+'\n';
+            // str += data.join('\n')
+            // console.log(str)
+            el.href = URL.createObjectURL(new Blob([BOM + str], { type: 'text/csv;charset=utf-8;' }))
+            document.body.appendChild(el);
+            el.click();
+            document.body.removeChild(el);
+        }
+
+        // function getCsvBlob2({header,data,filename}) {
+        //     let headers = '', rows = '';
+        //     const BOM = '\uFEFF';
+        //     let columnDelimiter = ','; //默认列分隔符','
+        //     let rowDelimiter = '\r\n'; //默认行分隔符 '\r\n'
+        //     let csv = headers.reduce((previous, header) => {
+        //         return (previous ? previous + columnDelimiter : '') + (header.title || header.column);
+        //     }, '');
+        //     if (Array.isArray(rows) && rows.length > 0) {
+        //         let columns = headers.map(header => header.column);
+        //         csv = rows.reduce((previous, row) => {
+        //             let rowCsv = columns.reduce((pre, column) => {
+        //                 if (row.hasOwnProperty(column)) {
+        //                     let cell = row[column];
+        //                     if (cell != null) {
+        //                         let header = headers.find(item => item.column == column);
+        //                         if (header.formatter != null && typeof (header.formatter) == "function") {
+        //                             cell = header.formatter(cell);
+        //                         }
+        //                         if (cell != null) {
+        //                             cell = cell.toString().replace(new RegExp(rowDelimiter, 'g'), ' '); // 若数据中本来就含行分隔符，则用' '替换
+        //                             cell = new RegExp(columnDelimiter).test(cell) ? `"${cell}"` : cell; //若数据中本来就含列分隔符，则用""包起来
+        //                             return pre ? pre + columnDelimiter + cell : pre + cell;
+        //                         }
+        //                     }
+        //                     return pre ? pre + columnDelimiter : pre + " ";//reduce初始值为''，故第一次迭代时不会在行首加列分隔符。后面的遇到值为空或不存在的列要填充含空格的空白" ",则pre返回true，会加列分隔符
+        //                 }
+        //                 else {
+        //                     return pre ? pre + columnDelimiter : pre + " ";//即使不存在该列也要填充空白，避免数据和表头错位不对应
+        //                 }
+        //             }, '');
+        //             return previous + rowDelimiter + rowCsv;
+        //         }, csv);
+        //     }
+        //     let blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+        //     return blob;
+        // }
+        // function getCsvBlob(headers, rows) {
+        //     const BOM = '\uFEFF';
+        //     let columnDelimiter = ','; //默认列分隔符','
+        //     let rowDelimiter = '\r\n'; //默认行分隔符 '\r\n'
+        //     let csv = headers.reduce((previous, header) => {
+        //         return (previous ? previous + columnDelimiter : '') + (header.title || header.column);
+        //     }, '');
+        //     if (Array.isArray(rows) && rows.length > 0) {
+        //         let columns = headers.map(header => header.column);
+        //         csv = rows.reduce((previous, row) => {
+        //             let rowCsv = columns.reduce((pre, column) => {
+        //                 if (row.hasOwnProperty(column)) {
+        //                     let cell = row[column];
+        //                     if (cell != null) {
+        //                         let header = headers.find(item => item.column == column);
+        //                         if (header.formatter != null && typeof (header.formatter) == "function") {
+        //                             cell = header.formatter(cell);
+        //                         }
+        //                         if (cell != null) {
+        //                             cell = cell.toString().replace(new RegExp(rowDelimiter, 'g'), ' '); // 若数据中本来就含行分隔符，则用' '替换
+        //                             cell = new RegExp(columnDelimiter).test(cell) ? `"${cell}"` : cell; //若数据中本来就含列分隔符，则用""包起来
+        //                             return pre ? pre + columnDelimiter + cell : pre + cell;
+        //                         }
+        //                     }
+        //                     return pre ? pre + columnDelimiter : pre + " ";//reduce初始值为''，故第一次迭代时不会在行首加列分隔符。后面的遇到值为空或不存在的列要填充含空格的空白" ",则pre返回true，会加列分隔符
+        //                 }
+        //                 else {
+        //                     return pre ? pre + columnDelimiter : pre + " ";//即使不存在该列也要填充空白，避免数据和表头错位不对应
+        //                 }
+        //             }, '');
+        //             return previous + rowDelimiter + rowCsv;
+        //         }, csv);
+        //     }
+        //     let blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+        //     return blob;
+        // }
+    </script>
+    <script>
+        new Vue({
+            el: '#app',
+            methods: {
+                exportCSV(){
+                    export_json_to_excel({
+                        header: this.tableHeader,
+                        data: this.tableData,
+                        filename: this.filename,
+                        autoWidth: this.autoWidth,
+                        bookType: this.bookType,
+                    });
+                }
+            },
+            computed:{
+                tableHeader(){
+                    return Object.values(this.exportConfig).map(item => item.label);
+                },
+                tableData(){
+                    return this.list.map(listItem => {
+                        return Object.keys(this.exportConfig).map((key) => {
+                            const format = this.exportConfig[key].formatText;
+                            if (format) {
+                                return format(listItem, key) || '-';
+                            }
+                            return String(listItem[key]) || '-';
+                        });
+                    });
+                }
+            },
+            data(){
+                return {
+        list: [
+                    {
+                        node_name: 'ad.ad-esp.ad-esp-api',
+                        instance: 3,
+                        cpu: 10,
+                        cpu_day_increase: 0,
+                        cpu_week_increase: -0.019999999999999574,
+                        cpu_use: 34.47,
+                    },
+                    {
+                        node_name: 'ad.ad-esp.ad-esp-api-2',
+                        instance: 1,
+                        cpu: 10,
+                        cpu_day_increase: 0,
+                        cpu_week_increase: -0.019999999999999574,
+                        cpu_use: 34.47,
+                    },
+                    {
+                        node_name: 'ad.ad-esp.ad-esp-api-3',
+                        instance: 4,
+                        cpu: 10,
+                        cpu_day_increase: 0,
+                        cpu_week_increase: -0.019999999999999574,
+                        cpu_use: 37,
+                    },
+                ],
+                exportConfig: {
+                    node_name: {
+                        label: '节点名',
+                    },
+                    instance: {
+                        label: '实例个数',
+                    },
+                    cpu: {
+                        label: 'CPU合计使用量',
+                    },
+                    cpu_day_increase: {
+                        label: '天CPU使用增量',
+                    },
+                    cpu_week_increase: {
+                        label: '周CPU使用增量',
+                    },
+                    cpu_use: {
+                        label: 'CPU整体利用率',
+                        formatText: (row, key) => {
+                            console.log(row, key);
+                            return 'testestsstests';
+                        }
+                    },
+                }
+                }
+            }
+        })
+    </script>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>createRange bug复现</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="HigKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<input type="text" id="input" />
+<div id="con"></div>
+<script>
+window.sectionObj = {
+  anchorNode: document.getElementById('input'),
+  anchorOffset: 0
+};
+
+var range = document.createRange();
+var pNode = document.getElementById('input');
+if (sectionObj.anchorNode.nodeType == 1) {
+  //焦点在输入框
+  range.setStart(pNode, sectionObj.anchorOffset);
+  range.setEnd(pNode, sectionObj.anchorOffset);
+} else {
+  //焦点在文本节点内部
+  range.setStart(sectionObj.anchorNode, sectionObj.anchorOffset);
+  range.setEnd(sectionObj.anchorNode, sectionObj.anchorOffset);
+}
+window.getSelection().removeAllRanges();
+window.getSelection().addRange(range);
+$('#input')[0].focus();
+
+
+setInterval(()=>{
+  // document.querySelector('#con').innerHTML = [window.getSelection().anchorNode,window.getSelection().anchorOffset].join(',');
+  // console.log(window.getSelection().anchorNode,window.getSelection().anchorOffset)
+},100)
+</script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>url 提取 path 和 search 测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="NGEKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script>
+    matchPathSearch_4 = (url = '')=>{
+        // 把协议和域名删除
+        return url.replace(/^(https?:)?\/\/[^/]*/,'') || '/'
+    }
+    matchPathSearch_5 = (url = '')=>{
+        // 区分相对路径和绝对路径
+        
+        return ''
+        // return url.replace(/^(https?:)?\/\/[^/]*/,'') || '/'
+    }
+</script>
+<script>
+    result = [
+        'https://hao123.com/a/b.jsp?viewId=asddasdad',
+        '//hao123.com/a/b.jsp?viewId=asddasdad',
+        '/a/b.jsp?viewId=asddasdad',
+
+        
+        'https://hao123.com/a/b.jsp',
+        '//hao123.com/a/b.jsp',
+        '/a/b.jsp',
+
+        
+        'https://hao123.com/a/',
+        '//hao123.com/a/',
+        '/a/',
+
+        
+        'https://hao123.com/',
+        '//hao123.com/',
+        '/',
+
+        
+        'https://hao123.com',
+        '//hao123.com',
+
+        // 特例
+        'a.html',
+        './a.html',
+        '../a.html',
+        '../../a.html',
+        'http://hao123.com/a/b.jsp?viewId=asddasdad',
+    ].map(v=>{
+        const el = document.createElement('a')
+        el.href = v
+        return {
+            url: v,
+            '补全url': el.href,
+            '方案1': v.match(/^((https?:)?\/\/)?[^/]*(.*)/)?.[3] || '/',
+            '方案2': el.pathname+el.search,
+            '方案3': v.split('://')[1]?.split('/').slice(1).join('/') || 
+                        v.split('//')[1]?.split('/').slice(1).join('/') || 
+                        v,
+            '方案4': matchPathSearch_4(v),
+            '方案5': matchPathSearch_5(v),
+        }
+    })
+
+    // console.table(result)
+</script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.40/vue.global.js"></script>
+<div id="app">
+    <table>
+        <tr>
+            <th v-for="(item,key) in result[0]">
+                {{key}}
+            </th>
+        </tr>
+        <tr v-for="item in result">
+            <td
+             v-for="(item2,key) in item" 
+             :data-key="key" 
+             :class="{
+                 'is-error': item2 != item['方案2']
+             }">
+                {{item2}}
+            </td>
+        </tr>
+    </table>
+</div>
+<script>
+    // new Vue({
+    //     el: '#app'
+    // })
+    Vue.createApp({
+        data(){
+            return {
+                result
+            }
+        }
+    }).mount('#app')
+
+</script>
+<style>
+    table,tr,th,td{
+        border: 1px solid #e7e8e9;
+        border-collapse: collapse;
+        padding: 6px 10px;
+    }
+    [data-key^="方案"].is-error{
+        color: red;
+        background: yellow;
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

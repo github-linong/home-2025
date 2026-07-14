@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>resize test</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="YEGKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="wrap">
+    <div id="app">
+        <div id="box">
+            
+        </div>
+    </div>
+</div>
+
+<style>
+    div{
+        padding:10px;
+        margin:10px;
+        background: rgba(0,0,0,.3);
+        resize: both;
+        overflow: auto;
+    }
+</style>
+
+<script>
+    Array.from(document.querySelectorAll('div')).forEach(el=>{
+        el.addEventListener('resize', e=>top.console.log('resize'))
+        el.addEventListener('click', e=>top.console.log('click'))
+        var observer = new MutationObserver(function () {
+            top.console.log(el.id,"callback that runs when observer is triggered");
+        });
+        // 在 MutationObserver 实例上调用 `observe` 方法，
+        // 并将要观察的元素与选项传给此方法
+        observer.observe(el, { 
+            subtree: true, 
+            childList: true,
+            attributes: true,
+            // attributeFilter: true,
+            attributeOldValue: true,
+            characterData: true,
+            characterDataOldValue: true,
+        });
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>回退马赛克步骤</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="P9xKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="image-container">
+		<img src="https://www.lilnong.top/static/img/wx-linong.jpg" id="image" alt="Image" />
+    <canvas id="mosaic-overlay"></canvas>
+    
+  </div>
+  <button class="btn">撤回</button>
+  <script>
+    const image = document.getElementById("image");
+    const mosaicOverlay = document.getElementById("mosaic-overlay");
+    image.onload = ()=>{
+        mosaicOverlay.width = image.width
+        mosaicOverlay.height = image.height
+    }
+    const ctx = mosaicOverlay.getContext("2d");
+    // 设置马赛克效果的尺寸
+    const mosaicSize = 20; // 调整这个值来改变马赛克块的大小
+    let isMosaicing = false;
+    // 监听鼠标按住左键事件
+    const handleStart = () => {
+      isMosaicing = true;
+      arr.push([])
+    }
+    mosaicOverlay.addEventListener("mousedown", handleStart);
+    mosaicOverlay.addEventListener("touchstart", handleStart);
+    // 监听鼠标松开事件
+    const handleMove = () => {
+      isMosaicing = false;
+    }
+    window.addEventListener("mouseup", handleMove);
+    window.addEventListener("touchend", handleMove);
+
+    // 监听鼠标移动事件，添加马赛克效果
+    const btn = document.querySelector('.btn')
+    let arr  = []
+    const handleEnd = (e) => {
+      if (isMosaicing) {
+        const point = e?.touches?.[0] || e;
+        const x = point.clientX - mosaicSize / 2;
+        const y = point.clientY - mosaicSize / 2;
+        arr[arr.length-1].push({x,y})
+        // 绘制马赛克块
+      ctx.drawImage(
+          image,
+            Math.random() * image.width,
+            Math.random() * image.height,
+          mosaicSize,
+          mosaicSize,
+          x,
+          y,
+          mosaicSize,
+          mosaicSize
+        );
+        
+      }
+    }
+    mosaicOverlay.addEventListener("mousemove", handleEnd);
+    mosaicOverlay.addEventListener("touchmove", handleEnd);
+    btn.addEventListener('click',( )=>{
+        const list = arr.pop();
+        list.forEach(({x,y})=>{
+            ctx.clearRect(x, y,mosaicSize, mosaicSize);
+        })
+    })
+
+
+  </script>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>模拟麻将打牌</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="DNXKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="user user_a"></div>
+  <div class="user user_b"></div>
+  <div class="user user_c"></div>
+  <div class="user user_d"></div>
+</div>
+<script>
+var wan = [0, 1, 2, 3, 4, 5, 6, 7, 8].map(v=>v+1).map(v=>v+'万')
+var tong = [9, 10, 11, 12, 13, 14, 15, 16, 17].map(v=>v-8).map(v=>v+'筒')
+var tiao = [18, 19, 20, 21, 22, 23, 24, 25, 26].map(v=>v-17).map(v=>v+'条')
+var feng = '东南西北中發白'.split('')
+var hua = '春夏秋冬梅兰竹菊'.split('')
+var majiang = wan.concat(wan,wan,wan,wan,
+                        tong,tong,tong,tong,
+                        tiao,tiao,tiao,tiao,
+                        feng,feng,feng,feng,
+                        hua)
+Array.prototype.shuffle = function() {
+    for(var j, x, i = this.length; i; j = parseInt(Math.random() * i), x = this[--i], this[i] = this[j], this[j] = x);
+    return this;
+  };
+// document.body.innerHTML = majiang.sort();
+// document.body.innerHTML = majiang.shuffle();
+// var 
+
+var _current_majiang = majiang.concat().shuffle();
+var game = [
+  _current_majiang.splice(0,13),//玩家1
+  _current_majiang.splice(0,13),//玩家2
+  _current_majiang.splice(0,13),//玩家3
+  _current_majiang.splice(0,13)//玩家4
+]
+var _current_index = 0;
+game[_current_index].push(_current_majiang.shift());
+
+document.querySelector('.user_a').innerHTML = game[0]
+document.querySelector('.user_b').innerHTML = game[1]
+document.querySelector('.user_c').innerHTML = game[2]
+document.querySelector('.user_d').innerHTML = game[3]
+</script>
+</body>
+</html>

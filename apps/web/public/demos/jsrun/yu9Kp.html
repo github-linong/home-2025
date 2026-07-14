@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue中flex最底行布局失效？</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="yu9Kp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<div id="app">
+      <ul class="program-investment">
+                    <li v-for="(item, index) in detailProgramInfo.statistics" :key="index">
+                        <p>{{ item.name }}</p>
+                        <p>
+                            {{ item.sum }}
+                            <span>{{ item.unit }}</span>
+                        </p>
+                    </li>
+                </ul>
+</div>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                detailProgramInfo: {
+                    statistics: [
+                        { name: '总投资', sum: 54883, unit: '万元' },
+                        { name: '本年计划投资', sum: 12468, unit: '万元' },
+                        { name: '本年累计完成投资', sum: 3485, unit: '万元' },
+                        { name: '自开工累计完成', sum: 2468, unit: '万元' },
+                        { name: '完成总投资比例', sum: 34, unit: '%' },
+                        { name: '完成计划投资比例', sum: 43, unit: '%' }
+                    ],
+                }
+               
+
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

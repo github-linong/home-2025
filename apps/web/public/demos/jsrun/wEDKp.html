@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000045130749</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="wEDKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<style>
+        #inputContainer{display: flex;flex-direction: row;}
+        #inputContainer > div{display: flex;flex-direction: column;}
+    </style>
+    <div id="inputContainer"></div>
+    <!-- <script src="app.js"></script> -->
+<!-- <script>
+    function divideIntoParts(total, parts) {
+        let values = [];
+        let sum = 0;
+
+        // 生成 parts - 1 个随机数
+        for (let i = 0; i < parts - 1; i++) {
+            let randomValue = Math.random() * (total - sum - (parts - i - 1));
+            randomValue = Math.round(randomValue);
+            values.push(randomValue);
+            sum += randomValue;
+        }
+
+        // 计算最后一个数
+        values.push(total - sum);
+
+        // 打乱数组顺序
+        for (let i = values.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [values[i], values[j]] = [values[j], values[i]];
+        }
+
+        return values;
+    }
+
+    let total = 600;
+    let parts = 20;
+    let result = divideIntoParts(total, parts);
+    console.log(result);
+
+</script>
+<script>
+    const arr = [
+        { id: 1, test: 5 },
+        { id: 2, test: 4 },
+        { id: 3, test: 5 },
+        { id: 4, test: 6 },
+    ];
+    const num = 600;
+    const sum = arr.reduce((acc, item) => acc + item.test, 0);
+    const factor = num / sum;
+    top.console.log('', {num,sum,factor})
+    const inputContainer = document.getElementById('input-container');
+
+    // Helper function to create an input element
+    function createInput(min, max) {
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = min;
+        input.max = max;
+        input.addEventListener('input', (event) => {
+            let value = parseInt(event.target.value, 10);
+            if (value < min) {
+                value = min;
+            } else if (value > max) {
+                value = max;
+            }
+            event.target.value = value;
+        });
+        return input;
+    }
+
+    // Create input fields based on the array data
+    arr.forEach((item, index) => {
+        const min = index * factor + 1;
+        const max = (index + 1) * factor;
+
+        for (let i = 0; i < item.test; i++) {
+            const input = createInput(min, max);
+            inputContainer.appendChild(input);
+        }
+        inputContainer.appendChild(document.createElement('br')); // For new line
+    });
+
+</script> -->
+<script>
+    // 将 600 分成 20 份，第一份为 1-30，第二份为 31-60
+    num = 600;
+    numPer = 30;
+    res = Array.from({ length: num / numPer }, (_, i) => {
+    return `${i * numPer + 1}-${(i + 1) * numPer}`;
+    });
+    arr = [
+    { id: 1, test: 5 },
+    { id: 2, test: 4 },
+    { id: 3, test: 5 },
+    { id: 4, test: 6 },
+    ];
+    // 根据 arr 将 res 分为四列，第一列有5个，包含 1-30、121-150、241-270、361-390、481-510
+    result = Array.from({ length: 4 },()=>[]);
+    // 需要注意第二列的个数，不能超过，放不下就顺延
+    while (res.length) {
+    for (let i = 0; i < result.length; i++) {
+        if (arr[i]?.test > result[i]?.length) {
+        result[i].push(res.shift());
+        }
+    }
+    }
+    console.log(result);
+    console.log(result);
+    // 将 result 输出到页面，用input
+    result.forEach((v) => {
+    row = document.createElement('div');
+    v.forEach((vv) => {
+        input = document.createElement('input');
+        input.value = +vv?.split('-')?.[0] + (Math.random()*30)>>>0;
+        row.appendChild(input);
+    });
+inputContainer.appendChild(row);
+    });
+</script>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000016361281</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="LSgKp" />
+  <style>
+    #bbox{
+        position: absolute;
+        top: 166px;
+        left: 219px;
+        background: #fff;
+        width: 548px;
+        border: 1px solid #999;
+    }
+    #bbox #seach-ul{
+        list-style: none;
+    }
+    #bbox #seach-ul li{
+        height: 50px;
+        line-height: 30px;
+        padding-left: 10px;
+    }
+    #bbox #seach-ul li:hover{
+        background: #e5e5e5;
+        text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<input type="text" id="txt" />
+<div id="bbox" style="display: none;">
+    <ul id="seach-ul">
+    </ul>
+</div>
+<script>
+$('#txt').on('keyup', function (e) {
+        var text = $('#txt').val();
+        var html = '';
+        html += '<li>' + text + '</li>'
+        $('#seach-ul').html(html);
+        $('#bbox').show();
+
+    });
+</script>
+</body>
+</html>

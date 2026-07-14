@@ -23,3 +23,8 @@ apps/api/assets/fonts/*
 !apps/api/assets/fonts/font.ttf
 !apps/api/assets/fonts/.gitkeep
 
+# JSRUN raw downloads (restore with: npm run download:jsrun)
+scripts/data/jsrun/snippets/
+scripts/data/jsrun/state.json
+scripts/data/jsrun/manifest.json
+

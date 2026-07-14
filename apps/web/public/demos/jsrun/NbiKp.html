@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>滚动条事件</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="NbiKp" />
+  <style>
+.main-container {
+				position: relative;
+				width: 300px;
+				height: 300px;
+				border: 1px solid aquamarine;
+				border-radius: 5px;
+				overflow: auto;
+				padding-top:10px;
+			}
+			.content-item {
+				border: 1px solid #ccc;
+				margin-bottom: 10px;
+			}
+			.console-div {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				width: 100px;
+				height: 30px;
+				background: #000;
+				color: #fff;
+			}
+  </style>
+</head>
+<body>
+<div class="main-container" onscroll="aa()" id="mainContainer">
+			<div class="content-item" data-value = "0">
+				<p>
+					<span style="color:olive;">10-1</span>
+					△陈亦度、薇薇走在医院花园。
+					陈亦度：（有些尴尬地开口）谢谢，谢谢你这几天为我妈做的事。
+					△薇薇有点受宠若惊，不敢相信地看着陈亦度。
+					薇薇：这话，确定是跟我说的？
+					△陈亦度苦笑，点头。
+					薇薇：（愣愣地）你的弯拐得也太快了吧！（思索状）不过喜怒无常好像一向是你的风格。说好啦，这次不许你再无缘无故翻脸！
+					陈亦度：薇薇，你跟我妈一样，虽然都忘了很多事，但在你们的内心深处，也有很多永远都忘不了的事。
+					    △薇薇很认真地看着陈亦度。
+					△一边，陈母得意地翻出IPAD上面的照片，给一边的小护士看，嘴上还一直夸薇薇。
+					△陈亦度看着一边的陈母露出笑容。
+					陈亦度：不过幸好，你们忘记的都是不愉快的事，记得的，都是快乐的事。所以，我似乎开始觉得，这一切，看上去像一场噩梦，但其实，也是上天送我们的一份特殊的礼物。
+					薇薇：（一副听不懂的表情，摇头）我的失忆，不是一场噩梦，而是一份礼物？
+					陈亦度：（点头）你没必要懂，你只要知道，我决定跟你们一样，试着去忘记过去，忘记痛苦，弥补遗憾，重新开始……
+					△一阵风吹过，树上的花瓣落在薇薇脸上。
+					△陈亦度凑近薇薇，伸手替薇薇捡掉落在脸颊上的花瓣，神情凝视着薇薇。时光，仿佛在这一刻停滞。陈亦度几乎就要吻上薇薇。
+				</p>
+				<p class="bottom-flag"></p>
+			</div>
+			<div class="content-item" data-value = "1">
+				<p>
+					<span style="color:olive;">10-2</span>
+					△一边，霍骁抱着文件夹匆匆赶来，正好看见这一幕。
+					霍骁：（突然喊）薇薇！
+					△薇薇回过神来，看见霍骁，尴尬。
+					△陈亦度看着霍骁，露出略带挑衅的眼神。
+					霍骁：（走过来，对薇薇递上文件）公司有份重要文件，急着要你亲笔签名。
+				</p>
+				<p class="bottom-flag"></p>
+			</div>
+			
+			<div class="content-item" data-value = "2">
+				<p>
+					<span style="color:olive;">10-3</span>
+					△薇薇家客厅，电机剧开着，电视里的男女正抱在一起痛哭流涕。
+					△薇薇坐在电视剧前，眼睛虽然盯着电视方向，却拖着腮帮子一直傻笑。
+					△LEO一副看到怪物的表情，伸手在薇薇面前晃了晃。
+					LEO：怎么了，又受刺激过度了？
+					薇薇：（瞪一眼LEO）你见过有哪个受刺激的能笑那么开心的！（炫耀般地）告诉你，我今天成功地拿下了陈亦度！
+					LEO：（鄙夷地看着薇薇）真的？
+					薇薇：朕金口玉言，向来说话算话！ 
+					LEO：（怀疑地）不对啊，照之前的形式，你不可能进展那么迅猛啊。你确定，所谓的搞定陈亦度，真不是你自己意淫的？
+				</p>
+				<p class="bottom-flag"></p>
+			</div>
+		</div>
+		<div class="console-div" id="consoleDiv">10-1</div>
+<script>
+			var topArr = [];
+			var index = [];
+			var value = 0;
+      var itemArr = document.getElementsByClassName("content-item");
+      for(var i= 0; i< itemArr.length; i++){
+        topArr.push(itemArr[i].offsetTop + itemArr[i].offsetHeight);
+        index.push(i);
+      }
+			
+			
+			function aa(){
+        debugger;
+				var scrollTop = document.getElementById("mainContainer").scrollTop;
+				var num = 0;
+				for(var i= 0; i<topArr.length; i++){
+				    if(topArr[i] > scrollTop) {
+				    	num = index[i];
+				    	break;
+				    }
+				}
+				console.log(document.getElementsByClassName("content-item")[num].getAttribute("data-value"));
+        
+				if(value != num){
+					value = num;
+					var title = document.getElementsByClassName("content-item")[num].getElementsByTagName("span")[0].innerText ;
+					document.getElementById("consoleDiv").innerText=title;
+				}
+				
+			}
+</script>
+</body>
+</html>

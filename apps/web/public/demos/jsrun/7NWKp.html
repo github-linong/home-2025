@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>数据处理 qb</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="7NWKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <p>{{list}}</p>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data(){
+    return {
+      list: [
+    {
+        "groupData":[
+            {
+                "userSelect":"user_is",
+                "dimSelect":"vv_mname",
+                "operatorSelect":"=",
+                "dimValue":".X22."
+            },
+            {
+                "userSelect":"user_is",
+                "dimSelect":"vv_prod",
+                "operatorSelect":"=",
+                "dimValue":"vvmusic-android"
+            }
+        ]
+    },
+    {
+        "groupData":[
+            {
+                "userSelect":"user_is",
+                "dimSelect":"vv_ochannel",
+                "operatorSelect":"=",
+                "dimValue":"1001"
+            }
+        ]
+    }
+]
+    }
+  }
+})
+</script>
+</body>
+</html>

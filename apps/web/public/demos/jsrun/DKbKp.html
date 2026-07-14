@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>数字特效 滚动</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="DKbKp" />
+  <style>
+.number-wrap{display:flex;gap:6px;padding:16px;background:#0b0b0b}
+.number-item{width:28px;height:40px;overflow:hidden;background:#111;color:#3f3;border:1px solid #2a2a2a;border-radius:4px}
+.number-item-inner{transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.number-item .number{height:40px;line-height:40px;text-align:center;font:700 22px/40px ui-monospace,monospace}
+#clog{margin:12px 16px;font:14px ui-monospace,monospace;color:#666}
+</style>
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+<div class="number-wrap">
+  <div class="number-item number-item--show"><div class="number-item-inner">
+    <div class="number number-0">0</div></div>
+    <div class="number number-1">1</div>
+    <div class="number number-2">2</div>
+    <div class="number number-3">3</div>
+    <div class="number number-4">4</div>
+    <div class="number number-5">5</div>
+    <div class="number number-6">6</div>
+    <div class="number number-7">7</div>
+    <div class="number number-8">8</div>
+    <div class="number number-9">9</div>
+  </div>
+  <div class="number-item number-item--1"><div class="number-item-inner">
+    <div class="number number-0">0</div></div>
+    <div class="number number-1">1</div>
+    <div class="number number-2">2</div>
+    <div class="number number-3">3</div>
+    <div class="number number-4">4</div>
+    <div class="number number-5">5</div>
+    <div class="number number-6">6</div>
+    <div class="number number-7">7</div>
+    <div class="number number-8">8</div>
+    <div class="number number-9">9</div>
+  </div>
+  <div class="number-item number-item--2"><div class="number-item-inner">
+    <div class="number number-0">0</div></div>
+    <div class="number number-1">1</div>
+    <div class="number number-2">2</div>
+    <div class="number number-3">3</div>
+    <div class="number number-4">4</div>
+    <div class="number number-5">5</div>
+    <div class="number number-6">6</div>
+    <div class="number number-7">7</div>
+    <div class="number number-8">8</div>
+    <div class="number number-9">9</div>
+  </div>
+  <div class="number-item"><div class="number-item-inner">
+    <div class="number number-0">0</div></div>
+    <div class="number number-1">1</div>
+    <div class="number number-2">2</div>
+    <div class="number number-3">3</div>
+    <div class="number number-4">4</div>
+    <div class="number number-5">5</div>
+    <div class="number number-6">6</div>
+    <div class="number number-7">7</div>
+    <div class="number number-8">8</div>
+    <div class="number number-9">9</div>
+  </div>
+  <div class="number-item"><div class="number-item-inner">
+    <div class="number number-0">0</div></div>
+    <div class="number number-1">1</div>
+    <div class="number number-2">2</div>
+    <div class="number number-3">3</div>
+    <div class="number number-4">4</div>
+    <div class="number number-5">5</div>
+    <div class="number number-6">6</div>
+    <div class="number number-7">7</div>
+    <div class="number number-8">8</div>
+    <div class="number number-9">9</div>
+  </div>
+</div>
+<div id="clog"></div>
+<script>
+function tick(){
+  var str = (Math.random()*100000>>0).toString().padStart(5,'0');
+  $('.number-item').each(function(i){
+    var digit = Number(str[i]||0);
+    $(this).find('.number-item-inner').css('transform','translateY('+(-digit*40)+'px)');
+  });
+  document.getElementById('clog').innerText = str;
+}
+tick();
+setInterval(tick, 2000);
+</script>
+</body>
+</html>

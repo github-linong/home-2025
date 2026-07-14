@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vux 功能呢</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="g9aKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<!-- https://doc.vux.li/zh-CN/components/datetime.html -->
+<script src="//www.lilnong.top/static/lib/vux/vux.min.js"></script>
+<link rel="stylesheet" href="//www.lilnong.top/static/lib/vux/vux.min.css">
+<div id="app">
+<div class="company clearfix">
+        <span class="activityName1">活动时间</span>
+        <div class="timeSelect">
+          <datetime
+            class="activityName_2"
+            id="TimeStart"
+            v-model="timeModel"
+            format="YYYY-MM-DD HH:mm"
+            :start-date="startdate"
+            :end-date="enddate"
+            :min-hour="0"
+            :max-hour="23"
+            @on-confirm="selectTime"
+          >
+            <span :style="kssj !== '开始时间' ? '' : ''">{{kssj}}</span>
+          </datetime>
+          <span class="time_span">-</span>
+          <datetime
+            class="activityName_3"
+            v-model="ActivityTimeE"
+            format="YYYY-MM-DD HH:mm"
+            :display-format="formatValueFunction"
+            :start-date="timeOlny"
+            :min-hour="timeM"
+            ref="eee"
+            @on-confirm="selectTimeEnd"
+            v-if="showTime"
+            @on-show="onshow"
+          >
+            <span :style="jssj !== '结束时间' ? '' : ''">{{jssj}}</span>
+          </datetime>
+          <span v-else class="activityName_3">结束时间</span>
+        </div>
+      </div>
+</div>
+<script>
+    Vue.component('datetime', vuxDatetime)
+    Vue.use(vuxDatetimePlugin)
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                timeModel: "",
+                startdate: "",
+                enddate: "",
+
+                
+                ActivityTimeE: "",
+                formatValueFunction(val) {
+                    console.log(val,'00000');
+                    return val.substring(11);
+                },
+                timeOlny: "",
+                timeM: "",
+                showTime: false,
+                
+                kssj: "开始时间",
+                jssj: "结束时间",
+            }
+        },
+        methods:{
+            selectTime(value) {
+                this.kssj = this.timeModel;
+                this.ActivityTimeS = this.timeModel;
+                // this.kssj = this.ActivityTimeS
+                // console.log('sss')
+                console.log(value, "kkkk");
+                this.showTime = false;
+                this.ActivityTimeE = "";
+                this.jssj = "结束时间";
+                console.log()
+                let timeStr = this.ActivityTimeS;
+                console.log(this.ActivityTimeS, 'this.ActivityTimeS')
+                console.log(timeStr, 'timeStr')
+                this.timeOlny = timeStr.substring(0, 10);
+                console.log(this.timeOlny,'timeOlny')
+                this.timeM = Number(timeStr.substring(11, 13));
+                this.timeF = Number(timeStr.substring(14));
+                // console.log(typeof (this.timeM))
+                // console.log(this.timeM)
+                // console.log(this.timeF)
+                setTimeout(() => {
+                    this.showTime = true;
+                }, 1);
+                this.endMin = this.startMin.filter(val => {
+                    return val > this.timeF;
+                });
+            },
+            selectTimeEnd(value) {
+                // console.log(value)
+                let timeStrEnd = this.ActivityTimeE;
+                this.timeEndHour = Number(timeStrEnd.substring(11, 13)); // 小时
+                this.timeEndM = Number(timeStrEnd.substring(14)); // 分钟
+                this.jssj = timeStrEnd.substring(11);
+                if (this.timeEndHour === this.timeM) {
+                    if (this.timeF >= this.timeEndM) {
+                    // console.log(888)
+                    this.$toast("请选择正确的时间！");
+                    // this.showTime = false
+                    this.ActivityTimeE = "";
+                    this.jssj = "结束时间";
+                    }
+                }
+            },
+            onshow(){
+                console.log('1-------')
+                console.log(this.$refs.eee,';;;;')
+                // console.log(this.enddate)
+                // this.timeModel = this.stardate
+            },
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

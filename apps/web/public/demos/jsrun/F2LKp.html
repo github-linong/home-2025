@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000023541524</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="F2LKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div>list:{{list}}</div>
+    <div>temp:{{temp}}</div>
+    <div v-for="item in list">
+        <el-checkbox-group 
+            class="custom-group" 
+            v-model="temp[item.id]">
+            <el-checkbox class="custom-box"  
+            v-for="(key,index) in item.items" 
+            :label="key.id" 
+            :key="key.id"
+            >{{key.title}}</el-checkbox>
+        </el-checkbox-group>
+    </div>
+</div>
+<script>
+new Vue({
+    el: "#app",
+    data(){
+        return {
+            temp: {1: [], 2: []},
+            list: [
+        {
+            "id": 1,
+            "title": "问题1",
+            "paperid": 1,
+            "must_fill": 1,
+            "type": 1,
+            "status": 1,
+            "items": [
+                {
+                    "id": 5,
+                    "title": "选项一",
+                },
+                {
+                    "id": 6,
+                    "title": "选项二",
+                },
+                {
+                    "id": 7,
+                    "title": "选项三",
+                },
+                {
+                    "id": 8,
+                    "title": "选项四",
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "title": "问题2",
+            "paperid": 1,
+            "paperid": 1,
+            "must_fill": 1,
+            "type": 1,
+            "status": 1,
+            "items": [
+                {
+                    "id": 2,
+                    "title": "选项二",
+                },
+                {
+                    "id": 1,
+                    "title": "选项一",
+                },
+                {
+                    "id": 3,
+                    "title": "选项三",
+                },
+                {
+                    "id": 4,
+                    "title": "选项四",
+                }
+            ]
+        },
+
+    ]
+        }
+    }
+})
+</script>
+</body>
+</html>

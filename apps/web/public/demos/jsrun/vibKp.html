@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>mobileSelect</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="vibKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="//www.lilnong.top/static/js/mobileSelect.js"></script>
+<link rel="stylesheet" href="//www.lilnong.top/static/css/mobileSelect.css" />
+
+
+<p>
+  <button id="getValue">getValue()</button>
+  <button id="set3">set3</button>
+  <button id="mobileSelect1">mobileSelect1</button>
+</p>
+<div id="day">day</div>
+<script>
+
+var mobileSelect1 = new MobileSelect({
+    trigger: '#day',
+    title: '单项选择',
+    wheels: [
+        {data:['周日','周一','周二','周三','周四','周五','周六']}
+    ],
+    position:[2] //Initialize positioning
+});
+console.log(mobileSelect1)
+document.querySelector('#getValue').addEventListener('click', function(){
+  console.log(mobileSelect1.getValue())
+})
+document.querySelector('#mobileSelect1').addEventListener('click', function(){
+  console.log(mobileSelect1)
+})
+document.querySelector('#set3').addEventListener('click', function(){
+  // console.log(mobileSelect1.getValue())
+  mobileSelect1.curValue = '周三'
+})
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="uIbKp" />
+  <style>
+ul{
+  border: 1px solid #f00;
+  height: 100px;
+  overflow: auto;
+}
+  </style>
+</head>
+<body>
+<ul @scroll.native="scrollHandler">
+ ...
+</ul>
+<div id="app">
+  <ul @scroll="scrollHandler">
+    <li v-for="item in arr">{{item}}</li>
+  </ul>
+  <vv-ul  @scroll.native="scrollNativeHandler"></vv-ul>
+</div>
+<script>
+Vue.component('vv-ul', {
+  template: `<ul >
+    <li v-for="item in arr">{{item}}</li>
+  </ul>`,
+  data(){
+    return {
+      arr:[1,2,3,4,5,6,7,8,9,10]
+    }
+  }
+})
+new Vue({
+  el: '#app',
+  data(){
+    return {
+      arr:[1,2,3,4,5,6,7,8,9,10]
+    }
+  },
+  methods: {
+    scrollHandler(){
+      console.count('我为什么可以 ？scrollHandler')
+    },
+    scrollNativeHandler(){
+      console.count('我为什么可以 ？scrollNativeHandler')
+    }
+  }
+})
+</script>
+</body>
+</html>

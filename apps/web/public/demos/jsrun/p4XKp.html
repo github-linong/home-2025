@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000019111520</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="p4XKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  {{selectDevice}}
+  <div class="app-container">
+        <select v-model="selectDevice" placeholder="请选择" @change="getBindDeviceId">
+          <option
+            v-for="item in bindDeviceGroup"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          />
+        </select>
+  </div>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data() {
+    return {
+      platformId: 0,
+      panelActiveName: '0',
+      selectDevice: 0,
+      deviceId: 0,
+      funcId: 0,
+      bindDeviceGroup: [],
+      functionItems: [],
+      flag: true,
+      funcDateList: []
+    }
+  },
+  created() {
+    this.getBindDevice()
+  },
+  mounted() {
+    console.log('888', this, this.selectDevice)
+  },
+  updated() {
+    if (this.flag) {
+      this.deviceId = this.selectDevice
+      getDeviceFuncItems(this.selectDevice).then(response => {
+        const arry = response.BusinessData
+        this.functionItems = arry
+      })
+      this.flag = false
+    }
+  },
+  methods: {
+    handleClick(tab, event) {
+      const _this = this
+      this.funcId = tab.$attrs.value
+      getDeviceFuncList(this.funcId, this.deviceId).then(response => {
+        const dataArr = response.BusinessData
+        dataArr.forEach(function(ele) {
+          ele.funcStatus = _this.deviceStatus(ele.funcStatus)
+        })
+        this.funcDateList = response.BusinessData
+      })
+    },
+    getBindDevice() {
+      // 获取已绑定设备
+      bindDevice(this.platformId).then(response => {
+        const device = response.BusinessData
+        this.bindDeviceGroup.push(device)
+        this.selectDevice = this.bindDeviceGroup[0][0].id
+      })
+    },
+    // 选中时获取设备Id
+    getBindDeviceId(id) {
+      this.deviceId = id
+      // 获取设备功能列表
+      getDeviceFuncItems(id).then(response => {
+        this.functionItems = response.BusinessData
+      })
+    },
+    /* 设备状态格式化 */
+    deviceStatus(value) {
+      const types = {
+        0: '未激活',
+        1: '已激活'
+      }
+      return types[value]
+    }
+  }
+})
+// {
+//   components: {
+//     faceRecognition,
+//     realAuth
+//   },
+//   props: {
+//     platformId: {
+//       type: Number,
+//       default: 0
+//     }
+//   },
+//   data() {
+//     return {
+//       panelActiveName: '0',
+//       selectDevice: 0,
+//       deviceId: 0,
+//       funcId: 0,
+//       bindDeviceGroup: [],
+//       functionItems: [],
+//       flag: true,
+//       funcDateList: []
+//     }
+//   },
+//   created() {
+//     this.getBindDevice()
+//   },
+//   mounted() {
+//     console.log('888', this, this.selectDevice)
+//   },
+//   updated() {
+//     if (this.flag) {
+//       this.deviceId = this.selectDevice
+//       getDeviceFuncItems(this.selectDevice).then(response => {
+//         const arry = response.BusinessData
+//         this.functionItems = arry
+//       })
+//       this.flag = false
+//     }
+//   },
+//   methods: {
+//     handleClick(tab, event) {
+//       const _this = this
+//       this.funcId = tab.$attrs.value
+//       getDeviceFuncList(this.funcId, this.deviceId).then(response => {
+//         const dataArr = response.BusinessData
+//         dataArr.forEach(function(ele) {
+//           ele.funcStatus = _this.deviceStatus(ele.funcStatus)
+//         })
+//         this.funcDateList = response.BusinessData
+//       })
+//     },
+//     getBindDevice() {
+//       // 获取已绑定设备
+//       bindDevice(this.platformId).then(response => {
+//         const device = response.BusinessData
+//         this.bindDeviceGroup.push(device)
+//         this.selectDevice = this.bindDeviceGroup[0][0].id
+//       })
+//     },
+//     // 选中时获取设备Id
+//     getBindDeviceId(id) {
+//       this.deviceId = id
+//       // 获取设备功能列表
+//       getDeviceFuncItems(id).then(response => {
+//         this.functionItems = response.BusinessData
+//       })
+//     },
+//     /* 设备状态格式化 */
+//     deviceStatus(value) {
+//       const types = {
+//         0: '未激活',
+//         1: '已激活'
+//       }
+//       return types[value]
+//     }
+//   }
+// }
+</script>
+</body>
+</html>

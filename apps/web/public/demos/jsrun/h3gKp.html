@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000015634350</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="h3gKp" />
+  <style>
+html,body{
+  height:100%;
+  width:100%;
+  padding: 0;
+  margin: 0;
+}
+#input{
+  height: 100px;
+  line-height: 20px;
+  background: #fff;
+}
+#input.focus:after{ 
+  content:"";
+  background-color: #000;
+  width: 1px;height: 16px;
+  display:inline-block;
+  overflow: hidden;
+  position:relative;
+  top: 2px;
+  animation: opacity .5s infinite;
+}
+@keyframes opacity {
+    0% {
+        opacity: 0
+    }
+    to {
+        opacity: 1
+    }
+}
+  </style>
+</head>
+<body>
+<div id="input" class=''>1</div>
+<button id="add">add</button>
+<script>
+document.querySelector('#input').addEventListener('click',e=>{
+  e.stopPropagation();
+  console.log('input')
+  document.querySelector('#input').classList.add('focus')
+});
+document.body.addEventListener('click',e=>{
+  console.log('body')
+  document.querySelector('#input').classList.remove('focus')
+});
+document.querySelector('#add').addEventListener('click',e=>{
+  e.stopPropagation();
+  console.log('add')
+  document.querySelector('#input').append(Math.random().toFixed(2).slice(-1))
+})
+</script>
+</body>
+</html>

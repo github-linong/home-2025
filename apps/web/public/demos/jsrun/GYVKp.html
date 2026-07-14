@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>flex 边框布局</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="GYVKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<table>
+    <tbody>
+        <tr>
+            <td rowspan="3">分类</td><td>1</td><td>2</td><td>3</td>
+        </tr>
+        <tr>
+            <td>4</td><td>5</td><td>6</td>
+        </tr>
+        <tr>
+            <td>7</td><td>8</td><td>9</td>
+        </tr>
+    </tbody>
+</table>
+<style>
+    table{
+        width: 100%;
+    }
+    table,tr,td{
+        border: 1px solid #f00;
+        border-collapse: collapse;
+        text-align: center;
+    }
+</style>
+<div>
+    有时候我们会需要实现这样的效果，如果是table那么很好实现，那么如果是其他布局，我们应该怎么实现呢？
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<div id="app1">
+    <div class="flex box" v-for="(item, idx) in 9">
+        <div class="flex-left flex">
+            <div class="flex-content box-child flex">分类</div>
+        </div>
+        <div class="flex-right flex">
+            <div class="flex-content box-child" v-for="(item1) in item">
+                {{item1}}
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    #app1{text-align: center;}
+    #app1 .flex{display: flex;}
+    #app1 .flex-left{flex: none;width: 4em;}
+    #app1 .flex-right{flex: auto;flex-wrap: wrap;}
+    #app1 .flex-content{width: 30%;flex: auto;}
+    #app1 .box{margin: 10px;}
+
+    #app1 .flex-content{justify-content: center;align-items:center;}
+    #app1 .box{border: 1px solid #f00;border-right:0;border-bottom:0;}
+    #app1 .box-child{border: 1px solid #f0f;border-left:0;border-top:0;}
+</style>
+<script>
+    new Vue({el: '#app1'})
+</script>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://cn.vuejs.org/v2/guide/render-function.html#createElement-%E5%8F%82%E6%95%B0</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="6LhKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <test></test>
+  <test2></test2>
+  <test3></test3>
+</div>
+<script>
+Vue.component('test', {
+  render: function (createElement) {
+    return createElement(
+      'div',
+      {},
+      ['<em>你好</em>']
+    )
+  },
+  props: {
+    level: {
+      type: Number,
+      required: true
+    }
+  }
+})
+Vue.component('test2', {
+  render: function (createElement) {
+    return createElement(
+      'div',
+      {},
+      [createElement('em',{},'你好')]
+    )
+  },
+  props: {
+    level: {
+      type: Number,
+      required: true
+    }
+  }
+})
+Vue.component('test3', {
+  render: function (createElement) {
+    return createElement(
+      'div',
+      {domProps: {
+    innerHTML: '<em>你好啊</em>'
+  },},
+      []
+    )
+  },
+  props: {
+    level: {
+      type: Number,
+      required: true
+    }
+  }
+})
+
+new Vue({
+  el: '#app'
+})
+
+</script>
+</body>
+</html>

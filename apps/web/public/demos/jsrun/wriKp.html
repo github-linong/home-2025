@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>http://cdn.jsrun.net/avatar/2345_1490748629173.png</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="wriKp" />
+  <style>
+/* index.css */
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background-color: #FCEBB6;
+}
+
+h1, h2, p {
+  font-family: "Raleway", sans-serif;
+}
+
+h1 {
+  font-size: 100px;
+  text-align: center;
+  color: #F07818;
+  margin-bottom: 0;
+}
+
+h2 {
+  font-size: 20px;
+  font-weight: 100;
+  font-style: italic;
+  text-align: center;
+  color: #F0A830;
+  margin-bottom: 20px;
+}
+
+span {
+  font-weight: lighter;
+}
+
+p {
+  color: #F0A830;
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.pos-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.demo-img {
+  width: 400px;
+  height: 300px;
+  border-radius: 5px;
+}
+
+.descrip {
+  font-size: 15px;
+  line-height: 0;
+  color: #D66A00;
+}
+
+.code-view {
+  width: 245px;
+  font-size: 14px;
+}
+
+
+  </style>
+</head>
+<body>
+<img src="https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=1590715230,3980719184&fm=27&gp=0.jpg" class="demo-img pos-center">
+<script>
+// blowup.min.js
+// Paul Krishnamurthy 2016
+
+$(function(o){o.fn.blowup=function(e){var t=this;if(!t.is("img"))return void console.log("%c Blowup.js Error: %cTarget element is not an image.","background: #FCEBB6; color: #F07818; font-size: 17px; font-weight: bold;","background: #FCEBB6; color: #F07818; font-size: 17px;");var n=t.attr("src"),i=(t.width(),t.height(),new Image);i.src=t.attr("src");var r={round:!0,width:200,height:200,background:"#FFF",shadow:"0 8px 17px 0 rgba(0, 0, 0, 0.2)",border:"6px solid #FFF",cursor:!0,zIndex:999999},s=o.extend(r,e);t.on("dragstart",function(o){o.preventDefault()}),t.css("cursor",s.cursor?"crosshair":"none");var d=document.createElement("div");d.id="BlowupLens",o("body").append(d),$blowupLens=o("#BlowupLens"),$blowupLens.css({position:"absolute",visibility:"hidden","pointer-events":"none",zIndex:s.zIndex,width:s.width,height:s.height,border:s.border,background:s.background,"border-radius":s.round?"50%":"none","box-shadow":s.shadow,"background-repeat":"no-repeat"}),t.mouseenter(function(){$blowupLens.css("visibility","visible")}),t.mousemove(function(o){var e=o.pageX-s.width/2,r=o.pageY-s.height/2,d=o.pageX-this.offsetLeft,a=o.pageY-this.offsetTop,u=-Math.floor(d/t.width()*i.width-s.width/2),h=-Math.floor(a/t.height()*i.height-s.height/2);$blowupLens.css({"background-image":"url("+n+")","background-position":u+"px "+h+'px'});console.log(JSON.stringify({"background-position":u+" "+h}))}),t.mouseleave(function(){$blowupLens.css("visibility","hidden")})}});
+
+$(function () {
+			$('img').blowup({
+				background : "#FCEBB6"
+			});
+		})
+</script>
+</body>
+</html>

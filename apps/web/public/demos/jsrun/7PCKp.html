@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000047324774</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="7PCKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- bookmark_modal.html -->
+
+
+<script>
+function showEditModal(id, url, name, logo_url, file_path, description) {
+    document.getElementById('site_id').value = id;
+    document.getElementById('url').value = url;
+    document.getElementById('name').value = name;
+    document.getElementById('logo_url').value = logo_url;
+    document.getElementById('description').value = description;
+    
+    // 显示模态框
+    const modal = new bootstrap.Modal(document.getElementById('editModal'));
+    modal.show();
+    
+    // 绑定更新按钮事件
+    const updateBtn = document.getElementById('updateSiteInfoBtn');
+    updateBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        updateSiteInfo();
+    });
+}
+
+
+
+// 将updateSiteInfo函数独立出来
+function updateSiteInfo() {
+    const url = document.getElementById('url').value;
+    if (!url) {
+        showCustomAlert('请先输入网址', 'warning');
+        return false;
+    }
+    
+    event.preventDefault();
+    event.stopPropagation();
+    
+    fetch('/Bookmark_modification_view/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            url: url,
+            post_type: 'updateSiteInfo'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        document.getElementById('name').value = data.id_name || '';
+        document.getElementById('description').value = data.id_description || '';
+        document.getElementById('logo_url').value = data.id_logo_url || '';
+        showCustomAlert('网站信息已更新', 'success');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showCustomAlert('获取网站信息时发生错误', 'error');
+    });
+    return false;
+}
+
+
+
+    // 保存更改的逻辑（这里仅作为示例，你需要根据实际情况编写保存逻辑）
+    function saveChanges() {
+        const site_id = document.getElementById('site_id').value;
+        const url = document.getElementById('url').value;
+        const name = document.getElementById('name').value;
+        const logo_url = document.getElementById('logo_url').value;
+        {% comment %} const folder_path = document.getElementById('file_path').value; {% endcomment %}
+        const description = document.getElementById('description').value;
+
+        // 这里调用后端API保存更改
+        console.log('保存的网址:', url);
+        console.log('保存的网址名称:', name);
+        console.log('保存的网址图片地址:', logo_url);
+        console.log('保存的网址说明:', description);
+        {% comment %} console.log('保存的文件路径:', folder_path); {% endcomment %}
+
+        fetch('/Bookmark_modification_view/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                site_id: site_id,
+                url: url,
+                name: name,
+                logo_url: logo_url,
+                {% comment %} folder_path: folder_path, {% endcomment %}
+                description: description,
+                post_type: 'Web_address_editing'
+            })
+        })
+            .then(response => response.json()) // 
+            .then(data => {
+                showCustomAlert(data.message, data.status);
+            })
+            .catch(error => console.error('Error:', error)); // 处理可能的错误
+
+        // 关闭模态框
+        $('#editModal').modal('hide');
+    }
+
+</script>
+<!-- 网址编辑页面 -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="editModalLabel">编辑书签</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <form id="editForm">
+                   <div class="mb-3">
+                      <label for="id" class="form-label">ID</label>
+                      <input type="text" class="form-control" id="site_id" placeholder="ID" readonly>
+                  </div> 
+                    <div class="mb-3">
+                        <label for="url" class="form-label">网址</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="url" placeholder="请输入网址">
+                            <button class="btn btn-outline-secondary" type="button" id="updateSiteInfoBtn">更新</button>
+                        </div>
+                  </div>
+                  <div class="mb-3">
+                      <label for="name" class="form-label">网址名称</label>
+                      <input type="text" class="form-control" id="name" placeholder="请输入网址名称">
+                  </div>
+                  <div class="mb-3">
+                      <label for="logo_url" class="form-label">网址图片地址</label>
+                      <input type="text" class="form-control" id="logo_url" placeholder="请输入网址图片地址">
+                  </div>
+                  {% comment %} <div class="mb-3">
+                      <label for="file_path" class="form-label">文件路径</label>
+                      <input type="text" class="form-control" id="file_path" placeholder="请输入文件路径">
+                  </div> {% endcomment %}
+                  <div class="mb-3">
+                      <label for="description" class="form-label">网址说明</label>
+                      <textarea class="form-control" id="description" rows="3" placeholder="请输入网址说明"></textarea>
+                  </div>
+              </form>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+              <button type="button" class="btn btn-primary" onclick="window.saveChanges()">保存更改</button>
+          </div>
+      </div>
+  </div>
+</div>
+<script>
+
+function showEditModal(id, url, name, logo_url, file_path, description) {
+    document.getElementById('site_id').value = id;
+    document.getElementById('url').value = url;
+    document.getElementById('name').value = name;
+    document.getElementById('logo_url').value = logo_url;
+    document.getElementById('description').value = description;
+    
+    // 显示模态框
+    const modal = new bootstrap.Modal(document.getElementById('editModal'));
+    modal.show();
+    
+    // 绑定更新按钮事件
+    const updateBtn = document.getElementById('updateSiteInfoBtn');
+    updateBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        updateSiteInfo();
+    });
+}
+
+
+
+// 将updateSiteInfo函数独立出来
+function updateSiteInfo() {
+    const url = document.getElementById('url').value;
+    if (!url) {
+        showCustomAlert('请先输入网址', 'warning');
+        return false;
+    }
+    
+    event.preventDefault();
+    event.stopPropagation();
+    
+    fetch('/Bookmark_modification_view/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            url: url,
+            post_type: 'updateSiteInfo'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        document.getElementById('name').value = data.id_name || '';
+        document.getElementById('description').value = data.id_description || '';
+        document.getElementById('logo_url').value = data.id_logo_url || '';
+        showCustomAlert('网站信息已更新', 'success');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showCustomAlert('获取网站信息时发生错误', 'error');
+    });
+    return false;
+}
+
+
+
+    // 保存更改的逻辑（这里仅作为示例，你需要根据实际情况编写保存逻辑）
+    function saveChanges() {
+        const site_id = document.getElementById('site_id').value;
+        const url = document.getElementById('url').value;
+        const name = document.getElementById('name').value;
+        const logo_url = document.getElementById('logo_url').value;
+        const folder_path = document.getElementById('file_path').value;
+        const description = document.getElementById('description').value;
+
+        // 这里调用后端API保存更改
+        console.log('保存的网址:', url);
+        console.log('保存的网址名称:', name);
+        console.log('保存的网址图片地址:', logo_url);
+        console.log('保存的网址说明:', description);
+        console.log('保存的文件路径:', folder_path);
+
+        fetch('/Bookmark_modification_view/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '123'
+            },
+            body: JSON.stringify({
+                site_id: site_id,
+                url: url,
+                name: name,
+                logo_url: logo_url,
+                folder_path: folder_path,
+                description: description,
+                post_type: 'Web_address_editing'
+            })
+        })
+            .then(response => response.json()) // 
+            .then(data => {
+                showCustomAlert(data.message, data.status);
+            })
+            .catch(error => console.error('Error:', error)); // 处理可能的错误
+
+        // 关闭模态框
+        $('#editModal').modal('hide');
+    }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue reder测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="sHqKp" />
+  <style>
+.fr{float:right;}
+  </style>
+</head>
+<body>
+<div id="app">
+  <input type="text" v-model="inputValue" @click="onClick"/>
+  {{inputValue}}
+  <div>
+    <button>新增</button>
+    <button class="fr">表头设置</button>
+  </div>
+  <table>
+    <thead>
+      <!-- <tr>
+        <th>序号</th><th>id</th><th>链接</th><th>图片</th><th>备注</th><th>时间</th>
+      </tr> -->
+      <tr>
+        <th>序号</th>
+        <th v-for="item in nav">{{item.title}}</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tr v-for="(item,index) in list">
+      <td>{{index}}</td><td>{{item.id}}</td><td><a :href="item.href">{{item.href}}</a></td><td><img :src="item.img" alt="logo"/></td><td>{{item.remark}}</td><td>{{formatDate(item.datetime)}}</td>
+    </tr>
+  </table>
+</div>
+0初始化 1进行中 2成功 3失败
+<script>
+let data = [
+  {
+    id: 1,
+    href: 'https://baidu.com',
+    img: 'https://baidu.com/favicon.ico',
+    remark: '超级长的文本',
+    datetime: 1519437803317,
+  },
+  {
+    id: 2,
+    href: 'https://51vv.com',
+    img: 'https://51vv.com/favicon.ico',
+    remark: '超级长的文本',
+    datetime: 1519437803318,
+  },
+  {
+    id: 3,
+    href: 'https://aliyun.com',
+    img: 'https://aliyun.com/favicon.ico',
+    remark: '超级长的文本',
+    datetime: 1519437803319,
+  }
+];
+let formatDate= function (time, fmt='yy-MM-dd hh:mm:ss') {
+    if (time) {
+      var date = new Date(time);
+      var o = {
+        'y+': date.getFullYear(),
+        'M+': date.getMonth() + 1,
+        'd+': date.getDate(),
+        'h+': date.getHours(),
+        'm+': date.getMinutes(),
+        's+': date.getSeconds()
+      };
+      for (var k in o) {
+        if (new RegExp('(' + k + ')').test(fmt)) {
+          var str = o[k] + '';
+          fmt = fmt.replace(RegExp.$1, (str.length === 1) ? ('0' + str) : str);
+        }
+      };
+      return fmt;
+    } else {
+      return '';
+    }
+  }
+const Test1 = {
+  template: `<div>test2</div>`
+}
+let nav = [
+  {title: 'ID', type: 'text', key: 'id'},
+  {title: '链接', type: 'a', key: 'href'},
+  {title: '图片', type: 'img', key: 'img'},
+  {title: '备注', type: 'multi',key: 'remark'},
+  {title: '时间', type: 'filter',key: 'datetime'},
+]
+const app = new Vue({
+  data: {  
+    list: data,
+    nav,
+    inputValue: ''
+  },
+  methods:{
+    formatDate,
+    onClick(){
+      alert(this.inputValue)
+    }
+  },
+  components: {
+    test1: Test1,
+  }
+}).$mount('#app')
+</script>
+</body>
+</html>

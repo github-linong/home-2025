@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue vue-router测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="arzKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js"></script>
+
+<div id="app">
+  <h1>Hello App!</h1>
+  <button @click="send">send</button>
+  <p v-show="$router.history.current.path !== '/foo'">{{$router.history.current}}</p>
+  <p>
+    <router-link to="/foo">Go to Foo</router-link>
+    <router-link to="/bar">Go to Bar</router-link>
+    <router-link to="/home">Go to Home</router-link>
+  </p>
+  <router-view></router-view>
+</div>
+
+<script>
+    const A = { template: '<div>foo{{$route.params}}</div>' }
+    const B = { template: '<div>bar{{$route.params}}</div>' }
+    const C = { template: '<div>home{{$route.params}}<button @click="send">send</button></div>',
+    methods:{
+        send(){
+            xhr = new XMLHttpRequest();
+            xhr.open('post', '/1')
+            xhr.send(new Blob(Array.from({length: 2**22})))
+            xhr.onload = console.log
+            xhr.onerror = console.log
+        }
+    } }
+
+    const routes = [
+    { path: '/foo', component: A },
+    { path: '/bar', component: B },
+    { path: '/home', component: C }
+    ]
+    const router = new VueRouter({
+    routes
+    })
+    const app = new Vue({
+    router,
+    methods:{
+        send(){
+            xhr = new XMLHttpRequest();
+            xhr.open('post', '/')
+            xhr.send(new Blob(Array.from({length: 2**22})))
+            xhr.onload = console.log
+            xhr.onerror = console.log
+        }
+    }
+    }).$mount('#app')
+</script>
+<script>
+
+</script>
+</body>
+</html>

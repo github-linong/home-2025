@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>axios 自动重试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="yn9Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- <script src="//cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>	 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.25.0/axios.min.js"></script>
+<script>
+    function axiosAutoTry(data){
+        return new Promise((resolve, reject)=>{
+            axios(data)
+            .then((data)=>{
+                resolve(data)
+            })
+            .catch(error=>{
+                // 有重试次数
+                if(typeof data.__try_count == 'number' && data.__try_count>0){
+                    top.console.warn('重试请求', axios.isCancel(error), error, data)
+                    data.__try_count--;
+                    if(error.code == 'ECONNABORTED'){
+                        // 中止，超时
+                        return resolve(axiosAutoTry(data))
+                    }else if(error.response && error.response.status){
+                        switch(error.response.status){
+                            case 503: 
+                                // 代理407
+                                return setTimeout(v=>{
+                                    resolve(axiosAutoTry(data))
+                                }, 500 + Math.random() * 500)
+                        }
+                    }
+                }
+                reject(error)
+            })
+        })
+    }
+
+    // 普通请求
+    function demo1(){
+        // 普通请求
+        axiosAutoTry({
+            url: `//www.lilnong.top/cors/1`,
+        }).then((data)=>top.console.log('then', data.data)).catch((error)=>top.console.log('catch', error))
+    }
+
+    // demo1()
+    // demo2()
+    // demo3()
+    // demo4()
+    // demo5()
+    // // 超时重试
+    // axiosAutoTry({
+    //     url: `//www.lilnong.top/cors/2`,
+    //     __try_count: 3,
+    //     timeout: 10
+    // }).then((data)=>top.console.log('then', data.data)) }).catch((error)=>top.console.log('catch', error))
+
+    // 503重试
+    function demo2(){
+        // 503重试
+        axiosAutoTry({
+            url: `//www.lilnong.top/corsutils/sleep?responseStatus=503&responseData=QAQ1&sleep=1000`,
+            __try_count: 3,
+        //     timeout: 10
+        }).then((data)=>top.console.log('then', data.data)).catch((error)=>top.console.log('catch', error))
+    }
+
+
+    // 5s超时重试
+    function demo3(){
+        // 5s超时重试
+        axiosAutoTry({
+            url: `//www.lilnong.top/corsutils/sleep?responseStatus=503&responseData=QAQ2&sleep=6000`,
+            __try_count: 3,
+            timeout: 5000
+        }).then((data)=>top.console.log('then', data.data)).catch((error)=>top.console.log('catch', error))
+    }
+
+
+
+    // 取消请求1
+    function demo4(){
+        // 取消请求1
+        var CancelToken1 = axios.CancelToken;
+        // 返回两个字段，{ token, cancel }
+        // token 用于表示某个请求，是一个 Promise 类型
+        // cancel 是一个方法，当被调用时，则取消 token 注入的那个请求
+        var source = CancelToken1.source();
+        axiosAutoTry({
+            url: `//www.lilnong.top/corsutils/sleep?responseStatus=200&responseData=QAQ3&sleep=6000`,
+            __try_count: 3,
+            timeout: 1000,
+            cancelToken: source.token, // 将token注入到请求中
+        }).then((data)=>top.console.log('then', data.data)).catch((error)=>top.console.log('catch', error))
+
+        setTimeout(()=>source.cancel('cancel'), 1500)
+    }
+
+
+    // 取消请求2
+    function demo5(){
+        // 取消请求2
+        var CancelToken2 = axios.CancelToken;
+        var cancel;
+        axiosAutoTry( {
+            url: `//www.lilnong.top/corsutils/sleep?responseStatus=200&responseData=QAQ4&sleep=6000`,
+            __try_count: 3,
+            timeout: 1000,
+            // CancelToken创建的
+            cancelToken: new CancelToken2(function executor(c) {
+                // An executor function receives a cancel function as a parameter
+                cancel = c;
+            }),
+        }).then((data)=>top.console.log('then', data.data)).catch((error)=>top.console.log('catch', error))
+
+        // cancel the request
+        setTimeout(()=>cancel('cancel'), 1500)
+    }
+
+
+</script>
+<button onclick="demo1()">demo1 普通请求</button>
+<button onclick="demo2()">demo2 503重试</button>
+<button onclick="demo3()">demo3 5s超时重试</button>
+<button onclick="demo4()">demo4 取消请求1</button>
+<button onclick="demo5()">demo5 取消请求2</button>
+<script>
+
+</script>
+</body>
+</html>

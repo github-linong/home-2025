@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>数据处理界面</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="ZQwKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<div id="app">
+	<div class="boxCon">
+		<el-form ref="dataProform" :model="dataProform" label-width="120px" :rules="dataFormRules">
+			<el-form-item label="数据集命名：" prop="dataListName">
+				<el-input size="mini" v-model="dataProform.dataListName" @blur="onBlurName(dataProform.dataListName)"></el-input>
+			</el-form-item>
+			<el-form-item label="数据集描述：" prop="dataListDes">
+				<el-input size="mini" v-model="dataProform.dataListDes" type="textarea"></el-input>
+			</el-form-item>
+			<div v-for="(item, index) in dataProform.dataList" :key="index" class="dataList" v-show="step == 1" :model="stepAll">
+				<el-form-item label="处理方法：" size="mini" :rules="dataFormRules.dealMethodst" :prop="`dataList.${index}.dealMethodst`">
+					<el-select v-model="item.dealMethodst" @change="selectMethods(item, index, stepAll)">
+						<el-option v-for="(item1, index1) in dealMethodsAll" :disabled="isSelect(item1.english_name)" :key="index1" :label="item1.chinese_name"
+						 :value="item1.english_name"></el-option>
+					</el-select>
+				</el-form-item>
+                <p>item.dataNodeMul:{{item.dataNodeMul}}</p>
+				<el-form-item label="数据项：" :rules="dataFormRules.dataNodeMul" :prop="`dataList.${index}.dataNodeMul`">
+					<!-- :multiple="idmodel"
+                v-if="update" 
+                multiple-->
+					<!-- :multiple="multiple(item,index)"
+                v-if="multipledate"  -->
+					<el-select v-model="item.dataNodeMul" 
+                        :multiple="multiple(item,index)" 
+                        v-if="multipledate" size="mini" 
+                        @change="pushArray($event, index)">
+						<el-option v-for="(item2, index2) in dataNodeAll" :key="index2" :label="item2" :value="item2"></el-option>
+					</el-select>
+				</el-form-item>
+				<div v-if="item.dealMethodst == 'normalization'">
+					<!--归一化-->
+					<div v-for="(itemM, indexM) in item.dataNode" :key="indexM">
+						<el-form-item :label="itemM.name + '最大取值：'" :rules="dataFormRules.max" :prop="`dataList.${index}.dataNode.${indexM}.max`">
+							<el-input size="mini" v-model="itemM.max" @input="change($event)"></el-input>
+						</el-form-item>
+						<el-form-item :label="itemM.name + '最小取值：'" :rules="dataFormRules.min" :prop="`dataList.${index}.dataNode.${indexM}.min`">
+							<el-input size="mini" v-model="itemM.min" @input="change($event)"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div v-else-if="item.dealMethodst == 'datatransfor'">
+					<!--数据转化-->
+					<div v-for="(itemX, indexX) in item.dataChange" :key="indexX + 'o'">
+						<el-form-item :label="itemX.name + '变换方式：'" :rules="dataFormRules.changeMethods" :prop="`dataList.${index}.dataChange.${indexX}.changeMethods`">
+							<el-select size="mini" v-model="itemX.changeMethods" @change="change($event)">
+								<el-option v-for="(items, indexs) in dataChangeAll" :key="indexs" :label="items" :value="items"></el-option>
+							</el-select>
+						</el-form-item>
+					</div>
+				</div>
+				<div v-else-if="item.dealMethodst == 'datasetfill'">
+					<!--缺失值处理-->
+					<div v-for="(itemy, indexy) in item.missValueDeal" :key="indexy + 'y'">
+						<el-form-item :label="itemy.name + '处理方式：'" :rules="dataFormRules.dealMethods" :prop="`dataList.${index}.missValueDeal.${indexy}.dealMethods`">
+							<el-select size="mini" v-model="itemy.dealMethods" @change="change($event)">
+								<el-option v-for="(itemv, indexv) in missValueDealAll" :key="indexv" :label="itemv.chinese_name" :value="itemv.english_name"></el-option>
+							</el-select>
+						</el-form-item>
+						<el-form-item label="填充值：" v-if="itemy.dealMethods == 'mode'" :rules="dataFormRules.fillValue" :prop="`dataList.${index}.missValueDeal.${indexy}.fillValue`">
+							<el-input size="mini" v-model="itemy.fillValue" @input="change($event)"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<!-- 追加 -->
+				<div v-else-if="item.dealMethodst == 'data_sort'">
+					<!--数据排序/单选 -->
+					<el-form-item label="排序方式：" :rules="dataFormRules.dataSort" :prop="`dataList.${index}.dataNode.dataSort`">
+						<el-select v-model="item.dataSort" size="mini" @change="changeSort()">
+							<el-option v-for="(itemN1, indexN1) in dataSortAll" :key="indexN1" :label="itemN1.chinese_name" :value="itemN1.english_name"></el-option>
+						</el-select>
+					</el-form-item>
+				</div>
+				<div v-else-if="item.dealMethodst == 'data_resample'">
+					<!--数据重采样/单选 -->
+					<!-- <el-form-item
+                label="采样方式："
+                :rules="dataFormRules.sampling"
+                :prop="dataProform.reSamp.sampling"
+              >
+                <el-radio-group
+                  v-model="dataProform.reSamp.sampling"
+                  size="mini"
+                >
+                  <el-radio label="按个数采样"></el-radio>
+                  <el-radio label="按比例采样"></el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item
+                :rules="dataFormRules.samplingInput"
+                :prop="dataProform.reSamp.samplingInput"
+              >
+                <el-input
+                  v-model="dataProform.reSamp.samplingInput"
+                  size="mini"
+                ></el-input>
+              </el-form-item>
+              <el-form-item
+                :rules="dataFormRules.samplingChekbox"
+                :prop="dataProform.reSamp.samplingChekbox"
+              >
+                <el-checkbox
+                  v-model="dataProform.reSamp.samplingChekbox"
+                  label="放回采样"
+                  name="type"
+                  size="mini"
+                ></el-checkbox>
+              </el-form-item>-->
+				</div>
+				<div v-else-if="item.dealMethodst == 'randem_generator'">
+					<!-- 数组载入（随机数据发生器） /输入单个-->
+					<!-- <el-form-item
+                label="数组列名："
+                :prop="dataProform.dateMap.dateName"
+                :rules="dataFormRules.dateName"
+              >
+                <el-input
+                  size="mini"
+                  v-model="dataProform.dateMap.dateName"
+                ></el-input>
+              </el-form-item>
+              <el-form-item
+                label="载入方式"
+                :prop="dataProform.dateMap.dateRadio"
+                :rules="dataFormRules.dateRadio"
+              >
+                <el-radio-group
+                  size="mini"
+                  v-model="dataProform.dateMap.dateRadio"
+                >
+                  <el-radio label="随机数生成"></el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item
+              style="display:inline-block;"
+                label="数据范围："
+                :prop="dataProform.dateMap.dateMin"
+                :rules="dataFormRules.dateMin"         
+              >
+                <el-input
+                  size="mini"
+                  v-model="dataProform.dateMap.dateMin"
+                ></el-input>
+              </el-form-item>
+              <el-form-item
+                style="display:inline-block;"
+                :prop="dataProform.dateMap.dateMax"
+                :rules="dataFormRules.dateMax"
+              >
+                <el-input
+                  size="mini"
+                  v-model="dataProform.dateMap.dateMax"
+                ></el-input>
+              </el-form-item>
+              <el-form-item
+                label="数据类型："
+                :prop="dataProform.dateMap.dateType"
+                :rules="dataFormRules.dateType"
+              >
+                <el-select
+                  size="mini"
+                  v-model="dataProform.dateMap.dateType"
+                  @change="change($event)"
+                >
+                  <el-option
+                    v-for="(itemDate, indexDate) in dateTypeAll"
+                    :key="indexDate"
+                    :label="itemDate"
+                    :value="itemDate"
+                  ></el-option>
+                </el-select>
+              </el-form-item>-->
+				</div>
+				<div v-else-if="item.dealMethodst == 'format_set'">
+					<!--数据格式设置 /多选   ok-->
+					<div v-for="(itemSet, indexSet) in item.setAll" :key="indexSet">
+						<el-form-item :label="itemSet.name + '保留小数位数：'" :rules="dataFormRules.litterNumber" :prop="`dataList.${index}.setAll.${indexSet}.litterNumber`">
+							<el-input size="mini" v-model="itemSet.litterNumber" @input="change($event)"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div v-else-if="item.dealMethodst == 'generated_column'">
+					<!--多项式处理/ 多选   ok-->
+					<div v-for="(itemPoly, indexPoly) in item.polyAll" :key="indexPoly">
+						<el-form-item :label="itemPoly.name + '派生列名：'" :rules="dataFormRules.nameDerive" :prop="`dataList.${index}.polyAll.${indexPoly}.nameDerive`">
+							<el-input size="mini" v-model="itemPoly.nameDerive" @change="change($event)"></el-input>
+						</el-form-item>
+						<el-form-item :label="itemPoly.name + '计算公式：'" :rules="dataFormRules.design" :prop="`dataList.${index}.polyAll.${indexPoly}.design`">
+							<el-input size="mini" type="textarea" v-model="itemPoly.design" @change="change($event)"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div v-else-if="item.dealMethodst == 'data_screen'">
+					<!--PCA降维/多选  ok-->
+					<div v-for="(itemPca, indexPca) in item.pcaAll" :key="indexPca">
+						<el-form-item :label="itemPca.name + '信息量比例：'" :rules="dataFormRules.namePca" :prop="`dataList.${index}.pcaAll.${indexPca}.namePca`">
+							<el-input size="mini" v-model="itemPca.namePca" @change="change($event)"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div v-else-if="item.dealMethodst == 'column_raname'">
+					<!-- 数据列重命名/多选  ok-->
+					<div v-for="(itemCR, indexCR) in item.columnAll" :key="indexCR">
+						<el-form-item :label="itemCR.name + '重命名为：'" :rules="dataFormRules.nameColumn" :prop="`dataList.${index}.columnAll.${indexCR}.nameColumn`">
+							<el-input size="mini" v-model="itemCR.nameColumn" @change="change($event)"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div v-else-if="item.dealMethodst == 'quantile'">
+					<!-- 分位处理-->
+					<div v-for="(itemQN, indexQN) in item.quantileNumAll" :key="indexQN">
+						<el-form-item :label="itemQN.name + '分位数：'" :rules="dataFormRules.quantileNum" :prop="`dataList.${index}.quantileNumAll.${indexQN}.quantileNum`">
+							<el-input size="mini" v-model="itemQN.quantileNum" @change="change($event)"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div v-else-if="item.dealMethodst == 'binarization'">
+					<!-- 2值处理-->
+					<div v-for="(itemQLN, indexQLN) in item.binarizationNumAll" :key="indexQLN">
+						<el-form-item :label="itemQLN.name + '阈值：'" :rules="dataFormRules.binarizationNum" :prop="`dataList.${index}.binarizationNumAll.${indexQLN}.binarizationNum`">
+							<el-input size="mini" v-model="itemQLN.binarizationNum"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div v-else-if="item.dealMethodst == 'sub_box'">
+					<!--分箱处理 -->
+					<div v-for="(itemSN, indexSN) in item.subBoxNumAll" :key="indexSN">
+						<el-form-item :label="itemSN.name + '分箱区间：'" :rules="dataFormRules.subBoxNum" :prop="`dataList.${index}.subBoxNumAll.${indexSN}.subBoxNum`">
+							<el-input size="mini" v-model="itemSN.subBoxNum"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div v-else-if="item.dealMethodst == 'target_encode'">
+					<!--目标编码-->
+					<div v-for="(itemEN, indexEN) in item.targetEncodeNumAll" :key="indexEN">
+						<el-form-item :label="itemEN.name + '目标项：'" :rules="dataFormRules.targetNum" :prop="`dataList.${index}.targetEncodeNumAll.${indexEN}.targetNum`">
+							<el-input size="mini" v-model="itemEN.targetNum"></el-input>
+						</el-form-item>
+						<el-form-item :label="itemEN.name + '特征项：'" :rules="dataFormRules.characteristicsNum" :prop="`dataList.${index}.targetEncodeNumAll.${indexEN}.characteristicsNum`">
+							<el-input size="mini" v-model="itemEN.characteristicsNum"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div v-else-if="item.dealMethodst == 'label_encoder'"></div>
+				<!--标签编码/多选  ok-->
+				<div v-else-if="item.dealMethodst == 'drop_dup'"></div>
+				<!--数据去重/单选-->
+				<div v-else-if="item.dealMethodst == 'onehot_enconder'"></div>
+				<!--整数编码/ 多选  -->
+				<div v-else-if="item.dealMethodst == 'abnormal_value'"></div>
+				<!--异常处理/多选 -->
+				<div v-else-if="item.dealMethodst == 'column_drop'"></div>
+				<!--删除/多选 -->
+
+				<!-- <div v-else-if="item.dealMethods=='整数编码'">
+              <div v-for="(itemz,indexz) in item.onehotCode" :key="indexz+'z'">
+                <el-form-item :label="itemz.name+'：'">
+                  <table class="table-div">
+                    <tr class="t-body" v-for="(itema, indexa) in itemz.dataListSmall" :key="indexa">
+                      <td>
+                        <el-input size="mini" v-model="itema.oldValue"></el-input>
+                      </td>
+                      <td style="padding: 0 10px;">
+                        <span>转换为</span>
+                      </td>
+                      <td>
+                        <el-input size="mini" v-model="itema.newValue"></el-input>
+                      </td>
+                      <td>
+                        <a class="el-icon-circle-plus-outline" @click="addRow(index,indexz)"></a>
+                      </td>
+                      <td v-show="itema.disable">
+                        <a class="el-icon-remove-outline" @click="removeRow(index,indexz,indexa)"></a>
+                      </td>
+                    </tr>
+                  </table>
+                </el-form-item>
+              </div>
+            </div> -->
+				<div class="botBtn">
+					<el-button size="mini" v-show="index !== 0" @click="deleteCanel(index)">取消</el-button>
+					<el-button size="mini" v-show="index == dataProform.dataList.length - 1" @click="nextDeal">继续处理</el-button>
+				</div>
+			</div>
+		</el-form>
+	</div>
+	<span slot="footer" class="dialog-footer">
+        <span v-show="step == 1">
+          <el-button @click="handleClose" size="mini">取 消</el-button>
+          <el-button
+            size="mini"
+            type="primary"
+            @click="dataProSure('dataProform')"
+            >确定</el-button
+          >
+        </span>
+      </span>
+      </div>
+<script>
+
+new Vue({
+  el: '#app',
+  data() {
+    return {
+      dialogVisiblev: false,
+      // dialogVisiblev2: false,
+      stepAll: 1,
+      step: 1,
+      dataProform: {
+        dataListName: "",
+        dataListDes: "",
+        dataList: [
+          {
+            dealMethodst: "归一化",
+            dataNodeMul: [],
+            dataNode: [
+              {
+                name: "列1",
+                max: "",
+                min: "",
+              },
+            ], //归一化
+            dataChange: [
+              {
+                name: "列1",
+                changeMethods: "",
+              },
+            ], //数据交换
+            missValueDeal: [
+              {
+                name: "列1",
+                dealMethods: "",
+                fillValue: "",
+              },
+            ], //缺失值处理
+
+            setAll: [
+              {
+                name: "列1",
+                litterNumber: "",
+              },
+            ], //数据格式设置
+            polyAll: [
+              {
+                name: "列1",
+                nameDerive: "",
+                design: "",
+              },
+            ], //多项式处理
+            pcaAll: [
+              {
+                namePca: "",
+              },
+            ], //PCA降维
+            columnAll: [
+              {
+                name: "列1",
+                nameColumn: "",
+              },
+            ], //列重命名
+            quantileNumAll: [
+              {
+                name: "列1",
+                quantileNum: "",
+              },
+            ], //分位处理
+            binarizationNumAll: [
+              {
+                name: "列1",
+                binarizationNum: "",
+              },
+            ], //2值处理
+            subBoxNumAll: [
+              {
+                name: "列1",
+                subBoxNum: "",
+              },
+            ], //分箱处理
+            targetEncodeNumAll: [
+              {
+                name: "列1",
+                targetNum: "",
+                characteristicsNum: "",
+              },
+            ], //目标编码
+          },
+        ],
+
+        reSamp: {
+          sampling: "按个数采样",
+          samplingInput: "",
+          samplingChekbox: "",
+        }, // 数据重采样
+
+        dateMap: {
+          dateName: "",
+          dateRadio: "随机数生成",
+          dateMin: "",
+          dateMax: "",
+          dateType: "",
+        }, //随机数据发生器
+        dataSortMap: {
+          dataSort: "",
+        }, //数据排序
+        targetEncodeNum: "", //目标编码
+        dataSort: "", //数据排序
+      }, //表单
+      dealMethodsAll: [
+          {
+            chinese_name:'归一化',
+            english_name:'normalization' 
+         },{
+             chinese_name:'标准化',
+             english_name:'standardization'
+         } ,{
+             chinese_name:'整数',
+             english_name:'onehot_enconder',
+         },{
+             chinese_name:'数据排序',
+             english_name:'data_sort',
+         }
+      ], //处理方法下拉
+      dataNodeAll: [
+          "usr_id", "trx_date", "trx_cty", "trx_amt", "total", "balance", "frequency", "amount"
+      ], //数据项下拉
+      dealMethods2All: ["切分", "合并"], //处理方式下拉
+      cutMethodsAll: ["按比例切分", "按记录条数切分", "按时间切分"], //切分方式下拉
+      mergeMethodsAll: ["列合并", "行合并"], //合并方式下拉
+      mergeDataListAll: [], //合并的数据集下拉
+      testColAll: [], //test1对应列下拉
+      dataListColAll: [], //数据集1对应列下拉
+      dataChangeAll: [], //变换方式下拉
+      missValueDealAll: [], //处理方式下拉
+      // 2020/10/19追加
+      dataSortAll: [], //排序方式下拉
+      dateTypeAll: [], //数据载入下拉
+
+      selected: [],
+      dataFormRules: {
+        dataListName: [{ required: true, message: "请填写", trigger: "blur" }],
+        dataListDes: [{ required: true, message: "请填写", trigger: "blur" }],
+        dealMethodst: [
+          { required: true, message: "请选择", trigger: "change" },
+        ],
+        dataNodeMul: [{ required: true, message: "请选择", trigger: "change" }],
+        max: [{ required: true, message: "请填写", trigger: "blur" }],
+        min: [{ required: true, message: "请填写", trigger: "blur" }],
+        changeMethods: [
+          { required: true, message: "请选择", trigger: "change" },
+        ],
+        dealMethods: [{ required: true, message: "请选择", trigger: "change" }],
+        fillValue: [{ required: true, message: "请填写", trigger: "blur" }],
+        // 2020/10/19追加
+        dataSort: [{ required: true, message: "请选择", trigger: "change" }], //数据排序
+        sampling: [{ required: true, message: "请选择", trigger: "change" }],
+        samplingInput: [{ required: true, message: "请填写", trigger: "blur" }],
+        samplingChekbox: [
+          { required: true, message: "请填写", trigger: "blur" },
+        ], //数据重采样
+        dateName: [{ required: true, message: "请填写", trigger: "blur" }],
+        dateRadio: [{ required: true, message: "请填写", trigger: "change" }],
+        dateMin: [{ required: true, message: "请填写", trigger: "blur" }],
+        dateMax: [{ required: true, message: "请填写", trigger: "blur" }],
+        dateType: [{ required: true, message: "请填写", trigger: "change" }], //随机数据发生器
+        litterNumber: [{ required: true, message: "请填写", trigger: "blur" }], //数据格式设置
+        nameDerive: [{ required: true, message: "请填写", trigger: "blur" }],
+        design: [{ required: true, message: "请填写", trigger: "blur" }], //多项式处理
+        namePca: [{ required: true, message: "请填写", trigger: "blur" }], //PCA降维
+        nameColumn: [{ required: true, message: "请填写", trigger: "blur" }], //列重命名
+        quantileNum: [{ required: true, message: "请填写", trigger: "blur" }], //分位处理
+        binarizationNum: [
+          { required: true, message: "请填写", trigger: "blur" },
+        ], //2值处理
+        subBoxNum: [{ required: true, message: "请填写", trigger: "blur" }], //分箱处理
+        targetEncodeNum: [
+          { required: true, message: "请填写", trigger: "blur" },
+        ], //目标编码
+      },
+      // multiple: true,
+      multipledate: true,
+    };
+  },
+  computed: {
+    dialogVisible() {
+      this.dialogVisiblev = this.isShow;
+      return this.isShow;
+    },
+    dialogVisible2() {
+      this.dialogVisiblev2 = this.isShow2;
+      return this.isShow2;
+    },
+  },
+  // watch:{
+  // },//监控数据选项
+  mounted() {
+    // var params = {};
+    // this.$http
+    //   .get(this.urlSet.URLPYP + "v1/dataset/filter", params, {
+    //     emulateJSON: true,
+    //   })
+    //   .then(
+    //     (res) => {
+    //       this.dealMethodsAll = res.data.hand_method;
+    //       this.dataProform.dataList[0].dealMethodst =
+    //         res.data.hand_method[0].english_name;
+    //       for (var i = 0; i < this.dealMethodsAll.length; i++) {
+    //         if (this.dealMethodsAll[i].chinese_name == "数据转换") {
+    //           this.dataChangeAll = this.dealMethodsAll[i].way;
+    //         } else if (this.dealMethodsAll[i].chinese_name == "缺失值处理") {
+    //           this.missValueDealAll = this.dealMethodsAll[i].way;
+    //         }
+    //       }
+    //     },
+    //     (error) => {
+    //       console.log(error);
+    //     }
+    //   );
+    // this.getDatax();
+  },
+  methods: {
+    //输入框不能输入值
+    change(e) {
+      this.$forceUpdate();
+    },
+    // 方法项下拉选择
+    selectMethods(item, index, stepAll) {
+      console.log(item, index, stepAll, "event,index");
+      this.selected = [];
+      for (const item of this.dataProform.dataList) {
+        if (item.dealMethodst) this.selected.push(item.dealMethodst);
+      }
+      console.log(this.selected, "选中，123456");
+      let selected = this.selected.toString();
+    },
+    isSelect(value) {
+      const selectItemList = [];
+      for (var i = 0; i < this.dataProform.dataList.length; i++) {
+        selectItemList.push(this.dataProform.dataList[i].dealMethodst);
+      }
+      // 如果option的value值在已经选择的数组里，则返回false不显示，否则返回true显示
+      for (let i in selectItemList) {
+        if (selectItemList[i] === value) {
+          return true;
+        }
+      }
+      return false;
+    },
+    multiple(item,index){
+      // console.log(this.dataNodeAll)
+      // console.log(item,index,"item,index")
+      // console.log(item.dealMethodst,"item.dealMethodst")
+      
+      if(item.dealMethodst === 'normalization'){
+          item.dataNodeMul = []
+        return true;
+      }else if((item.dealMethodst === 'standardization')){
+          item.dataNodeMul = ''
+        return false;
+      }else if((item.dealMethodst === 'onehot_enconder')){
+          item.dataNodeMul = []
+        return true;
+      }else if((item.dealMethodst === 'datatransfor')){
+          item.dataNodeMul = []
+        return true;
+      }
+    },
+    //数据集命名验证
+    onBlurName(val) {
+      this.$http({
+        url: this.urlSet.URLPYP + "v1/dataset/dataset_name",
+        method: "post",
+        data: { dataset_name: val, type_name: 1 },
+      }).then((res) => {
+        if (res.data.code == 0) {
+          this.$message.warning("名称已存在，请重新输入！");
+          this.dataProform.dataListName = "";
+          this.cutAllForm.dataListNamemany = "";
+          this.cutAllForm.dataListNamesel = "";
+          this.cutAllForm.mergeDataListName = "";
+        }
+      });
+    },
+    //获取数据项
+    // getDatax() {
+    //   this.$http({
+    //     url: this.urlSet.URLPYP + "v1/dataset/get_columns",
+    //     method: "post",
+    //     data: { dataset_id: this.$route.query.id },
+    //   }).then((response) => {
+    //     this.dataNodeAll = response.data.columns;
+    //   });
+    //   this.dataNodeAll = [
+          
+    //       ]
+    // },
+    //数据集对应列
+    dataCol(id) {
+      this.$http({
+        url: this.urlSet.URLPYP + "v1/dataset/get_columns",
+        method: "post",
+        data: { dataset_id: id },
+      }).then((response) => {
+        this.dataListColAll = response.data.columns;
+      });
+    },
+
+
+    handleClose() {
+      this.$refs.dataProform.resetFields();
+      this.dialogVisiblev = false;
+      this.$emit("dialogVisiblev", this.dialogVisiblev);
+    },
+    handleClose2() {
+      this.dialogVisiblev2 = false;
+      this.$emit("dialogVisiblev2", this.dialogVisiblev2);
+    },
+    //确定按钮---数据处理
+    dataProSure(formStep) {
+      // console.log(formStep, "formStep");
+      this.$refs[formStep].validate((valid) => {
+        if (valid) {
+          let params = {
+            dataset_id: this.$route.query.id,
+            dataset_name: this.dataProform.dataListName,
+            description: this.dataProform.dataListDes,
+            operator: JSON.parse(localStorage.getItem("userInfo")).user_name,
+            filter: [
+              // {
+              //   "dealMethods": "normalization",
+              //   "dataNodeMul": ["DCE_Price", "FOB_Price"],
+              //   "dataNode": [{ "max": 100, "min": 500, "name": "DCE_Price" }, { "max": 1000, "min": 500, "name": "FOB_Price" }]
+              // },
+              // { "dealMethods": "standardization", "dataNodeMul": ["export_all_provincial_month", "Russia_import_month"], "dataNode": [{ "name": "export_all_provincial_month" }, { "name": "Russia_import_month" }] },
+              // { "dealMethods": "datatransfor", "dataNodeMul": ["India_import_month", "Brazil_import_month"], "dataNode": [{ "name": "India_import_month", "val": "sin" }, { "name": "Brazil_import_month", "val": "cos" }] },
+              // { "dealMethods": "datasetfill", "dataNodeMul": ["Australia_import_month", "Brazil_week"], "dataNode": [{ "name": "Australia_import_month", "smooth": "iter" }, { "name": "Brazil_week", "smooth": "mean" }] },
+              // { "dealMethods": "label_enconder", "dataNodeMul": ["BHP_week", "vale_weeks"], "dataNode": [{ "name": "BHP_week" }, { "name": "vale_weeks" }] }
+            ],
+          };
+          for (var i = 0; i < this.dataProform.dataList.length; i++) {
+            if (this.dataProform.dataList[i].dealMethodst == "normalization") {
+              // 归一化
+              let listModel = [];
+
+              delete this.dataProform.dataList[i].dataChange;
+              delete this.dataProform.dataList[i].missValueDeal;
+              delete this.dataProform.dataList[i].binarizationNumAll;
+              delete this.dataProform.dataList[i].columnAll;
+              delete this.dataProform.dataList[i].pcaAll;
+              delete this.dataProform.dataList[i].polyAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              delete this.dataProform.dataList[i].setAll;
+              delete this.dataProform.dataList[i].subBoxNumAll;
+              delete this.dataProform.dataList[i].targetEncodeNumAll;
+             
+              params.filter.push(this.dataProform.dataList[i]);
+            } else if (
+              this.dataProform.dataList[i].dealMethodst == "datatransfor"
+            ) {
+              // 数据转化
+              delete this.dataProform.dataList[i].dataNode;
+              delete this.dataProform.dataList[i].missValueDeal;
+              delete this.dataProform.dataList[i].binarizationNumAll;
+              delete this.dataProform.dataList[i].columnAll;
+              delete this.dataProform.dataList[i].pcaAll;
+              delete this.dataProform.dataList[i].polyAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              delete this.dataProform.dataList[i].setAll;
+              delete this.dataProform.dataList[i].subBoxNumAll;
+              delete this.dataProform.dataList[i].targetEncodeNumAll;
+              this.dataProform.dataList[i].dataNode = this.dataProform.dataList[
+                i
+              ].dataChange;
+              delete this.dataProform.dataList[i].dataChange;
+              // console.log(this.dataProform.dataList[i]);
+              params.filter.push(this.dataProform.dataList[i]);
+              // console.log("数据转化");
+            } else if (
+              this.dataProform.dataList[i].dealMethodst == "datasetfill"
+            ) {
+              // 缺失值处理
+              delete this.dataProform.dataList[i].dataNode;
+              delete this.dataProform.dataList[i].dataChange;
+              delete this.dataProform.dataList[i].binarizationNumAll;
+              delete this.dataProform.dataList[i].columnAll;
+              delete this.dataProform.dataList[i].pcaAll;
+              delete this.dataProform.dataList[i].polyAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              delete this.dataProform.dataList[i].setAll;
+              delete this.dataProform.dataList[i].subBoxNumAll;
+              delete this.dataProform.dataList[i].targetEncodeNumAll;
+              this.dataProform.dataList[i].dataNode = this.dataProform.dataList[
+                i
+              ].missValueDeal;
+              delete this.dataProform.dataList[i].missValueDeal;
+              params.filter.push(this.dataProform.dataList[i]);
+              // console.log("缺失值处理");
+            } else if (
+              this.dataProform.dataList[i].dealMethodst == "standardization"
+            ) {
+              // 标准化
+              delete this.dataProform.dataList[i].dataChange;
+              delete this.dataProform.dataList[i].missValueDeal;
+              delete this.dataProform.dataList[i].onehotCode;
+              delete this.dataProform.dataList[i].binarizationNumAll;
+              delete this.dataProform.dataList[i].columnAll;
+              delete this.dataProform.dataList[i].pcaAll;
+              delete this.dataProform.dataList[i].polyAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              delete this.dataProform.dataList[i].setAll;
+              delete this.dataProform.dataList[i].subBoxNumAll;
+              delete this.dataProform.dataList[i].targetEncodeNumAll;
+              // this.dataProform.dataList[i].dealMethods = 'standardization'
+              params.filter.push(this.dataProform.dataList[i]);
+              // console.log("标准化");
+            } else if (
+              this.dataProform.dataList[i].dealMethodst == "label_enconder"
+            ) {
+              // 标签编码/多选
+              delete this.dataProform.dataList[i].dataChange;
+              delete this.dataProform.dataList[i].missValueDeal;
+              delete this.dataProform.dataList[i].binarizationNumAll;
+              delete this.dataProform.dataList[i].columnAll;
+              delete this.dataProform.dataList[i].pcaAll;
+              delete this.dataProform.dataList[i].polyAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              delete this.dataProform.dataList[i].setAll;
+              delete this.dataProform.dataList[i].subBoxNumAll;
+              delete this.dataProform.dataList[i].targetEncodeNumAll;
+              params.filter.push(this.dataProform.dataList[i]);
+              // console.log("标签编码");
+            } else if (
+              this.dataProform.dataList[i].dealMethodst == "onehot_enconder"
+            ) {
+              // -整数编码/ 多选
+              delete this.dataProform.dataList[i].dataChange;
+              delete this.dataProform.dataList[i].missValueDeal;
+              delete this.dataProform.dataList[i].binarizationNumAll;
+              delete this.dataProform.dataList[i].columnAll;
+              delete this.dataProform.dataList[i].pcaAll;
+              delete this.dataProform.dataList[i].polyAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              delete this.dataProform.dataList[i].setAll;
+              delete this.dataProform.dataList[i].subBoxNumAll;
+              delete this.dataProform.dataList[i].targetEncodeNumAll;
+              this.dataProform.dataList[i].dataNode = this.dataProform.dataList[
+                i
+              ].onehotCode;
+              params.filter.push(this.dataProform.dataList[i]);
+              // console.log("标签编码");
+            } else if (
+              this.dataProform.dataList[i].dealMethodst == "abnormal_value"
+            ) {
+              // -异常处理/多选
+              delete this.dataProform.dataList[i].dataChange;
+              delete this.dataProform.dataList[i].missValueDeal;
+              delete this.dataProform.dataList[i].binarizationNumAll;
+              delete this.dataProform.dataList[i].columnAll;
+              delete this.dataProform.dataList[i].pcaAll;
+              delete this.dataProform.dataList[i].polyAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              delete this.dataProform.dataList[i].setAll;
+              delete this.dataProform.dataList[i].subBoxNumAll;
+              delete this.dataProform.dataList[i].targetEncodeNumAll;
+              params.filter.push(this.dataProform.dataList[i]);
+              // console.log("标签编码");
+            } else if (
+              this.dataProform.dataList[i].dealMethodst == "column_drop"
+            ) {
+              // -删除/多选
+              delete this.dataProform.dataList[i].dataChange;
+              delete this.dataProform.dataList[i].missValueDeal;
+              delete this.dataProform.dataList[i].binarizationNumAll;
+              delete this.dataProform.dataList[i].columnAll;
+              delete this.dataProform.dataList[i].pcaAll;
+              delete this.dataProform.dataList[i].polyAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              delete this.dataProform.dataList[i].setAll;
+              delete this.dataProform.dataList[i].subBoxNumAll;
+              delete this.dataProform.dataList[i].targetEncodeNumAll;
+              params.filter.push(this.dataProform.dataList[i]);
+              // console.log("标签编码");
+            } else if (
+              this.dataProform.dataList[i].dealMethodst == "format_set"
+            ) {
+              // 数据格式设置 /多选
+              // console.log(this.dataProform.dataList[i]);
+              delete this.dataProform.dataList[i].dataNode;
+              delete this.dataProform.dataList[i].dataChange;
+              delete this.dataProform.dataList[i].missValueDeal;
+              delete this.dataProform.dataList[i].onehotCode;
+              delete this.dataProform.dataList[i].binarizationNumAll;
+              delete this.dataProform.dataList[i].columnAll;
+              delete this.dataProform.dataList[i].pcaAll;
+              delete this.dataProform.dataList[i].polyAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              delete this.dataProform.dataList[i].subBoxNumAll;
+              delete this.dataProform.dataList[i].targetEncodeNumAll;
+              this.dataProform.dataList[i].dataNode = this.dataProform.dataList[
+                i
+              ].setAll;
+              delete this.dataProform.dataList[i].setAll;
+              params.filter.push(this.dataProform.dataList[i]);
+              // console.log("数据格式设置");
+            } else if (
+              this.dataProform.dataList[i].dealMethodst == "generated_column"
+            ) {
+              // 多项式处理/ 多选
+              delete this.dataProform.dataList[i].dataNode;
+              delete this.dataProform.dataList[i].dataChange;
+              delete this.dataProform.dataList[i].missValueDeal;
+              delete this.dataProform.dataList[i].onehotCode;
+              delete this.dataProform.dataList[i].binarizationNumAll;
+              delete this.dataProform.dataList[i].columnAll;
+              delete this.dataProform.dataList[i].setAll;
+              delete this.dataProform.dataList[i].pcaAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              delete this.dataProform.dataList[i].subBoxNumAll;
+              delete this.dataProform.dataList[i].targetEncodeNumAll;
+              this.dataProform.dataList[i].dataNode = this.dataProform.dataList[
+                i
+              ].polyAll;
+              delete this.dataProform.dataList[i].polyAll;
+              params.filter.push(this.dataProform.dataList[i]);
+              // console.log("多项式处理");
+            } else if (
+              this.dataProform.dataList[i].dealMethodst == "data_screen"
+            ) {
+              // PCA降维/多选
+              // console.log(this.dataProform.dataList[i]);
+              delete this.dataProform.dataList[i].dataNode;
+              delete this.dataProform.dataList[i].dataChange;
+              delete this.dataProform.dataList[i].missValueDeal;
+              delete this.dataProform.dataList[i].onehotCode;
+              delete this.dataProform.dataList[i].binarizationNumAll;
+              delete this.dataProform.dataList[i].columnAll;
+              delete this.dataProform.dataList[i].setAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              delete this.dataProform.dataList[i].subBoxNumAll;
+              delete this.dataProform.dataList[i].targetEncodeNumAll;
+              delete this.dataProform.dataList[i].polyAll;
+              this.dataProform.dataList[i].dataNode = this.dataProform.dataList[
+                i
+              ].pcaAll;
+              delete this.dataProform.dataList[i].pcaAll;
+              params.filter.push(this.dataProform.dataList[i]);
+              // console.log(" PCA降维");
+            } else if (
+              this.dataProform.dataList[i].dealMethodst == "column_raname"
+            ) {
+              // 数据列重命名/多选
+              // console.log(this.dataProform.dataList[i]);
+              delete this.dataProform.dataList[i].dataChange;
+              delete this.dataProform.dataList[i].missValueDeal;
+              delete this.dataProform.dataList[i].onehotCode;
+              delete this.dataProform.dataList[i].binarizationNumAll;
+              delete this.dataProform.dataList[i].pcaAll;
+              delete this.dataProform.dataList[i].polyAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              delete this.dataProform.dataList[i].setAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              delete this.dataProform.dataList[i].subBoxNumAll;
+              delete this.dataProform.dataList[i].targetEncodeNumAll;
+              this.dataProform.dataList[i].dataNode = this.dataProform.dataList[
+                i
+              ].columnAll;
+              delete this.dataProform.dataList[i].columnAll;
+              params.filter.push(this.dataProform.dataList[i]);
+              // console.log("数据列重命名");
+            } else if (
+              this.dataProform.dataList[i].dealMethodst == "quantile"
+            ) {
+              //  分位处理
+              // console.log(this.dataProform.dataList[i]);
+              delete this.dataProform.dataList[i].dataNode;
+              delete this.dataProform.dataList[i].dataChange;
+              delete this.dataProform.dataList[i].missValueDeal;
+              delete this.dataProform.dataList[i].onehotCode;
+              delete this.dataProform.dataList[i].binarizationNumAll;
+              delete this.dataProform.dataList[i].setAll;
+              delete this.dataProform.dataList[i].subBoxNumAll;
+              delete this.dataProform.dataList[i].targetEncodeNumAll;
+              delete this.dataProform.dataList[i].columnAll;
+              delete this.dataProform.dataList[i].pcaAll;
+              delete this.dataProform.dataList[i].polyAll;
+              this.dataProform.dataList[i].dataNode = this.dataProform.dataList[
+                i
+              ].quantileNumAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              params.filter.push(this.dataProform.dataList[i]);
+              // console.log("分位处理");
+            } else if (
+              this.dataProform.dataList[i].dealMethodst == "binarization"
+            ) {
+              // 2值处理
+              // console.log(this.dataProform.dataList[i]);
+              delete this.dataProform.dataList[i].dataNode;
+              delete this.dataProform.dataList[i].dataChange;
+              delete this.dataProform.dataList[i].missValueDeal;
+              delete this.dataProform.dataList[i].onehotCode;
+              delete this.dataProform.dataList[i].setAll;
+              delete this.dataProform.dataList[i].subBoxNumAll;
+              delete this.dataProform.dataList[i].targetEncodeNumAll;
+              delete this.dataProform.dataList[i].columnAll;
+              delete this.dataProform.dataList[i].pcaAll;
+              delete this.dataProform.dataList[i].polyAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              this.dataProform.dataList[i].dataNode = this.dataProform.dataList[
+                i
+              ].binarizationNumAll;
+              delete this.dataProform.dataList[i].binarizationNumAll;
+              params.filter.push(this.dataProform.dataList[i]);
+              // console.log("2值处理");
+            } else if (this.dataProform.dataList[i].dealMethodst == "sub_box") {
+              // 分箱处理
+              // console.log(this.dataProform.dataList[i]);
+              delete this.dataProform.dataList[i].dataNode;
+              delete this.dataProform.dataList[i].dataChange;
+              delete this.dataProform.dataList[i].missValueDeal;
+              delete this.dataProform.dataList[i].onehotCode;
+              delete this.dataProform.dataList[i].setAll;
+              delete this.dataProform.dataList[i].targetEncodeNumAll;
+              delete this.dataProform.dataList[i].binarizationNumAll;
+              delete this.dataProform.dataList[i].columnAll;
+              delete this.dataProform.dataList[i].pcaAll;
+              delete this.dataProform.dataList[i].polyAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              this.dataProform.dataList[i].dataNode = this.dataProform.dataList[
+                i
+              ].subBoxNumAll;
+              delete this.dataProform.dataList[i].subBoxNumAll;
+              params.filter.push(this.dataProform.dataList[i]);
+              // console.log("分箱处理");
+            } else if (
+              this.dataProform.dataList[i].dealMethodst == "target_encode"
+            ) {
+              // 目标编码
+              // console.log(this.dataProform.dataList[i]);
+              delete this.dataProform.dataList[i].dataNode;
+              delete this.dataProform.dataList[i].dataChange;
+              delete this.dataProform.dataList[i].missValueDeal;
+              delete this.dataProform.dataList[i].onehotCode;
+              delete this.dataProform.dataList[i].setAll;
+              delete this.dataProform.dataList[i].binarizationNumAll;
+              delete this.dataProform.dataList[i].columnAll;
+              delete this.dataProform.dataList[i].pcaAll;
+              delete this.dataProform.dataList[i].polyAll;
+              delete this.dataProform.dataList[i].quantileNumAll;
+              delete this.dataProform.dataList[i].subBoxNumAll;
+              this.dataProform.dataList[i].dataNode = this.dataProform.dataList[
+                i
+              ].targetEncodeNumAll;
+              delete this.dataProform.dataList[i].targetEncodeNumAll;
+              params.filter.push(this.dataProform.dataList[i]);
+              // console.log("目标编码");
+            }
+          }
+          // console.log(params)
+          this.$http
+            .post(this.urlSet.URLPYP + "v1/dataset/filter", params, {
+              emulateJSON: true,
+            })
+            .then(
+              (res) => {
+                // console.log(res);
+                if (res.data.code == 0) {
+                  this.$message.success(res.data.msg);
+                  this.dialogVisiblev = false;
+                  this.$emit("dialogVisiblev", this.dialogVisiblev);
+                } else {
+                  this.$message.error(res.data.msg);
+                }
+              },
+              (error) => {
+                console.log(error);
+              }
+            );
+        } else {
+          return false;
+        }
+      });
+    },
+    //继续处理
+    nextDeal() {
+      this.dataProform.dataList.push({});
+      this.stepAll = this.stepAll + 1;
+    },
+    //取消
+    deleteCanel(idx) {
+      this.dataProform.dataList.splice(idx, 1);
+    },
+    pushArray(e, idx) {
+      console.log(e)
+      for (var i = 0; i < this.dataProform.dataList.length; i++) {
+        if (
+          idx == i &&
+          this.dataProform.dataList[i].dealMethodst == "normalization"
+        ) {
+          this.dataProform.dataList[i].dataNode = [];
+          for (var j = 0; j < e.length; j++) {
+            this.dataProform.dataList[i].dataNode.push({
+              name: e[j],
+              max: "",
+              min: "",
+            });
+          }
+        } else if (
+          idx == i &&
+          this.dataProform.dataList[i].dealMethodst == "datatransfor"
+        ) {
+          this.dataProform.dataList[i].dataChange = [];
+          for (var j = 0; j < e.length; j++) {
+            this.dataProform.dataList[i].dataChange.push({
+              name: e[j],
+              changeMethods: "",
+            });
+          }
+        } else if (
+          idx == i &&
+          this.dataProform.dataList[i].dealMethodst == "datasetfill"
+        ) {
+          this.dataProform.dataList[i].missValueDeal = [];
+          for (var j = 0; j < e.length; j++) {
+            console.log(e);
+            this.dataProform.dataList[i].missValueDeal.push({
+              name: e[j],
+              dealMethods: "",
+              fillValue: "",
+            });
+          }
+        } else if (
+          idx == i &&
+          this.dataProform.dataList[i].dealMethodst == "label_enconder"
+        ) {
+          this.dataProform.dataList[i].onehotCode = [];
+          for (var j = 0; j < e.length; j++) {
+            this.dataProform.dataList[i].onehotCode.push({
+              name: e[j],
+            });
+          }
+        } else if (
+          idx == i &&
+          this.dataProform.dataList[i].dealMethodst == "standardization"
+        ) {
+          this.dataProform.dataList[i].dataNode = [];
+          for (var j = 0; j < e.length; j++) {
+            this.dataProform.dataList[i].dataNode.push({
+              name: e[j],
+            });
+          }
+        } else if (
+          idx == i &&
+          this.dataProform.dataList[i].dealMethodst == "label_encoder"
+        ) {
+          this.dataProform.dataList[i].dataNode = [];
+          for (var j = 0; j < e.length; j++) {
+            this.dataProform.dataList[i].dataNode.push({
+              name: e[j],
+            });
+          }
+        } else if (
+          idx == i &&
+          this.dataProform.dataList[i].dealMethodst == "abnormal_value"
+        ) {
+          this.dataProform.dataList[i].dataNode = [];
+          for (var j = 0; j < e.length; j++) {
+            this.dataProform.dataList[i].dataNode.push({
+              name: e[j],
+            });
+          }
+        } else if (
+          idx == i &&
+          this.dataProform.dataList[i].dealMethodst == "column_drop"
+        ) {
+          this.dataProform.dataList[i].dataNode = [];
+          for (var j = 0; j < e.length; j++) {
+            this.dataProform.dataList[i].dataNode.push({
+              name: e[j],
+            });
+          }
+        } else if (
+          idx == i &&
+          this.dataProform.dataList[i].dealMethodst == "format_set"
+        ) {
+          this.dataProform.dataList[i].setAll = [];
+          for (var j = 0; j < e.length; j++) {
+            this.dataProform.dataList[i].setAll.push({
+              name: e[j],
+              litterNumber: "",
+            });
+          }
+        } else if (
+          idx == i &&
+          this.dataProform.dataList[i].dealMethodst == "generated_column"
+        ) {
+          this.dataProform.dataList[i].polyAll = [];
+          for (var j = 0; j < e.length; j++) {
+            this.dataProform.dataList[i].polyAll.push({
+              name: e[j],
+              nameDerive: "",
+              design: "",
+            });
+          }
+        } else if (
+          idx == i &&
+          this.dataProform.dataList[i].dealMethodst == "data_screen"
+        ) {
+          this.dataProform.dataList[i].pcaAll = [];
+          for (var j = 0; j < e.length; j++) {
+            this.dataProform.dataList[i].pcaAll.push({
+              name: e[j],
+              namePca: "",
+            });
+          }
+        } else if (
+          idx == i &&
+          this.dataProform.dataList[i].dealMethodst == "column_raname"
+        ) {
+          this.dataProform.dataList[i].columnAll = [];
+          for (var j = 0; j < e.length; j++) {
+            this.dataProform.dataList[i].columnAll.push({
+              name: e[j],
+              nameColumn: "",
+            });
+          }
+        } else if (
+          idx == i &&
+          this.dataProform.dataList[i].dealMethodst == "binarization"
+        ) {
+          this.dataProform.dataList[i].binarizationNumAll = [];
+          for (var j = 0; j < e.length; j++) {
+            this.dataProform.dataList[i].binarizationNumAll.push({
+              name: e[j],
+              binarizationNum: "",
+            });
+          }
+        } else if (
+          idx == i &&
+          this.dataProform.dataList[i].dealMethodst == "sub_box"
+        ) {
+          this.dataProform.dataList[i].subBoxNumAll = [];
+          for (var j = 0; j < e.length; j++) {
+            this.dataProform.dataList[i].subBoxNumAll.push({
+              name: e[j],
+              subBoxNum: "",
+            });
+          }
+        } else if (
+          idx == i &&
+          this.dataProform.dataList[i].dealMethodst == "quantile"
+        ) {
+          this.dataProform.dataList[i].quantileNumAll = [];
+          for (var j = 0; j < e.length; j++) {
+            this.dataProform.dataList[i].quantileNumAll.push({
+              name: e[j],
+              quantileNum: "",
+            });
+          }
+        } else if (
+          idx == i &&
+          this.dataProform.dataList[i].dealMethodst == "target_encode"
+        ) {
+          this.dataProform.dataList[i].targetEncodeNumAll = [];
+          for (var j = 0; j < e.length; j++) {
+            this.dataProform.dataList[i].targetEncodeNumAll.push({
+              name: e[j],
+              targetNum: "",
+              characteristicsNum: "",
+            });
+          }
+        }
+      }
+    },
+    copyDataList() {
+      var des1 = {
+        oldValue: "",
+        newValue: "",
+        disable: true,
+      };
+      return des1;
+    },
+    // 新增一行
+    addRow(index, idx2) {
+      console.log(index);
+      var des = this.copyDataList();
+      this.dataProform.dataList[index].onehotCode[idx2].dataListSmall.push(des);
+    },
+    // 删除一行
+    removeRow(index, idx, idx2) {
+      console.log(index, idx);
+      this.dataProform.dataList[index].onehotCode[idx].dataListSmall.splice(
+        idx2,
+        1
+      );
+    },
+  },
+})
+</script>
+</body>
+</html>

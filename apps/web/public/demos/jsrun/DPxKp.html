@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>插件注册测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="DPxKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<p>1. menu ，menu 注入（两个 list 合并），单击加载对应内容
+	<p>2. 注入js来源？（ 点击加载本地的目录，目录里面有插件配置，配置包括菜单配置，右侧的展示区域js）
+		<p></p>
+		<!-- <div id="app" style="height: 400px;display:flex;flex-direction: column;">
+    <div style="display: flex;flex: auto;">
+        <div id="nav">nav</div>
+        <div style="flex: auto">
+            <div>header</div>
+            <div>content</div>
+        </div>
+    </div>
+    <div>footer</div>
+</div> -->
+		<div id="app" style="height: 400px;display:flex;flex-direction: column;">
+            <input type="file" style="display:block;width:0;height:0;" id="import2file">
+            <a target="_top" download="test.js" style="display:block;width:0;height:0;" id="downloadEl">123</a>
+			<div style="display: flex;flex: auto;">
+				<div id="nav">
+					<div v-for="item in nav" @click="item.mount(content)">{{item.name}}</div>
+				</div>
+				<div style="flex: auto">
+					<div>header
+						<button @click="import1">导入内置插件</button>
+                        <button @click="import2">JSONP 导入本地插件</button>
+                        <button @click="download1">下载测试文件1</button>
+                    </div>
+                 <div id="content">content</div>
+        </div>
+    </div>
+    <div>footer</div>
+</div>
+<style>
+    div{
+        border: 1px solid #f00;
+        padding: 6px 10px;
+        margin-bottom: 4px;
+    }
+</style>
+<script>
+    sMenu = [
+        {
+            name: '个人中心',
+            mount(el){
+                el.innerHTML = '个人中心'
+            }
+        },
+        {
+            name: '系统通知',
+            mount(el){
+                el.innerHTML = '系统通知'
+            }
+        }
+    ]
+    uMenu = []
+
+    // nav.innerHTML = [].concat(sMenu,uMenu).map((v)=>{
+    //     return `<div>${v.name}</div>`
+    // }).join('')
+
+    // nav.addEventListener('click',()=>{
+        
+    // })
+</script>
+<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                nav: [].concat(sMenu,uMenu)
+            }
+        },
+        methods:{
+            import1(){
+                const value = Math.random();
+                this.nav.push({
+                    name: value,
+                    mount(el){
+                        el.innerHTML = Date.now()+value
+                    }
+                })
+            },
+            import2(){
+                import2file.click();
+                import2file.onchange = (e)=>{
+                    const file = e.files[0];
+                    if(file){
+                        fr = new FileReader()
+                        fr.readAsText(file)
+                        fr.onload = ()=>{
+                            eval(`(${fr.result})`)
+                        }
+                    }
+                }
+                window.import2 = (v)=>{
+                    this.nav.push(v)
+                }
+            },
+            download1(){
+                downloadEl.href = URL.createObjectURL(new Blob([`import2({
+                    name: '本地文件${Math.random()}',
+                    mount(el){
+                        el.innerHTML = Date.now()+'本地文件'
+                    }
+                })`]))
+                downloadEl.click()
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>判断滚动结束显示内容</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="HGVKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.min.js"></script>
+<div id="app">
+    <div v-show="tag" style="position: fixed;top:0;right:0;width: 100px;height: 100px;background:red;">
+        fixed
+    </div>
+    <ul>
+        <li v-for="item in 100">{{item}}</li>
+    </ul>
+</div>
+<script>
+    new Vue({
+        el:'#app',
+        data() {
+            return {
+                oldScrollTop: 0, //记录上一次滚动结束后的滚动距离
+                scrollTop: 0, // 记录当前的滚动距离，
+                tag: true,
+            }
+        },
+        watch: {
+            scrollTop(newValue, oldValue) {
+                setTimeout(() => {
+                    if(newValue == window.scrollY) { //延时执行后当newValue等于window.scrollY，代表滚动结束
+                        console.log('滚动结束');
+                        this.tag = true;
+                        this.oldScrollTop = newValue; //每次滚动结束后都要给oldScrollTop赋值
+                    };
+                }, 20); //必须使用延时器，否则每次newValue和window.scrollY都相等，无法判断，20ms刚好大于watch的侦听周期，故延时20ms
+                if(this.oldScrollTop == oldValue) { //每次滚动开始时oldScrollTop与oldValue相等
+                    console.log('滚动开始');
+                }
+                this.tag = false;
+            }
+        },
+        methods: {
+            handleScroll() {
+                window.addEventListener('scroll', () => {
+                    this.scrollTop = window.scrollY;
+                })
+            }
+        },
+        mounted() {
+            this.handleScroll();
+        },
+        beforeDestroy() {
+            window.removeEventListener('scroll'); //离开当前组件别忘记移除事件监听哦
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

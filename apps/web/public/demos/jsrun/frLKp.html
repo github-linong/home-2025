@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>elementui tree 修改</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="frLKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<div id="app">
+    <el-tree
+    :data="data"
+    show-checkbox
+    default-expand-all
+    node-key="id"
+    ref="tree"
+    highlight-current
+    :props="defaultProps">
+    </el-tree>
+
+    <hr>
+    <v-deep :data="data" type="1"></v-deep>
+    <v-deep :data="data" type="1"></v-deep>
+    <v-deep :data="data" type="2"></v-deep>
+    
+    <hr>
+    <v-deep :data="data" type="2"></v-deep>
+    <hr>
+    <div v-for="item in 5">
+        {{item}}
+        <v-deep :data="data" :type="item<4?1:2"></v-deep>
+    </div>
+</div>
+<script>
+Vue.component('v-deep', {
+    props: ['data','type'],
+    data(){
+        return {}
+    },
+    mounted(){
+    },
+    template: `
+        <div>
+            <div></div>
+            <div v-for="item in data">
+                <div v-if="item.children&&item.children.length">
+                    <v-deep :data="item.children" :type="type"></v-deep>
+                </div>
+                <div v-else>
+                    <input type="checkbox" v-if="type==1">
+                    {{item.label}}
+                    <input type="radio" v-if="type==2">
+                </div>
+            </div>
+        </div>
+    `
+})
+new Vue({
+    el: '#app',
+    methods: {
+      getCheckedNodes() {
+        console.log(this.$refs.tree.getCheckedNodes());
+      },
+      getCheckedKeys() {
+        console.log(this.$refs.tree.getCheckedKeys());
+      },
+      setCheckedNodes() {
+        this.$refs.tree.setCheckedNodes([{
+          id: 5,
+          label: '二级 2-1'
+        }, {
+          id: 9,
+          label: '三级 1-1-1'
+        }]);
+      },
+      setCheckedKeys() {
+        this.$refs.tree.setCheckedKeys([3]);
+      },
+      resetChecked() {
+        this.$refs.tree.setCheckedKeys([]);
+      },
+      renderContent(){
+          return ''
+      }
+    },
+
+    data() {
+      return {
+        data: [{
+          id: 1,
+          label: '一级 1',
+          children: [{
+            id: 4,
+            label: '二级 1-1',
+            children: [{
+              id: 9,
+              label: '三级 1-1-1'
+            }, {
+              id: 10,
+              label: '三级 1-1-2'
+            }]
+          }]
+        }, {
+          id: 2,
+          label: '一级 2',
+          children: [{
+            id: 5,
+            label: '二级 2-1'
+          }, {
+            id: 6,
+            label: '二级 2-2'
+          }]
+        }, {
+          id: 3,
+          label: '一级 3',
+          children: []
+        }],
+        defaultProps: {
+          children: 'children',
+          label: 'label'
+        }
+      };
+    }
+  })
+</script>
+</body>
+</html>

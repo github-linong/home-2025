@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>pc rem策略方案，异常情况查询</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="AchKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<template id="tempate">
+  <div >
+    <div class="header">
+      <ul class="headerTitle">
+        <li class="headerText">
+          首页
+        </li>
+        <li class="headerText">
+          新闻
+        </li>
+        <li class="headerText">
+          推荐
+        </li>
+        <li class="headerText">
+          娱乐
+        </li>
+        <li class="headerText">
+          财经
+        </li>
+        <li class="headerText">
+          活动
+        </li>
+      </ul>
+    </div>
+    <div class="main">
+      <img class="mainImg" src="../images/Snipaste_2018-11-20_21-17-31.png"
+      alt="">
+      <p class="mainText">
+        我喝过最烈的酒，放过不该放的手
+      </p>
+    </div>
+    <div class="newList">
+      <ul>
+        <li class="newItem">
+          <div class="newInner">
+            <img class="newImg" src="../images/123456789.png" alt="">
+            <p class="newText">
+              我喝过最烈的酒，放过不该放的手，一路向北飘流着
+            </p>
+            <span class="time">
+              1小时前
+            </span>
+            <span class="num">
+              456
+            </span>
+          </div>
+        </li>
+        <li class="newItem">
+          <div class="newInner">
+            <img class="newImg" src="../images/123456789.png" alt="">
+            <p class="newText">
+              我喝过最烈的酒，放过不该放的手，一路向北飘流着
+            </p>
+            <span class="time">
+              1小时前
+            </span>
+            <span class="num">
+              456
+            </span>
+          </div>
+        </li>
+        <li class="newItem">
+          <div class="newInner">
+            <img class="newImg" src="../images/123456789.png" alt="">
+            <p class="newText">
+              我喝过最烈的酒，放过不该放的手，一路向北飘流着
+            </p>
+            <span class="time">
+              1小时前
+            </span>
+            <span class="num">
+              456
+            </span>
+          </div>
+        </li>
+        <li class="newItem">
+          <div class="newInner">
+            <img class="newImg" src="../images/123456789.png" alt="">
+            <p class="newText">
+              我喝过最烈的酒，放过不该放的手，一路向北飘流着
+            </p>
+            <span class="time">
+              1小时前
+            </span>
+            <span class="num">
+              456
+            </span>
+          </div>
+        </li>
+        <li class="newItem">
+          <div class="newInner">
+            <img class="newImg" src="../images/123456789.png" alt="">
+            <p class="newText">
+              我喝过最烈的酒，放过不该放的手，一路向北飘流着
+            </p>
+            <span class="time">
+              1小时前
+            </span>
+            <span class="num">
+              456
+            </span>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>
+
+<div id="app"></div>
+<script>
+var htmlWidth = document.documentElement.clientWidth || document.body.clientWidth;
+
+//获取htmlDOM;
+var htmlDom = document.getElementsByTagName('html')[0];
+
+//设置rem  
+htmlDom.style.fontSize = htmlWidth / 10 + 'px';
+
+window.addEventListener('resize', (e) => {
+
+  var htmlWidth = document.documentElement.clientWidth || document.body.clientWidth;
+
+  htmlDom.style.fontSize = htmlWidth / 10 + 'px';
+
+})
+
+new Vue({
+  el: '#app',
+  template: '#tempate'
+})
+</script>
+</body>
+</html>

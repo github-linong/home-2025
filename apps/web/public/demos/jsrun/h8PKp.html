@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>大图片适配</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="h8PKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div class="btn">测试</div>
+    <div class="btn">测试sdfsd</div>
+
+    <div class="btn btn-resize">校准</div>
+    <div class="btn btn-resize btn-resize-2">校准</div>
+</div>
+
+<style>
+    #app{
+        width: 200px; 
+        margin: 100px auto;
+    }
+
+    .btn{
+        width: 200px;
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: url(https://cdns.jsrun.top/res/983409260qqcom/348731660621155_.pic.jpg) center center no-repeat;
+        /* background-size: 196px; */
+        background-size: 170px 56px;
+    }
+    .btn:hover{
+        background: url(https://cdns.jsrun.top/res/983409260qqcom/348721660621155_.pic.jpg) center center no-repeat;
+        /* background-size: 222px; */
+
+        background-size: auto 108px;
+    }
+    .btn.btn-resize{
+        background: 
+            url(https://cdns.jsrun.top/res/983409260qqcom/348721660621155_.pic.jpg) center center no-repeat,
+            url(https://cdns.jsrun.top/res/983409260qqcom/348731660621155_.pic.jpg) center center no-repeat;
+    }
+    .btn.btn-resize-2{
+
+        background: 
+            url(https://cdns.jsrun.top/res/983409260qqcom/348721660621155_.pic.jpg) center center no-repeat,
+            url(https://cdns.jsrun.top/res/983409260qqcom/348731660621155_.pic.jpg) center center no-repeat;
+        background-size:
+            auto 108px,
+            170px 56px;
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>html2canvas</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="xihKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div class="swiper-slide page2" id="page2">
+   <div class="img1">王小明</div>
+  <div class="img2">图片2</div>
+  </div>
+<canvas id="canvas"></canvas>
+<a download src="" alt="" id='a1'/>
+<a download src="" alt="" id='a2'/>
+<script>
+   
+html2canvas(document.querySelector("#page2"), {
+        canvas: canvas,
+        onrendered: function (canvas) {
+          document.querySelector("#page2").setAttribute('href', canvas.toDataURL())
+          a1.href = canvas.toDataURL()
+          canvas.toBlob(blob=>{
+            document.querySelector("#page2").setAttribute('href-blob', URL.createObjectURL(blob));
+          	a2.href = canvas.toDataURL();
+          })
+        }
+      });
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>滑块动画测试，top和bottom</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="sghKp" />
+  <style>
+div{
+  width: 100px;
+  height:100px;
+  background: black;
+  position: absolute;
+  top: 10px;
+  transition: all 1s;
+}
+div.ani{
+  bottom: 10px;
+  top: auto;
+}
+  </style>
+</head>
+<body>
+<div>
+  
+</div>
+<script>
+// setTimeout(()=>{
+var _top = document.documentElement.clientHeight - 100 - 10;//视口-元素-偏移量
+setInterval(()=>{
+  if(Math.random()<0.5){
+      // document.querySelector('div').classList.add('ani')
+    document.querySelector('div').style.top = _top+'px';
+  }else{
+      // document.querySelector('div').classList.remove('ani')
+    document.querySelector('div').style.top = '10px';
+  }
+}, 1200)
+</script>
+</body>
+</html>

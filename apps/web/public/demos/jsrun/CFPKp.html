@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>input 长度限制</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="CFPKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.38/vue.global.prod.js"></script>
+<div id="app">
+    {{1}}
+    <div>
+        <input v-model="message" @input="handlerInput">
+    </div>
+    <div>
+        {{message}}
+    </div>
+</div>
+<!-- 
+<script setup>
+
+</script> -->
+
+<script>
+  const { createApp } = Vue
+
+  createApp({
+    data() {
+      return {
+        message: 'Hello Vue!'
+      }
+    },
+    methods: {
+        handlerInput(){
+            console.log('handlerInput', this.characterStatistics(this.message))
+            const len = this.characterStatistics(this.message);
+            if(len > 14){
+                this.message = this.message.slice(0, -1);
+                this.handlerInput();
+            }
+        },
+        characterStatistics(value){
+            return Array.from(value).reduce((s,v)=>{
+                // console.log(s, v, v.charCodeAt())
+                if( v.charCodeAt() < 127){
+                    // console.log(v, '这看上去是个英文')
+                    return s + 1
+                }else{
+                    // console.log(v, '这看上去是个中文')
+                    return s + 2
+                }
+                //return s
+            }, 0)
+        },
+    }
+  }).mount('#app')
+</script>
+<script>
+
+</script>
+</body>
+</html>

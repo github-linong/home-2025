@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>优化裹脚布代码</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="FMzKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js">
+
+</script>
+<div id="app">
+
+
+</div>
+<script>
+new Vue({
+    el: '#app',
+    data() {
+        return {
+            modelData: {
+                partyList: [
+                    {
+                        "vendorId": "13423",
+                        "vendorDataList": [
+                            {
+                                value: '13423',
+                                label: '黄金糕'
+                            }, {
+                                value: '999',
+                                label: '双皮奶',
+                            }, {
+                                value: '3333',
+                                label: '蚵仔煎'
+                            }, {
+                                value: '444',
+                                label: '龙须面'
+                            }, {
+                                value: '555',
+                                label: '北京烤鸭'
+                            }
+                        ],
+                    },
+                    {
+                        "vendorId": "222",
+                        "vendorDataList": [
+                            {
+                                value: '222',
+                                label: '黄金糕'
+                            }, {
+                                value: '1111',
+                                label: '双皮奶',
+                            }, {
+                                value: '3333',
+                                label: '蚵仔煎'
+                            }, {
+                                value: '444',
+                                label: '龙须面'
+                            }, {
+                                value: '555',
+                                label: '北京烤鸭'
+                            }
+                        ],
+                    },
+                ]
+            }
+        };
+    },
+    methods: {
+        handleVendor(type) {
+            let params = [{
+                "name": "vendorId",
+                "value": "13423",
+                "operation": "=",
+                "type": 0
+            }]
+            let checkBgIdVendor = {}
+            let partyVendorList = this.modelData.partyList
+            let vebdorId = _.find(params, {
+                name: 'vendorId'
+            });
+            // 如果返回空数组, 当前传入的params这个数组里面的13423这个id要清空掉partyList这个里面的下拉框的value
+            checkBgIdVendor.data = []
+            /*如果返回北京烤鸭, 找partyVendorList里面是否包含, 不包含就清空掉, partyVendorList里面的列表中的下拉的值*/
+            // checkBgIdVendor.data = [{
+            //     value: '555',
+            //     label: '北京烤鸭'
+            // }]
+            if (partyVendorList.length > 0 && vebdorId.value !== "") {
+                checkBgIdVendor.index = partyVendorList.findIndex(idx => idx.vendorId == vebdorId.value)
+                checkBgIdVendor.partyVendorItem = partyVendorList.find(finds => finds.vendorId == vebdorId.value)
+                checkBgIdVendor.findList = checkBgIdVendor.partyVendorItem.vendorDataList.find(f => f.value == vebdorId.value)
+                if (checkBgIdVendor.findList !== undefined && checkBgIdVendor.partyVendorItem !== undefined) {
+                    checkBgIdVendor.vendorName = checkBgIdVendor.findList.label
+                }
+            }
+        }
+    },
+    created() {
+        this.handleVendor()
+    },
+})
+</script>
+</body>
+</html>

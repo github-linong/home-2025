@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue-virtual-scroller</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="euXKp" />
+  <style>
+.scroller {
+  height: 100%;
+}
+
+.user {
+  height: 32%;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+}
+#app{
+  height: 500px
+}
+  </style>
+</head>
+<body>
+<!-- <link rel="stylesheet" href="vue-virtual-scroller/dist/vue-virtual-scroller.css"/> -->
+<!-- <script src="vue-virtual-scroller/dist/vue-virtual-scroller.min.js"></script> -->
+<div id="app">
+  <abcdef
+    class="scroller"
+    :items="list"
+    :item-size="21"
+    :prerender="20"
+    key-field="id"
+          size-field="height"
+  >
+    <template v-slot="{item}">
+      <div>
+         {{ item.name }}
+        <img src="//www.baidu.com" alt="" />
+      </div>     
+    </template>
+  </abcdef>
+</div>
+
+
+<RecycleScroller>
+  <!-- Wrapper element with a pre-calculated total height -->
+  <wrapper
+    :style="{ height: computedTotalHeight + 'px' }"
+  >
+    <!-- Each view is translated to the computed position -->
+    <view
+      v-for="view of pool"
+      :style="{ transform: 'translateY(' + view.computedTop + 'px)' }"
+    >
+      <!-- Your elements will be rendered here -->
+      <slot
+        :item="view.item"
+        :index="view.nr.index"
+        :active="view.nr.used"
+      />
+    </view>
+  </wrapper>
+</RecycleScroller>
+<script>
+// Vue.use(VueVirtualScroller)
+Vue.component('abcdef', VueVirtualScroller.RecycleScroller)
+new Vue({
+  el: '#app',
+  data:{
+    list: new Array(1000).fill(1).map((v,i)=>({name: '1'+i,id:i}))
+  }
+})
+</script>
+</body>
+</html>

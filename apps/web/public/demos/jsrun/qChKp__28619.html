@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://juejin.im/post/5ac73397518825556534bf47</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="qChKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div class="task-container">
+        <component :is="'task-' + questions[currentIndex].type" 
+            :question="questions[currentIndex]"></component>
+        <button class="next-question" @click="nextQuestion">下一题</button>
+    </div>
+</div>
+<script>
+Task1 = {
+  template: `
+<div>
+		<div>Task1</div>
+    <h2>{{question.index}}. 选择题</h2>
+    <div>{{content}}</div>
+</div>
+`,//'<div>Task1</div>',
+  data(){
+    return {
+      content:''
+    }
+  },
+  props:{
+    question: Object
+  }
+}
+Task2 = {
+  template: `
+<div>
+		<div>Task2</div>
+    <h2>{{question.index}}.  判断题</h2>
+    <div>{{content}}</div>
+</div>
+`,//'<div>Task2</div>',
+  data(){
+    return {
+      content:''
+    }
+  },
+  props:{
+    question: Object
+  }
+}
+Task3 = {
+  template: `
+<div>
+		<div>Task3</div>
+    <h2>{{question.index}}. 填空题</h2>
+    <div>{{content}}</div>
+</div>
+`,//'<div>Task3</div>',
+  data(){
+    return {
+      content:''
+    }
+  },
+  props:{
+    question: Object
+  }
+}
+new Vue({
+  el: '#app',    
+  data() {
+      return {
+          currentIndex: 0,
+        	questions:null
+      };
+  },
+  created() {
+      // 请求question数据
+      this.questions = [{index: 1, type: 1, content: ''}, {index: 2, type: 1, content: ''}, 
+ 				{index: 3, type: 2, content: ''}, {index: 4, type: 3, content: ''}]
+  },
+  methods: {
+      nextQuestion() {
+          this.currentIndex = (this.currentIndex + 1) % this.questions.length;
+      }
+  },
+  components: {
+      Task1,
+      Task2,
+      Task3
+  }
+})
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue 组件定义优先级测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="uSUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+    <div id="app">
+        {{1}}
+        <component1></component1>
+        <component2></component2>
+    </div>
+    <script>
+        Vue.component('component1', {
+            template: '<div>vue.component</div>'
+        })
+        new Vue({
+            el: '#app',
+            components:{
+                component1: {
+                    template: '<div>options components</div>'
+                },
+                component2: {
+                    template: '<div>child <component1></component1></div>'
+                }
+            }
+        })
+    </script>
+<script>
+
+</script>
+</body>
+</html>

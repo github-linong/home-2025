@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000018937418</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="2nXKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="contentImg linexRBS">
+      <img src="http://cdn.jsrun.top/css/img/screens.png" alt="" />
+  </div>
+  <div class="cotnentText">
+    lilnong.top
+  </div>
+  <div class="cotnentUrl">
+    <a href="https://www.lilnong.top/">lilnong.top</a>
+  </div>
+</div>
+<button id="copyData">copyData</button>
+<script>
+for (var i = 0; i < document.getElementsByClassName('contentImg linexRBS').length; i++) {
+  var contImg = document.getElementsByClassName('contentImg linexRBS')[i]
+
+  // 1.onload必须指定为function  这里立即执行函数的返回不是一个function，要做修改
+  var targetImg = new Image();
+  targetImg.crossOrigin = '';
+  targetImg.src = contImg.getElementsByTagName("img")[0].src;
+  targetImg.onload = (function (num,contImg,targetImg) {
+    //2. 使用闭包后 注意变量生成的时机，注意对比下哪些变量需要放到闭包里
+    return function (){
+      var tupianwidth = contImg.offsetWidth;
+      var tupianheight = contImg.offsetHeight;
+      tupianheight = tupianheight - 200;
+
+      var canvas = document.createElement('canvas');
+      canvas.width = tupianwidth;
+      canvas.height = tupianheight;
+
+      var cxt = canvas.getContext('2d');
+      cxt.drawImage(targetImg, 0, 0);
+      var clipImage = canvas.toDataURL("image/png", 1);
+      document.getElementsByClassName('contentImg linexRBS')[num].getElementsByTagName("img")[0].src = clipImage;
+    }
+  })(i,contImg,targetImg);
+}
+function copyData (value) {
+    let inputDom = document.createElement('input')
+    inputDom.value = value
+    document.body.appendChild(inputDom)
+    inputDom.select() // 选择对象
+    document.execCommand('Copy') // 执行浏览器复制命令
+    document.body.removeChild(inputDom) // 删除DOM
+  };
+document.querySelector('#copyData').onclick = ()=>copyData(document.querySelector('#app').innerHTML)
+</script>
+</body>
+</html>

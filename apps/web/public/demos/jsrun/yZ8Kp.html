@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/a/1190000039046174</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="yZ8Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<div id="app">
+    <ln-document :doc="doc"></ln-document>
+</div>
+<script>
+    doc = {
+        type: 'document',
+        nodes: [
+            {
+                type: 'paragraph',
+                data: {
+                    style: {
+                        color: 'yellow'
+                    }
+                },
+                nodes: [
+                    {
+                        type: 'text',
+                        chars: [
+                            {
+                                text: 'a',
+                                marks: [
+                                    {type: 'bold'},
+                                ]
+                            },
+                            {
+                                text: 'ab',
+                                marks: [
+                                    {type: 'bold'},
+                                    {type: 'color', value: 'red'},
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        type: 'text',
+                        chars: [
+                            {
+                                text: 'c',
+                                marks: [
+                                    {type: 'bold'},
+                                ]
+                            },
+                            {
+                                text: 'de',
+                                marks: [
+                                    {type: 'bold'},
+                                    {type: 'color', value: 'red'},
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },{
+                type: 'paragraph',
+                data: {
+                    style: {
+                        color: 'blue'
+                    }
+                },
+                nodes: [
+                    {
+                        type: 'text',
+                        chars: [
+                            {
+                                text: 'a',
+                                marks: [
+                                    {type: 'bold'},
+                                ]
+                            },
+                            {
+                                text: 'ab',
+                                marks: [
+                                    {type: 'bold'},
+                                    {type: 'color', value: '#f0f'},
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        type: 'text',
+                        chars: [
+                            {
+                                text: 'c',
+                                marks: [
+                                    {type: 'bold'},
+                                ]
+                            },
+                            {
+                                text: 'de#3af',
+                                marks: [
+                                    {type: 'bold'},
+                                    {type: 'color', value: '#3af'},
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+</script>
+<script>
+    Vue.component('ln-document',{
+        props: ['doc'],
+        template:`<div><ln-paragraph v-for="item in doc.nodes" :paragraph="item"></ln-paragraph></div>`
+    })
+    Vue.component('ln-paragraph',{
+        props: ['paragraph'],
+        template: `<div :style="paragraph.data.style"><ln-text v-for="item in paragraph.nodes" :text="item"></ln-text></div>`
+    })
+    Vue.component('ln-text',{
+        props: ['text'],
+        template: `<div><ln-leaf v-for="item in text.chars" :leaf="item"></ln-leaf></div>`
+    })
+    Vue.component('ln-leaf',{
+        props: ['leaf'],
+        computed:{
+            style(){
+                return this.leaf.marks.reduce((s,n)=>{
+                    if(n.type == 'bold'){
+                        s['font-weight'] = 'bold'
+                    }else if(n.type == 'color'){
+                        s['color'] = n.value
+                    }
+                    return s
+                },{})
+            }
+        },
+        template: `<span :style="style">{{leaf.text}}</span>`
+    })
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                doc: doc,
+            }
+        }
+    })
+</script>
+
+<div id="app1">
+    <input class="input" value="input">
+    <div class="input" contenteditable>div</div>
+    <textarea class="input" >textarea</textarea>
+    拦截 ctrl + delete 的事件
+</div>
+<style>
+    #app1 .input{min-height: 2em;display: block;}
+</style>
+<script>
+    var els = document.querySelectorAll('#app1 .input')
+    let elArr = Array.from(els);
+    // console.log(elArr)
+    elArr.forEach((item)=>{
+        console.log(item)
+        // item.addEventListener('keyup',
+        //     e=>{
+        //         e.preventDefault();
+        //         top.console.log('keyup', item.tagName, item.value, JSON.stringify({
+        //             key:event.key,
+        //             keyCode:event.keyCode,
+        //             code:event.code,
+        //             altKey:event.altKey,
+        //             metaKey:event.metaKey,
+        //             shiftKey:event.shiftKey,
+        //             ctrlKey:event.ctrlKey,
+        //         }))
+        //     })
+        // item.addEventListener('keypress',
+        //     e=>{
+        //         e.preventDefault();
+        //         top.console.log('keypress', item.tagName, item.value, JSON.stringify({
+        //             key:event.key,
+        //             keyCode:event.keyCode,
+        //             code:event.code,
+        //             altKey:event.altKey,
+        //             metaKey:event.metaKey,
+        //             shiftKey:event.shiftKey,
+        //             ctrlKey:event.ctrlKey,
+        //         }))
+        //     })
+        item.addEventListener('keydown',
+            e=>{
+                // e.preventDefault();
+                top.console.log('keydown', item.tagName, item.value, JSON.stringify({
+                    key:event.key,
+                    keyCode:event.keyCode,
+                    code:event.code,
+                    altKey:event.altKey,
+                    metaKey:event.metaKey,
+                    shiftKey:event.shiftKey,
+                    ctrlKey:event.ctrlKey,
+                }))
+            })
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

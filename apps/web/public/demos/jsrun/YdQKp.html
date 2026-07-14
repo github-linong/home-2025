@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue input 数字校验</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="YdQKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js">
+</script>
+
+<div id="app">
+	<div>
+		input: {{input}}
+	</div>
+	<input v-model="input" @input="inputAll($event, '1')">
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                input: ''
+            }
+        },
+        methods: {
+            inputAll(event, eventI) {
+                console.log(
+                    "到场目标客户数（人）：默认请输入，必录，限制输入整数'目标保费（万元）：默认请输入，必录，只能输入数字",
+                    event,
+                    eventI
+                );
+                let nums =/[^0-9]/g;
+                let moneys=/[^0-9.]/g;
+                let alls = /[^\a-\z\A-\Z0-9\u4E00-\u9FA5\@\.\`\~\!\#\$\^\&\*\(\)\=\|\{\}\'\:\;\,\\\[\]\<\>\/\?\！\￥\…\（\）\—\【\】\‘\’\；\：\”\“\。\，\、\？\%\✘\#\+\_\～\‖\-]/gi;
+                if(eventI=='1' || eventI=='3') {
+                    this.input =  this.input.replace(moneys, "");
+                }
+            },
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

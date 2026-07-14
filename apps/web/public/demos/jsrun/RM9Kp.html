@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue3 使用 vue2 的组件</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="RM9Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.31/vue.cjs.js"></script> -->
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<script>
+    // top.console.log(Vue, Vue.version)
+    top.Vue2 = Vue2 = Vue;
+</script>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.31/vue.global.js"></script>
+<script>
+    // top.console.log(Vue, Vue.version)
+    top.Vue3 = Vue3 = Vue;
+</script>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.js"></script>
+<script>
+    top.console.clear();
+    top.console.log('LN', Vue2.version, Vue2)
+    top.console.log('LN', Vue3.version, Vue3)
+</script>
+
+<script>
+    function Vue2InVue3 (_WrappedComponent) {
+        let WrappedComponent
+        if (!(_WrappedComponent.prototype instanceof (Vue2))) {
+            top.console.log('LN', 'vue2InVue3暂不支持转换除extend方式定义的组件')
+            // throw new Error('vue2InVue3暂不支持转换除extend方式定义的组件');
+            WrappedComponent = Vue2.extend(_WrappedComponent);
+        }else{
+            WrappedComponent = _WrappedComponent
+        }
+        let vm;
+        // 获取 options 是要干嘛？ options 就是 options object
+        const options = ((WrappedComponent).options || {});
+        top.console.log('LN', 'options', options)
+        // 返回了一个 object 的对象，可以用来 new Vue(object)
+        if(options.props.value){
+            // top.console.log('LN', '需要 v-model ')
+            if(options.props.modelValue){
+                // TODO 需要兼容
+                top.console.warn('LN', '名字起的不太好。容易误伤，建议别用 modelValue')
+            }else{
+                // 因为 vue3 使用的是 modelValue，所以这里也需要传入。
+                options.props.modelValue = options.props.value
+            }
+        }else{
+            if(options.props.modelValue){
+                // TODO 需要兼容
+                top.console.warn('LN', '名字起的不太好。容易误伤，建议别用 modelValue。或者说你在支持 Vue3?')
+            }
+        }
+        return {
+            mounted () {
+                // 所有给组件绑定的 属性、事件
+                top.console.log('LN', '$attrs', this.$attrs)
+                // 过滤所有事件
+                const filteredAttrs = _.pickBy(this.$attrs, (v, key) => key.startsWith('on'));
+                // top.console.log('LN', 'filteredAttrs', filteredAttrs)
+                // 移除 on 关键词
+                // TODO 这里需要关注一下是不是支持所有修饰符 .once
+                // TODO 这里需要关注一下是不是对于 v-model 的处理是正确的
+                // TODO modelModifiers 处理是否正确
+                // TODO class\style 是否透传成功。目前看上去并没有成功
+                // TODO nativeOn 支持是否正确？
+                // TODO directives 支持是否正确？
+                // TODO 作用域插槽 scopedSlots 是否正常？
+                // TODO 如果组件是其它组件的子组件，需为插槽指定名称 slot 是否正常？
+                // TODO key 是否正常？如果是 vue3 ，那么应该也不需要这个字段了。
+                // TODO ref 是否正常
+                // TODO boolean 类型是否正常？
+                
+                const listeners = _.mapKeys(filteredAttrs, (v, k) => _.lowerFirst(k.slice(2)));
+                top.console.log('LN', 'listeners', listeners)
+
+                // 在 mounted 里面开始初始化 Vue2 的组件。
+                vm = new (Vue2)({
+                    render: (createElement) => {
+                        top.console.log('LN', '$slots', this.$slots)
+                        const slots = Object.keys(this.$slots)
+                            .reduce((arr, key) => arr.concat(this.$slots[key]), [])
+                            // 手动更正 context
+                            .map((vnode) => {
+                                // TODO context 里面有什么为什么要更正。
+                                top.console.log('LN', 'vnode.context', vnode.context, this._self)
+                                vnode.context = this._self;
+                                return vnode;
+                            });
+                        top.console.log('LN', '$slots 计算后', slots.concat())
+                        top.console.log('LN', 'this.$props', this.$props, this)
+                        top.console.log('LN', 'this.$scopedSlots', this.$scopedSlots)
+                        // 渲染 vue2 组件。
+                        return createElement(
+                            WrappedComponent,
+                            // 把 vue3 的传入的参数都给 vue2
+                            {
+                                props: {
+                                    ...this.$props,
+                                    // 强行绑定 value
+                                    value: this.$props.modelValue
+                                },
+                                on: {
+                                    input: listeners['update:modelValue'],
+                                    ...listeners,
+                                },
+                                scopedSlots: this.$scopedSlots,
+                            },
+                            slots,
+                        );
+                    },
+                });
+                // 挂载
+                vm.$mount(this.$refs.container);
+            },
+            // 这里定义了 vue3 的 props。所以 this.$props 会有值
+            props: options.props,
+            render () {
+                top.console.log('LN', 'render')
+                vm && vm.$forceUpdate();
+                return Vue3.h('div', { ref: 'container' });
+            },
+        };
+    }
+    // ApiServiceTreeSelect = Vue2InVue3(_ApiServiceTreeSelect);
+</script>
+
+<h3>vue2 渲染</h3>
+<div id="extend_app1"></div>
+
+<h3>vue2 组件渲染</h3>
+<div id="extend_app1_1">
+    syncValue: {{syncValue}}
+    <extend_1_vue3 
+        v-model:value3.capitalize="value3" 
+        v-model:value2="value2" 
+        v-model="value1" 
+        class="class1" 
+        :class="['a', 'b', class3]"
+        style="font-size: 18px;"
+        :style="style1"
+        :b="2" 
+        c="c" 
+        d 
+        id="abc"
+        data-idx="1" 
+        @click="clog" 
+        @touchend.native="clog" 
+        @touchstart.once="clog"
+        BBQ 
+        ref="abccccc"
+        :sync-value.sync="syncValue">
+        <template #con>芭比Q</template>
+        <template v-slot:con1>芭比Q</template>
+        <template v-slot:con2="content">{{content}}</template>
+    </extend_1_vue3>
+    <div>value1: {{value1}} <button @click="value1++">value1++</button></div>
+</div>
+
+<h3>vue3 渲染</h3>
+<div id="extend_app2"></div>
+<script>
+    // Vue2.compile(`<button @click="a++">{{a}}</button>`).render
+    extend_1 = Vue2.extend({
+        props: {
+            c: {
+                type: [String],
+                default: '啥都没有传入'
+            },
+            // vue2 中 使用 value 来接受 v-model 的值
+            value: {
+                type: [String, Number],
+                require: false
+            },
+            'syncValue': {
+                type: [String, Number],
+                require: false
+            }
+        },
+        data(){
+            return {
+                a: 1
+            }
+        },
+        render(h){
+            return h('div', [
+                `a: ${this.a}。c: ${this.c}。d: ${this.d}。`,
+                h('button',{
+                    on: {
+                        click: () => this.a++
+                    }
+                }, this.a ),
+                h('div',
+                    [`value: ${this.value}。`
+                    ,h('button',{
+                    on: {
+                        // click: () => this.value++
+                        click: () => this.$emit('input', this.value+1)
+                    }
+                }, 'this.value++ = ${this.value}' )],
+                ),
+                h('div',
+                    [`modelValue: ${this.modelValue}`
+                    ,h('button',{
+                    on: {
+                        // click: () => this.modelValue++
+                        click: () => this.$emit('update:modelValue', this.modelValue+1)
+                    }
+                }, `this.modelValue++ = ${this.modelValue}` )],
+                ),
+                h('div',
+                    [`syncValue: ${this.syncValue}`
+                    ,h('button',{
+                        on: {
+                            // click: () => this.syncValue++
+                            click: () => this.$emit('update:syncValue', this.syncValue+1)
+                        }
+                    }, `this.syncValue++ = ${this.syncValue}` )],
+                ),
+            ])
+        }
+    })
+    extend_1_vue2_vm = new Vue2(extend_1).$mount('#extend_app1');
+    extend_1_vue2_vm1 = new Vue2({
+        el: '#extend_app1_1',
+        data(){
+            return {
+                value1: 0,
+                value2: '',
+                value3: '',
+                syncValue: 1,
+                class1: 'a',
+                class2: {},
+                class3: ['a1','b2',{c3: true, c4: false}],
+                style1: {color: 'red'}
+            }
+        },
+        mounted(){
+            // top.console.log('LN', 'Vue2-component-onMounted', this.$refs)
+        },
+        methods:{
+            clog(...args){
+                console.log('LN', 'Clog', args)
+            }
+        },
+        components: {
+            extend_1_vue3: extend_1
+        }
+    })
+    extend_1_vue3 = Vue2InVue3(extend_1)
+
+    Vue3.createApp({
+        template: `<div>
+        <extend_1_vue3 
+            class="class1" 
+            :class="['a', 'b', class3]"
+            style="font-size: 18px;"
+            :style="style1"
+            :b="2" 
+            c="c" 
+            v-model="value1" 
+            v-model:value3.capitalize="value3" 
+            v-model:value2="value2" 
+            d 
+            id="abc"
+            data-idx="1" 
+            @click="clog" 
+            @touchend.native="clog" 
+            @touchstart.once="clog"
+            BBQ 
+            ref="abccccc">
+            <template #con>芭比Q</template>
+            <template v-slot:con1>芭比Q</template>
+            <template v-slot:con2="content">{{content}}</template>
+        </extend_1_vue3>
+        <div>value1: {{value1}} <button @click="value1++">value1++</button></div>
+        </div>`,
+        data(){
+            return {
+                value1: 0,
+                value2: '',
+                value3: '',
+                class3: ['a1','b2',{c3: true, c4: false}],
+                style1: {color: 'red'}
+            }
+        },
+        mounted(){
+            top.console.log('LN', 'Vue3-onMounted', this.$refs)
+        },
+        methods:{
+            clog(...args){
+                console.log('LN', 'Clog', args)
+            }
+        },
+        components: {
+            extend_1_vue3
+        }
+    }).mount('#extend_app2')
+</script>
+<script>
+
+</script>
+</body>
+</html>

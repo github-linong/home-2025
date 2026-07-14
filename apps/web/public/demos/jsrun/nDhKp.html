@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue-swiper动画失效</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="nDhKp" />
+  <style>
+.swiper-container{
+  width:500px;
+  height:500px;
+}
+.swiper-slide{
+  background:coral;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.box{
+  width:30px;
+  height:50px;
+  background:red;
+}
+  </style>
+</head>
+<body>
+<div class="swiper-container">
+  <div class="swiper-wrapper">
+    <div class="swiper-slide">
+      <div class="box animated slideInUp" data-animated="slideInUp">box</div>
+    </div>
+    <div class="swiper-slide">
+      <div class="box animated slideInDown" data-animated="slideInDown">box1</div>
+    </div>
+    <div class="swiper-slide">slider3</div>
+  </div>
+</div>
+<script>
+var mySwiper = new Swiper('.swiper-container', {
+				autoplay: 5000,//可选选项，自动滑动  
+        direction: "vertical",
+        slidesPerView: 1,
+        observer: true,
+        observeParents: true,
+        onInit: function(swiper) {
+          console.log('onInit')
+          // swiperAnimateCache(swiper);
+          // swiperAnimate(swiper);
+        },
+        onSlideChangeEnd: function(swiper) {
+          console.log('onSlideChangeEnd',swiper.activeIndex)
+          var _checkDOM = document.querySelectorAll('.swiper-slide')[swiper.activeIndex].querySelector('.box');
+          if(_checkDOM && _checkDOM.dataset.animated){
+            var _animated = _checkDOM.dataset.animated;
+            _checkDOM.classList.remove(_animated);
+            setTimeout(()=>{
+               _checkDOM.classList.add(_animated);
+            })
+          }
+          // swiperAnimate(swiper);
+        }
+})
+</script>
+</body>
+</html>

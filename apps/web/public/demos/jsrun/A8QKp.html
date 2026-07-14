@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>elementui</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="A8QKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- import CSS -->
+<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+<!-- import Vue before Element -->
+<!-- <script src="https://unpkg.com/vue/dist/vue.js"></script> -->
+<!-- import JavaScript -->
+<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js">
+
+</script>
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js">
+
+</script>
+
+<div id="app">
+	<el-button @click="visible = true">Button</el-button>
+	<el-dialog :visible.sync="visible" title="Hello world">
+		<p>Try Element</p>
+	</el-dialog>
+
+	<div class="hello">
+		<h2>{{ msg }}</h2>
+		<template1></template1>
+		<el-badge :value="2" class="item" type="warning">
+			<el-button size="small" @click="getTableData">回复</el-button>
+		</el-badge>
+
+		<el-table :data="tableData" style="width: 100%">
+			<el-table-column fixed prop="date" label="日期" width="150">
+			</el-table-column>
+			<el-table-column prop="name" label="姓名" width="120"> 
+
+      <!-- <template slot-scope="scope"> -->
+      <!-- <template slot-scope="scope"> -->
+        <!-- <i class="el-icon-time"></i> -->
+        <!-- <span style="margin-left: 10px">{{ scope.row.date }}</span> -->
+        <!-- <template1> 789 </template1> -->
+      <!-- </template> -->
+    </el-table-column>
+            </el-table-column>
+			<el-table-column prop="province" label="省份" width="120">
+				<!-- <img
+          :src="
+            'http://www.lilnong.top/static/img/avatar/cbe999a20a1d4ddebb5311bb3ece6948_tplv-k3u1fbpfcp-watermark.jpeg?' +
+            Date.now()
+          "
+          style="max-height: 100px; max-width: 100px"
+          alt=""
+        /> -->
+				<!-- ! -->
+				<template1> 123456 </template1>
+				<!-- @ -->
+			</el-table-column>
+			<el-table-column prop="city" label="市区" width="120"> </el-table-column>
+			<el-table-column prop="address" label="地址" width="300">
+			</el-table-column>
+			<el-table-column prop="zip" label="邮编" width="120"> </el-table-column>
+		</el-table>
+		<template1></template1>
+	</div>
+</div>
+
+<script>
+	let template1 = () => {
+  return new Promise(function (resolve) {
+    setTimeout(() => {
+      resolve(Vue.extend({
+          name: 'bbbb',
+        template: `<div>123<img
+          src="http://www.lilnong.top/static/img/avatar/cbe999a20a1d4ddebb5311bb3ece6948_tplv-k3u1fbpfcp-watermark.jpeg?"
+          style="max-height: 100px; max-width: 100px"
+          alt=""
+        /> </div>`,
+      }));
+    }, 1000 + Math.random() * 1000);
+  });
+};
+    new Vue({
+      el: '#app',
+  components: {
+    template1: template1,
+  },
+  mounted() {
+    const tableData = this.tableData;
+    console.log(tableData);
+    const number = tableData.length;
+    // setInterval(function () {
+    //   const item = tableData[(Math.random() * tableData.length) << 0];
+    //   console.log(item);
+    //   item.isShow = true;
+    // }, 1000);
+  },
+  methods: {
+    getTableData() {
+      // const test = this.tableData.length;
+      // console.log(test);
+    },
+  },
+          name: 'a',
+      data: function() {
+        return {
+            msg: '123',
+             visible: false,
+      value: "",
+
+      tableData: [
+        {
+          date: "2016-05-03",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+          isShow: false,
+        },
+        {
+          date: "2016-05-02",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+          isShow: true,
+        },
+        {
+          date: "2016-05-04",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+          isShow: true,
+        },
+        {
+          date: "2016-05-01",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+          isShow: true,
+        },
+        {
+          date: "2016-05-08",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+          isShow: false,
+        },
+        {
+          date: "2016-05-06",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+          isShow: false,
+        },
+        {
+          date: "2016-05-07",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+          isShow: false,
+        },
+      ],
+              }
+      }
+    })
+
+</script>
+<script>
+
+</script>
+</body>
+</html>

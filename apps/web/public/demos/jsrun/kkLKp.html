@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>focusin</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="kkLKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div class="item" @focusout="blur" 
+        @focusin="selectFocus = true">
+        <select 
+            v-model="selectValue">
+            <option v-for="item in list">{{item}}</option>
+        </select>
+        <input type="" v-model="value1">
+        <input type="" v-model="value2">
+    </div>
+    <div class="item" >
+        <input type="" v-model="value3">
+    </div>
+    <div class="result">
+        list:{{list}}
+    </div>
+    <div class="result">
+        selectValue:{{selectValue}}
+        <br>
+        selectFocus:{{selectFocus}}
+        <br>
+        value1:{{value1}}
+        <br>
+        value2:{{value2}}
+        <br>
+        value3:{{value3}}
+    </div>
+    <div class="result">
+        arr:{{arr}}
+    </div>
+</div>
+<script>
+new Vue({
+    el: '#app',
+    data(){
+        return {
+            selectValue: '',
+            list: ['test1', 'test2'],
+            value1: '',
+            selectFocus: '',
+            arr: [],
+            value2: '',
+            value3: ''
+        }
+    },
+    methods:{
+        blur(){
+            // this.$nextTick(v=>{
+            setTimeout(v=>{
+                if(!this.value1 || this.selectFocus) return this.selectFocus = false
+                this.arr.push(this.value1);
+                this.value1 = ''
+            }, 100)
+            // })
+        },
+        log(e, key){
+            //console.log([e, this, key, e.type, e.target])
+        }
+    }
+})
+</script>
+</body>
+</html>

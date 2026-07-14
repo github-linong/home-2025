@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue表单日期范围</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="idsKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js">
+
+</script>
+<div id="app">
+    tool: {{tool}}
+    <el-switch v-model="tool"></el-switch>
+    <div 
+        v-for="item in 10"
+        :key="item">
+        {{`2022-11-${item.toString().padStart(2, '0')} 00:00:00.000`}}
+        <el-date-picker
+            v-model="a"
+            :key="tool"
+            :picker-Options="tool?getPickerOptions(`2022-11-${item.toString().padStart(2, '0')} 00:00:00.000`):{}"
+        ></el-date-picker>
+    </div>
+</div>
+<script>
+new Vue({
+    el: '#app',
+    data() {
+        return {
+            a: '',
+            tool: true,
+            pickerOptions: {
+                disabledDate(time) {
+                    if(time.getTime() === new Date('2022-11-07 00:00:00.000').getTime()){
+                        return false
+                    }
+                    if(time.getTime() < Date.now()){
+                        return true
+                    }
+                },
+            }
+        }
+    },
+    methods: {
+        getPickerOptions(pickOptionsTime =  '2022-11-07 00:00:00.000'){
+            return {
+                disabledDate(time) {
+                    if(time.getTime() === new Date(pickOptionsTime).getTime()){
+                        return false
+                    }
+                    if(time.getTime() < Date.now()){
+                        return true
+                    }
+                },
+            }
+        }
+    },
+    computed: {
+        disabledDates() {
+            return (date)=>{
+                if(time.getTime() === new Date(date).getTime()){
+                    return false
+                }
+                if(time.getTime() < Date.now()){
+                    return true
+                }
+            }
+        }
+    }
+})
+</script>
+</body>
+</html>

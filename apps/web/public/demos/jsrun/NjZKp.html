@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000015066102</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="NjZKp" />
+  <style>
+.item{
+  float:left;
+  width: 100px;height: 50px;line-height: 50px;text-align:center;
+  background-color: #eee;
+}
+.item.animate{
+  background-color: #0cc;
+  transition: all 1s;
+}
+br{
+  clear:both
+}
+.item1{
+  float:left;
+  width: 100px;height: 50px;line-height: 50px;text-align:center;
+  background-color: #eee;
+}
+.item1.animate{
+  background-color: #0cc;
+  transition: all 1s;
+}
+  </style>
+</head>
+<body>
+<span id="jianjie" class="item">简介</span>
+    <span id="lishi" class="item">历史</span>
+    <span id="rongyu" class="item">荣誉</span>
+<br />
+    <span id="jianjie" class="item1">简介</span>
+    <span id="lishi" class="item1">历史</span>
+    <span id="rongyu" class="item1">荣誉</span>
+<script>
+$(function(){
+    $(".item").off().on('click',function(){
+        $(this).addClass("animate").siblings().removeClass('animate')
+    });
+}) 
+$(function(){
+    $("body").on('click','.item1',function(){
+        $(this).addClass("animate").siblings().removeClass('animate')
+    });
+}) 
+</script>
+</body>
+</html>

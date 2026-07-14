@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000040884063</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="rfUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div class="list"
+        ref="list"
+        @resize="width = $event.target.offsetWidth">
+        <div class="item" v-for="item in itemList"
+            :style="{left: item.left,top: item.top}">{{item.value}}</div>
+    </div>
+</div>
+<style>
+    .list{position: relative;height: 300px;overflow: scroll;border: 1px solid #f00;resize: both;}
+    .item{position: absolute;left:0;top:0;background: rgba(0,100,100,.3);width: 50px;height: 50px;transition: all 1s;}
+</style>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                width: 500,
+                list: Array.from({length: 70}).map((v,i)=>({value:i,left:0,width:0,top:0,height:0}))
+            }
+        },
+        mounted(){
+            setInterval(()=>{
+                this.width = (this.$refs.list.offsetWidth / 50 >>> 0) * 50
+            }, 100)
+        },
+        computed:{
+            itemList(){
+                let width = 50;
+                let height = 60;
+                let gutter = 10;
+                return this.list.map((v,i)=>{
+                    let leftWidth = (this.width / (width + gutter)) >>> 0;
+                    let left = i % leftWidth;
+                    let top = i / leftWidth >>> 0;
+                    
+                    return {
+                        left: left * (width + gutter) + 'px',
+                        top: top * (height + gutter) + 'px',
+                        value: i,
+                    }
+                })
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

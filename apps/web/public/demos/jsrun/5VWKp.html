@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>父子组件生命周期</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="5VWKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  123
+  <div>
+    <test-2 />
+  </div>
+</div>
+<button onclick="vm1.$destroy()">vm1.$destroy()</button>
+<script>
+Vue.component('test-3',{
+  template: `<div>3</div>`,
+  beforeCreate:()=>console.log('beforeCreate','孙'),
+  created:()=>console.log('created','孙'),
+  beforeMount:()=>console.log('beforeMount','孙'),
+  mounted:()=>console.log('mounted','孙'),
+  beforeUpdate:()=>console.log('beforeUpdate','孙'),
+  updated:()=>console.log('updated','孙'),
+  activated:()=>console.log('activated','孙'),
+  deactivated:()=>console.log('deactivated','孙'),
+  beforeDestroy:()=>console.log('beforeDestroy','孙'),
+  destroyed:()=>console.log('destroyed','孙'),
+  errorCaptured:()=>console.log('errorCaptured','孙')
+})
+Vue.component('test-2',{
+  template: `<div>2<test-3 /></div>`,
+  beforeCreate:()=>console.log('beforeCreate','子'),
+  created:()=>console.log('created','子'),
+  beforeMount:()=>console.log('beforeMount','子'),
+  mounted:()=>console.log('mounted','子'),
+  beforeUpdate:()=>console.log('beforeUpdate','子'),
+  updated:()=>console.log('updated','子'),
+  activated:()=>console.log('activated','子'),
+  deactivated:()=>console.log('deactivated','子'),
+  beforeDestroy:()=>console.log('beforeDestroy','子'),
+  destroyed:()=>console.log('destroyed','子'),
+  errorCaptured:()=>console.log('errorCaptured','子')
+})
+top.vm1 = vm1 = new Vue({
+  el: '#app',
+  beforeCreate:()=>console.log('beforeCreate','1'),
+  created:()=>console.log('created','1'),
+  beforeMount:()=>console.log('beforeMount','1'),
+  mounted:()=>console.log('mounted','1'),
+  beforeUpdate:()=>console.log('beforeUpdate','1'),
+  updated:()=>console.log('updated','1'),
+  activated:()=>console.log('activated','1'),
+  deactivated:()=>console.log('deactivated','1'),
+  beforeDestroy:()=>console.log('beforeDestroy','1'),
+  destroyed:()=>console.log('destroyed','1'),
+  errorCaptured:()=>console.log('errorCaptured','1')
+})
+</script>
+</body>
+</html>

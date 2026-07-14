@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>flex 布局实现底部固定</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="vIzKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="controls">
+    <button id="add">add</button>
+</div>
+<script>
+    add.onclick = ()=>{
+        arr = document.querySelectorAll('.content')
+        elArr = Array.from(arr);
+        elArr.forEach(v=>{
+            el = document.createElement('button')
+            el.className = 'remove'
+            el.innerText = 'remove' + Date.now()
+            v.append(el)
+        })
+    }
+</script>
+
+<hr>
+<div>
+    flex 布局。这里采用了默认的 absolute + padding
+</div>
+
+<div class="body demo1">
+    <div class="header"><i>header</i></div>
+    <div class="content">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+<div class="body demo1 maxHeight">
+    <div class="header"><i>header</i></div>
+    <div class="content">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+<div class="body demo1 minHeight">
+    <div class="header"><i>header</i></div>
+    <div class="content">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+
+<hr>
+<div>
+    这里加了 flex: auto; 所以 content 会撑开父级
+</div>
+
+<div class="body demo1">
+    <div class="header"><i>header</i></div>
+    <div class="content flex-auto">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+<div class="body demo1 maxHeight">
+    <div class="header"><i>header</i></div>
+    <div class="content flex-auto">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+<div class="body demo1 minHeight">
+    <div class="header"><i>header</i></div>
+    <div class="content flex-auto">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+
+
+<hr>
+<div>
+    flex 布局，这里没有 aboslute
+</div>
+
+<div class="body demo2">
+    <div class="header"><i>header</i></div>
+    <div class="content flex-auto">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+<div class="body demo2 maxHeight">
+    <div class="header"><i>header</i></div>
+    <div class="content flex-auto">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+<div class="body demo2 minHeight">
+    <div class="header"><i>header</i></div>
+    <div class="content flex-auto">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+
+
+<hr>
+<div>
+    非 flex。使用  calc
+</div>
+
+<div class="body demo3">
+    <div class="header"><i>header</i></div>
+    <div class="content">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+<div class="body demo3 maxHeight">
+    <div class="header"><i>header</i></div>
+    <div class="content">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+<div class="body demo3 minHeight">
+    <div class="header"><i>header</i></div>
+    <div class="content">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+
+
+<hr>
+<div>
+    非 flex。非 calc。使用 absolute
+</div>
+
+<div class="body demo4">
+    <div class="header"><i>header</i></div>
+    <div class="content">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+<div class="body demo4 maxHeight">
+    <div class="header"><i>header</i></div>
+    <div class="content">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+<div class="body demo4 minHeight">
+    <div class="header"><i>header</i></div>
+    <div class="content">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+
+
+
+<!-- <hr>
+<div>
+    grid
+</div>
+
+<div class="body demo5">
+    <div class="header"><i>header</i></div>
+    <div class="content">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+<div class="body demo5 maxHeight">
+    <div class="header"><i>header</i></div>
+    <div class="content">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+<div class="body demo5 minHeight">
+    <div class="header"><i>header</i></div>
+    <div class="content">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div> -->
+
+<!-- <div class="body">
+    <div class="header"><i>header</i></div>
+    <div class="content">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div>
+<div class="body">
+    <div class="header"><i>header</i></div>
+    <div class="content">
+        content
+    </div>
+    <div class="footer"><b>footer</b></div>
+</div> -->
+
+<style>
+    div{
+        background: rgba(100, 100, 100, .4);
+        padding: 10px;
+        margin: 10px;
+        resize: auto;
+    }
+    .body{
+        height: 300px;
+        /* min-height: 300px; */
+        /* max-height: 300px; */
+        width: 240px;
+        display: inline-block;
+        vertical-align: top;
+        overflow: hidden;
+        overflow: auto;
+    }
+    .body.maxHeight{
+        height: auto;
+        max-height: 300px;
+    }
+    .body.minHeight{
+        height: auto;
+        min-height: 300px;
+    }
+    .body.height{
+        height: 300px;
+    }
+    .remove{
+        display: block;
+    }
+    .flex-auto{
+        flex: auto;
+    }
+
+    body{
+        padding-top: 50px;
+    }
+    #controls{
+        position: fixed;
+        top:0;
+        left: 0;
+        right:0;
+        z-index: 999;
+    }
+</style>
+<style>
+    .demo1{
+        position: relative;
+        padding-bottom: 40px;
+        display: inline-flex;
+        flex-direction: column;
+    }
+    .demo1 .footer{
+        position: absolute;
+        bottom: 0;
+        left: 0;right: 0;
+        margin: 0;
+    }
+    .demo1 .content{
+        overflow: auto;
+    }
+</style>
+
+<style>
+    .demo2{
+        position: relative;
+        display: inline-flex;
+        flex-direction: column;
+    }
+    .demo2 .content{
+        overflow: auto;
+    }
+</style>
+
+
+<style>
+    .demo3{
+        position: relative;
+    }
+    .demo3 .content{
+        overflow: auto;
+        max-height: calc(100% - 160px);
+    }
+</style>
+
+
+
+<style>
+    .demo4{
+        position: relative;
+    }
+    .demo4 .header,.demo4 .footer{
+        position: absolute;
+        margin: 0;
+        top:0;left:0 ;right:0;
+    }
+    .demo4 .footer{
+        top: auto;
+        bottom: 0;
+    }
+    .demo4 .content{
+        overflow: auto;
+        height: 100%;
+        padding-top: 30px;
+        padding-bottom: 30px;
+        margin: 0;
+        box-sizing: border-box;
+    }
+</style>
+
+
+<style>
+    .demo5{
+        display: inline-grid;
+        grid-template: "a" 70px
+                       "b" auto
+                       "c" 70px;
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

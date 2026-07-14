@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>perspective 测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="kfXKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<div id="app">
+  <div :style="{transform: 'rotateX('+rotate+'deg)'}"></div>
+  <div :style="{transform: 'rotateY('+rotate+'deg)'}"></div>
+  <input type="range" v-model="rotate" min="-180"  max="180"/>
+  {{rotate}}
+</div>
+<div id="app2">
+  <input type="range" v-model="rotate" min="-180"  max="180"/>
+  {{rotate}}
+  <div>
+    <div v-for="(item, i) in 6" :style="{transform: rotateArr[i]}">{{item}}</div>
+  </div>
+  <button @click="next">next</button><button @click="prev">prev</button>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data:{
+    rotate: 0
+  }
+});
+new Vue({
+  el: '#app2',
+  data:{
+    rotate: 0,
+    index: 0,
+    rotateArr: ['rotateY(0deg)','rotateY(-90deg)','rotateY(-90deg)','rotateY(-90deg)','rotateY(-90deg)','rotateY(-90deg)']
+  },
+  methods:{
+    next(){
+      this.rotateArr.splice(this.index, 1, 'rotateY(90deg)')
+      this.rotateArr.splice(this.index, 1, 'rotateY(0deg)')
+      this.index++
+    },
+    prev(){
+      this.rotateArr.splice(this.index, 1, 'rotateY(-90deg)')
+      this.rotateArr.splice(this.index-1, 1, 'rotateY(0deg)')
+      this.index--
+    }
+  }
+});
+</script>
+</body>
+</html>

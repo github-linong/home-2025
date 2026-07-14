@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>echartsshow</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="kLUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.1.2/echarts.min.js">
+
+</script>
+<div id="app">
+
+</div>
+<div id="main" style="width: 318px;height:200px;"></div>
+
+<style>
+	#main {
+		border: 1px solid #f00;
+	}
+</style>
+<script>
+	var myChart = echarts.init(document.getElementById('main'));
+
+    list = [
+// {money: "0", color: '#FF6E76'},
+{money: "12", color: '#FF6E76'},
+// {money: "0", color: '#FDDD60'},
+{money: "80", color: '#FDDD60'},
+// {money: "0", color: '#58D9F9'},
+{money: "5", color: '#58D9F9'},
+{money: "13", color: '#7CFFB2'},
+{money: "0", color: '#7C00B2'},
+{money: "110", color: '#7CFFB2'}
+    // 4: {money: "0.00"}
+]
+getOptions = ()=>{
+// list = [
+//     {money: "19623.11", color: '#FF6E76'},
+//     {money: "10010.00", color: '#FDDD60'},
+//     {money: "3417.12", color: '#58D9F9'}
+// ]
+sum = list.reduce((s,n)=>{
+    s = s + (+n.money)
+    n._sum = s
+    return s
+}, 0)
+
+width = main.offsetWidth;
+height = main.offsetHeight;
+x = width /2
+y = height / 2
+r = 90
+getPointer = (deg) => {
+    return [ x + r * Math.cos(deg* Math.PI / -180), y + r * Math.sin(deg* Math.PI / -180) ]
+    //return [ 300 + 160 * Math.cos(deg* Math.PI / -180), 200 + 160 * Math.sin(deg* Math.PI / -180) ]
+    //return [ 300 + 170 * Math.cos(deg* Math.PI / -180), 200 + 170 * Math.sin(deg* Math.PI / -180) ]
+}
+option = {
+    series: [{
+        type: 'gauge',
+        startAngle: 200,
+        endAngle: -20,
+        min: 0,
+        max: 1,
+        splitNumber: 100,
+        axisLine: {
+            lineStyle: {
+                width: 6,
+                color: list.map(v=>[v._sum/sum, v.color])
+            }
+        },
+        pointer: {
+            show: false, //指针不显示
+        },
+        axisTick: {
+            length: 8,
+              lineStyle: {
+                color: "auto",
+                width: 8,
+            },
+        },
+        splitLine: {
+            length: 8,
+            lineStyle: {
+                color: "auto",
+                width: 8,
+            },
+        },
+        axisLabel: {
+            color: '#464646',
+            show: false,
+            fontSize: 10,
+            rotate: 60,
+            formatter: function (value) {
+                var idx = _this.list
+                  .map((v, i, arr) => (arr[i - 1]?._sum || 0) + v.money / 2)
+                  .map((v) => (((v / sum) * 100) >>> 0) / 100)
+                  .indexOf(value);
+                if (idx != -1) {
+                  let a = _this.list[idx].money;
+                  let b = ((a / sum) * 10000) >> 0;
+                  let dd =
+                    (
+                      (((_this.list[idx].money / sum) * 10000) >> 0) /
+                      100
+                    ).toFixed(2) + "%";
+                  console.log(dd, "百分比");
+                  return dd;
+                }
+            }
+        },
+        title: {
+            offsetCenter: [0, "-30%"], //显示位置
+              fontSize: 10,
+              color: "#999999",
+        },
+        detail: {
+            fontSize: 20,
+              offsetCenter: [0, "6%"],
+            //   valueAnimation: true,
+              formatter: function(value) {
+                return value.toFixed(2); //取保留两位小数的总和
+              },
+              color: "#333333",
+        },
+        data: [
+            {
+                value: sum,
+                name: "总业绩(元)",
+            }
+        ],
+        markPoint:{
+            symbol: 'circle',
+            symbolSize: 10,
+            symbolSize: 0,
+            // animation:false,
+            data: [
+                ...list.filter(v=>+v.money).map((v) => {
+									//console.log(v,'展示数据')
+                  let pointer = getPointer(
+                    200 - 220 * (v._sum / sum - v.money / sum / 2)
+                  );
+                  let rotateDegTextBase = v._sum / sum - v.money / sum / 2;
+                  return {
+                    name: v.money / sum,
+                    x: pointer[0] >>> 0,
+                    y: pointer[1] >>> 0,
+                    itemStyle: {
+                      color: `rgba(255,0,0,${((v + 30) / 180).toFixed(2)})`,
+                    },
+                    label: {
+                      show: true,
+                      rotate: 360 - (rotateDegTextBase - 0.5) * 220,
+                      formatter: (((v.money / sum) * 100) >>> 0).toFixed(2) + "%",
+                      color: v.color,
+                      fontSize: 10,
+                      backgroundColor:'#ffffff'
+                    },
+                  };
+                }),
+              ],
+        }
+    }]
+};
+}
+// x1   =   x0   +   r   *   cos( a )
+// y1   =   y0   +   r   *   sin( a )
+
+// console.log(option)
+   getOptions();   
+      myChart.setOption(option)
+
+      setTimeout(()=>{
+ list = [
+// {money: "0", color: '#FF6E76'},
+{money: "123", color: '#FF6E76'},
+// {money: "0", color: '#FDDD60'},
+{money: "80", color: '#FDDD60'},
+// {money: "0", color: '#58D9F9'},
+{money: "5", color: '#58D9F9'},
+{money: "13", color: '#7CFFB2'},
+{money: "0", color: '#7C00B2'},
+{money: "110", color: '#7CFFB2'}
+    // 4: {money: "0.00"}
+]
+getOptions();
+        //   console.log(option)
+          myChart.setOption(option);
+      }, 300 )
+
+</script>
+<script>
+
+</script>
+</body>
+</html>

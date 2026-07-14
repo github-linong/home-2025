@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>宽度自适应DEMO</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="jIhKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<div class="aside">
+  <img class="main_img" src="http://img5.imgtn.bdimg.com/it/u=3185439614,3825985117&fm=26&gp=0.jpg" alt="" />
+  <img class="main_img" src="http://img5.imgtn.bdimg.com/it/u=3185439614,3825985117&fm=26&gp=0.jpg" alt="" />
+</div>
+<div class="main">
+  <span>我是一个卖报的小画家啦啦啦啦啦啦啦我是一个卖报的小画家啦啦啦啦啦啦啦  我是一个卖报的小画家啦啦啦啦啦啦啦</span>
+</div>
+<script>
+var a = document.querySelector('.aside');
+
+a.addEventListener('mousemove', function(e) {
+  this.style.cursor = 'auto'
+  if (e.offsetX + 15 > this.offsetWidth) {
+    this.style.cursor = 'col-resize';
+  }
+  // if(x!=null){
+  //  	// console.log(this.style.width = this.offsetWidth+(e.offsetX - x)+'px');
+  //   this.style.width = this.offsetWidth+(e.offsetX - x)+'px'
+  //   x = e.offsetX;
+  // }
+});
+var x = null;
+a.addEventListener('mousedown', function(e) {
+  if (e.offsetX + 15 > this.offsetWidth) {
+    x = e.offsetX;
+  }
+});
+document.body.addEventListener('mouseup', function(e) {
+  x = null
+});
+document.body.addEventListener('mousemove', function(e) {
+  if (x != null) {
+    a.style.width = (e.clientX - 10) + 'px';
+  }
+  // console.log(e.clientX)
+})
+</script>
+</body>
+</html>

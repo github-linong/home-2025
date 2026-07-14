@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3D地图，</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="GAUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/echarts/4.9.0-rc.1/echarts.js"></script>
+<!-- <script src="https://raw.githubusercontent.com/apache/echarts/4.9.0/map/js/china.js"></script> -->
+<script src="https://cdns.jsrun.top/res/983409260qqcom/china.js"></script>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/echarts-gl/1.1.2/echarts-gl.js"></script>
+<div id="echart3DMap"></div>
+<style>
+    #echart3DMap{height: 500px;width: 800px;}
+</style>
+<script>
+    // 初始化地图
+  function init3DMapChart() {
+    const map = echart3DMap;
+    const myChart = echarts.init(map);
+    const options = {
+      geo3D: {
+        map: 'china',
+        itemStyle: { // 地图样式
+          color: this.mapStyle?.color || '#12226d',
+          borderColor: this.mapStyle?.borderColor || '#324f9a',
+          borderWidth: this.mapStyle?.borderWidth || 0.5,
+        },
+        zlevel: -100,
+        // distance: 100,
+        boxHeight: 20,
+        label: { // 标签样式
+          show: true,
+          distance: 3,
+          textStyle: {
+            color: this.mapStyle?.textStyle?.color || '#1292ca',
+            fontSize: 12,
+            backgroundColor: 'transparent'
+          }
+        },
+        emphasis: { // 鼠标Hover样式
+          label: {
+            show: true,
+            textStyle: {
+              color: this.mapStyle?.emphasis?.label?.color || '#fff'
+            }
+          },
+          itemStyle: {
+            color: this.mapStyle?.emphasis?.itemStyle?.color || '#0040e5'
+          }
+        },
+        shading: 'realistic',
+        // shading: 'lambert',
+        realisticMaterial: { // 纹理
+        //   detailTexture: require('@/assets/images/map/texture.png'),
+        },
+        viewControl: { // 3D效果
+            projection: 'perspective',
+          alpha: 45, // 角度
+          distance: 90, // 调整视角到主体的距离，类似调整zoom
+        },
+      }
+    };
+    myChart.setOption(options);
+    chartMap = myChart;
+    update3DMpaChart();
+  }
+  // 更新地图
+  function update3DMpaChart() {
+    const mapFeatures = (echarts.getMap('china').geoJson).features;
+    const options = {
+      series: [
+        {
+          name: 'lines3D',
+          type: 'lines3D',
+          zlevel: 10,
+          coordinateSystem: 'geo3D',
+          lineStyle: {
+            width: 10,
+            color: '#ffec23',
+          },
+          data: [
+            {
+              coords: [ [110.3467, 41.4899, 4], [119.4543, 25.9222, 3]],
+              value: 1000
+            },
+            {
+              coords: [ [100.3467, 41.4899, 0], [109.4543, 30.9222 , 0]],
+              value: 20
+            },
+            {
+              coords: [ [99.3467, 41.4899, 4], [99.4543, 30.9222 , 4]],
+              value: 200
+            },
+            {
+              coords: [ [95.3467, 41.4895,10], [95.4543, 30.9222 ,10]],
+              value: 300
+            },
+            {
+              coords: [ [90.3467, 30.4890,-10], [120.4543, 40.9222 ,-10]],
+              value: -300
+            }
+          ]
+        },
+        {
+          name: 'bar3D',
+          type: 'bar3D',
+          zlevel: 20,
+          coordinateSystem: 'geo3D',
+          barSize: 1,
+          bevelSize: 0.5,
+          bevelSmoothness: 10,
+          minHeight: 1,
+          itemStyle: {
+            color: '#ffec23',
+            opacity: 0.4
+          },
+          data: [
+            {
+              name: '内蒙',
+              value: [110.3467, 41.4899, 5]
+            }
+          ],
+        },
+      ]
+    };
+    chartMap.setOption(options);
+  }
+  init3DMapChart();
+</script>
+<script>
+
+</script>
+</body>
+</html>

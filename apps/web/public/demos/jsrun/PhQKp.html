@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>操作记录</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="PhQKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+
+<div id="app" class="flex">
+    <div>
+        <div class="view" id="viewEl">
+            <div>
+                <input type="">
+                <input type="checkbox">
+                <input type="radio">
+                <select name="" id=""></select>
+                <button>搜索</button>
+            </div>
+            <div>
+                <button>新增</button>
+                <button>删除</button>
+                <button>批量已读</button>
+                <button>全部</button>
+                <button>重点推荐</button>
+            </div>
+
+            <table>
+                <tr>
+                    <th>序号</th>
+                    <th>姓名</th>
+                    <th>操作</th>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>linong</td>
+                    <td>
+                        <button>删除</button>
+                        <button>编辑</button>
+                        <button>复制</button>
+                        <button>更多</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <canvas class="canvas" id="cavnas">
+        </canvas>
+    </div>
+    <div id="clog">
+
+    </div>
+</div>
+<style>
+    .flex{display: flex;}
+    table,tr,th,td{border: 1px solid #eee;}
+    .view,.canvas{
+        height: 300px;
+        background: #fa5;
+        border: 1px solid #cfc
+    }
+    #clog{
+        white-space: pre;
+    }
+</style>
+<script>
+    logList = [];
+    var lastMoveTarget = null;
+    var getEventLog = (e)=>({
+            eventType: e.type,
+            comment: e.target.children.length || e.target.innerText,
+            path: e.path
+                // .filter(v=>v.tagName)
+                .slice(0, -3)
+                .map(v=>`${v.tagName}`) 
+                .join(' > '),
+        })
+    document.addEventListener('mousemove', (e)=>{
+        if(lastMoveTarget == e.target) return ;
+        lastMoveTarget = e.target
+        top.console.log(e)
+        console.log(getEventLog(e))
+        // logList.push(getEventLog(e))
+        // setLog();
+    })
+    document.addEventListener('click', (e)=>{
+        top.console.log(e)
+        console.log(getEventLog(e))
+        logList.push(getEventLog(e))
+        setLog();
+    })
+    // document.addEventListener('mouseover', (e)=>{
+    //     top.console.log(e)
+    //     console.log({
+    //         eventType: e.type,
+    //         comment: e.target.innerText,
+    //         path: e.path.map(v=>`${v.tagName}`),
+    //     })
+    // })
+    // document.addEventListener('mouseout', (e)=>{
+    //     top.console.log(e)
+    //     console.log({
+    //         eventType: e.type,
+    //         comment: e.target.innerText,
+    //         path: e.path.map(v=>`${v.tagName}`),
+    //     })
+    // })
+    var setLog = function(){
+        clog.innerHTML = logList.map(v=>JSON.stringify(v,null,2)).join('\n')
+    }
+</script>
+<script>
+
+</script>
+</body>
+</html>

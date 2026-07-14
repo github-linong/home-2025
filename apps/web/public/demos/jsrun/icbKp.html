@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000020182732</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="icbKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <template>
+  <div
+    class="wrapper"
+  >
+    <div
+      v-for="item, index in pushData"
+      :key="index"
+      class="form-items"
+    >
+      <!-- 标题 start -->
+      <span>{{ item.explain }}<i v-show="item.must">*</i></span>
+      <!-- 标题 end -->
+      <!-- 正常输入框 start -->
+      <input
+        v-if="item.type === 'text'"
+        :placeholder = "item.placeholder"
+        :type="item.type"
+        @input="item.fun"
+      />
+      <!-- 正常输入框 end -->
+      <!-- 单选项输入框 start -->
+      <span
+        v-if="item.type === 'radio'"
+        v-for="every, idx in item.list"
+        :key="idx"
+      >
+        <input
+          :id="every"
+          :type="item.type"
+          :name="item.explain"
+          :data-num='idx'
+          :checked="idx === item.num ? 'cheack' : ''"
+          @input="item.fun"
+        />
+        <label
+          :for="every"
+        >{{ every }}</label>
+      </span>
+      <!-- 单选项输入框 end -->
+      <!-- 复选项输入框 start -->
+      <span
+        v-if="item.type === 'checkbox'"
+        v-for="every, idx in item.list"
+        :key="idx"
+      >
+        <input
+          :id="every"
+          :type="item.type"
+          :name="item.explain"
+          @input="item.fun"
+        />
+        <label
+          :for="every"
+        >{{ every }}</label>
+      </span>
+      <!-- 复选项输入框 end -->
+      <!-- 下拉框 start -->
+      <span
+        v-if="item.type === 'select'"
+      >
+        <!-- 单级下拉框 start -->
+        <select
+          v-if="item.manyGroup"
+          @input="item.fun"
+        >
+          <option hidden>{{ '请选择' }}</option>
+          <option
+            v-for="every, idx in item.list"
+            :key="idx"
+          >{{ every }}</option>
+        </select>
+        <!-- 单级下拉框 end -->
+        <!-- 多级下拉框 start -->
+        <select
+          v-else
+          v-for="every, idx in item.list"
+          :key="idx"
+          @input="item.fun"
+        >
+          <option hidden>{{ '请选择' }}</option>
+          <option
+            v-for="n, i in every"
+            :key="i"
+          >{{ n }}</option>
+        </select>
+        <!-- 多级下拉框 end -->
+      </span>
+      <!-- 下拉框 end -->
+      <!-- 地区选择 start -->
+      <span
+        v-if="item.type === 'region'"
+      >
+        <select
+          @input="item.onProvince"
+        >
+          <option hidden>{{ '选择省份' }}</option>
+          <option
+            v-for="every, idx in item.provincelist"
+            :key="idx"
+          >{{ every.name }}</option>
+        </select>
+        <select
+          @input="item.onCity"
+        >
+          <option hidden>{{ '选择省市' }}</option>
+          <option
+            v-for="every, idx in item.cityList"
+            :key="idx"
+          >{{ every.name }}</option>
+        </select>
+        <select
+          @input="item.onArea"
+        >
+          <option hidden>{{ '选择区县' }}</option>
+          <option
+            v-for="every, idx in item.areaList"
+            :key="idx"
+          >{{ every }}</option>
+        </select>
+      </span>
+      <!-- 地区选择 end -->
+      <!-- 验证码 start -->
+      <span
+        v-if="item.type === 'code'"
+        class="code"
+      >
+        <input
+          :placeholder = "item.placeholder"
+          type="text"
+          @input="item.fun"
+        />
+        <button
+          click="onCodeFun"
+        >{{ codeText }}</button>
+      </span>
+      <!-- 验证码 end -->
+    </div>
+    <div><button
+      id="formAreaId"
+      @click="pushForm"
+    >{{ buttonText }}</button></div>
+  </div>
+</template>
+  <div>
+    {{form}}
+  </div>
+</div>
+<script>
+data = {
+  buttonText: '提交', // 提交按钮文案
+  pushData: [{
+    explain: '姓名：',
+    placeholder: '请输入姓名',
+    must: 'name'
+  },{
+    explain: '手机号码：',
+    placeholder: '请输入手机号码',
+    must: 'phone'
+  }, {
+    explain: '单选项1：',
+    type: 'radio',
+    list: ['单选项11', '单选项12'],
+  }, {
+    explain: '单选项2：',
+    type: 'radio',
+    list: ['单选项21', '单选项22'],
+  }, {
+    explain: '多选项1：',
+    type: 'checkbox',
+    list: ['多选项11', '多选项12'],
+  }, {
+    explain: '多选项2：',
+    type: 'checkbox',
+    list: ['多选项21', '多选项22'],
+  }, {
+    explain: '下拉框1：',
+    type: 'select',
+    list: ['选项1', '选项2', '选项3'],
+  }, {
+    explain: '下拉框2：',
+    type: 'select',
+    list: [
+      ['选项11', '选项12', '选项13'],
+      ['选项21', '选项22', '选项23'],
+      ['选项31', '选项32', '选项33'],
+    ],
+  }, {
+    explain: '地区选择1：',
+    type: 'region',
+  }, {
+    explain: '地区选择2：',
+    type: 'region',
+  }, {
+    explain: '验证码：',
+    placeholder: '请输入验证码',
+    type: 'code',
+  }],
+};
+new Vue({
+  el: '#app',
+  data () {
+    return {
+      push: { // 提交反馈
+        show: false,
+        text: ''
+      },
+      buttonText: data.buttonText, // 按钮文案
+      pushData: data.pushData, // 表单数据
+      codeText: '获取验证码',
+      phone: '', // 手机号码
+      isPhone: false, // 验证手机号码
+      code: '', // 验证码
+      form: [], // 提交数据
+      chooseCity: [{
+          'name': '天津',
+          'city': [{
+            'name': '天津',
+            'area': ['和平区', '河东区', '河西区', '南开区', '河北区', '红桥区', '塘沽区', '汉沽区', '大港区', '东丽区', '西青区', '津南区', '北辰区', '武清区', '宝坻区', '宁河县', '静海县', '蓟县']
+          }]
+      }, {
+          'name': '山西',
+          'city': [{
+            'name': '太原',
+            'area': ['小店区', '迎泽区', '杏花岭区', '尖草坪区', '万柏林区', '晋源区', '清徐县', '阳曲县', '娄烦县', '古交市']
+          }, {
+            'name': '大同',
+            'area': ['城区', '矿区', '南郊区', '新荣区', '阳高县', '天镇县', '广灵县', '灵丘县', '浑源县', '左云县', '大同县']
+          }, {
+            'name': '阳泉',
+            'area': ['城区', '矿区', '郊区', '平定县', '盂县']
+          }, {
+            'name': '长治',
+            'area': ['城区', '郊区', '长治县', '襄垣县', '屯留县', '平顺县', '黎城县', '壶关县', '长子县', '武乡县', '沁  县', '沁源县', '潞城市']
+          }, {
+            'name': '晋城',
+            'area': ['城区', '沁水县', '阳城县', '陵川县', '泽州县', '高平市']
+          }, {
+            'name': '朔州',
+            'area': ['朔城区', '平鲁区', '山阴县', '应县', '右玉县', '怀仁县']
+          }, {
+            'name': '忻州',
+            'area': ['忻府区', '原平市', '定襄县', '五台县', '代县', '繁峙县', '宁武县', '静乐县', '神池县', '五寨县', '岢岚县', '河曲县', '保德县', '偏关县']
+          }, {
+            'name': '吕梁',
+            'area': ['离石区', '孝义市', '汾阳市', '文水县', '交城县', '兴县', '临县', '柳林县', '石楼县', '岚县', '方山县', '中阳县', '交口县']
+          }, {
+            'name': '晋中',
+            'area': ['榆次市', '介休市', '榆社县', '左权县', '和顺县', '昔阳县', '寿阳县', '太谷县', '祁县', '平遥县', '灵石县']
+          }, {
+            'name': '临汾',
+            'area': ['临汾市', '侯马市', '霍州市', '曲沃县', '翼城县', '襄汾县', '洪洞县', '古县', '安泽县', '浮山县', '吉县', '乡宁县', '蒲县', '大宁县', '永和县', '隰县', '汾西县']
+          }, {
+            'name': '运城',
+            'area': ['运城市', '永济市', '河津市', '芮城县', '临猗县', '万荣县', '新绛县', '稷山县', '闻喜县', '夏县', '绛县', '平陆县', '垣曲县']
+          }]
+       }]
+    };
+  },
+  created () {
+    let that = this;
+    for (let i in this.pushData) {
+      let item = that.pushData[i];
+      // 设置必选项
+      if (!item.hasOwnProperty('must')) {
+        that.$set(item, 'must', false);
+      }
+      // 设置表单类型
+      if (!item.hasOwnProperty('type')) {
+        that.$set(item, 'type', 'text'); // 默认表单类型为文本
+      }
+      // 设置radio/checkbox的默认值
+      that.$set(item, 'val', that.defaultCheckFun(item));
+      // 设置默认单选下标
+      if (item.type === 'radio') {
+        that.$set(item, 'num', 0); // 默认单选下标
+      }
+      // 监控表单类型，输出不同方法
+      that.$set(item, 'fun', (e) => {
+        switch (item.type) {
+          case 'radio':
+            if (e.target.tagName == 'input') { // 解决触发两次的bug
+              item.val = e.target.id;
+              item.num = e.target.dataset.num;
+            }
+            // console.log(e.target.dataset.num)
+            // console.log('radio', item.explain, item.val)
+            break;
+          case 'checkbox':
+            let findVal = item.val.indexOf(e.target.id);
+            if (findVal === -1) { // 防止重复点击
+              item.val.push(e.target.id);
+            } else {
+              item.val.splice(findVal, 1);
+            }
+            // console.log('checkbox', item.explain, item.val)
+            break;
+          case 'select':
+            item.val = e.target.value;
+            // console.log('select', item.explain, item.val)
+            break;
+          case 'region':
+            break;
+            // console.log('region', item.explain, item.val)
+            break;
+          case 'code':
+            this.code = e.target.value;
+            // item.val = e.target.value;
+            // console.log('code', item.explain, item.val)
+            break;
+          default:
+            item.val = e.target.value;
+            // console.log('text', item.explain, item.val)
+        }
+      });
+      if (item.type === 'region') {
+        that.$set(item, 'provincelist', that.chooseCity); // 省份列表
+        that.$set(item, 'onProvince', (e) => { // 选择省份
+          that.$set(item, 'province', e.target.value);
+          that.provinceFun(item, e.target.value);
+        });
+        that.$set(item, 'onCity', (e) => { // 选择城市
+          that.$set(item, 'city', e.target.value);
+          that.cityFun(item, e.target.value);
+        });
+        that.$set(item, 'onArea', (e) => { // 选择区县
+          that.$set(item, 'val', item.province + item.city + e.target.value);
+          console.log('城市选项结果:', item.val)
+        });
+      }
+      that.form.push({
+        name: item.explain,
+        value: item.val
+      });
+    }
+  },
+  mounted () {
+    let that = this;
+    // console.log(that.pushData)
+  },
+  methods: {
+    // 设置radio/checkbox的默认值
+    defaultCheckFun (item) {
+      let that = this;
+      switch (item.type) {
+        case 'radio':
+          return item.list[0];
+          break;
+        case 'checkbox':
+          return [];
+          break;
+        case 'select':
+          if (typeof(item.list[0]) === 'string') {
+            that.$set(item, 'manyGroup', true);
+          } else {
+            that.$set(item, 'manyGroup', false);
+          }
+          break;
+        default:
+          return '';
+      }
+    },
+    // 选择省份
+    provinceFun (source, event) {
+      let that = this;
+      // 将tpye为region的数据筛选出来
+      for (let i in this.chooseCity) {
+        let item = that.chooseCity[i];
+        if (event === item.name) {
+          // 匹配省份
+          that.$set(source, 'cityList', item.city);
+          // console.log('城市列表:', item.city)
+        }
+      }
+      // console.log('省份:', source.province)
+    },
+    // 选择城市
+    cityFun (source, event) {
+      let that = this;
+      // 匹配城市
+      for (let i in source.cityList) {
+        let item = source.cityList[i];
+        if (event === item.name) {
+          that.$set(source, 'areaList', item.area);
+          // console.log('区县列表:', item.area)
+        }
+      }
+      // console.log('城市:', source.city)
+    },
+    // 筛选数据
+    screenData (screenTarget) {
+      let that = this;
+      for (let i in this.pushData) {
+        let item = that.pushData[i];
+        if (item.must === screenTarget) {
+          return item.val
+        }
+      }
+    },
+    // 倒计时
+    times () {
+      let that = this;
+      let num = 60;
+      let timeFun = window.setInterval(() => {
+        if (num < 1) {
+          window.clearInterval(timeFun);
+          that.codeText = '获取验证码';
+        } else {
+          num--;
+          that.codeText = num;
+        };
+      }, 1000);
+    },
+    // 表单反馈
+    feedbackResults (txt) {
+      let that = this;
+      this.push.text = txt;
+      this.push.show = true;
+      setTimeout(() => {
+        that.push.show = false;
+      }, 1200);
+    },
+    // 校验手机号码
+    cheakPhone () {
+      if (this.phone.length < 1) {
+        this.feedbackResults('请输入手机号码');
+        return
+      }
+      if (!(/^1\d{10}$/.test(this.phone))) {
+        this.feedbackResults('请验证手机号码');
+        return
+      }
+    },
+    // 提交按钮触发事件
+    pushForm () {
+      let that = this;
+      this.cheakPhone();
+      for (let i in this.pushData) {
+        let item = that.pushData[i];
+        if (item.type === 'code') {
+          that.verifySmscode();
+          return
+        }
+      }
+    }
+  },
+})
+</script>
+</body>
+</html>

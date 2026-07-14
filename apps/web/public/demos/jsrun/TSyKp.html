@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue .sync</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="TSyKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+<div id="app">
+  <p>{{value}} {{value1}} {{value2}} {{version}}</p>
+  <sync-update-test 
+                    v-model="value" 
+                    :value1.sync="value1"
+                    :value2="value2"
+                    @update2="value2 = $event"
+                    />
+</div>
+<script>
+Vue.component('sync-update-test',{
+  props: ['value','value1','value2'],
+  template: `<div>
+		<p><input :value="value" @input="valueinput">{{value}}</p>
+		<p><input :value="value1" @input="valueinput1">{{value1}}</p>
+		<p><input :value="value2" @input="valueinput2">{{value2}}</p>
+	</div>`,
+  methods: {
+    valueinput(e){
+      // console.log(this.value)
+      this.$emit('input',e.target.value)
+    },
+    valueinput1(e){
+      // console.log(this.value)
+      this.$emit('update:value1',e.target.value)
+    },
+    valueinput2(e){
+      this.$emit('update2',e.target.value)
+    }
+  }
+})
+new Vue({
+  el: '#app',
+  data() {
+    return {
+      value: 'Vue',
+      value1: 'lilnong',
+      value2: 'biubiubiu',
+      version: Vue.version
+    }
+  }
+})
+</script>
+</body>
+</html>

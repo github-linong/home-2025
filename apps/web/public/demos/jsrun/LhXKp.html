@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000018125120</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="LhXKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<form name="form" id="form"> 
+  <div id=div1>
+    <input name=text1>
+  </div> 
+  <input id=text2> 
+</form>
+<script>
+// if(form.all === undefined){
+//     form.all = function(name){
+//         return form[name]
+//     }
+// }
+var _form = document.createElement('form')
+if(!_form.__proto__.all){
+  _form.__proto__.all = function(name){
+      return this[name]
+  }
+}
+
+
+console.log('form.all',form.all,form.all&&form.all("itemname"))
+console.log('form.all',form.getElementsByTagName('*'),form.getElementsByTagName("itemname"))
+console.log('form.text1',form.text1)
+console.log('form.div1',form.div1)
+
+console.log('ie:',form.all("div"),form.all("text1"),form.all("text2"))
+</script>
+</body>
+</html>

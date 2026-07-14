@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>canvas 导出背景色</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="wT3Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<img id="img" src="" alt="">
+<script>
+    ctx = canvas.getContext('2d');
+    ctx.fillText('前端linong', 20, 20)
+    w = canvas.width;
+    h = canvas.height;
+    var imageData = ctx.getImageData( 0,0,w,h);
+    for (var i = 0; i < imageData.data.length; i += 4) {
+        // 当该像素是透明的，则设置成白色
+        if (imageData.data[i + 3] == 0) {
+            imageData.data[i] = 255;
+            imageData.data[i + 1] = 255;
+            imageData.data[i + 2] = 255;
+            imageData.data[i + 3] = 255;
+        }
+    }
+    ctx.putImageData(imageData, 0, 0);
+    img.src = canvas.toDataURL('image/jpeg')
+</script>
+<script>
+
+</script>
+</body>
+</html>

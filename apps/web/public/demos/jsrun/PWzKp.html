@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>谷歌局部翻译</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="PWzKp" />
+  <style>
+/* 
+  #google_translate_element {
+    overflow: hidden;
+    border-width: 1px;
+    border-radius: 0.25rem;
+  }
+
+  .goog-te-gadget {
+    font-size: 0 !important;
+  }
+
+  .goog-te-combo {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    font-size: 0.75rem !important;
+    line-height: 1rem !important;
+    outline: 2px solid transparent !important;
+    outline-offset: 2px !important;
+  }
+
+  .goog-logo-link {
+    display: none !important;
+  }
+
+  .goog-te-banner-frame {
+    display: none !important;
+    position: fixed !important;
+  } */
+
+  </style>
+</head>
+<body>
+<!-- <div id="google_translate_element">资源</div> -->
+<!-- <script async src="/translate-google.js">
+</script> -->
+
+<div>资源引用</div>
+
+<div id="google_translate_element" style="position:fixed;bottom:10px;right:10px;z-index:2000;opacity:0.7">资源</div>
+
+<!-- <style>.goog-te-banner-frame{display: none;}body{top: 0px !important;}</style> -->
+
+<script src="https://translate.google.cn/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script>
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement(
+            {
+                pageLanguage: 'zh-CN',
+                // 需要翻译的语言，比如你只需要翻译成越南和英语，这里就只写en,vi
+                includedLanguages: 'en,zh-CN,hr,cs,da,nl,fr,de,el,iw,hu,ga,it,ja,ko,pt,ro,ru,sr,es,th,vi',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                // 自动显示翻译横幅，就是翻译后顶部出现的那个
+                autoDisplay: true,
+                // 还有些其他参数，由于原插件不再维护，找不到详细api了，将就了，实在不行直接上dom操作
+            },
+            'google_translate_element' // 触发元素的id
+        );
+
+    // new google.translate.TranslateElement(
+    //   {
+    //     pageLanguage: "zh-CN",
+    //     includedLanguages: 'af,ga,sq,it,ar,ja,az,kn,eu,ko,bn,la,be,lv,bg,lt,ca,mk,zh-CN,ms,zh-TW,mt,hr,no,cs,fa,da,pl,nl,pt,en,ro,eo,ru,et,sr,tl,sk,fi,sl,fr,es,gl,sw,ka,sv,de,ta,el,te,gu,th,ht,tr,iw,uk,hi,ur,hu,vi,is,cy,id,yi',
+    //     autoDisplay: false,
+    //   },
+    //   "google_translate_element"
+    // );
+    }
+</script>
+
+<script>
+    function getck(name) {
+    var cookie_start = document.cookie.indexOf(name);
+    var cookie_end = document.cookie.indexOf(";", cookie_start);
+    if (cookie_start == -1) {
+        return '';
+    } else {
+        var v = document.cookie.substring(cookie_start + name.length + 1, (cookie_end > cookie_start ? cookie_end : document.cookie.length));
+        return unescape(v);
+    }
+}
+if (getck("googtrans") == '') {
+        document.cookie = "googtrans=/zh-CN/en";
+}
+</script>
+
+
+<script type="text/javascript" src="https://translate.google.cn/translate_a/element.js?cb=gtElInit&amp;client=wt"></script>
+<script type="text/javascript">
+var gtElInit = function gtElInit() {
+    // 直接翻译
+    // var lib = new google.translate.TranslateService();
+    // lib.translatePage('zh-cn', 'en', function () {});
+}
+</script>
+
+
+
+
+<div style="text-align:center;"><p>翻译演示<p>
+<button onclick="change(this);"  value="">中文</button>
+<button onclick="change(this);"  value="en">英文</button>
+<button onclick="change(this);"  value="ja">日文</button>
+ 
+<select id="select" onchange="change(this)" class="adres-input">
+	<option value="">中文</option>
+	<option value="en">英文</option>
+	<option value="ja">日文</option>
+	<option value="ko">韩文</option>
+	<option value="ru">俄文</option>
+</select>
+</div>
+ 
+<script type="text/javascript" src="https://translate.google.cn/translate_a/element.js?cb=gtElInit&amp;client=wt"></script>
+<script>
+//var gtElInit = function gtElInit() {
+//    var lib = new google.translate.TranslateService();
+//    lib.translatePage('zh-cn', 'en', function () {});
+//}
+function change(obj) {
+    var lang = obj.value;
+    var lib = new google.translate.TranslateService();
+    lib.translatePage('zh-cn', lang, function () {});
+}
+</script>
+<script>
+
+</script>
+</body>
+</html>

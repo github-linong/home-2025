@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>背景图尝试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="UgXKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<div class="warp">
+  <div class="page"><img src="https://www.lilnong.top/static/img/Rectangle%2010.svg" alt="" /></div>
+  <div class="page"><img src="https://www.lilnong.top/static/img/ml-active-btn6.png" alt="" /></div>
+  <div class="page"><img src="https://www.lilnong.top/static/img/Desert.jpg" alt="" /></div>
+  <div class="page"></div>
+  <div class="page"></div>
+</div>
+<script>
+var setStyle = (v) => {
+   // if(v.width>v.height){
+   //    v.style.width="100%"
+   //  }else{
+   //    v.style.height="100%"
+   //  }
+  if(v.width/v.parentNode.offsetWidth<v.height/v.parentNode.offsetHeight){
+     
+    v.style.height="100%"
+  }else{
+    v.style.width="100%"
+  }
+}
+
+document.querySelectorAll('img').forEach(v=>{
+  // console.log(v.width,v.height, v.parentNode.offsetWidth, v.parentNode.offsetHeight);
+  // v.width/v.parentNode.offsetWidth
+  // v.height/v.parentNode.offsetHeight
+  if((v.width === 0 && v.height === 0) || 
+    (v.width === undefined && v.height === undefined)){
+    v.addEventListener('onload', ()=>{
+      setStyle(v)
+    })
+  }else{
+    setStyle(v)
+  }
+})
+
+</script>
+</body>
+</html>

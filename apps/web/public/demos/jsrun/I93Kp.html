@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000039348026</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="I93Kp" />
+  <style>
+@charset "UTF-8";
+.el-calendar {
+  background: #ffffff;
+  box-shadow: 0px 2px 4px 0px rgba(28, 41, 90, 0.04);
+  border-radius: 10px;
+}
+
+.el-calendar__header {
+  position: relative;
+  padding: 0;
+  border-bottom: none;
+}
+.el-calendar__header .el-calendar__title {
+  font-size: 26px;
+  font-weight: 600;
+  color: #636e95;
+  line-height: 70px;
+  width: 100%;
+  text-align: center;
+}
+.el-calendar__header .el-calendar__button-group {
+  position: absolute;
+  width: 100%;
+}
+.el-calendar__header .el-calendar__button-group .el-button-group > button span {
+  display: none;
+}
+.el-calendar__header .el-calendar__button-group .el-button-group > button {
+  position: absolute;
+  top: 20px;
+  font-family: "element-icons" !important;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #d2d5e1;
+  background: #fff !important;
+  padding: 0;
+}
+.el-calendar__header .el-calendar__button-group .el-button-group > button:before {
+  content: "";
+  color: #636e95;
+  font-size: 14px;
+  font-weight: 600;
+}
+.el-calendar__header .el-calendar__button-group .el-button-group > button:nth-child(2) {
+  display: none;
+}
+.el-calendar__header .el-calendar__button-group .el-button-group > button:nth-child(1) {
+  left: 20px;
+}
+.el-calendar__header .el-calendar__button-group .el-button-group > button:nth-child(1):before {
+  content: "";
+}
+.el-calendar__header .el-calendar__button-group .el-button-group > button:last-child {
+  right: 20px;
+}
+.el-calendar__header .el-calendar__button-group .el-button-group > button:last-child:before {
+  content: "";
+}
+
+.el-calendar-table thead th {
+  color: #97a0c3;
+  padding: 0 0 16px;
+  font-size: 15px;
+  border-bottom: 1px solid #eaedf7;
+}
+.el-calendar-table thead th:before {
+  content: "周";
+}
+
+.el-calendar-table tr td:first-child,
+.el-calendar-table tr:first-child td,
+.el-calendar-table td {
+  border: none;
+  border-radius: 4px;
+}
+.el-calendar-table tr td:first-child .bookings p,
+.el-calendar-table tr:first-child td .bookings p,
+.el-calendar-table td .bookings p {
+  margin: 0;
+  margin-bottom: 10px;
+  font-size: 15px;
+  color: #636e95;
+  line-height: 21px;
+  text-align: center;
+}
+
+.el-calendar-table .el-calendar-day {
+  padding: 0;
+  min-height: 150px;
+  height: auto;
+}
+.el-calendar-table .el-calendar-day .calendar-day {
+  text-align: center;
+  color: #242f57;
+  line-height: 26px;
+  padding-top: 24px;
+  font-size: 22px;
+}
+
+.el-calendar__body {
+  padding-top: 0;
+  padding-bottom: 20px;
+}
+
+.el-calendar-table:not(.is-range) td.prev,
+.el-calendar-table:not(.is-range) td.next {
+  color: #c0c4cc;
+  display: none;
+}
+
+.el-calendar-table:not(.is-range) td.prev {
+  visibility: hidden;
+  display: table-cell;
+}
+
+.el-calendar-table td.current.is-selected {
+  background: linear-gradient(90deg, #ef8d82 0%, #f95b49 100%);
+  border-radius: 4px;
+}
+.el-calendar-table td.current.is-selected .calendar-day {
+  color: #fff !important;
+}
+
+.el-calendar-table td:hover {
+  background: rgba(239, 141, 130, 0.15);
+  border-radius: 4px;
+}
+
+.el-calendar-table .el-calendar-day:hover {
+  background: none;
+}
+
+.el-calendar-table td.is-selected .el-calendar-day,
+.el-calendar-table td.is-selected:hover .el-calendar-day {
+  background: linear-gradient(90deg, #ef8d82 0%, #f95b49 100%);
+  border-radius: 4px;
+}
+.el-calendar-table td.is-selected .el-calendar-day .calendar-day,
+.el-calendar-table td.is-selected:hover .el-calendar-day .calendar-day {
+  color: #fff !important;
+}
+.el-calendar-table td.is-selected .el-calendar-day .bookings p,
+.el-calendar-table td.is-selected:hover .el-calendar-day .bookings p {
+  color: #fff;
+}
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.1/index.js"></script>
+<link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.1/theme-chalk/index.min.css" rel="stylesheet">
+<div id="app">
+    <el-calendar>
+    <!-- 这里使用的是 2.5 slot 语法，对于新项目请使用 2.6 slot 语法-->
+    <template
+        slot="dateCell"
+        slot-scope="{date, data}">
+        <div v-for="item in (+data.day.slice(-2))">{{ +data.day.slice(-2)}}</div>
+        <p :class="data.isSelected ? 'is-selected' : ''">
+        {{ data.day.split('-').slice(1).join('-') }} {{ data.isSelected ? '✔️' : ''}}
+        </p>
+    </template>
+    </el-calendar>
+</div>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

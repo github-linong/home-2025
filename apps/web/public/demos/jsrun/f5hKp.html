@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://juejin.im/post/5b8bf7e3e51d4538c210c6b0</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="f5hKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<input type="file" onchange="playMusic.call(this)" class="select-file">
+<audio class="audio-node" autoplay></audio>
+<script>
+function playMusic () {
+    if (!this.value) {
+        return;
+    }
+    let fileReader = new FileReader();
+    let file = this.files[0];
+    fileReader.onload = function () {
+        let arrayBuffer = this.result;
+        console.log(window.a = arrayBuffer);
+    }
+    // fileReader.onload = function () {
+    //     let arrayBuffer = this.result;
+    //     // 转成一个blob
+    //     let blob = new Blob([new Int8Array(this.result)]);
+    //     // 生成一个本地的blob url
+    //     let blobUrl = URL.createObjectURL(blob);
+    //     console.log(blobUrl);
+    //     // 给audio标签的src属性
+    //     document.querySelector('.audio-node').src = blobUrl;
+    // }
+    // let blobUrl = URL.createObjectURL(this.files[0]);
+    
+    fileReader.readAsArrayBuffer(this.files[0]);
+}
+
+
+
+function play (arrayBuffer) {
+    // Safari需要使用webkit前缀
+    let AudioContext = window.AudioContext || window.webkitAudioContext,
+        audioContext = new AudioContext();
+    // 创建一个AudioBufferSourceNode对象，使用AudioContext的工厂函数创建
+    let audioNode = audioContext.createBufferSource();
+    // 解码音频，可以使用Promise，但是较老的Safari需要使用回调
+    audioContext.decodeAudioData(arrayBuffer, function (audioBuffer) {
+        console.log(audioBuffer);
+        audioNode.buffer = audioBuffer;
+        audioNode.connect(audioContext.destination); 
+        // 从0s开始播放
+        audioNode.start(0);
+    });
+}
+fileReader.onload = function () {
+    let arrayBuffer = this.result;
+    play(arrayBuffer);
+}
+</script>
+</body>
+</html>

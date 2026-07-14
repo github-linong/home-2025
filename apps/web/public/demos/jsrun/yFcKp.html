@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>canvas 保存命名</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="yFcKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+方法不可取，没办法修改
+
+<canvas 
+    src="abc.jpg"
+    alt="https://www.lilnong.top" 
+    title="https://www.lilnong.top" 
+    download="https://www.lilnong.top" 
+    id="canvas"></canvas>
+<img 
+    id="img" 
+    alt="alt"
+    title="title"
+    download="download"
+    name="name"
+>
+
+---------------------------
+
+<a id="alink" download="alink.png" target="_blank">
+    alink
+</a>
+
+<script>
+    ctx = canvas.getContext('2d');
+    ctx.fillText('https://www.lilnong.top', 50, 50);
+
+    alink.href = img.src = canvas.toDataURL()
+</script>
+<script>
+
+</script>
+</body>
+</html>

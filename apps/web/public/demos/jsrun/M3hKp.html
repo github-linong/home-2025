@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>视口操作，DOM</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="M3hKp" />
+  <style>
+/* original CSS missing from upstream JSRUN */
+  </style>
+</head>
+<body>
+<canvas id="cvs">
+  
+</canvas>
+<script>
+var imgData;
+var c=document.getElementById("cvs");
+var ctx=c.getContext("2d");
+var img = new Image();
+// img.crossOrigin = 'anonymous';
+img.crossOrigin="anonymous";
+img.src='http://cdn.jsrun.net/css/img/logo.png';
+img.onload = ()=>{
+  ctx.drawImage(img,0,0,100,100);
+  // imgData=ctx.createImageData(0,0);
+  imgData = ctx.getImageData(0,0,500,500)
+  putImage()
+}
+putImage = (x=0,y=0)=>{
+  ctx.putImageData(imgData,0,0);
+  ctx.lineWidth=100;
+  
+  // var grd=ctx.createRadialGradient(0,0,5,50,50,100);
+  // grd.addColorStop(0,"rgba(0,0,0,.7)");
+  // grd.addColorStop(1,"rgba(0,0,0,1)");
+  
+// var grd=ctx.createRadialGradient(50,50,30,90,60,100);
+  var grd=ctx.createRadialGradient(x,y,30,x,y,100);
+  grd.addColorStop(0,"rgba(0,0,0,0)");
+	grd.addColorStop(1,"rgba(0,0,0,1)");
+  ctx.strokeStyle=grd;
+  
+	ctx.beginPath();
+  ctx.arc(x,y,100,0,2*Math.PI);
+  ctx.stroke();
+}
+document.addEventListener('mousemove', (e)=>{
+  putImage(e.x,e.y)
+})
+</script>
+</body>
+</html>

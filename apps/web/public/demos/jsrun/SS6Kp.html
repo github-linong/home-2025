@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000037692294</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="SS6Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div class='box'>
+    <canvas id="canvas" style="display:block;border:1px solid #aaa;">
+      您的浏览器尚不支持canvas
+    </canvas>
+    <input type="range" id="scale-range" min="0.5" max="2.0" step="0.01" value="1.0"
+      style="display:block;margin:20px;" />
+    <div class='box-border'></div>
+  </div>
+  <div>
+    <p>img</p>
+    <img id='img' src="" alt="">
+  </div>
+  <script>
+    var canvas = document.getElementById("canvas")
+    var context = canvas.getContext("2d")
+    var slider = document.getElementById("scale-range")
+    var image = new Image()
+    window.onload = function () {
+
+      canvas.width = 300
+      canvas.height = 500
+
+      var scale = slider.value
+      image.src = "https://cors-www.lilnong.top/static/img/avator/avator-19.jpg"
+      image.onload = function () {
+        drawImageByScale(scale)
+
+        slider.onmousemove = function () {
+          scale = slider.value
+          drawImageByScale(scale)
+        }
+      }
+    }
+    
+    //放大缩小
+    function drawImageByScale(scale) {
+
+      var imageWidth = 300 * scale
+      var imageHeight = 500 * scale
+
+      x = canvas.width / 2 - imageWidth / 2
+      y = canvas.height / 2 - imageHeight / 2
+
+      context.clearRect(0, 0, canvas.width, canvas.height)  //第滑动一次input，range,清空canvas
+      context.drawImage(image, x, y, imageWidth, imageHeight)
+      getImg(canvas, context)
+    }
+    
+    //获取截图
+    function getImg(canvas, context) {
+      context.drawImage(image, 0, 0, 100, 100);
+      var url = canvas.toDataURL("image/png")
+      document.getElementById('img').setAttribute('src', url)
+    }
+  </script>
+<script>
+
+</script>
+</body>
+</html>

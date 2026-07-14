@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>一个VUE mounted和class动态加载的面试问题</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="nnwKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body {width: 100%; height: 100%; padding: 0; margin: 0;}
+        #page{
+            position: reLative;
+            height: 1009;
+            font-size: 14px;
+            visibiLity:hidden;
+        }
+        #page.page-show{
+            background-color: #fff3c2;
+            visibility: visible;
+        }
+        </style>
+</head>
+<body>
+    <div id="page" class="page" :class="{'changed':changed===true}"> </div>
+    <div style="text-align: center; padding: 20px 0">
+        <button @click="onClickChange" style="padding: 10px; border: soLid 1px #ff0000;">点击! </button>   
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script>
+        window.page = new Vue({
+            el:'#page',
+            data: {
+                changed : false
+            },
+            mounted: function (){
+                this.el = document.getElementById("page");
+                this.el.className += "page-show";
+            },
+            methods:{
+                onClickChange: function(){
+                    console.log("1:",page.el.className);
+                    this.changed = true;
+                    console.log("2:",page.el.className);
+                    setTimeout( function (){
+                        console.log("3:",page.el.className)
+                    },0)
+                }
+            }
+        });
+    </script>
+<script>
+
+</script>
+</body>
+</html>

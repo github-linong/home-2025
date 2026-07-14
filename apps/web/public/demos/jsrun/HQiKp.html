@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>jquery 滚动条定位问题</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="HQiKp" />
+  <style>
+*{padding:0;margin:0}
+table{border-spacing: 0px;border-collapse:separate;position:relative;left:110px}
+
+
+div,table,tbody{
+  max-height:150px;
+  overflow:scroll;
+}
+tr{
+  background-color:#fff;
+}
+tr:nth-child(odd){
+  background-color:#eee;
+}
+td{padding:0 10px;}
+  </style>
+</head>
+<body>
+<button id="sea">search</button>
+<div class="of-y" id="nurse" ><table class="high width" id="nurse-plan">
+    <tr id="tr-one"><td>1</td></tr>
+    <tr id="tr-two"><td>2</td></tr>
+    <tr id="tr-three"><td>3</td></tr>
+    <tr id="tr-four"><td>4</td></tr>
+    <tr><td>4</td></tr>
+    <tr><td>4</td></tr>
+    <tr><td>4</td></tr>
+    <tr><td>4</td></tr>
+    <tr><td>4</td></tr>
+    <tr><td>4</td></tr>
+    <tr><td>4</td></tr>
+    <tr><td>4</td></tr>
+    <tr><td>4</td></tr>
+    <tr><td>4</td></tr>
+    <tr><td>4</td></tr>
+  </table></div>
+<script>
+// $("#nurse").scrollTop($("#nurse").scrollTop() +
+//                       $('#tr-three').offset().top -
+//                       $("#nurse").offset().top);
+
+function search(){
+  console.log('"#nurse").scrollTop()- ' + $("#nurse").scrollTop())
+  console.log('"#tr-three").offset()- ' + $('#tr-three').offset().top)
+  console.log('"#nurse").offset()- ' + $("#nurse").offset().top)
+  console.log($('#tr-three').offset().top - $("#nurse").offset().top,$("#nurse").scrollTop() + $('#tr-three').offset().top - $("#nurse").offset().top)
+}
+sea.addEventListener('click', search)
+
+</script>
+</body>
+</html>

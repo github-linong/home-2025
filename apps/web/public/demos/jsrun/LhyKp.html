@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://run.iviewui.com/60LTdRmn</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="LhyKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div>
+      {{allCollapseOpen}}
+      <br />
+      {{templateStr}}
+      <br />
+      <Alert show-icon>当前 iView 版本为 3.4.1</Alert>
+      <br />
+      <Collapse v-model="allCollapseOpen">
+          <Panel v-for="(box1,i) in templateStr" :key="i" :name="'panel_'+i">
+              第{{i}}个 {{'panel_'+i}}
+              <p slot="content">史蒂夫·乔布斯（Steve Jobs），1955年2月24日生于美国加利福尼亚州旧金山，美国发明家、企业家、美国苹果公司联合创办人。</p>
+          </Panel>
+      </Collapse>
+    </div>
+</div>
+<script>
+new Vue({
+  el:'#app',
+    data () {
+      return {
+        allCollapseOpen:["panel_0", "panel_1", "panel_2", "panel_3"],
+        templateStr:[{},{},{}],
+      }
+    },
+    methods: {
+      getAllKeys(data){
+        let arr = [];
+        let n=0;
+        let len = data.length;
+        while(n<len){
+          arr.push('panel_'+n);
+          n++;
+        }
+        return arr;
+      },
+    },
+    mounted () {
+      setTimeout(() => {
+          this.templateStr = [{},{},{},{},{}]
+        },1000);
+    },
+    watch:{
+      templateStr:{
+        handler:function(val){
+          console.log(val, JSON.stringify(val))
+          this.$nextTick(v=>{
+          	this.allCollapseOpen = this.getAllKeys(val);
+          })
+          console.log(this.allCollapseOpen, JSON.stringify(this.allCollapseOpen))
+        },
+        deep:true
+    },
+  }
+})
+</script>
+</body>
+</html>

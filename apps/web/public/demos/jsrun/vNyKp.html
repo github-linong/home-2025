@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://www.iviewui.com/components/table</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="vNyKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- import Vue.js -->
+<script src="//vuejs.org/js/vue.min.js"></script>
+<!-- import stylesheet -->
+<link rel="stylesheet" href="//unpkg.com/iview/dist/styles/iview.css">
+<!-- import iView -->
+<script src="//unpkg.com/iview/dist/iview.min.js"></script>
+<div id="app">
+  <i-table width="550" height="200" border :columns="columns2" :data="data4"></i-table>
+  <button @click="removeColumns2">随机删除一列</button>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  methods:{
+    removeColumns2(){
+      var idx =  this.columns2.length * Math.random() >> 0;
+      console.log(idx, this.columns2[idx].title)
+      this.columns2.splice(idx, 1)
+    }
+  },
+  data(){
+    return {
+      columns2: [
+                    {
+                        title: 'Name',
+                        key: 'name',
+                        width: 100,
+                        fixed: 'left'
+                    },
+                    {
+                        title: 'Age',
+                        key: 'age',
+                        width: 100
+                    },
+                    {
+                        title: 'Province',
+                        key: 'province',
+                        width: 100
+                    },
+                    {
+                        title: 'City',
+                        key: 'city',
+                        width: 100
+                    },
+                    {
+                        title: 'Address',
+                        key: 'address',
+                        width: 200
+                    },
+                    {
+                        title: 'Postcode',
+                        key: 'zip',
+                        width: 100
+                    },
+                    {
+                        title: 'Action',
+                        key: 'action',
+                        fixed: 'right',
+                        width: 120,
+                        render: (h, params) => {
+                            return h('div', [
+                                h('Button', {
+                                    props: {
+                                        type: 'text',
+                                        size: 'small'
+                                    }
+                                }, 'View'),
+                                h('Button', {
+                                    props: {
+                                        type: 'text',
+                                        size: 'small'
+                                    }
+                                }, 'Edit')
+                            ]);
+                        }
+                    }
+                ],
+                data4: [
+                    {
+                        name: 'John Brown',
+                        age: 18,
+                        address: 'New York No. 1 Lake Park',
+                        province: 'America',
+                        city: 'New York',
+                        zip: 100000
+                    },
+                    {
+                        name: 'Jim Green',
+                        age: 24,
+                        address: 'Washington, D.C. No. 1 Lake Park',
+                        province: 'America',
+                        city: 'Washington, D.C.',
+                        zip: 100000
+                    },
+                    {
+                        name: 'Joe Black',
+                        age: 30,
+                        address: 'Sydney No. 1 Lake Park',
+                        province: 'Australian',
+                        city: 'Sydney',
+                        zip: 100000
+                    },
+                    {
+                        name: 'Jon Snow',
+                        age: 26,
+                        address: 'Ottawa No. 2 Lake Park',
+                        province: 'Canada',
+                        city: 'Ottawa',
+                        zip: 100000
+                    },
+                    {
+                        name: 'John Brown',
+                        age: 18,
+                        address: 'New York No. 1 Lake Park',
+                        province: 'America',
+                        city: 'New York',
+                        zip: 100000
+                    },
+                    {
+                        name: 'Jim Green',
+                        age: 24,
+                        address: 'Washington, D.C. No. 1 Lake Park',
+                        province: 'America',
+                        city: 'Washington, D.C.',
+                        zip: 100000
+                    },
+                    {
+                        name: 'Joe Black',
+                        age: 30,
+                        address: 'Sydney No. 1 Lake Park',
+                        province: 'Australian',
+                        city: 'Sydney',
+                        zip: 100000
+                    },
+                    {
+                        name: 'Jon Snow',
+                        age: 26,
+                        address: 'Ottawa No. 2 Lake Park',
+                        province: 'Canada',
+                        city: 'Ottawa',
+                        zip: 100000
+                    }
+                ]}
+  }
+})
+</script>
+</body>
+</html>

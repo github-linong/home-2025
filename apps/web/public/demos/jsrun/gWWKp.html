@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="gWWKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://unpkg.com/vue@2.6.10/dist/vue.js"></script>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<div id="app">
+  <el-select
+    v-model="value"
+    multiple
+    filterable
+    remote
+    reserve-keyword
+    placeholder="请输入关键词"
+    :remote-method="remoteMethod">
+    <el-option
+      v-for="item in options"
+      :key="item.value"
+      :label="item.label"
+      :value="item.value">
+    </el-option>
+    <el-option
+      v-for="item in selectOptions"
+      :key="item.label"
+      :label="item.label"
+      :value="item.value" v-show="false">
+    </el-option>
+  </el-select>
+  <p>{{value}}</p>
+  <p>{{selectOptions}}</p>
+</div>
+<script>
+new Vue({
+  	el: '#app',
+    data() {
+      return {
+        options: [],
+        value: [],
+        list: [],
+        loading: false,
+        states: ["Alabama", "Alaska", "Arizona",
+        "Arkansas", "California", "Colorado",
+        "Connecticut", "Delaware", "Florida",
+        "Georgia", "Hawaii", "Idaho", "Illinois",
+        "Indiana", "Iowa", "Kansas", "Kentucky",
+        "Louisiana", "Maine", "Maryland",
+        "Massachusetts", "Michigan", "Minnesota",
+        "Mississippi", "Missouri", "Montana",
+        "Nebraska", "Nevada", "New Hampshire",
+        "New Jersey", "New Mexico", "New York",
+        "North Carolina", "North Dakota", "Ohio",
+        "Oklahoma", "Oregon", "Pennsylvania",
+        "Rhode Island", "South Carolina",
+        "South Dakota", "Tennessee", "Texas",
+        "Utah", "Vermont", "Virginia",
+        "Washington", "West Virginia", "Wisconsin",
+        "Wyoming"]
+      }
+    },
+    mounted() {
+      this.list = this.states.map(item => {
+        return { value: item, label: item+Math.random() };
+      });
+    },
+    computed:{
+			selectOptions(){
+        return this.value.map(v=>this.list.find(v1=>v1.value==v))
+      }
+    },
+    methods: {
+      remoteMethod(query) {
+        if (query !== '') {
+          this.loading = true;
+          setTimeout(() => {
+            this.loading = false;
+            this.options = this.list.filter(item => {
+              return item.label.toLowerCase()
+                .indexOf(query.toLowerCase()) > -1;
+            });
+          }, 200);
+        } else {
+          this.options = [];
+        }
+      }
+    }
+  })
+</script>
+</body>
+</html>

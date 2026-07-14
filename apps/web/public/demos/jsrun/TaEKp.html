@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>手势操作 + 鼠标操作</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="TaEKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+<p>无法区分触摸板和鼠标的滚轮事件</p>
+<div class="wrap" id="avatarView">
+    <img 
+        src="https://www.lilnong.top/static/img/avator/avator-14.jpg" 
+        style="transform: translate(0px, 0px) rotate(0deg) scale(1)"
+        id="avatar"
+        alt="">
+</div>
+
+
+<style>
+    *{
+        padding: 0;margin: 0;
+    }
+    .wrap{
+        background: #0cc;
+        overflow: hidden;
+        position: relative;
+        padding: 20px;
+    }
+    .wrap img{
+        display: block;
+    }
+</style>
+<script>
+    // 头像操作模块
+    let avatarViewTouchState = {
+        touchTag: 0,//无 1移动 2缩放
+        touchesStartPoint:{
+            x: 0,
+            y: 0,
+            scale: 1,
+            scaleX: 1,
+            scaleY: 1,
+            // translate: '',
+            translateX: 0,
+            translateY: 0,
+            rotate: 0,
+            touches: []
+        },
+        state: {
+            scale: 1,
+            translate: '0px, 0px',
+            translateX: 0,
+            translateY: 0,
+            rotate: '0deg',
+        }
+    }
+</script>
+<script>
+    avatarView.addEventListener('mousedown', function(e){
+        console.log('mouseDown')
+        avatarViewTouchState.touchTag = 1
+        avatarViewTouchState.touchesStartPoint.x = e.screenX;
+        avatarViewTouchState.touchesStartPoint.y = e.screenY;
+        e.preventDefault();
+    }, true)
+    window.addEventListener('mousemove', _.throttle(function(e){
+        if(avatarViewTouchState.touchTag == 1  && !avatarViewTouchState.touchSwitch){
+            var touches_1_move_x = e.screenX-avatarViewTouchState.touchesStartPoint.x;
+            var touches_1_move_y = e.screenY-avatarViewTouchState.touchesStartPoint.y;
+            avatarViewTouchState.state.translateX = avatarViewTouchState.touchesStartPoint.translateX + touches_1_move_x;
+            avatarViewTouchState.state.translateY = avatarViewTouchState.touchesStartPoint.translateY + touches_1_move_y;
+
+            avatarViewTouchState.state.translate = `${avatarViewTouchState.state.translateX}px, ${avatarViewTouchState.state.translateY}px`
+
+            avatar.style.transform = `translate(${avatarViewTouchState.state.translate}) 
+                rotate(${avatarViewTouchState.state.rotate}) 
+                scale(${avatarViewTouchState.state.scale})`
+        }
+    }, 16))
+    window.addEventListener('mouseup', function(e){
+        avatarViewTouchState.touchTag = 0
+        avatarViewTouchState.touchesStartPoint.translateX = avatarViewTouchState.state.translateX
+        avatarViewTouchState.touchesStartPoint.translateY = avatarViewTouchState.state.translateY
+    })
+    avatarView.addEventListener('mouseleave', function(e){
+        avatarViewTouchState.touchTag = 0
+        avatarViewTouchState.touchesStartPoint.translateX = avatarViewTouchState.state.translateX
+        avatarViewTouchState.touchesStartPoint.translateY = avatarViewTouchState.state.translateY  
+    })
+
+    avatarView.addEventListener('mousewheel', function(e){
+        console.log('mousewheel', e) 
+    })
+    avatarView.addEventListener('wheel', function(e){
+        // top?.console.log('wheel', e, [e.wheelDeltaX,e.wheelDeltaY]) 
+        top?.console.log('wheel', e, [e.deltaMode, e.deltaX, e.deltaY], event.sourceCapabilities) 
+        if (Math.abs(e.deltaX) !== 0 && Math.abs(e.deltaY) !== 0) return console.log('没有固定方向');
+        if (e.deltaX < 0) return console.log('向右');
+        if (e.deltaX > 0) return console.log('向左');
+        if (e.ctrlKey) {
+            if (e.deltaY > 0) return console.log('向内');
+            if (e.deltaY < 0) return console.log('向外');
+        } else {
+            if (e.deltaY > 0) return console.log('向上');
+            if (e.deltaY < 0) return console.log('向下');
+        }
+
+    })
+    avatarView.addEventListener('touchstart', function(e){
+        top?.console.log('touchstart', e) 
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>reduce</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="zv3Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+
+<script>
+list = [];
+for(var i = 0; i < 100;i++){
+    list.push({
+        id: i+1,
+        random: Math.random(),
+        random: Math.random()
+    })
+}
+console.log(list)
+
+userlist = []
+for(var i = 0; i < 10;i++){
+    userlist.push({
+        id: i+1,
+        iconid: Math.random()*100>>>0,
+    })
+}
+console.log(userlist)
+
+for(var i = 0; i < 10;i++){
+    for(var j = 0; j < 100;j++){
+        console.count('a')
+    }
+}
+var listHash = list.reduce(function(s, n){
+    s[n.id] = n;
+    return s;
+},{})
+console.log(listHash)
+
+for(var i = 0; i < 10;i++){
+    console.log(userlist[i],listHash[userlist[i].id])
+}
+</script>
+</body>
+</html>

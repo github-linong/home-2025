@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>打工人-zl</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="kTwKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+     <div class="list-course">
+        <p>{{form}}</p>
+    <el-button type="primary" @click="newAdd" class="con-add">新增</el-button>
+    <el-table
+      v-loading="listLoading"
+      :data="list"
+      :row-style="{ height: '100px' }"
+      element-loading-text="Loading"
+      border
+      fit
+      highlight-current-row
+    >
+      <el-table-column align="center" label="编号" width="50">
+        <template slot-scope="scope">{{ scope.$index + 1 }}</template>
+      </el-table-column>
+      <el-table-column align="center" label="所属渠道">
+        <template slot-scope="scope">{{ scope.row.channel }}</template>
+      </el-table-column>
+      <el-table-column label="课程数" align="center">
+        <template slot-scope="scope">{{ scope.row.cources }}</template>
+      </el-table-column>
+      <el-table-column label="分类名称" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.categoryName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="编辑" align="center">
+        <template slot-scope="scope">
+          <el-button type="text" size="small" @click="newEdit(scope.row)"
+            >编辑</el-button
+          >
+        </template>
+      </el-table-column>
+      <el-table-column label="删除" align="center">
+        <template slot-scope="scope">
+          <el-button
+            type="text"
+            size="small"
+            @click="deleteItem(scope.row, scope.$index)"
+            >删除</el-button
+          >
+        </template>
+      </el-table-column>
+      <el-table-column label="排序" fixed="right" min-width="90" align="center">
+        <template slot-scope="scope">
+          <el-button
+            type="text"
+            size="small"
+            @click="moveUp(scope.row, scope.$index)"
+            :disabled="scope.$index === 0"
+            >上移</el-button
+          >
+          <!-- 这里分别展示了判断是否上移下移的两种方案 -->
+          <el-button
+            type="text"
+            size="small"
+            @click="moveDown(scope.row, scope.$index)"
+            :disabled="getFormLength(scope.$index)"
+            >下移</el-button
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+    <!-- 新增编辑弹窗 -->
+    <el-dialog
+      :title="form.id ? '编辑合规课程分类' : '新增合规课程分类'"
+      :visible.sync="form.dialogTableVisible"
+    >
+      <el-form label-width="120px" :model="form" :rules="rules" ref="form">
+        <!-- 直播名称 -->
+        <el-form-item label="分类名称" prop="categoryName" class="w600">
+          <el-input v-model="form.categoryName" placeholder="合规课程" ></el-input>
+        </el-form-item>
+        <!-- 是否允许存在相同分类名 -->
+        <el-form-item class="w31" label="是否重名" prop="useSameName">
+          <el-select v-model="form.useSameName" placeholder="是否允许存在相同分类名">
+            <el-option label="不允许" value="0" ></el-option>
+            <el-option label="允许" value="1"></el-option>
+          </el-select>
+        </el-form-item>
+        <!-- 内外勤 -->
+        <el-form-item class="w31" label="渠道选择" prop="channel">
+          <el-select v-model="form.channel" placeholder="选择渠道">
+            <el-option label="银保" value="0" ></el-option>
+            <!-- <el-option label="银行版" value="1" disabled ></el-input -->
+          </el-select>
+        </el-form-item>
+        <!-- 播放权限 -->
+        <el-form-item class="w31" label="播放权限" prop="readRight">
+          <el-select v-model="form.readRight" placeholder="请选择播放权限">
+            <el-option label="外勤" value="0" ></el-option>
+            <el-option label="内勤" value="1" ></el-option>
+            <el-option label="内外勤" value="2" ></el-option>
+          </el-select>
+        </el-form-item>
+        <!-- 保存or取消 -->
+        <el-form-item>
+          <el-button type="primary" @click="onSubmitCancel(1)">确定</el-button>
+          <el-button @click="onSubmitCancel(0)">取消</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+    <!--  删除弹框 -->
+    <el-dialog
+      title="合规课程分类管理删除"
+      :visible.sync="dialogVisible"
+      width="30%"
+    >
+      <span
+        >该合规课程分类下有课程，请将该分类下的课程移到其它分类后在进行删除</span
+      >
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="dialogVisible = false"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
+    <!-- 分页 -->
+    <el-pagination
+      :page-size="10"
+      layout="total, prev, pager, next, jumper"
+      :total="total"
+      :current-page="list.pageNum"
+      @current-change="pageData"
+    ></el-pagination>
+  </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+<link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css" rel="stylesheet">
+<script>
+new Vue({
+  el: '#app',
+  data() {
+    return {
+      total: 0,
+      listLoading: false, //加载
+      list: [
+        // {
+        //   id: "",
+        //   useSameName: "", //无分类
+        //   channel: "" /* 渠道channel */,
+        //   cources: "",
+        //   categoryName: "" /* 分类名称 */,
+        //   readRight: "" /* 播放权限 */,
+        //   pageNum: 1,
+        //   pageSize: 10
+        // }
+      ], //合规课程列表
+      disabled: true, //列表编辑
+      dialogVisible: false, //列表删除
+      //弹窗部分操作(新增和编辑)
+      form: {
+        dialogTableVisible: false, //弹窗显示隐藏
+        id: "",
+        useSameName:'',
+        categoryName: "", // 分类名称
+        channel: '', // 渠道
+        readRight: '' // 播放权限
+      },
+      rules: {
+        //弹窗校验
+        categoryName: [
+          { required: true, message: "请输入活动名称", trigger: "blur" },
+          { min: 1, max: 10, message: "长度最多10个字符", trigger: "blur" }
+        ],
+        useSameName: [
+          {
+            required: true,
+            message: "请选择是否重名",
+            trigger: "change"
+          }
+        ],
+        channel: [
+          {
+            required: true,
+            message: "请选择一个渠道",
+            trigger: "change"
+          }
+        ],
+        readRight: [
+          {
+            required: true,
+            message: "请选择一个播放权限",
+            trigger: "change"
+          }
+        ]
+      }
+    };
+  },
+  computed: {
+    listHash() {
+      return this.list.reduce((s, n) => {
+        s[n.id] = n;
+        return s;
+      }, {});
+    }
+  },
+  created() {},
+  methods: {
+    //const formabc = this.form;
+    //分页
+    pageData(page) {
+      // console.log(page);
+      const  token = getToken()
+      const that = this;
+      that.list.pageNum = page;
+      that.list.pageSize = 10;
+      coursePage(that.list).then(response => {
+        if (response.info.total === 0) {
+          that.list = [];
+        } else {
+          that.total = Number(response.info.total);
+          that.list = response.info.list;
+        }
+      });
+    },
+    newReset() {
+      //重置功能
+      this.form.id = "";
+      this.form.categoryName = ""; // 标题
+      this.form.useSameName = '';//是否重名
+      this.form.channel = ''; // 渠道
+      this.form.readRight = ''; // 播放权限
+      this.$refs["form"] ? this.$refs["form"].resetFields() : "";
+      this.$refs["form"] ? this.$refs["form"].clearValidate : "";
+    },
+    newAdd() {
+      // 新增
+      this.form.dialogTableVisible = true;
+      this.newReset();
+    },
+    // 列表编辑
+    newEdit(row) {
+      const that = this;
+      that.form.dialogTableVisible = true;
+      courseEdit(that.from)
+        .then(res => {
+          if (res.rspCode === "-100") {
+            console.log(res);
+            that.$message({
+              type: "error",
+              message: "失败",
+              info: "null"
+            });
+          } else {
+            const rows = res.info.data;
+            this.form.id = rows.id;
+            this.form.categoryName = rows.categoryName; // 标题
+            this.form.channel = rows.channel.split(","); // 渠道
+            this.form.readRight = rows.readRight.split(","); // 播放权限
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+    // 列表上移
+    moveUp(item, index) {
+      this.list.splice(index - 1, 0, item); // 定位到点击位置的上一行，0即不删除如何元素，在此位置插入item
+      this.list.splice(index + 1, 1); // 此时数组中有重复元素，把原来被挤下去的元素删除
+    },
+    // 列表下移
+    moveDown(item, index) {
+      this.list.splice(index + 2, 0, item);
+      this.list.splice(index, 1);
+    },
+    moveRow() {
+      const that = this;
+      const data = {
+        id: 1
+      };
+      courseMove(data).then(res => {
+        if (res.rspCode === "0") {
+          that.$message({ type: "success", message: "成功!" });
+        } else {
+          that.$message({ type: "error", message: "系统繁忙，请稍后重试!" });
+        }
+      });
+    },
+    // 删除
+    deleteItem(typeuseSameName, index, id) {
+      console.log("delete");
+      const that = this;
+      const param = {
+        id: that.list[index].id
+      };
+      if (typeuseSameName.useSameName === "1") {
+        this.dialogVisible = true;
+      } else {
+        courseDel(param).then(response => {
+          if (response.rspCode === "0") {
+            this.list.splice(index, 1);
+          } else {
+            that.$message({ type: "error", message: "系统繁忙，请稍后重试!" });
+          }
+        });
+      }
+    },
+    // 控制下移按钮的显示于隐藏
+    getFormLength(index) {
+      if (index === this.list.length - 1) return true;
+      else return false;
+    },
+    //确定取消
+    onSubmitCancel(type) {
+      // 0取消 1确认
+      const that = this;
+      if (type) {
+        that.$refs["form"].validate(valid => {
+          if (valid) {
+            console.log(that.form.channel)
+            console.log( that.form.readRight)
+            const c = that.form.channel
+            const  d = that.form.readRight
+            that.formabc = {
+              id: 0,
+              useSameName: 0,
+              categoryName: that.form.categoryName,
+              channel: c,
+              checkPlay: d
+            };
+            courseAddEdit(that.formabc)
+              .then(res => {
+                if (res.rspCode === "-100") {
+                  console.log(res);
+                  that.$message({
+                    type: "error",
+                    message: "失败",
+                    info: "null"
+                  });
+                } else {
+                  if (that.form.id) {
+                    //编辑
+                    const item = that.listHash[that.form.id];
+                    item.categoryName = that.form.categoryName;
+                    item.channel = that.form.channel.join();
+                    item.readRight = that.form.readRight.join();
+                  } else {
+                    //新增
+                    that.list.push({
+                      id: that.list.length + 1,
+                      categoryName: that.form.categoryName,
+                      channel: that.form.channel.join(),
+                      readRight: that.form.readRight.join()
+                    });
+                  }
+                  that.newReset();
+                  that.$message({ type: "success", message: "创建成功!" });
+                  setTimeout(() => {
+                    that.form.dialogTableVisible = false;
+                  }, 800);
+                }
+              })
+              .catch(error => {
+                console.log(error);
+              });
+          } else {
+            console.log("error submit!!");
+            return false;
+          }
+        });
+      } else {
+        that.form.dialogTableVisible = false;
+      }
+    }
+  },
+  mounted(){
+    //const  token=getToken(),
+  }
+})
+</script>
+</body>
+</html>

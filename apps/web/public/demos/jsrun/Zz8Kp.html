@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>轮播时间轴</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="Zz8Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcss.com/vue/2.6.14/vue.min.js"></script>
+<div id="app">
+    {{'wwww.lilnong.top'}}
+    {{$refs}}
+    <div class="steps-wrap">
+        <div class="steps-btn steps-prev" @click="swiper(-200)">上</div>
+        <div class="steps-btn steps-next" @click="swiper(200)">下</div>
+        <div class="steps" refs="stepsEl"  ref="stepsEl">
+            <div class="step" v-for="step in steps">
+                {{step.title}}
+                <div class="circle"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data(){
+            return {
+                steps: [
+                    {title: '新增“中-阿拉伯语”翻译'},
+                    {title: '新增“中-泰”翻译'},
+                    {title: '新增“英-葡”翻译'},
+                    {title: '新增…翻译'},
+                    {title: '新增“中-阿拉伯语”翻译1'},
+                    {title: '新增“中-泰”翻译1'},
+                    {title: '新增“英-葡”翻译1'},
+                    {title: '新增…翻译1'},
+                ]
+            }
+        },
+        methods:{
+            swiper(val){
+                this.$refs.stepsEl.scrollLeft += val
+            }
+        }
+        
+    })
+</script>
+<style>
+    .steps-wrap{
+        position: relative;
+    }
+    .steps-btn{
+        position: absolute;
+        background: #ff0;
+        padding: 10px;top: 0;
+    }
+    .steps-prev{
+        left: 0;
+    }
+    .steps-next{
+        right: 0;
+    }
+    .steps{
+        display: flex;
+        position: relative;
+        /* margin: 0 30px; */
+        margin: auto;
+        width: 400px;
+        overflow: hidden;
+        scroll-behavior:smooth;
+    }
+    .step{
+        flex: 0 0 25%;
+        border: 1px solid #f00;box-sizing: border-box;
+        display: flex;
+        flex-direction: column;    
+        align-items: center;
+    }
+    .circle{width: 20px;height: 20px;border:1px solid #f00;border-radius:20px}
+</style>
+<script>
+
+</script>
+</body>
+</html>

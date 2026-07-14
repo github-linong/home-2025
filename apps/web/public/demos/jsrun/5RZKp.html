@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>图片放大 cropper</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="5RzKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <button @click="lookImgId(showImgUrl1,'1')">传图片</button>
+	 <div class="mantle my-edit-mantle imgLook"style="display:none;" v-show="imgLookId">
+                <div style="background-color: #FFF; padding: 20px; border-radius: 10px;">
+                    <div v-if="showImgUrl.length>0" class="signImgList operaImg">
+                        <div v-for="(itemImg, i) in showImgUrl"  :key="itemImg">
+                            <div class="img-show-block"><img style="height: 100px" :src="itemImg" alt="" id="image"></div>
+                            <div class="btn-show" v-show="btnOperation">
+                                <button class="edit-btn grend" @click="bigImg('itemImg', $event)">放大</button>
+                                <button class="edit-btn grend" @click="rotateImg('itemImg', $event)">旋转</button>
+                                <button class="edit-btn grend" @click="resetImg('itemImg', $event)">重置</button>
+                            </div>
+                        </div>
+                    </div>
+                    <span v-else>暂无数据</span>
+                    <!-- 弹框信息 -->
+                    <div class="edit-btm">
+                        
+                        <button class="edit-btn grend" @click="hide('imgLookId')">关闭</button>
+                    </div>
+                </div>
+            </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<link href="https://cdn.bootcdn.net/ajax/libs/cropper/4.0.0/cropper.min.css" rel="stylesheet">
+<script src="https://cdn.bootcdn.net/ajax/libs/cropper/4.0.0/cropper.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery-cropper/1.0.1/jquery-cropper.min.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+imgLookId: true,
+btnOperation: true,
+showImgUrl: [],
+    showImgUrl1:[
+    "//cors-www.lilnong.top/static/img/avator/avator-17.jpg",
+"//cors-www.lilnong.top/static/img/avator/avator-16.jpg",
+"//cors-www.lilnong.top/static/img/avator/avator-15.jpg"
+]
+            }
+        },
+        methods: {
+            lookImgId(val,operationType) {
+                top.console.log('11111111111',val)
+                top.console.log('333333333333',this.btnOperation)
+                for(var i=0; i<val.length; i++){
+                    if(val[i]===null || val[i]==='null'){
+                        val[i]=''
+                    }
+                }
+                if(operationType && operationType=='1'){
+                    this.btnOperation=true
+                }else{
+                    this.btnOperation=false
+                }
+                this.imgLookId = true
+                this.showImgUrl=val
+                top.console.log(this.showImgUrl,'多张照片--222')
+                top.console.log(this.btnOperation,'多张照片--333')
+                
+            },
+            initCropper(event, cb){
+                top.console.log(event,"initCropper放大----11111",$(event.target).parent().parent().children('img'),!event.target.$image)
+                if(!event.target.$image){
+                    event.target.$el = $(event.target).parent().parent().children('.img-show-block').children('img')
+                    event.target.$image = $(event.target.$el);
+                    event.target.$image.cropper({
+                        // aspectRatio: 16 / 9,
+                        viewMode:1,
+                        autoCrop:false,//是否允许在初始化时自动裁剪图片
+                        guides:false,//是否显示裁剪框的虚线。
+                        background:false,//是否在容器内显示网格背景。
+                        dragMode:'none',//不从新创建裁切框，也不能拖动图片
+                        zoom: null,//当通过鼠标滚轮，或者触摸缩小放大图片的时候执行此方法
+                        zoomOnWheel:false,//是否容许鼠标滚轴 缩放图片
+
+                        ready: cb
+                    })
+                }else{
+                    cb();
+                }
+                
+            },
+            /* 放大，转向,重置*/
+            bigImg(val, event){
+                top.console.log(event,"放大----11111")
+                this.initCropper(event, function ready(){
+                        console.log('ready')
+
+                // setTimeout(()=>{
+                    $($(event.target).parent().parent().children('.img-show-block').children('img'))
+                    .cropper("zoom", 0.2 * 1);
+                // }, 100)
+                    });
+            },
+            smallImg(val, event){
+                top.console.log(event,"缩小----11111")
+                this.initCropper(event);
+                setTimeout(()=>{
+                    $($(event.target).parent().parent().children('.img-show-block').children('img'))
+                    .cropper("zoom",  0.2 * -1);
+                }, 100)
+            },
+            rotateImg(val, event){
+                this.initCropper(event, function ready(){
+                        console.log('ready-rotate')
+                    $($(event.target).parent().parent().children('.img-show-block').children('img'))
+                    .cropper("rotate",90)
+                    });
+            },
+            resetImg(val, event){
+                this.initCropper(event);
+                setTimeout(()=>{
+                    $($(event.target).parent().parent().children('.img-show-block').children('img'))
+                    .cropper("reset")
+                }, 100)
+            },
+        }
+    })
+</script>
+<style>
+.my-edit-mantle ul {
+            margin-top: 20px;
+            margin-left: 36px;
+            line-height: 33px;
+            font-size: 16px;
+        }
+        
+        .my-edit-mantle ul li {
+            margin: 8px 0;
+        }
+        
+        .my-edit-mantle ul li input {
+            padding-left: 10px;
+        }
+        
+        .my-edit-mantle button {
+            width: 130px;
+        }
+        
+        .mantle-spec .m-s-content {
+            width: 85%;
+            padding: 50px 40px;
+            border-radius: 30px;
+        }
+        
+        .mantle-spec .m-s-content .content-loca {
+            text-align: left;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .mantle-spec .m-s-content .h_c_content {
+            margin: 30px auto;
+        }
+        
+        .content-loca ul li .left {
+            text-align: left;
+        }
+        
+        .left {
+            display: inline-block;
+            width: 115px;
+            text-align: center;
+        }
+        
+        .sexS {
+            display: inline-block;
+        }
+        
+        .sexS input {
+            margin: 5px;
+        }
+        
+        .inputC {
+            display: inline-block;
+            border: solid #333333 1px;
+        }
+        
+        .inputC input {
+            border: none;
+        }
+        
+        .none {
+            display: none;
+        }
+        
+        .signImgBtn {
+            width: 100%;
+            padding: 20px;
+        }
+        
+        .signImgBtn button {
+            padding: 5px;
+            border-radius: 5px;
+            border: solid 1px #666;
+            width: 100px;
+        }
+        
+        .isChecked {
+            background-color: rgb(74, 74, 240);
+            color: #FFF;
+        }
+        
+        .isNotChecked {
+            background-color: rgb(239, 239, 239);
+            color: #333;
+        }
+        
+        .signImgList {
+            max-width: 700px;
+            max-height: 400px;
+            overflow: auto;
+        }
+        
+        .signImgList img {
+           
+            /* max-height: 400px; */
+        }
+        .signImgList .img-show-block{
+            margin: 20px;
+            width: 100%;
+            display:flex;
+            justify-content:center;
+        }
+        .signImgList .img-show-block img {
+            display:block;
+            max-width:100%;
+        }
+        .signImgList .btn-show{
+            margin-top:20px;
+        }
+        .spec-m-img .signImgLists{/* 合同样式处理 */
+            max-width:700px;
+            max-height: 400px;
+            overflow: auto;
+        }
+        .spec-m-img .signImgLists img {
+            margin: 20px;
+            width: 100% !important;
+        }
+</style>
+<script>
+
+</script>
+</body>
+</html>

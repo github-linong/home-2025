@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>转盘活动实现</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="6IcKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div id="game">
+        <div class="result result-1">1</div>
+        <div class="result result-2">2</div>
+        <div class="result result-3">3</div>
+        <div class="result result-4">4</div>
+        <div class="result result-5">5</div>
+        <div class="result result-6">6</div>
+    </div>
+    <button onclick="game.style.transform = getComputedStyle(game).transform;game.classList.add('result-3')">result-3</button>
+</div>
+
+<style>
+    #game{
+        width: 100px;
+        height: 100px;
+        border: 1px solid #f00;
+        border-radius: 50%;
+        position: relative;
+    }
+    #game .result{
+        position: absolute;
+        left: 50%;top: 50%;margin-left: -10px;margin-top: -10px;
+        width: 20px;height: 20px;line-height: 20px;
+    }
+    #game .result-1{
+        transform: rotate(0) translate(-30px);
+    }
+    #game .result-2{
+        transform: rotate(60deg) translate(-30px);
+    }
+    #game .result-3{
+        transform: rotate(120deg) translate(-30px);
+    }
+    #game .result-4{
+        transform: rotate(180deg) translate(-30px);
+    }
+    #game .result-5{
+        transform: rotate(240deg) translate(-30px);
+    }
+    #game .result-6{
+        transform: rotate(300deg) translate(-30px);
+    }
+    #game{
+        animation: rotate 2s 0s infinite linear;
+    }
+    #game.result-3{
+        animation: 
+            rotate 2s 0s 1 linear,
+            rotate-result-3 10s 0s 1 ease-out;
+        animation-fill-mode: both;
+    }
+    @keyframes rotate{
+        from{transform: rotate(0)}
+        to{transform: rotate(360deg)}
+    }
+    @keyframes rotate-result-3{
+        to{transform: rotate(1200deg)}
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

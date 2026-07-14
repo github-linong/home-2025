@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3d 进度条</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="dGUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+    canvas = canvas;
+    canvas.width=40;
+    canvas.height=70;
+    ctx = canvas.getContext('2d');
+    ctx.beginPath();
+    // ctx.rect(0,0,100,100);
+    ctx.rect(0,0,100,100);
+    ctx.fillStyle=`#fff`
+    ctx.fill();
+    ctx.closePath();
+    for(var i = 0; i < 10; i++){
+        ctx.beginPath();
+        ctx.rect(0+i,0+i,20,50);
+        // ctx.fillStyle=`#ff${i}${i}00`
+        ctx.fillStyle=`#000`
+        ctx.fill()
+        ctx.closePath();
+    }
+    canvas.toBlob((blob)=>{
+        let url = (URL.createObjectURL(blob))
+        // progress.style.backgroundImage = `url(${url})`
+        // progress.style.backgroundImage = `url(${url}), linear-gradient(rgba(255,0,0,0.5),rgba(0,0,0,0.5))`
+        // progress.style.backgroundImage = `url(${url}), linear-gradient(#f00, #ff0)`
+        progress.style.backgroundImage = `url(${url}), linear-gradient(90deg, #f00, #ff0)`
+    })
+</script>
+<style>
+    body{background:#fff;}
+    /* #canvas{width: 16px;} */
+    @keyframes widthAni{
+        0%{width: 0}
+        100%{width: 100%;}
+    }
+    .progress{
+        height: 50px;
+        background: left top repeat-x;
+        background-size: auto 50px;
+        overflow: hidden;
+        width: 80px;
+        /* transition: all 10s; */
+        /* transition: all 10s steps(13); */
+        animation: widthAni 3s infinite steps(16);
+        /* background-image: url("../images/image.jpg"), linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)); */
+        background-blend-mode: overlay;
+        background-blend-mode: lighten;
+    }
+    .progress:hover{
+        width: 100%;
+    }
+</style>
+<div id="app">
+    <div class="progress" id="progress">
+        
+    </div>
+</div>
+<script>
+
+</script>
+</body>
+</html>

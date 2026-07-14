@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000039182330</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="BzaKp" />
+  <style>
+.logo {
+    width: 180px;
+    font-weight: bold;
+    font-family: "96B64E66";
+    text-align: center;
+    font-size: 35px;
+    color: white;
+    float: left;
+}
+#mainPage,#Questions {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+    height:100%;
+}
+#header{
+    position: relative;
+    min-width: 1000px;
+    height:60px;
+    background: dodgerblue;
+}
+#title,#right{
+    display: inline-block;
+    padding: 20px 10px 10px 0px;
+    font-size: 16px;
+    line-height: 22px;
+    color:white;
+    font-weight: bold;
+    font-size:20px;
+}
+#ask_box{
+    box-sizing: border-box;
+    margin: 0;
+    min-width: 0;
+    flex: 1;
+    -webkit-box-pack: center;
+    justify-content: center;
+    display: flex;
+}
+input{
+    width:400px;
+    height:40px;
+    margin: 5px auto;/*外边距30px，输入框居中*/
+ padding: 8px;/*设置内边距*/
+ text-align: center;/*文字居中*/
+ border: 1px solid #EBEBEB;/*把输入框包起来，变成长方形*/
+ border-radius: 10px;/*让长方形的4个角弯一点，*/
+ font-family: 'Source Sans Pro', sans-serif;/*字体类型*/
+ font-size: 18px;/*字体大小*/
+ /*你点击输入框，会出现一个边框，下面代码是去掉原来边框*/
+ outline: none;
+}
+/*button {
+ height: 15px; width: 80px; margin: 10px; padding: 18px; border-radius: 10px; line-height: 0px; font-family: 'Source Sans Pro', sans-serif; font-size: 20px; color:white; position: absolute; background: deepskyblue;}
+button:hover{
+ font-weight: bold; color: lightblue;
+}
+button:active {
+ transform: translateY(4px);}*/
+#side_card{
+    position: absolute;
+    background: white;
+    top: 90px;
+    left:930px;
+    height:230px;
+    width:280px;
+    background: whitesmoke;
+}
+#side_card:hover {
+    -webkit-transition: border linear .2s, -webkit-box-shadow linear .5s;
+    /*鼠标移动是过渡*/
+ box-shadow: 0px 0px 100px #FFFFFF/*四边出现阴影，效果发光*/
+}
+a-icon{
+    fontSize:20px;
+    color:white;
+}
+#container_header{
+  font-family: -apple-system,BlinkMacSystemFont,Helvetica Neue,PingFang SC,Microsoft YaHei,Source Han Sans SC,Noto Sans CJK SC,WenQuanYi Micro Hei,sans-serif;
+  font-size: 15px;
+  background: #fff;
+  margin-bottom: 0!important;
+  text-align: left;
+}
+#question_block{
+  font-family: -apple-system,BlinkMacSystemFont,Helvetica Neue,PingFang SC,Microsoft YaHei,Source Han Sans SC,Noto Sans CJK SC,WenQuanYi Micro Hei,sans-serif;
+  font-size: 11px;
+  color: #121212;
+  -webkit-tap-highlight-color: rgba(18,18,18,0);
+  background: #fff;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  border-radius: 0;
+  padding: 15px 0 0px 5px;
+  border-bottom: 1px solid #f0f2f7;
+  width: 860px;
+  text-align: left;
+  height: 130px;
+}
+  </style>
+</head>
+<body>
+<!-- <template> -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+    <div id="app">
+
+  <div id="mainPage" style="height:100%;width:100%">
+    <a-layout id="components-layout-demo-top-side-2">
+    <div id="header">
+      <div class="logo">知&nbsp;否</div>
+
+      <div id="title" @click="mainPage">
+        <a-icon type="home" />&nbsp;首页
+        <a-icon type="user" />&nbsp;个人中心
+      </div>
+        <input
+            placeholder="input search text"
+            size="large"
+            @search="onSearch"
+       >
+        <button type="button" id="search" @click="onSearch" style="
+    height: 15px;
+    width: 80px;
+    margin: 10px;
+    padding: 18px;
+    border-radius: 10px;
+    line-height: 0px;
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: 20px;
+    color:white;
+    position: absolute;
+    background: deepskyblue;
+    font-weight: bold;
+    color: lightblue;
+
+
+
+    transform: translateY(4px);
+">提问</button>
+      <div style="height:60px;weight:200px;float:right;padding: 0 20px;">
+        <div id="right" style="padding: 20px 5px 10px 20px;">
+        <a-icon type="bell"/>&nbsp;通知
+        </div>
+<!--        <div style="display: inline-block">
+          ![](../assets/logo.png)
+        </div>-->
+        <template>
+          <a-dropdown>
+            <a style="color:white;font-size:15px" >
+              {{ user_name }} <a-icon type="down" style="color:white;font-size:20px" />
+            </a>
+            <a-menu slot="overlay" @click="onClick">
+              <a-menu-item key="1">
+                <a-icon type="setting" />
+                设置
+              </a-menu-item>
+              <a-menu-item key="2">
+                <a-icon type="logout" />
+                退出
+              </a-menu-item>
+
+            </a-menu>
+          </a-dropdown>
+        </template>
+
+      </div>
+    </div>
+
+      <a-layout style="height:520px">
+
+        <a-layout style="padding: 0 24px 24px">
+          <a-breadcrumb style="margin: 16px 0">
+
+          </a-breadcrumb>
+          <a-layout-content
+              :style="{ background: '#fff', padding: '14px', margin: 0, minHeight: '280px',width: '900px' }"
+          >
+            <div id="container_header">
+              <a-menu mode="horizontal">
+                <a-menu-item>推荐 </a-menu-item>
+                <a-menu-item>关注</a-menu-item>
+                <a-menu-item>热榜</a-menu-item>
+              </a-menu>
+            </div>
+              <div id="question_block" v-for="item in questions">
+                <h style="font-size: 15px" >{{item.user_name}}&nbsp;的提问期待你的解答</h><br/>
+                <div style="float:right;background: red;font-size: 18px;padding:5px;color:white">未终结</div>
+                <h id="question_title" style="font-size:20px;font-weight: bold">{{item.question_name}}</h><br/>
+                <a @click="getAllAnswers">{{item.question_text}}&nbsp;&nbsp;查看全文&nbsp;<a-icon type="down" /></a><br/><br/>
+                <a-button style="background: lightskyblue"><a-icon type="edit" />写回答</a-button>
+                <div style="font-size: 14px;float:right;display:inline-block">{{item.question_date}}</div>
+<!--                :{{item.question_shield_state}}:{{item.question_end_State}}:-->
+
+
+              </div>
+
+          </a-layout-content>
+          <div id="side_card">
+            <div
+                style="height: 30px;
+                      width: 100%;
+                      text-align: center;
+                      padding: 10px 0;
+                      font-size: 20px;">
+              创作中心
+            </div>
+            <a-divider style="margin:17px 0 13px 0;"/>
+
+            <div style="height:80px;width:100%">
+            <div style="height: 80px;width: 150px;padding: 0 0 0 20px;">
+            <div style="height: 80px;
+                  width: 100px;
+                  text-align: center;
+                  font-size: 20px;" @click="publishQuestions">
+              <a-icon type="edit" style="fontSize:20px;padding: 0 0 10px 0"/><br/>
+              发布问题
+            </div>
+            </div>
+
+            <div style="position:absolute;
+            display:inline-block;
+            left: 150px;
+            right: 0px;
+            top: 60px;
+            height: 80px;
+            width: 10px;">
+              <div style="height: 80px;
+                  width: 100px;
+                  text-align: center;
+                  font-size: 20px;">
+                <a-icon type="video-camera" style="fontSize:20px;padding: 0 0 10px 0"/><br/>
+                发视频
+              </div>
+            </div>
+
+            </div>
+            <a-divider style="margin:17px 0 13px 0;"/>
+
+            <a-row>
+              <a-col :span="12" style="padding: 10px 0px;font-size: 20px;">
+                稍后发
+              </a-col>
+              <a-divider type="vertical" style="height: 50px; position: absolute;right: 125px;"/>
+              <a-col :span="12" style="padding: 10px 0px;font-size: 20px;">
+                存草稿
+              </a-col>
+            </a-row>
+
+          </div>
+        </a-layout>
+
+      </a-layout>
+      </a-layout>
+
+  </div>
+
+    </div>
+<!-- </template> -->
+<script>
+new Vue({
+    el: '#app',
+  name: 'mainPage',
+  data () {
+    return {
+      questions:'',
+      user_id:'',
+      user_name:'',
+
+    }
+  },
+  created:function() {
+    console.log('created');
+    this.getParameter();
+    this.$nextTick(() => {
+      // 在此处执行你要执行的函数
+      this.getAllQuestions();
+
+    })
+  },
+  methods: {
+    getParameter(){
+
+      // 将数据放在当前组件的数据内
+      this.user_id = this.$route.params.user_id;
+      this.user_name=this.$route.params.user_name;
+    },
+
+    onOpenChange (openKeys) {
+      const latestOpenKey = openKeys.find(key => this.openKeys.indexOf(key) === -1)
+      if (this.rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
+        this.openKeys = openKeys
+      } else {
+        this.openKeys = latestOpenKey ? [latestOpenKey] : []
+      }
+    },
+    //分页获得所有的问题
+    getAllQuestions () {
+      var _this = this;
+      _this.$axios.post('/api/question/getAllQuestions',
+        _this.$qs.stringify({
+
+        })
+      ).then(function (response) {
+
+        console.log("打印response.data：");
+        console.log(response.data)
+        console.log("打印list：");
+        console.log(response.data.data)
+        /*console.log(response.data.data.questions_id)*/
+        _this.questions = response.data.data;
+        console.log("this.questions" + _this.questions)
+      }).catch(function (error) {
+        console.log(error);
+
+      });
+    },
+    onClick ({ key }) {
+      console.log(`Click on item ${key}`)
+    },
+    onSearch (value) {
+      console.log(value)
+    },
+    mainPage(){
+      this.$router.push({name:"mainPage"})
+    },
+    publishQuestions(){
+      console.log(this.user_id,this.user_name);
+      this.$router.push({name:"publishQuestions",params:{user_id:this.user_id,user_name:this.user_name}})
+    },
+    getAllAnswers(){
+      var _this = this;
+      _this.$axios.post('/api/question/getAllQuestions',
+        _this.$qs.stringify({
+        })
+      ).then(function (response) {
+
+       console.log("打印问题id:");
+        console.log(response.data.data.questions_id)
+      /*  _this.questions = response.data.data;
+        console.log("this.questions" + _this.questions)*/
+      }).catch(function (error) {
+        console.log(error);
+
+      });
+    },
+
+
+  },
+
+
+
+})
+</script>
+<script>
+
+</script>
+</body>
+</html>

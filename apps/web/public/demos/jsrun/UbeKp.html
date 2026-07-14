@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue3 使用 vue2 的组件 2</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="UbeKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.31/vue.cjs.js"></script> -->
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<script>
+    // top.console.log(Vue, Vue.version)
+    top.Vue2 = Vue2 = Vue;
+</script>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.31/vue.global.js"></script>
+<script>
+    // top.console.log(Vue, Vue.version)
+    top.Vue3 = Vue3 = Vue;
+</script>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.js"></script>
+
+<script>
+    // 定义 vue2 的 组件
+    // 
+    vue2Data = {
+        props: {
+            value: {
+                type: [String, Number]
+            },
+            a: {
+                type: [Number]
+            },
+            c: {
+                type: [Boolean]
+            },
+            d: {
+                type: [Boolean],
+            },
+        },
+        template:`
+            <div>
+                <div>value: {{ value }} <button @click="$emit('input', Date.now())">Date.now()</button></div>
+                <div><button @click="$emit('input1', Date.now())">$emit('input2', Date.now())</button></div>
+                <div>a: {{ a }}</div>
+                <div><slot >slot 默认未传入东西</slot></div>
+                <div><slot name="search1">slot search1  未传入东西</slot></div>
+                <div><slot name="search2">slot search2  未传入东西</slot></div>
+                <div><slot name="search3">slot search3  未传入东西</slot></div>
+            </div>
+        `
+    }
+</script>
+<div id="vue2_1"></div>
+<script>
+    top.vm = vm = new Vue2({
+        template: `<vue2Data ref="componentEl" v-model="value" a="2">
+            <template>
+            1 默认 slot
+            </template>
+            <template v-for="item in slots" v-slot:[item.name]>
+            serach slot {{item}}
+            </template>
+        </vue2Data>`,
+        data(){
+            return {
+                // 读到哪些参数是必传的，然后传入进去
+                value: 1,
+
+                // slot 动态渲染
+                slots: [
+                    {name: 'search1', value: 'value'},
+                    {name: 'search2', slot: 'slot'},
+                    {name: 'search3', component: 'component'},
+                ]
+            }
+        },
+        mounted(){
+            top.console.log(this.$refs.componentEl)
+            const vm = this.$refs.componentEl;
+            // 这里需要外部传入。然后再去监听。
+            vm.$on('input1', (...args)=>{
+                top.console.log('input1', args)
+            })
+            vm.$on('input', (...args)=>{
+                top.console.log('input', args)
+            })
+        },
+        components: {
+            vue2Data
+        }
+    }).$mount('#vue2_1')
+</script>
+<script>
+    // 通过 vue2Component 获取所有需要传入的 props
+    const getProps = function(vue2Component){
+        // 推荐写 default 
+        const data = vue2Component.props || {}
+        for(var i in data){
+            const item = data[i];
+            if(item.default !== undefined){
+                data[i] = item.default 
+            } else if(item.type && item.type.length){
+                // 不同 iframe String 应该会不相等
+                if(item.type[0] === String){
+                    data[i] = ''
+                }else if(item.type[0] === Number){
+                    data[i] = 0
+                }else if(item.type[0] === Boolean){
+                    data[i] = false
+                }
+            }
+        }
+        return data
+    }
+    const APIComponent = function(vue2Component){
+        top.console.log('getProps', getProps(vue2Component))
+        let vm = null;
+        let result = {
+            // 0待初始化
+            state: 0,
+            // 初始化
+            create(){
+                if(result.state === 0){
+                    // 传入渲染目标 el
+                    // 需要使用的 options
+                    // 需要监听的时间 listeners
+                    // 需要渲染的 slots
+                    vm = new Vue({
+
+                    })
+                }
+                return result;
+            },
+            // 更新 属性
+            setOptions(){
+                return result;
+            },
+            // 更新 slot
+            setSlot(){
+                return result;
+            },
+            // 销毁
+            destory(){
+                result = null
+                return result;
+            },
+            on(){},
+            once(){},
+            emit(){},
+            off(){}
+        }
+        return result;
+    }
+
+    top.console.log(new APIComponent(vue2Data))
+</script>
+<script>
+
+</script>
+</body>
+</html>

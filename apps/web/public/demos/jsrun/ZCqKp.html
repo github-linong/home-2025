@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>获取截图 粘贴上传</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="ZCqKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<input type="text" />
+<img src="" alt="" id="showImage"/>
+<script>
+document.querySelector('body').addEventListener('paste', function (event) { 
+  
+  console.log(event.clipboardData.files.length,
+              event.clipboardData.items.length,
+              event.clipboardData.types,
+              event.clipboardData,
+              event,
+              arguments)
+  if(event.clipboardData.files.length == 0) return;
+  reader = new FileReader();
+  reader.onload = (function (file) {
+        return function (e) {
+           console.info(this.result); //这个就是base64的数据了
+            var showImage=document.querySelector("#showImage");
+            showImage.src=this.result;
+        };
+    })(event.clipboardData.files[0]);
+    reader.readAsDataURL(event.clipboardData.files[0]);
+})
+
+</script>
+</body>
+</html>

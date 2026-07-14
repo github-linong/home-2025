@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://juejin.im/post/5cbdbea3f265da037875967f</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="cCXKp" />
+  <style>
+
+  </style>
+  <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+</head>
+<body>
+<div id="app">
+  <div class="seconds">
+    <span v-for="(v,i) in seconds">{{i}}秒</span>
+  </div>
+  <div class="minutes">
+    <span v-for="(v,i) in minutes">{{i}}分</span>
+  </div>
+  <div class="hours">
+    <span v-for="(v,i) in hours">{{i}}时</span>
+  </div>
+  
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data(){
+    return {
+      minutes: 60,
+      seconds: 60,
+      hours: 24,
+    }
+  }
+})
+</script>
+</body>
+</html>

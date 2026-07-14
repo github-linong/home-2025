@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>jquery批量拖拽</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="JWLKp" />
+  <style>
+
+  </style>
+  <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+
+  <script src="https://cdn.bootcdn.net/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuedraggable@2.24.3/dist/vuedraggable.umd.min.js"></script>
+</head>
+<body>
+<style>
+		.dargwrap {
+			border: 1px solid #f00;
+			padding: 10px;
+			margin: 10px;
+			display: flex;
+		}
+
+		.dargwrap .ul {
+			flex: 1 1 auto;
+			margin: 10px;
+			padding: 10px;
+			border: 1px solid #ff0;
+			list-style: none
+		}
+	</style>
+	<div id="app">
+		<p>
+			list: {{list}}
+		</p>
+		<p>
+			list1: {{list1}}
+		</p>
+		<p>
+			list2: {{list2}}
+		</p>
+		<div class="dargwrap">
+			<draggable class="dragArea list-group ul" :list="list"
+				ref="sourceList"
+				:move="moveHandle"
+				:group="{ name: 'people', pull: 'clone', put: false }">
+				<div class="list-group-item" v-for="element in list" :key="element">
+					<input type="checkbox" v-model="element.checked"><span @mousedown="element.checked = !element.checked">{{ element.txt }}</span>
+				</div>
+			</draggable>
+
+			<!-- <draggable :move="moveHandle" class="dragArea list-group ul" :list="list1" group="people" @change="log"> -->
+			<draggable  :move="moveHandle" class="dragArea list-group ul" :list="list1" group="people" @change="log">
+				<div class="list-group-item" v-for="element in list1" :key="element">
+					{{ element.txt }}
+				</div>
+			</draggable>
+
+			<!-- <draggable :move="moveHandle" class="dragArea list-group ul" :list="list2" group="people" @change="log"> -->
+			<draggable :move="moveHandle" class="dragArea list-group ul" :list="list2" group="people" @change="log">
+				<div class="list-group-item" v-for="element in list2" :key="element">
+					{{ element.txt }}
+				</div>
+			</draggable>
+            <el-dialog :visible.sync="dialogDrag">
+
+            </el-dialog>
+		</div>
+	</div>
+	<script>
+		lastEvent = null;
+		new Vue({
+			el: '#app',
+			data() {
+				return {
+					list: [
+						{txt: '人教大法师', checked: false},
+						{txt: '人教小法师', checked: false},
+						{txt: '长庚道友', checked: false},
+						{txt: '长寿道友', checked: false},
+						{txt: '海神', checked: false},
+						{txt: '水神', checked: false},
+						{txt: '苟寿', checked: false},
+						{txt: '大兴西北', checked: false},
+					],
+					list1: [],
+					list2: [],
+                    dialogDrag: false,
+                    judg: ''
+				}
+			},
+			computed:{},
+			methods: {
+				log: function ( evt) {
+                    if (evt.added) {
+                        if(this.judge == this.list2) {
+                            if(app.__vue__.$refs.sourceList.$el  == lastEvent.from && this.list.filter(v=>v.checked).length > 1){
+                                this.dialogDrag = false;
+                            }else{
+                                this.dialogDrag = true;
+                            }
+                        }
+                    }
+					window.console.log(evt, lastEvent);
+					if( app.__vue__.$refs.sourceList.$el  == lastEvent.from){
+						// 从原始数据中拖出
+						// lastEvent.draggedContext.element.checked=false
+                        if(evt.added){
+                            evt.added.element.checked = false
+                        }
+						this.list.forEach(v=>{
+							if(v.checked){
+                                v.checked = false
+								// v.checked = false;
+								// if(!lastEvent.relatedContext.list.includes(v)){
+									lastEvent.relatedContext.list.push(v)	
+								// }
+							}
+						})
+					}
+				},
+				moveHandle(ctx, event){
+					// console.log(arguments, this)
+					lastEvent = ctx;
+                    this.judge = ctx.relatedContext.list
+					var key = ctx.draggedContext.element
+					if(ctx.relatedContext.list == this.list) return false
+					if(ctx.relatedContext.list.includes(key)){
+						if(ctx.from == ctx.to) return true
+						return true
+					}
+					return true
+				}
+			}
+		})
+	</script>
+<script>
+
+</script>
+</body>
+</html>

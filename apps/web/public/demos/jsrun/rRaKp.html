@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000039324235</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="rRaKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div class="sprites"></div>
+</div>
+
+<style>
+    #app{
+        width: 500px;
+        height: 500px;
+        background: #000;
+        position: relative;
+        overflow: hidden
+    }
+    .sprites{
+        height: 64px;width: 64px;
+        background: #0cc;
+        border-radius: 50%;
+        position: absolute;
+        cursor: grab
+    }
+    /* .sprites:hover{
+    } */
+    .sprites:active{
+        cursor: grabbing
+    }
+</style>
+<script>
+// const mouseX = event.pageX
+// const mouseY = event.pageY
+/*定义两个值用来存放当前元素的left和top值,小球相对于父组件的left和top值,初始值由父组件设定*/
+// const [needX, setNeedX] = useState<number>(props.Left)
+// const [needY, setNeedY] = useState<number>(props.Right)
+var disY = disX = 64 / 2 + 10;
+var dragEl = null
+const onMouseMove = (e) => {
+    const event = e || window.event;
+    // //获取鼠标位置
+    const mouseX = event.pageX
+    const mouseY = event.pageY
+
+    // //计算小球应该随鼠标移动到的位置
+    let left = mouseX - disX;
+    let top = mouseY - disY;
+    // console.log(mouseX, mouseY, left, top)
+
+    // //获取被拖拽的元素
+    const dragball= dragEl//document.getElementById('drag')
+
+    // //计算元素位置坐标的最大值
+    // const maxHeight = props.fatherHeight - dragball.offsetHeight
+    // const maxWidth = props.fatherWidth - dragball.offsetWidth
+
+    // //不可超出规定拖拽范围
+    // left = left > 0 ? (left < maxWidth ? left : maxWidth) : 0
+    // top = top > 0 ? (top < maxHeight ? top : maxHeight) : 0
+
+    // //将结果保存为最终元素需要显示的坐标
+    // setNeedX(left)  
+    // setNeedY(top)
+    if(!dragball) return 
+    dragball.style.left = left + 'px'
+    dragball.style.top = top + 'px'
+}
+app.onmousemove = onMouseMove
+app.onmousedown = (e)=>{
+    dragEl = e.target
+    dragEl.classList.add('drag')
+}
+app.onmouseup = app.onmouseleave = (e)=>{
+    if(!dragEl) return 
+    dragEl.classList.remove('drag')
+    dragEl = null
+}
+</script>
+</body>
+</html>

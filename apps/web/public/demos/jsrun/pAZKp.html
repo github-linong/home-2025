@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>demo测试，</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="pAZKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+
+<script>
+// state 0未开始 1
+var arr = [
+  {id:1,state:0,},
+	{id:2,state:0,},
+	{id:3,state:0,},
+	{id:4,state:0,},
+	{id:5,state:0,}
+];
+
+function init(_arr = []) {
+  var index = 0;
+  var _syncTimeout = -1;
+  var sync = function(_syncIndex) {
+    if (_syncIndex != index) return;
+    if (index == _arr.length) return;
+    index++;
+    console.log(index + 'loading'+(+new Date()));
+    //ajax-sync
+    ajax_sync(index, syncSuccess, syncError, _arr[_syncIndex]);
+    clearTimeout(_syncTimeout);
+    _syncTimeout = setTimeout(() => {
+      sync(index);
+    },
+    1000)
+  }
+  var syncSuccess = function(i) {
+    console.log(i + 'success'+(+new Date()));sync(i);
+  }
+  var syncError = function(i) {
+    console.log(i + 'error'+(+new Date()));sync(i);
+  }
+  sync(0);
+}
+var ajax_sync = function(index, successCB, errorCB, syncItem) {
+  setTimeout(() => {
+    if (Math.random() < 0.5) {
+      errorCB(index, syncItem)
+    } else {
+      successCB(index, syncItem)
+    }
+  },
+  Math.random() * 1000 + 500)
+}
+init([1, 2, 3])
+</script>
+</body>
+</html>

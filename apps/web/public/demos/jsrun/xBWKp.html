@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000021482641</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="xBWKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <div><button @click="checkValue.splice(0,checkValue.length)">清除选中</button>checkValue:{{checkValue}}</div>
+  <div v-for="item in list">
+    <input type="checkbox" :value="item"  v-model="checkValue"/>{{item}}
+  </div>
+  <div><button @click="radioValue = ''">清除选中</button>radioValue:{{radioValue}}</div>
+  <div v-for="item in list">
+    <input type="radio" :value="item"  v-model="radioValue"/>{{item}}
+  </div>
+</div>
+<hr />
+<hr />
+<hr />
+<hr />
+<hr />
+<hr />
+<hr />
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="todo">
+  <button @click="doRest">重置全部单选按钮组为未选状态</button>
+  <ul class ="todo-list ui-sortable">  
+      <li v-for="(todo, index) in filedText">  
+          <input style="cursor: pointer" :id="'b'+index" type="radio" name="waterText"  
+    :value="index+'!@$%'+todo.label"  
+    v-model="waterMarkText"/>  
+          <label class="text" :for="'b'+index" style="cursor: pointer">{{todo.label}}</label>  
+      </li>  
+  </ul>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    list:['JS','HTML','CS','TS','NODE'],
+    checkValue: [],
+    radioValue: '',
+  }
+})
+
+
+
+
+
+
+
+;
+var vu = new Vue({
+        el: '#todo',
+        data: {
+            one:{
+            	fields: [{field_type:'file'}]
+            },
+          checkedNames:[],
+          waterMarkText: '',
+          waterMarkImg: '',
+        },
+        watch: {},
+        computed: { 
+            filedText: { //文本字段
+                get: function () {
+                    return this.one.fields.filter(function (item) {
+                        return item.field_type != 'file';
+                    });
+                },
+                set: function (newValue) {
+                    this.$state.filedText = newValue;
+                },
+            },
+            filedImg: function () {//图片字段
+                return this.one.fields.filter(function (item) {
+                    return item.field_type == 'file' && item.filetype == 'img';
+                })
+            },
+        },
+        methods: {
+            doRest: function () {
+                console.log(111);
+                //想把单选列表选项清空
+                this.filedText=null;
+                this.filedImg = null;
+            }
+        }
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>测试文件上传</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="hANKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<label for="fileInput">
+        上传
+    </label>
+    <label for="fileInput" id="fileName">
+
+    </label>
+    <input id="fileInput"  capture="camera" type="file" accept="image/*">
+    <style>
+        input{
+            display: none;
+        }
+        #fileName{
+            background: #fff;
+            display: inline-block;
+            min-width: 10em;
+            min-height: 1em;
+        }
+    </style>
+    <script>
+        fileInput.onchange = function(e){
+            if(this.files && this.files.length){
+                var file = this.files[0]
+                fileName.innerText = file.name
+            }
+        }
+    </script>
+<script>
+
+</script>
+</body>
+</html>

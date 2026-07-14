@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000016429844</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="VkhKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <!--<template slot-scope="scope"> 
+            <el-button v-for="(item,key) in actionbutton" :key="key" :type="item.type" 
+              :size="item.size"
+              @click="func(item.value)">
+             {{ item.label }}
+            </el-button>
+         </template> -->
+  <p v-for="(item,key) in actionbutton" :key="key" :type="item.type" @click="func(item.value)"> {{ item.label }}</p>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data: {
+     actionbutton: [
+            {label: '查看详情', type: 'text', value: 'showDetails', size: 'mini'},
+            {label: '编辑', type: 'primary', value: 'showEditDialog(scope.$index,scope.row)', size: 'mini'},
+            {label: '删除', type:'danger', value:'Delfunction(scope.$index,scope.row)', size: 'mini'},
+          ],
+  },
+  methods:{
+    func(v){
+      console.log(v, Date.now())
+    },
+    showDetails(){
+      console.log('showDetails')
+    },
+    showEditDialog(){
+      console.log('showEditDialog')
+    },
+    Delfunction(){
+      console.log('Delfunction')
+    }
+  }
+})
+</script>
+</body>
+</html>

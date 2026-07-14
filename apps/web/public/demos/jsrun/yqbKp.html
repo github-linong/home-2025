@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000019782348</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="yqbKp" />
+  <style>
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden
+}
+
+.nav-container {
+  width: 100%;
+  height: 90px;
+  background-color: #0abfbf;
+  position: relative
+}
+
+.nav-container #tab-bar {
+  width: 60px;
+  height: 60px;
+  border: 1px #2b2c31 solid;
+  text-align: center;
+  position: absolute;
+  display: flex;
+  left: 10px;
+  margin-top: 10px
+}
+
+.nav-container #tab-bar span {
+  width: 80%;
+  height: 4px;
+  background-color: #2b2c31;
+  margin-top: 16px;
+  display: block;
+  position: absolute;
+  margin-left: 10%;
+}
+
+.nav-container #tab-bar .tab-bar-1 {
+  top: 0
+}
+
+.nav-container #tab-bar .tab-bar-2 {
+  top: 9px
+}
+
+.nav-container #tab-bar .tab-bar-3 {
+  top: 18px
+}
+
+.left-bar {
+  width: 300px;
+  border: 1px solid #0c6492;
+  display: block;
+  top: 0;
+  left: -300px;
+  right: auto;
+  position: fixed;
+  overflow-y: auto
+}
+
+.bar-close {
+  width: 60px;
+  height: 60px;
+  position: relative;
+  right: -220px
+}
+
+.bar-close .bar-left,
+.bar-close .bar-right {
+  position: absolute;
+  width: 80%;
+  margin-left: 10%;
+  height: 3px;
+  background: black
+}
+
+.bar-close .bar-left {
+  transform: rotate(45deg);
+  top: 5px
+}
+
+.bar-close .bar-right {
+  transform: rotate(315deg);
+  top: 5px
+}
+
+body {
+  left: 0px;
+  display: block;
+  overflow-y: auto;
+  height: 3000px
+}
+
+  </style>
+</head>
+<body>
+<nav class="nav-container">
+  <div id="tab-bar">
+    <span class="tab-bar-1">
+    </span>
+    <span class="tab-bar-2">
+    </span>
+    <span class="tab-bar-3">
+    </span>
+  </div>
+</nav>
+<div class="left-bar">
+  <ul>
+    <li>
+      首页
+    </li>
+    <li>
+      Dating Site
+    </li>
+    <li>
+      Dating Tips
+    </li>
+    <li>
+      Blogs
+    </li>
+    <li>
+      Forum
+    </li>
+    <li>
+      Sign Up
+    </li>
+  </ul>
+  <div class="bar-close">
+    <span class="bar-left">
+    </span>
+    <span class="bar-right">
+    </span>
+  </div>
+</div>
+<script>
+var LeftBar = document.getElementsByClassName('left-bar')[0]
+var BoDy = document.body
+var TabBar = document.getElementById('tab-bar');
+var BarClose = document.getElementsByClassName('bar-close')[0];
+TabBar.onclick = function() {
+  var timer = setInterval(function() {
+    // console.log(LeftBar.offsetLeft);
+    if (LeftBar.style.left >= 0 + "px") {
+      clearInterval(timer);
+      LeftBar.style.left = 0 + "px"
+    } else {
+      LeftBar.style.left = (2 + LeftBar.offsetLeft) / 2 + "px";
+      BoDy.style.marginLeft = (600 + LeftBar.offsetLeft) / 2 + "px"
+    }
+  }, 100)
+
+}
+
+BarClose.onclick = function() {
+  var timer = setInterval(function() {
+    console.log(LeftBar.style.left <= -300 + "px", LeftBar.style.left, LeftBar.style.left <= -300)
+    if (LeftBar.style.left <= -300 + "px") {
+      clearInterval(timer);
+      LeftBar.style.left = -300 + "px"
+    } else {
+      LeftBar.style.left = ( - 4 + LeftBar.offsetLeft) / 2 + "px";
+      BoDy.style.marginLeft = (2 + LeftBar.offsetLeft) / 2 + "px";
+      // console.log(LeftBar.offsetLeft)
+    }
+  }, 100)
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>图片边框的一些操作，图片居中</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="ySYKp" />
+  <style>
+.g-eco-content{
+   overflow:hidden;
+ }
+img{
+  position:relative;
+  display:block;
+  float:left;
+  width:25%;
+  height:58px;
+  margin:0;
+  padding:0;
+  box-sizing:border-box; 
+  border-left:1px solid #e6e6e6;
+}
+.topimg{
+  border-bottom:1px solid #e6e6e6;
+}
+
+img.topimg:first-child,img.topimg+img.bottomimg{
+  border-left:0px;
+}
+
+
+
+#time20170828{width:400px;height:200px;border:1px solid #f00;text-align:center;line-height:200px}
+#time20170828 img{width:auto;height:auto;float:none;display:inline-block;vertical-align: middle;}
+  </style>
+</head>
+<body>
+<div class="g-eco-content">
+  <img src="https://github-linong.github.io/images/1 - 副本.png" alt="" class="topimg">
+  <img src="https://github-linong.github.io/images/2.png" alt="" class="topimg">
+  <img src="https://github-linong.github.io/images/3.png" alt="" class="topimg">
+  <img src="https://github-linong.github.io/images/4.png" alt="" class="topimg">
+  <img src="https://github-linong.github.io/images/5.png" alt="" class="bottomimg">
+  <img src="https://github-linong.github.io/images/6.png" alt="" class="bottomimg">
+  <img src="https://github-linong.github.io/images/7.png" alt="" class="bottomimg">
+  <img src="https://github-linong.github.io/images/8.png" alt="" class="bottomimg">
+</div>
+<div id="time20170828">
+  <img src="https://github-linong.github.io/images/8.png" alt="">
+</div>
+<script>
+
+</script>
+</body>
+</html>

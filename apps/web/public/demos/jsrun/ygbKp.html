@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>自适应动画</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="ygbKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<!-- import CSS -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- import Vue before Element -->
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<div id="app">
+  <div class="box box--show left">
+    <div class="controls">
+      <button>新增</button>
+      <p>{{selectIndex}}</p>
+      <ul>
+        <li @click="selectIndex = index" v-for="(item, index) in list" :style="{color: index == selectIndex?'red':''}">{{item.name}}</li>
+      </ul>
+    </div>
+  </div>
+  <div class="box right" :class="{'box--show':selectIndex!=-1}">
+    
+  </div>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data(){
+  	return{
+      selectIndex: -1,
+  		list:[
+  			{name: '管理员'},
+  			{name: '企业账号'}
+  		]
+		}
+	}
+})
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ng判断 天</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="24ZKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<form  ng-app="myApp"  ng-controller="validateCtrl"
+name="myForm" novalidate>
+
+<p>时间:<br>
+  <input type="text" name="time" ng-model="time" required>
+</p>
+   <input type="radio" name="radio" ng-model="switch" value="hours" id="hours"/><label for="hours">hours</label>
+  <input type="radio" name="radio" ng-model="switch" value="day" id="day"/><label for="day">day</label>
+  
+  <p>当前选中的是 {{switch}}</p>
+</form>
+
+<script>
+var app = angular.module('myApp', []);
+app.controller('validateCtrl', function($scope) {
+    $scope.time = '1';
+  	$scope.switch = 'hours'
+    
+  $scope.$watch("switch",function(newVal,oldVal){
+    	$scope.time = '1';
+  });
+  $scope.$watch("time",function(newVal,oldVal){
+    	$scope.time = parseInt('1');
+	    var _val = newVal || 1;
+    	if($scope.switch == 'hours'){
+        $scope.time = ''+Math.max(Math.min(24,_val),1);
+      }else if($scope.switch == 'day'){
+        $scope.time = ''+Math.max(Math.min(31,_val),1);
+      }
+  });
+});
+</script>
+<script>
+
+</script>
+</body>
+</html>

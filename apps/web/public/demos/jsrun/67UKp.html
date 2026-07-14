@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>el-select自定义指令优化下拉框</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="67UKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<div id="app">
+    <p>optionAll.length: {{optionAll.length}}</p>
+    <p>optionFilterAll.length: {{optionFilterAll.length}}</p>
+ <el-select 
+      class="order-cover-select" 
+      v-model="selectModel" 
+      clearable 
+      placeholder="请选择设备名称" 
+      filterable 
+      multiple 
+      collapse-tags 
+      v-loadmore="loadmore" 
+      :filter-method="filterVmModel"
+      @visible-change="initPage"
+    >
+      <el-option v-for="item in options" :key="item.id" :label="item.name" :value="item.id">
+      </el-option>
+    </el-select>
+</div>
+<script>
+new Vue({
+    el: '#app',
+    data() {
+        return {
+            selectModel: '',// select 选择的数据
+            optionAll: [], // 全部的数据
+            optionFilterAll: [], //过滤过的数据
+            options: [], // 分页数据
+            // 分页参数
+            query: {
+                page: 1,
+                limit: 10
+            },
+            filterText: '' // 筛选文本
+        }
+    },
+    directives: {
+        'loadmore': {
+            bind(el, binding) {
+                // 获取element-ui定义好的scroll盒子 
+                const SELECTWRAP_DOM = el.querySelector('.el-select-dropdown .el-select-dropdown__wrap');
+                SELECTWRAP_DOM.addEventListener('scroll', function () {
+                    /**
+                    * scrollHeight 获取元素内容高度(只读)
+                    * scrollTop 获取或者设置元素的偏移值,常用于, 计算滚动条的位置, 当一个元素的容器没有产生垂直方向的滚动条, 那它的scrollTop的值默认为0.
+                    * clientHeight 读取元素的可见高度(只读)
+                    * 如果元素滚动到底, 下面等式返回true, 没有则返回false:
+                    */
+                    const condition = Math.round(this.scrollHeight - this.scrollTop) <= this.clientHeight;
+                    if (condition) {
+                        binding.value();
+                    }
+                });
+            }
+        }
+    },
+    created() {
+        this.initData()
+    },
+    methods: {
+        // 初始化数据
+        initData() {
+            // http request....
+            // 模拟2k条数据
+            let demoData = []
+            for (let index = 0; index < 2000; index++) {
+                demoData.push({ name: `测试${index}`, id: index })
+            }
+            this.optionAll = demoData
+            // this.filterVmModel()
+            // this.loadmore(true)
+        },
+        loadmore(firstTag) {
+            // 筛选时下拉不触发分页 
+            // if (!this.filterText) {
+                if (!firstTag) {
+                    this.query.page++
+                }
+                // 前端分页简单版本
+                // 分页开始坐标
+                const begin = this.query.limit * (this.query.page - 1)
+                // 分页结束坐标
+                const end = (this.query.limit * (this.query.page - 1)) + this.query.limit
+                // 这里使用slice 进行分页
+                this.options.push(...this.optionFilterAll.slice(begin, end))
+            // }
+        },
+        initPage(tag) {
+            if(tag){
+                this.query.page = 1
+                this.query.limit = 10
+                this.filterVmModel('');
+            }
+        },
+        filterVmModel(value) {
+            this.filterText = value;
+            // this.initPage();
+            // // 筛选数据
+            if (value) {
+                this.optionFilterAll = this.optionAll.filter(item => {
+                    if (item.name && item.name.indexOf(value) !== -1) {
+                        return true
+                    } else {
+                        return false
+                    }
+                })
+            } else {
+                this.optionFilterAll = this.optionAll.concat();
+            }
+            //     // 直接赋值会连续触发 loadmore 分页事件
+            //     this.options = []
+                this.$nextTick(() => {
+                    this.options = this.optionFilterAll.slice(0, this.query.limit * this.query.page)
+                })
+            // }
+        },
+    }
+})
+</script>
+</body>
+</html>

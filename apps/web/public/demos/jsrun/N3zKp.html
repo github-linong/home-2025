@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>格式化对象</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="N3zKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.js"></script>
+<div id="app">
+    <textarea v-model="value"></textarea>
+    <textarea :value="value1"></textarea>
+    <textarea :value="value2"></textarea>
+</div>
+<style>
+    #app{
+        display: flex;
+        height: 100vh;
+    }
+    textarea{
+        min-width: 200px;
+        min-height: 200px;
+        flex: auto;
+    }
+</style>
+<script>
+    deep = function(obj, fun){
+        _.forOwn(obj, (value, key, object)=>{
+            fun(value, key, object)
+            // obj[_.camelCase(key)] = value;
+            if(typeof value === 'object'){
+                deep(value, fun)
+            }
+        })
+    }
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                value: JSON.stringify({
+                    a: 1,
+                    b_l: 2,
+                    c: {
+                        d: 1,
+                        e_l : 2,
+                    },
+                    f_l: {
+                        g: 1,
+                        h_l : 2,
+                    },
+                    i_l_l: {
+                        j: 1,
+                        k_l : 2,
+                        l_l: {
+                            n: 1,
+                            o_l : 2,
+                        }
+                    },
+                    reachType: 1
+                }, null ,4)
+            }
+        },
+        computed: {
+            value1(){
+                const obj = JSON.parse(this.value);
+                // _.forOwn(obj, (value, key, object)=>{
+                //     obj[_.camelCase(key)] = value;
+                // })
+                deep(obj, (value, key, object)=>{
+                    object[_.camelCase(key)] = value;
+                })
+                return JSON.stringify(obj, null, 4)
+
+            },
+            value2(){
+                const obj = JSON.parse(this.value);
+                // _.forOwn(obj, (value, key, object)=>{
+                //     obj[_.camelCase(key)] = value;
+                // })
+                deep(obj, (value, key, object)=>{
+                    object[_.snakeCase(key)] = value;
+                })
+                return JSON.stringify(obj, null, 4)
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

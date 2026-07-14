@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JcZKp</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="JcZKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
+    <div id="main" style="width: 600px;height:400px;"></div>
+<script>
+option = {
+    xAxis: {
+        type: 'category',
+        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    },
+    yAxis: {
+        type: 'value'
+    },
+    series: [{
+        data: [820, 932, 901, 934, 1290, 1330, 1320],
+        type: 'line'
+    }]
+};
+month = [{"months":"2018-03","years":"2018","total":1},{"months":"2018-04","years":"2018","total":7},{"months":"2018-05","years":"2018","total":3}] 
+days = [{"days":"2018-05-28","months":"2018-05","years":"2018","total":2},{"days":"2018-05-29","months":"2018-05","years":"2018","total":1}];
+var filter = (data)=>{
+  xAxis = [];
+  series = [];
+  data.forEach(v=>{
+    series.push(v.total);
+    xAxis.push(v.days || v.months || v.years);
+  })
+  return {
+    xAxis:{
+      type: 'category',
+      data: xAxis//[]
+    },
+    series:[{
+      data: series,//[]
+      type: 'line'
+    }]
+  }
+}
+var myChart = echarts.init(document.getElementById('main'));
+myChart.setOption(option);
+// myChart.setOption({
+//     graphic: [
+//         { 
+//             type: 'text',
+//             id: 'year',    
+//             left: 10,
+//             // right: 10,
+//             top: '0',
+//             // bottom: '10%',
+//             style: {
+//                 text: '本年',
+//             },
+//           	onclick(){
+//               console.log('本年')
+//               myChart.setOption(filter(month));
+//             }
+//         },
+//         { 
+//             type: 'text',
+//             id: 'month',    
+//             left: 50,
+//             // right: 10,
+//             top: '0',
+//             // bottom: '10%',
+//             style: {
+//                 text: '本月',
+//             },
+//           	onclick(){
+//               console.log('本月')
+//               myChart.setOption(filter(days));
+//             }
+//         },
+//         { 
+//             type: 'text',
+//             id: 'date',    
+//             left: 100,
+//             top: '0',
+//             style: {
+//                 text: '最近七日',
+//             },
+//           	onclick(){
+//               console.log('最近七日')
+//             }
+//         }
+//     ]
+// });
+myChart.setOption({
+	    graphic: [
+	        { 
+	            type: 'text',id: 'year',left: 10,top: '0',
+	            style: {text: '本年',},
+	          	onclick(){switchDate('years')}
+	        },
+	        { 
+	            type: 'text',id: 'month',left: 50,top: '0',
+	            style: {text: '本月',},
+	          	onclick(){switchDate('months')}
+	        },
+	        { 
+	            type: 'text',id: 'date',left: 100,top: '0',
+	            style: {text: '最近七日',},
+	          	onclick(){switchDate('dats')}
+	        }
+	    ]
+	});
+</script>
+</body>
+</html>

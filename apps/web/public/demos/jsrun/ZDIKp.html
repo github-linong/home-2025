@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000038747493</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="ZDIKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<head>
+    <style>
+        :root {
+            --bg_color: green;
+        }
+        body {
+            /* --bg_color: blue; */
+            background-color: var(--bg_color);
+            margin: 1px;
+
+        }
+    </style>
+</head>
+<body>
+    <script>
+        var mystyle = document.documentElement.style;
+        console.log('bgcolor=' + mystyle.getPropertyValue("--bg_color").trim());
+        setTimeout("changBgcolor()"  , 3000);
+
+        function changBgcolor() {
+            mystyle.setProperty("--bg_color", "red");
+            console.log('在setProperty后bgcolor=' + mystyle.getPropertyValue("--bg_color").trim());
+        }
+    </script>
+<script>
+
+</script>
+</body>
+</html>

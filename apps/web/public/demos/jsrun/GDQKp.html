@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>css 动画造成页面卡顿</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="GDQKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div class="ani">{{time}}</div>
+    <div v-for="item in 1000">
+        {{item}}.
+        <!-- {{time+time}} -->
+    </div>
+</div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                time: Date.now()
+            }
+        },
+        created(){
+            setInterval(v=>{
+                this.time = Date.now() + Math.random()
+            }, 100)
+        }
+    })
+</script>
+<style>
+    #app{
+        /* position: absolute; */
+    }
+    .ani{
+        width: 100px;
+        height: 100px;
+        background: red;
+        position: fixed;
+        top:0;
+        right:0;
+    }
+    .ani:before{
+        content: '';
+        display: block;
+        width: 30px;
+        height: 30px;
+        background: blue;
+        animation: ani1 1s 999;
+        /* animation: ani1 1s 999 linear; */
+    }
+    @keyframes ani1{
+        form {transform: rotate(0)}
+        to{transform: rotate(2turn)}
+    }
+
+</style>
+<script>
+
+</script>
+</body>
+</html>

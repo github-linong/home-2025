@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>phaser 陀螺仪 引力</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="t4HKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/phaser/3.23.0/phaser.min.js"></script>
+<div id="app"></div>
+<script>
+    class Example extends Phaser.Scene{
+        preload (){
+            // this.load.image('mountains', 'assets/skies/mountains-tile.png');
+            this.load.spritesheet(
+                'balls', 
+                'https://cors-www.lilnong.top/static/project/phaser3-tutorial-src/assets/star.png', 
+                { 
+                    frameWidth: 40, frameHeight: 40 
+                }
+            );
+        }
+
+        create (){
+            // this.matter.world.setBounds(0, 0, 800, 600, 32, true, true, false, true);
+            this.matter.world.setBounds(0, 0, 800, 600, 32, true, true, true, true);
+            // this.physics.world.setBounds(0, 0, 800, 600, 32, true, true, false, true);
+
+            // const path = '0 0 0 0 800 1 800 2';
+            // const verts = this.matter.verts.fromPath(path);
+            // this.matter.add.fromVertices(408, 492, verts, { ignoreGravity: true }, true, 0.01, 10);
+            // setInterval(()=>{
+            //     // this.game.physics.world.gravity.y = 1000 * Math.random() - 500;
+            //     this.matter.physics.world.gravity.y = 1000 * Math.random() - 500;
+            //     top.console.log(this,game)
+            // }, 2000)
+            this.time.addEvent({
+                delay: 2000,
+                callback: this.changeGravity,
+                callbackScope: this,
+                loop: true
+            });
+            //  Just a repeating timer
+            this.time.addEvent({ 
+                delay: 250, 
+                callback: this.releaseBall, 
+                callbackScope: this, 
+                repeat: 256 
+            });
+        }
+
+        releaseBall ()
+        {
+            const ball = this.matter.add.image(
+                Phaser.Math.Between(32, 768), 200, 'balls', Phaser.Math.Between(0, 5)
+            );
+            // const ball = this.physics.add.image(
+            //     Phaser.Math.Between(32, 768), -200, 'balls', Phaser.Math.Between(0, 5)
+            // );
+
+            ball.setCircle();
+            ball.setBounce(0.4);
+        }
+           changeGravity() {
+               const arr= [[1,1],[1,-1],[-1,1],[-1,-1]]
+        // 随机生成新的重力值
+        // const newGravityX = Phaser.Math.FloatBetween(-1, 1); // 随机 X 轴方向的重力值
+        // const newGravityY = Phaser.Math.FloatBetween(-1, 1); // 随机 Y 轴方向的重力值
+        const [newGravityX,newGravityY] = arr[Math.random() * 4 >>> 0]
+        // 设置新的重力值
+        this.matter.world.setGravity(newGravityX, newGravityY);
+    }
+    }
+
+    const config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        backgroundColor: '#c4dedf',
+        parent: '#app',
+        physics: {
+            default: 'matter',
+            // default: 'arcade',
+            gravity: { y: 300 },
+            arcade: {
+                gravity: { y: 300 },
+                debug: false
+            },
+            matter: {
+                gravity: { y: 0.5 },
+                debug: false,
+                enableSleeping: true
+            }
+        },
+        scene: Example
+    };
+
+    const game = new Phaser.Game(config);
+</script>
+<script>
+
+</script>
+</body>
+</html>

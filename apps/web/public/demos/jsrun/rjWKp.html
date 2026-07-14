@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>删除字符限制</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="rjWKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<input type="text" />
+<div id="contentEditable" contentEditable>123</div>
+<script>
+inputDOM = document.body.querySelector('input')
+inputDOM.onkeydown = e=>{
+  // console.log('onkeydown', e.keyCode)
+  console.count('onkeydown')
+}
+
+inputDOM.onkeyup = e=>{
+  console.log('onkeyup', e.keyCode)
+}
+
+inputDOM.onkeypress = e=>{
+  console.log('onkeypress', e.keyCode)
+}
+
+divDOM = document.body.querySelector('#contentEditable')
+divDOM.onkeydown = e=>{
+  // console.log('onkeydown', e.keyCode)
+  console.count('divDOM-onkeydown')
+}
+
+divDOM.onkeyup = e=>{
+  console.log('divDOM-onkeyup', e.keyCode)
+}
+
+divDOM.onkeypress = e=>{
+  console.log('divDOM-onkeypress', e.keyCode)
+}
+</script>
+</body>
+</html>

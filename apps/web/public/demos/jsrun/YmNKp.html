@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000039724954</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="YmNKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.js"></script>
+<template id="Table">
+  <div>
+      <div>
+          <slot></slot>
+      </div>
+    <table>
+      <thead>
+        <tr>
+          <td v-for="(item, index) in 5" :key="index">
+            <slot :name="'head' + index" :test="88"></slot>
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(item1, index1) in 5" :key="index1">
+          <td v-for="(item2, index2) in 5" :key="index2">
+            <slot :name="'body'" :test2="99">{{'body' + index1 + index2}}</slot>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
+<div id="app"></div>
+<script>
+    Vue.component('v-Table', {
+        template: Table,
+        mounted(){
+            window._this = this;
+            console.log('v-Table')
+        }
+    })
+</script>
+<script>
+    vm = new Vue({
+        el: '#app',
+        template: `
+            <div class="home">
+                <v-Table>
+                    <template>1</template>
+                    <template
+                        v-for="(item, index) in 5"
+                        slot-scope="{ test }"
+                        :slot="'head' + index"
+                    >
+                        {{ test }}
+                    </template>
+                    <template>2</template>
+                    <template 
+                        v-for="(item2, index2) in 5" 
+                        slot-scope="{ test2 }"
+                        :slot="'body'" 
+                        >
+                        <div
+                        >
+                            {{ test2 }}
+                        </div>
+                    </template>
+                </v-Table>
+            </div>
+        `
+        // template: `
+        //     <div class="home">
+        //         <v-Table>
+        //             <template>1</template>
+        //             <template
+        //                 v-for="(item, index) in 5"
+        //                 slot-scope="{ test }"
+        //                 :slot="'head' + index"
+        //             >
+        //                 {{ test }}
+        //             </template>
+        //             <template>2</template>
+        //             <template v-for="(item1, index1) in 5">
+        //                 <template><div>3 {{'body' + index1}}</div></template>
+        //                 <template 
+        //                     v-for="(item2, index2) in 5" 
+        //                     slot-scope="{ test2 }"
+        //                     :slot="'body' + index1 + index2" 
+        //                     >
+        //                     <template>4 'body' + index1 + index2</template>
+        //                     <div
+        //                     >
+        //                         {{ test2 }}
+        //                     </div>
+        //                 </template>
+        //             </template>
+        //         </v-Table>
+        //     </div>
+        // `
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

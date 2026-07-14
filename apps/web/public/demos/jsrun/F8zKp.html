@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>图片旋转 demo</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="F8zKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div>
+    <img src="http://www.lilnong.top/static/img/avator/avator-14.jpg" alt="">
+    <img src="http://www.lilnong.top/static/img/avator/avator-13.jpg" alt="">
+    <img src="http://www.lilnong.top/static/img/avator/avator-12.jpg" alt="">
+    <img src="http://www.lilnong.top/static/img/avator/avator-11.jpg" alt="">
+    <img src="http://www.lilnong.top/static/img/avator/avator-10.jpg" alt="">
+</div>
+<div>
+    <img src="http://www.lilnong.top/static/img/avator/avator-14.jpg" alt="">
+    <img src="http://www.lilnong.top/static/img/avator/avator-13.jpg" alt="">
+    <img src="http://www.lilnong.top/static/img/avator/avator-12.jpg" alt="">
+    <img src="http://www.lilnong.top/static/img/avator/avator-11.jpg" alt="">
+    <img src="http://www.lilnong.top/static/img/avator/avator-10.jpg" alt="">
+</div>
+<div>
+    <img src="http://www.lilnong.top/static/img/avator/avator-14.jpg" alt="">
+    <img src="http://www.lilnong.top/static/img/avator/avator-13.jpg" alt="">
+    <img src="http://www.lilnong.top/static/img/avator/avator-12.jpg" alt="">
+    <img src="http://www.lilnong.top/static/img/avator/avator-11.jpg" alt="">
+    <img src="http://www.lilnong.top/static/img/avator/avator-10.jpg" alt="">
+</div>
+<style>
+    *{padding: 0;margin: 0;}
+    div{
+        background: rgba(100,100,100,.2);
+        height: 400px;
+        width: 400px;
+        border-radius: 400px;
+        position: relative;
+    }
+    div:nth-child(1),div:nth-child(2){
+        animation: rotate 3s linear infinite;
+    }
+    div:nth-child(2) img{
+        animation: rotate 3s linear infinite;
+        animation-direction: reverse;
+    }
+    img{
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 400px;
+        position: absolute;
+        left:0;
+        top: 0;
+    }
+    img:nth-child(1){
+        top: 0px;
+        left: 200px;
+        margin-left: -50px
+    }
+    img:nth-child(2){
+        top: 300px;
+        left: 200px;
+        margin-left: -50px
+    }
+    img:nth-child(3){
+        top: 150px;
+        left: 50px;
+        margin-left: -50px
+    }
+    img:nth-child(4){
+        top: 150px;
+        left: 200px;
+        margin-left: -50px
+    }
+    img:nth-child(5){
+        top: 150px;
+        left: 350px;
+        margin-left: -50px
+    }
+
+    @keyframes rotate{
+        0%{transform: rotate(0deg)}
+        100%{transform: rotate(360deg)}
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

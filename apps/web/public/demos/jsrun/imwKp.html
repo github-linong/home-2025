@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>导航制作-周年庆</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="imwKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<img src="https://www.lilnong.top/static/img/annual_festival_2020/%E5%9B%BE%E5%B1%82%20663.png" alt="">
+<img src="https://www.lilnong.top/static/img/annual_festival_2020/%E5%9B%BE%E5%B1%82%20663%281%29.png" alt="">
+<img src="https://www.lilnong.top/static/img/annual_festival_2020/%E5%9B%BE%E5%B1%82%20662.png" alt="">
+<img src="https://www.lilnong.top/static/img/annual_festival_2020/%E5%9B%BE%E5%B1%82%20662%20%E6%8B%B7%E8%B4%9D.png" alt="">
+<img src="https://www.lilnong.top/static/img/annual_festival_2020/%E4%BF%AE%E6%94%B9.png" alt="">
+<img src="https://www.lilnong.top/static/img/annual_festival_2020/%E4%BF%AE%E6%94%B92.png" alt="">
+
+<div id="app">
+    <div class="flex">
+        <div class="item flex-auto">一二三四五</div>
+        <div class="item flex-auto">一二三四五</div>
+        <div class="item flex-auto">一二三四五</div>
+    </div>
+    <div class="flex">
+        <div class="item flex-auto item--active">一二三四五</div>
+        <div class="item flex-auto">一二三</div>
+        <div class="item flex-auto">一二</div>
+    </div>
+    <div class="flex">
+        <div class="item flex-auto ">一二三四五</div>
+        <div class="item flex-auto item--active">一二三</div>
+        <div class="item flex-auto">一二</div>
+    </div>
+    <div class="flex">
+        <div class="item flex-auto ">一二三四五</div>
+        <div class="item flex-auto">一二三</div>
+        <div class="item flex-auto item--active">一二</div>
+    </div>
+
+    
+    <div class="flex">
+        <div class="item flex-auto" :class="{'item--active':idx == 0}" @click="idx = 0">一二三四五</div>
+        <div class="item flex-auto" :class="{'item--active':idx == 1}" @click="idx = 1">一二三</div>
+        <div class="item flex-auto" :class="{'item--active':idx == 2}" @click="idx = 2">一二</div>
+        <div class="item flex-auto" :class="{'item--active':idx == 3}" @click="idx = 3">一二三四五</div>
+        <div class="item flex-auto" :class="{'item--active':idx == 4}" @click="idx = 4">一二三</div>
+        <div class="item flex-auto" :class="{'item--active':idx == 5}" @click="idx = 5">一二</div>
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                idx: 0
+            }
+        }
+    })
+</script>
+<style>
+    *{padding: 0; margin: 0;}
+    body{background: #999}
+    .flex{margin: 10px 0;}
+</style>
+<style>
+    .flex{display: flex;background: rgb(43,32,49) url(https://www.lilnong.top/static/img/annual_festival_2020/%E5%9B%BE%E5%B1%82%20663%281%29.png) bottom left;}
+        .flex-auto{flex: 1}
+    .item{text-align: center;height: 82px;line-height: 82px;color: #FFF2AB;}
+        .item--active{
+            background: rgb(43,32,49) url(https://www.lilnong.top/static/img/annual_festival_2020/%E5%9B%BE%E5%B1%82%20663.png) top left;
+            /* padding: 0 32px; */
+        }
+        .item--active{
+            background: url("https://www.lilnong.top/static/img/annual_festival_2020/%E4%BF%AE%E6%94%B9.png"),
+             url("https://www.lilnong.top/static/img/annual_festival_2020/%E4%BF%AE%E6%94%B92.png"),
+             url("https://www.lilnong.top/static/img/annual_festival_2020/%E5%9B%BE%E5%B1%82%20663.png");
+            background-repeat: no-repeat, no-repeat, repeat;
+            background-position: left top, right top, left top;
+            background-size: 82px,82px,82px,;
+        }
+        .item--active:first-child{
+            background: 
+             url("https://www.lilnong.top/static/img/annual_festival_2020/%E4%BF%AE%E6%94%B92.png"),
+             url("https://www.lilnong.top/static/img/annual_festival_2020/%E5%9B%BE%E5%B1%82%20663.png");
+            background-repeat: no-repeat, repeat;
+            background-position: right top, left top;
+            background-size: 82px,82px,;
+        }
+        .item--active:last-child{
+            background: url("https://www.lilnong.top/static/img/annual_festival_2020/%E4%BF%AE%E6%94%B9.png"),
+             url("https://www.lilnong.top/static/img/annual_festival_2020/%E5%9B%BE%E5%B1%82%20663.png");
+            background-repeat: no-repeat, repeat;
+            background-position: left top, left top;
+            background-size: 82px,82px,;
+        }
+        
+</style>
+<script>
+
+</script>
+</body>
+</html>

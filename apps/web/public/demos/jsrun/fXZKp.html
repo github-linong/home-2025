@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>纯CSS实现瀑布流布局</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="fXZKp" />
+  <style>
+/* original CSS missing from upstream JSRUN */
+  </style>
+</head>
+<body>
+<div class="box column">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+  <div>5</div>
+  <div>6</div>
+  <div>7</div>
+  <div>8</div>
+  <div>9</div>
+</div>
+<div class="box column">
+  我是长文本我是长文本我是长文本我是长文本我是长文本我是长文本我是长文本我是长文本我是长文本我是长文本我是长文本我是长文本我是长文本我是长文本我是长文本
+   column-width = (width-(n-1)*font-size)/n
+</div>
+<div class="box flexbox">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+  <div>4</div>
+  <div>5</div>
+  <div>6</div>
+  <div>7</div>
+  <div>8</div>
+  <div>9</div>
+</div>
+<div class="box grid">
+  <header>header</header>
+  <nav>nav</nav>
+  <article>article</article>
+  <aside>aside</aside>
+  <footer>footer</footer>
+</div>
+<div class="masonry column">
+  <div class="item">
+    <div class="item__content"> </div>
+  </div> 
+  <div class="item"> 
+    <div class="item__content"> </div> 
+  </div> 
+  <!-- more items --> 
+</div>
+
+<div class="demo1 column">
+  <div class="masonry">
+    <div class="item">
+      <div class="item__content">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content item__content--small">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content item__content--medium">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content item__content--small">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content item__content--medium">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content item__content--large">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content item__content--medium">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content item__content--small">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content item__content--large">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content item__content--small">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content item__content--large">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content item__content--medium">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content item__content--small">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content item__content--medium">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content">
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__content item__content--small">
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+
+</script>
+</body>
+</html>

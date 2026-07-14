@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000016350910</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="xMgKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<h2 align="center">Ajax显示数据</h2>
+<table>
+    <tbody id="disp">
+        <th>标题</th>
+        <th>内容</th>
+        <th>作者</th>
+        <th>邮件</th>
+        <th>来自</th>
+    </tbody>
+</table>
+<script>
+data = [ {title:"祝大家开心",
+         content:"非常感谢大家长期以来的帮助",
+        author:"唐三彩",
+         email:"sanyo@tom.com",
+        ip:"59.51.24.37"}
+, {title:"到此一游",
+         content:`<p><img alt="" src="upfiles/54591303758197437.jpg" /></p>
+<p><img alt="" src="upfiles/20130714_121621_2779.jpg" /></p>
+<p><img height="46" alt="" width="615" src="/php/8/example/8.1/fckeditor/editor/filemanager/connectors/php/upfiles/20130714_123447_8018.png" /></p>
+<p>本人今天到此一游</p>`,
+        author:"小神马",
+         email:"shemo@qq.com",
+        ip:"201.11.43.45"}
+, {title:"请教个问题",
+         content:"虚拟目录中的文件如何浏览",
+        author:"李博士",
+         email:"tdkd@163.com",
+        ip:"89.12.34.56"}
+, {title:"祝大家开心",
+         content:"非常感谢大家的帮助",
+        author:"胡积分",
+         email:"xta@tom.com",
+        ip:"202.103.56.6"} ] 
+$.each(data,function(i,item){
+            var tr = "<tr><td>" + item.title + "</td>"    +
+                        "<td>"  + item.content  + "</td>" +
+                        "<td>"  + item.author  + "</td>"  +
+                        "<td>"  + item.email  + "</td>"   +
+                        "<td>"  + item.ip  + "</td></tr>"
+            $("#disp").append(tr);
+        });
+</script>
+</body>
+</html>

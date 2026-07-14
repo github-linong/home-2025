@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>为什么饿了么的el-radio中的@change事件不生效?</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="zfVKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.2/index.min.js"></script>
+<link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.2/theme-chalk/index.css" rel="stylesheet">
+
+<div id="app">
+    <el-radio v-model="form.struts_" label="0" @change="changeRadio()">待发布</el-radio>
+    <el-radio v-model="form.struts_" label="1" @change="changeRadio()">已发布</el-radio>
+
+    <hr>
+    <el-radio-group v-model="form.struts_" @change="changeRadio2()">
+        <el-radio label="0">待发布</el-radio>
+        <el-radio label="1">已发布</el-radio>
+  </el-radio-group>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                form: {
+                    struts_: '0'
+                }
+            }
+        },
+        methods: {
+            changeRadio(){
+                console.log('changeRadio',arguments)
+            },
+            changeRadio2(){
+                console.log('changeRadio2',arguments)
+            }
+        },
+        watch: {
+            'form.struts_': function(){
+                console.log('watch form.struts_',arguments)
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

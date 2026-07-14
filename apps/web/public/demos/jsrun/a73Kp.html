@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>jquery show test</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="a73Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<h2>什么样式都没有，模拟css没有加载的场景</h2>
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div class="view">
+        默认状态，什么样式都没有
+    </div>
+</div>
+
+<hr>
+
+
+
+
+
+<h2>只用style控制样式</h2>
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div class="view" style="display: flex">
+        style="display: flex"
+    </div>
+</div>
+
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div class="view" style="display: block">
+        style="display: block"
+    </div>
+</div>
+
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div class="view" style="display: table">
+        style="display: table"
+    </div>
+</div>
+
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div class="view" style="display: none">
+        style="display: none"
+    </div>
+</div>
+<hr>
+
+
+
+
+<h2>只用class控制样式</h2>
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div class="view view-flex">
+        class="view-flex"
+    </div>
+</div>
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div class="view view-block">
+        class="view-block"
+    </div>
+</div>
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div class="view view-table">
+        class="view-table"
+    </div>
+</div>
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div class="view view-none">
+        class="view-none"
+    </div>
+</div>
+
+<hr>
+
+
+
+
+
+<h2>style="display:none"，用class控制样式</h2>
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div style="display:none" class="view view-flex">
+        style="display:none" class="view-flex"
+    </div>
+</div>
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div style="display:none" class="view view-block">
+        style="display:none" class="view-block"
+    </div>
+</div>
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div style="display:none" class="view view-table">
+        style="display:none" class="view-table"
+    </div>
+</div>
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div style="display:none" class="view view-none">
+        style="display:none" class="view-none"
+    </div>
+</div>
+
+<hr>
+
+
+
+
+
+<h2>class="view-none",style控制样式</h2>
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div class="view view-none" style="display: flex">
+        class="view view-none" style="display: flex"
+    </div>
+</div>
+
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div class="view view-none" style="display: block">
+        class="view view-none" style="display: block"
+    </div>
+</div>
+
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div class="view view-none" style="display: table">
+        class="view view-none" style="display: table"
+    </div>
+</div>
+
+<div class="box">
+    <button type="button" class="show">show</button>
+    <button type="button" class="hide">hide</button>
+    <button type="button" class="toggle">toggle</button>
+    <div class="view view-none" style="display: none">
+        class="view view-none" style="display: none"
+    </div>
+</div>
+<style>
+    div{
+        background: rgba(200,200,100,.2);
+        margin: 10px;
+        padding: 10px;
+    }
+    .view-block{
+        display: block;
+    }
+    .view-flex{
+        display: flex;
+    }
+    .view-table{
+        display: table;
+    }
+    .view-none{
+        display: none;
+    }
+</style>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $('.box').on('click','.show',function(){
+        $(this).parents('.box').find('.view').show();
+    })
+    $('.box').on('click','.hide',function(){
+        $(this).parents('.box').find('.view').hide();
+    })
+    $('.box').on('click','.toggle',function(){
+        $(this).parents('.box').find('.view').toggle();
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

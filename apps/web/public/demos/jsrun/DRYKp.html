@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>基于HTML5的拖动排序</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="DRYKp" />
+  <style>
+div{
+			font-size:0;min-height: 300px;min-width: 300px;
+		}
+		span{
+			display:inline-block;
+			width:200px;
+			line-height: 50px;
+			margin:5px;
+			text-align: center;
+			color:#333;
+			background-color: #ccc;
+			font-size: 14px;
+		}
+  </style>
+</head>
+<body>
+<div style="background-color:#f00">
+		<span draggable="true">
+			1-LiNong
+		</span>
+		<span draggable="true">
+			2-LiNong
+		</span>
+		<span draggable="true">
+			3-LiNong
+		</span>
+		<span draggable="true">
+			4-LiNong
+		</span>
+		<span draggable="true">
+			5-LiNong
+		</span>
+		<span draggable="true">
+			6-LiNong
+		</span>
+		<span draggable="true">
+			7-LiNong
+		</span>
+		<span draggable="true">
+			8-LiNong
+		</span>
+		<span draggable="true">
+			9-LiNong
+		</span>
+		<span draggable="true">
+			10-LiNong
+		</span>
+	</div>
+	<div style="background-color:#0f0">
+	</div>
+<script>
+var span  =document.querySelectorAll("span");
+		var dropTag = null;
+		for(var i in span){
+			span[i].ondragstart = function(event){
+        dropTag = event.target
+				console.log('--------------------------ondragstart-start');
+				console.log(event.target,event.type,event.target.innerText);
+				console.log('--------------------------ondragstart-end');
+			}
+		}
+		document.querySelectorAll("div")[1].ondragover = function(event){
+			event.preventDefault() ;
+			if(document.querySelectorAll("div")[1].ondragoverTag){
+				clearTimeout(document.querySelectorAll("div")[1].ondragoverTag);
+				document.querySelectorAll("div")[1].ondragoverTag=null;
+			}
+			document.querySelectorAll("div")[1].ondragoverTag = setTimeout(function(){
+				console.log('--------------------------ondragover-start');
+				console.log(event.target,event.type,event.target.innerText);
+				console.log('--------------------------ondragover-end');
+			},1000);
+		}
+		document.querySelectorAll("div")[1].ondrop = function(event){
+			event.preventDefault() 
+			console.log('--------------------------ondrop-start');
+			console.log(event.target,event.type,event.target.innerText);
+      this.appendChild(dropTag);
+			console.log('--------------------------ondrop-end');
+		}
+</script>
+</body>
+</html>

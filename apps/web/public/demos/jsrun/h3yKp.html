@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vueRouter多组件传参方式</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="h3yKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <h1>Hello App!</h1>
+  <p>
+    <router-link to="/foo">Go to Foo</router-link>
+    <router-link to="/bar">Go to Bar</router-link>
+  </p>
+  <router-view></router-view>
+</div>
+<script>
+const Foo = { 
+	template: '<div>foo {{baseConfig}}</div>',
+  props:{
+    baseConfig: {
+      type: Object,
+      default: {}
+    }
+  } 
+}
+const Bar = { 
+	template: '<div>bar {{baseConfig}}</div>',
+  props:{
+    baseConfig: {
+      type: Object,
+      default: {}
+    }
+  } 
+}
+
+const routes = [
+  { path: '/foo', component: Foo, props: {baseConfig: {a:1}} },
+  { path: '/bar', component: Bar, props: {baseConfig: {b:1}} }
+]
+const router = new VueRouter({
+  routes
+})
+const app = new Vue({
+  router
+}).$mount('#app')
+</script>
+</body>
+</html>

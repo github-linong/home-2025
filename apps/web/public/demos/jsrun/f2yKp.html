@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue 权限控制</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="f2yKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- <script src="https://unpkg.com/vue/dist/vue.js"></script> -->
+<!-- <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script> -->
+<div id="app">
+  <div>
+    <h3>全量菜单</h3>
+    <router-link to="/"> to="/"</router-link>
+    <router-link to="/a">to="/a"</router-link>
+    <router-link to="/b">to="/b"</router-link>
+    <router-link to="/c">to="/c"</router-link>
+    <router-link to="/d">to="/d"</router-link>
+  </div>
+  <div>
+    <h3>当前用户菜单 <button @click="switchUser">switchUser</button></h3> 
+    <router-link :to="item.url" v-for="item in user.sso"> {{item.url}} </router-link>
+  </div>
+  <div>
+    <h3>视口</h3>
+    <router-view></router-view>
+  </div>
+</div>
+<script>
+arr = [
+  {
+    name: '用户1',
+    sso: [
+      {url: '/a', rank: true},//有权限
+      {url: '/b', rank: true},//有权限
+      {url: '/c', rank: false},//有权限
+    ]
+  },
+  {
+    name: '用户2',
+    sso: [
+      {url: '/a', rank: true},//有权限
+    ]
+  }
+]
+const a = { template: '<div>a</div>' }
+const b = { template: '<div>b</div>' }
+const c = { template: '<div>c</div>' }
+const defaultView = { template: '<div>defaultView</div>' }
+const routes = [
+  { path: '/', component: defaultView },
+  { path: '/a', component: a },
+  { path: '/b', component: b },
+  { path: '/c', component: c },
+]
+const router = new VueRouter({
+  routes 
+})
+router.beforeEach(function(to, from, next){
+  console.log(to,from);
+  if(to.path == '/'){
+		// 首页不判断权限    
+    return next();
+  }else{
+		// 判断to.path的权限  
+    var isRank = vm.user.sso.some(v=>v.url == to.path && v.rank);//存在菜单，并且有权限
+    if(isRank){
+      return next()
+    }else{
+      return next('/')
+    }
+  }
+})
+vm=new Vue({
+  el: '#app',
+  router,
+  data(){
+    return {
+      user:arr[0]
+    };
+  },
+  methods:{
+    switchUser(){
+      if(this.user == arr[0]){
+        this.user = arr[1]
+      }else{
+        this.user = arr[0]
+      }
+    }
+  }
+})
+</script>
+</body>
+</html>

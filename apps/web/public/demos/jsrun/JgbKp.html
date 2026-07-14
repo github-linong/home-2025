@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://element.eleme.cn/#/zh-CN/component/tooltip</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="JgbKp" />
+  <style>
+  .box {
+    width: 400px;
+  }
+.text-wrap{
+  width: calc(100vw - 200px)
+}
+.tooltip-wrap{
+  transform: translateX(30px)
+}
+  </style>
+</head>
+<body>
+<!-- import CSS -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- import Vue before Element -->
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+<div id="app">
+    <div>
+      <el-tooltip class="item"  effect="dark" content="Right Top 提示文字" placement="right-start">
+        <el-button>右上</el-button>
+      </el-tooltip>
+    </div>
+    <div>
+      <el-tooltip class="item" effect="dark" content="Right Center 提示文字" placement="right">
+        <el-button>右边</el-button>
+      </el-tooltip>
+    </div>
+    <div>
+      <el-tooltip class="item" effect="dark" content="Right Bottom 提示文字" placement="right-end">
+        <el-button>右下</el-button>
+      </el-tooltip>
+    </div>
+    <div>
+      <el-tooltip placement="right">
+        <div slot="content">多行信息<br/>第二行信息</div>
+        <el-button>Top center</el-button>
+      </el-tooltip>
+    </div>
+    <div>
+      <el-tooltip placement="right" class="tooltip-wrap">
+        <div slot="content"  class="text-wrap tooltip-wrap">多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息多行信息</div>
+        <el-button>right center</el-button>
+      </el-tooltip>
+    </div>
+</div>
+<script>
+new Vue({
+  el: '#app'
+})
+</script>
+</body>
+</html>

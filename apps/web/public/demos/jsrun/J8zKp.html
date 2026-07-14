@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>图片旋转 demo</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="J8zKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div class="wrap">
+    <div><img src="http://www.lilnong.top/static/img/avator/avator-14.jpg"></div>
+    <div><img src="http://www.lilnong.top/static/img/avator/avator-13.jpg"></div>
+    <div><img src="http://www.lilnong.top/static/img/avator/avator-12.jpg"></div>
+    <div><img src="http://www.lilnong.top/static/img/avator/avator-11.jpg"></div>
+    <div><img src="http://www.lilnong.top/static/img/avator/avator-10.jpg"></div>
+</div>
+<style>
+    *{padding: 0;margin: 0;}
+    .wrap{
+        background: rgba(100,100,100,.2);
+        height: 400px;
+        width: 400px;
+        border-radius: 400px;
+        position: relative;
+        animation: rotate 3s linear infinite;
+    }
+    div > div{
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 100px;
+        height: 100px;
+        transform: translate(-50%,-50%);
+    }
+    div > div:nth-child(1){
+        transform: translate(-50%,-50%) rotate(0deg) translate(-125px);
+    }
+    div > div:nth-child(2){
+        transform: translate(-50%,-50%) rotate(72deg) translate(-125px);
+    }
+    div > div:nth-child(3){
+        transform: translate(-50%,-50%) rotate(144deg) translate(-125px);
+    }
+    div > div:nth-child(4){
+        transform: translate(-50%,-50%) rotate(216deg) translate(-125px);
+    }
+    div > div:nth-child(5){
+        transform: translate(-50%,-50%) rotate(288deg) translate(-125px);
+    }
+    img{
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 400px;
+        animation: rotate 3s linear infinite;
+        animation-direction: reverse;
+    }
+    @keyframes rotate{
+        0%{transform: rotate(0deg)}
+        100%{transform: rotate(360deg)}
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

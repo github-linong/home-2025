@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>网页暗水印的研究与实践</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="avDKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- <h1>Image Watermarking</h1> -->
+	<!-- <button id="processButton">Process Images</button> -->
+	<!-- <input type="file" id="imageInput" accept="image/*" onchange="loadImage(event, 'im')">
+    <input type="file" id="markInput" accept="image/*" onchange="loadImage(event, 'mark')">
+    <div>
+        <canvas id="originalImageCanvas"></canvas>
+        <canvas id="watermarkCanvas"></canvas>
+        <canvas id="encodedWatermarkCanvas"></canvas>
+        <canvas id="spectrumOriginalImageCanvas"></canvas>
+        <canvas id="spectrumWatermarkedImageCanvas"></canvas>
+        <canvas id="watermarkedImageCanvas"></canvas>
+        <canvas id="residualCanvas"></canvas>
+        <canvas id="extractedWatermarkCanvas"></canvas>
+    </div> -->
+	<!-- <script>
+        let im = null;
+        let mark = null;
+        const alpha = 1;
+
+        function onOpenCvReady() {
+            console.log('OpenCV.js is ready.');
+        }
+
+        function loadImage(event, type) {
+            let file = event.target.files[0];
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                let imgElement = new Image();
+                imgElement.onload = function() {
+                    let canvas = document.createElement('canvas');
+                    let ctx = canvas.getContext('2d');
+                    canvas.width = imgElement.width;
+                    canvas.height = imgElement.height;
+                    ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+                    let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    let mat = cv.matFromImageData(imgData);
+                    if (type === 'im') {
+                        im = mat;
+                        cv.imshow('originalImageCanvas', im);
+                    } else if (type === 'mark') {
+                        mark = mat;
+                        cv.imshow('watermarkCanvas', mark);
+                    }
+                };
+                imgElement.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function processImages() {
+            if (im === null || mark === null) {
+                alert("Please load both the original image and the watermark.");
+                return;
+            }
+            top.console.log('1');
+            let imsize = im.size();
+            let TH = new cv.Mat.zeros(Math.floor(imsize.height * 0.5), imsize.width, im.type());
+            let TH1 = TH.clone();
+            mark.copyTo(TH1.roi(new cv.Rect(0, 0, mark.cols, mark.rows)));
+top.console.log('2');
+            let M = cv.matFromArray(Math.floor(imsize.height * 0.5), 1, cv.CV_32S, Array.from({length: Math.floor(imsize.height * 0.5)}, (_, i) => i));
+            cv.randShuffle(M);
+            let N = cv.matFromArray(imsize.width, 1, cv.CV_32S, Array.from({length: imsize.width}, (_, i) => i));
+            cv.randShuffle(N);
+top.console.log('3');
+            for (let i = 0; i < Math.floor(imsize.height * 0.5); i++) {
+                for (let j = 0; j < imsize.width; j++) {
+                    TH.ucharPtr(i, j).set(TH1.ucharPtr(M.intAt(i), N.intAt(j)));
+                }
+            }
+top.console.log('4');
+            let mark_ = new cv.Mat.zeros(imsize.height, imsize.width, im.type());
+            TH.copyTo(mark_.roi(new cv.Rect(0, 0, imsize.width, Math.floor(imsize.height * 0.5))));
+top.console.log('5');
+            for (let i = 0; i < Math.floor(imsize.height * 0.5); i++) {
+                for (let j = 0; j < imsize.width; j++) {
+                    mark_.ucharPtr(imsize.height - 1 - i, imsize.width - 1 - j).set(TH.ucharPtr(i, j));
+                }
+            }
+top.console.log('6');
+            cv.imshow('encodedWatermarkCanvas', mark_);
+top.console.log('7');
+            let FA = new cv.Mat();
+            cv.dft(im, FA);
+            cv.imshow('spectrumOriginalImageCanvas', FA);
+top.console.log('8');
+            let FB = new cv.Mat();
+            cv.add(FA, mark_.mul(alpha), FB);
+            cv.imshow('spectrumWatermarkedImageCanvas', FB);
+top.console.log('9');
+            let FAO = new cv.Mat();
+            cv.idft(FB, FAO, cv.DFT_SCALE | cv.DFT_REAL_OUTPUT);
+            cv.imshow('watermarkedImageCanvas', FAO);
+top.console.log('10');
+            let RI = new cv.Mat();
+            cv.subtract(FAO, im, RI);
+            cv.imshow('residualCanvas', RI);
+top.console.log('11');
+            let FA2 = new cv.Mat();
+            cv.dft(FAO, FA2);
+top.console.log('12');
+            let G = new cv.Mat();
+            cv.subtract(FA2, FA, G);
+            G.convertTo(G, cv.CV_32F, 1.0 / alpha);
+top.console.log('13');
+            let GG = new cv.Mat.zeros(Math.floor(imsize.height * 0.5), imsize.width, im.type());
+            for (let i = 0; i < Math.floor(imsize.height * 0.5); i++) {
+                for (let j = 0; j < imsize.width; j++) {
+                    GG.ucharPtr(M.intAt(i), N.intAt(j)).set(G.ucharPtr(i, j));
+                }
+            }
+top.console.log('14');
+            for (let i = 0; i < Math.floor(imsize.height * 0.5); i++) {
+                for (let j = 0; j < imsize.width; j++) {
+                    GG.ucharPtr(imsize.height - 1 - i, imsize.width - 1 - j).set(GG.ucharPtr(i, j));
+                }
+            }
+top.console.log('15');
+            cv.imshow('extractedWatermarkCanvas', GG);
+        }
+
+        document.getElementById('processButton').addEventListener('click', processImages);
+    </script> -->
+	<div>
+		<input type="file" id="input" accept="image/*">
+    <div>
+        <img id="oriImg" />
+        <img id="watermarkImg" />
+        <img id="decodeWatermarkImg" />
+    </div>
+    <script>
+        async function addWatermark(imageSrc, watermarkText) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.src = imageSrc;
+            return new Promise((resolve)=>{
+                img.onload = async function() {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    ctx.font = '48px serif';
+                    ctx.rotate(-0.4)
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(watermarkText, canvas.width / 2, canvas.height / 2);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.02)';
+                    ctx.fillText(watermarkText, canvas.width / 2 + 20, canvas.height / 2+20);
+                    canvas.toBlob(resolve);
+                    decodeWatermark(canvas)
+                    canvas.toBlob((blob)=>{
+decodeWatermarkImg.src = URL.createObjectURL(blob)
+                    });
+                };
+            })
+        }
+    </script>
+    <script>
+        const decodeWatermark = (
+            canvas,
+            colorKey = 3,
+            otherColorValue = 0,//0,
+            flag,
+        ) => {
+        const ctx = canvas.getContext('2d');
+        const originalData = ctx.getImageData(
+            0,
+            0,
+            ctx.canvas.width,
+            ctx.canvas.height,
+        );
+        const data = originalData.data;
+        for (let i = 0; i < data.length; i++) {
+            // 找到像素点的颜色通道值，由下标 i % 4 的值确定：0 -> R，1 -> G，2 -> B，3 -> A
+            if (i % 4 == colorKey) {
+            if (data[i] % 2 == 0) {
+                // 如果色值为偶数
+                data[i] = flag ? 255 : 0;
+            } else {
+                // 如果色值为奇数
+                data[i] = flag ? 0 : 255;
+            }
+            } else if (i % 4 == 3) {
+            // 透明度不作处理
+            continue;
+            } else {
+            // 关闭其他色值
+            if (otherColorValue !== undefined) {
+                data[i] = otherColorValue;
+            }
+            }
+        }
+        ctx.putImageData(originalData, 0, 0);
+        };
+    </script>
+    <script>
+        input.onchange = async (e) => {
+            const target = e?.target;
+            const file = e?.target?.files?.[0]
+            if(file){
+                oriImg.src = URL.createObjectURL(file)
+                watermarkImg.src = URL.createObjectURL(await addWatermark(oriImg.src, 'lilnong.top'))
+            }
+        }
+    </script>
+    <style>
+        #oriImg{
+            max-width: 300px;
+            max-height: 300px;
+        }
+    </style>
+</div>
+<script>
+
+</script>
+</body>
+</html>

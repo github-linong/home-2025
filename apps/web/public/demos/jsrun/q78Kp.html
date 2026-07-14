@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue3 测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="q78Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- <script src="https://unpkg.com/vue@next"></script> -->
+
+<!-- <script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script> -->
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/3.1.5/vue.global.js"></script>
+<!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.1.5/vue.esm-browser.js"></script> -->
+<div id="app">
+
+    {{0}}
+
+    <br>
+    {{state}}
+    <div id="app1-1" id="app1-2"></div>
+    <div id="app1-2" id="app1-1" ></div>
+
+    <div id="sf_q_1010000040574138">
+        <div class="sf_q_1010000040574138_item" 
+            :data-type="item.type" 
+            :data-text="item.text" 
+            v-for="item in sf_q_1010000040574138">
+            <!-- {{item.text}} -->
+        </div>
+    </div>
+</div>
+<style>
+    /* .sf_q_1010000040574138_item{border: 1px solid #ff0;margin: 10px;width: 3em;margin-left: 3em;background: #f00;}
+    .sf_q_1010000040574138_item[data-type="1"]{margin:0;background:#0f0} */
+    .sf_q_1010000040574138_item{border-right: 6px solid #000;width: 3em;text-align: center;}
+    .sf_q_1010000040574138_item:before{content: attr(data-text);background: #f00;display: block;border: 2px solid #0f0;}
+    .sf_q_1010000040574138_item[data-type="1"]:before{transform: translate(calc(100% + 6px),0);background: #00f;color: #fff;}
+</style>
+<script>
+    console.log(app.children[0].id)
+    console.log(app.children[1].id)
+</script>
+
+<div class="flex">
+    <div class="before"></div>
+    <div class="context"></div>
+    <div class="after"></div>
+</div>
+
+<script>
+    let vm = Vue.createApp({
+        setup(){
+            // let state = ({
+            let state = Vue.reactive({
+                state: 1,
+                sf_q_1010000040574138: [
+                    {
+                        type:0, // * 0代表红，1代表蓝
+                        text:1
+                    },
+                    {
+                        type:0, // * 0代表红，1代表蓝
+                        text:2
+                    },
+                    {
+                        type:0, // * 0代表红，1代表蓝
+                        text:3
+                    },
+                    {
+                        type:1, // * 0代表红，1代表蓝
+                        text:1
+                    },
+                    {
+                        type:0, // * 0代表红，1代表蓝
+                        text:1
+                    },
+                ],
+            })
+            setInterval(()=>{
+                state.state++;
+            },300)
+            Vue.onMounted(top.console.log.bind(top.console, 'onMounted'))
+            Vue.onUnmounted(top.console.log.bind(top.console, 'onUnmounted'))
+            return {
+                ...Vue.toRefs(state)
+            }
+        }
+    })
+    top.console.log(vm);
+    vm.mount('#app')
+    // setTimeout(()=>{
+    //     vm.unmount()
+    // }, 5000)
+    // setTimeout(()=>{
+    //     vm.mount('#app')
+    // }, 9000)
+</script>
+<script>
+
+</script>
+</body>
+</html>

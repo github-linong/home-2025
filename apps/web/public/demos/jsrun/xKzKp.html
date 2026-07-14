@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>去抖（后置）</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="xKzKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div>
+    width: <span id="widthEl"></span>
+    <br>
+    now: <span id="nowEl"></span>
+</div>
+<style>
+    * {
+        font-size: 64px;
+    }
+</style>
+<script>
+    // window.onresize = function(){
+    //     widthEl.innerText = window.innerWidth;
+    // }
+    // 去抖
+    d = function(fun){
+        let timeout = 0;
+        return function(...args){
+            clearTimeout(timeout);
+            timeout = setTimeout(fun.bind(this, ...args), 500);
+        }
+    }
+    // window.onresize = d(function(){
+    //     widthEl.innerText = window.innerWidth;
+    // })
+    
+    // 节流
+    thro = function(fun){
+        let timeout = 0;
+        return function(...args){
+            if(timeout) return;
+            timeout = setTimeout(()=>timeout=0, 500);
+            fun.call(this, ...args)
+        }
+    }
+    window.onresize = thro(function(){
+        widthEl.innerText = window.innerWidth;
+        nowEl.innerText = Date.now();
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

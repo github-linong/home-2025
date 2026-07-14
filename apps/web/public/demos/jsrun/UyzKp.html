@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue 虚拟化</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="UyzKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<link rel="stylesheet" href="//www.lilnong.top/static/css/vue-virtual-scroller.css"/>
+<!-- http://www.lilnong.top/static/css/vue-virtual-scroller.css -->
+<!-- <script src="vue.js"></script> -->
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<script src="//www.lilnong.top/static/js/vue-virtual-scroller.min.js"></script>
+
+
+<div id="app1">
+    <style type="text/css">
+		.scroller {
+		  height: 100%;
+		}
+
+		.user {
+		  height: 32%;
+		  padding: 0 12px;
+		  display: flex;
+		  align-items: center;
+		}
+		#app{
+		  height: 200px
+		}
+	</style>
+	<p>
+		要注意vue版本。
+	</p>
+	<div id="app">
+	  <Recycle-Scroller
+        class="scroller"
+        :items="list"
+        :item-size="32"
+        key-field="id"
+        v-slot="{ item }"
+    >
+        <div class="user">
+        {{ item.name }}
+        </div>
+    </Recycle-Scroller>
+	</div>
+</div>
+<script>
+    // Vue.component('RecycleScroller', VueVirtualScroller.RecycleScroller)
+
+		// Vue.component('abcdef', VueVirtualScroller.RecycleScroller)
+		top.vm = vm = new Vue({
+		  el: '#app',
+		  data:{
+		    list: new Array(1000).fill(1).map((v,i)=>({name: '1'+i,id:i})),
+		    author: 'lilnong.top'
+		  }
+		})
+</script>
+<script>
+
+</script>
+</body>
+</html>

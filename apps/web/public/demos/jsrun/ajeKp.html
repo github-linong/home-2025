@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000041595452</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="ajeKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div>
+    优化前：<input id="input" type="">
+</div>
+<div>
+    优化后：<input id="input2" type="">
+</div>
+<script>
+    input.oninput = (e)=>{
+            // 闪闪发光正则
+        e.target.value = e.target.value.replace(/[^\d.]/g,"")
+            .replace(/\.{2,}/g,".")
+            .replace(".","$#$").replace(/\./g,"").replace("$#$",".")
+            .replace(/^(\-)*(\d+)\.(\d\d).*$/,'$1$2.$3');
+    }
+</script>
+<script>
+    input2.oninput = (e)=>{
+        var start = e.target.selectionStart;
+        var startBeforeRepalceNum = 0;
+        this.phoneerrmsg = '';   //验证输入的提示信息
+        let filtered = e.target.value.replace(/[^\d.]/g, function(s, idx){
+            if(idx < start){
+                startBeforeRepalceNum++;
+            }
+            return ''
+        })
+        top.console.log(start, startBeforeRepalceNum)
+        if(this.value8 != filtered){
+            this.value8 = filtered;
+        }
+        e.target.value = filtered;
+        e.target.setSelectionRange(start-startBeforeRepalceNum,start-startBeforeRepalceNum)
+    }
+</script>
+<script>
+
+</script>
+</body>
+</html>

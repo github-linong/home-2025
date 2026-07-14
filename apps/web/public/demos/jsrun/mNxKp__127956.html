@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>需在移动端执行</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="mNxKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<input type="file" id="image-upload" accept="image/*">
+    <canvas id="mosaic-canvas" style="max-width: 100%; max-height: 80vh;"></canvas>
+    <button id="apply-mosaic">Apply Mosaic</button>
+    <script>
+        const canvas = document.getElementById('mosaic-canvas');
+        const ctx = canvas.getContext('2d');
+        const imageUpload = document.getElementById('image-upload');
+        const applyMosaicButton = document.getElementById('apply-mosaic');
+
+        let image = new Image();
+        image.src="https://cors-www.lilnong.top/static/img/wx-linong.jpg?1";
+        image.crossOrigin='anonymous';
+        let mosaicSize = 10; // 调整马赛克块的大小
+
+        // 当选择图片后，加载图片到canvas上
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                image.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // 当图片加载完成后，绘制到canvas上
+        image.onload = () => {
+            canvas.width = image.width;
+            canvas.height = image.height;
+            ctx.drawImage(image, 0, 0);
+        };
+
+        // 应用马赛克效果
+        applyMosaicButton.addEventListener('click', () => {
+            applyMosaic();
+        });
+
+        function applyMosaic() {
+            for (let y = 0; y < canvas.height; y += mosaicSize) {
+                for (let x = 0; x < canvas.width; x += mosaicSize) {
+                    const pixel = ctx.getImageData(x, y, mosaicSize, mosaicSize);
+                    ctx.putImageData(pixel, x+6, y+1);
+                }
+            }
+        }
+    </script>
+<script>
+
+</script>
+</body>
+</html>

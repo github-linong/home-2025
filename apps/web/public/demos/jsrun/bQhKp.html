@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>二次确认switch</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="bQhKp" />
+  <style>
+.switch {display:inline-block;width: 30px;height: 16px;line-height: 16px;border-radius: 16px;vertical-align: middle;border: 1px solid #cdcdcd;background-color: #cdcdcd;position: relative;cursor: pointer;-webkit-user-select: none;user-select: none;transition: all .2s ease-in-out}
+.switch-inner {color: #fff;font-size: 12px;/* position: absolute; */left: 15px}
+.switch-inner i {width: 12px;height: 12px;text-align: center}
+.switch:after {content: "";width: 12px;height: 12px;border-radius: 12px;background-color: #fff;position: absolute;left: 1px;top: 1px;cursor: pointer;transition: left .2s ease-in-out,width .2s ease-in-out}
+.switch:active:after {width: 18px}
+.switch:focus {box-shadow: 0 0 0 2px rgba(45,140,240,.2);outline: 0}
+.switch:focus:hover {box-shadow: none}
+.switch-checked {border-color: #2d8cf0;background-color: #2d8cf0}
+.switch-checked .switch-inner {left: 8px}
+.switch-checked:after {left: 15px}
+.switch-checked:active:after {left: 9px}
+.switch-disabled {cursor: not-allowed;background: #f3f3f3;border-color: #f3f3f3}
+.switch-disabled:after {background: #ccc;cursor: not-allowed}
+.switch-disabled .switch-inner {color: #ccc}
+</style>
+  </style>
+</head>
+<body>
+<div id="app">
+  
+  <!-- <span :class="['switch', 'switch-checked', 'switch-disabled']" @click="toggle" @keydown.space="toggle"> -->
+  <span :class="['switch', currentValue?'switch-checked':'']" @click="toggle" @keydown.space="toggle">
+      <!-- <input type="hidden" :name="name" :value="currentValue"> -->
+      <span :class="['switch-inner']">
+          <slot name="open" v-if="currentValue"></slot>
+          <slot name="close" v-if="!currentValue"></slot>
+      </span>
+  </span>
+</div>
+
+<span id="jquery" class="switch switch-checked"><span class="switch-inner"></span></span>
+<script>
+new Vue({
+  el: '#app',
+  data(){
+  	return {
+      currentValue: true
+    }
+  },
+  methods:{
+    toggle(){
+      var _ = confirm(this.currentValue?'将要关闭该功能':'将要开启该功能');
+      console.log(_);
+      if(_){
+        this.currentValue = !this.currentValue
+      }
+    }
+  }
+})
+
+
+document.querySelector('#jquery').addEventListener('click', function(e){
+  var _tag = this.classList.contains('switch-checked')
+  var _ = confirm(_tag?'将要关闭该功能':'将要开启该功能');
+  if(_){
+    this.classList.toggle('switch-checked')
+  }
+})
+</script>
+</body>
+</html>

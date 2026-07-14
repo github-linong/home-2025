@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000041671643</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="kLQKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div class="swiper">
+        <div class="swiper-item is-active">
+            <img src="http://www.lilnong.top/static/img/big/1.jpg" alt="">
+        </div>
+        <div class="swiper-item">
+            <img src="http://www.lilnong.top/static/img/big/2.jpg" alt="">
+        </div>
+        <div class="swiper-item">
+            <img src="http://www.lilnong.top/static/img/big/3.jpg" alt="">
+        </div>
+    </div>
+</div>
+<style>
+    /* @keyframes fadein {
+        from {opacity: 0}
+        to {opacity: 1}
+    }
+
+    @keyframes fadeout {
+        from {opacity: 1}
+        to {opacity: 0}
+    } */
+    .swiper{
+        position: relative;
+    }
+    .swiper-item{
+        position: absolute;
+        opacity: 0;
+        transition: opacity 1s;
+    }
+    .swiper-item.is-active{
+        opacity: 1;
+    }
+</style>
+<script>
+    setInterval(()=>{
+        el = document.querySelector('.is-active');
+        elNext = el.nextElementSibling
+        if(!elNext){
+            elNext = document.querySelector('.swiper-item')
+        }
+        el.classList.remove('is-active')
+        elNext.classList.add('is-active')
+    }, 1500)
+</script>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,418 @@
+[
+  {
+    "slug": "jsrun-BdIKp",
+    "title": "ECharts 径向决策树（预算超降）",
+    "description": "用 Vue 2 编辑各地区科目的预算与支出，ECharts tree（radial）按超降比例着色并持久化。",
+    "tags": [
+      "ECharts",
+      "Vue",
+      "tree",
+      "可视化",
+      "localStorage"
+    ],
+    "intro": "演示将「事业部门 → 地区 → 科目」三级数据映射为 ECharts 径向树图。表格中修改预算/实际支出后，计算超降比例（budget/expenses - 1），超额（负值）标红，否则青色。数据写入 localStorage（键 www.lilnong.top-company），树底可用背景图并根据整体超降切换红色滤镜。",
+    "steps": [
+      "打开页面，查看径向树与地区/科目汇总表",
+      "在科目行修改 budget、expenses 数字输入",
+      "等待约 1 秒深监听汇总后，再点 setOptions 刷新树",
+      "确认超降为负时树节点与底部底座呈现红色",
+      "刷新页面，确认 localStorage 恢复了上次数据"
+    ],
+    "docs": [
+      {
+        "label": "ECharts Tree 系列",
+        "url": "https://echarts.apache.org/zh/option.html#series-tree"
+      },
+      {
+        "label": "Vue 2 侦听器",
+        "url": "https://v2.cn.vuejs.org/v2/api/#watch"
+      }
+    ],
+    "notes": "占比字段 expenses_mix 未在 watch 中赋值；初始化会生成 6 地区 × 14 科目的随机数据（若无缓存）。"
+  },
+  {
+    "slug": "jsrun-7NxKp",
+    "title": "Canvas 笔刷马赛克",
+    "description": "在图片上按住拖动，用 Canvas 从原图随机取样绘制马赛克块。",
+    "tags": [
+      "Canvas",
+      "马赛克",
+      "图像处理",
+      "touch"
+    ],
+    "intro": "图片上方叠一层 canvas，按下鼠标/触摸后在移动时持续绘制。每个马赛克块边长为 20px，源区域取自原图随机位置，目标位置跟指针。支持 mousedown/mousemove 与 touchstart/touchmove。",
+    "steps": [
+      "等待图片加载完成（canvas 尺寸对齐图片）",
+      "在图上按住左键或手指开始涂抹",
+      "拖动观察随机纹理马赛克块出现",
+      "松开后停止绘制",
+      "改代码中 mosaicSize 可调整块大小"
+    ],
+    "docs": [
+      {
+        "label": "Canvas drawImage",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/drawImage"
+      }
+    ],
+    "notes": "迁移后丢失了源文件中 #mosaic-overlay 的 absolute 叠层样式；坐标用 clientX/Y，未减容器偏移，涂抹位置可能不准。"
+  },
+  {
+    "slug": "jsrun-PJNKp",
+    "title": "CSS 局部光照（径向渐变跟随鼠标）",
+    "description": "设置风格卡片上用 radial-gradient 与 CSS 变量实现聚光灯式局部高光。",
+    "tags": [
+      "CSS",
+      "radial-gradient",
+      "CSS变量",
+      "UI效果"
+    ],
+    "intro": "页面结构为黑色盒子上的「系统」设置项与绝对定位 .effect 层。原意是：mousemove 更新 --pt-x/--pt-y，effect 用 radial-gradient(circle at …) 在指针处形成白色光晕。半透明卡片边框/背景配合光晕，做出局部被照亮的观感（对应 SegmentFault 问题）。",
+    "steps": [
+      "对照标题与 .effect 层理解局部光照意图",
+      "在完整实现中移动鼠标，观察光斑跟随",
+      "查看 item 的半透明 border/background 如何「吃」到光",
+      "用开发者工具改 --pt-x/--pt-y 验证径向渐变圆心",
+      "阅读源站问题了解需求背景"
+    ],
+    "docs": [
+      {
+        "label": "SegmentFault 原问题",
+        "url": "https://segmentfault.com/q/1010000039359551"
+      },
+      {
+        "label": "CSS radial-gradient",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/gradient/radial-gradient"
+      },
+      {
+        "label": "CSS 自定义属性",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/Using_CSS_custom_properties"
+      }
+    ],
+    "notes": "当前 public HTML 仅剩结构，样式与 mousemove 脚本在迁移中丢失，页面上看不到光照；完整逻辑在 snippets/PJNKp/source.html。"
+  },
+  {
+    "slug": "jsrun-5bTKp",
+    "title": "Flex 蛇形走位布局",
+    "description": "把列表按行切分后，奇数行用 flex 反向排列，模拟蛇形折返顺序。",
+    "tags": [
+      "Flex",
+      "Vue",
+      "布局",
+      "蛇形"
+    ],
+    "intro": "Vue 将 1–18 拆成「首行 1 个 + 之后每行 4 个」。.list 使用 flex-wrap；:nth-child(2n+1) 设为 row-reverse（首行强制 row）。伪元素 after 标「左/右/下/上」提示折返方向，演示纯 CSS 控制阅读顺序的蛇皮走位。",
+    "steps": [
+      "打开页面查看多行灰色格子与方向文字",
+      "对照 splitList：首行 1 项，其后每行最多 4 项",
+      "确认奇数行视觉顺序与偶数行相反",
+      "修改 list 长度（如 20）观察换行与末项「上」标记",
+      "在开发者工具切换 flex-direction 验证机制"
+    ],
+    "docs": [
+      {
+        "label": "flex-direction",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/flex-direction"
+      },
+      {
+        "label": ":nth-child",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/:nth-child"
+      }
+    ]
+  },
+  {
+    "slug": "jsrun-fReKp",
+    "title": "Vue keep-alive 动态 include 缓存",
+    "description": "按路由访问把组件名写入 include 列表，从列表删除即可销毁对应缓存。",
+    "tags": [
+      "Vue",
+      "keep-alive",
+      "vue-router",
+      "缓存"
+    ],
+    "intro": "左侧链到 /a、/b、/c，右侧 keep-alive :include=\"list\" 包裹 router-view。组件名为 ComponentA/B/C，模板显示当前时间戳。路由变化时若组件名不在 list 则 push；点列表旁 x 可 splice 移除，从而失去缓存。验证：先访 A、B 再切换，时间不变即已缓存；删 A 后再进 A 会刷新时间。",
+    "steps": [
+      "点 Go to a，记录右侧时间戳",
+      "再进 b、切回 a，确认时间未变（已缓存）",
+      "在 list 旁点 x 删除 ComponentA",
+      "再次进入 a，确认时间更新（缓存已清）",
+      "对 b、c 重复验证 include 白名单效果"
+    ],
+    "docs": [
+      {
+        "label": "keep-alive include",
+        "url": "https://v2.cn.vuejs.org/v2/api/#keep-alive"
+      },
+      {
+        "label": "Vue Router",
+        "url": "https://v3.router.vuejs.org/zh/"
+      }
+    ],
+    "notes": "初次进入时 list 仍为空，该次渲染未必入缓存；再次进入同路由才会明显体现 include。"
+  },
+  {
+    "slug": "jsrun-468Kp",
+    "title": "SortableJS 与 Vue 列表同步排序",
+    "description": "Sortable 拖拽 ul 项后，在 onEnd 中 splice 同步 Vue 的 list 数组。",
+    "tags": [
+      "SortableJS",
+      "Vue",
+      "拖拽排序",
+      "交互"
+    ],
+    "intro": "创建 10 条带 id/val/checked 的数据渲染列表。mounted 时对 #sortWrap 调用 Sortable.create（delay 100、animation 150 等）。拖拽结束后用 newIndex/oldIndex 对 list 做 splice 重排，下方 JSON 实时反映顺序。点击项会将 checked 置 true。",
+    "steps": [
+      "拖动列表项改变顺序",
+      "观察下方 JSON 数组顺序是否同步",
+      "点击某项，确认 checked 变为 true",
+      "尝试快速拖拽，感受 delay:100",
+      "在控制台打印 list 核对 id 序列"
+    ],
+    "docs": [
+      {
+        "label": "SortableJS",
+        "url": "https://github.com/SortableJS/Sortable"
+      },
+      {
+        "label": "Sortable onEnd",
+        "url": "https://github.com/SortableJS/Sortable#event-object-demo"
+      }
+    ]
+  },
+  {
+    "slug": "jsrun-JWLKp",
+    "title": "Vue.Draggable 勾选批量拖拽",
+    "description": "左侧源列表勾选多项后拖入目标列表，一次把所有勾选项批量放入。",
+    "tags": [
+      "Vue.Draggable",
+      "Sortable",
+      "批量拖拽",
+      "Vue"
+    ],
+    "intro": "三列：源 list（pull:clone、不可 put）、目标 list1/list2（同 group people）。源项可勾选；从源拖出时，change 回调把所有 checked 项一并 push 到 related 列表并取消勾选。moveHandle 记录拖拽上下文。标题虽写 jquery，实现核心是 Vue + Vue.Draggable。",
+    "steps": [
+      "在源列表勾选多个人名项",
+      "拖到 list1 或 list2 放下",
+      "确认所有勾选项都进入目标，且源勾选被清空",
+      "再试只拖一项对比行为",
+      "查看顶部 list/list1/list2 数据绑定"
+    ],
+    "docs": [
+      {
+        "label": "Vue.Draggable",
+        "url": "https://github.com/SortableJS/Vue.Draggable"
+      },
+      {
+        "label": "Sortable group",
+        "url": "https://github.com/SortableJS/Sortable#group-option"
+      }
+    ],
+    "notes": "当前 public HTML 未引入 Vue / Sortable / Vue.Draggable / ElementUI，直接打开会报错；完整依赖见 snippets/JWLKp。"
+  },
+  {
+    "slug": "jsrun-F6JKp",
+    "title": "面板内元素拖动与滚轮缩放",
+    "description": "在固定视口内拖动天气卡片，并用滚轮通过 transform:scale 缩放。",
+    "tags": [
+      "拖动",
+      "缩放",
+      "Vue",
+      "transform"
+    ],
+    "intro": "300×300 的 layoutView 内有绝对定位红色 draggable 块（示例城市天气文案）。mousedown + mousemove 改 left/top；在容器上监听 wheel，增减 screenNum（下限约 0.2）并设置 scale。按钮可强制 screenNum 为 1、2、0.5。边界限制相关代码被注释掉。",
+    "steps": [
+      "拖动红色方块在视口内移动",
+      "在视口上滚动滚轮放大/缩小",
+      "点 screenNum = 2 / 0.5 / 1 观察缩放",
+      "缩到约 0.2 时确认无法再缩小",
+      "打开控制台查看拖动时 screenNum 日志"
+    ],
+    "docs": [
+      {
+        "label": "CSS transform scale",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/transform-function/scale"
+      },
+      {
+        "label": "Element: wheel event",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/Element/wheel_event"
+      }
+    ]
+  },
+  {
+    "slug": "jsrun-9EVKp",
+    "title": "拖拽分割条调整侧栏宽度",
+    "description": "通过中间 resize 条拖动，动态改变 Element UI 菜单侧栏宽度（最小 200px）。",
+    "tags": [
+      "拖拽",
+      "侧栏",
+      "Element UI",
+      "布局"
+    ],
+    "intro": "左侧 el-menu 宽度绑定 detailWidth（初始 200），中间 5px 宽 #resize 捕获 mousedown，mousemove 用位移更新宽度；小于 200 强制回到 200，并短时提示「不能再缩放了」。右侧橙色 .box 占剩余空间。松开后清除 mousemove/mouseup。",
+    "steps": [
+      "按住中间细条向右拖，侧栏变宽",
+      "向左拖到不能再缩时看提示",
+      "松开后确认不再跟随鼠标",
+      "切换菜单展开项确认布局仍可用",
+      "在 Vue 数据中观察 detailWidth 变化"
+    ],
+    "docs": [
+      {
+        "label": "Element UI Menu",
+        "url": "https://element.eleme.cn/#/zh-CN/component/menu"
+      },
+      {
+        "label": "鼠标拖拽改宽思路",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/Element/mousemove_event"
+      }
+    ],
+    "notes": "页面只引入了 Element UI，未显式引入 Vue；若全局无 Vue，菜单与拖拽脚本无法运行。"
+  },
+  {
+    "slug": "jsrun-5r8Kp",
+    "title": "CSS 荡开涟漪动画",
+    "description": "多层圆形以错开延迟循环缩放淡出，衬托居中「琅琊榜」文字。",
+    "tags": [
+      "CSS动画",
+      "keyframes",
+      "涟漪",
+      "视觉"
+    ],
+    "intro": "300×300 容器内四个圆形绝对居中，蓝色线性渐变背景。各自 5.2s linear infinite 动画，延迟分别为 -3.9s、-2.6s、-1.3s、0s，形成连续荡开。keyframes 从 scale(0.4) opacity 0 到放大再淡出。文字在上层 z-index:11。",
+    "steps": [
+      "打开页面观察四层圆依次荡开",
+      "注意圆与文字叠层关系",
+      "在开发者工具暂停动画查看关键帧",
+      "修改 animation-delay 观察相位变化",
+      "将时长从 5.2s 改短验证节奏"
+    ],
+    "docs": [
+      {
+        "label": "CSS @keyframes",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/@keyframes"
+      },
+      {
+        "label": "animation",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation"
+      }
+    ]
+  },
+  {
+    "slug": "jsrun-PuzKp",
+    "title": "多图预览放大缩小与旋转",
+    "description": "弹层展示多张图，用 CSS transform 的 scale/rotate 做放大、缩小、重置、旋转。",
+    "tags": [
+      "Vue",
+      "图片预览",
+      "transform",
+      "交互"
+    ],
+    "intro": "点「传图片」把预设头像 URL 列表填入 showImgUrl 并显示操作钮。每张图可放大（multiples+=0.25，上限 2）、缩小（下限 1）、重置、旋转（degs-=90）。样式绑定 rotate()+scale()。虽引入 Cropper/jQuery，业务代码未调用 Cropper 实例。",
+    "steps": [
+      "点击「传图片」打开预览",
+      "对某张图点「放大1」多次，观察上限约 2 倍",
+      "点「缩小1」「重置1」「旋转」",
+      "点「关闭」隐藏弹层",
+      "确认空列表时显示「暂无数据」"
+    ],
+    "docs": [
+      {
+        "label": "CSS transform",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/transform"
+      },
+      {
+        "label": "Cropper.js（本页未实际使用）",
+        "url": "https://github.com/fengyuanchen/cropperjs"
+      }
+    ],
+    "notes": "标题含 cropper，但放大逻辑纯 CSS；外链图片依赖 cors-www.lilnong.top 是否可访问。"
+  },
+  {
+    "slug": "jsrun-MdJKp",
+    "title": "piexifjs 写入 EXIF Orientation",
+    "description": "把 Canvas 导出为 JPEG，用 piexifjs 分别写入 Orientation 1–8 并展示。",
+    "tags": [
+      "piexifjs",
+      "EXIF",
+      "Orientation",
+      "Canvas"
+    ],
+    "intro": "先在 canvas 画矩形与文字，再 toBlob 得到 JPEG。handleFileSelect 构造 0th/Exif/GPS 字段，设置 ImageIFD.Orientation，dump 后 insert 进 DataURL，再以带边框区块显示 Orientation 数字与结果图。连续生成 1 到 8 共八张对照。",
+    "steps": [
+      "打开页面自动生成 8 个结果块",
+      "核对每块标注的 Orientation 值为 1–8",
+      "用看图/元数据工具检查方向标记（浏览器未必旋转显示）",
+      "阅读代码中 Make、DateTimeOriginal、GPS 等示例字段",
+      "换 Orientation 值重新导出做对比"
+    ],
+    "docs": [
+      {
+        "label": "piexifjs",
+        "url": "https://github.com/hMatoba/piexifjs"
+      },
+      {
+        "label": "EXIF Orientation",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement#does_not_honor_exif_orientation_data"
+      }
+    ]
+  },
+  {
+    "slug": "jsrun-XjxKp",
+    "title": "2048 AI（Alpha-Beta 搜素）",
+    "description": "移植 ovolve 2048-AI：评估函数 + 迭代加深 Alpha-Beta，用于择优走子。",
+    "tags": [
+      "2048",
+      "AI",
+      "Alpha-Beta",
+      "博弈搜索"
+    ],
+    "intro": "内含 Tile/Grid 与 AI：eval 综合平滑度、单调性、空格与最大值；search 做 Alpha-Beta；iterativeDeep 在 minSearchTime(100ms) 内加深。run 循环尝试驱动外部页面按钮，并从 getMapThat 读盘面，调用 gameThat.moveUp/Right/Down/Left。本页无棋盘 UI，单独打开缺少游戏宿主。",
+    "steps": [
+      "阅读 AI.eval 与 search 理解评价与剪枝",
+      "确认 minSearchTime 与 getBest 迭代加深",
+      "在完整宿主页中观察自动走子（若可用）",
+      "对照上游 2048-AI 仓库理解算法",
+      "在控制台查看 run 打印的 DOM 探测结果"
+    ],
+    "docs": [
+      {
+        "label": "2048-AI 原项目",
+        "url": "http://ovolve.github.io/2048-AI/"
+      },
+      {
+        "label": "GitHub ovolve/2048-AI",
+        "url": "https://github.com/ovolve/2048-AI"
+      }
+    ],
+    "notes": "依赖 jQuery、$、getMapThat、gameThat 等外部全局；迁移页几乎只有算法与挂载钩子，单独预览无法玩完整 2048。"
+  },
+  {
+    "slug": "jsrun-yn9Kp",
+    "title": "Axios 自动重试与取消",
+    "description": "封装 axiosAutoTry：支持重试次数、超时重试、503 退避，以及 CancelToken 取消。",
+    "tags": [
+      "axios",
+      "重试",
+      "超时",
+      "CancelToken"
+    ],
+    "intro": "失败时若 __try_count>0 则递减并重试：ECONNABORTED（超时）立即递归；HTTP 503 随机延时 500–1000ms 后再试。五个按钮：普通请求、503 重试、5s 超时重试、CancelToken.source 取消、executor 取消。结果打到 top.console。",
+    "steps": [
+      "点 demo1 看普通成功/失败日志",
+      "点 demo2 观察 503 多次重试",
+      "点 demo3 结合 timeout:5000 看超时路径",
+      "点 demo4/demo5，约 1.5s 后取消，核对 isCancel",
+      "打开控制台过滤「重试请求」警告"
+    ],
+    "docs": [
+      {
+        "label": "Axios",
+        "url": "https://axios-http.com/zh/docs/intro"
+      },
+      {
+        "label": "Cancellation",
+        "url": "https://axios-http.com/zh/docs/cancellation"
+      }
+    ],
+    "notes": "请求打到 www.lilnong.top 的 cors/corsutils；离线或跨域失败时重试行为仍可从控制台理解。"
+  }
+]

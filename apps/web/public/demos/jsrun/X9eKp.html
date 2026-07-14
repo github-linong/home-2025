@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>上传文件方法对比</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="X9eKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<h2>上传文件方法对比</h2>
+<section class="card">
+    <h3> form 上传</h3>
+    <div class="view">
+        <form action="//www.lilnong.top/upload_any" 
+            target="demo1" method="post"
+            enctype="multipart/form-data">
+            <input type="file" name="file">
+            <button type="submit">submit</button>
+        </form>
+        <iframe name="demo1" frameborder="0" height="80" style="height: 80px"></iframe>
+    </div>
+    <h3> Ajax 上传</h3>
+    <div class="view">
+        <form >
+            <input id="demo2_input" type="file" name="file">
+            <button type="button" id="demo2_btn">submit</button>
+        </form>
+        <script>
+            demo2_input.onchange = ()=>{
+                console.log(demo2_input.files[0])
+            }
+            demo2_btn.onclick = ()=>{
+                const file = demo2_input.files[0];
+                if(file){
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('post', '//cors-www.lilnong.top/upload_any')
+                    xhr.send();
+                    xhr.onload = ()=>console.log(xhr.response)
+                }
+            }
+        </script>
+    </div>
+</section>
+<script>
+
+</script>
+</body>
+</html>

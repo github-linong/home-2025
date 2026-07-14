@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>远程搜索反选</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="NT8Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- 引入样式 -->
+<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+<!-- 引入组件库 -->
+<!-- <script src="https://unpkg.com/element-ui/lib/index.js"> -->
+<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+</script>
+<div id="app">
+    <el-select
+        v-model="value"
+        multiple
+        filterable
+        remote
+        reserve-keyword
+        placeholder="请输入关键词"
+        :remote-method="remoteMethod"
+        :loading="loading"
+        @focus="onfocus">
+        <div style="display:flex">
+            <el-button @click="onAll">全选</el-button>
+            <el-button @click="offAll">反选</el-button>
+        </div>
+        <el-option
+            v-for="item in options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+        </el-option>
+    </el-select>
+    <div>
+        value: <br>{{value}}
+    </div>
+    <div>
+        options: <br>{{options}}
+    </div>
+</div>
+<script>
+new Vue({
+    el: '#app',
+    data() {
+      return {
+        options: [],
+        value: [],
+        list: [],
+        loading: false,
+        states: [
+            "Alabama", "Alaska", "Arizona",
+            "Arkansas", "California", "Colorado",
+            "Connecticut", "Delaware", "Florida",
+            "Georgia", "Hawaii", "Idaho", "Illinois",
+            "Indiana", "Iowa", "Kansas", "Kentucky",
+            "Louisiana", "Maine", "Maryland",
+            "Massachusetts", "Michigan", "Minnesota",
+            "Mississippi", "Missouri", "Montana",
+            "Nebraska", "Nevada", "New Hampshire",
+            "New Jersey", "New Mexico", "New York",
+            "North Carolina", "North Dakota", "Ohio",
+            "Oklahoma", "Oregon", "Pennsylvania",
+            "Rhode Island", "South Carolina",
+            "South Dakota", "Tennessee", "Texas",
+            "Utah", "Vermont", "Virginia",
+            "Washington", "West Virginia", "Wisconsin",
+            "Wyoming"
+        ], 
+        showAll: false
+      }
+    },
+    mounted() {
+      this.list = this.states.map(item => {
+        return { value: `value:${item}`, label: `label:${item}` };
+      });
+    },
+    methods: {
+      onfocus(){
+        this.remoteMethod()
+      },
+      remoteMethod(query) {
+        this.showAll = !!query
+        if (!!query) {
+          this.loading = true;
+          setTimeout(() => {
+            this.loading = false;
+            this.options = this.list.filter(item => {
+              return item.label.toLowerCase()
+                .indexOf(query.toLowerCase()) > -1;
+            });
+          }, 200);
+        } else {
+          this.options = [];
+        }
+      },
+      onAll() { // 全选
+        if( this.showAll) {
+            let _options = JSON.parse(JSON.stringify(this.options))
+            let result = []
+            _options.forEach(item => {
+                  result.push(item.value)
+            })
+            // this.value = result
+            console.log(result, "result")
+            this.value = result
+        }
+      },
+      offAll() { // 反选
+
+      }
+    }
+})
+</script>
+</body>
+</html>

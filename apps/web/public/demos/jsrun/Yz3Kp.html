@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue 声明周期全观察</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="Yz3Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<div id="app">
+    {{1}}
+    <button @click="count++">count++</button>
+    <div>parent: {{count}}</div>
+    <div>
+        <ln-child :a="count"></ln-child>
+    </div>
+</div>
+<script>
+    Vue.component('ln-child',{
+        template: `<div>{{a}}</div>`,
+        props: ['a','b'],
+        mounted(){
+            top.console.log(this.$options.propsData)
+        },
+        beforeUpdate(){
+            top.console.log('child-beforeUpdate', this.a)
+        },
+        updated(){
+            top.console.log('child-updated', this.a)
+        }
+    })
+    new Vue({
+       el: '#app',
+       data(){
+           return {
+               count: 2
+           }
+       },
+       beforeUpdate(){
+           top.console.log('parent-beforeUpdate', this.count)
+       },
+       updated(){
+           top.console.log('parent-updated', this.count)
+       }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

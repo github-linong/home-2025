@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue 如果没有 router-view 组件会不会渲染。</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="xHUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js"></script>
+
+    <div id="app">
+        <!-- <router-view></router-view> -->
+    </div>
+
+    <script>
+        const routes = [
+            {
+                name: 'aaa',
+                path: '/',
+                alias: ['/bbb/*'],
+                component: {
+                    template: '<div>{{1}}</div>',
+                    created(){console.log('created')},
+                    mounted(){console.log('mounted')}
+                },
+            },
+        ]
+    </script>
+    <script>
+        const router = new VueRouter({
+            base: '/',
+            // feproxy不支持history
+            mode: true ? 'hash' : 'history',
+            routes,
+        });
+        const devcloudVue = new Vue({
+            router,
+            el: '#app',
+            // store,
+            // render: h => h(App),
+        })
+        // .$mount('#app');
+    </script>
+<script>
+
+</script>
+</body>
+</html>

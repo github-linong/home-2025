@@ -1,0 +1,460 @@
+[
+  {
+    "slug": "jsrun-DRYKp",
+    "title": "基于 HTML5 的跨容器拖放",
+    "description": "用原生 HTML5 Drag and Drop，把红色区域的可拖拽标签拖进绿色空容器。",
+    "tags": [
+      "拖放",
+      "HTML5",
+      "Drag and Drop",
+      "DOM",
+      "交互"
+    ],
+    "intro": "演示原生 HTML5 拖放：元素设 draggable=\"true\"，在 dragstart 记录源节点，目标容器在 dragover 里 preventDefault，ondrop 时 appendChild 完成转移。标题虽写「排序」，实际是跨两个容器搬移，并非列表内重排。交互事件会打到控制台，便于对照生命周期。",
+    "steps": [
+      "在红色区域按住某个灰色标签开始拖动",
+      "拖到下方绿色空白区域，松开鼠标",
+      "确认该标签从红区消失并出现在绿区",
+      "打开开发者工具控制台，观察 ondragstart / ondragover / ondrop 日志",
+      "再拖其他标签进绿区，验证可连续追加"
+    ],
+    "docs": [
+      {
+        "label": "MDN: HTML 拖放 API",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/HTML_Drag_and_Drop_API"
+      },
+      {
+        "label": "MDN: DataTransfer",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/DataTransfer"
+      }
+    ],
+    "notes": "实际能力是跨容器拖放，不是同列表排序；需鼠标拖拽，触摸端可能不可用。"
+  },
+  {
+    "slug": "jsrun-f2iKp",
+    "title": "CSS position: sticky 粘性定位示例",
+    "description": "纵向滚动页中演示 sticky：顶部块 top:50px 吸附，分区标题吸顶直到离开所在 section。",
+    "tags": [
+      "CSS",
+      "sticky",
+      "定位",
+      "滚动",
+      "layout"
+    ],
+    "intro": "纯 CSS 演示 position: sticky（含 -webkit-sticky）。首段灰色块 sticky 且 top:50px；下方多个 section 内红色 h2 也 sticky、top:0，随滚动在各自 section 范围内吸顶。脚本仅把各 div 编号为 1、2、3…，便于观察粘性边界。",
+    "steps": [
+      "在 iframe 内向下滚动，观察顶部编号块是否在距顶约 50px 处「粘住」",
+      "继续滚，看吸顶块最终是否随内容滚走",
+      "滚到绿色边框的 section，观察红色「I am sticky」标题是否贴顶",
+      "跨到下一 section，确认上一标题释放、下一标题开始吸顶",
+      "对比奇数/偶数块底色，核对编号是否连续"
+    ],
+    "docs": [
+      {
+        "label": "MDN: position",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/position"
+      },
+      {
+        "label": "SegmentFault 相关讨论",
+        "url": "https://segmentfault.com/q/1010000011442574"
+      }
+    ],
+    "notes": "需在可滚动视口中看效果；sticky 父级若有 overflow:hidden 等限制会失效（本页用于对照常见坑）。"
+  },
+  {
+    "slug": "jsrun-fXZKp",
+    "title": "纯 CSS 瀑布流 / 多列布局骨架",
+    "description": "本意对比 column、flex、grid 与 masonry 类结构做纯 CSS 瀑布流，但迁移后样式丢失。",
+    "tags": [
+      "CSS",
+      "瀑布流",
+      "多列",
+      "Flexbox",
+      "Grid",
+      "masonry"
+    ],
+    "intro": "页面保留多种布局示意：.column 多列、.flexbox、.grid 页头页脚、以及不同高度的 .masonry/.item 块。标题与结构指向纯 CSS 瀑布流（多列/列流），脚本为空。当前 <style> 内容变成「服务异常，请稍候再试」，有效 CSS 已丢失，预览几乎无排版。",
+    "steps": [
+      "打开页面，确认标题仍为「纯CSS实现瀑布流布局」",
+      "查看源码中 .box.column / .flexbox / .grid / .masonry 等 HTML 骨架",
+      "注意 <style> 是否仅为错误文案而非规则",
+      "对比各块数字与「长文本」占位是否按列错落（当前通常不会）",
+      "若修复样式后，再对照 column / flex / grid / masonry 四块差异"
+    ],
+    "docs": [
+      {
+        "label": "W3CPlus：纯 CSS 实现瀑布流",
+        "url": "https://www.w3cplus.com/css/pure-css-create-masonry-layout.html"
+      },
+      {
+        "label": "MDN: CSS multi-column",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_multicol_layout"
+      }
+    ],
+    "notes": "关键：style 被「服务异常」占位覆盖，现场无可用布局样式，不可当完整瀑布流效果验收。"
+  },
+  {
+    "slug": "jsrun-YAqKp",
+    "title": "CSS shape-outside 模拟 iPhone X 刘海绕排",
+    "description": "用 shape-outside: polygon 让列表随滚动绕开刘海形轮廓，并附 clip-path 变形动画。",
+    "tags": [
+      "CSS",
+      "shape-outside",
+      "clip-path",
+      "浮动",
+      "滚动",
+      "CSS Shapes"
+    ],
+    "intro": "张鑫旭思路的实践：浮动透明条用 shape-outside: polygon 模拟刘海凹槽，滚动时用 JS 把 scrollTop 写进多边形坐标，让列表行随刘海位移。页首圆形图用 shape-outside: content-box 做环绕；底部 .ani 用 clip-path polygon 关键帧动画。",
+    "steps": [
+      "看顶部圆形图片旁文字是否沿圆形外侧绕排",
+      "在中间黑框列表内上下滚动",
+      "观察文字是否随滚动在左侧「躲开」刘海轮廓",
+      "对照半透明刘海图与实际生效的浮动 .shape",
+      "再看下方六边形渐变块的 clip-path 来回变形"
+    ],
+    "docs": [
+      {
+        "label": "张鑫旭：Shapes 与 iPhone X 刘海",
+        "url": "http://www.zhangxinxu.com/wordpress/2017/09/css-shapes-outside-iphone-x-head/"
+      },
+      {
+        "label": "MDN: shape-outside",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/shape-outside"
+      },
+      {
+        "label": "MDN: clip-path",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/clip-path"
+      }
+    ],
+    "notes": "刘海图 liu.png 若路径缺失则只见绕排不见贴图；部分外链 logo 可能失败。需在列表容器内滚动，非整页滚动。"
+  },
+  {
+    "slug": "jsrun-8diKp",
+    "title": "CSS :link / :visited 伪类与透明背景实验",
+    "description": "对比链接未访问/已访问/悬停/按下样式，并用不同 alpha 的背景测 :visited 限制。",
+    "tags": [
+      "CSS",
+      "伪类",
+      "visited",
+      "链接",
+      "隐私",
+      "选择器"
+    ],
+    "intro": "演示 a:link、:visited、:hover、:active 的颜色与字号变化，另加 a1–a4：在 link/visited 上设不同 rgba 背景。用于观察浏览器对 :visited 可改样式的限制（隐私相关），并非爱恨投票交互。",
+    "steps": [
+      "观察默认「Hello」为红色大字（:link）",
+      "点击某一链接后，看 :visited 是否变为蓝底红字等样式",
+      "悬停、按下时分别观察 :hover / :active",
+      "对比 Hello1–Hello4 点击前后背景是否可见差异",
+      "结合开发者工具查看各 class 的 :visited 规则哪些实际生效"
+    ],
+    "docs": [
+      {
+        "label": "MDN: :visited",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/:visited"
+      },
+      {
+        "label": "知乎相关专栏文",
+        "url": "https://zhuanlan.zhihu.com/p/29747893"
+      }
+    ],
+    "notes": "现代浏览器对 :visited 可应用样式有严格限制，部分背景差异可能看不见；标题 Love or hate 非功能描述。"
+  },
+  {
+    "slug": "jsrun-ZCqKp",
+    "title": "粘贴剪贴板图片即时预览",
+    "description": "监听 paste，用 clipboardData 取文件并用 FileReader 读成 DataURL 显示截图。",
+    "tags": [
+      "剪贴板",
+      "paste",
+      "FileReader",
+      "上传",
+      "Base64",
+      "交互"
+    ],
+    "intro": "极简「截图粘贴预览」：在页面监听 paste，若 clipboardData.files 有文件则 FileReader.readAsDataURL，把结果赋给 img#showImage。含文本输入框便于聚焦；无实际上传服务，仅本地预览。",
+    "steps": [
+      "用系统截图或复制一张图片到剪贴板",
+      "点击页面空白或输入框获得焦点",
+      "按 Cmd/Ctrl+V 粘贴",
+      "确认下方 img 显示出刚粘贴的图",
+      "打开控制台查看 clipboardData 相关日志"
+    ],
+    "docs": [
+      {
+        "label": "MDN: ClipboardEvent.clipboardData",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/ClipboardEvent/clipboardData"
+      },
+      {
+        "label": "MDN: FileReader.readAsDataURL",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/FileReader/readAsDataURL"
+      }
+    ],
+    "notes": "无图片文件时粘贴会被忽略；需用户手势粘贴，不能纯自动演示。"
+  },
+  {
+    "slug": "jsrun-8dgKp",
+    "title": "Canvas 按网格拼贴爱心图案",
+    "description": "用二维 0/1 矩阵定爱心形状，随机从 CDN 拉图并延时 drawImage 拼成马赛克。",
+    "tags": [
+      "Canvas",
+      "拼贴",
+      "二维数组",
+      "Image",
+      "异步",
+      "图形"
+    ],
+    "intro": "并非可玩拼图，而是把 9×9 的 0/1 矩阵当作爱心点阵：为 1 的格子用 Image 加载 CDN 图，random 延时后 ctx.drawImage 画小方块。展示矩阵驱动布局 + 异步贴图；标题「拼图小程序」容易误解成交互拼图。",
+    "steps": [
+      "打开页面，等待画布上逐块出现小图",
+      "观察整体是否大致呈爱心轮廓",
+      "刷新多次，看贴图出现顺序是否随机变化",
+      "若 CDN 失败，画布可能空白或少块",
+      "在源码中对照 arr 矩阵与绘制位置关系"
+    ],
+    "docs": [
+      {
+        "label": "MDN: CanvasRenderingContext2D.drawImage",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/drawImage"
+      },
+      {
+        "label": "MDN: HTMLImageElement",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/HTMLImageElement/Image"
+      }
+    ],
+    "notes": "依赖七牛 CDN 图片；外链失效则看不到拼贴。无拖拽、交换等交互。"
+  },
+  {
+    "slug": "jsrun-SXhKp",
+    "title": "Vue 大转盘旋转与分区指示",
+    "description": "用 Vue 驱动圆形转盘持续旋转，并根据角度计算当前朝上分区编号。",
+    "tags": [
+      "Vue",
+      "转盘",
+      "transform",
+      "computed",
+      "动画",
+      "抽奖"
+    ],
+    "intro": "八扇区分的简易转盘：v-for 生成分区标记，圆弧用 transform rotate；mounted 里 setInterval 累加 rotateArc，computed 用 rotate 样式与公式算当前扇区。演示绑定 + 变换动画，未见指针点击抽停逻辑。",
+    "steps": [
+      "打开页面看红色圆是否在持续旋转",
+      "观察圆上 1–8 分区标记是否绕圆心转动",
+      "看下方数字随旋转变化（角度与当前扇区）",
+      "用开发者工具改 data.num 或 rotateArc 观察反应",
+      "确认控制台是否有 Vue is not defined（依赖缺失时）"
+    ],
+    "docs": [
+      {
+        "label": "Vue 2 官方文档",
+        "url": "https://v2.cn.vuejs.org/v2/guide/"
+      },
+      {
+        "label": "MDN: transform",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/transform"
+      }
+    ],
+    "notes": "页面使用 new Vue 但未引入 Vue 脚本，通常会直接报错无法运行；需补 CDN 或全局 Vue 才能验收。"
+  },
+  {
+    "slug": "jsrun-aXhKp",
+    "title": "Canvas 圆弧绘制太极八卦图",
+    "description": "用多次 arc + fill 拼接半圆与阴阳鱼眼，在 canvas 上画出太极图。",
+    "tags": [
+      "Canvas",
+      "arc",
+      "路径",
+      "太极",
+      "矢量绘制",
+      "图形"
+    ],
+    "intro": "在 300×300 canvas 上用 beginPath/arc/fill 绘制：大圆上下半色、小半圆阴阳区、最小圆点鱼眼。展示弧段起止角（如 Math.PI/2）与填充色切换；第二块 canvas 脚本已注释，仅第一块生效。",
+    "steps": [
+      "打开页面查看左侧 canvas 是否出现红黑太极图",
+      "对照源码识别大圆、S 形半圆与两个小圆点",
+      "用开发者工具改 _r 或填充色后刷新对比",
+      "确认第二块 canvas 为空（绘制代码已注释）",
+      "缩放窗口确认为位图，非响应式矢量"
+    ],
+    "docs": [
+      {
+        "label": "MDN: CanvasRenderingContext2D.arc",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/arc"
+      },
+      {
+        "label": "MDN: Canvas 教程",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/Canvas_API/Tutorial"
+      }
+    ],
+    "notes": "静态绘制，无动画或交互；第二 canvas 未启用。"
+  },
+  {
+    "slug": "jsrun-DKbKp",
+    "title": "数字翻牌 / 滚动切换特效骨架",
+    "description": "多列 0–9 数字条按随机五位数切换 class，实现翻牌滚动所需 DOM，但样式与 jQuery 缺失。",
+    "tags": [
+      "数字滚动",
+      "翻牌",
+      "jQuery",
+      "CSS动画",
+      "定时器",
+      "特效"
+    ],
+    "intro": "结构为多列 .number-item，每列含 0–9；每 2 秒生成随机五位数，给各列设 number-item--数字类，并用 #clog 显示目标数。典型「odomometer/翻牌」靠 CSS 位移实现，但 <style> 同样是「服务异常」占位，且使用 $ 却未引入 jQuery。",
+    "steps": [
+      "打开页面，看五列 0–9 是否垂直堆叠裸露",
+      "观察下方 #clog 是否约每 2 秒变一个五位数",
+      "看各列 class 是否变为 number-item--0…9",
+      "打开控制台确认是否报 $ is not defined",
+      "样式修复并引入 jQuery 后，再验收翻滚动画"
+    ],
+    "docs": [
+      {
+        "label": "jQuery 官方文档",
+        "url": "https://api.jquery.com/"
+      },
+      {
+        "label": "MDN: className",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/Element/className"
+      }
+    ],
+    "notes": "CSS 丢失 + 无 jQuery，当前几乎无视觉特效；只能验 DOM class 与目标数字文本。"
+  },
+  {
+    "slug": "jsrun-4tbKp",
+    "title": "Canvas 刮奖涂层与擦除比例",
+    "description": "用 destination-out 刮开涂层，统计透明像素占比，并支持轨迹回放与重新覆盖。",
+    "tags": [
+      "Canvas",
+      "刮奖",
+      "destination-out",
+      "getImageData",
+      "节流",
+      "交互"
+    ],
+    "intro": "刮刮乐原型：涂层 fill/贴图后，鼠标按下拖动以 destination-out 擦除（光标图）；定时 getImageData 算 alpha===0 比例；「自动」按预设轨迹回放，「覆盖」用 source-over 重填。依赖 _.throttle，页面未引入 lodash。",
+    "steps": [
+      "在 canvas 上按住鼠标刮开涂层，露出背景图",
+      "观察 #eraseRate 刮开比例是否升高",
+      "看「节点记录」是否追加鼠标轨迹点",
+      "点「覆盖」恢复遮罩后再刮一次",
+      "点「自动」看是否按轨迹自动刮开（若 _.throttle 报错则先看控制台）"
+    ],
+    "docs": [
+      {
+        "label": "MDN: globalCompositeOperation",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation"
+      },
+      {
+        "label": "MDN: getImageData",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/getImageData"
+      },
+      {
+        "label": "Lodash throttle",
+        "url": "https://lodash.com/docs/#throttle"
+      }
+    ],
+    "notes": "使用 _.throttle 但未引入 lodash，脚本可能中断；背景/笔刷图依赖 lilnong.top，可能失败；主要为鼠标事件。"
+  },
+  {
+    "slug": "jsrun-yH6Kp",
+    "title": "Canvas 重叠圆面积占比（面试题）",
+    "description": "用 destination-out 画多个圆挖空，再按透明像素占比估算重叠区域相对整幅画布的面积。",
+    "tags": [
+      "Canvas",
+      "像素统计",
+      "面试题",
+      "几何",
+      "destination-out",
+      "面积"
+    ],
+    "intro": "针对「多圆重叠面积占比」类题：整幅先铺实色，再用 destination-out 画若干圆挖空；定时扫描 imageData alpha===0 像素占比显示在 eraseRate。canvas 用 transform: scale(1,-1) 翻转坐标系；也支持手工拖刮。fill 按钮未绑事件。",
+    "steps": [
+      "打开后看画布上是否已有多个圆形挖空",
+      "读 eraseRate，约为透明像素占全画布比例",
+      "在挖空区外再按住拖动，看比例是否上升",
+      "对照 transform: scale(1,-1) 理解 y 方向视觉翻转",
+      "点「覆盖」——当前脚本未绑定，预期通常无反应"
+    ],
+    "docs": [
+      {
+        "label": "MDN: getImageData",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/getImageData"
+      },
+      {
+        "label": "MDN: globalCompositeOperation",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation"
+      }
+    ],
+    "notes": "占比相对整幅 100×100 画布，非精确解析几何公式；「覆盖」按钮无监听器。"
+  },
+  {
+    "slug": "jsrun-k8iKp",
+    "title": "D3.js 树状图（行政区划）",
+    "description": "内联 D3 v3，用 layout.tree 与 svg.diagonal 绘制「中国→省→市」层级树。",
+    "tags": [
+      "D3",
+      "树状图",
+      "SVG",
+      "hierarchy",
+      "可视化",
+      "layout.tree"
+    ],
+    "intro": "将 d3 打包进页面后，用 d3.layout.tree().size 计算节点，d3.svg.diagonal 画连线，SVG 节点为小矩形+文本。数据为省市区假树（浙江/广西/黑龙江/新疆等）。静态图，无折叠展开交互。",
+    "steps": [
+      "打开页面确认出现横向展开的树（根「中国」）",
+      "核对省份节点下是否有对应城市文字",
+      "沿灰色 link 路径看父子连线",
+      "用开发者工具检查生成的 svg/g/node",
+      "此示例无点击折叠，仅静态浏览即可"
+    ],
+    "docs": [
+      {
+        "label": "D3 官方站点",
+        "url": "https://d3js.org/"
+      },
+      {
+        "label": "Observable: d3-hierarchy",
+        "url": "https://d3js.org/d3-hierarchy"
+      }
+    ],
+    "notes": "内联的是偏 D3 v3 API（layout.tree / svg.diagonal）；文件体积大；无缩放拖拽等交互。"
+  },
+  {
+    "slug": "jsrun-mIhKp",
+    "title": "长标题省略与右侧图标宽度自适应",
+    "description": "对比 Flex、BFC/float 等方案：长文 ellipsis，右侧图标区宽度随数量自适应。",
+    "tags": [
+      "CSS",
+      "Flex",
+      "ellipsis",
+      "BFC",
+      "float",
+      "布局"
+    ],
+    "intro": "三组方案并排：Flex + text-overflow:ellipsis；inline-block/BFC 下图标 float:right；Flex 中图标白空间 nowrap。演示「文字可变省略、右侧徽章宽度随张数变化」。大量图标指向 jsrun CDN，常裂图。",
+    "steps": [
+      "对比第一组：长文+两图 / 长文+一图 / 短文+两图",
+      "看长文是否单行省略，图标是否仍靠右可见",
+      "再看中间 BFC/float 组图标是否靠右、文字是否省略",
+      "看第三组 flex 图标容器在一图/两图时宽度差",
+      "缩小 iframe 宽度，确认省略与挤占行为"
+    ],
+    "docs": [
+      {
+        "label": "MDN: text-overflow",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/text-overflow"
+      },
+      {
+        "label": "MDN: flex",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/flex"
+      },
+      {
+        "label": "CodePen 相关笔",
+        "url": "https://codepen.io/linong/pen/aRjwbe"
+      }
+    ],
+    "notes": "logo 多来自 cdn.jsrun.top / jsrun.net，易失效导致只见裂图；纯 CSS，无脚本。"
+  }
+]

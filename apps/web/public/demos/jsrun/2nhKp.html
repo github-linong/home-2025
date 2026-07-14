@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://juejin.im/user/5928e14644d90400641dec8a/posts</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="2nhKp" />
+  <style>
+#ripple {
+  width: 300px;
+  height: 300px;
+  border-radius: 150px;
+  font-size: 5em;
+  background-color: rgb(255,64,129);
+  border: 0;
+  box-shadow: 0 1px 1.5px 0 rgba(0,0,0,.12),0 1px 1px 0 rgba(0,0,0,.24);
+  color: white;
+
+  --ripple-x: 0;
+  --ripple-y: 0;
+  --ripple-color: rgba(255,255,255,0.54);
+  --animation-tick: 0;
+}
+#ripple:focus {
+  outline: none;
+}
+#ripple.animating {
+  background-image: paint(ripple);
+}
+
+  </style>
+</head>
+<body>
+<button id="ripple" class="" style="--animation-tick: 0;">
+  Click me!
+</button>
+<script>
+if (location.protocol === 'http:' && location.hostname !== 'localhost')
+    location.protocol = 'https:';
+if ('paintWorklet' in CSS) {
+    // CSS.paintWorklet.addModule('https://fed.renren.com/html/houdini/houdini-samples/paint-worklet/ripple/paintworklet.js');
+  registerPaint('ripple', class {
+    static get inputProperties() { return ['background-color', '--ripple-color', '--animation-tick', '--ripple-x', '--ripple-y']; }
+    paint(ctx, geom, properties) {
+      const bgColor = properties.get('background-color').toString();
+      const rippleColor = properties.get('--ripple-color').toString();
+      const x = parseFloat(properties.get('--ripple-x').toString());
+      const y = parseFloat(properties.get('--ripple-y').toString());
+      let tick = parseFloat(properties.get('--animation-tick').toString());
+      if(tick < 0)
+        tick = 0;
+      if(tick > 1000)
+        tick = 1000;
+
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, geom.width, geom.height);
+      ctx.fillRect(0, 0, geom.width, geom.height);
+
+      ctx.fillStyle = rippleColor;
+      ctx.globalAlpha = 1 - tick/1000;
+      ctx.arc(
+        x, y, // center
+        geom.width * tick/1000, // radius
+        0, // startAngle
+        2 * Math.PI //endAngle
+      );
+      ctx.fill();
+    }
+});
+} else {
+    document.body.innerHTML = 'You need support for <a href="https://drafts.css-houdini.org/css-paint-api/">CSS Paint API</a> to view this demo :(';
+  }
+const button = document.querySelector('#ripple');
+let start = performance.now();
+let x, y;
+document.querySelector('#ripple').addEventListener('click', evt => {
+  button.classList.add('animating');
+  [x, y] = [evt.clientX, evt.clientY];
+  start = performance.now();
+  requestAnimationFrame(function raf(now) {
+    const count = Math.floor(now - start);
+    button.style.cssText = `--ripple-x: ${x}; --ripple-y: ${y}; --animation-tick: ${count};`;
+    if(count > 1000) {
+      button.classList.remove('animating');
+      button.style.cssText = `--animation-tick: 0`;
+      return;
+    }
+    requestAnimationFrame(raf);
+  })
+})
+
+</script>
+</body>
+</html>

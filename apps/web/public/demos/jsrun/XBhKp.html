@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>递归选择框 删除bug</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="XBhKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div v-for="(model,index) in treeData"
+         :key="model.uuid">
+        <div style="margin-left:30px;">
+            <!--组件-->
+            <nobr>
+                <h3>{{index + 1}}选择知识点</h3>
+                <button class="login-button" @click="knows_delete(index)">-</button>
+            </nobr>
+            <!-- {{treeData[index]}} -->
+            <item class="item"
+                  v-model="treeData[index]"
+                  :model="treeData[index]" ></item>
+            <h3>掌握级别</h3>
+            <select class="search" v-model="mastery_degree[index]">
+                <option :value='1'>掌握</option>
+                <option :value='2'>部分掌握</option>
+                <option :value='3'>未掌握</option>
+            </select>
+            <br /><br />
+        </div>
+    </div>
+    <button class="login-button" @click="knows_add">增加</button>
+</div>
+
+<script type="text/x-template" id="item_template">
+    <div>
+        <!--通过绑定数据:index,在组件中的watch-->
+        <select @input="index = $event.target.value" :value="model.select_index" class="search">
+            <!--<select v-model="model.select_index" class="search">-->
+            <option :value="model.id" v-for="(model, index) in model.children">{{model.name}}</option>
+        </select>
+        <br>
+        <!-- <p>{{model.id}} {{model.select_index}}</p> -->
+        <div>
+            <item class="item"
+                  v-for="(model, index) in model.children"
+                  :key="index"
+                  v-if="model.id == id && model.id !== 0 && model.children != undefined"
+                  :model="model">
+            </item>
+        </div>
+    </div>
+</script>
+<script>
+//递归组件
+Vue.component('item', {
+    template: '#item_template',
+    props: {
+        model: Object
+    },
+    data: function () {
+        return {
+            //选中的option下标对应的数据id值
+            id: this.model.select_index || '',
+            //option的下标
+            index: new Number,
+        }
+    },
+    computed: {
+        //目的：进行判断下一级是否为true
+        isFolder: function () {
+            return this.model.children &&
+                this.model.children.length
+        }
+    },
+    //数据监听
+    watch: {
+        //选项框变化
+        index(Value,oldValue) {
+            //选中的节点下标
+            this.model.select_index = Value;
+            // console.log(this.model)
+            this.model.children.forEach(v=>{
+                v.select_index = undefined;
+            })
+            //选中的节点下标的id
+            // for (i = 0;i < this.model.children.length;i++) {
+            //     if (this.model.children[i].id = Value) {
+            //         this.id = this.model.children[i].id
+            //     }
+            // }
+            this.id = Value
+
+            //获取选中的节点下的所有子节点
+            this.toggle(this.index)
+            //post过去input输入框的值
+            this.model.new_NodeA = ""
+            //当前input输入框的值
+            this.new_Node = ""
+        },
+    },
+    methods: {
+        //获取选中的节点下的所有子节点 index:下标
+        toggle(index) {
+        },
+    },
+})
+
+vm = new Vue({
+    el: '#app',
+    data: {
+        treeData: [{"id":-1,"name":"目录","children":[{"id":"1","name":"几何初步和三角形1","father":"0","children":[{"id":"2","children_A":"[3,7","father":"1","name":"几何初步","children":[{"id":"3","children_A":"[4,5,6","father":"2","name":"角","children":[{"id":"4","children_A":"0","father":"3","name":"角的定义"},{"id":"5","children_A":"0","father":"3","name":"角的分类"},{"id":"6","children_A":"0","father":"3","name":"角的计算和比较"}]},{"id":"7","children_A":"[8,9,17","father":"2","name":"线","children":[{"id":"8","children_A":"0","father":"7","name":"直线、射线、线段的定义"},{"id":"9","children_A":"[10,13","father":"7","name":"相交线","children":[{"id":"10","children_A":"[11,12","father":"9","name":"两条直线相交","children":[{"id":"11","children_A":"0","father":"10","name":"对顶角"},{"id":"12","children_A":"0","father":"10","name":"两直线垂直及其性质"}]},{"id":"13","children_A":"[14,15,16","father":"9","name":"两条直线被第三条直线所截","children":[{"id":"14","children_A":"0","father":"13","name":"内错角"},{"id":"15","children_A":"0","father":"13","name":"同位角"},{"id":"16","children_A":"0","father":"13","name":"同旁内角"}]}]},{"id":"17","children_A":"[18,19","father":"7","name":"平行线","children":[{"id":"18","children_A":"0","father":"17","name":"平行线的性质和判断"},{"id":"19","children_A":"[20","father":"17","name":"平行公理及推理","children":[{"id":"20","children_A":"0","father":"19","name":"分支主题"}]}]}]}]},{"id":"21","children_A":"[22,23,32","father":"1","name":"三角形","children":[{"id":"22","children_A":"0","father":"21","name":"三角形相关定义和概念"},{"id":"23","children_A":"[24,28","father":"21","name":"三角形分类","children":[{"id":"24","children_A":"[25,26,27","father":"23","name":"按角分类","children":[{"id":"25","children_A":"0","father":"24","name":"锐角三角形"},{"id":"26","children_A":"0","father":"24","name":"直角三角形"},{"id":"27","children_A":"0","father":"24","name":"钝角三角形"}],"select_index":"26","new_NodeA":""},{"id":"28","children_A":"[29,30,31","father":"23","name":"按边分类","children":[{"id":"29","children_A":"0","father":"28","name":"等边三角形"},{"id":"30","children_A":"0","father":"28","name":"等腰三角形"},{"id":"31","children_A":"0","father":"28","name":"普通三角形"}]}],"select_index":"24","new_NodeA":""},{"id":"32","children_A":"[33,34","father":"21","name":"三角形得性质","children":[{"id":"33","children_A":"0","father":"32","name":"三角形三边关系"},{"id":"34","children_A":"0","father":"32","name":"三角形的内外角关系"}],"new_NodeA":""}],"select_index":"23","new_NodeA":""}],"children_A":"[2,21","select_index":"21","new_NodeA":""}],"uuid":"0.30181523918396147","select_index":"1","new_NodeA":""}], //递归数据
+        //递归组件 掌握程度
+        knows: 0,
+        mastery_degree: [],//掌握程度
+        json:[{"id":"1","name":"几何初步和三角形1","father":"0","children":[{"id":"2","children_A":"[3,7","father":"1","name":"几何初步","children":[{"id":"3","children_A":"[4,5,6","father":"2","name":"角","children":[{"id":"4","children_A":"0","father":"3","name":"角的定义"},{"id":"5","children_A":"0","father":"3","name":"角的分类"},{"id":"6","children_A":"0","father":"3","name":"角的计算和比较"}]},{"id":"7","children_A":"[8,9,17","father":"2","name":"线","children":[{"id":"8","children_A":"0","father":"7","name":"直线、射线、线段的定义"},{"id":"9","children_A":"[10,13","father":"7","name":"相交线","children":[{"id":"10","children_A":"[11,12","father":"9","name":"两条直线相交","children":[{"id":"11","children_A":"0","father":"10","name":"对顶角"},{"id":"12","children_A":"0","father":"10","name":"两直线垂直及其性质"}]},{"id":"13","children_A":"[14,15,16","father":"9","name":"两条直线被第三条直线所截","children":[{"id":"14","children_A":"0","father":"13","name":"内错角"},{"id":"15","children_A":"0","father":"13","name":"同位角"},{"id":"16","children_A":"0","father":"13","name":"同旁内角"}]}]},{"id":"17","children_A":"[18,19","father":"7","name":"平行线","children":[{"id":"18","children_A":"0","father":"17","name":"平行线的性质和判断"},{"id":"19","children_A":"[20","father":"17","name":"平行公理及推理","children":[{"id":"20","children_A":"0","father":"19","name":"分支主题"}]}]}]}]},{"id":"21","children_A":"[22,23,32","father":"1","name":"三角形","children":[{"id":"22","children_A":"0","father":"21","name":"三角形相关定义和概念"},{"id":"23","children_A":"[24,28","father":"21","name":"三角形分类","children":[{"id":"24","children_A":"[25,26,27","father":"23","name":"按角分类","children":[{"id":"25","children_A":"0","father":"24","name":"锐角三角形"},{"id":"26","children_A":"0","father":"24","name":"直角三角形"},{"id":"27","children_A":"0","father":"24","name":"钝角三角形"}]},{"id":"28","children_A":"[29,30,31","father":"23","name":"按边分类","children":[{"id":"29","children_A":"0","father":"28","name":"等边三角形"},{"id":"30","children_A":"0","father":"28","name":"等腰三角形"},{"id":"31","children_A":"0","father":"28","name":"普通三角形"}]}]},{"id":"32","children_A":"[33,34","father":"21","name":"三角形得性质","children":[{"id":"33","children_A":"0","father":"32","name":"三角形三边关系"},{"id":"34","children_A":"0","father":"32","name":"三角形的内外角关系"}]}]}],"children_A":"[2,21"}],
+    },
+    methods: {
+        //递归组件 掌握程度 增加
+        knows_add() {
+            this.treeData.push({
+                id: -1,
+                name:"目录",
+                children: JSON.parse(JSON.stringify(this.json)) || [],
+                uuid: Math.random().toString()
+            })
+//					this.treeData[this.knows].children = response.data
+            this.knows += 1
+
+
+        },
+
+        //递归组件 掌握程度 减少 index:下标
+        knows_delete(index) {
+            console.log(index)
+            this.treeData.splice(index, 1) //删除节点数据
+            this.knows -= 1
+            this.mastery_degree.splice(index, 1) //删除掌握程度
+        },
+    }
+})
+</script>
+</body>
+</html>

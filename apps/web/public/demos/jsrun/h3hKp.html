@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000016806674</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="h3hKp" />
+  <style>
+* {
+            margin: 0px;
+            padding: 0px;
+            box-sizing: border-box;
+        }
+        
+        .con {
+            width: 500px;
+            height: 500px;
+            border: 1px solid #ccc;
+            margin: 0 auto;
+            margin-top: 50px;
+            position: relative;
+        }
+        
+        .banner {
+            width: 200px;
+            height: 200px;
+            border: 1px solid #ccc;
+            position: absolute;
+            z-index: 10px;
+            display: none;
+        }
+        
+        .banner input {
+            margin-left: 30px;
+            margin-top: 30px;
+        }
+  </style>
+</head>
+<body>
+<div class="con">
+  <div>
+    <b class="dele">删除</b>
+    <p id="first">
+      标题
+      <span class="change" data-id="1" id="1">编辑</span>
+    </p>
+    <input type="text" placeholder="请填写信息">
+  </div>
+  <div>
+    <b class="dele">删除</b>
+    <p id="second">标题
+      <span class="change" data-id="2" id="2">编辑</span>
+    </p>
+    <textarea name="" id="" cols="40" rows="5" placeholder="请填写信息">
+    </textarea>
+  </div>
+  <div>
+    <b class="dele">删除</b>
+    <p id="third">
+      标题
+      <span class="change" data-id="3" id="3">编辑</span>
+    </p>
+    <input type="file" name="" id="">
+  </div>
+  <div class="banner">
+    <input type="text" id="input">
+    <button type="button" id="button">
+      点击一下
+    </button>
+    <button type="button" id="button1">
+      点击一下
+    </button>
+  </div>
+</div>
+<script>
+$(() => {
+
+  (function() {
+
+    $(".con").on("click", "span", function() {
+      var val = $(this).attr("id");
+      let p = $(this).parent();
+      var va = $(this).parent().attr("id");
+      let clone = $(this).clone();
+      (function(va) {
+        $(".banner").css("display", "block");
+        $("#button").on("click", function(e) {
+          console.log('button')
+          let vals = $("#input").val();
+          console.log(va);
+          switch (va) {
+
+          case "first":
+            console.log(1, "i am a first");
+            $("#first").text(vals);
+            $("#first").append(clone);
+            $(".banner").css("display", "none");
+            event.preventDefault;
+            break;
+          case "second":
+            $("#second").text(vals);
+            $("#second").append(clone);
+            $(".banner").css("display", "none");
+            break;
+          case "third":
+            $("#third").text(vals);
+            $("#third").append(clone);
+            $(".banner").css("display", "none");
+            break;
+          }
+        })
+        $("#button1").off().on("click", function(e) {
+          console.log('button1')
+          let vals = $("#input").val();
+          console.log(va);
+          switch (va) {
+
+          case "first":
+            console.log(1, "i am a first");
+            $("#first").text(vals);
+            $("#first").append(clone);
+            $(".banner").css("display", "none");
+            event.preventDefault;
+            break;
+          case "second":
+            $("#second").text(vals);
+            $("#second").append(clone);
+            $(".banner").css("display", "none");
+            break;
+          case "third":
+            $("#third").text(vals);
+            $("#third").append(clone);
+            $(".banner").css("display", "none");
+            break;
+          }
+        })
+      })(va)
+      // for (let i = 0; i < arr.length; i++) {
+      //     if (arr[i] == va) {
+      //         str = arr[i];
+      //         break;
+      //     }
+      // }
+
+    })
+
+  })()
+
+})
+</script>
+</body>
+</html>

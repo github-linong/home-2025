@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>flex 布局</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="GKzKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<style>
+    .flex{display: flex;}
+    .flex-auto{flex: auto;}
+    div{background: rgba(200,200,200,.3);min-height: 100px;}
+    .left-basic,.right-basic{width: 200px;}
+    .content{background: rgba(200,0,0,.5)}
+    .content:nth-child(2n){background: rgba(200,200,0,.5)}
+</style>
+<div>
+    左右定宽，中间自适应。flex
+    <div class="flex">
+        <div class="left-basic"></div>
+        <div class="content flex-auto"></div>
+        <!-- <div class="content flex-auto"></div> -->
+        <!-- <div class="content flex-auto"></div> -->
+        <div class="right-basic"></div>
+    </div>
+</div>
+
+<div>
+    左右定宽，中间自适应。absolute
+    <div style="position: relative;">
+        <div style="position: absolute;top:0;left:0"></div>
+        <div style="margin: 0 200px;" class="content"></div>
+        <!-- <div class="content flex-auto"></div> -->
+        <!-- <div class="content flex-auto"></div> -->
+        <div style="position: absolute;top:0;right:0"></div>
+    </div>
+</div>
+
+
+<div>
+    左右定宽，中间自适应。absolute
+    <div style="position: relative;padding: 0 200px;">
+        <div style="position: absolute;top:0;left:0"></div>
+        <div style="" class="content"></div>
+        <!-- <div class="content flex-auto"></div> -->
+        <!-- <div class="content flex-auto"></div> -->
+        <div style="position: absolute;top:0;right:0"></div>
+    </div>
+</div>
+<script>
+
+</script>
+</body>
+</html>

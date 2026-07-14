@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>div 自动创建结构图</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="qUzKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<div id="app">
+    <!-- <div class="item flex flex-wrap flex-cc flex-streach">
+        <h1 class="h1" contenteditable>标题</h1>
+        <div class="box flex-auto">
+            <div class="add flex flex-cc">+</div>
+        </div>
+    </div> -->
+        <!-- <div class="add flex flex-cc">+</div> -->
+    <hr>
+    <hr>
+    <ln-box></ln-box>
+</div>
+<style>
+    *{padding:0;margin:0;}
+    #app{padding: 20px;}
+
+    .flex{
+        display: flex;
+    }
+    .flex-wrap{
+        flex-wrap: wrap;
+    }
+    .flex-auto{
+        flex: auto;
+    }
+    .flex-cc{
+        justify-content: center;
+        align-items: center;
+    }
+    .flex-streach{
+        align-items: stretch;
+    }
+    .flex-column{
+        flex-direction: column;
+    }
+
+    .box,.item{
+        min-height: 100px;
+        display: flex;
+    }
+    .h1{
+        text-align: center;
+        border: 1px solid #0f0;
+        min-height: 1em;
+        width: 100%;
+        min-width: 100px;
+    }
+    .box{
+        border: 1px solid #f00;
+    }
+    .item{
+        border: 1px solid #00f;
+    }
+    .add{
+        min-width: 30px;
+        min-height: 30px;
+        display: flex;
+        background: rgba(100,100,100,.1);
+        cursor: pointer;
+    }
+</style>
+<script>
+    count = 0;
+    Vue.component('ln-item',{
+        template: `
+            <div class="item flex flex-wrap flex-cc flex-streach">
+                <h1 class="h1" contenteditable>标题 {{item.title}}</h1>
+                <ln-item v-for="item1 in item.list" :item="item1"></ln-item>
+                <div class="add flex flex-cc" @click="add">+</div>
+            </div>
+        `,
+        props: {
+            item: {
+                type: Object
+            }
+        },
+        data(){
+            return {
+            }
+        },
+        methods: {
+            add(){
+                this.item.list.push({
+                    title: ++count,//Math.random() * 10 >>> 0,
+                    list: []
+                })
+            }
+        }
+    })
+    Vue.component('ln-box',{
+        template: `
+            <div class="box flex-auto flex-wrap flex-column">
+                <ln-item v-for="item in list" :item="item"></ln-item>
+                <div class="add flex flex-cc" @click="add">+</div>
+            </div>
+        `,
+        data(){
+            return {
+                list: []
+            }
+        },
+        methods: {
+            add(){
+                this.list.push({
+                    title: ++count,//Math.random() * 10 >>> 0,
+                    list: []
+                })
+            }
+        }
+    })
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

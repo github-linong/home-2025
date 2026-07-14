@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>榜单特效测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="32hKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<div id="app">
+  <!-- <div>K歌榜</div><div>富豪榜</div><div>麦霸榜</div><div>铁粉榜</div> -->
+  <div class="nav-warp clearfix">
+    <div v-for="(item,index) of nav" class="nav-item" :class="{select: navSelectIndex === index}" @click="navSelectIndex = index">{{item}}</div>
+  </div>
+  <p>
+    内容
+  </p>
+</div>
+
+<div id="app2">
+  <div class="nav-warp clearfix">
+    <div v-for="(item,index) of nav" class="nav-item" :class="{select: navSelectIndex === index}" @click="navSelectIndex = index">{{item}}</div>
+  </div>
+  <p>
+    内容
+  </p>
+</div>
+
+<div id="app3">
+  <div class="nav-warp clearfix">
+    <div v-for="(item,index) of nav" class="nav-item" :class="{select: navSelectIndex === index}" @click="navSelectIndex = index">{{item}}</div>
+  </div>
+  <p>
+    内容
+  </p>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data:{
+    nav: ['K歌榜','富豪榜','麦霸榜','铁粉榜'],
+    navSelectIndex: 0
+  }
+})
+
+new Vue({
+  el: '#app2',
+  data:{
+    nav: ['K歌榜','富豪榜','麦霸榜','铁粉榜'],
+    navSelectIndex: 0
+  }
+})
+
+new Vue({
+  el: '#app3',
+  data:{
+    nav: ['K歌榜','富豪榜','麦霸榜','铁粉榜'],
+    navSelectIndex: 0
+  }
+})
+</script>
+</body>
+</html>

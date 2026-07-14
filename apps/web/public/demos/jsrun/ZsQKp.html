@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue select test</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="ZsQKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<div id="app">
+    <select v-model="data.year" v-on:change="viewHistoryBigMood($event)" style="margin-left:20px;">
+        <option v-for="item in data.year_list" :value="item.year">{{item.year}}年</option>
+    </select>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                data: {
+                    year: '',
+                    year_list: [
+                        {year: 2020,},
+                        {year: 2021,},
+                        {year: 2022,}
+                    ]
+                }
+            }
+        },
+        methods: {
+            viewHistoryBigMood: console.log
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

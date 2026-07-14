@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>纯CSS touch左滑按钮显示demo实例页面</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="M99Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<h4>1. 纯滚动</h4>
+<div class="list">
+    <a href="javascript:" class="content">我是列表，试试左滑我</a>
+    <s class="space">
+        <button class="button" data-type="danger">删除</button>
+    </s>
+</div>
+<div class="list">
+    <a href="javascript:" class="content">我是列表，试试左滑我</a>
+    <s class="space">
+        <button class="button" data-type="danger">删除</button>
+        123
+    </s>
+</div>
+
+<h4>2. 带定位滚动</h4>
+<div class="list scroll-snap">
+    <a href="javascript:" class="content">我是列表，试试左滑我</a>
+    <s class="space">
+        <button class="button" data-type="danger">删除</button>
+    </s>
+</div>
+
+<h4>3. 多个按钮定位滚动</h4>
+<div class="list scroll-snap">
+    <a href="javascript:" class="content">我是列表，试试左滑我</a>
+    <s class="space">
+        <button class="button" data-type="danger">删除</button>
+        <button class="button" data-type="warning">不显示</button>
+    </s>
+</div>
+
+<h4>4. 多个按钮定位视差滚动</h4>
+<div class="list scroll-snap perspective">
+    <a href="javascript:" class="content">我是列表，试试左滑我</a>
+    <s class="space">
+        <button class="button" data-type="danger">删除</button>
+        <button class="button" data-type="warning">不显示</button>
+    </s>
+</div>
+
+<style>
+    *{padding:0;margin:0;}
+    /* *{padding:0;margin:0;box-sizing:border-box;}
+    html,body{overflow:hidden;} */
+</style>
+<style>
+    .list::-webkit-scrollbar { display: none; }
+    .list { display: flex; border-top: 1px solid #eee; border-bottom: 1px solid #eee; overflow-y: hidden;}
+    .content { padding: .5rem 1rem; line-height: 1.5; flex: 0 0 calc(100vw - 2rem); font-size: 1rem; color: inherit; background-color: #fff; box-shadow: 0 1px #fff, 0 -1px #fff; position: relative; }
+    .space { flex: 0 0 4rem; }
+    .button { border: 0; padding: 0; font-size: 1rem; color: #fff; width: 4rem; height: 2.5rem; position: absolute; right: 0; outline: 0; }
+    [data-type="danger"] { background-color: #eb4646; }
+    [data-type="warning"] { background-color: #f59b00; }
+    /* 自动右边缘定位 */
+    .scroll-snap { scroll-snap-type: x mandatory; }
+    .scroll-snap .space { scroll-snap-align: end; }
+    .scroll-snap .content { scroll-snap-align: start; }
+    /* 多个按钮定位 */
+    .button:nth-of-type(2) { right: 4rem; }
+    .button:nth-of-type(3) { right: 8rem; }
+    .space:nth-child(4) { flex: 0 0 8rem; }
+    .space:nth-child(5) { flex: 0 0 12rem; }
+    /* 视差滚动 */
+    .perspective { perspective: 1px; transform-style: preserve-3d; perspective-origin: 100% 50%; }
+    .perspective .button:last-of-type { transform: translate3D(2rem, 0, -1px) scale(2); }
+    .perspective .button:first-of-type { transform: translate3D(2rem, 0, -3px) scale(4); }
+</style>
+
+<style>
+    .content{
+        position: relative;
+        z-index: 2;
+        box-sizing: border-box;
+        flex: 0 0 100vw;
+    }
+    .space{
+        position: sticky;
+        right: 0;
+        bottom: 0;
+        flex: none;
+    }
+    .button { position: static;}
+</style>
+<script>
+
+</script>
+</body>
+</html>

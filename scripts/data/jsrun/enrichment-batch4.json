@@ -1,0 +1,464 @@
+[
+  {
+    "slug": "jsrun-Zd8Kp",
+    "title": "粘贴与拖放内容识别",
+    "description": "演示在 textarea 上监听 paste/drop，解析 clipboardData 与 dataTransfer 中的 files 与 items 并预览。",
+    "tags": [
+      "clipboardData",
+      "dataTransfer",
+      "粘贴",
+      "拖放",
+      "文件预览",
+      "Blob URL"
+    ],
+    "intro": "页面上方提供可复制的富文本与图片区域，下方是放置用的 textarea。粘贴或拖入内容后，会分别遍历 files 与 items：文件项生成 Blob URL 并展示名称、大小、类型（图片则缩略图），字符串项异步 getAsString 后写入全量预览区。适合排查不同来源（截图、文件、富文本）在剪贴板/拖放 API 中的差异。",
+    "steps": [
+      "从上方富文本或图片区域复制内容，或从系统选中文件",
+      "在红色边框的「放置区域」textarea 中粘贴或拖入",
+      "查看红色预览区中「文件预览」与「全量内容预览」的差异",
+      "打开控制台观察 types、files.length、items.length 等日志"
+    ],
+    "docs": [
+      {
+        "label": "ClipboardEvent.clipboardData",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/ClipboardEvent/clipboardData"
+      },
+      {
+        "label": "DataTransfer",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/DataTransfer"
+      },
+      {
+        "label": "URL.createObjectURL",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/URL/createObjectURL_static"
+      }
+    ],
+    "notes": "HTML 原标题为「识别优化」；拖拽相关事件做了 preventDefault，实际解析逻辑在 drop 与 paste 上。"
+  },
+  {
+    "slug": "jsrun-AegKp",
+    "title": "Vue 多选选中效果三种写法",
+    "description": "用三个并列 Vue 实例对比数组、对象映射、条目属性三种多选状态管理。",
+    "tags": [
+      "Vue 2",
+      "多选",
+      "响应式",
+      "$set",
+      "$delete",
+      "列表交互"
+    ],
+    "intro": "同一份 javascript/css/html/vue 列表被三个 app 共享。app_1 用 id 数组存选中并用 ~indexOf 判断；app_2 用对象键映射配合 $set/$delete；app_3 直接在 item 上挂 vv_selected。选中项文字变红（.selected）。可对照不同数据结构对勾选状态与渲染的影响。",
+    "steps": [
+      "分别点击三列列表项切换选中（再次点击取消）",
+      "观察每列上方展示的选中 id 列表是否同步变化",
+      "对比数组 splice、对象 $set/$delete、item 属性三种实现差异",
+      "注意三实例共享同一 _list 引用时 app_3 改写 item 可能影响其他列"
+    ],
+    "docs": [
+      {
+        "label": "Vue 2 列表渲染",
+        "url": "https://v2.cn.vuejs.org/v2/guide/list.html"
+      },
+      {
+        "label": "Vue.set / Vue.delete",
+        "url": "https://v2.cn.vuejs.org/v2/api/#Vue-set"
+      }
+    ],
+    "notes": "页面依赖全局 Vue，本地 HTML 未内嵌 Vue CDN。"
+  },
+  {
+    "slug": "jsrun-ypzKp",
+    "title": "Office 文件浏览器端预览",
+    "description": "选择本地 Word/PPT/Excel 等文件，用多个库在页面内渲染预览。",
+    "tags": [
+      "docx-preview",
+      "PPTXjs",
+      "SheetJS",
+      "mammoth",
+      "文件预览",
+      "Office"
+    ],
+    "intro": "页面提供 file input，按 MIME 或扩展名分流：.docx（及部分 msWord）走 docx.renderAsync；.pptx 走 PPTXjs 的 pptxToHtml；.xlsx/.xls/.et/.csv/.xml 走 SheetJS 读 workbook 再 sheet_to_html。同时加载了 mammoth（代码中有 render_mammoth 但默认分支未走它）以及 Promise/JSZip 等依赖，体量较大。",
+    "steps": [
+      "点击文件选择控件，挑选 docx、pptx 或表格类文件",
+      "等待预览区渲染出文档、幻灯片或工作表 HTML",
+      "打开控制台查看 ext、workbook、docx finished 等日志",
+      "可对比不同格式与库的预览效果与限制"
+    ],
+    "docs": [
+      {
+        "label": "docx-preview",
+        "url": "https://www.npmjs.com/package/docx-preview"
+      },
+      {
+        "label": "SheetJS",
+        "url": "https://docs.sheetjs.com/"
+      },
+      {
+        "label": "mammoth.js",
+        "url": "https://www.npmjs.com/package/mammoth"
+      },
+      {
+        "label": "kkFileView",
+        "url": "https://kkfileview.keking.cn/zh-cn/docs/home.html"
+      }
+    ],
+    "notes": "依赖多个 CDN（unpkg、bootcdn、lilnong 静态资源、cdn.sheetjs.com），离线或跨域可能失败。.doc 等老格式分支被注释掉。"
+  },
+  {
+    "slug": "jsrun-vIzKp",
+    "title": "Flex/Calc/绝对定位底部固定对比",
+    "description": "对比多种 header-content-footer 布局在固定高度、max-height、min-height 下的底部固定表现。",
+    "tags": [
+      "Flexbox",
+      "sticky footer",
+      "absolute",
+      "calc",
+      "布局",
+      "overflow"
+    ],
+    "intro": "四组方案并排展示：demo1 为纵 flex + footer absolute + 底 padding；同结构再演示 content 加 flex:auto；demo2 纯 flex 无 absolute；demo3 用 calc 限制 content 最大高度；demo4 头尾 absolute、content 全高加上下 padding。顶部固定「add」按钮可向所有 .content 追加 remove 按钮以观察溢出滚动。",
+    "steps": [
+      "先观察各组在默认 content 较少时 footer 是否贴底",
+      "点击 add 向各 content 追加按钮，观察滚动与 footer 位置",
+      "拖拽改变各 .body 尺寸（resize），对比 maxHeight/minHeight 变体",
+      "对照页面内中文说明理解 absolute、flex:auto、calc 的取舍"
+    ],
+    "docs": [
+      {
+        "label": "CSS Flexible Box",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_flexible_box_layout"
+      },
+      {
+        "label": "calc()",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/calc"
+      },
+      {
+        "label": "position",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/position"
+      }
+    ],
+    "notes": "Grid 方案（demo5）在 HTML 中已整段注释，当前不可见。"
+  },
+  {
+    "slug": "jsrun-QUzKp__98981",
+    "title": "SVG 路径描边与沿线运动动画",
+    "description": "汇总 SVG stroke-dasharray 流光描边与 CSS offset-path 沿线粒子动画片段。",
+    "tags": [
+      "SVG",
+      "stroke-dasharray",
+      "offset-path",
+      "CSS 动画",
+      "数据大屏",
+      "Vue 片段"
+    ],
+    "intro": "文件混入多份示例：顶部简单 path；中部是「信息机房应用成效」类 Vue/SFC 片段（tab 切换多组 polyline，g-rect-fill 用 dashoffset 做流动高亮）；底部是登录页风格的 SVG path + 多个 div 沿 offset-path 循环运动。含 CSDN 原文链接与版权声明。可直接运行并可见的主要是静态 SVG 与末段样式动画；Vue 模板依赖未引入的运行环境。",
+    "steps": [
+      "打开页面观察顶部 path 与独立 polyline 的描边流光动画",
+      "查看中部 Vue 模板中的 svgData 与 lineMove 关键帧实现思路",
+      "观察底部沿线运动元素（需浏览器支持 offset-path）",
+      "阅读文内 CSDN 链接了解大屏线条动画写法"
+    ],
+    "docs": [
+      {
+        "label": "CSDN 原文：SVG 线条动画",
+        "url": "https://blog.csdn.net/sunxiaobai1/article/details/122862625"
+      },
+      {
+        "label": "stroke-dasharray",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/SVG/Attribute/stroke-dasharray"
+      },
+      {
+        "label": "offset-path",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/offset-path"
+      }
+    ],
+    "notes": "meta slug 为 QUzKp；中间 Vue SFC（scoped less、组件 import）在纯 HTML 环境下无法完整运行。"
+  },
+  {
+    "slug": "jsrun-rfUKp",
+    "title": "固定宽度卡片自动换行过渡",
+    "description": "容器可缩放时，按列数重算 absolute 定位，用 CSS transition 实现换行动画。",
+    "tags": [
+      "Vue 2",
+      "瀑布流式布局",
+      "resize",
+      "transition",
+      "绝对定位",
+      "响应式"
+    ],
+    "intro": "对应 SegmentFault 问题：固定宽卡片在容器变宽时自动换行并带过渡。列表容器 relative 可 resize，子项 absolute；computed 按当前宽度算出每行列数，得到 left/top；定时读取 offsetWidth（对齐到 50px 网格）。item 有 transition: all 1s，宽度变化时位移动画可见。",
+    "steps": [
+      "观察红框列表中约 70 个半透明色块的网格排列",
+      "拖动手柄改变容器宽度，观察列数变化与位移动画",
+      "缩小宽度使每行卡片减少，确认过渡是否平滑",
+      "阅读 computed 中按宽度求 leftWidth、行/列索引的算法"
+    ],
+    "docs": [
+      {
+        "label": "SegmentFault 原问题",
+        "url": "https://segmentfault.com/q/1010000040884063"
+      },
+      {
+        "label": "CSS transition",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/transition"
+      }
+    ],
+    "notes": "HTML 原 title 为 SegmentFault URL；@resize 非标准事件，实际靠 setInterval 轮询宽度。"
+  },
+  {
+    "slug": "jsrun-ISgKp",
+    "title": "Vue 递归树形组件",
+    "description": "用自引用 item 组件实现可折叠、可增子节点的树形视图。",
+    "tags": [
+      "Vue 2",
+      "递归组件",
+      "树形结构",
+      "折叠展开",
+      "组件通信"
+    ],
+    "intro": "经典 Vue 树形 demo：item 模板内再渲染 item。文件夹由 children 数组判定；单击切换 open；双击叶子可变为文件夹并新增子项；文件夹下有「+」可添加。左侧竖线样式强化层级。适合学习组件递归与树数据就地修改。",
+    "steps": [
+      "点击带 [+/-] 的节点展开或折叠子树",
+      "双击叶子节点，将其变为文件夹并自动添加子项",
+      "在已展开文件夹底部点「+」添加 new stuff",
+      "对照 isFolder、toggle、changeType、addChild 理解递归结构"
+    ],
+    "docs": [
+      {
+        "label": "Vue 2 组件基础（递归）",
+        "url": "https://v2.cn.vuejs.org/v2/guide/components.html"
+      },
+      {
+        "label": "Vue.set",
+        "url": "https://v2.cn.vuejs.org/v2/api/#Vue-set"
+      }
+    ],
+    "notes": "依赖全局 Vue；本地 HTML 未内嵌 CDN。sketch 中另有 SegmentFault 关联描述。"
+  },
+  {
+    "slug": "jsrun-ezyKp",
+    "title": "端内 Upload 组件（客户端/H5 分流）",
+    "description": "封装 vv-upload：按 UA 与开关在 App 内客户端上传与 H5 file 输入间切换。",
+    "tags": [
+      "Vue 2",
+      "上传",
+      "UA 检测",
+      "slot",
+      "混合 App",
+      "组件封装"
+    ],
+    "intro": "自定义 vv-upload：默认 slot 文案「上传图片」，隐藏 file input（accept 默认 image/*）。根据 isClientAutoUpload、isClientUpload 等 props 计算 labelFor：端内客户端上传时返回 false 并走 uploadImage 分支占位逻辑，否则绑定 input id 走 H5 选文件。示例展示默认、带 slot、多个实例。适合对照混合 App 上传能力封装思路。",
+    "steps": [
+      "查看三个 vv-upload 实例的默认文案与自定义 slot",
+      "在浏览器中点击上传，确认走 H5 隐藏 file input",
+      "阅读 isIOS/isAndroid/isVVMusic 与 labelFor 计算逻辑",
+      "对照 props 思考端内自动分流与端外 H5 的开关组合"
+    ],
+    "docs": [
+      {
+        "label": "Vue 2 自定义组件",
+        "url": "https://v2.cn.vuejs.org/v2/guide/components-custom-events.html"
+      },
+      {
+        "label": "<input type=\"file\">",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/input/file"
+      }
+    ],
+    "notes": "客户端上传分支仅为占位（空 XHR）；inputChange 使用 e.files，标准事件应为 e.target.files。"
+  },
+  {
+    "slug": "jsrun-L5WKp",
+    "title": "df 输出解析为 Vue 进度条",
+    "description": "把 Linux df -h 风格文本拆成挂载点与占用，并用进度条可视化。",
+    "tags": [
+      "Vue 2",
+      "进度条",
+      "文本解析",
+      "磁盘占用",
+      "可视化"
+    ],
+    "intro": "data 中硬编码多行 df 输出；computed 跳过表头，用非空白正则拆字段，取出挂载点、Use%、Used/Size，渲染为左名称、中绿色进度条、右「已用/总量」。进度条宽度直接用 Use% 字符串（如 11%）。简洁示范：把 shell 文本变成前端可视化。",
+    "steps": [
+      "打开页面查看各挂载点对应的绿色进度条",
+      "对照右侧「Used/Size」与进度条宽度是否一致",
+      "阅读 coumputedData 中 match(/[^\\s]+/g) 的字段下标含义",
+      "可修改 data 中字符串模拟不同 Use% 再刷新观察"
+    ],
+    "docs": [
+      {
+        "label": "Vue 2 计算属性",
+        "url": "https://v2.cn.vuejs.org/v2/guide/computed.html"
+      },
+      {
+        "label": "df (Linux)",
+        "url": "https://man7.org/linux/man-pages/man1/df.1.html"
+      }
+    ],
+    "notes": "依赖全局 Vue；进度条 class 命名含拼写 coumputedData。"
+  },
+  {
+    "slug": "jsrun-PT3Kp",
+    "title": "不确定高度列表展开收起动画",
+    "description": "先测量 ul 实际高度再在固定矮高度与全高之间 transition，实现动态高度折叠。",
+    "tags": [
+      "Vue 2",
+      "高度动画",
+      "transition",
+      "$nextTick",
+      "折叠面板"
+    ],
+    "intro": "随机生成约 10–20 条 li，mounted 的 $nextTick 里记录 ul 真实 offsetHeight 并设为 style.height。点击「收缩/放出」在该全高与 3em 之间切换；ul 有 transition: all 0.5s 与 overflow:hidden。页面引入了 Element UI 样式/脚本但交互未使用其组件。解决「高度未知时不好做 CSS 动画」的常见手法。",
+    "steps": [
+      "进入页面等待列表按随机条数渲染并测定高度",
+      "点击「收缩/放出」观察列表高度过渡",
+      "再次点击恢复全高，确认动画连贯",
+      "打开控制台查看 testnum、showli 相关日志"
+    ],
+    "docs": [
+      {
+        "label": "Element.offsetHeight",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/HTMLElement/offsetHeight"
+      },
+      {
+        "label": "Vue 2 $nextTick",
+        "url": "https://v2.cn.vuejs.org/v2/api/#vm-nextTick"
+      }
+    ],
+    "notes": "依赖全局 Vue；Element UI 对本 demo 非必需。"
+  },
+  {
+    "slug": "jsrun-M3hKp",
+    "title": "Canvas 鼠标探照灯效果",
+    "description": "用 getImageData/putImageData 与径向渐变描边，随鼠标移动模拟探照灯遮罩。",
+    "tags": [
+      "Canvas",
+      "getImageData",
+      "径向渐变",
+      "mousemove",
+      "图像处理"
+    ],
+    "intro": "Canvas 加载跨域 logo 图后 drawImage，再 getImageData。mousemove 时先 putImageData 还原，再以鼠标为圆心创建径向透明到黑色的粗线圆弧，形成周围压暗、中心相对透出的探照灯效果。HTML 标题写「视口操作，DOM」，实现主体是 Canvas 像素与渐变描边，而非 DOM 视口 API。",
+    "steps": [
+      "等待图片绘制到 canvas（需 logo 图可跨域加载）",
+      "在页面上移动鼠标，观察探照灯中心跟随",
+      "理解 putImage 中 createRadialGradient 与 arc stroke 的叠加",
+      "若画面空白，检查跨域与图片 URL 是否可访问"
+    ],
+    "docs": [
+      {
+        "label": "CanvasRenderingContext2D.getImageData",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/getImageData"
+      },
+      {
+        "label": "createRadialGradient",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/createRadialGradient"
+      }
+    ],
+    "notes": "依赖 http://cdn.jsrun.net 上的 logo；CORS 失败时 getImageData 会抛错。style 标签内误写了一句中文错误提示文本。"
+  },
+  {
+    "slug": "jsrun-yPiKp",
+    "title": "纯 CSS 按钮 Loading 菊花",
+    "description": "给按钮加 loading 类即可隐藏文字并显示无图片旋转菊花指示器。",
+    "tags": [
+      "纯 CSS",
+      "loading",
+      "伪元素",
+      "box-shadow",
+      "动画",
+      "按钮"
+    ],
+    "intro": "源自张鑫旭微码示例：匹配 a/label 且 class 含 -btn，再加 .loading。::first-line 文字透明隐藏文案；::before 用多重 box-shadow 拼出八点菊花，steps(8) 的 spinZoom 动画缩放旋转。示例为带 -btn loading 的链接。无需图片或 JS。",
+    "steps": [
+      "打开页面观察链接上的旋转菊花与透明文字",
+      "阅读 .loading::before 的 box-shadow 八点布局",
+      "尝试去掉 loading 类（在控制台或本地改）恢复文字可见",
+      "对照 spinZoom 关键帧理解 steps 分步旋转"
+    ],
+    "docs": [
+      {
+        "label": "张鑫旭微码原页",
+        "url": "http://www.zhangxinxu.com/php/microCodeDetail.php?id=5"
+      },
+      {
+        "label": "CSS ::before",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/::before"
+      },
+      {
+        "label": "animation",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation"
+      }
+    ],
+    "notes": "HTML 原 title 为张鑫旭 URL；选择器要求 class 名包含 -btn。"
+  },
+  {
+    "slug": "jsrun-UbeKp",
+    "title": "Vue2/Vue3 共存与组件 API 化探索",
+    "description": "同页加载 Vue2 与 Vue3，挂载 Vue2 组件并草拟框架无关的 create/update/destroy API。",
+    "tags": [
+      "Vue 2",
+      "Vue 3",
+      "跨版本",
+      "组件包装",
+      "v-model",
+      "slot"
+    ],
+    "intro": "先引入 Vue 2.6 存为 Vue2，再引入 Vue 3.2 全局构建。定义带 value/a/slots 的 vue2Data 组件，在 Vue2 中用 v-model、动态具名 slot 挂载。后续 getProps 读取 props 默认值，APIComponent 草拟 create/setOptions/setSlot/destory 与事件 on/once/emit/off（create 内仍为占位）。用于探索「用统一 API 在非 Vue3 环境消费 Vue2 组件」的方向。",
+    "steps": [
+      "打开控制台确认 Vue2、Vue3 版本并存",
+      "在 #vue2_1 区域点击按钮触发 input / input1 事件并看日志",
+      "阅读 getProps 如何从 props 定义推导初始值",
+      "查看 APIComponent 的状态机与待实现方法清单"
+    ],
+    "docs": [
+      {
+        "label": "Vue 2 文档",
+        "url": "https://v2.cn.vuejs.org/"
+      },
+      {
+        "label": "Vue 3 全局构建",
+        "url": "https://cn.vuejs.org/guide/quick-start.html"
+      },
+      {
+        "label": "相关 JSRUN：vue2InVue2",
+        "url": "https://jsrun.net/RM9Kp/edit"
+      }
+    ],
+    "notes": "标题含「vue3 使用 vue2」，本文件主体仍是 Vue2 挂载与 API 设计草稿；Vue3 变量已赋值但未完成桥接渲染。"
+  },
+  {
+    "slug": "jsrun-ANCKp",
+    "title": "上传前本地文件预览（拖放/粘贴）",
+    "description": "拖放、点击或粘贴文件后，在上传前本地预览并展示音频/视频/图片/文本/JSON/PDF/Excel 信息。",
+    "tags": [
+      "Vue 2",
+      "文件预览",
+      "拖放上传",
+      "PDF.js",
+      "SheetJS",
+      "Blob URL"
+    ],
+    "intro": "左侧虚线区支持点击选文件与拖放高亮；右侧展示 name/size/type/lastModified。analysisFile 按 MIME/扩展名分流：文本、JSON（尝试 parse）、音视频与图片用 Object URL 并读取时长/宽高；PDF 用 lilnong 上 pdf.js viewer iframe；xlsx/xls 用 XLSX 转各 sheet HTML。亦监听 paste。预览后会调用 uploadFile 向 /upload_any 提交（演示环境可能失败）。",
+    "steps": [
+      "将图片、音频、视频、pdf 或 xlsx 拖入虚线上传区",
+      "或点击「点击上传」选择文件，查看右侧基本信息与预览",
+      "复制含文件的剪贴板内容后在页面粘贴，确认是否触发预览",
+      "切换 Excel 多表标题查看不同 sheet 的 HTML 表格"
+    ],
+    "docs": [
+      {
+        "label": "PDF.js 相关测试页",
+        "url": "https://www.lilnong.top/static/html/pdfjs-test.html"
+      },
+      {
+        "label": "SheetJS",
+        "url": "https://docs.sheetjs.com/"
+      },
+      {
+        "label": "HTML Drag and Drop",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web/API/HTML_Drag_and_Drop_API"
+      }
+    ],
+    "notes": "HTML 原 title 为路径式文件名；页面声明依赖 Element 图标类名与 XLSX 全局，完整能力需对应脚本在运行环境中可用。"
+  }
+]

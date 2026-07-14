@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://www.jb51.net/article/102345.htm</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="xeXKp" />
+  <style>
+
+  body {
+  background-color:black;
+  }
+  #canvas {
+  position:absolute;
+  top:50%;
+  left:50%;
+  margin:-151px 0 0 -401px;
+  border:1px dashed #171717;
+  }
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="800px" height="300px">您的浏览器不支持canvas</canvas>
+<script>
+//判断是否支持canvaas
+  function isSupportCanvas(canvas) {
+  return !!(canvas.getContext && canvas.getContext("2d"));
+  }
+  //requestAnimationFrame会自动使用最优的帧率进行渲染
+  function setupRAF() {
+  var lastTime = 0;
+  //兼容各个浏览器，Internet Explorer11、Google Chrome(Microsoft Edge)、Mozilla Firefox、Opera
+  var vendors = ["ms", "moz", "webkit", "o"];
+  for(var i=0; i<vendors.length; i++) {
+   window.requestAnimationFrame = window[vendors[i] + "RequestAnimationFrame"];
+   window.cancelAnimationFrame = window[vendors[i] + "CancelAnimationFrame"] || window[vendors[i] + "CancelRequestAnimationFrame"];
+   //测试浏览器支持哪一张
+   if(window.requestAnimationFrame) {
+   console.log(vendors[i] + "requestAnimationFrame");
+   }
+   if(window[vendors[i] + "CancelAnimationFrame"]) {
+   console.log(vendors[i] + "CancelAnimationFrame");
+   }
+   if(window[vendors[i] + "CancelRequestAnimationFrame"]) {
+   console.log(vendors[i] + "CancelRequestAnimationFrame");
+   }
+  }
+  //回退机制
+  if(!window.requestAnimationFrame) {
+   window.requestAnimationFrame = function(callback, element) {
+   var currentTime = new Date().getTime();
+   var timeToCall = Math.max(0, 16-(currentTime-lastTime));
+   var callTime = currentTime + timeToCall;
+   var id = window.setTimeout(function() {
+    callback(callTime);
+   }, timeToCall);
+   lastTime = callTime;
+   return id;
+   };
+  }
+  //回退机制
+  if(!window.cancelAnimationFrame) {
+   window.cancelAnimationFrame = function(id) {
+   clearTimeout(id);
+   }
+  }
+  }
+  var CanvasController = function(canvas) {
+  var ctx = canvas.getContext("2d");
+  ctx.lineWidth = 1;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.font = "bold 18pt Calibri";
+  var i = 0;
+  var step = 1;
+  var unitX = 90
+  var unitY = canvas.height * 0.3;
+  function update() {
+   i += step;
+   i %= 360;
+  }
+  //渲染坐标
+  function rendeRcoordinate() {
+   ctx.strokeStyle = "white";
+   ctx.beginPath();
+   var topUnit = 0.5 * canvas.height - unitY;
+   var bottomUnit = 0.5 * canvas.height + unitY;
+   ctx.moveTo(0, topUnit);
+   ctx.lineTo(canvas.width, topUnit);
+   ctx.moveTo(0, bottomUnit);
+   ctx.lineTo(canvas.width, bottomUnit);
+   ctx.stroke();
+  }
+  //渲染三角函数
+  function render(trigonometricFunction, color) {
+   ctx.strokeStyle = color;
+   ctx.beginPath();
+   var isInRange = false;
+   for(var x=0; x < canvas.width; x++) {
+   var a = (x + i) / 180 * Math.PI;
+   var y = trigonometricFunction(a);
+   //tan值有可能是无穷大或无穷小
+   if(isFinite(y)) {
+    y = y * unitY + 0.5 * canvas.height;
+    if(isInRange) {
+    if(y < 0 || y > canvas.height) {
+     isInRange = false;
+    } else {
+     ctx.lineTo(x, y);
+    }
+    } else {
+    isInRange = true;
+    ctx.moveTo(x, y);
+    }
+    if(x == 0) {
+    ctx.fillStyle = color;
+    var funcName = trigonometricFunction.toString();
+    var reg = /function\s*(\w*)/i;
+    var matches = reg.exec(funcName);
+    ctx.fillText(matches[1], 0, y);
+    } 
+   } else {
+    isInRange = false;
+   }
+   }
+   ctx.stroke();
+  }
+  this.init = function() {
+   function loop() {
+   requestAnimationFrame(loop, canvas);
+   ctx.clearRect(0, 0, canvas.width, canvas.height);
+   update();
+   rendeRcoordinate();
+   render(Math.sin, "red");
+   render(Math.cos, "green");
+   render(Math.tan, "blue");
+   }
+   loop();
+  }
+  }
+  function init() {
+  var canvas = document.getElementById("canvas");
+  if(!isSupportCanvas(canvas)) {
+   return;
+  }
+  setupRAF();
+  var canvasController = new CanvasController(canvas);
+  canvasController.init();
+  }
+  init();
+</script>
+</body>
+</html>

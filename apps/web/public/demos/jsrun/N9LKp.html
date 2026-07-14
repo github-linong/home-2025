@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>tabs切换</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="N9LKp" />
+  <style>
+.tab-inner{
+    width: 210px;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    height: 32px;
+    line-height: 32px;
+    color: #2f78ef;
+    margin-bottom: 32px;
+}
+
+.tablist:nth-child(1) {
+    width: 102px;
+    border-radius: 16px 0px 0px 16px;
+    border: solid 1px #2f78ef;
+}
+.tablist:nth-child(2) {
+    width: 102px;
+    border-radius: 0px 16px 16px 0px;
+    border: solid 1px #2f78ef;
+}
+.tabAcitive {
+    background: #2f78ef;
+    color: #fff;
+}
+  </style>
+</head>
+<body>
+<div id="app">
+    <div class="tab-inner">
+        <div v-for="(item, index) in tabs" 
+            class="tablist" :key="item"
+            :class="{'tabAcitive':item == minTabValue}"
+            @click="handleActiveTabs(item,index)">{{item}}</div>
+    </div>
+    <div v-if="minTabValue == '即席分析'">即席</div>
+    <div v-if="minTabValue == '固定报表'">固定</div>
+    <div>{{minTabValue}}</div>
+    <div>{{newStatus}}</div>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data(){
+    return {
+        tabs: ["即席分析", "固定报表"],
+        minTabValue: '即席分析',
+        newStatus: ''
+    }
+  },
+  watch:{},
+  methods: {
+      handleActiveTabs(item) {
+        this.minTabValue = item
+        this.newStatus = localStorage.getItem("data", this.minTabValue);
+      }
+  }
+})
+</script>
+</body>
+</html>

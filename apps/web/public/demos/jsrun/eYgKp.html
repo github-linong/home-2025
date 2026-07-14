@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>datetime-local</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="eYgKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <input type="datetime-local" v-model="test" />
+  <p>{{test}}</p>
+  <p>{{formmat}}</p>
+  <p>{{Newformmat}}</p>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    test: ''
+  },
+  computed: {
+    formmat() {
+      if(this.test){
+        var _d = new Date(this.test)
+        return `${_d.getFullYear()}-${_d.getMonth()+1}-${_d.getDate()} ${_d.getHours()}:${_d.getMinutes()}:${_d.getSeconds()}`
+      }else{
+        return ''
+      }
+    },
+    Newformmat() {
+      if(this.test){
+        var _d = new Date(this.test);
+        _d = new Date();
+        return `${_d.getFullYear()}-${_d.getMonth()+1}-${_d.getDate()} ${_d.getHours()}:${_d.getMinutes()}:${_d.getSeconds()}`
+      }else{
+        return ''
+      }
+    }
+  }
+})
+</script>
+</body>
+</html>

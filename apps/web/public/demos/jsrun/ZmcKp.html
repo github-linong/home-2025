@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>请求生成器</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="ZmcKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcss.com/vue/2.6.14/vue.min.js"></script>
+<div id="app">
+    <input type="" v-model="baseURL">
+    <div>
+        <h2>response code: </h2>
+        <input type="number" v-model.number="data.responseCode">
+    </div>
+    <div>
+        <h2>response Headers: <button @click="data.responseHeaders.push({
+                            key: 'key',
+                            value: 'value'
+                        })">+</button></h2>
+        <div v-for="(item, idx) in data.responseHeaders">
+            <input v-model="item.key">
+            <input v-model="item.value">
+            <button @click="data.responseHeaders.splice(idx, 1)">-</button>
+        </div>
+    </div>
+    <div>
+        <h2>response Data: </h2>
+        <textarea type="textarea" v-model.number="data.responseData"></textarea>
+    </div>
+    <div>
+        <h2>response Sleep: </h2>
+        <input type="number" v-model.number="data.responseSleep">
+    </div>
+    
+    <h2>JSON.stringify(data, null, 4)</h2>
+    <div style="white-space: pre;">{{JSON.stringify(data, null, 4)}}</div>
+    
+</div>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                baseURL: 'https://www.lilnong.top/cors/',
+                data: {
+                    responseCode: 200,
+                    responseHeaders: [
+                        {
+                            key: 'content-type',
+                            value: 'application/json'
+                        }
+                    ],
+                    responseData: '{\n    "a": 1,\n    "b": 2\n}',
+                    responseSleep: 0,
+                }
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

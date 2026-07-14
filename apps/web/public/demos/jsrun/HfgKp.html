@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>数据遍历渲染</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="HfgKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <h1>{{solutionGameIndustry.desc}}</h1>
+  <h2>{{solutionGameIndustry.properties.title.title}}</h2>
+  <h3>{{solutionGameIndustry.properties.items.title}}</h3>
+  <p v-for="item in solutionGameIndustry.properties.items.developValue">{{item.title}}</p>
+  <p v-for="item in solutionGameIndustry.properties.items.children.items.developValue">{{item.desc}}</p>
+</div>
+<script>
+data = {
+  "solutionGameIndustry": {
+    "desc": "专为游戏行业量身定制模块",
+    "type": "SolutionGameIndustry",
+    "properties": {
+      "title": {
+        "type": "Text",
+        "title": "专为游戏行业量身定制--大标题",
+        "required": 1,
+        "developValue": "专为游戏行业量身定制"
+      },
+      "imgGroup": {
+        "type": "FieldsGroup",
+        "mixin": 1,
+        "title": "icon",
+        "children": {
+          "webImg": {
+            "type": "FieldsGroup",
+            "mixin": 1,
+            "title": "专为游戏行业量身定制图片",
+            "inline": "inline",
+            "children": {
+              "img": {
+                "type": "Image",
+                "title": "1倍图",
+                "required": 1,
+                "developValue": "/res/SolutionGameIndustry/猛犸@1x.png"
+              },
+              "img_2x": {
+                "type": "Image",
+                "title": "2倍图",
+                "required": 1,
+                "developValue": "/res/SolutionGameIndustry/猛犸@2x.png"
+              }
+            }
+          },
+          "wapImg": {
+            "type": "FieldsGroup",
+            "title": "移动端专为游戏行业量身定制图片",
+            "mixin": 1,
+            "inline": "inline",
+            "children": {
+              "m_img_2x": {
+                "type": "Image",
+                "required": 1,
+                "title": "2x",
+                "developValue": "/res/SolutionGameIndustry/m/猛犸@2x.png"
+              },
+              "m_img_3x": {
+                "type": "Image",
+                "required": 1,
+                "title": "3x",
+                "developValue": "/res/SolutionGameIndustry/m/猛犸@3x.png"
+              }
+            }
+          }
+        }
+      },
+      "items": {
+        "title": "",
+        "type": "List",
+        "developValue": [{
+            "title": "猛犸"
+          },
+          {
+            "title": "有数"
+          },
+          {
+            "title": "专属云"
+          },
+          {
+            "title": "时序数据库（即将上线）"
+        }],
+        "children": {
+          "title": {
+            "type": "Text",
+            "title": "小标题",
+            "required": 1,
+            "developValue": "猛犸"
+          },
+          "items": {
+            "title": "",
+            "type": "List",
+            "developValue": [{
+              "desc": "超五星级机房，顶级硬件配置"
+            },
+            {
+              "desc": "123456"
+            },
+            {
+              "desc": "789"
+            },
+            {
+              "desc": "789123"
+            }],
+            "children": {
+              "desc": {
+                "type": "MultiText",
+                "title": "描述",
+                "required": 1,
+                "developValue": "超五星级机房，顶级硬件配置"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+new Vue({
+	el: '#app',
+  data: data
+})
+</script>
+</body>
+</html>

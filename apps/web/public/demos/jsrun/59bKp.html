@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>穿梭框-统一数据源</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="59bKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<div id="app">
+  <div>
+    未选择筛选框<input type="text" v-model="value1"/>
+  </div>
+  <div>
+    已选择筛选框<input type="text" v-model="value2"/>
+  </div>
+  <div id="wrap">
+    <p>直接移动</p>
+    <ul>
+      <li v-for="item in list1" @click="item.state=2">{{item.id}}</li>
+    </ul>
+    <ul>
+      <li v-for="item in list2" @click="item.state=1">{{item.id}}</li>
+    </ul>
+  </div>
+  <div id="wrap">
+    <p>选择 <button @click="moveItem(1,2)">&gt;</button><button @click="moveItem(2,1)">&lt;</button></p>
+    <ul>
+      <li v-for="item in list1" @click="item.checked=true">{{item.id}}</li>
+    </ul>
+    <ul>
+      <li v-for="item in list2" @click="item.checked=true">{{item.id}}</li>
+    </ul>
+  </div>
+  <div id="wrap">
+    <p>选择，不会清空选择项 <button @click="moveChecked()">&gt;</button><button @click="moveUnChecked()">&lt;</button></p>
+    <ul>
+      <li v-for="item in list1" @click="item.checked=true">{{item.id}}</li>
+    </ul>
+    <ul>
+      <li v-for="item in list2" @click="item.checked=true">{{item.id}}</li>
+    </ul>
+  </div>
+  
+  <ul>
+    <li v-for="item in list">{{item}}</li>
+  </ul>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data(){
+    return {
+    	list: [],  
+      value1: '',  
+      value2: ''
+    }
+  },
+  methods: {
+    moveItem(state, changeState){
+      this.list.forEach(v=>{
+        if(v.checked){
+          v.checked = false
+          if(v.state == state)
+          	v.state = changeState
+        }
+      })
+    },
+    moveChecked(){
+      this.list1.forEach(v=>{
+        if(v.checked){
+          v.checked = false
+          if(v.state == 1)
+          	v.state = 2
+        }
+      })
+    },
+    moveUnChecked(){
+      this.list2.forEach(v=>{
+        if(v.checked){
+          v.checked = false
+          if(v.state == 2)
+          	v.state = 1
+        }
+      })
+    }
+  },
+  mounted(){
+    setTimeout(()=>{
+      this.list = new Array(100).fill(1).map((v,i)=>{
+				return {
+          id: (''+(i+1)).padStart(8, '0'),
+          state: 1,
+          checked: false,
+        }
+			})
+    })
+  },
+  computed:{
+    list1(){
+      return this.list.filter(v=>v.state==1 && v.id.indexOf(this.value1) != -1)
+    },
+    list2(){
+      return this.list.filter(v=>v.state==2 && v.id.indexOf(this.value2) != -1)
+    }
+  }
+})
+</script>
+</body>
+</html>

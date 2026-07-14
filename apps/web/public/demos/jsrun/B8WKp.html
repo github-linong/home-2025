@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>angular 回显数据</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="B8WKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.staticfile.org/angular.js/1.4.6/angular.min.js"></script>
+<div ng-app="myApp" ng-controller="myCtrl">
+  {{arr|filterArr}}
+  <form>
+    <p ng-repeat="x in arr">
+      <input type="checkbox" ng-model="x.checked">{{x.value}}
+    </p>
+  </form>
+</div>
+<script>
+var app = angular.module('myApp', []);
+
+app.filter('filterArr', function() { //可以注入依赖
+    return function(arr) {
+        return arr.filter(v=>v.checked).map(v=>v.value).join()
+    }
+});
+app.controller('myCtrl', function($scope) {
+  var ajaxArr = '123asdfawefsadfas'.split('')
+    // $scope.arr = [
+    //   {value: 'a',checked: false},
+    //   {value: 'b',checked: false},
+    //   {value: 'c',checked: false},
+    //   {value: 'd',checked: false}];
+  $scope.arr = ajaxArr.map(v=>({value: v,checked:false}))
+});
+</script>
+</body>
+</html>

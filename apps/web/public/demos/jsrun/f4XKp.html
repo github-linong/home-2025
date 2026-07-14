@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>$set数据更新</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="f4XKp" />
+  <style>
+.switch_plan .switch_plan_active{
+        background-color: #1890ff;
+        color:#ffffff;
+        border: none;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div>
+    <div  v-for="(item,index) in takeD" v-if="item.isRoot">
+    <div class="switch_plan">
+      <p><span v-if="item.isRequired">*(必答)</span>{{item.title}}</p>
+      <div v-for="(items,indexs) in item.jsonOptions" :key="indexs">
+          <span  @click="selectT(item,index,items,indexs)"  :class="{switch_plan_active:items.isChecked}">{{items.v}}</span>
+                  
+      </div>                        
+    </div>
+  </div>
+  </div>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data:{
+    message:"测试",
+    takeD:[
+      {
+            "createTime":"2019-05-07 16:28:48",
+            "hasOther":1,
+            "id":21,
+            "isRequired":1,
+            "isRoot":1,
+            "jsonOptions":[{"v":"是的","n":"22"},{"v":"不是","n":"23"},{"v":"gsf","n":0}],
+            "remark":"",
+            "sortNo":1,
+            "title":"你喜欢听歌吗？",
+            "type":2
+        },
+      {
+            "createTime":"2019-05-07 16:29:27",
+            "hasOther":0,
+            "id":22,
+            "isRequired":0,
+            "isRoot":1,
+            "jsonOptions":[{"v":"是的","n":"23"},{"v":"不是","n":"26"}],
+            "remark":"",
+            "sortNo":2,
+            "title":"你喜欢一个人旅行吗",
+            "type":1
+        },
+      {
+            "createTime":"2019-05-07 16:29:57",
+            "hasOther":0,
+            "id":23,
+            "isRequired":0,
+            "isRoot":1,
+            "jsonOptions":[{"v":"是的","n":"27"},{"v":"不是","n":"28"}],
+            "remark":"",
+            "sortNo":3,
+            "title":"你曾经主动追求过异性",
+            "type":1
+        },
+    ]
+  },
+  methods:{
+        selectT(item,i,items,j){
+                // console.log(items)
+                // console.log(this.$set)
+  if(item.type == 1){
+    item.jsonOptions.forEach(v=>this.$set(v, 'isChecked', false))
+    this.$set(items,"isChecked", true)
+  }else{
+    
+                this.$set(items,"isChecked",!items.isChecked)
+                console.log(item)
+  }
+            }
+        }
+})
+</script>
+</body>
+</html>

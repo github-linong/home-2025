@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>数字增加11</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="tHhKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<div id="app">
+  <button @click="random">新值</button>
+  <button @click="add">++</button>
+  <button @click="sub">--</button>
+  <div>
+    <input type="text" v-model="num" />
+    <p>{{num}}</p>
+    <p>{{numArray}}</p>
+  </div>
+  <div class="num-list"><div class="numn transition" :class="['numn'+num[i]]" v-for="(v,i) in num.length"></div></div>
+  <div class="num-list"><div class="numn transition" :class="['numn'+v]" v-for="(v,i) in numArray"></div></div>
+  
+  <div class="num-list rtl"><div class="numn transition" :class="['numn'+num[i]]" v-for="(v,i) in num.length"></div></div>
+  <div class="num-list rtl"><div class="numn transition" :class="['numn'+v]" v-for="(v,i) in numArray"></div></div>
+</div>
+<script>
+vm = new Vue({
+  el: '#app',
+  data: {
+    num: '111234567'
+  },
+  mounted() {
+    setInterval(()=>{
+      this.addRandom();
+    }, 3000)
+  },
+  methods: {
+    random() {
+      var _num = Math.random().toFixed(Math.random() * 8 + 3).slice(2);
+      this.num = '0'.repeat(_num.length);
+      // this.$nextTick(()=>{
+      //   this.num = _num
+      // })
+      setTimeout(() => {
+        this.num = _num
+      },100)
+    },
+    add() {
+      this.num = +this.num + 1 + ''
+    },
+    addRandom() {
+      this.num = +this.num + parseInt(Math.random()*100+50) + ''
+    },
+    sub() {
+      this.num = this.num - 1 + ''
+    },
+
+  },
+  computed: {
+    numArray() {
+      return this.num.split('').reverse()
+    }
+  }
+})
+</script>
+</body>
+</html>

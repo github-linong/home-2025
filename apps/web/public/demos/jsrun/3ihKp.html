@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1590000016467417</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="3ihKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <div>
+    <select name="" id="" v-model="selectIndex[0]" >
+      <option :value="index" v-for="(item, index) in data">{{item.subject}}</option>
+    </select>
+    <input type="text" v-model="defaultSelect[0]" disabled/>
+  </div>
+  <div>
+    <select name="" id="" v-model="selectIndex[1]"  v-if="selectIndex[0]!=='' && selectIndex[0]!==undefined" >
+      <option :value="index" v-for="(item, index) in data[selectIndex[0]].childrena">{{item.version_name}}</option>
+    </select>
+    <select name="" id="" v-else></select>
+    <input type="text" v-model="defaultSelect[1]"  disabled/>
+  </div>
+  <div>
+    <select name="" id="" v-model="selectIndex[2]" v-if="selectIndex[1]!=='' && selectIndex[1]!==undefined" >
+      <option :value="index" v-for="(item, index) in data[selectIndex[0]].childrena[selectIndex[1]].childrenb">{{item.grade_name}}</option>
+    </select>
+    <select name="" id="" v-else></select>
+    <input type="text" v-model="defaultSelect[2]"  disabled/>
+  </div>
+  <div>
+    <select name="" id="" v-model="selectIndex[3]" v-if="selectIndex[2]!=='' && selectIndex[2]!==undefined" >
+      <option :value="index" v-for="(item, index) in data[selectIndex[0]].childrena[selectIndex[1]].childrenb[selectIndex[2]].childrenc">{{item.section}}</option>
+    </select>
+    <select name="" id="" v-else></select>
+    <input type="text" v-model="defaultSelect[3]"  disabled/>
+  </div>
+  <div>
+    <select name="" id="" v-model="selectIndex[4]" v-if="selectIndex[3]!=='' && selectIndex[3]!==undefined" >
+      <option :value="index" v-for="(item, index) in data[selectIndex[0]].childrena[selectIndex[1]].childrenb[selectIndex[2]].childrenc[selectIndex[3]].childrend">{{item.knows}}</option>
+    </select>
+    <select name="" id="" v-else></select>
+    <input type="text" v-model="defaultSelect[4]"  disabled/>
+  </div>
+  <p v-if="selectIndex[0] || selectIndex[0] === 0">{{data[selectIndex[0]].subject}} {{data[selectIndex[0]].relation_subject}}</p>
+  <p v-if="selectIndex[1] || selectIndex[1] === 0">{{data[selectIndex[0]].childrena[selectIndex[1]].version_name}} {{data[selectIndex[0]].childrena[selectIndex[1]].relation_version}}</p>
+  <p v-if="selectIndex[2] || selectIndex[2] === 0">{{data[selectIndex[0]].childrena[selectIndex[1]].childrenb[selectIndex[2]].grade_name}} {{data[selectIndex[0]].childrena[selectIndex[1]].childrenb[selectIndex[2]].relation_grade}}</p>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    data: [
+      {
+        "relation_subject": 1,
+        "subject": "语文",
+        "childrena": [
+          {
+            "relation_version": 2,
+            "version_name": "北师大版",
+            "childrenb": [
+              {
+                "relation_grade": 1,
+                "grade_name": "一年级",
+                "childrenc": [
+                  {
+                    "relation_section": 9,
+                    "section": "沁园春 · 长沙",
+                    "childrend": [
+                      {
+                        "knowsid": 14,
+                        "knows": "沁园春知识点"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "relation_subject": 2,
+        "subject": "数学",
+        "childrena": [
+          {
+            "relation_version": 1,
+            "version_name": "人教版",
+            "childrenb": [
+              {
+                "relation_grade": 2,
+                "grade_name": "二年级",
+                "childrenc": [
+                  {
+                    "relation_section": 10,
+                    "section": "解方程",
+                    "childrend": [
+                      {
+                        "knowsid": 15,
+                        "knows": "二元一次方程-应用题"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    selectIndex: [],
+    defaultSelect: ['语文','北师大版','','','']
+  },
+	created(){
+  	var _arr=[
+      {key: 'subject', children: 'childrena'},
+      {key: 'version_name', children: 'childrenb'},
+      {key: 'grade_name', children: 'childrenc'},
+      {key: 'section', children: 'childrend'},
+      {key: 'knows', children: null},
+    ]
+    this.data.forEach((v,i)=>{
+      if(v.subject === this.defaultSelect[0]){
+        this.selectIndex.splice(0,1,i)
+        v.childrena.forEach((v,i)=>{
+          if(v.version_name === this.defaultSelect[1]){
+            this.selectIndex.splice(1,1,i)
+            v.childrenb.forEach((v,i)=>{
+              if(v.grade_name === this.defaultSelect[2]){
+                this.selectIndex.splice(2,1,i)
+								v.childrenc.forEach((v,i)=>{
+                  if(v.section === this.defaultSelect[3]){
+                    this.selectIndex.splice(3,1,i)
+                    v.childrend.forEach((v,i)=>{
+                      if(v.knows === this.defaultSelect[4]){
+                        this.selectIndex.splice(4,1,i)
+                      }
+                    })
+                  }
+                })
+              }
+            })
+          }
+        })
+      }
+    })
+  	// this.defaultSelect
+	}
+})
+</script>
+</body>
+</html>

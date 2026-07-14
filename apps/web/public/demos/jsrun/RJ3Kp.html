@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://element.eleme.cn/#/zh-CN/component/radio</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="RJ3Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<div id="app">
+  <el-radio-group v-model="radio">
+    <el-radio :label="3">备选项</el-radio>
+    <el-radio :label="6">备选项</el-radio>
+    <el-radio :label="9">备选项</el-radio>
+  </el-radio-group>
+  <el-date-picker
+    v-model="value1"
+    type="date"
+    placeholder="选择日期">
+  </el-date-picker>
+  <el-date-picker
+    v-model="value2"
+    type="date"
+    placeholder="选择日期">
+  </el-date-picker>
+  <p>radio: {{radio}}</p>
+  <p>value1: {{value1}}</p>
+  <p>value2: {{value2}}</p>
+
+<el-upload
+      class="upload-demo"
+      ref="upload"
+      multiple
+      action=""
+      :on-change="fileChange"
+      :auto-upload="false">
+      <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+    </el-upload>
+  </el-form-item>
+
+</div>
+<script>
+new Vue({
+    el: '#app',
+    data() {
+        return {
+            radio: '',
+            value1: '',
+            value2: '',
+        }
+    },
+    watch: {
+        radio(val) {
+            if (val) {
+                this.value1 = this.value2 = ''
+            }
+        },
+        value1(val) {
+            if (val) {
+                this.radio = ''
+            }
+        },
+        value2(val) {
+            if (val) {
+                this.radio = ''
+            }
+        }
+    },
+    methods: {
+
+        //on-change：文件状态改变时的钩子，添加文件、上传成功和上传失败时都会被调用
+        fileChange(file, fileList) {
+            console.log(file)
+            fm = new FormData();
+            fm.append('file',file.raw, 'abc.txt')
+            fm.append('author','https://www.lilnong.top')
+            fetch('https://cors-www.lilnong.top/any_upload',{
+
+                method: 'post',
+                body: fm
+            })
+                .then(v=>v.text())
+                .then(console.log)
+            // let existFile = fileList.slice(0, fileList.length - 1).find(f => f.name === file.name)//如果文件名重复
+            // if (existFile) {
+            //     this.$message.error('当前文件已经存在!');
+            //     fileList.pop()
+            // }
+        },
+        //on-remove：文件列表移除文件时的钩子
+        removeFile(file, fileList) {
+            this.fjLists = fileList//此处fileList为删除文件后，剩余的文件
+        },
+        //保存上传
+        saveFile() {
+            let { uploadFiles } = this.$refs.upload
+            this.fileData = new FormData();
+            uploadFiles.forEach(item => {
+                if (item.lastModified) {
+                    this.fileData.append('file', item)
+                }
+            })
+            // 此时所有的钩子已经执行完了fileData 中存的是通过校验的数据
+            // 此时再调用接口上传该数据
+            let config = {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            }
+            subFile(this.fileData, config).then(res => {
+                this.diaFile = false
+                //-----可写保存成功后执行的操作，此处省略
+                this.fjLists = []//清空
+            }).catch((res) => {
+                //-----可写保存失败后执行的操作，此处省略
+                this.diaFile = false
+            })
+        },
+        //取消
+        cancelUploadFile() {
+            this.diaFile = false//关闭弹窗
+            this.importList = {//清空表单其他项
+                sysName: '',//系统名称
+                resName: '',//资源名称
+                resItemName: '',//资源项名称
+                fjFileList: ''//文件名列表
+            }
+            this.fjLists = []
+        }
+
+
+    }
+})
+</script>
+</body>
+</html>

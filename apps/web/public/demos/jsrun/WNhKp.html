@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>实现复制功能</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="WNhKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<input type="text" value="abc" />
+<button>copy</button>
+<script>
+var input = document.querySelector('input');
+// input.focus()
+var copy = ()=>{
+  input.select();
+  console.log(document.execCommand('copy'))
+}
+// copy();
+document.querySelector('button').addEventListener('click', ()=>{
+  // copy()
+  var input = document.createElement('input');
+  input.value = '123'+(Date.now());
+  document.body.appendChild(input)
+  input.select();
+  console.log(document.execCommand('copy'));
+  document.body.removeChild(input)
+});
+
+</script>
+</body>
+</html>

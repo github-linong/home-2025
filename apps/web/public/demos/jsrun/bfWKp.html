@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue-router 子路由name跳转</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="bfWKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+<div id="app">
+  <router-link to="/foo">Go to Foo</router-link>
+  <router-link to="/bar">Go to Bar</router-link>
+  <router-link :to="{ name: 'profile'}">Go to UserProfile</router-link>
+  <router-link :to="{ name: 'posts'}">Go to posts</router-link>
+  <router-view></router-view>
+</div>
+<script>
+
+const Foo = { template: '<div>foo<router-view></router-view></div>' }
+const Bar = { template: '<div>bar<router-view></router-view></div>' }
+const UserProfile = { template: '<div>UserProfile</div>' }
+const UserPosts = { template: '<div>UserPosts</div>' }
+const routes = [
+  { path: '/foo', component: Foo,children: [
+        {
+          // 当 /user/:id/profile 匹配成功，
+          // UserProfile 会被渲染在 User 的 <router-view> 中
+          path: 'profile',
+          name: 'profile',
+          component: UserProfile
+        },
+        {
+          // 当 /user/:id/posts 匹配成功
+          // UserPosts 会被渲染在 User 的 <router-view> 中
+          path: 'posts',
+          name: 'posts',
+          component: UserPosts
+        }
+      ] },
+  { path: '/bar', component: Bar }
+]
+const router = new VueRouter({
+  routes // (缩写) 相当于 routes: routes
+})
+new Vue({
+  el: '#app',
+  router,
+  data(){
+    return {
+      
+    }
+  }
+})
+</script>
+</body>
+</html>

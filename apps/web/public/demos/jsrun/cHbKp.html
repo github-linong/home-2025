@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>刮奖 demo</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="cHbKp" />
+  <style>
+#canvas{
+  background: url(https://www.lilnong.top/static/img/avator/avator-21.jpg) #fff no-repeat center center;
+  background-size: cover;
+  background-size: contain;
+  border: 1px solid #f00;
+}
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="300" height="200"></canvas>
+<p id="eraseRate"></p>
+<button id="auto">自动</button>
+<button id="fill">覆盖</button>
+<script>
+ctx = canvas.getContext('2d');
+ctx.beginPath();
+ctx.moveTo(0, 0);//window.getComputedStyle(canvas).width
+ctx.lineTo(300, 0);
+ctx.lineTo(300, 200);
+ctx.lineTo(0, 200);
+ctx.fill();
+// linearr = [];
+clearRectTag = false;
+
+clearRectLen = 30
+clearRectLen2 = clearRectLen / 2
+clearRectCanvas = _.throttle((e)=>{
+  // ctx.clearRect(e.x - clearRectLen2, e.y - clearRectLen2, clearRectLen, clearRectLen);
+  // linearr.push({x: e.x, y: e.y});
+  ctx.beginPath();
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.arc(e.x, e.y, clearRectLen, 0, Math.PI * 2);
+  ctx.fill();
+}, 32)
+canvas.addEventListener('mousedown', (e)=>{
+  clearRectTag = true
+  clearRectCanvas(e)
+})
+canvas.addEventListener('mousemove', (e)=>{
+  if(clearRectTag) clearRectCanvas(e)
+})
+canvas.addEventListener('mouseup', (e)=>{
+  clearRectTag = false
+})
+canvas.addEventListener('mouseout', (e)=>{
+  clearRectTag = false
+})
+
+setInterval(v=>{
+  var imageData = ctx.getImageData(0, 0, 300, 200).data;
+  var eraseTotal = 0;
+  var step = 1 * 4;//步长精度
+  for (var i = 3, len = imageData.length; i < len; i += step) {
+    if (imageData[i] === 0) {
+        eraseTotal++;
+    }
+  }
+  eraseRate.innerText = eraseTotal/(len/step)
+}, 1000)
+fill.addEventListener('click', function(){
+  ctx.globalCompositeOperation="source-over"
+  ctx.beginPath();
+  ctx.moveTo(0, 0);//window.getComputedStyle(canvas).width
+  ctx.lineTo(300, 0);
+  ctx.lineTo(300, 200);
+  ctx.lineTo(0, 200);
+  ctx.fill();
+});
+auto.addEventListener('click', function(){
+  arr = [{"x":30,"y":18},{"x":68,"y":20},{"x":102,"y":25},{"x":132,"y":39},{"x":166,"y":53},{"x":199,"y":67},{"x":224,"y":92},{"x":249,"y":123},{"x":221,"y":150},{"x":176,"y":157},{"x":119,"y":169},{"x":76,"y":174},{"x":75,"y":174},{"x":26,"y":178},{"x":24,"y":137},{"x":25,"y":137},{"x":74,"y":124},{"x":75,"y":124},{"x":112,"y":116},{"x":154,"y":109},{"x":128,"y":89},{"x":91,"y":77},{"x":37,"y":72}];
+interval = setInterval(()=>{
+    if(arr.length == 0) return clearInterval(interval)
+    clearRectCanvas(arr.shift());
+}, 20)
+})
+</script>
+</body>
+</html>

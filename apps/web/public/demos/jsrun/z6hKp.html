@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1590000016704075</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="z6hKp" />
+  <style>
+ .search {
+    width: 300px;
+    /*长度*/
+    size: 1px;
+    background-color: #D8D8D8;
+    /*背景颜色*/
+    border: 1px solid #277de2;
+  }
+
+  h3 {
+    text-align: center;
+  }
+
+  #table1 {
+    /*折叠边框,border-collapse 属性设置是否将表格边框折叠为单一边框*/
+    border-collapse: collapse;
+    /*表格左右居中*/
+    margin: 20px auto 0;
+  }
+
+  #table1 table,
+  th,
+  td {
+    /*table、th 以及 td 设置了蓝色边框*/
+    /*border: 1px solid blue;*/
+    border: 1px solid black;
+  }
+
+  #table1 th,
+  td {
+    /*表格内边距,为 td 和 th 元素设置 padding 属性*/
+    padding: 15px;
+  }
+
+  #table1 th {
+    background-color: green;
+    color: white;
+    text-align: center;
+  }
+
+  #table1 td button {
+    color: white;
+    font-weight: bold;
+    background: green;
+    width: 6rem;
+  }
+
+  #table1 td .knows {
+    font-size: 1.7rem;
+    color: #00007F;
+  }
+  /*CSS截取字符串，多余文字省略号显示start*/
+
+  #test {
+    display: block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 200px;
+  }
+  /*CSS截取字符串，多余文字省略号显示end*/
+
+  #test:hover {
+    cursor: pointer;
+  }
+  /*分页块的样式start*/
+
+  .setPageDiv {
+    margin-top: 30px;
+  }
+
+  #pagination a {
+    display: inline-block;
+    margin-left: 20px;
+  }
+
+  #pagination span {
+    display: inline-block;
+    margin-left: 20px;
+  }
+  /*分页块的样式end*/
+  /*联动下拉选择框start*/
+
+  #abc {
+    width: 500px;
+    margin: 20px auto 20px;
+  }
+
+  #table2 {
+    margin: 0 auto;
+  }
+
+  #abc select {
+    min-width: 100px;
+    height: 30px;
+    /*margin-right: 30px;*/
+    border: 1px solid black;
+  }
+  /*联动下拉选择框end*/
+  </style>
+</head>
+<body>
+<!-- <script type="text/javascript" src="../../node_modules/vue/dist/vue.js"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.17-beta.0/vue.js"></script>
+<!-- <script type="text/javascript" src="../../node_modules/axios/dist/axios.js"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
+  <script>Vue.config.devtools = false;Vue.config.silent = true;Vue.config.productionTip = false;</script>
+<style type="text/css"></style>
+
+
+<div class="lecturer-list list-pad">
+  <div id="app" class="container">
+    <h3>进步本</h3>
+
+    <div id="appA">
+      <!--多级联动-->
+      <h1>编辑知识点</h1>
+      <!--<p>selectIndex{{selectIndex}}</p>-->
+      <!--<p>oldSelectIndex{{oldSelectIndex}}</p>-->
+      <div>
+        <select class="search" @change="selectIndexSplice(0)" key="select5" name="" id="" v-model="selectIndex[0]">
+          <!--知识点：数据双向绑定：v-model-->
+          <!--:value="index"：获取当前option的下标；-->
+          <option :value="index" v-for="(item, index) in data">{{item.subject}}</option>
+        </select>
+        <!--知识点：input框禁止输入：disabled-->
+        <!--<input type="text" v-model="defaultSelect[0]" disabled/>-->
+      </div>
+      <div>
+        <select class="search" @change="selectIndexSplice(1)" key="select4" name="" id="" v-model="selectIndex[1]" v-if="(selectIndex[0]===0||selectIndex[0]) && data[selectIndex[0]]">
+          <option :value="index" v-for="(item, index) in data[selectIndex[0]].children">{{item.version_name}}</option>
+        </select>
+        <select class="search" name="" id="" v-else></select>
+        <!--<input type="text" v-model="defaultSelect[1]" disabled/>-->
+      </div>
+      <div>
+        <select class="search" @change="selectIndexSplice(2)" key="select1" name="" id="" v-model="selectIndex[2]" v-if="(selectIndex[1]===0||selectIndex[1]) && data[selectIndex[0]].children[selectIndex[1]]">
+          <option :value="index" v-for="(item, index) in data[selectIndex[0]].children[selectIndex[1]].children">{{item.grade_name}}</option>
+        </select>
+        <select class="search" name="" id="" v-else></select>
+        <!--<input type="text" v-model="defaultSelect[2]" disabled/>-->
+      </div>
+      <div>
+        <select class="search" @change="selectIndexSplice(3)" key="select2" name="" id="" v-model="selectIndex[3]" v-if="(selectIndex[2]===0||selectIndex[2]) && data[selectIndex[0]].children[selectIndex[1]].children[selectIndex[2]]">
+          <option :value="index" v-for="(item, index) in data[selectIndex[0]].children[selectIndex[1]].children[selectIndex[2]].children">{{item.section}}</option>
+        </select>
+        <select class="search" name="" id="" v-else></select>
+        <!--<input type="text" v-model="defaultSelect[3]" disabled/>-->
+      </div>
+      <div>
+        <select class="search" @change="selectIndexSplice(4)" key="select3" name="" id="" v-model="selectIndex[4]" v-if="(selectIndex[3]===0||selectIndex[3]) && data[selectIndex[0]].children[selectIndex[1]].children[selectIndex[2]].children[selectIndex[3]]">
+          <option :value="index" v-for="(item, index) in data[selectIndex[0]].children[selectIndex[1]].children[selectIndex[2]].children[selectIndex[3]].children">{{item.knows}}</option>
+        </select>
+        <select class="search" name="" id="" v-else></select>
+        <!--<input type="text" v-model="defaultSelect[4]" disabled/>-->
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  
+</script>
+<script>
+new Vue({
+    el: '#appA',
+    data() {
+      return {
+        //多级联动
+        data: new Array(),
+        arrA: [],
+        selectIndex: [],
+        oldSelectIndex: [],
+//                defaultSelect: ['语文', '', '', '', ''],
+        defaultSelect: [],
+
+        //ueditor
+        editorA: null,
+        ueditorA: '',
+        editorB: null,
+        ueditorB: '',
+        editorC: null,
+        ueditorC: '',
+      }
+    },
+    mounted() {
+      // 找到对应的知识点
+      var knowsid = this.getQueryString('knowsid') // 知识点
+      var subject = this.getQueryString('subject') // 科目
+      var version = this.getQueryString('version') // 版本
+      var grade = this.getQueryString('grade') // 年级
+      var section = this.getQueryString('section') // 章节
+      this.default_data(subject,version,grade,section,knowsid)
+    },
+    methods: {
+      default_data: function(subject,version,grade,section,knowsid) {
+        // 找到对应的知识点
+        axios.get('http://www.mesdk.com/TP5_learning/progress/progress_book/1/1/' + grade + "/" + version + "/" + subject + "/" + section + "/" + knowsid).then(response =>
+        {
+          console.log(response)
+          this.defaultSelect[0] = response.data.data.result[0].subject
+          this.defaultSelect[1] = response.data.data.result[0].version_name
+          this.defaultSelect[2] = response.data.data.result[0].grade_name
+          this.defaultSelect[3] = response.data.data.result[0].section
+          this.defaultSelect[4] = response.data.data.result[0].knows
+          
+          axios.get('http://www.mesdk.com/TP5_learning/progress/progress_book').then(response => {
+          // 处理数据生成符合多级联动json数据
+          var arrA = response.data.data.result;
+          var _arr = arrA;
+          var arr = [];
+          var key_arr = [{
+            keys: ['relation_subject', 'subject'],
+            children: 'children'
+          },
+            {
+              keys: ['relation_version', 'version_name'],
+              children: 'children'
+            },
+            {
+              keys: ['relation_grade', 'grade_name'],
+              children: 'children'
+            },
+            {
+              keys: ['relation_section', 'section'],
+              children: 'children'
+            }
+          ];
+          _arr.forEach(v => {
+            var _cache = arr;
+            key_arr.forEach(o => {
+              var _index = _cache.findIndex(val => val[o.keys[0]] == v[o.keys[0]])
+              if(!~_index) {
+                var _obj = {}
+                o.keys.forEach(k => {
+                  _obj[k] = v[k]
+                })
+                _obj[o.children] = []
+                _cache.push(_obj)
+                _children = _obj;
+              } else {
+                _children = _cache[_index]
+              }
+              _cache = _children[o.children]
+            })
+            _cache.push({
+              "knowsid": v.knowsid,
+              "knows": v.knows,
+            })
+          })
+          this.data = arr
+          // console.log(JSON.parse(JSON.stringify(arr)))
+          this.data.forEach((v, i) => {
+            if(v.subject === this.defaultSelect[0]) {
+              this.selectIndex.splice(0, 1, i)
+              v.children.forEach((v, i) => {
+                if(v.version_name === this.defaultSelect[1]) {
+                  this.selectIndex.splice(1, 1, i)
+                  v.children.forEach((v, i) => {
+                    if(v.grade_name === this.defaultSelect[2]) {
+                      this.selectIndex.splice(2, 1, i)
+                      v.children.forEach((v, i) => {
+                        if(v.section === this.defaultSelect[3]) {
+                          this.selectIndex.splice(3, 1, i)
+                          v.children.forEach((v, i) => {
+                            if(v.knows === this.defaultSelect[4]) {
+                              this.selectIndex.splice(4, 1, i)
+                            }
+                          })
+                        }
+                      })
+                    }
+                  })
+                }
+              })
+            }
+            else{
+              console.log(this.defaultSelect)
+              console.log(v.subject)
+              console.log("空")
+            }
+          })
+        })
+        })
+
+        // 多级联动 获取数据
+        
+      },
+
+      // 找到对应的知识点
+      // 获取地址栏参数的方法:        name:参数名称  name_null:结果为null返回的值
+      getQueryString(name, name_null) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+        var r = window.location.hash.replace('#firstAnchor','').substr(1).match(reg)
+        if (r == null) {
+          //var r = window.location.search.replace('#firstAnchor','').substr(1).match(reg)
+          var r = '?knowsid=14&subject=1&version=2&grade=1&section=9'.replace('#firstAnchor','').substr(1).match(reg)
+        }
+        if(r != null) {
+          return unescape(r[2])
+        } else {
+          return name_null;
+        }
+      },
+
+      // 多级联动
+      selectIndexSplice(idx) {
+        console.log(idx);
+        idx++;
+        if(idx < this.selectIndex.length)
+          this.selectIndex.splice(idx, this.selectIndex.length - idx)
+      },
+    },
+  })
+</script>
+</body>
+</html>

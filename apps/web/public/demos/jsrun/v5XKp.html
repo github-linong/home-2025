@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>聊天窗口 test</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="v5XKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="app-left">
+    <div class="app-header">
+      <div class="search-component">
+        <div class="search">
+          <div class="search-icon"></div>
+          <input class="search-input">
+          <div class="search-reset"></div>
+        </div>
+        <div class="group-create"></div>
+      </div>
+    </div>
+    <div class="chatlist">
+      <div class="chatuser" v-for="item in list" :key="item.id">
+        <div class="chatuser-avatar"></div>
+        <div class="chatuser-info">
+          <div class="chatuser-main">
+            <div class="chatuser-time"></div>
+          </div>
+          <div class="chatuser-sub">
+            <div class="chatuser-remove"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="app-right chat">
+    <div class="app-header chat-header">
+      <div class="chat-name">lilnong.top</div>
+      <div class="chat-opt"></div>
+    </div>
+    <div class="chat-view">
+      
+    </div>
+    <div class="chat-send">
+      
+    </div>
+  </div>
+</div>
+<script>
+const USER_TYPE = 1;
+const GROUP_TYPE = 2;
+const OTHER_TYPE = -1;
+new Vue({
+  el: '#app',
+  data(){
+    return{
+      // 用户信息
+      infos:{
+        [USER_TYPE]:{},
+        [GROUP_TYPE]:{},
+        [OTHER_TYPE]:{}
+      },
+      // 消息信息
+      messages: {
+        [USER_TYPE]:{},
+        [GROUP_TYPE]:{},
+        [OTHER_TYPE]:{}
+      },
+			// 聊天列表
+      list: [{
+        id: 1000,
+        type: 1,
+        time: Date.now(),
+        unread: 0,
+      },{
+        id: 1000,
+        type: 2,
+        time: Date.now(),
+        unread: 0,
+      },{
+        id: 1000,
+        type: 3,
+        time: Date.now(),
+        unread: 0,
+      }]
+    }
+  },
+})
+</script>
+</body>
+</html>

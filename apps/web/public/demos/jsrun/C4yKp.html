@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>echarts</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="C4yKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="main" style="width: 600px;height:400px;"></div>
+<div id="main2" style="width: 600px;height:400px;"></div>
+<script>
+var myChart = echarts.init(document.getElementById('main'));
+// app.title = '坐标轴刻度与标签对齐';
+arrx = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+arr = [10, 52, 200, 334, 390, 330, 220]
+arrlist = arrx.map((v,i)=>({x:v,y:arr[i]}))
+console.log(JSON.stringify(arrlist))
+option = {
+    color: ['#3398DB'],
+    tooltip : {
+        trigger: 'axis',
+        axisPointer : {            // 坐标轴指示器，坐标轴触发有效
+            type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+        }
+    },
+    grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+    },
+    yAxis : [
+        {
+            type : 'category',
+            data : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            axisTick: {
+                alignWithLabel: true
+            }
+        }
+    ],
+    xAxis : [
+        {
+            type : 'value'
+        }
+    ],
+    series : [
+        {
+            name:'直接访问',
+            type:'bar',
+            barWidth: '60%',
+            data:[10, 52, 200, 334, 390, 330, 220]
+        }
+    ]
+};
+myChart.setOption(option)
+setInterval(v=>{
+    arrlist.forEach((v,i)=>arrlist[i].y+=Math.random()*100>>0)
+    arrlist.sort((n,m)=>n.y-m.y)
+		myChart.setOption({
+			series : [
+        {
+            name:'直接访问',
+            type:'bar',
+            barWidth: '60%',
+            data:arrlist.map(v=>v.y)
+        }
+    	],
+      yAxis : [
+        {
+            type : 'category',
+            data : arrlist.map(v=>v.x),
+            axisTick: {
+                alignWithLabel: true
+            }
+        }
+     ]
+		})
+}, 1000)
+
+
+
+
+
+
+var myChart2 = echarts.init(document.getElementById('main2'));
+arr2 = [10, 52, 200, 334, 390, 330, 220]
+setInterval(v=>{
+  arr2.forEach((v,i)=>arr2[i]+=1000)
+}, 1000)
+myChart2.setOption({
+    color: ['#3398DB'],
+    tooltip : {
+        trigger: 'axis',
+        axisPointer : {            // 坐标轴指示器，坐标轴触发有效
+            type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+        }
+    },
+    grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+    },
+    yAxis : [
+        {
+            type : 'category',
+            data : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            axisTick: {
+                alignWithLabel: true
+            }
+        }
+    ],
+    xAxis : [
+        {
+            type : 'value'
+        }
+    ],
+    series : [
+        {
+            name:'直接访问',
+            type:'bar',
+            barWidth: '60%',
+            data:arr2
+        }
+    ]
+});
+</script>
+</body>
+</html>

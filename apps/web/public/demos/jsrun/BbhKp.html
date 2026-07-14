@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1590000016618259</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="BbhKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<div id="app">
+    <i-button @click="add">add</i-button>
+  <div v-for="(item,index) in dataArr" class="task_warp">
+    <i-input v-model="item.title" placeholder="任务描述" ></i-input>
+    <date-picker v-model="item.date" type="date" placeholder="任务时间"></date-picker>
+    <i-button @click="remove(index)">remove</i-button>
+    <i-button @click="switchState(item)">{{item.state==0?'未完成':'完成'}}</i-button>
+  </div>
+</div>
+<script>
+new Vue({
+        el: '#app',
+        data: {
+            dataArr: [{
+              title: '',
+              date: null,
+              state: false //0未完成 1完成
+            }]
+        },
+        methods: {
+            add: function () {
+                this.dataArr.push({
+             			title: '',
+                  date: new Date(),
+                  state: false //0未完成 1完成
+                })
+            },
+            remove: function (idx) {
+                this.dataArr.splice(idx, 1)
+            },
+          	switchState: function(item){
+              	item.state = !item.state;
+            }
+        }
+    })
+</script>
+</body>
+</html>

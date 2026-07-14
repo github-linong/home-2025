@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>两个Obj-array怎么过滤掉其中相同的项</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="w8ZKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+
+<script>
+var arr = [{
+  id: 111,
+  name: 'aaa'
+},{
+  id: 222,
+  name: 'bbb'
+},{
+  id: 333,
+  name: 'ccc'
+}]
+
+var arr1 = [{
+  id: 111,
+  name: 'aaa'
+},{
+  id: 222,
+  name: 'bbb'
+}]
+
+//想要的
+var arr2 = [{
+  id: 333,
+  name: 'ccc'
+}]
+console.log(_.differenceBy(arr, arr1, 'id'), "id")
+console.log(_.differenceBy(arr, arr1, function(v){return JSON.stringify(v)}),'fun')
+console.log(_.differenceBy(arr1, arr, 'id'), "id")
+console.log(_.differenceBy(arr1, arr, function(v){return JSON.stringify(v)}),'fun')
+console.log(_.xorBy(arr1, arr, 'id'), "id")
+console.log(_.xorBy(arr1, arr, function(v){return JSON.stringify(v)}),'fun')
+console.log(_.xorWith(arr1, arr, _.isEqual))
+console.log(_.xorWith(arr, arr1, _.isEqual))
+
+
+</script>
+</body>
+</html>

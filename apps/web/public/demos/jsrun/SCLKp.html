@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>列表 computed 第一个加icon</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="SCLKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <ul>
+        <li v-for="item in computedList">{{item.isShowIcon}}.{{item}}</li>
+    </ul>
+</div>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                list: [
+                    {id: 1,name:'a'},
+                    {id: 2,name:'a'},
+                    {id: 3,name:'b'},
+                    {id: 4,name:'a'},
+                    {id: 5,name:'b'},
+                    {id: 6,name:'c'},
+                ]
+            }
+        },
+        computed:{
+            computedList(){
+                var set = new Set();
+                return JSON.parse(JSON.stringify(this.list)).map((v)=>{
+                    v.isShowIcon = !set.has(v.name)
+                    set.add(v.name)
+                    return v
+                })
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

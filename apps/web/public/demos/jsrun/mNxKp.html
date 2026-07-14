@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>实现图片马赛克</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="MNxKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="image-container" style="width: 100%; max-height: 80vh; overflow: hidden; position: relative;">
+        <img id="image" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 100%; height: auto;" alt="Your Image">
+        <canvas id="mosaic-canvas" style="position: absolute; top: 0; left: 0;"></canvas>
+    </div>
+    <script>
+        const image = document.getElementById('image');
+        const mosaicCanvas = document.getElementById('mosaic-canvas');
+        const ctx = mosaicCanvas.getContext('2d');
+        const mosaicSize = 10; // 调整马赛克块的大小
+        let isDrawing = false;
+
+        // 当图片加载完成后，设置canvas的尺寸与图片相同
+        image.onload = () => {
+            mosaicCanvas.width = image.width;
+            mosaicCanvas.height = image.height;
+        };
+
+        // 监听滑动手势
+        start = (e) => {
+            isDrawing = true;
+            drawMosaic(e);
+        }
+        mosaicCanvas.addEventListener('touchstart', start);
+        mosaicCanvas.addEventListener('mousedown', start);
+
+        move = (e) => {
+            if (isDrawing) {
+                drawMosaic(e);
+            }
+        }
+        mosaicCanvas.addEventListener('touchmove', move);
+        mosaicCanvas.addEventListener('mousemove', move);
+
+        end=() => {
+            isDrawing = false;
+        }
+        mosaicCanvas.addEventListener('touchend', end);
+        mosaicCanvas.addEventListener('mouseup', end);
+
+        function drawMosaic(event) {
+            if (!isDrawing) return;
+
+            const touch = event?.touches?.[0] || event;
+            const x = touch.clientX - mosaicCanvas.getBoundingClientRect().left;
+            const y = touch.clientY - mosaicCanvas.getBoundingClientRect().top;
+            ctx.drawImage(
+          image,
+          x,
+          y,
+          mosaicSize,
+          mosaicSize,
+          x,
+          y,
+          mosaicSize,
+          mosaicSize
+        );
+            // for (let i = -mosaicSize / 2; i < mosaicSize / 2; i++) {
+            //     for (let j = -mosaicSize / 2; j < mosaicSize / 2; j++) {
+            //         const pixel = ctx.getImageData(x + i, y + j, 1, 1);
+            //         const averageColor = getAverageColor(pixel);
+
+            //         ctx.fillStyle = `rgb(${averageColor.r},${averageColor.g},${averageColor.b})`;
+            //         ctx.fillRect(x + i, y + j, 1, 1);
+            //     }
+            // }
+        }
+
+        // function getAverageColor(pixelData) {
+        //     const r = pixelData.data[0];
+        //     const g = pixelData.data[1];
+        //     const b = pixelData.data[2];
+        //     return { r, g, b };
+        // }
+
+    </script>
+<script>
+
+</script>
+</body>
+</html>

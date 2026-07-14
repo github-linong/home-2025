@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>dom 修改测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="eFEKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<a href="https://segmentfault.com/q/1010000042409983/">https://segmentfault.com/q/1010000042409983/ 通过在网上查询，好像强制绘制被修复了</a>
+<div id="app">
+    
+</div>
+<button id="btn1">switch 1</button>
+<button id="btn2">switch 2</button>
+<style>
+    #app{
+        width: 100px;
+        height: 100px;
+        background: red
+    }
+</style>
+<script>
+    btn1.onclick = ()=>{
+        app.style.background = 'yellow'
+        forceRedraw(app)
+        alert('test')
+        app.style.background = 'red'
+    }
+    btn2.onclick = ()=>{
+        app.style.background = 'yellow'
+        forceRedraw(app)
+        alert(app.style.background)
+        app.style.background = 'red'
+    }
+    const forceRedraw = elem => {
+        // const t = elem.ownerDocument.createTextNode(' 1') ;
+        const t =  document.createElement('div')
+        elem.appendChild(t) ;
+        console.log(elem.children)
+        app.style.paddingLeft = `${Math.random()*10}px`
+        console.log(app.offsetWidth)
+        // elem.removeChild(t)
+        // setTimeout(() => { elem.removeChild(t) }, 0) ;
+    }
+</script>
+<script>
+
+</script>
+</body>
+</html>

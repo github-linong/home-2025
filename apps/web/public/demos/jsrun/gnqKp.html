@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>滚动效果news</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="gnqKp" />
+  <style>
+#news,
+#news1 {
+  overflow: hidden;
+  height: 200px
+}
+
+#news {
+  float: left;
+}
+
+#news1 {
+  float: right;
+}
+
+
+/* #news li:nth-child(4n){background:#ccc}
+#news li:nth-child(4n+1){background:#bbb}
+#news li:nth-child(4n+2){background:#aaa}
+#news li:nth-child(4n+3){background:#999} */
+
+  </style>
+</head>
+<body>
+<ul id="news">
+</ul>
+<ul id="news1">
+</ul>
+
+$(function() {
+  var lylxBox = document.getElementById('lylx-cywt-box');
+  setInterval(function() {
+    lylxBox.scrollTop++;
+    if (lylxBox.scrollTop == lylxBox.offsetHeight) {
+      lylxBox.scrollTop = 0;
+    }
+    // console.log(lylxBox.offsetTop)
+  },
+  40);
+  // 
+});
+<script>
+news = document.querySelector('#news');
+news1 = document.querySelector('#news1');
+arr = [];
+for (var i = 1; i < 13; i++) arr.push('<li>' + Math.random());
+news.innerHTML = arr.join('');
+news1.innerHTML = arr.join('');
+
+setInterval(function() {
+  news.scrollTop++;
+  if (news.scrollTop == news.children[0].offsetHeight) {
+    news.appendChild(news.children[0]);
+    news.scrollTop = 0;
+  }
+
+  var news1Tag = news1.scrollTop;
+  news1.scrollTop++;
+  if (news1.scrollTop == news1Tag) {
+    news1.appendChild(news1.children[0]);
+    news1.scrollTop++;
+  }
+},
+40);
+</script>
+</body>
+</html>

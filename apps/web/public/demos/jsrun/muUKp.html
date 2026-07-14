@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>requestAnimationFrame 数字增长动画</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="muUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<input type="text" id="text" value="500">
+<span id="span" style="display: inline-block;">0</span>
+<script>
+    function updateNumber(el,option)
+    {
+        let duration=option.duration;
+        let beforeNumber=option.beforeNumber;
+        let endNumber=option.endNumber;
+        
+        let oneNumber=(endNumber-beforeNumber)/(duration*17);
+        let currentNumber=0;
+        return function()
+        {
+            currentNumber+=oneNumber;
+            el.textContent=Math.floor(currentNumber);
+            if(currentNumber<endNumber)
+            {
+                if(currentNumber+oneNumber>endNumber)         
+                    oneNumber=endNumber-currentNumber;
+                requestAnimationFrame(arguments.callee);
+            }               
+        }
+    }
+    let text=document.querySelector("#text");
+    let span=document.querySelector("#span");
+    text.addEventListener("input",()=>
+    {
+        let updata=updateNumber(span,{
+                duration:2,
+                beforeNumber:parseInt(span.textContent),
+                endNumber:parseInt(text.value)
+            });
+        requestAnimationFrame(updata);
+    });
+</script>
+<script>
+
+</script>
+</body>
+</html>

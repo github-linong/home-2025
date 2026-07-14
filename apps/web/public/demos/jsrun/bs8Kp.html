@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>canvas 画矩形</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="bs8Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<canvas></canvas>
+<style>
+    canvas{border: 1px solid #f00};
+</style>
+<script>
+    canvas = document.querySelector('canvas')
+    ctx = canvas.getContext('2d')
+    ctx.fillRect(20,20, 100, 100)
+
+    ctx.beginPath(0); 
+    ctx.arc(30, 30, 10, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.strokeStyle = "#0f0";
+    ctx.stroke();
+
+
+    /*画一个空心梯形*/
+    ctx.beginPath(0);
+    ctx.moveTo(40, 40);
+    ctx.lineTo(60,60);
+    ctx.lineTo(60,90);
+    ctx.lineTo(40, 110);
+    ctx.fillStyle = "#0ff";
+    ctx.closePath();
+    ctx.fill();
+</script>
+
+<script>    
+// 绘制（圆角）矩形
+// var draw = function(x, y, width, height, radius, color, type){
+//     ctx.beginPath();
+//     ctx.moveTo(x, y+radius);
+//     ctx.lineTo(x, y+height-radius);
+//     ctx.quadraticCurveTo(x, y+height, x+radius, y+height);
+//     ctx.lineTo(x+width-radius, y+height);
+//     ctx.quadraticCurveTo(x+width, y+height, x+width, y+height-radius);
+//     ctx.lineTo(x+width, y+radius);
+//     ctx.quadraticCurveTo(x+width, y, x+width-radius, y);
+//     ctx.lineTo(x+radius, y);
+//     ctx.quadraticCurveTo(x, y, x, y+radius);
+//     ctx[type + 'Style'] = color || params.color;
+//     ctx.closePath();
+//     ctx[type]();
+// }
+</script>
+<script>
+
+</script>
+</body>
+</html>

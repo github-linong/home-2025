@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>transfrom测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="HSWKp" />
+  <style>
+/* #app div{
+  transform: translate(100px);
+} */
+
+.right2left-enter-active {
+  animation: right2left 7s linear;
+}
+.animation-play-state .right2left-enter-active {
+	animation-play-state: paused;
+}
+@keyframes right2left {
+  0% {
+    transform: translate3d(120vw,0,0px);
+  }
+  100% {
+    transform: translate3d(-120%,0,0px);
+  }
+}
+  </style>
+</head>
+<body>
+<div id="app" :class="{'animation-play-state': isPause}">
+  <!-- <div 
+       v-for="(item, idx) in list" 
+       @click="list.splice(idx,1)"
+       :key="item.random" 
+       :style="{transition: 'all 10s',transform: item.translate?'translate(0px)':''}">
+    {{item.idx}}.{{item.random}}
+  </div> -->
+  <button @click="list.push({idx: list.length,random:Math.random(),translate:0})">push</button>
+  <button @click="isPause=!isPause">isPause</button>
+  <transition-group
+    name="right2left"
+  >
+    <div 
+         v-for="(item, idx) in list" 
+         @click="list.splice(idx,1)"
+         :key="item.random">
+      {{item.idx}}.{{item.random}}
+    </div>
+  </transition-group>
+  <div class="test-animation right2left-enter-active" @animationend="animationend">123</div>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data(){
+    return {
+      isPause: false,
+      list: [{idx:0,random: 1}]
+    }
+  },
+  created(){
+    for(var i = 1; i<2;i++){
+      this.list.push({idx: i,random:Math.random()})
+    }
+		// setTimeout(v=>{
+		// this.list.forEach(v=>{
+		// v.translate=Math.random()
+		// })
+		// })
+  },
+  methods:{
+    animationend (){
+      console.log(Date.now())
+    }
+  }
+})
+</script>
+</body>
+</html>

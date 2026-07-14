@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>遍历、vue、重复渲染测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="eVyKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  {{checkState(1)}} 错误方案，内部不可以使用方法
+  <div v-for="item in arr">
+    <input type="text" v-model="item.state" :class="{success: checkState(item.state)}"/>
+  </div>
+</div>
+
+<div id="app1">
+  {{STATE_SUCCESS_GET.value}} 错误方案，内部不可以值比对
+  <div v-for="item in arr">
+    <input type="text" v-model="item.state" :class="{success: item.state == STATE_SUCCESS_GET.value}"/>
+  </div>
+</div>
+
+<div id="app2">
+  {{STATE_SUCCESS_GET.value}} 正确方案，放入组件
+  <div v-for="item in arr">
+    <input-template :item="item" :state="STATE_SUCCESS_GET" :value="STATE_SUCCESS_GET.value"></input-template>
+  </div>
+</div>
+<script>
+
+var STATE_SUCCESS = 1;
+
+// 测试demo1
+vm1 = new Vue({
+  el: '#app',
+  data(){
+    return {
+      arr: new Array(5).fill(1).map(v=>({state: Math.random()*5>>0}))
+    }
+  },
+  methods: {
+    checkState(state){
+      console.count('checkState')
+      return state == STATE_SUCCESS?'success':''
+    }
+  }
+})
+// 测试demo2
+vm2proxy = new Proxy({}, {
+          get: function(target, name){
+              console.count('get-Proxy')
+              return STATE_SUCCESS
+          }
+      });
+vm2proxy.value = 2;
+vm2 = new Vue({
+  el: '#app1',
+  data(){
+    return {
+      arr: new Array(5).fill(1).map(v=>({state: Math.random()*5>>0})),
+      STATE_SUCCESS_GET: vm2proxy
+    }
+  }
+})
+
+// 测试demo3
+vm3Template = {
+  template: `<input type="text" v-model="item.state" :class="{success: item.state == state.value}"/>`,
+  props:['item','state','value']
+}
+vm3 = new Vue({
+  el: '#app2',
+  data(){
+    return {
+      arr: new Array(5).fill(1).map(v=>({state: Math.random()*5>>0})),
+      STATE_SUCCESS_GET: vm2proxy
+    }
+  },
+  components:{
+    'input-template': vm3Template
+  }
+})
+
+</script>
+</body>
+</html>

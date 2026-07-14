@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000013320387</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="CGqKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="box">
+    <ul>
+        <li><img src="images/1.jpg"/></li>
+        <li><img src="images/2.jpg"/></li>
+        <li><img src="images/3.jpg"/></li>
+        <li><img src="images/4.jpg"/></li>
+        <li><img src="images/5.jpg"/></li>
+    </ul>
+</div>
+<div id="box1">
+    <ul>
+        <li><img src="images/1.jpg"/></li>
+        <li><img src="images/2.jpg"/></li>
+        <li><img src="images/3.jpg"/></li>
+        <li><img src="images/4.jpg"/></li>
+        <li><img src="images/5.jpg"/></li>
+    </ul>
+</div>
+<script>
+    let lis = document.querySelectorAll('#box li');
+
+    let i =0,l=lis.length;
+    for(;i<l;i++){
+        lis[i].onmouseover=(e)=>{
+            console.log(i, lis[i]);  //undefined
+        }
+    }
+
+		let lis1 = document.querySelectorAll('#box1 li');
+
+    let l1=lis.length;
+    for(let i1 = 0;i1<l;i1++){
+        lis1[i1].onmouseover=(e)=>{
+            console.log(i1, lis[i1]);  //undefined
+        }
+    }
+
+	for(var j = 1; j< 5; j++){
+    console.log(j);
+  }
+	console.log(j);
+	for(let k = 10; k< 15; k++){
+    console.log(k);
+  }
+	console.log(k);
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000018330622</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="62XKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div>
+  <p class="cl">
+    <label for="box" class="la">man</label>
+    <input type="checkbox" id="box">
+  </p>
+</div>
+
+<div>
+  <p class="cl1">
+    <label class="la1">man</label>
+    <input type="checkbox">
+  </p>
+</div>
+
+
+<div>
+  <p class="cl2">
+    <label class="la2" for="checkbox2">man</label>
+    <input type="checkbox" id="checkbox2">
+  </p>
+</div>
+<script>
+let cl = document.querySelector('.cl')
+let bx = document.querySelector('#box')
+cl.addEventListener('click', function (e) {
+  window.event ? window.event.cancelBubble = true : e.stopPropagation()
+  console.log(e.target)
+}, true)
+  
+let cl1 = document.querySelector('.cl1')
+let bx1 = document.querySelector('#box1')
+cl1.addEventListener('click', function (e) {
+  window.event ? window.event.cancelBubble = true : e.stopPropagation()
+  console.log(e.target)
+}, true)
+</script>
+</body>
+</html>

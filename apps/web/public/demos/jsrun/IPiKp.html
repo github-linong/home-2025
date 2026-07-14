@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>http://www.zhangxinxu.com/wordpress/2016/11/css-content-pre-animation-character-loading/</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="IPiKp" />
+  <style>
+dot {
+    display: inline-block; 
+    height: 1em; line-height: 1;
+    text-align: left;
+    vertical-align: -.25em;
+    overflow: hidden;
+}
+dot::before {
+    display: block;
+    content: '333\A222\A1';
+    white-space: pre-wrap;   /* 也可以是white-space: pre */
+    animation: dot 3s infinite step-start both;
+}
+@keyframes dot {
+    33% { transform: translateY(-2em); }
+    66% { transform: translateY(-1em); }
+}
+  </style>
+</head>
+<body>
+订单提交中<dot>...</dot>
+<script>
+
+</script>
+</body>
+</html>

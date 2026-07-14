@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>列表item测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="EswKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<div id="app">
+</div>
+<div class="flex" style="width: 4em">《<span class="ellipsis">123456789</span>》</div>
+<style>
+    *{padding:0;margin:0;box-sizing: border-box;}
+    .item{ height: 80px;}
+    .ellipsis{white-space: nowrap;text-overflow: ellipsis;overflow:hidden}
+    .flex{display: flex;}
+        .flex-middle{align-items: center;}
+        .flex-item{flex: 1 1 auto;overflow:hidden;}
+            .flex-item-fixed{flex: 0 0 auto;padding: 0 20px}
+        .flex-item-avatar{min-width: 40px}
+</style>
+<script>
+    Vue.component('vv-list-item',{
+        props: ['info'],
+        template: `
+            <div class="item flex flex-middle">
+                <div class="flex-item-fixed flex-item-avatar">
+                    <slot name="avatar">
+                        图
+                    </slot>
+                </div>
+                <div class="flex-item">
+                    <slot>
+                        <div class="flex-item-txt ellipsis" v-for="item in info.txt">{{item}}</div>
+                    </slot>
+                </div>
+                <div class="flex-item-fixed">
+                    <slot name="btn">
+                        <span style="display:inline-block;min-width: 3em;text-align:center;background:#0cc;border-radius: 100px;">打开</span>
+                    </slot>
+                </div>
+            </div>
+        `,
+        mounted(){
+            //console.log(this.$slots)
+        }
+    })
+    new Vue({
+        el: '#app',
+        template: `
+        <div>
+            <h3>base</h3>
+            <vv-list-item :info="({
+                img: 'http://cdn.jsrun.top/css/img/logo@2x.png',
+                txt: ['aaa','bbb']
+            })"></vv-list-item>
+            <vv-list-item :info="({
+                img: 'http://cdn.jsrun.top/css/img/logo@2x.png',
+                txt: ['aaa']
+            })"></vv-list-item>
+            <vv-list-item :info="({
+                img: 'http://cdn.jsrun.top/css/img/logo@2x.png',
+                txt: ['aaa','bbb','ccc']
+            })"></vv-list-item>
+            <vv-list-item :info="({
+                img: 'http://cdn.jsrun.top/css/img/logo@2x.png',
+                txt: ['aaa','bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb','ccc']
+            })"></vv-list-item>
+            <vv-list-item :info="({
+                img: 'http://cdn.jsrun.top/css/img/logo@2x.png',
+                txt: ['aaa','bbb','ccc']
+            })">
+                <div>default</div>
+                <template #avatar>avatar</template>
+                <template #content>content</template>
+                <template #btn>
+                    <P>btn1</P>
+                    <P>btn2</P>
+                    <P>btn2</P>
+                </template>
+            </vv-list-item>
+        </div>
+        `,
+        data(){
+            return {
+
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

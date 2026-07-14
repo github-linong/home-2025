@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://clipboardjs.com</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="dzyKp" />
+  <style>
+table{
+  border-collapse: collapse;
+  border-bottom: 1px solid #f00;
+}
+/* tr:last-child{
+  border-bottom: 1px solid #f00
+} */
+  </style>
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+<table id="app">
+  <tr>
+    <td>1</td>
+    <td>2</td>
+    <td rowspan="3">3</td>
+    <td>4</td>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>2</td>
+    <td rowspan="2">4</td>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>2</td>
+  </tr>
+</table>
+
+<button class="btn">btn</button>
+<!-- <button class="btn" data-clipboard-target="#app">
+    <img src="assets/clippy.svg" alt="Copy to clipboard">
+</button> -->
+<script>
+// new ClipboardJS('.btn', {
+//     container: document.getElementById('app')
+// });
+
+new ClipboardJS('.btn', {
+    target: function(trigger) {
+        return document.getElementById('app')
+    }
+});
+</script>
+</body>
+</html>

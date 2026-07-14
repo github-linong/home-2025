@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>获取图片base64地址</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="Vr8Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<input type="file" id="fileInput">
+
+<section>
+    <label>base64JpgUrl</label>
+    <button class="copy">copy</button>
+    <span id="base64JpgUrlLength"></span>
+    <textarea id="base64JpgUrl"></textarea>
+</section>
+
+<section>
+    <label>base64WebpUrl</label>
+    <button class="copy">copy</button>
+    <span id="base64WebpUrlLength"></span>
+    <textarea id="base64WebpUrl"></textarea>
+</section>
+
+<section>
+    <label>base64PngUrl</label>
+    <button class="copy">copy</button>
+    <span id="base64PngUrlLength"></span>
+    <textarea id="base64PngUrl"></textarea>
+</section>
+<img id="img">
+<canvas id="canvas"></canvas>
+<style>
+    input,textarea{
+        display: block;
+        margin: 10px;padding: 10px;
+        width: 300px;
+    }
+    canvas,img{
+        max-width: 100px;
+        max-height: 100px;
+    }
+</style>
+<script>
+    fileInput.onchange = ()=>{
+        const file = fileInput.files[0];
+        computedImageBase64(file)
+    }
+    const computedImageBase64 = function(file){
+        if(file){
+            const blobUrl = URL.createObjectURL(file);
+            img.src = blobUrl;
+            img.onload = function(){
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.naturalWidth
+                canvas.height = img.naturalHeight
+                ctx.drawImage(img,0,0);
+                base64JpgUrl.value = canvas.toDataURL('image/jpeg');
+                base64JpgUrlLength.innerText = base64JpgUrl.value.length;
+                base64WebpUrl.value = canvas.toDataURL('image/webp');
+                base64WebpUrlLength.innerText = base64WebpUrl.value.length;
+                base64PngUrl.value = canvas.toDataURL();
+                base64PngUrlLength.innerText = base64PngUrl.value.length;
+            }
+        }
+    }
+</script>
+
+<script>
+    document.onpaste = function(e){
+        let files = e.clipboardData.files;
+        if(files.length){
+            computedImageBase64(files[0])
+        }
+    }
+</script>
+<script>
+
+    document.ondrop = // 放置
+    document.ondragenter = // 拖拽进入
+    document.ondragleave = // 拖拽离开
+    document.ondragover = // 在上面移动
+        function(e){
+            e.preventDefault();
+        }
+    document.addEventListener('drop', function(e){
+        let files = e.dataTransfer.files;
+        if(files.length){
+            computedImageBase64(files[0])
+        }
+    })
+</script>
+<script>
+    Array.from(document.querySelectorAll('.copy')).forEach((el)=>{
+        el.addEventListener('click', ()=>{
+            const textEl = el.parentNode.querySelector('textarea');
+            textEl.focus();
+            textEl.select(); // 选择对象
+            document.execCommand("Copy"); // 执行浏览器复制命令
+        })
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

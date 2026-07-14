@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue2.x 动态参数测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="UbUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    {{a}} => {{b}}
+    <div :[a]="b"> :[a]="b"</div>
+    <div :[true?a:b]="b"> :[true?a:b]="b"</div>
+    <div :[false?a:b]="b"> :[false?a:b]="b"</div>
+    <c1></c1>
+    <c2></c2>
+    <hr>
+    <component :is="true?'c1':'c2'" :[false?a:b]="b"></component>
+    <component :is="false?'c1':'c2'" :[true?a:b]="b"></component>
+
+    <c1 v-show="false" ref="refDemo1"></c1>
+    <c1 v-show="true"  ref="refDemo2"></c1>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<script>
+    Vue.component('c1',{
+        template: `<div>c1, {{a1}}, {{b1}}<div>`,
+        props: ['a1','b1']
+    })
+    Vue.component('c2',{
+        template: `<div>c2, {{a1}}, {{b1}}<div>`,
+        props: ['a1','b1']
+    })
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                a: 'a1',
+
+                b: 'b1'
+            }
+        },
+        mounted(){
+            setInterval(()=>{
+                let {refDemo1, refDemo2} = this.$refs
+                top.console.log(false, refDemo1.$el.offsetHeight,refDemo1.$el.offsetWidth)
+                top.console.log(true, refDemo2.$el.offsetHeight,refDemo2.$el.offsetWidth)
+            },1000)
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

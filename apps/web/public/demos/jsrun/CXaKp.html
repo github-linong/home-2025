@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000039028774?_ea=95708568</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="CXaKp" />
+  <style>
+
+  h1 {
+    font-size: 36px;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: normal;
+  }
+  .top {
+    display: flex;
+    justify-content: space-between;
+    height: 44px;
+    align-items: center;
+  }
+  .pop {
+    margin-left: 20px;
+  }
+  .pup-title {
+    width: 100%;
+    background-color: #ffce43;
+    color: black;
+    font-weight: bold;
+    text-align: center;
+    padding: 8px 3px;
+    position: relative;
+  }
+  .hide {
+    position: absolute;
+    right: 5px;
+    top: 8px;
+  }
+  .van-popup--left {
+    width: 180px;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .btn-text {
+    margin-left: 5px;
+    font-weight: bold;
+  }
+  .num {
+    margin-right: 10px;
+  }
+  .num span {
+      display: inline-block;
+      padding: 5px 20px;
+      box-sizing: border-box;
+      font-weight: bold;
+      color: #fff;
+      background-color: #595959;
+      border-radius: 20px;
+      letter-spacing: 3px;
+      text-align: center;
+    }
+
+  .swiper-container {
+    margin-top: 5px;
+    /* height: 80%;   */
+    height: 80vh;
+  }
+  .swiper-slide {
+    height: 100%;
+    text-align: center;
+  }
+  .inter {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    margin-left: 20px;
+    color: #ffce43;
+    height: 60px;
+  }
+  .inter 
+    span {
+      font-size: 16px;
+    }
+  .sen {
+    color: black;
+    text-align: left;
+    height: calc(100% - 240px);
+    overflow-x: hidden;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: scroll;
+  }
+  .sen 
+    p {
+      font-size: 14px;
+      line-height: 24px;
+      max-width: 100%;
+      padding: 0;
+      margin: 0;
+    }
+  .van-button--info {
+    border: 0.02667rem solid #ffce43;
+  }
+
+  </style>
+</head>
+<body>
+<div class="dd">
+    <div class="top" id="区域1">
+     <!-- 固定高度44px 后期转化成rem -->
+    </div>
+
+<div class="swiper-container">
+  <div class="swiper-wrapper">
+    <div class="swiper-slide">
+      <div style="height: 140px; padding-top: 55px" id="区域2">
+        <!-- 内容  固定高度140px -->
+      </div>
+
+      <div class="inter" id="区域3">
+        <!-- 无特殊要求 内容一般一行 最多两行展示完 -->
+      </div>
+      <div class="sen" id="区域4">
+       <!-- 内容不定，有时候很多，有时候很少，高度自适应，超出高度滚动 -->
+      </div>
+    </div>
+  </div>
+</div>
+<div style="width: 50%; margin: 0 auto" id="区域5">
+  <!-- 不随着区域2 3 4 左右滑动 -->
+  <van-button>不再标记</van-button>
+</div>
+</div>
+<script>
+    Array.from(document.querySelectorAll('*')).forEach(v=>{
+        v.style.background = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},${Math.random()*.5})`
+        v.style.background = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},${1})`
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

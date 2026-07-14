@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>img 压缩测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="TUtKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div>
+    <input type="file" id="input">
+    <img id="img">
+    <canvas id="canvas"></canvas>
+</div>
+<div>
+    <div>
+        <div>原图</div>
+        <div>
+            <img id="ori">
+            <span id="oriSize"></span>
+        </div>
+    </div>
+    <div>
+        <div>同类型 0.8</div>
+        <div>
+            <img id="typeOriQuality8">
+            <span id="typeOriQuality8Size"></span>
+        </div>
+    </div>
+    <div>
+        <div>同类型 1</div>
+        <div>
+            <img id="typeOriQuality10">
+            <span id="typeOriQuality10Size"></span>
+        </div>
+    </div>
+    <div>
+        <div>jpg 0.8</div>
+        <div>
+            <img id="typeJpgQuality8">
+            <span id="typeJpgQuality8Size"></span>
+        </div>
+    </div>
+    <div>
+        <div>jpg 1</div>
+        <div>
+            <img id="typeJpgQuality10">
+            <span id="typeJpgQuality10Size"></span>
+        </div>
+    </div>
+    <div>
+        <div>png 0.8</div>
+        <div>
+            <img id="typePngQuality8">
+            <span id="typePngQuality8Size"></span>
+        </div>
+    </div>
+    <div>
+        <div>png 1</div>
+        <div>
+            <img id="typePngQuality10">
+            <span id="typePngQuality10Size"></span>
+        </div>
+    </div>
+    <div>
+        <div>webp 0.8</div>
+        <div>
+            <img id="typeWebpQuality8">
+            <span id="typeWebpQuality8Size"></span>
+        </div>
+    </div>
+    <div>
+        <div>webp 1</div>
+        <div>
+            <img id="typeWebpQuality10">
+            <span id="typeWebpQuality10Size"></span>
+        </div>
+    </div>
+</div>
+
+<style>
+    div{
+        display: flex;
+        flex-wrap: wrap;
+        border: 1px solid rgba(0,0,0,.1);
+        padding: 4px;margin: 4px;
+    }
+    img,canvas{
+        max-width: 100px;
+        max-height: 100px;
+    }
+</style>
+<script>
+    input.onchange = (e)=>{
+        const file = e.target.files?.[0];
+        if(file){
+            img.src = URL.createObjectURL(file);
+            ctx = canvas.getContext('2d');
+            img.onload = ()=>{
+                canvas.width = img.naturalWidth || img.width
+                canvas.height = img.naturalHeight || img.height
+                ctx.drawImage(img,0,0)
+                // top.console.log('ctx',ctx)
+
+                ori.src = img.src;
+                oriSize.innerText = file.size
+                // Ori
+                canvas.toBlob((blob)=>{
+                    typeOriQuality8.src = URL.createObjectURL(blob)
+                    typeOriQuality8Size.innerText = blob.size;
+                },file.type,.8)
+                canvas.toBlob((blob)=>{
+                    typeOriQuality10.src = URL.createObjectURL(blob)
+                    typeOriQuality10Size.innerText = blob.size;
+                },file.type,1)
+
+                // jpeg
+                canvas.toBlob((blob)=>{
+                    typeJpgQuality8.src = URL.createObjectURL(blob)
+                    typeJpgQuality8Size.innerText = blob.size;
+                },'image/jpeg',.8)
+                canvas.toBlob((blob)=>{
+                    typeJpgQuality10.src = URL.createObjectURL(blob)
+                    typeJpgQuality10Size.innerText = blob.size;
+                },'image/jpeg',1)
+
+                // Png
+                canvas.toBlob((blob)=>{
+                    typePngQuality8.src = URL.createObjectURL(blob)
+                    typePngQuality8Size.innerText = blob.size;
+                },'image/png',.8)
+                canvas.toBlob((blob)=>{
+                    typePngQuality10.src = URL.createObjectURL(blob)
+                    typePngQuality10Size.innerText = blob.size;
+                },'image/png',1)
+
+                // webp
+                canvas.toBlob((blob)=>{
+                    typeWebpQuality8.src = URL.createObjectURL(blob)
+                    typeWebpQuality8Size.innerText = blob.size;
+                },'image/webp',.8)
+                canvas.toBlob((blob)=>{
+                    typeWebpQuality10.src = URL.createObjectURL(blob)
+                    typeWebpQuality10Size.innerText = blob.size;
+                },'image/webp',1)
+            }
+        }
+    }
+</script>
+<script>
+
+</script>
+</body>
+</html>

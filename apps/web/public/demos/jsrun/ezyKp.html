@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>端内 upload 组件</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="ezyKp" />
+  <style>
+.vv-upload{
+  display: block;
+}
+  </style>
+  <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+</head>
+<body>
+<div id="app">
+  {{time}}
+  <vv-upload class="vv-upload"></vv-upload>
+  <vv-upload class="vv-upload">
+    <div>slot</div>
+  </vv-upload>
+  <vv-upload class="vv-upload"></vv-upload>
+</div>
+<script>
+var ua = navigator.userAgent,
+  isIOS=/iphone|ipad|ipod/gi.test(ua),
+  isAndroid=/android/gi.test(ua),
+  isVVMusic=/vvmusic/gi.test(ua);
+var componentPre = 'vv-upload-component'
+Vue.component('vv-upload', {
+  name: componentPre,
+  author: 'lilnong.top',
+  template: `
+		<label :for="labelFor" @click="uploadImage">
+			<slot>上传图片</slot>
+			<input type="file" :accept="accept" :name="inputID" :id="inputID" style="width:0;height:0;overflow:hidden;position:absolute;" @change="inputChange">
+		</label>
+	`,
+  data(){
+    return{
+      inputID: componentPre+Date.now()+Math.random().toFixed(10).slice(2),
+      random: Math.random()
+    }
+  },
+  methods: {
+    uploadImage(){
+      if(this.labelFor === false){
+				// 需要客户端上传
+        
+      }else{
+        // 页面自己上传
+        var xhr = new XMLHttpRequest();
+        xhr.open('post', '');
+        xhr.send();
+      }
+    },
+    inputChange(e){
+      if(e.files.length > 0){
+				// 选中了文件
+        this.uploadImage(e.files[0])
+      }
+    }
+  },
+  computed: {
+    labelFor(){
+			// 开启了识别
+      if(this.isClientAutoUpload === true){
+				// 开启了客户端上传
+        if(this.isClientUpload === true){
+					// 服务支持版本验证通过
+          if(true){
+            return false;
+          }
+        }
+      }
+      return this.inputID
+    }
+  },
+  props:{
+    accept: {
+      type: String,
+      default: "image/*"
+    },
+    isAndroid: {
+      type: Boolean,
+      default: isAndroid
+    },
+    isIOS: {
+      type: Boolean,
+      default: isIOS
+    },
+    isVVMusic: {
+      type: Boolean,
+      default: isVVMusic
+    },
+		// 是否开启客户端上传
+    isClientUpload: {
+      type: Boolean,
+      default: true
+    },
+		// 自动识别，端内客户端上传，端外H5
+    isClientAutoUpload: {
+      type: Boolean,
+      default: false
+    }
+  }
+})
+
+new Vue({
+  el: '#app',
+  data(){
+    return{
+      time: Date.now()
+    }
+  }
+})
+</script>
+</body>
+</html>

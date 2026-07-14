@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vant watch field</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="y5QKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vant/2.12.47/vant.min.js"></script>
+<div id="app">
+    <div>value: {{value}}</div>
+    <van-cell-group>
+         <van-field v-model="value" label="文本" placeholder="请输入用户名" />
+    </van-cell-group>
+
+    <hr>
+
+    <div>obj.value: {{obj.value}}</div>
+    <van-cell-group>
+         <van-field v-model="obj.value" label="文本" placeholder="请输入用户名" />
+    </van-cell-group>
+
+    <hr>
+
+    <div>obj.value2: {{obj.value2}}</div>
+    <van-cell-group>
+         <van-field v-model="obj.value2" label="文本" placeholder="请输入用户名" />
+    </van-cell-group>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                value: '123',
+                obj:{
+                    value: 456,
+
+                    value2: 789
+                }
+            }
+        },
+        watch:{
+            value(){
+                console.log(this.value)
+            },
+            'obj.value'(){
+                console.log(this.obj.value)
+            },
+            'obj.value2':{
+                handler(){
+                    console.log(this.obj.value2)
+                }
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

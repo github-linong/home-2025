@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>优化select体验</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="AMaKp" />
+  <style>
+  .el-select--small .el-select__tags {
+      top: 61% !important;
+    }
+
+.el-select__tags {
+    margin-left: 5px !important;
+    -webkit-box-align: center !important;
+    -ms-flex-align: center !important;
+    align-items: flex-start!important;
+    display: -ms-flex !important;
+    display: -webkit-flex !important;
+    display: flex !important;
+    -webkit-flex-wrap: nowrap !important;
+    flex-wrap: nowrap !important;
+    overflow: hidden !important;
+    align-content: flex-start !important;
+  }
+
+.el-tag.el-tag--info {
+    margin-right: auto !important;
+  }
+
+  .el-select {
+    width: 100% !important;
+    max-width: 343.5px !important;
+  }
+
+
+  .el-select:focus-within .el-select__input{
+      order: -1;
+      width: 30px !important;
+      flex-shrink: 0;
+  }
+  /* .el-select .el-tag{
+      flex: 0 1 0;
+      overflow: hidden;
+  }
+ .el-select .el-select__tags > span{
+    width: 100%;
+    flex-grow: 0
+    display: flex !important;
+    overflow: hidden;
+  } */
+  </style>
+</head>
+<body>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<div id="app">
+  <div style="width:200px">
+    <el-select
+    refs="autoWidthInput"
+    v-model="value" 
+    :multiple="true" filterable  
+    reserve-keyword placeholder="请选择">
+            <el-option
+            v-for="item in options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+            </el-option>
+    </el-select>
+  </div>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data(){
+    return {
+        options: [{
+          value: '选项1',
+          label: '黄金糕'
+        }, {
+          value: '选项6',
+          label: '黄金糕1'
+        },  {
+          value: '选项7',
+          label: '黄金糕2'
+        },   {
+          value: '选项8',
+          label: '黄金糕3'
+        }, {
+          value: '选项2',
+          label: '双皮奶'
+        }, {
+          value: '选项3',
+          label: '蚵仔煎'
+        }, {
+          value: '选项4',
+          label: '龙须面'
+        }, {
+          value: '选项5',
+          label: '北京烤鸭'
+        }],
+        value: ''
+    }
+  },
+  watch:{},
+  mounted(){
+    //   this.$nextTick()
+    this.$refs.autoWidthInput
+  },
+  methods: {
+    
+      
+  }
+})
+</script>
+</body>
+</html>

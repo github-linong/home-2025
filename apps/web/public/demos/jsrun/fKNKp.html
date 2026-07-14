@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>canvas 截图</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="fKNKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div>
+    <video crossOrigin id="video1" controls src="http://cors-www.lilnong.top/static/video/friday.mp4"></video>
+    <canvas width="200" height="200" id="canva1"></canvas>
+</div>
+<div>
+    <canvas width="200" height="200" id="video1ToCanvas"></canvas>
+    <canvas width="200" height="200" id="canvas1ToCanvas"></canvas>
+</div>
+<div>
+    <img width="200" height="200" id="video1ToCanvasToImg"></img>
+    <img width="200" height="200" id="canvas1ToCanvasToImg"></img>
+</div>
+<style>
+    *{padding: 0;margin: 0;}
+    video,canvas{width: 200px;height: 200px;display: inline-block;vertical-align: top;}
+</style>
+<script>
+    ctx1 = canva1.getContext('2d')
+    setInterval(v=>{
+        ctx1.drawImage(video1, 0, 0, 200, 200)
+    }, 100)
+    ctx2 = video1ToCanvas.getContext('2d')
+    setInterval(v=>{
+        ctx2.drawImage(video1, 0, 0, 200, 200)
+    }, 200)
+    ctx3 = canvas1ToCanvas.getContext('2d')
+    setInterval(v=>{
+        ctx3.drawImage(canva1, 0, 0, 200, 200)
+    }, 200)
+    video1.currentTime = 0;
+    video1.play()
+    setInterval(v=>{
+        video1ToCanvasToImg.src = video1ToCanvas.toDataURL('image/jpeg')
+        canvas1ToCanvasToImg.src = canvas1ToCanvas.toDataURL('image/jpeg')
+    }, 200)
+</script>
+<script>
+
+</script>
+</body>
+</html>

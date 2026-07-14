@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>曝光埋点测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="26TKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+
+</div>
+<style>
+    .ligh{
+        color: red;
+    }
+</style>
+<script>
+    str = '';
+    for(var i = 0; i < 999; i++){
+        str += `<div>${i}</div>`
+    }
+    app.innerHTML = str;
+
+    var divEl = Array.from(app.querySelectorAll('div'));
+    console.time('1')
+    divEl.forEach(v=>{
+        // top.console.log(v.getClientRects()[0].top);
+    })
+    console.timeEnd('1')
+
+    window.onscroll = (()=>{
+        // document.scrollingElement.scrollTop
+
+        // document.scrollingElement.scrollHeight
+        // document.scrollingElement.offsetHeight
+
+        // document.scrollingElement.clientHeight
+        // console.log('onscroll', document.scrollTop)
+        top.console.log(
+            document.scrollingElement.scrollTop,
+            document.scrollingElement.scrollHeight,
+            document.scrollingElement.offsetHeight,
+            document.scrollingElement.clientHeight
+        )
+        // let scrollTop = document.scrollingElement.scrollTop +
+        //  document.scrollingElement.clientHeight;
+
+        let scrollTop = document.scrollingElement.clientHeight;
+        console.time('1')
+        divEl.every(v=>{
+            v.className = 'ligh'
+            return v.getClientRects()[0].top < scrollTop;
+            // top.console.log(v.getClientRects()[0].top);
+        })
+        console.timeEnd('1')
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

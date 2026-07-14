@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>文档流测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="A2VKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<style>
+        #app div{
+            margin: 10px;
+        }
+    </style>
+    <div id="app">
+        <div v-for="item in 10">
+            <span v-for="item1 in 30">{{item}}.{{item1}} </span>
+        </div>
+    </div>
+    <!-- left: 200px; right: auto -->
+    <style>
+        /* BFC */
+        /* .box{background: #f00}
+        .left{float:left;height: 100px;width: 200px;background: #0f0}
+        .right{
+            overflow:hidden;
+            height: 110px;background: #00f;
+        } */
+
+        /* flex */
+        /* .box{background: #f00;display: flex;}
+        .left{height: 100px;width: 200px;background: #0f0;flex:none;}
+        .right{height: 110px;background: #00f;flex: auto;}  */
+
+        /* position */
+        /* .box{background: #f00;position: relative;}
+        .left{height: 100px;width: 200px;background: #0f0;left:0;top:0;position:absolute;}
+        .right{height: 110px;background: #00f;flex: auto;margin-left: 200px;}  */
+
+        /* table: 刘 */
+
+        /* margin：刘 */
+    </style>
+    <div class="box">
+        <div class="right"></div>
+        <div class="left"></div>
+    </div>
+    <script>
+        new Vue({
+            el: '#app'
+        })
+    </script>
+<script>
+
+</script>
+</body>
+</html>

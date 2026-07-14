@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue nextTick 微任务</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="GL3Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<div id="app">
+    {{1}}
+    <button @click="click"> click</button>
+    <button @click="click2"> click2</button>
+</div>
+<script>
+    new Vue({
+        el: "#app",
+        mounted(){
+            console.log(11);
+            this.fun()
+            console.log(12);
+        },
+        methods:{
+            fun(){
+                console.log('fun')
+            },
+            click(){
+
+                console.log(21);
+                this.$nextTick(v=>this.fun())
+                console.log(22);
+            },
+            click2(){
+
+                console.log(31);
+                this.fun()
+                console.log(32);
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

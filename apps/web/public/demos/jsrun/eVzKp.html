@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>element el-table</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="eVzKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js">
+</script>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js">
+</script>
+
+<div id="app">
+
+	<el-table :data="tableData" style="width: 100%">
+		<el-table-column label="商品 ID" prop="id">
+		</el-table-column>
+		<el-table-column prop="enableDate" label="生效日期"></el-table-column>
+
+		<el-table-column prop="beforeTotal" label="调整前工资(￥)"></el-table-column>
+		<el-table-column prop="afterTotal" label="调整后工资(￥)"></el-table-column>
+	
+        <el-table-column
+          label="调薪记录"
+        >
+          <template #default="scope">
+            <el-popover
+              placement="right"
+              :width="100"
+              :key="scope.row.id"
+              trigger="click"
+            >
+              <template #reference>
+                <a
+                  class="table-name"
+                  @click="handleDetail(scope.row)"
+                >{{ scope.row.recordType == 1 ? '定薪1':'调薪1' }}</a>
+              </template>
+            </el-popover>
+
+            <el-popover
+              placement="right"
+              :width="100"
+              trigger="click"
+            >
+              <template #reference>
+                <a
+                  class="table-name"
+                  @click="handleDetail(scope.row)"
+                >{{ scope.row.recordType == 1 ? '定薪2':'调薪2' }}</a>
+              </template>
+            </el-popover>
+          </template>
+        </el-table-column>
+	<el-table-column label="商品名称" prop="name">
+	</el-table-column>
+	<el-table-column label="描述" prop="desc">
+	</el-table-column>
+	</el-table>
+</div>
+<style>
+	.demo-table-expand {
+		font-size: 0;
+	}
+
+	.demo-table-expand label {
+		width: 90px;
+		color: #99a9bf;
+	}
+
+	.demo-table-expand .el-form-item {
+		margin-right: 0;
+		margin-bottom: 0;
+		width: 50%;
+	}
+</style>
+
+<script>
+	new Vue( {
+      el: '#app',
+    data() {
+      return {
+        tableData: [{
+          id: '12987122',
+          name: '好滋好味鸡蛋仔',
+          category: '江浙小吃、小吃零食',
+          desc: '荷兰优质淡奶，奶香浓而不腻',
+          address: '上海市普陀区真北路',
+          shop: '王小虎夫妻店',
+          shopId: '10333',
+          recordType:'recordType',
+        enableDate:'enableDate',
+        beforeTotal:'beforeTotal',
+        afterTotal:'afterTotal',
+        }, {
+          id: '12987123',
+          name: '好滋好味鸡蛋仔',
+          category: '江浙小吃、小吃零食',
+          desc: '荷兰优质淡奶，奶香浓而不腻',
+          address: '上海市普陀区真北路',
+          shop: '王小虎夫妻店',
+          shopId: '10333',
+          recordType:'recordType',
+        enableDate:'enableDate',
+        beforeTotal:'beforeTotal',
+        afterTotal:'afterTotal',
+        }, {
+          id: '12987125',
+          name: '好滋好味鸡蛋仔',
+          category: '江浙小吃、小吃零食',
+          desc: '荷兰优质淡奶，奶香浓而不腻',
+          address: '上海市普陀区真北路',
+          shop: '王小虎夫妻店',
+          shopId: '10333',
+          recordType:'recordType',
+        enableDate:'enableDate',
+        beforeTotal:'beforeTotal',
+        afterTotal:'afterTotal',
+        }, {
+          id: '12987126',
+          name: '好滋好味鸡蛋仔',
+          category: '江浙小吃、小吃零食',
+          desc: '荷兰优质淡奶，奶香浓而不腻',
+          address: '上海市普陀区真北路',
+          shop: '王小虎夫妻店',
+          shopId: '10333',
+          recordType:'recordType',
+        enableDate:'enableDate',
+        beforeTotal:'beforeTotal',
+        afterTotal:'afterTotal',
+        }]
+      }
+    },
+    methods: {
+        load(){
+            console.log(arguments)
+        },
+        handleDetail(){
+
+        }
+    }
+  })
+
+</script>
+<script>
+
+</script>
+</body>
+</html>

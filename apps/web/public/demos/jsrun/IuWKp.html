@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000021484691</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="IuWKp" />
+  <style>
+#app{
+  /* width: 100px; */
+  /* height: 100px; */
+  /* border: 1px solid #f00; */
+  /* transform: translate(0); */
+  /* left: 0; */
+}
+.app{
+  width: 100px;
+  height: 100px;
+  border: 1px solid #f00;
+  transform: translate(0);
+  position:relative;
+  left: 0px;
+}
+.translate{
+  transform: translate(100px)
+}
+.transition{
+  transition: all 1s;
+}
+.left{
+  left: 100px;
+}
+  </style>
+</head>
+<body>
+<div id="app" class="app"></div>
+
+<div>
+  <button id="addTranslate">add translate</button>
+  <button id="removeTranslate">remove translate</button>
+  <button id="toggleTranslate">toggle translate</button>
+  <br />
+  <button id="addTransition">add transition</button>
+  <button id="removeTransition">remove transition</button>
+  <button id="toggleTransition">toggle transition</button>
+  <br />
+  <button id="addLeft">add left</button>
+  <button id="removeLeft">remove left</button>
+  <button id="toggleLeft">toggle left</button>
+  <br />
+  <button id="demo1">移除transition，添加translate，添加transition</button>
+  <button id="demo2">移除transition，添加translate，添加transition，中途获取value</button>
+  
+  <button id="demo3">移除transition，添加left，添加transition</button>
+  <button id="demo4">移除transition，添加left，添加transition，获取位置</button>
+  
+  <button id="demo5">移除transition，添加translate，添加transition，中途获取value，获取位置</button>
+</div>
+<script>
+addTranslate.onclick = ()=>app.classList.add('translate')
+removeTranslate.onclick = ()=>app.classList.remove('translate')
+toggleTranslate.onclick = ()=>app.classList.toggle('translate')
+
+addTransition.onclick = ()=>app.classList.add('transition')
+removeTransition.onclick = ()=>app.classList.remove('transition')
+toggleTransition.onclick = ()=>app.classList.toggle('transition')
+
+addLeft.onclick = ()=>app.classList.add('left')
+removeLeft.onclick = ()=>app.classList.remove('left')
+toggleLeft.onclick = ()=>app.classList.toggle('left')
+
+demo1.onclick = ()=>{
+  app.classList.remove('transition')
+  app.classList.add('translate')
+  app.classList.add('transition')
+}
+demo2.onclick = ()=>{
+  console.log(app.classList.value, app.className, app.getAttribute('class'))
+  app.classList.remove('transition')
+  console.log(app.classList.value, app.className, app.getAttribute('class'))
+  app.classList.add('translate')
+  console.log(app.classList.value, app.className, app.getAttribute('class'))
+  app.classList.add('transition')
+  console.log(app.classList.value, app.className, app.getAttribute('class'))
+}
+demo3.onclick = ()=>{
+  app.classList.remove('transition')
+  app.classList.add('left')
+  app.classList.add('transition')
+}
+demo4.onclick = ()=>{
+  console.log(app.classList.value, app.className, app.getAttribute('class'), app.scrollTop,app.offsetLeft)
+  app.classList.remove('transition')
+  console.log(app.classList.value, app.className, app.getAttribute('class'), app.scrollTop,app.offsetLeft)
+  app.classList.add('left')
+  console.log(app.classList.value, app.className, app.getAttribute('class'), app.scrollTop,app.offsetLeft)
+  app.classList.add('transition')
+  console.log(app.classList.value, app.className, app.getAttribute('class'), app.scrollTop,app.offsetLeft)
+}
+
+demo5.onclick = ()=>{
+  console.log(app.classList.value, app.className, app.getAttribute('class'),app.scrollTop,app.offsetLeft)
+  app.classList.remove('transition')
+  console.log(app.classList.value, app.className, app.getAttribute('class'),app.scrollTop,app.offsetLeft)
+  app.classList.add('translate')
+  console.log(app.classList.value, app.className, app.getAttribute('class'),app.scrollTop,app.offsetLeft)
+  app.classList.add('transition')
+  console.log(app.classList.value, app.className, app.getAttribute('class'),app.scrollTop,app.offsetLeft)
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue 时间视频联动</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="GBTKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div class="box flex">
+        <div class="left">
+            <div>
+                {{current}}
+                <br>
+                {{currentTime}}
+                <br>
+                <!-- {{listState}} -->
+                <!-- {{innnerHTMLStr}} -->
+                <!-- <div v-html="innnerHTMLStr"></div> -->
+            </div>
+            <video 
+                ref="videoEl"
+                controls 
+                muted
+                volume='0.1'
+                autoplay
+                @timeupdate="timeUpdateHandler"
+                loop src="http://www.lilnong.top/static/audio/918c_1958_7d87_022d7d76c923b1caaca6e30ca47d0f69.mp3"></video>
+
+            <div 
+                v-if="listState.bottomChecked > -1 &&  (listFilter[listState.bottomChecked].start <= currentTime && listFilter[listState.bottomChecked].end >= currentTime )"
+                @click="listState.bottomChecked = -1"
+                >退出聚焦</div>
+        </div>
+        <div class="right">
+            <div class="fixed" 
+                @mouseenter="listState.topHover=true"
+                @mouseleave="listState.topHover=false,listState.gotoTopBtn=true">
+                <ul ref="fixedEl">
+                    <li v-for="item in listFixed">
+                        {{item.startTxt}}-{{item.endTxt}}
+                    </li>
+                </ul>
+                <div style="position:absolute;right:0;background:#f00;top:0;" 
+                    v-if="listFixed.length > 5 && listState.gotoTopBtn" @click="gotoTop">
+                    更多
+                </div>
+            </div>
+            <div class="scroll"
+                @mouseenter="listState.bottomHover=true"
+                @mouseleave="listState.bottomHover=false">
+                <ol ref="allEl">
+                    <li v-for="(item, idx) in listFilter" 
+                        :class="{isHigh: item.isHigh, isSelected: idx == listState.bottomChecked && (listFilter[listState.bottomChecked].start <= currentTime && listFilter[listState.bottomChecked].end >= currentTime )}"
+                        @click="selectHanlder($event, item, idx)">
+                        <!-- {{item}} -->
+                        {{item.startTxt}}-{{item.endTxt}}
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    *{
+        /* padding: 0; */
+        padding-top:0;padding-bottom:0;
+        box-sizing: border-box;
+        margin: 0;
+        line-height: 1;
+        scroll-behavior: smooth;
+    }
+    div{
+        border: 1px solid #f00;
+        /* line-height: 1; */
+    }
+    .flex{display: flex}
+    .right{
+        height: 500px;
+        /* overflow: hidden; */
+        display: flex;
+        flex-direction: column;
+        flex: auto;
+    }
+    .fixed, .scroll{
+        /* offestTop */
+        position: relative;
+    }
+    .right > div{
+        max-height: 100%;
+        overflow: hidden;
+    }
+    .right > div ul,.right > div ol{
+        max-height: 100%;
+        overflow: hidden;
+    }
+    .right > div:hover ul,.right > div:hover ol{
+        /* max-height: 100%; */
+        overflow: scroll;
+    }
+    .right > .fixed{flex: none;max-height: 5em;}
+    .isHigh{color: #0f0;}
+    .isSelected{color: #00f}
+</style>
+<script>
+    list = Array.from({length: 130}).map(()=>{
+        start = (Math.random() * 60 * 1.5) * 1 >>> 0
+        return {
+            start: start,
+            end: Math.random() >.8 ? Infinity : start + (Math.random() * 30) * 1 >>> 0
+        }
+    });
+    list.sort((n,m)=>n.start-m.start)
+</script>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<script>
+    const sToMs = (t) => {
+        // 时间转化
+        const m = Math.floor(t / 60);
+        const s = Number((t % 60).toFixed(0));
+        const mStr = m < 10 ? `0${m}` : m;
+        const sStr = s < 10 ? `0${s}` : s;
+
+        return `${mStr}:${sStr}`;
+    };
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                list: list,
+                listState: {
+                    topHover:false,
+                    bottomHover: false,
+                    bottomChecked: -1,
+                    gotoTopBtn: true
+                },
+                current: 0,
+                innnerHTMLStr: '<p><span style="color: red;">12</span>345</p>'
+            }
+        },
+        methods: {
+            gotoTop(){
+                this.$refs.fixedEl.scrollTop = 0;
+                this.listState.gotoTopBtn=false;
+            },
+            timeUpdateHandler(e){
+                this.current = e.target.currentTime
+                this.autoScroll();
+                if( 
+                    this.listState.bottomChecked > -1 && 
+                    (
+                        this.currentTime < this.listFilter[this.listState.bottomChecked].start ||
+                        this.currentTime > this.listFilter[this.listState.bottomChecked].end
+                    )
+                ){
+                    this.listState.bottomChecked = -1;
+                }
+            },
+            selectHanlder(e, item, idx){
+                var el = this.$refs.videoEl;
+                this.listState.bottomChecked = idx;
+
+                el.currentTime = item.start >> 0 
+                el.play();
+            },
+            autoScroll(){
+                if(!this.listState.topHover){
+                    this.$refs.fixedEl.scrollTop = 9999999;
+                }
+                    
+                if(!this.listState.bottomHover){
+                    var idx_prev = this.$refs.allEl.children[this.listFilterIndex]
+                    if(idx_prev){
+                        this.$refs.allEl.scrollTop = idx_prev.offsetTop
+                    }
+                    // this.$refs.allEl.scrollTop = 9999999;
+                    
+                }
+                // allEl
+            }
+        },
+        computed:{
+            currentTime(){
+                return this.current >>> 0
+            },
+            listFilterIndex(){
+                // 找到时间大于当前戳的第一个，比如说 3应该找到 4，3.5也应该找到4，不能找到自己
+                var idx = this.listFilter.findIndex(v=>v.start>this.currentTime);
+                if(this.listFilter[idx - 1]){
+                    var findTime = this.listFilter[idx - 1].start >>> 0;
+                    var idx_prev = this.listFilter.findIndex(v=>v.start>=findTime);
+                    return idx_prev
+                }
+                return Infinity
+            },
+            listFilter(){
+                return this.list.map(v=>({
+                    ...v,
+                    isHigh: v.start <= this.current && v.end > this.current,
+                    startTxt: sToMs(v.start),
+                    endTxt: Number.isSafeInteger(v.end)&&sToMs(v.end) || '',
+                }))
+            },
+            listFixed(){
+                this.$nextTick(()=>this.autoScroll())
+                return this.listFilter.filter((v, idx)=>
+                    v.start < this.current &&
+                    v.end > this.current &&
+                    this.listFilterIndex > idx
+                )
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

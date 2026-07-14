@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vuedraggable test</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="XCXKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="//cdnjs.cloudflare.com/ajax/libs/vue/2.5.2/vue.min.js"></script>
+<!-- CDNJS :: Sortable (https://cdnjs.com/) -->
+<script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
+<!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.20.0/vuedraggable.umd.min.js"></script>
+
+<div id="app">
+  <draggable v-model="myArray" group="people" @start="drag=true" @end="drag=false">
+   <div v-for="element in myArray" :key="element.id">{{element.name}}</div>
+</draggable>
+  <button @click="save">保存数据</button>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    myArray:[]
+  },
+  created(){
+    setTimeout(v=>{
+      this.myArray.push({name: 'a', id: 1})
+      this.myArray.push({name: 'b', id: 2})
+      this.myArray.push({name: 'c', id: 3})
+      this.myArray.push({name: 'd', id: 4})
+      this.myArray.push({name: 'e', id: 5})
+      this.myArray.push({name: 'f', id: 6})
+      this.myArray.push({name: 'g', id: 7});
+      console.log('拉回来的数据', JSON.parse(JSON.stringify(this.myArray)))
+    })
+  },
+  methods:{
+    save(){
+      console.log('保存的数据', JSON.parse(JSON.stringify(this.myArray)))
+    }
+  }
+})
+</script>
+</body>
+</html>

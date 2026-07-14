@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>样式控制after</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="dU3Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<ul class="demo1">
+    <li>1</li>
+    <li>1</li>
+    <li>1</li>
+    <li>1</li>
+    <li>1</li>
+    <li>1</li>
+    <li>1</li>
+    <li>1</li>
+</ul>
+<ul class="demo1">
+    <li>1</li>
+    <li>1</li>
+    <li>1</li>
+    <li>1</li>
+    <li>1</li>
+    <li>1</li>
+    <li>1</li>
+    <li>1</li>
+    <div>2</div>
+</ul>
+<ul class="demo2">
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+</ul>
+<ul class="demo2">
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <div>2</div>
+    <li>1</li>
+</ul>
+<ul class="demo3">
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <li class="li">1</li>
+    <div>2</div>
+    <li>1</li>
+</ul>
+<style>
+    li:after{
+        content: '';
+        display: block;
+        height: 1px;
+        background: #f00;
+    }
+    .demo1 li:last-child:after{
+        background: #0f0;
+    }
+    .demo2 .li:last-of-type:after{
+        background: #00f;
+    }
+    .demo2 :nth-last-child(li):after{
+        background: #0ff;
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

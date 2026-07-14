@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>动画队列 css</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="tbXKp" />
+  <style>
+@keyframes toright{
+    0% {
+        left: 0;
+    }
+    100% {
+        left: 100px;
+    }
+}
+@keyframes tobottom{
+    0% {
+        top:0
+    }
+    100% {
+        top:100px
+    }
+}
+#app{
+  width: 100px;
+  height: 100px;
+  background: red;
+  position:absolute;
+  
+  animation: toright 3s 3s forwards, tobottom 3s forwards; 
+}
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+
+</script>
+</body>
+</html>

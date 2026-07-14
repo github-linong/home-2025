@@ -1,0 +1,698 @@
+{
+  "generatedAt": "2026-07-14T01:53:21.226Z",
+  "totals": {
+    "all": 626,
+    "curated": 56,
+    "archiveKeep": 570,
+    "prune": 0
+  },
+  "curated": [
+    {
+      "contentSlug": "jsrun-KAQKp",
+      "title": "intro.js 引导测试",
+      "score": 82,
+      "total": 42092,
+      "demoUrl": "/demos/jsrun/KAQKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "vue",
+        "modern-api",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-PmQKp",
+      "title": "driver.js 引导测试",
+      "score": 82,
+      "total": 44687,
+      "demoUrl": "/demos/jsrun/PmQKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "vue",
+        "modern-api",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-cUUKp",
+      "title": "构建一个心生成器",
+      "score": 82,
+      "total": 4547,
+      "demoUrl": "/demos/jsrun/cUUKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "vue",
+        "modern-api",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-BdIKp",
+      "title": "echarts 决策树",
+      "score": 82,
+      "total": 8102,
+      "demoUrl": "/demos/jsrun/BdIKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "vue",
+        "modern-api",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-JWLKp",
+      "title": "jquery批量拖拽",
+      "score": 82,
+      "total": 3185,
+      "demoUrl": "/demos/jsrun/JWLKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "vue",
+        "modern-api",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-avDKp",
+      "title": "网页暗水印的研究与实践",
+      "score": 81,
+      "total": 7614,
+      "demoUrl": "/demos/jsrun/avDKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "canvas",
+        "modern-api",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-F6JKp",
+      "title": "拖动缩放demo",
+      "score": 78,
+      "total": 4017,
+      "demoUrl": "/demos/jsrun/F6JKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "canvas",
+        "vue",
+        "modern-api"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-9EVKp",
+      "title": "拖放DOM大小",
+      "score": 78,
+      "total": 3054,
+      "demoUrl": "/demos/jsrun/9EVKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "vue",
+        "modern-api",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-8dgKp",
+      "title": "拼图小程序",
+      "score": 77,
+      "total": 2655,
+      "demoUrl": "/demos/jsrun/8dgKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "canvas",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-4tbKp",
+      "title": "刮奖 demo",
+      "score": 77,
+      "total": 4873,
+      "demoUrl": "/demos/jsrun/4tbKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "canvas",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-k8iKp",
+      "title": "d3 树状图",
+      "score": 77,
+      "total": 154319,
+      "demoUrl": "/demos/jsrun/k8iKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "modern-api",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-ypzKp",
+      "title": "文件预览",
+      "score": 73,
+      "total": 71073,
+      "demoUrl": "/demos/jsrun/ypzKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "modern-api",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-VsUKp",
+      "title": "echarts 3d 饼图",
+      "score": 72,
+      "total": 13523,
+      "demoUrl": "/demos/jsrun/VsUKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "vue",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-PuzKp",
+      "title": "图片放大 cropper",
+      "score": 72,
+      "total": 7168,
+      "demoUrl": "/demos/jsrun/PuzKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "vue",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-MdJKp",
+      "title": "piexifjs 修改 exif 测试",
+      "score": 71,
+      "total": 2252,
+      "demoUrl": "/demos/jsrun/MdJKp.html",
+      "reasons": [
+        "medium",
+        "has-js",
+        "canvas",
+        "modern-api",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-sfQKp",
+      "title": "扫雷，开启算法",
+      "score": 68,
+      "total": 3960,
+      "demoUrl": "/demos/jsrun/sfQKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "vue",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-5bTKp",
+      "title": "flex 布局实现 蛇皮走位",
+      "score": 68,
+      "total": 1752,
+      "demoUrl": "/demos/jsrun/5bTKp.html",
+      "reasons": [
+        "medium",
+        "has-js",
+        "vue",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-ISgKp",
+      "title": "树形视图 组件的递归使用。",
+      "score": 68,
+      "total": 1798,
+      "demoUrl": "/demos/jsrun/ISgKp.html",
+      "reasons": [
+        "medium",
+        "has-js",
+        "vue",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-DRYKp",
+      "title": "基于HTML5的拖动排序",
+      "score": 67,
+      "total": 1975,
+      "demoUrl": "/demos/jsrun/DRYKp.html",
+      "reasons": [
+        "medium",
+        "has-js",
+        "modern-api",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-CMQKp",
+      "title": "聚焦元素",
+      "score": 67,
+      "total": 4862,
+      "demoUrl": "/demos/jsrun/CMQKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-ezyKp",
+      "title": "端内 upload 组件",
+      "score": 64,
+      "total": 2020,
+      "demoUrl": "/demos/jsrun/ezyKp.html",
+      "reasons": [
+        "medium",
+        "has-js",
+        "vue",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-ANCKp",
+      "title": "/sf-a-1190000022597533-file-preview-input-drop.html",
+      "score": 64,
+      "total": 9122,
+      "demoUrl": "/demos/jsrun/ANCKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "vue",
+        "modern-api"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-f2iKp",
+      "title": "position: sticky 详解（防坑指南）",
+      "score": 63,
+      "total": 11294,
+      "demoUrl": "/demos/jsrun/f2iKp.html",
+      "reasons": [
+        "substantial",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-XjxKp",
+      "title": "http://ovolve.github.io/2048-AI/",
+      "score": 63,
+      "total": 22333,
+      "demoUrl": "/demos/jsrun/XjxKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-vIzKp",
+      "title": "flex 布局实现底部固定",
+      "score": 63,
+      "total": 4975,
+      "demoUrl": "/demos/jsrun/vIzKp.html",
+      "reasons": [
+        "substantial",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-QUzKp__98981",
+      "title": "svg 线 动画",
+      "score": 63,
+      "total": 4745,
+      "demoUrl": "/demos/jsrun/QUzKp__98981.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-L5WKp",
+      "title": "进度条 vue",
+      "score": 62,
+      "total": 1590,
+      "demoUrl": "/demos/jsrun/L5WKp.html",
+      "reasons": [
+        "medium",
+        "has-js",
+        "vue",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-PT3Kp",
+      "title": "不确定高度动画",
+      "score": 62,
+      "total": 1287,
+      "demoUrl": "/demos/jsrun/PT3Kp.html",
+      "reasons": [
+        "medium",
+        "has-js",
+        "vue",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-7NxKp",
+      "title": "canvas 测试。马赛克效果",
+      "score": 61,
+      "total": 1564,
+      "demoUrl": "/demos/jsrun/7NxKp.html",
+      "reasons": [
+        "medium",
+        "has-js",
+        "canvas",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-YAqKp",
+      "title": "http://www.zhangxinxu.com/wordpress/2017/09/css-shapes-outside-iphone-x-head/",
+      "score": 59,
+      "total": 3211,
+      "demoUrl": "/demos/jsrun/YAqKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "linked-article"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-fReKp",
+      "title": "keep-alive 动态缓存",
+      "score": 58,
+      "total": 1592,
+      "demoUrl": "/demos/jsrun/fReKp.html",
+      "reasons": [
+        "medium",
+        "has-js",
+        "vue",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-468Kp",
+      "title": "sortable 排序。",
+      "score": 58,
+      "total": 1469,
+      "demoUrl": "/demos/jsrun/468Kp.html",
+      "reasons": [
+        "medium",
+        "has-js",
+        "vue",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-ya9Kp",
+      "title": "贫富差距产生 模拟:100人 初始有每人有100元， 每次每个人随机给一个人2块钱。",
+      "score": 57,
+      "total": 2136,
+      "demoUrl": "/demos/jsrun/ya9Kp.html",
+      "reasons": [
+        "medium",
+        "has-js",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-5r8Kp",
+      "title": "css 动画，荡开",
+      "score": 57,
+      "total": 3037,
+      "demoUrl": "/demos/jsrun/5r8Kp.html",
+      "reasons": [
+        "substantial",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-UbeKp",
+      "title": "vue3 使用 vue2 的组件 2",
+      "score": 56,
+      "total": 3991,
+      "demoUrl": "/demos/jsrun/UbeKp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "vue"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-Zd8Kp",
+      "title": "识别优化",
+      "score": 55,
+      "total": 5074,
+      "demoUrl": "/demos/jsrun/Zd8Kp.html",
+      "reasons": [
+        "substantial",
+        "has-js",
+        "modern-api"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-HxWKp",
+      "title": "flex 实现图标加多行文本功能",
+      "score": 54,
+      "total": 1244,
+      "demoUrl": "/demos/jsrun/HxWKp.html",
+      "reasons": [
+        "medium",
+        "vue",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-rfUKp",
+      "title": "https://segmentfault.com/q/1010000040884063",
+      "score": 54,
+      "total": 1452,
+      "demoUrl": "/demos/jsrun/rfUKp.html",
+      "reasons": [
+        "medium",
+        "has-js",
+        "vue",
+        "linked-article"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-ZCqKp",
+      "title": "获取截图 粘贴上传",
+      "score": 50,
+      "total": 775,
+      "demoUrl": "/demos/jsrun/ZCqKp.html",
+      "reasons": [
+        "has-js",
+        "modern-api",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-3nTKp",
+      "title": "导航，CSS实现，下划线跟随效果",
+      "score": 50,
+      "total": 1970,
+      "demoUrl": "/demos/jsrun/3nTKp.html",
+      "reasons": [
+        "medium",
+        "has-js",
+        "vue"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-fXZKp",
+      "title": "纯CSS实现瀑布流布局",
+      "score": 49,
+      "total": 2283,
+      "demoUrl": "/demos/jsrun/fXZKp.html",
+      "reasons": [
+        "medium",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-guWKp",
+      "title": "barrage;",
+      "score": 49,
+      "total": 4519,
+      "demoUrl": "/demos/jsrun/guWKp.html",
+      "reasons": [
+        "substantial",
+        "has-js"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-aXhKp",
+      "title": "canvas 八卦",
+      "score": 48,
+      "total": 1154,
+      "demoUrl": "/demos/jsrun/aXhKp.html",
+      "reasons": [
+        "has-js",
+        "canvas",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-SXhKp",
+      "title": "大转盘游戏",
+      "score": 45,
+      "total": 738,
+      "demoUrl": "/demos/jsrun/SXhKp.html",
+      "reasons": [
+        "vue",
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-mIhKp",
+      "title": "宽度自适应DEMO",
+      "score": 45,
+      "total": 2761,
+      "demoUrl": "/demos/jsrun/mIhKp.html",
+      "reasons": [
+        "substantial"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-YnhKp",
+      "title": "https://juejin.im/post/5b82ac63e51d4538c362233f",
+      "score": 45,
+      "total": 1623,
+      "demoUrl": "/demos/jsrun/YnhKp.html",
+      "reasons": [
+        "medium",
+        "has-js",
+        "linked-article"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-yn9Kp",
+      "title": "axios 自动重试",
+      "score": 45,
+      "total": 3970,
+      "demoUrl": "/demos/jsrun/yn9Kp.html",
+      "reasons": [
+        "substantial",
+        "has-js"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-yH6Kp",
+      "title": "解一道泰康的拔高面试题：面积占比",
+      "score": 43,
+      "total": 1551,
+      "demoUrl": "/demos/jsrun/yH6Kp.html",
+      "reasons": [
+        "medium",
+        "has-js",
+        "canvas"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-AegKp",
+      "title": "vue选中效果",
+      "score": 40,
+      "total": 1765,
+      "demoUrl": "/demos/jsrun/AegKp.html",
+      "reasons": [
+        "medium",
+        "has-js",
+        "vue"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-be9Kp",
+      "title": "怎么用css做一个流动的边框，大佬们求教",
+      "score": 39,
+      "total": 14504,
+      "demoUrl": "/demos/jsrun/be9Kp.html",
+      "reasons": [
+        "substantial"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-PJNKp",
+      "title": "CSS如何实现局部光照效果？",
+      "score": 30,
+      "total": 569,
+      "demoUrl": "/demos/jsrun/PJNKp.html",
+      "reasons": [
+        "value-title"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-M3hKp",
+      "title": "视口操作，DOM",
+      "score": 30,
+      "total": 979,
+      "demoUrl": "/demos/jsrun/M3hKp.html",
+      "reasons": [
+        "has-js",
+        "canvas"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-yPiKp",
+      "title": "http://www.zhangxinxu.com/php/microCodeDetail.php?id=5",
+      "score": 26,
+      "total": 1113,
+      "demoUrl": "/demos/jsrun/yPiKp.html",
+      "reasons": [
+        "linked-article"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-DKbKp",
+      "title": "数字特效 滚动",
+      "score": 25,
+      "total": 2368,
+      "demoUrl": "/demos/jsrun/DKbKp.html",
+      "reasons": [
+        "medium"
+      ]
+    },
+    {
+      "contentSlug": "jsrun-8diKp",
+      "title": "Love or hate",
+      "score": 16,
+      "total": 1005,
+      "demoUrl": "/demos/jsrun/8diKp.html",
+      "reasons": []
+    },
+    {
+      "contentSlug": "jsrun-cCXKp",
+      "title": "https://juejin.im/post/5cbdbea3f265da037875967f",
+      "score": -14,
+      "total": 359,
+      "demoUrl": "/demos/jsrun/cCXKp.html",
+      "reasons": [
+        "vue",
+        "url-only",
+        "bare-url"
+      ]
+    }
+  ],
+  "pruneSample": []
+}

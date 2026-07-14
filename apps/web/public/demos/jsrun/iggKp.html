@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Uncaught IndexSizeError: Failed to execute 'setStart' on 'Range': There is no child at offset 3.</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="iggKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+Uncaught IndexSizeError: Failed to execute 'setStart' on 'Range': There is no child at offset 3.
+<p id='content' contentEditable='true'>test</p>
+<script>
+$('#content').on('keypress', function(e) {
+  if (e.which === 13) {
+    console.log('enter pressed');
+    e.preventDefault();
+    var range = window.getSelection().getRangeAt(0);
+    var element = document.createElement('p');
+    element.setAttribute("id", "uniqueIdentifier");
+    var date = new Date().getTime();
+    date = date.toString();
+    console.log('date: ' + date);
+    element.textContent = date;
+    //element.innerHTML = '<br>';
+    range.insertNode(element);
+    var range2 = document.createRange();
+    console.log('$(#content).text(): ' + $('#content').text());
+    var startOffset = $('#content').text().indexOf(date);
+    console.log('startOffset: ' + startOffset);
+    range2.setStart(document.getElementById('uniqueIdentifier'), startOffset);
+    range2.setEnd(document.getElementById('uniqueIdentifier'), startOffset + date.length);
+    //        $('#content p.new').focus();
+  }
+});
+</script>
+</body>
+</html>

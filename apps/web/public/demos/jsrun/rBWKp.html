@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>canvas 绘图游戏</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="rBWKp" />
+  <style>
+canvas{
+  border: 1px solid #f00;
+  position:relative;
+}
+  </style>
+</head>
+<body>
+<div id="app">
+  <div id="clog">1</div>
+  <canvas id="canvas"></canvas>
+  <canvas id="canvas2"></canvas>
+</div>
+<script>
+canvas = document.querySelector('#canvas');
+ctx = canvas.getContext('2d')
+// strokeRect()
+// fillRect
+ctx.strokeRect(10,10, 30,30)
+ctx.strokeRect(10,40, 30,30)
+ctx.strokeRect(40,10, 30,30)
+ctx.strokeRect(40,40, 30,30)
+ctx.strokeRect(70,10, 30,30)
+ctx.strokeRect(70,40, 30,30)
+ctx.strokeRect(100,10, 30,30)
+ctx.strokeRect(100,40, 30,30)
+
+canvas.addEventListener('click', (e)=>{
+  // console.log(e)
+  // clog.innerText = `${e.x},${e.y} => ${(e.x-10)/30},${(e.y-10)/30}`
+  
+  clog.innerText = `${e.x},${e.y} => ${((e.offsetX-10)/30).toFixed(2)},${((e.offsetY-10)/30).toFixed(2)}`
+//   offsetY
+})
+
+canvas = document.querySelector('#canvas2');
+ctx = canvas.getContext('2d')
+for(var i = 0; i<30;i++){
+  for(var j = 0; j<30;j++){
+  	ctx.strokeRect(i*30,j*30, 30,30)
+	}
+}
+pointArr = [];
+canvas.addEventListener('click', (e)=>{
+  var x = ((e.offsetX)/30)>>0;
+  var y = ((e.offsetY)/30)>>0;
+  console.log(x, y, e.offsetX, e.offsetY)
+  var str = `${x*30},${y*30},${30},${30}`
+  var strIdx = pointArr.indexOf(str);
+  if(strIdx == -1){
+    ctx.fillStyle = '#000'
+  	ctx.fillRect(x*30,y*30, 30,30);
+    pointArr.push(str)
+  }else{
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(x*30+1,y*30+1, 28,28);
+    pointArr.splice(strIdx, 1)
+  }
+})
+</script>
+</body>
+</html>

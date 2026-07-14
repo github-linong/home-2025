@@ -1,0 +1,15 @@
+# Local download cache — keep docs, sample, catalogs, and curation metadata
+*
+!.gitignore
+!README.md
+!sample-catalog.json
+!catalog.json
+!catalog-case-collisions.json
+!curated-handpicked.json
+!curated-enrichment.json
+!curated-slugs.json
+!curation-report.json
+!enrichment-batch1.json
+!enrichment-batch2.json
+!enrichment-batch3.json
+!enrichment-batch4.json

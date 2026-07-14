@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000018234952/a-1020000018235058</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="cbXKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <div>
+    <inputnumber v-model="val1"></inputnumber> {{val1}}
+  </div>
+  <div>
+    <inputnumber v-model="val2"></inputnumber> {{val2}}
+  </div>
+  <button @click="val1 = Math.random()">val1 = Math.random()</button>
+  <button @click="val2 = Math.random()">val2 = Math.random()</button>
+</div>
+<script>
+Vue.component('inputnumber', {
+  template: `
+		<div>
+			<input v-model="val" @input="change"/>
+			<button @click="add">+</button>
+			<button @click="minus">-</button>
+		</div>
+	`,
+  props: ['value'],
+  data: ()=>({
+    val: 0
+  }),
+  methods: {
+  	add(){
+  		this.val++;
+  		this.$emit('input',this.val)
+		},
+  	minus(){
+  		this.val--
+  		this.$emit('input',this.val)
+		},
+    change(){
+  		// console.log(this.val)
+  		this.$emit('input',this.val)
+		}
+	}
+})
+new Vue({
+  el: '#app',
+  data: {
+    val1: 0,
+    val2: 0
+  }
+})
+</script>
+</body>
+</html>

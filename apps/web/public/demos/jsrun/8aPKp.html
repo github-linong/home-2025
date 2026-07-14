@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue Draggable 测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="8aPKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<style>
+		#app {
+    display: flex;
+    flex-direction: row;
+}
+.left {
+    width: 180px;
+    display: flex;
+    flex-flow: wrap;
+    border-right: 1px solid red;
+}
+.item {
+    font-size: 12px;
+    width: 40px;
+    height: 40px;
+    /* background: black; */
+    border: 1px solid rebeccapurple;
+    /* margin-right: 20px; */
+    /* margin-bottom: 20px; */
+}
+.right {
+    width: calc( 100% - 180px )
+}
+ .layout-compontent {
+    width: 100%;
+    display: grid;
+    justify-content: space-between;
+    grid-template-columns: repeat(auto-fill, 40px);
+    row-gap: 20px;
+    column-gap: 20px;
+    padding-top: 35px;
+}
+
+.card {
+    width: 100%;
+
+}
+
+.card-title {
+    color: red;
+    line-height: 2em;
+    border-bottom: 1px solid seagreen;
+}
+
+.content-item {
+     font-size: 12px;
+    width: 40px;
+    height: 40px;
+    /* background: black; */
+    border: 1px solid rebeccapurple;
+}
+	</style>
+    <div id="app">
+        <div class="left">
+            <draggable v-model="list" 
+            :options="optionslider"
+             :move="move" @start="drag=true" @end="drag=false"
+              class="layout-compontent">
+                <div class="item" v-for="(item, index) in list" :key="index">{{item.label}}</div>
+            </draggable>
+        </div>
+
+        <div class="right">
+            <div class="card" v-for="(item, index) in dataList" :key="index">
+                <div class="card-title">{{item.title}}</div>
+                <div class="content">
+                    <draggable v-model="item.list" 
+                    @sort="clog('sort', $event)" 
+                    :options="options" 
+                    :move="move" 
+                    @start="drag=true" @end="drag=false" 
+                    class="layout-compontent">
+                        <div class="content-item" v-for="(_item, _index) in item.list">
+                            {{_item.label}}
+                        </div>
+                    </draggable>
+                </div>
+            </div>
+        </div>
+</div>
+	<script>
+		var app = new Vue({
+  el: '#app',
+  data: {
+    optionslider: { group: {name:'ronli', pull: 'clone', put: false},  animation: 500, ghostClass: 'gloable-drag-slider' },
+    options: { group : 'ronli', animation: 500, ghostClass: 'gloableClass' },
+    list: [
+              {label: '新闻', component: 'banner', w: '12', h: '8', icon: 'banner'},
+              {label: '公告', component: 'notice', w: '12', h: '8', icon: 'notice'},
+              {label: '待办', component: 'agenda', w: '16', h: '14', "minW": 12, "minH": 14, "maxH": 14,icon: 'agenda'},
+              {label: '应用', component: 'thought', w: '8', h: '14', icon: 'thought'},
+              {label: '快捷', component: 'shortcut', w: '8', h: '14', icon: 'shortcut'},
+              {label: '快捷2', component: 'shortCutV2', w: '24', h: '7', icon: 'shortcut'},
+              {label: '邮件', component: 'email', w: '8', h: '14', icon: 'email_com'},
+              {label: '快讯', component: 'newsFlash', w: '8', h: '14', icon: 'news_flash'},
+              {label: '学习', component: 'learn', w: '8', h: '14', icon: 'learn'},
+              {label: '内推', component: 'interpolate', w: '8', h: '7', icon: 'interpolate'},
+              {label: '交付', component: 'delivery', w: '8', h: '7', icon: 'delivery'},
+              {label: '达人', component: 'talent', w: '8', h: '14', icon: 'talent'},
+              {label: '长跑', component: 'longRun', w: '16', h: '7', "minW": 8,  "minH": 7, "maxH": 7,icon: 'long_run'},
+              {label: '链接', component: 'links', w: '8', h: '2', icon: 'links'},
+              {label: '通讯', component: 'addressBook', w: '8', h: '5', icon: 'address_book'},
+          ],
+        dataList: [
+              {
+                  title: '统一办公',
+                  list: [
+                      {label: '新闻', component: 'banner', w: '12', h: '8', icon: 'banner'},
+                      {label: '公告', component: 'notice', w: '12', h: '8', icon: 'notice'},
+                  ]
+              },
+              {
+                  title: '数字看板',
+                  list: [
+                      {label: '新闻', component: 'banner', w: '12', h: '8', icon: 'banner'},
+                      {label: '公告', component: 'notice', w: '12', h: '8', icon: 'notice'},
+                  ]
+              },
+              {
+                  title: '其他',
+                  list: [
+                      {label: '快讯', component: 'newsFlash', w: '8', h: '14', icon: 'news_flash'},
+                      {label: '学习', component: 'learn', w: '8', h: '14', icon: 'learn'},
+                  ]
+              }
+          ]
+  },
+  mounted() {
+      console.log(1)
+  },
+  methods: {
+    move(data) {
+        const toList = data.relatedContext.list;
+        const moveItem = data.draggedContext.element;
+        
+        if(!toList.find(v=>v.label === moveItem.label)){
+            // 目标数组没有，允许拖动
+            return true;
+        }else if(data.from == data.to){
+            // 回归原数组
+            return true;
+        }
+        return false;
+    },
+    clog(){
+        top.console.log('clog', arguments)
+    }
+  }
+})
+    </script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg"
+		style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<!-- <script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script> -->
+	<!-- <script>
+		var _hmt = _hmt || [];
+		(function () {
+			var hm = document.createElement("script");
+			hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+			var s = document.getElementsByTagName("script")[0];
+			s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script> -->
+<script>
+
+</script>
+</body>
+</html>

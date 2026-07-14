@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue2 的 watch 和 computed</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="S8zKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<div id="app">
+    {{a}}
+    <hr>
+    {{b}}
+    <hr>
+    {{c}}
+</div>
+<script>
+    top.vm = vm = new Vue({
+        el: '#app',
+        data(){
+            return { a: [ { b: [ { c: 0 } ] } ] }
+        },
+        computed:{
+            b(){
+                console.log('computed')
+                return [this.a, this.a[0].b[0].c];
+            },
+
+            c(){
+                console.log('computed-c')
+                return [this.a];
+            }
+        },
+        watch: {
+            a: {
+                deep: true,
+                handler(){
+                    console.log('watch')
+                }
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

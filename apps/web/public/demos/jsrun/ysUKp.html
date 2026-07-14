@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>看上去是 3d 进度条</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="ysUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<div class="box">
+    <div class="con1">1</div>
+    <div class="con2">2</div>
+    <div class="con3">3</div>
+    <div class="con4">4</div>
+    <div class="con5">5</div>
+    <div class="con6">6</div>
+</div>
+<style>
+    .box{
+        /* overflow: hidden; */
+        user-select: none;
+        position: relative;
+        /* margin-top: 300px; */
+        width:300px;
+        height:300px;
+        /* position:fixed; */
+        /* left:0;right:0; */
+        /* top:0;bottom:0; */
+        /* margin:auto; */
+        margin: 50px auto;
+        /* 3D的空间 */
+        transform-style: preserve-3d;
+        /* 为了方便观察让3D舞台转动角度 */
+        transform:rotateX(10deg) rotateY(-30deg);
+        transition:2s;
+    }
+    .box:hover{
+        transform:rotateX(330deg) rotateY(140deg);
+    }
+    .box div{
+        width:200px;
+        height:200px;
+        text-align: center;
+        line-height:200px;
+        font-size: 100px;
+        font-weight:bolder;
+        color:#fff;
+        /* 让6个面全部定位在父元素里面 */
+        position:absolute;
+        left:0;top:0;
+        opacity:0.5; /* 透明 */
+        border:2px solid #000;
+    }
+    .con1{
+        /* 第一个面往前走 */
+        background:red;
+        transform:translateZ(100px);
+    }
+    .con2{
+        /* 第二个面往后走 */
+        background:blue;
+        transform:translateZ(-100px) rotateY(180deg); /*rotateY(180deg)  让正面朝外*/
+    }
+    .con3{
+        /* 先往上位移100px  再绕着X轴转动90deg */
+        background:pink;
+        transform:translateY(-100px) rotateX(90deg);
+    }
+    .con4{
+        /* 先往下位移100px,再绕着X轴转动90deg */
+        background:green;
+        transform:translateY(100px) rotateX(-90deg);
+    }
+
+    .con5{
+        /* 先往左位移100px , 再绕着Y轴转动90deg */
+        background:rosybrown;
+        transform:translateX(-100px) rotateY(-90deg);
+    }
+    .con6{
+        /* 先往右侧位移100px,再绕着Y轴转动90deg */
+        background:#000;
+        transform:translateX(100px) rotateY(90deg);
+    }
+     
+    .box div{
+        /* 使背面不可见！ */
+        backface-visibility:hidden;
+    }
+</style>
+
+<div class="box1">
+    <div class="con1">1</div>
+    <!-- <div class="con2">2</div> -->
+    <div class="con3">3</div>
+    <!-- <div class="con4">4</div> -->
+    <div class="con5">5</div>
+    <!-- <div class="con6">6</div> -->
+</div>
+<style>
+    .box1{
+        min-width:300px;
+        min-height:200px;
+        user-select: none;
+        position: relative;
+        transform-style: preserve-3d;
+        /* 为了方便观察让3D舞台转动角度 */
+        transform:rotateX(-10deg) rotateY(6deg);
+        transition:2s;
+    }
+    .box1 div{
+        width:50px;height:100px;
+        text-align: center;line-height:100px;
+        font-weight:bolder;color:#fff;font-size: 100px;
+        /* 让6个面全部定位在父元素里面 */
+        position:absolute;
+        left:0;top:0;
+        opacity:0.5; /* 透明 */
+        /* border:2px solid #000; */
+    }
+
+    .box1 .con1{
+        /* 第一个面往前走 */
+        background:red;
+        transform:translateZ(50px);
+    }
+    .box1 .con3{
+        /* 先往上位移50px  再绕着X轴转动90deg */
+        background:pink;
+        transform:translateY(-50px) rotateX(90deg);
+    }
+    .box1 .con5{
+        /* 先往左位移50px , 再绕着Y轴转动90deg */
+        background:rosybrown;
+        width: 100px;height: 100px;
+        transform:translateX(-50px) rotateY(-90deg);
+    }
+</style>
+<div id="app">
+    <div>
+        <div class="progress-wrap" v-for="item in 10">
+            <div class="progress">
+                <div class="progress-inner" :style="{width: `${item * 10}%`}"></div>
+            </div>
+            {{item * 10}}%
+        </div>
+        <div class="progress-wrap" v-for="item in 10">
+            <div class="progress">
+                <div class="progress-inner" :style="{width: `${item * 10}%`}">
+                    <div class="box1" v-for="item in 5">
+                        <div class="con1"></div>
+                        <div class="con3"></div>
+                        <div class="con5"></div>
+                    </div>
+                </div>
+            </div>
+            {{item * 10}}%
+        </div>
+    </div>
+</div>
+<style>
+    .progress-wrap{
+        display: flex;
+    }
+    .progress{
+        width: 200px;
+        background: #f00;
+    }
+    .progress-inner{
+        background: #0f0;
+        /* height: 10px; */
+        height: 100%;
+        display: flex;
+        overflow: hidden;
+    }
+    .progress-inner .box1{
+        min-width: 70px;   
+    }
+</style>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://www.vue2editor.com/guide.html#installation</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="W3bKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- <script src="https://unpkg.com/vue/dist/vue.js"></script> -->
+<script src="https://cdn.bootcss.com/quill/2.0.0-dev.3/quill.js"></script>
+<script src="https://unpkg.com/vue2-editor/dist/vue2-editor.umd.js"></script>
+<link href="https://cdn.bootcss.com/quill/2.0.0-dev.3/quill.bubble.css" rel="stylesheet">
+<link href="https://cdn.bootcss.com/quill/2.0.0-dev.3/quill.core.css" rel="stylesheet">
+
+
+<div id="app">
+  <button @click="insertImg">insertImg</button>
+  <vue-editor v-model="content"
+     :editor-toolbar="customToolbar" ></vue-editor>
+</div>
+<script>
+top.vm = vm = new Vue({
+  el: '#app',
+  data: () => ({
+    content: "<h1>Some initial content</h1>",
+    // customToolbar: [
+    //   ["bold", "italic", "underline"],
+    //   ['user1'],
+    //   ["image", "code-block"]
+    // ]
+    customToolbar: [{
+      'user1': ''
+    }]
+  }),
+  methods:{
+  insertImg(){
+  this.$children[0].quill.insertEmbed(10, 'image', 'https://www.lilnong.top/favicon.ico');
+}
+}
+});
+</script>
+</body>
+</html>

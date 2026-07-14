@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>canvas rotate 测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="Q7JKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<style>
+    canvas{display: block;}
+</style>
+<canvas id="canvas1"></canvas>
+<script>
+    ctx1 = canvas1.getContext('2d')
+    ctx1.fillRect(0,0,300,200)
+    ctx1.fillStyle='#f00'
+    ctx1.fillText('123456',100,100)
+</script>
+<canvas id="canvas2"></canvas>
+<script>
+    ctx2 = canvas2.getContext('2d')
+    ctx2.rotate(90*Math.PI/180);
+    ctx2.translate(-50,-200);
+    ctx2.drawImage(canvas1,0,0)
+</script>
+<canvas id="canvas3"></canvas>
+<script>
+    ctx3 = canvas3.getContext('2d')
+    ctx3.rotate(10*Math.PI/180);
+    ctx3.drawImage(canvas1,0,0)
+</script>
+<canvas id="canvas4"></canvas>
+<script>
+    ctx4 = canvas4.getContext('2d')
+    orientation = 0 // 0
+    orientation = 3 // 180
+    orientation = 8 // 270
+    orientation = 6 // 90
+    if (orientation === 6) {
+        canvas4.width = canvas1.height;
+        canvas4.height = canvas1.width;
+        ctx4.rotate(Math.PI / 2);
+        ctx4.drawImage(canvas1, 0, -canvas1.height);
+    } else if (orientation === 3) {
+        canvas4.width = canvas1.width;
+        canvas4.height = canvas1.height;
+        ctx4.rotate(Math.PI);
+        ctx4.drawImage(canvas1, -canvas1.width, -canvas1.height);
+    } else if (orientation === 8) {
+        canvas4.width = canvas1.height;
+        canvas4.height = canvas1.width;
+        ctx4.rotate(-Math.PI / 2);
+        ctx4.drawImage(canvas1, -canvas1.width, 0);
+    } else {
+        // 如果没有旋转，直接绘制图片
+        canvas4.width = canvas1.width;
+        canvas4.height = canvas1.height;
+        ctx4.drawImage(canvas1, 0, 0);
+    }
+</script>
+<script>
+    import ExifReader from 'exif-js';
+    // 从文件 input 元素中获取图片文件
+    const inputElement = document.getElementById('fileInput');
+    const file = inputElement.files[0];
+    // 读取图片的 EXIF 信息
+    ExifReader.load(file, (exifData) => {
+    // 获取当前图片的旋转方向
+    const orientation = exifData.Orientation;
+
+    // 创建一个新的 Image 元素
+    const imgElement = new Image();
+
+    // 设置图片加载完成的回调函数
+    imgElement.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // 根据 EXIF 旋转信息绘制图片到 canvas
+        if (orientation === 6) {
+            canvas.width = imgElement.height;
+            canvas.height = imgElement.width;
+            ctx.rotate(Math.PI / 2);
+            ctx.drawImage(imgElement, 0, -imgElement.width);
+        } else if (orientation === 3) {
+            canvas.width = imgElement.width;
+            canvas.height = imgElement.height;
+            ctx.rotate(Math.PI);
+            ctx.drawImage(imgElement, -imgElement.width, -imgElement.height);
+        } else if (orientation === 8) {
+            canvas.width = imgElement.height;
+            canvas.height = imgElement.width;
+            ctx.rotate(-Math.PI / 2);
+            ctx.drawImage(imgElement, -imgElement.height, 0);
+        } else {
+            // 如果没有旋转，直接绘制图片
+            canvas.width = imgElement.width;
+            canvas.height = imgElement.height;
+            ctx.drawImage(imgElement, 0, 0);
+        }
+
+        // 将 canvas 转换为新的图片文件
+        canvas.toBlob((blob) => {
+        // 创建一个新的文件对象
+        const newFile = new File([blob], 'newImage.jpg', {
+            type: 'image/jpeg', // 设置新文件的 MIME 类型
+        });
+
+        // 这里可以将新文件上传到服务器或进行其他操作
+        // 例如，你可以使用 FormData 将文件上传到服务器
+        const formData = new FormData();
+        formData.append('image', newFile);
+
+        // 发送 formData 到服务器
+        // fetch('upload-url', {
+        //   method: 'POST',
+        //   body: formData,
+        // })
+        }, 'image/jpeg');
+    };
+
+    // 设置 Image 元素的 src，触发加载
+    imgElement.src = URL.createObjectURL(file);
+    });
+
+</script>
+
+<canvas id="canvas5"></canvas>
+<script>
+    var context = canvas5.getContext('2d');
+    canvas5.width=canvas1.height;
+    canvas5.height=canvas1.width;
+    var width = canvas5.width;
+    var height = canvas5.height;
+    // 先位移坐标到中心
+    context.translate(width / 2, height / 2);
+    // 旋转90度
+    context.rotate(90 * Math.PI / 180);
+    // 此时按照旋转后的尺寸
+    // 把定位中心移动到左上角
+    context.translate(-1 * height / 2, -1 * width / 2);
+    // 绘制图片
+    context.drawImage(canvas1, 0, 0, height, width);
+    // 坐标系还原到初始
+    context.setTransform(1, 0, 0, 1, 0, 0);
+</script>
+<script>
+
+</script>
+</body>
+</html>

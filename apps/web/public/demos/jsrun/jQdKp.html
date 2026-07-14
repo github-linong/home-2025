@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>阻止默认事件</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="jQdKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<p>
+    Quick Start
+Welcome to the React documentation! This page will give you an introduction to the 80% of React concepts that you will use on a daily basis.
+</p>
+<input type="" value="Quick Start Welcome to the React documentation! This page will give you an introduction to the 80% of React concepts that you will use on a daily basis.">
+<textarea type="" value="Quick Start Welcome to the React documentation! This page will give you an introduction to the 80% of React concepts that you will use on a daily basis.">
+    Quick Start Welcome to the React documentation! This page will give you an introduction to the 80% of React concepts that you will use on a daily basis.
+</textarea>
+
+<script>
+
+document.addEventListener('contextmenu', (event) => {
+  // 阻止默认菜单
+  event.preventDefault();
+
+let textNode = event.target//document.getElementById('text').firstChild;
+  // 获取鼠标所在位置的文本节点和偏移量
+  let range = document.createRange();
+  range.setStart(textNode, 0);
+  range.setEnd(textNode, textNode.length);
+  let rect = range.getBoundingClientRect();
+  let mouseX = event.clientX - rect.left;
+  let mouseY = event.clientY - rect.top;
+  let offset = range.startOffset + mouseX;
+
+  // 向左寻找单词的起始位置
+  let startOffset = offset;
+  while (startOffset > 0 && /\w/.test(textNode.textContent.charAt(startOffset - 1))) {
+    startOffset--;
+  }
+
+  // 向右寻找单词的结束位置
+  let endOffset = offset;
+  while (endOffset < textNode.length && /\w/.test(textNode.textContent.charAt(endOffset))) {
+    endOffset++;
+  }
+
+  // 创建一个新的 Selection 对象，并设置其范围为鼠标所在位置的单词
+  let newRange = document.createRange();
+  newRange.setStart(textNode, startOffset);
+  newRange.setEnd(textNode, endOffset);
+  let selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(newRange);
+});
+
+    // Array.from(document.querySelectorAll('p,input,textarea'))
+    //     .forEach((el)=>{
+    //         el.addEventListener('contextmenu',(e)=>{
+    //             // 阻止默认的菜单
+    //             e.preventDefault();
+                
+    //             // 获取用户当前触发事件的Dom
+    //             const selection = document.getSelection();
+    //             const anchorNode = selection?.anchorNode;
+
+    //             let el = anchorNode
+    //             if(anchorNode.nodeType == 3){
+    //                 el = anchorNode.parentNode
+    //             }else{
+    //                 el = document.activeElement;
+    //             }
+    //             top.console.log(
+    //                 '用户单机位置',
+    //                 el,
+    //                 e.target
+    //             )
+
+    //             // 获取用户当前选中的内容
+    //             let txt = ''
+    //             if(anchorNode.nodeType == 3){
+    //                 const {
+    //                     commonAncestorContainer,
+    //                     startOffset,
+    //                     endOffset
+    //                 } = selection.getRangeAt(0);
+    //                 txt = commonAncestorContainer.substringData(startOffset,endOffset-startOffset)
+    //             }else{
+    //                 txt = el.value.slice(el.selectionStart, el.selectionEnd)
+    //             }
+    //             top.console.log(
+    //                 '用户当前选中的内容',
+    //                 txt
+    //             )
+    //         })
+    //     })
+</script>
+
+<style>
+    *{padding:0;margin:0;}
+    p,input,textarea{
+        display: block;
+        width: 100%;
+        min-height: 3em;
+        font-size: 24px;
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

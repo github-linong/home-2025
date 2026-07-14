@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>el-progress</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="F9aKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.0/index.min.js"></script>
+<link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.0/theme-chalk/index.min.css" rel="stylesheet">
+<div id="app">
+    <el-progress :stroke-width="12" :percentage="70"></el-progress>
+</div>
+<style>
+        .el-progress .el-progress-bar .el-progress-bar__outer {
+            background-color: #f9f9f9;
+            border-radius: 0;
+        }
+        .el-progress .el-progress-bar .el-progress-bar__inner {
+            background-color: #1db09c;
+            border-radius: 0;
+            background-image: linear-gradient(45deg, #77d0c4 25%, transparent 25%, transparent 50%, #77d0c4 50%, #77d0c4 75%, transparent 75%, transparent);
+            /* background-color: rgba(0,0,0,0); */
+            /* background-repeat: no-repeat; */
+            background-size: 40px 40px;
+            animation: el-progress-bar__inner 2s linear infinite;
+        }
+
+        @keyframes el-progress-bar__inner {
+        to {
+            background-position: 40px 0;
+        }
+        from {
+            background-position: 0 0;
+        }
+        }
+</style>
+<script>
+new Vue({
+    el: '#app'
+})
+</script>
+</body>
+</html>

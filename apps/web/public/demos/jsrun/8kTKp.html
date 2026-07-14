@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>百度地图与Vue有冲突？</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="8kTKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app"></div>
+    <div id="container"></div>
+    <!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.common.dev.js"></script> -->
+    <script>
+        // let vm = new Vue({
+        let vm = ({
+            el: '#app',
+            data: {
+                map: null
+            },
+            mounted() {
+                this.initMap()
+                console.log('mounted')
+            },
+            methods: {
+                initMap() {
+                    var script = document.createElement('script')
+                    script.src = '//api.map.baidu.com/api?v=3&ak=8BB7F0E5C9C77BD6B9B655DB928B74B6E2D838FD&callback=init'
+                    document.head.appendChild(script)
+
+                    window.init = this.init
+                    console.log('initMap')
+                },
+                //初始化地图
+                init() {
+                    console.log('init')
+                    var map = vm.map = new BMap.Map('container', {
+                        minZoom: 5,
+                        maxZoom: 20,
+                        enableMapClick: false
+                    })
+
+                    map.centerAndZoom('北京', 12)
+
+                    var start = new BMap.Point(116.310791, 40.003419)
+                    var end = new BMap.Point(116.486419, 39.877282)
+
+                    //创建驾车规划
+                    var driving = new BMap.DrivingRoute(vm.map, {
+                        renderOptions: {
+                            map: vm.map
+                        },
+                        onSearchComplete: function() {
+                            //问题：这里1会输出两次，而不使用Vue,只会输出一次
+                            console.log(1)
+                        }
+                    })
+
+                    driving.search(start, end)
+                }
+            }
+        })
+        vm.methods.initMap();
+    </script>
+<script>
+
+</script>
+</body>
+</html>

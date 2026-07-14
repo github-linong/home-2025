@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>大图片测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="Qf5Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div class="container" id="imageContainer">
+    <!-- 这里是图片容器，实际渲染的图片将动态添加到这里 -->
+  </div>
+
+  <script>
+    const container = document.getElementById('imageContainer');
+
+    // 模拟大量图片数据
+    const imagesData = Array.from({ length: 50000 }, (_, index) => ({
+      id: index,
+      src: `https://via.placeholder.com/200x200?text=Image${index}`
+    }));
+
+    // 渲染可见区域内的图片
+    function renderImages(startIndex, endIndex) {
+      for (let i = startIndex; i < endIndex; i++) {
+        const imageData = imagesData[i];
+        const imageElement = document.createElement('img');
+        imageElement.setAttribute('src', imageData.src);
+        imageElement.setAttribute('alt', `Image ${imageData.id}`);
+        imageElement.classList.add('image');
+        container.appendChild(imageElement); 
+      }
+    }
+
+    // 监听滚动事件并根据滚动位置更新可见图片
+    container.addEventListener('scroll', function() {
+      const scrollTop = container.scrollTop;
+      const containerHeight = container.clientHeight;
+      const totalHeight = container.scrollHeight;
+
+      const startIndex = Math.floor(scrollTop / 200); // 假设每张图片高度为200px
+      const endIndex = Math.min(startIndex + Math.ceil(containerHeight / 200) + 1, imagesData.length);
+
+      // 清空容器并重新渲染可见区域内的图片
+      container.innerHTML = '';
+      renderImages(startIndex, endIndex);
+    });
+
+    // 初始渲染可见区域内的图片
+    renderImages(0, Math.ceil(container.clientHeight / 200));
+  </script>
+<script>
+
+</script>
+</body>
+</html>

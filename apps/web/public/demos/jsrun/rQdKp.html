@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>阻止默认事件</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="RQdKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<p>
+    Quick Start
+Welcome to the 123abc React documentation! This page will give you an introduction to the 80% of React concepts that you will use on a daily basis.
+</p>
+<input type="" value="Quick Start Welcome to the 123abc React documentation! This page will give you an introduction to the 80% of React concepts that you will use on a daily basis.">
+<textarea type="" value="Quick Start Welcome to the 123abc React documentation! This page will give you an introduction to the 80% of React concepts that you will use on a daily basis.">
+    Quick Start Welcome to the React documentation! This page will give you an introduction to the 80% of React concepts that you will use on a daily basis.
+</textarea>
+
+<script>
+    Array.from(document.querySelectorAll('p,input,textarea'))
+        .forEach((el)=>{
+            el.addEventListener('contextmenu',(e)=>{
+                // 阻止默认的菜单
+                e.preventDefault();
+                
+                // 获取用户当前触发事件的Dom
+                const selection = document.getSelection();
+                const anchorNode = selection?.anchorNode;
+
+                let el = anchorNode
+                if(anchorNode.nodeType == 3){
+                    el = anchorNode.parentNode
+                }else{
+                    el = document.activeElement;
+                }
+                top.console.log(
+                    '用户单机位置',
+                    el,
+                    e.target,
+                    selection
+                )
+
+                // 获取用户当前选中的内容
+                let txt = ''
+                if(anchorNode.nodeType == 3){
+                    const {
+                        commonAncestorContainer,
+                        startOffset,
+                        endOffset
+                    } = selection.getRangeAt(0);
+                    txt = commonAncestorContainer.substringData(startOffset,endOffset-startOffset)
+                }else{
+                    txt = el.value.slice(el.selectionStart, el.selectionEnd)
+                }
+                top.console.log(
+                    '用户当前选中的内容',
+                    txt,
+                    el.selectionStart,
+                    el.selectionEnd
+                )
+                // 
+                if(anchorNode.nodeType == 3){
+                    let start = selection.anchorOffset;
+                    let len = 1;
+                    // let reg = /[0-9a-z]/i
+                    // console.log(
+                    //     selection.getRangeAt(0).commonAncestorContainer.substringData(selection.anchorOffset, 1)
+                    // )
+                    let char = selection
+                        .getRangeAt(0)
+                        .commonAncestorContainer
+                        .substringData(start, 1)
+                    while(/[0-9a-z]/i.test(char)){
+                        start--;
+                        len++;
+                        char = selection
+                            .getRangeAt(0)
+                            .commonAncestorContainer
+                            .substringData(start, 1)
+                    }
+                    console.log(start,len,selection
+                            .getRangeAt(0)
+                            .commonAncestorContainer
+                            .substringData(start, len))
+
+                    let newRange = document.createRange();
+                    newRange.setStart(anchorNode, start);
+                    newRange.setEnd(anchorNode, start+len);
+                    let _selection = window.getSelection();
+                    _selection.removeAllRanges();
+                    _selection.addRange(newRange);
+                }
+            })
+        })
+</script>
+
+<style>
+    *{padding:0;margin:0;}
+    p,input,textarea{
+        display: block;
+        width: 100%;
+        min-height: 3em;
+        font-size: 24px;
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

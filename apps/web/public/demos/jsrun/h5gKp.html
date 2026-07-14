@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue table过滤</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="h5gKp" />
+  <style>
+.red{
+  color: red
+}
+  </style>
+</head>
+<body>
+<div id="app">
+  <div>
+    <table>
+      <tr>
+        <th v-for="item in table">
+          {{item.name}}
+          <span v-if="item.options">
+            (
+            <i :class="{red:item.checkOptions == op.value}" v-for="op in item.options" @click="item.checkOptions = op.value">
+              [{{op.value}}]
+            </i>
+            )
+          </span>
+        </th>
+      </tr>
+      <tr v-for="item in filterList">
+        <td v-for="col in table">
+          {{item[col.key]}}
+        </td>
+      </tr>
+    </table>
+  </div>
+  <hr />
+  <p v-for="item in list" >
+    {{item}}
+  </p>
+  <hr />
+  <p v-for="item in filterList">
+    {{item}}
+  </p>
+  
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    list: [{
+      id: 1,
+      name: 'a',
+      age: 15
+    },
+    {
+      id: 2,
+      name: 'ab',
+      age: 16
+    },
+    {
+      id: 3,
+      name: 'ac',
+      age: 17
+    },
+    {
+      id: 4,
+      name: 'add',
+      age: 18
+    },
+    {
+      id: 5,
+      name: 'a',
+      age: 19
+    },
+    {
+      id: 6,
+      name: 'b',
+      age: 20
+    },
+    {
+      id: 7,
+      name: 'c',
+      age: 21
+    },
+    ],
+    table: [{
+      name: '序号',
+      key: 'id'
+    },
+    {
+      name: '名称',
+      key: 'name',
+      options: [{
+        value: 'a'
+      },
+      {
+        value: 'b'
+      }],
+      checkOptions: null,
+      filterName: 'nameFilter'
+    },
+    {
+      name: 'age',
+      key: 'age',
+      options: [{
+        value: 15
+      },
+      {
+        value: 17
+      }],
+      checkOptions: null,
+      filterName: 'ageFilter'
+    },
+    ]
+  },
+  methods: {
+    nameFilter(item, optionsValue) {
+			return !!~item.name.indexOf(optionsValue)
+		},
+    ageFilter(item, optionsValue) {
+			return item.age == (optionsValue)
+		},
+  },
+  computed:{
+    filterList(){
+      return this.list.filter(v=>{
+        return !~this.table.map(t=>t.options && t.checkOptions?(this[t.filterName](v,t.checkOptions)):true).indexOf(false)
+        // return true;
+      })
+    }
+  }
+})
+</script>
+</body>
+</html>

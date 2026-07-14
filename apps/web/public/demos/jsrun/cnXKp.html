@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JS 测试电脑/手机上的浏览器JS引擎性能。可以大致对比PC、手机、ipad的性能。</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="cnXKp" />
+  <style>
+body {
+  background: #333;
+  color: #FFF;
+  width:100%;
+  padding:0;
+  margin:0;
+}
+h1{
+  text-align:center;
+}
+#info{
+  padding:10px;
+  text-align:center;
+}
+button {
+  background: #00b8ff;
+  border: 1px solid #fff;
+  color: #FFF;
+  border-radius: 30px;
+  padding: 10px 33px;
+  font-size: 15px;
+  outline: none;
+  margin:auto; 
+  display:block;
+}
+
+input {
+     padding: 12px;
+    width: 80%;
+    margin: auto;
+    display: block;
+    font-size: 14px;
+    border: none;
+    border-radius: 30px;
+    outline: none;
+}
+
+button:active {
+  background: #008abf;
+}
+
+#save {
+  display: none;
+}
+
+  </style>
+</head>
+<body>
+<h1>
+  测试你手机/电脑的性能
+</h1>
+<br />
+<br />
+<br />
+<div id="info">
+  此方法可以大致对比出PC、手机、ipad的性能。 不同浏览器性能也有所区别。
+</div>
+<div id="save">
+  <input type='text' placeholder='输入我的设备信息' id='device' />
+  <br />
+  <button onclick='saveInfo()'>
+    保存我的信息
+  </button>
+</div>
+<br />
+<br />
+<br />
+<button onclick='test()'>
+  测试
+</button>
+<br />
+<br />
+<br />
+<h3>
+  看看大伙保存的性能信息：
+</h3>
+耗时越少表示性能越好。
+<br />
+<br />
+<br />
+<div id='record'>
+</div>
+<hr />
+<br />
+<script>
+var time;
+function test() {
+  document.getElementById("info").innerHTML = '正在测试中';
+  var output = '';
+  var t1 = new Date().getTime();
+  //执行一百万次乘法运算
+  for (var i = 1; i < 1000000; i++) {
+    k = i * Math.random(4000, 10000) * Math.random(2000, 5000) * Math.random(2000, 5000) * Math.random(200, 5000);
+  }
+  time = new Date().getTime() - t1;
+  output += '执行一百万次乘法运算耗时：<div style="color:#04dc74;font-size:34px">' + time + '毫秒</div>';
+  document.getElementById("info").innerHTML = output;
+  document.getElementById("save").style.display = 'block';
+}
+Date.prototype.format = function(fmt) { //author: meizz 
+  var o = {
+    "M+": this.getMonth() + 1,
+    //月份 
+    "d+": this.getDate(),
+    //日 
+    "h+": this.getHours(),
+    //小时 
+    "m+": this.getMinutes(),
+    //分 
+    "s+": this.getSeconds(),
+    //秒 
+    "q+": Math.floor((this.getMonth() + 3) / 3),
+    //季度 
+    "S": this.getMilliseconds() //毫秒 
+  };
+  if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+  for (var k in o) if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+  return fmt;
+}
+
+function saveInfo() {
+  var device = document.getElementById('device').value;
+  if (device) { 
+    JSData.append("data", new Date().format("yyyy-MM-dd hh:mm:ss") + " " + time + "毫秒 【"  + device +  "】 <br/>", function() {
+      document.getElementById("save").innerHTML = "保存成功"
+    });
+  } else {
+    alert('请输入你的设备信息再保存');
+  }
+}
+
+window.onload = function() {
+  JSData.get("data", function(result) {
+    document.getElementById("record").innerHTML = result.data;
+  });
+  // JSData.set("data", '');
+};
+</script>
+</body>
+</html>

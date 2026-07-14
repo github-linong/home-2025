@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>递归测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="BFJKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+	{{arr1}}
+    <div style="dispaly: flex">
+        <div>
+            <checkboxgroup :arr1="arr1"></checkbox>
+        </div>
+        <div>
+            <checkboxgroup :arr1="arr2"></checkbox>
+        </div>
+    </div>
+</div>
+<style>
+    div{
+        padding: 2px 10px
+    }
+</style>
+<script>
+	arr1 = [
+        {
+            title:'全部',
+            children:[
+                {
+                    title:'小明0.1',
+                    children:[
+                        {
+                            title:'小明0.1.1',
+                            children:[
+                                {
+                                    title:'小明0.1.1.1',
+                                    children: []
+                                }
+                            ]
+                        },
+                        {
+                            title:'小明0.1.2',
+                            children:[
+                                {
+                                    title:'小明0.1.2.1',
+                                    children: []
+                                }
+                            ]
+                        },
+                    ]
+                },
+                {
+                    title:'小明0.2',
+                    children:[
+                        {
+                          title:'小明0.2.1',
+                        },
+                        {
+                          title:'小明0.2.2',
+                        },
+                        {
+                          title:'小明0.2.2',
+                        }
+                    ]
+                }
+            ]
+        }
+
+    ]
+
+</script>
+<script>
+    deep = (arr, cb)=>{
+        arr.forEach((item)=>{
+            if(item?.children?.length){
+                deep(item.children, cb)
+            }
+            cb(item)
+        })
+    }
+</script>
+<script>
+	Vue.component('checkboxgroup',{
+        props: ['arr1'],
+        template: `<checkbox v-for="item in arr1" :item="item"></checkbox>`
+    })
+	Vue.component('checkbox',{
+        props: ['item'],
+        template: `<div>
+            <div>
+            {{item.title}} 
+            <input type="checkbox" :checked="item.checked" @input="$set(item, 'checked', !item.checked)">
+            <input type="checkbox" v-model="item.checked2" disabled></div>
+            <checkbox v-for="item in item.children" :item="item"></checkbox>
+            
+        </div>`
+    })
+    new Vue({
+        el: " #app ",
+        data(){
+            return {
+                arr1,
+            }
+        },
+        computed:{
+            arr2(){
+                const result = [];
+                deep(this.arr1, (item)=>{
+                    console.log({...item})
+                    if(item.checked){
+                        // item.checked2 = true
+                        this.$set(item, 'checked2', true)
+                    }else if(item.children?.length){
+                        this.$set(item, 'checked2', item.children?.every(v=>v.checked))
+                        this.$set(item, 'checked2', item.children?.every(v=>v.checked || v.checked2))
+                    }
+                })
+                return []
+            }
+        }
+    })
+
+</script>
+<script>
+
+</script>
+</body>
+</html>

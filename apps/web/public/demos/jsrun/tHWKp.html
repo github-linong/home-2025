@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>flex 实现图标加多行文本功能</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="tHWKp" />
+  <style>
+img{height: 1em;border: 1px solid #f00;}
+
+.flex-box{display:flex;}
+.flex-wrap{flex-wrap: wrap;}
+  </style>
+</head>
+<body>
+<p>��������������������������������������������������恩��������������</p>
+<div id="app">
+  <p>{{'��������������������������������������������������恩��������������'}}</p>
+  <p>��������������������������������������������������恩��������������</p>
+  <div>
+    <h2>默认的流式布局</h2>
+    <article>
+      <img src="//cdn.jsrun.top/css/img/logo.png" alt="" style="width: 2em;"/>
+      <img src="//cdn.jsrun.top/css/img/logo.png" alt="" />
+      <span>{{str}}</span>
+    </article>
+  </div>
+  <div>
+    <h2>默认的Flex布局</h2>
+    <article class="flex-box">
+      <img src="//cdn.jsrun.top/css/img/logo.png" alt="" style="width: 2em;"/>
+      <img src="//cdn.jsrun.top/css/img/logo.png" alt="" />
+      <span>{{str}}</span>
+    </article>
+  </div>
+  <div>
+    <h2>处理的Flex布局</h2>
+    <article class="flex-box flex-wrap">
+      <img src="//cdn.jsrun.top/css/img/logo.png" alt="" style="width: 2em;"/>
+      <img src="//cdn.jsrun.top/css/img/logo.png" alt="" />
+      <span v-for="item in str">{{item}}</span>
+    </article>
+  </div>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data(){
+    return {
+      str: '我中文溜的一匹让我康康是谁觊觎我的美色我中文溜的一匹让我康康是谁觊觎我的美色我中文溜的一匹让我康康是谁觊觎我的美色我中文溜的一匹让我康康是谁觊觎我的美色'
+      // str: "��������������������������������������������������恩��������������"
+    }
+  }
+})
+</script>
+</body>
+</html>

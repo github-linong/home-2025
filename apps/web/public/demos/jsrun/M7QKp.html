@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iframe 缓存测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="M7QKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<div id="app">
+    <button @click="switch1 = !switch1">switch1</button> v-if 不行
+    <br>
+    <iframe v-if="switch1" src="//www.lilnong.top/cors/1" frameborder="0"></iframe>
+    
+    <hr>
+    <button @click="switch2 = !switch2">switch2</button> 组件 不行
+    <br>
+    <switch2iframe v-if="switch2"></switch2iframe>
+
+    <hr>
+    <button @click="switch3 = !switch3">switch3</button> keep-alive 不行
+    <br>
+    <keep-alive>
+        <switch3iframe v-if="switch3"></switch3iframe>
+    </keep-alive>
+
+    <hr>
+    <button @click="switch4 = !switch4">switch4</button> appendChild 不行
+    <br>
+    <switch4iframe v-if="switch4"></switch4iframe>
+
+
+    <hr>
+    <button @click="switch5 = !switch5">switch5</button> absolute 行
+    <br>
+    <switch5iframe v-if="switch5"></switch5iframe>
+</div>
+<script>
+    
+    new Vue({
+        el: '#app',
+        components: {
+            switch2iframe: {
+                created(){top.console.log('switch2iframe', 'created')},
+                template: `
+                <div style="display: inline-flex">
+                    <iframe src="//www.lilnong.top/cors/2" frameborder="0"></iframe>
+                </div>
+                `
+            },
+
+            switch3iframe: {
+                created(){top.console.log('switch3iframe', 'created')},
+                template: `
+                <div style="display: inline-flex">
+                    <iframe src="//www.lilnong.top/cors/3" frameborder="0"></iframe>
+                </div>
+                `
+            },
+
+            switch4iframe: {
+                async mounted(){
+                    top.console.log('switch4iframe', 'mounted', this.$refs);
+                    await this.$nextTick();
+
+                    if(window.cacheIframe4){
+                        this.$refs.box.appendChild(window.cacheIframe4)
+                    }else{
+                        this.$refs.box.innerHTML = `<iframe src="//www.lilnong.top/cors/4" frameborder="0"></iframe>`
+                        window.cacheIframe4 = this.$refs.box.querySelector('iframe');
+                    }
+                },
+                beforeDestroy(){
+                    top.console.log('switch4iframe', 'beforeDestroy')
+                    document.body.appendChild(window.cacheIframe4)
+                },
+                template: `
+                <div style="display: inline-flex" ref="box">
+                </div>
+                `
+            },
+
+            switch5iframe: {
+                async mounted(){
+                    top.console.log('switch5iframe', 'mounted', this.$refs);
+                    await this.$nextTick();
+
+                    if(window.cacheIframe5){
+                        // this.$refs.box.appendChild(window.cacheIframe5)
+                    }else{
+                        // `<iframe src="//www.lilnong.top/cors/5" frameborder="0"></iframe>`
+                        const el = document.createElement('iframe');
+                        el.src = "//www.lilnong.top/cors/5"
+                        el.style.position = 'absolute'
+                        el.style.top = '-9999vw'
+                        el.style.left = '-9999vh'
+                        window.cacheIframe5 = el;
+                        document.body.appendChild(el);
+                    }
+                    window.cacheIframe5.style.top = this.$refs.box.offsetTop + 'px'
+                    window.cacheIframe5.style.left = this.$refs.box.offsetLeft + 'px'
+                    
+                },
+                beforeDestroy(){
+                    top.console.log('switch5iframe', 'beforeDestroy')
+                    // document.body.appendChild(window.cacheIframe4)
+
+                    window.cacheIframe5.style.top = '-9999vw'
+                    window.cacheIframe5.style.left = '-9999vh'
+                },
+                template: `
+                <div style="display: inline-flex;height: 300px;" ref="box">
+                </div>
+                `
+            }
+        },
+        data(){
+            return {
+                switch1: true,
+                switch2: true,
+                switch3: true,
+                switch4: true,
+                switch5: true
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

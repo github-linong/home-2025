@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>echarts 决策树</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="BdIKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.0.0/echarts.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<style>
+    table{
+        width: 100%;
+    }
+    #myChartBox{
+        width: 600px;
+        height: 600px;
+        position: relative;
+    }
+    #myChart{
+        min-width: 600px;
+        min-height: 600px;
+    }
+    #myChartBase{
+        position:absolute;
+        top:0;left:0;z-index:-1;
+        width: 600px;
+        height: 600px;
+        background: url(http://www.lilnong.top/static/img/tree-base.png) center center no-repeat;
+        background-size: 125px;
+        background-position: bottom center;
+        
+    }
+    #myChartBase.red{
+        filter: invert(16%) sepia(100%) saturate(7421%) hue-rotate(345deg) brightness(113%) contrast(112%);
+    }
+</style>
+<div id="myChartBox">
+    <div id="myChart"></div>
+    <div id="myChartBase"></div>
+</div>
+<div id="app">
+    <div>
+        <button @click="setOptions">setOptions</button>
+    </div>
+    <table>
+        <caption>{{company.title}}</caption>
+        <tr>
+            <th>地区<br>({{company.cityList.length}})</th>
+            <th>预算<br>({{company.budget}})</th>
+            <th>实际支出<br>({{company.expenses}})</th>
+            <th>占比<br>({{company.expenses_mix}})</th>
+            <th>超降比例<br>({{company.expenses_budget_mix}})</th>
+        </tr>
+        <tr v-for="row in company.cityList">
+            <td>{{row.title}}</td>
+            <td>{{row.budget}}</td>
+            <td>{{row.expenses}}</td>
+            <td>{{row.expenses_mix}}</td>
+            <td>{{row.expenses_budget_mix}}</td>
+        </tr>
+    </table>
+    <table v-for="item in company.cityList">
+        <caption>{{item.title}}</caption>
+        <tr>
+            <th>项目<br>({{item.list.length}})</th>
+            <th>预算<br>({{item.budget}})</th>
+            <th>实际支出<br>({{item.expenses}})</th>
+            <th>占比<br>({{item.expenses_mix}})</th>
+            <th>超降比例<br>({{item.expenses_budget_mix}})</th>
+        </tr>
+        <tr v-for="row in item.list">
+            <td>{{row.title}}</td>
+            <td><input type="number" v-model="row.budget"></td>
+            <td><input type="number" v-model="row.expenses"></td>
+            <td>{{row.expenses_mix}}</td>
+            <td>{{row.expenses_budget_mix}}</td>
+        </tr>
+    </table>
+</div>
+<script>
+    item = {
+        title:'科目1', // 支出方向
+        budget: 0, // 预算
+        expenses: 0, // 实际支出
+        expenses_mix: 0, // 占比
+        expenses_budget_mix: 0, // 超降比例
+    }
+    list=[item]
+    city = {
+        title: '河北',
+        budget: 0,
+        expenses: 0, 
+        list: list
+    }
+    cityList = [city]
+    company = {
+        title: '事业部门',
+        budget: 0,
+        expenses: 0,
+        itemList: list,
+        cityList: cityList
+    }
+</script>
+<script>
+    cityList = []
+    for(var j = 0; j < 6; j++){
+        var list = []
+        for(var i = 0; i < 14; i++){
+            list.push({
+                title:`科目${i+1}`, // 支出方向
+                budget: (Math.random() * 100).toFixed(2), // 预算
+                expenses: (Math.random() * 100).toFixed(2), // 实际支出
+                expenses_mix: 0, // 占比i+1
+                expenses_budget_mix: 0, // 超降比例
+            })
+        }
+        cityList.push({
+            title: `地区${j+1}`,
+            budget: 0,
+            expenses: 0, 
+            list: list
+        })
+    }
+    company = {
+        title: '事业部门',
+        budget: 0,
+        expenses: 0, 
+        itemList: JSON.parse(JSON.stringify(list)),
+        cityList: cityList
+    }
+    console.log(company)
+</script>
+<script>
+    var data = localStorage.getItem('www.lilnong.top-company')
+    if(data && data !== 'undefined'){
+        company = JSON.parse(data)
+    }else{
+        localStorage.setItem('www.lilnong.top-company', JSON.stringify(company))
+    }
+    // console.log(data, data && data !== 'undefined', typeof data)
+</script>
+<script>
+    myChart = null
+    new Vue({
+        el: '#app',
+        data: {
+            company: company
+        },
+        mounted(){
+            myChart = echarts.init(document.getElementById('myChart'));
+            this.setOptions();
+        },
+        methods:{
+            setOptions(){
+                console.log(this.company.cityList)
+                var data = {
+                    name: this.company.title,
+                    value: this.company.expenses_budget_mix,
+                    itemStyle: {
+                        color: this.company.expenses_budget_mix<0?'red':'#0cc'
+                    },
+                    label: {
+                        color: this.company.expenses_budget_mix<0?'red':'#0cc'
+                    },
+                    // lineStyle: {
+                    //     color: this.company.expenses_budget_mix<0?'red':'#0cc'
+                    // },
+                    children: this.company.cityList.map(v=>({
+                        name: v.title,
+                        value: v.expenses_budget_mix,
+                        itemStyle: {
+                            color: v.expenses_budget_mix<0?'red':'#0cc'
+                        },
+                        label: {
+                            color: v.expenses_budget_mix<0?'red':'#0cc'
+                        },
+                        lineStyle: {
+                            color: v.expenses_budget_mix<0?'red':'#0cc'
+                        },
+                        children: v.list.map(v=>({
+                            name: v.title,
+                            value: v.expenses_budget_mix,
+                            itemStyle: {
+                                color: v.expenses_budget_mix<0?'red':'#0cc'
+                            },
+                            lineStyle: {
+                                color: v.expenses_budget_mix<0?'red':'#0cc'
+                            },
+                            label: {
+                                color: v.expenses_budget_mix<0?'red':'#0cc'
+                            }
+                        }))
+                    }))
+                }
+                myChart.setOption(option = {
+                    tooltip: {
+                        trigger: 'item',
+                        triggerOn: 'mousemove'
+                    },
+                    series: [
+                        {
+                            type: 'tree',
+                            data: [data],
+                            left: '10%',
+                            top: '10%',
+                            right: '10%',
+                            bottom: '10%',
+                            layout: 'radial',
+
+                            symbol: 'emptyCircle',
+
+                            symbolSize: 7,
+
+                            initialTreeDepth: 3,
+
+                            animationDurationUpdate: 750
+
+                        }
+                    ]
+                });
+            }
+        },
+        watch:{
+            company:{
+                immediate: true,
+                deep: true,
+                handler: function company(val){
+                    setTimeout(()=>{
+                        val.budget = 0;
+                        val.expenses = 0;
+                        val.cityList.forEach(city=>{
+                            city.budget = 0;
+                            city.expenses = 0;
+                            city.list.forEach(item=>{
+                                item.expenses_budget_mix = (item.budget / item.expenses -1).toFixed(2)
+                                // console.log(item)
+                                city.budget += +item.budget;
+                                city.expenses += +item.expenses;
+                            })
+                            city.budget = city.budget.toFixed(2);
+                            city.expenses = city.expenses.toFixed(2);
+                            city.expenses_budget_mix = (city.budget / city.expenses -1).toFixed(2)
+                            val.budget += +city.budget;
+                            val.expenses += +city.expenses;
+                        })
+                        val.budget = val.budget.toFixed(2);
+                        val.expenses = val.expenses.toFixed(2);
+                        if(val.expenses_budget_mix < 0){
+                            myChartBase.classList.add('red')
+                        }else{
+                            myChartBase.classList.remove('red')
+                        }
+                        val.expenses_budget_mix = (val.budget / val.expenses -1).toFixed(2)
+                        localStorage.setItem('www.lilnong.top-company', JSON.stringify(company))
+                        this.setOptions();
+                    }, 1000)
+                }
+            }
+        }        
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

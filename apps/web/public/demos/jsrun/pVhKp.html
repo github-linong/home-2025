@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>排序时间测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="pVhKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+
+<script>
+arr = [];
+for(var i = 0; i < 10000;i++) arr.push(Mock.mock({
+  "string|1-10": "★",
+  "number|1-999999": 100,
+  "object|2": {
+    "310000": "上海市",
+    "320000": "江苏省",
+    "330000": "浙江省",
+    "340000": "安徽省"
+  },
+   "array1|1": [
+    "AMD",
+    "CMD",
+    "UMD"
+  ],
+  "array|1-10": [
+    {
+      "name|+1": [
+        "Hello",
+        "Mock.js",
+        "!"
+      ]
+    }
+  ]
+}))
+
+
+console.time('concat')
+arr1 = arr.concat();
+console.timeEnd('concat')
+
+info =Mock.mock({
+  "string|1-10": "★",
+  "number|1-999999": 100,
+  "object|2": {
+    "310000": "上海市",
+    "320000": "江苏省",
+    "330000": "浙江省",
+    "340000": "安徽省"
+  },
+   "array1|1": [
+    "AMD",
+    "CMD",
+    "UMD"
+  ],
+  "array|1-10": [
+    {
+      "name|+1": [
+        "Hello",
+        "Mock.js",
+        "!"
+      ]
+    }
+  ]
+}); 
+console.time('push')
+arr1.push(info);
+console.timeEnd('push')
+
+console.time('consoleTime')
+arr1.sort((n,m)=>n.number-m.number)
+console.timeEnd('consoleTime')
+</script>
+</body>
+</html>

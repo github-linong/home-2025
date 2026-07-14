@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/a/1190000011819279</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="8ziKp" />
+  <style>
+#tree {
+    margin-top: 2em;
+    margin-right: 2em;
+}
+
+ul {
+    padding: 0 0 0 2em;
+    margin: 0;
+}
+
+li {
+    padding: 0;
+    padding-left: 1px;
+    border-left: 1px dashed green;
+    margin: 0;
+    list-style: none;
+}
+
+li > div {
+    padding: 2px 0.5em;
+    border: 1px solid steelblue;
+    margin-bottom: -1px;
+    background-color: lightsteelblue;
+}
+  </style>
+</head>
+<body>
+<div id="tree">
+</div>
+<script>
+const data = {
+    name: "A",
+    nodes: [
+        { name: "B", nodes: [{ name: "F" }] },
+        { name: "C" },
+        {
+            name: "D",
+            nodes: [
+                { name: "G" },
+                { name: "H" },
+                { name: "I", nodes: [{ name: "J" }, { name: "K" }] }
+            ]
+        },
+        { name: "E" }
+    ]
+};
+function makeTree(roots) {
+    function makeNode(node) {
+        const $div = $("<div>").text(node.name || "");
+        const $li = $("<li>").append($div);
+        if (node.nodes && node.nodes.length) {
+            $li.append(makeNodeList(node.nodes));
+        }
+        return $li;
+    }
+    function makeNodeList(nodes) {
+        return nodes
+            .map(child => makeNode(child))
+            .reduce(($ul, $li) => {
+            return $ul.append($li);
+        }, $("<ul>"));
+    }
+    return makeNodeList(roots);
+}
+
+makeTree([data]).appendTo($("#tree"));
+</script>
+</body>
+</html>

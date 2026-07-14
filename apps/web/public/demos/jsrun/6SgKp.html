@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000016359241</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="6SgKp" />
+  <style>
+ul{
+  list-style:none;
+  padding: 0;
+}
+ul li{
+  border-left: 1px solid #000;
+  margin-bottom: 3px;
+  /* padding: 0 1em; */
+}
+ul ul{
+  padding-left: 1em;
+}
+  </style>
+</head>
+<body>
+<div id="app">
+  <ul>
+    <li>1</li>
+    <li>2</li>
+  </ul>
+</div>
+
+<ul>
+  <li>-1
+    <ul>
+      <li>1</li>
+      <li>2</li>
+    </ul>
+  </li>
+  <li>-2</li>
+</ul>
+
+<pre>
+  ├─examples // 原 src 目录，改成 examples 用作示例展示
+  │ │ App.vue //主页文件
+  │ │ main.js //项目入口文件
+  │ │
+  │ ├─docs //markdown帮助文档文件夹
+  │ │
+  │ └─router
+  │ index.js //路由配置文件
+  │
+  ├─src // 新增 src 用于编写存放组件
+  │ │ index.js //组件集成统一访问文件配置
+  │ │
+  │ ├─components //组件文件夹
+  │ ├─directives //自定义指令文件夹
+  │ ├─mixins //混入文件
+  │ └─styles //样式文件夹
+</pre>
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    tree: {
+    	children: [
+        {
+          name: 'examples',
+          children: [
+            {
+              name: 'App.vue',
+            },
+            {
+              name: 'main.js',
+            },
+            {
+              name: 'docs',
+            	children: []
+            }
+          ]
+        }
+      ]
+    }
+  }
+})
+</script>
+</body>
+</html>

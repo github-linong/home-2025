@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>jquery动画</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="GghKp" />
+  <style>
+div{
+  /* float:left; */
+  /* width: 30%; */
+}
+/* #app4{
+  position: absolute;
+  left:0 ;
+}
+#app3{
+  position: absolute;
+  right:0 ;
+} */
+li{
+  background-color: #0cc;
+  margin-top: -8px;
+}
+li:last-child{
+  background: red;
+}
+  </style>
+</head>
+<body>
+<div id="app3">
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+</div>
+<script>
+var _index = 1;
+var _now = 0;
+setInterval(() => {
+  var _children = $('#app3')
+    .append('<li>' + (_index++) + '</li>')
+    .children()
+    .animate({opacity: '-=0.1'})
+    .first()
+    .stop()
+    .animate({opacity: '0',marginTop: '-20px'},function(){$(this).remove()})
+  	.siblings();
+}, 1000);
+</script>
+</body>
+</html>

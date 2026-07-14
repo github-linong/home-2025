@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>input 图片预览</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="GAiKp" />
+  <style>
+input::-webkit-input-placeholder{color:#f00}
+input:focus::-webkit-input-placeholder{color:#ff0}
+  </style>
+</head>
+<body>
+<input type="file" id="img"/>
+<img src="" alt="" id="imgCall" />
+<input type="file"  accept="application/vnd.openxmlformats-officedocument.presentationml.presentation" />
+<input type="text" placeholder="placeholder"/>
+<input type="text" placeholder="placeholder"/>
+ URL.createObjectURL(file)
+<script>
+document.querySelector('#img').onchange = () => {
+                       	console.log(this.files)
+  document.querySelector('#imgCall').src= URL.createObjectURL(window.document.querySelector('#img').files[0]);
+                       }
+</script>
+</body>
+</html>

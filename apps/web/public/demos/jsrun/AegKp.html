@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue选中效果</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="AegKp" />
+  <style>
+li.selected{
+  color: #f00;
+}
+  </style>
+  <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+</head>
+<body>
+<div id="app_1">
+  <p>app_1: 选中：{{selectList}}</p>
+  <ul>
+    <li v-for="item of list" :class="{selected: ~checkSelect(item.id)}" @click="select(item)">{{item.label}}</li>
+  </ul>
+</div>
+<div id="app_2">
+  <p>app_2: 选中：{{selectArray}}</p>
+  <ul>
+    <li v-for="item of list" :class="{selected: selectList[item.id]}" @click="select(item)">{{item.label}}</li>
+  </ul>
+</div>
+<div id="app_3">
+  <p>app_3: 选中：{{selectArray}}</p>
+  <ul>
+    <li v-for="item of list" :class="{selected: item.vv_selected}" @click="select(item)">{{item.label}}</li>
+  </ul>
+</div>
+<script>
+var _list = [{
+    id: 10,
+    label: 'javascript'
+  },{
+    id: 11,
+    label: 'css'
+  },{
+    id: 12,
+    label: 'html'
+  },{
+    id: 13,
+    label: 'vue'
+  }]
+new Vue({
+  el: '#app_1',
+  data:{
+    list: _list,
+    selectList: []
+  },
+  methods:{
+    select(item){
+      var _index = this.checkSelect(item.id)
+      if(~_index){
+        this.selectList.splice(_index,1)
+      }else{
+        this.selectList.push(item.id)
+      }
+    },
+    checkSelect(id){
+      return this.selectList.indexOf(id);
+    }
+  }
+})
+new Vue({
+  el: '#app_2',
+  data:{
+    list: _list,
+    selectList: {}
+  },
+  methods:{
+    select(item){
+      if(this.selectList[item.id]){
+        this.$delete(this.selectList, item.id)
+      }else{
+        this.$set(this.selectList, item.id, true)
+      }
+    }
+  },
+  computed:{
+    selectArray(){
+      return Object.keys(this.selectList)
+    }
+  }
+})
+new Vue({
+  el: '#app_3',
+  data:{
+    list: _list
+  },
+  methods:{
+    select(item){
+      if(item.vv_selected){
+        item.vv_selected = false;
+      }else{
+        this.$set(item, 'vv_selected', true)
+      }
+    }
+  },
+  computed:{
+    selectArray(){
+      return this.list.filter((e)=>e.vv_selected).map(e=>e.id)
+    }
+  }
+})
+</script>
+</body>
+</html>

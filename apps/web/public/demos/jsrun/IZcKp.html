@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>渲染是否会发生在微任务之间?</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="IZcKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<button id="test1">同步修改，长任务阻塞渲染</button>
+<div id="clog">
+
+</div>
+<div id="app">
+    {1}
+    <!-- <img src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png"> -->
+</div>
+<style>
+    img{position: fixed;left: 10px;top: 50px;}
+</style>
+<style id="css"></style>
+<script>
+    css.innerHTML = Array.from({length: 999}).map((v,i)=>`img:nth-child(${i}){left: ${10 + i * 8}px;top: ${50 + i * 14}px}`).join('\n')
+</script>
+<script>
+    a = 1;
+    sleep = (time)=>{
+        const now = Date.now();
+        while(true){
+            if(Date.now() - time > now){
+                return
+            }
+        }
+    }
+    img = `
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="width: 999999px;height: 5000px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+    `
+    img = `
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+        <img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${Math.random()}">
+    `
+    img = Array.from({length: 20}).map((v,i)=>`<img style="height: 300px;" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${i}">`).join('\n')
+    // img = `
+    //     <img style="" src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png">
+    // `
+</script>
+<script>
+    clog.innerHTML = Array.from({length: 9999}).map((v,i)=>`<p src="http://cdns.jsrun.top/res/983409260qqcom/topwriter_linong.png?${i}">${i} ${Math.random()}</p>`).join('\n')
+    clogInterval = 0;
+    setInterval(v=>{
+        console.log(performance.now(), 'setInterval', clogInterval)
+        clog.querySelector('p').innerHTML = `${clogInterval++} ${Math.random()}`
+    })
+</script>
+<script>
+    console.clear()
+    test1.onclick = ()=>{
+
+        console.log(performance.now(), '开始')
+        // sleep(1000)
+        app.innerHTML = img;
+        app.children[app.children.length - 1].onload = ()=>{
+            console.log(performance.now(), 'onload');
+            // alert(1)   
+            setTimeout(()=>{
+                console.log(performance.now(), 'onload-setTimeout');
+                // alert(2)   
+            })
+        }
+        // document.scrollingElement.scrollTop = document.scrollingElement.scrollHeight * 2
+        console.log(performance.now(), '同步修改')
+
+        // sleep(1000)
+        console.log(performance.now(), '同步修改， sleep 长任务占用')
+    }
+    setTimeout(test1.onclick, 100)
+</script>
+<script>
+
+</script>
+</body>
+</html>

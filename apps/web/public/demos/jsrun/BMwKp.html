@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>provide：Object | () =&gt; Object</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="BMwKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div>
+        <div>{{aaa}}</div>
+        <div>{{bbb}}</div>
+        <div>{{bbb}}</div>
+    </div>
+    <hr />
+    <vv-test></vv-test>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<script>
+    Vue.component('vv-test',{
+        inject: ['test1','test2','test3','test4','test5','test6'],
+        template: `
+            <div>
+                <div>{{test1}}</div>
+                <div>{{test2}}</div>
+                <div>{{test3}}</div>
+                <div>{{test4}}</div>
+                <div>{{test5}}</div>
+                <div>{{test6}}</div>
+                <div>{{computedInject}}</div>
+            </div>
+        `,
+        computed:{
+            computedInject(){
+                return {
+                    test1: this.test1,
+                    test2: this.test2,
+                    test3: this.test3,
+                    test4: this.test4,
+                    test5: this.test5,
+                    test6: this.test6,
+                    test7: bus.ddd
+                }
+            }
+        }
+    })
+    bus = new Vue({
+        data(){
+            return {
+                ccc: 1,
+                ddd: {ddd:1}
+            }
+        },
+        created(){
+            setTimeout(()=>this.ccc=4, 1000)
+            setTimeout(()=>this.ddd.ddd=5, 1000)
+        },
+    })
+    new Vue({
+        el: '#app',
+        provide(){
+            return {
+                test1: 1,
+                test2: this.aaa,
+                test3: this.bbb,
+                test4: bus.ccc,
+                test5: bus.ddd,
+                test6: bus.ddd.ddd
+            }
+        },
+        mounted(){
+            setTimeout(()=>this.bbb=3, 1000)
+        },
+        data(){
+            return {
+                bbb: 0
+            }
+        },
+        computed: {
+            aaa(){
+                return 2
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

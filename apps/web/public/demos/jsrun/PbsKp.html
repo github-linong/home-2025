@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>echarts 问题</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="PbsKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+
+  <div id="main" style="width: 600px;height:400px;"></div>
+<script type="text/javascript">
+      // 基于准备好的dom，初始化echarts实例
+      var myChart = echarts.init(document.getElementById('main'));
+
+      // 指定图表的配置项和数据
+      var option = {
+        title: {
+          text: 'ECharts 入门示例'
+        },
+        tooltip: {},
+        legend: {
+          data: ['销量']
+        },
+        xAxis: {
+          data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
+        },
+        yAxis: {},
+        series: [
+          {
+            name: '销量',
+            type: 'bar',
+            data: [5, 20, 36, 10, 10, 20]
+          }
+        ]
+      };
+
+    </script>
+    <script>
+        var data = {  
+            "columns":["10-14","10-17","10-18","10-19","10-20","10-21"],
+            "index":["s300","s400","s500"],
+            "data":[
+                [4.34,5.85,2.29,0.35,-1.18,8.69],
+                [1.47,9.15,-1.93,-3.81,-3.17,7.77],
+                [2.74,1.45,4.56,-1.95,-9.97,0.7]
+            ]
+        }
+        temp1 = data.columns;
+        data.columns = data.indexl
+
+option = {
+    tooltip: {},
+    dataset: {
+        //sourceHeader:False,
+        dimensions: data.columns,
+        source: data.data, 
+      },
+    legend: {data: data.columns},
+    grid: {},
+    xAxis: { type: 'category',  data: data.index },
+    yAxis: { show: true, type: 'value', min:-10, max:20 },
+    series: []
+};
+       
+for (var i = 0; i < data.columns.length; i++) {
+    option.series.push({
+        name: data.columns[i],
+        type: 'bar',
+        //stack: true,
+        // seriesLayoutBy:'row',//'columns',
+        barWidth: '2%',
+        barMaxWidth:15,
+        barGap:1,
+        label: {show: false, position: 'bottom'//insideRight
+        },
+        data: data.data[i]
+    });
+}
+    </script>
+    <script>
+
+      // 使用刚指定的配置项和数据显示图表。
+      myChart.setOption(option);
+    </script>
+<script>
+
+</script>
+</body>
+</html>

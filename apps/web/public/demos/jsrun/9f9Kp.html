@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>大数计算</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="9f9Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src='https://cdn.jsdelivr.net/npm/bignumber.js@9.0.2/bignumber.min.js'></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+
+
+<div id="app">
+    问题：{{0.1+0.2}}、{{0.3-0.1}}、{{145.55*100}}、{{145.55/3}}
+    <br>
+    解决：{{a1}}、{{a2}}、{{a3}}、{{a4}}
+    <br>
+    <input type="" v-model="value">
+    <div>
+        eval: {{valueEvalComputed}}
+    </div>
+    <div>
+        ((valueEvalComputed).toFixed(30)) : {{eval30}}
+    </div>
+    <div>
+        ((valueEvalComputed).toFixed(10)) : {{eval10}}
+    </div>
+    <div>
+        bignumber: {{valueBigNumberComputed}}
+    </div>
+    <div>
+        valueCalculator: {{valueCalculator}}
+    </div>
+    <ul>
+        <li @click="value = item" v-for="item in list">{{item}}</li>
+    </ul>
+</div>
+<script>
+    function calculator(str) {
+        let n = 0, charStack = [], numStack = [], reducerStr =  [], leftIndex = -1
+        const op = {
+            '+' : 1,
+            '-' : 1,
+            '*' : 2,
+            '/' : 2,
+            '(' : 3,
+            ')' : 3
+        }
+        while(n < str.length) {
+            const byte = str[n]
+            // 数字
+            // if(/\d/.test(byte)) {
+            if(/[\d\.]+/.test(byte)) {
+                // reducerStr.push(byte)
+                let result = byte;
+                let _str = str[n+1]
+                while(/[\d\.]+/.test(_str)){
+                    result+=_str;
+                    n++;
+                    _str = str[n+1]
+                }
+                reducerStr.push(result)
+            } else if(/\(|\)/.test(byte)) {
+                // 左括号入栈
+                if(byte === '(') {
+                    charStack.push(byte)
+                    leftIndex = n
+                    // console.log('左括号', byte)
+                // 右括号出栈
+                } else {
+                    let nowChar = charStack.pop()
+                    while(nowChar && nowChar !== '(') {
+                    reducerStr.push(nowChar)
+                    nowChar = charStack.pop()
+                    }
+                }
+                // 符号
+            } else {
+                // 字符栈顶元素
+                let nowChar = charStack[charStack.length - 1]
+                while(nowChar && op[byte] < op[nowChar] && nowChar !== '(') {
+                    charStack.pop()
+                    reducerStr.push(nowChar)
+                    nowChar = charStack[charStack.length - 1]
+                }
+                charStack.push(byte)
+            }
+            n++
+        }
+        while(charStack.length) {
+            reducerStr.push(charStack.pop())
+        }
+        return reducerStr
+    }
+    console.log(calculator('(1+2)*3'))
+    console.log(calculator('0.1+0.2'))
+</script>
+<script>
+    var evalRPN = function(tokens) {
+        const stack = [];
+        const n = tokens.length;
+        for (let i = 0; i < n; i++) {
+            const token = tokens[i];
+            if (isNumber(token)) {
+                stack.push((token));
+                // stack.push(parseInt(token));
+            } else {
+                const num2 = stack.pop();
+                const num1 = stack.pop();
+                if (token === '+') {
+                    stack.push(new BigNumber(num1).plus(num2));
+                } else if (token === '-') {
+                    stack.push(new BigNumber(num1).minus(num2));
+                } else if (token === '*') {
+                    stack.push(new BigNumber(num1).times(num2));
+                } else if (token === '/') {
+                    stack.push(new BigNumber(num1).dividedBy(num2));
+                    // stack.push(num1 / num2 > 0 ? Math.floor(num1 / num2) : Math.ceil(num1 / num2));
+                }
+            }
+        }
+        return stack.pop();
+    };
+
+    const isNumber = (token) => {
+        return !('+' === token || '-' === token || '*' === token || '/' === token );
+    }
+
+    console.log(evalRPN(["2","1","+","3","*"]))
+</script>
+<script>
+    new Vue({
+        el: "#app",
+        data(){
+            return{
+                value: '1+1',
+                list: [
+                    '1+1',
+                    '0.1+0.2',
+                    '1.1+2.2',
+                    '(1+2)*3',
+                    '(10+20)*30',
+                    '1.1+2.2',
+                    '99999999999999999999919.123411239991+99999999999999999999929.123411239992',
+                    '0.123123123123123123123123123123+0.2222222222222222222222222222222222222222222222222222222'
+                ]
+            }
+        },
+        computed:{
+            a1(){
+                num = new BigNumber(0.1)
+                return num.plus(0.2) 
+            },
+            a2(){
+                num = new BigNumber(0.3)  
+                return num.minus(0.1) 
+            },
+            a3(){
+                num = new BigNumber(145.55)  
+                return num.times(100)
+            },
+            a4(){
+                num = new BigNumber(145.55)  
+                return num.dividedBy(3)
+            },
+            valueEvalComputed(){
+                try{
+                    return eval(`(${this.value})`)
+                }catch(e){
+
+                }
+                return 'error'
+            },
+            eval30(){
+                return (this.valueEvalComputed || 0).toFixed(30)
+            },
+            eval10(){
+                return (this.valueEvalComputed || 0).toFixed(10)
+            },
+            valueBigNumberComputed(){
+                try{
+                    return evalRPN(this.valueCalculator).toFixed();
+                }catch(e){
+
+                }
+                return 'error'
+            },
+            valueCalculator(){
+                return calculator(`(${this.value})`);
+            }
+
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

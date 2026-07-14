@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>piexifjs 修改 exif 测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="MdJKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/piexifjs/1.0.6/piexif.js"></script>
+<style>
+    canvas,img{display: block;}
+    img{max-width: 200px;max-height: 200px;}
+    div{display: inline-block;}
+</style>
+<canvas id="canvas1"></canvas>
+<script>
+    ctx1 = canvas1.getContext('2d')
+    ctx1.fillRect(0,0,300,200)
+    ctx1.fillStyle='#f00'
+    ctx1.fillText('123456',100,100)
+</script>
+<script>
+
+function handleFileSelect(Orientation = 1,file) {
+    console.log('file', file)
+    var zeroth = {};
+    var exif = {};
+    var gps = {};
+    zeroth[piexif.ImageIFD.Make] = "Make";
+    zeroth[piexif.ImageIFD.XResolution] = [777, 1];
+    zeroth[piexif.ImageIFD.YResolution] = [777, 1];
+    zeroth[piexif.ImageIFD.Software] = "Piexifjs";
+    exif[piexif.ExifIFD.DateTimeOriginal] = "2010:10:10 10:10:10";
+    exif[piexif.ExifIFD.LensMake] = "LensMake";
+    exif[piexif.ExifIFD.Sharpness] = 777;
+    exif[piexif.ExifIFD.LensSpecification] = [[1, 1], [1, 1], [1, 1], [1, 1]];
+    gps[piexif.GPSIFD.GPSVersionID] = [7, 7, 7, 7];
+    gps[piexif.GPSIFD.GPSDateStamp] = "1999:99:99 99:99:99";
+    var exifObj = {"0th":zeroth, "Exif":exif, "GPS":gps};   
+    // 获取当前图片的方向值（通常在 '0th' IFD 中）
+    // 设置新的方向值，例如将方向设置为正常（1）
+    exifObj['0th'][piexif.ImageIFD.Orientation] = Orientation;//正常
+    // exifObj['0th'][piexif.ImageIFD.Orientation] = 2;//
+    var exifStr = piexif.dump(exifObj);
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var inserted = piexif.insert(exifStr, e.target.result);
+
+        var image = new Image();
+        image.src = inserted;
+        // image.width = 200;
+
+        var el = document.createElement('div');
+        el.style.border='1px solid #0cc'
+        el.style.padding = '20px'
+        el.innerHTML = Orientation
+        el.appendChild(image);
+        document.body.appendChild(el);
+
+    };
+    reader.readAsDataURL(file);
+}
+
+canvas1.toBlob(handleFileSelect.bind(window,1), 'image/jpeg')
+canvas1.toBlob(handleFileSelect.bind(window,2), 'image/jpeg')
+canvas1.toBlob(handleFileSelect.bind(window,3), 'image/jpeg')
+canvas1.toBlob(handleFileSelect.bind(window,4), 'image/jpeg')
+canvas1.toBlob(handleFileSelect.bind(window,5), 'image/jpeg')
+canvas1.toBlob(handleFileSelect.bind(window,6), 'image/jpeg')
+canvas1.toBlob(handleFileSelect.bind(window,7), 'image/jpeg')
+canvas1.toBlob(handleFileSelect.bind(window,8), 'image/jpeg')
+</script>
+<script>
+
+</script>
+</body>
+</html>

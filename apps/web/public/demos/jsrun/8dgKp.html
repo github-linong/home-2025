@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>拼图小程序</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="8dgKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="500" height="500"></canvas>
+<script>
+var arr=[
+	[0,0,0,0,0,0,0,0,0],
+	[0,0,1,1,0,1,1,0,0],
+	[0,1,1,1,1,1,1,1,0],
+	[1,1,1,1,1,1,1,1,1],
+	[1,1,1,1,1,1,1,1,1],
+	[0,1,1,1,1,1,1,1,0],
+	[0,0,1,1,1,1,1,0,0],
+	[0,0,0,1,1,1,0,0,0],
+	[0,0,0,0,1,0,0,0,0],
+]
+var imageArr=[
+  'http://7xlzf0.com1.z0.glb.clouddn.com/css/img/logo.png',
+  // 'http://123.56.16.33/favicon.ico',
+  // 'http://123.56.16.33/invitation/m/index/dist/images/rank.png',
+  // 'http://123.56.16.33/invitation/m/index/dist/images/o_1ch0bs2b8ah3ngj1g9c1e551pkb26.png',
+  // 'http://123.56.16.33/invitation/m/index/dist/images/o_1buvvnjal1cl3eeoj0t3261atu7q.png'
+]
+var c=document.getElementById("canvas");
+var ctx=c.getContext("2d");
+var _px = 30;
+c.width = _px*10;
+c.height = _px*10;
+var drawImage = function(url,t,l,w,h){
+  var _img = new Image();
+  _img.src= url;
+  _img.onload = function(){
+    ctx.drawImage(_img,t,l,w,h);
+  }
+}
+for(let i in arr){
+  for(let j in arr[i]){
+    if(arr[i][j]){
+      setTimeout(()=>{
+				drawImage(imageArr[Math.floor(imageArr.length * Math.random())],_px*j+_px/2,_px*i,_px,_px)
+			},(i+j)*10*Math.random())
+      
+    }
+  }
+}
+
+
+
+// var arr1=[
+// 	[0,0,0,0,0,0,0,0,0],
+// 	[0,0,2,0,0,2,0,0,0],
+// 	[0,1,0,0,1,0,0,1,0],
+// 	[1,1,1,1,1,1,1,1,1],
+// 	[1,1,1,1,1,1,1,1,1],
+// 	[0,1,1,1,1,1,1,1,0],
+// 	[0,0,1,1,1,1,1,0,0],
+// 	[0,0,0,1,1,1,0,0,0],
+// 	[0,0,0,0,1,0,0,0,0],
+// ]
+// var arr1=[
+// 	[0,0,0,0,0,0,0,0,0],
+// 	[0,2,0,0,0,0,2,0,0],
+// 	[1,0,0,1,0,1,0,0,1],
+// 	[1,2,0,2,0,1,1,1],
+// 	[1,0,0,0,0,1,1,1],
+// 	[0,1,1,2,0,1,1,0],
+// 	[0,0,1,0,0,1,0,0],
+// 	[0,0,0,1,1,0,0,0],
+// 	[0,0,0,0,0,0,0,0],
+// ]
+// var imageArr=[
+//   'http://7xlzf0.com1.z0.glb.clouddn.com/css/img/logo.png',
+//   // 'http://123.56.16.33/favicon.ico',
+//   // 'http://123.56.16.33/invitation/m/index/dist/images/rank.png',
+//   // 'http://123.56.16.33/invitation/m/index/dist/images/o_1ch0bs2b8ah3ngj1g9c1e551pkb26.png',
+//   // 'http://123.56.16.33/invitation/m/index/dist/images/o_1buvvnjal1cl3eeoj0t3261atu7q.png'
+// ]
+// var c=document.getElementById("canvas");
+// var ctx=c.getContext("2d");
+// var _px = 30;
+// c.width = _px*10;
+// c.height = _px*10;
+// var drawImage = function(url,t,l,w,h){
+//   var _img = new Image();
+//   _img.src= url;
+//   _img.onload = function(){
+//     ctx.drawImage(_img,t,l,w,h);
+//   }
+// }
+// for(let i in arr1){
+//   for(let j in arr1[i]){
+//     if(arr1[i][j]){
+//       setTimeout(()=>{
+// 				drawImage(imageArr[Math.floor(imageArr.length * Math.random())],_px*j+_px/2,_px*i,_px*arr1[i][j],_px*arr1[i][j])
+// 			},(i+j)*10*Math.random())
+//     }
+//   }
+// }
+
+
+// // ctx.fillStyle="#FF0000";
+// // ctx.fillRect(0,0,150,75);
+</script>
+</body>
+</html>

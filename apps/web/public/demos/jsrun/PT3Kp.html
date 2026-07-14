@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>不确定高度动画</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="PT3Kp" />
+  <style>
+.flex-div {
+  width: 100%;
+  display: flex;
+}
+.flex-div .div {
+  flex: 1;
+  text-align: center;
+}
+li {
+  width: 100px;
+  background-color: #999;
+  margin-top: 1px;
+}
+ul {
+  background-color: #f2f2f2;
+  transition: all 0.5s;
+  overflow: hidden;
+}
+  </style>
+  <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+</head>
+<body>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<div id="app">
+ <div>
+    <div>this is a vue file called ulTransition.vue;</div>
+    <hr />
+    <div class="flex-div">
+      <div class="div">
+        <ul ref="ul" class="showall:true">
+          <li v-for="i in testnum" :key="i">测试数据i</li>
+        </ul>
+      </div>
+      <div>
+        <button @click="toggle">收缩/放出</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data(){
+    return {
+        showli: false,
+        testnum: 0,
+        ulheight: 0
+    }
+  },
+ mounted() {
+    this.testnum = Math.ceil(Math.random() * 10 + 10);
+    console.log(this.testnum);
+ 
+    this.$nextTick(e => {
+      console.log("开始了！");
+      this.ulheight = this.$refs.ul.offsetHeight + "px";
+      this.$refs.ul.style.height = this.ulheight;
+    });
+  },
+  methods: {
+    toggle() {
+        console.log('this.showli', this.showli)
+      if (this.showli) {
+        this.$refs.ul.style.height = this.ulheight;
+      } else {
+        this.$refs.ul.style.height = '3em';
+      }
+      this.showli = !this.showli;
+    }
+  }
+})
+</script>
+</body>
+</html>

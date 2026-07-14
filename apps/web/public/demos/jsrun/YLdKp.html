@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue component 覆盖测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="YLdKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<div id="app">
+    {{1}}
+    <button @click="a++">{{a}}</button>
+    <c ></c>
+</div>
+<script>
+    c = {
+        template: `<div>c1 {{b}}</div>`,
+        props: {
+            b: {
+                type: Array,
+                default: ()=>[]
+            }
+        }
+    }
+    c2 = {
+        template: `<div>c2 {{b}}</div>`,
+        props: {
+            b: {
+                type: Array,
+                default: ()=>[]
+            }
+        }
+    }
+    Vue.component('c', c)
+    Vue.component('c', c2)
+    vm = new Vue({
+        el: '#app',
+        data(){
+            return {
+                a: 0
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

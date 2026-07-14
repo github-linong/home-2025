@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000015117721</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="5RZKp" />
+  <style>
+.warp.mask{
+  filter: blur(2px); 
+}
+.mask{
+  position: fixed;top:0;right:0;bottom:0;left:0;z-index:1000;
+  background-color: rgba(0,0,0,.2);
+  display:none;
+}
+.popo{
+  width: 500px;height: 300px;
+  background-color: #fefefe;
+  position:absolute;left: 50%;top:50%;transform: translate(-50%,-50%);
+}
+.popo_head{
+  height: 50px;line-height: 50px;padding: 0 20px;/* border-bottom: 1px solid #eee; */
+  box-shadow: 0px 1px 0px 0px #DCDFE6, 0px 2px 0px 0px #eee;
+}
+.popo_close{float: right;}
+.popo_footer{
+  text-align: center;height: 50px;line-height: 50px;
+  position:absolute;bottom:0;left:0;right:0;
+  box-shadow: 0px -1px 0px 0px #DCDFE6;
+}
+
+
+.btn{
+  display:inline-block;width: 5em;height: 1.7em;line-height:1.7;
+  text-align:center;
+  box-shadow: inset 0px 0px 2px 0px #bbb;border-radius: 5px;
+}
+.btn.btn-primary{
+  color: #fff;background-color: #409EFF;
+}
+.btn.btn-error{
+  color: #fff;background-color: #F56C6C;
+}
+.btn.btn-warning{
+  color: #fff;background-color: #E6A23C;
+}
+  </style>
+</head>
+<body>
+<div class="warp">
+<button id="showPopo">显示弹框</button>
+
+<p> to continue 1</p>
+<p> to continue 2</p>
+<p> to continue 3</p>
+<p> to continue 4</p>
+<p> to continue 5</p>
+<p> to continue 6</p>
+<p> to continue 7</p>
+<p> to continue 8</p>
+<p> to continue 9</p>
+<p> to continue 10</p>
+<p> to continue 11</p>
+<p> to continue 12</p>
+<p> to continue 13</p>
+<p> to continue 14</p>
+<p> to continue 15</p>
+<p> to continue 16</p>
+<p> to continue 17</p>
+<p> to continue 18</p>
+<p> to continue 19</p>
+<p> to continue 20</p>
+  
+</div>
+<div class="mask">
+  <div class="popo">
+    <div class="popo_head">
+      <span class="popo_title">操作弹框</span>
+      <span class="popo_close">x</span>
+    </div>
+    <div class="popo_content">
+      <input type="text" />
+    </div>
+    <div class="popo_footer">
+      <sapn class="btn btn-primary">确定</sapn>
+      <span class="btn btn-error">关闭</span>
+      <span class="btn btn-warning">取消</span>
+    </div>
+  </div>
+</div>
+<script>
+$('#showPopo').on('click', ()=>{
+  $('.warp').addClass('mask');
+  $('.mask').show();
+}).click();
+var _clientX = null, _clientY = null
+,_marginLeft = '',_marginTop = '';
+$('.popo').on('mousedown', '.popo_head', (e)=>{
+  _marginLeft = parseInt($('.popo').css('marginLeft'));
+  _marginTop = parseInt($('.popo').css('marginTop'));
+  _clientX = e.clientX;
+  _clientY = e.clientY;
+}).on('mouseup', '.popo_head', (e)=>{
+  _clientX = null;
+  _clientY = null;
+})
+$('body').on('mousemove', (e)=>{
+  if(_clientX!=null && _clientY != null){
+    $('.popo').css('margin', `${_marginTop+e.clientY-_clientY}px 0 0 ${_marginLeft+e.clientX-_clientX}px`);
+  }
+})
+</script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>可编辑的表格，弹出框</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="cS3Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js">
+
+</script>
+<div id="app">
+	{{editRow}}
+	<el-button @click="handleEdit2()">新增</el-button>
+	<el-table border :data="tableData">
+		<el-table-column v-for="(item, itemkey) in column.column" :label="item.label">
+			<template slot="default" slot-scope="scope">
+				<template v-if="editRow!=scope.row">
+					<div>
+						{{filterColumn(scope.row, scope.column, item, itemkey) }}
+					</div>
+				</template>
+				<template v-else>
+					<el-date-picker v-model="scope.row[item.key]" type="date" format="yyyy-MM-dd" value-format="yyyy-MM-dd" v-if="item.type == 'date'"
+					 placeholder="选择日期">
+					</el-date-picker>
+					<input style="width: 3em;" v-model="scope.row[item.key]" type="number" v-else-if="item.type == 'number'">
+                    <input style="width: 3em;" v-model="scope.row[item.key]" v-else>
+                </template>
+            </template>
+        </el-table-column>
+        <el-table-column
+            label="操作"
+        >
+      <template slot-scope="scope">
+            <el-button size="mini" @click="handleEdit2(scope.$index, scope.row, scope.column)">
+                编辑
+            </el-button>
+      </template>
+        </el-table-column>
+    </el-table>
+    <el-dialog
+    title="提示"
+    :visible.sync="dialogVisible"
+    width="300px"
+    :before-close="handleClose">
+        <div v-if="editRow2">
+            <el-form :model="columnType" ref="dynamicValidateForm" label-width="100px">
+                <el-form-item 
+                    v-for="(domain, index) in column.column"
+                    :label="domain.key" :key="domain.key" 
+                    :prop="domain.key"
+                    :rules="{required: true, message: '必填项', trigger: 'blur'}"
+                >
+                    <el-input v-model="columnType[domain.key]"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="submitForm('dynamicValidateForm')">提交</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="dialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+        </span>
+    </el-dialog>
+    {{columnType}}
+</div>
+<script>
+new Vue({
+    el: '#app',
+    data() {
+        return {
+            tableData: [
+                {
+                    id: 1,
+                    date: '2016-05-02',
+                    age: 18,
+                    name: '王小虎',
+                    address: '上海市普陀区金沙江路 1518 弄'
+                },
+                {
+                    id: 2,
+                    date: '2016-05-04',
+                    age: 19,
+                    name: '王小虎',
+                    address: '上海市普陀区金沙江路 1517 弄'
+                },
+                {
+                    id: 3,
+                    date: '2016-05-01',
+                    age: 24,
+                    name: '王小虎',
+                    address: '上海市普陀区金沙江路 1519 弄'
+                },
+                {
+                    id: 4,
+                    date: '2016-05-03',
+                    age: 13,
+                    name: '王小虎',
+                    address: '上海市普陀区金沙江路 1516 弄'
+                }
+            ],
+            column:{
+                column: [
+                {
+                    key: 'id',
+                    type: "Number",
+                    edit: false,
+                    label: "ID",
+                },
+                {
+                    key: 'date',
+                    type: "date",
+                    edit: true,
+                    label: "date",
+                },
+                {
+                    key: 'age',
+                    type: "number",
+                    edit: true,
+                    label: "age",
+                },
+                {
+                    key: 'name',
+                    type: "text",
+                    edit: true,
+                    label: "姓名",
+                },
+                {
+                    key: 'address',
+                    type: "text",
+                    edit: true,
+                    label: "地址",
+                }
+            ],
+            },
+            editRow: null,
+            editRow2: null,
+            columnType: "",
+            dialogVisible: false
+        }
+    },
+    methods: {
+        filterColumn(row, column, item, itemkey) {
+            // console.log(row, column, item, itemkey)
+            return row[item.key]
+        },
+        handleEdit2(idx, row, column) {
+            if (row) {
+                this.columnType = column
+                this.editRow2 = row;
+            } else {
+                this.columnType = null;
+                this.editRow2 = this.column.column.reduce((s, n) => {
+                    s[n.label] = ''
+                    return s
+                }, {})
+            }
+            this.dialogVisible = true;
+        },
+        handleEdit(idx, row, column) {
+            this.columnType = column
+            console.log(column)
+            if (this.editRow == row) {
+                this.editRow = null;
+                return false;
+            }
+            this.editRow = row;
+        },
+        handleClose(done) {
+            this.$confirm('确认关闭？')
+                .then(_ => {
+                    done();
+                })
+                .catch(_ => { });
+        },
+        submitForm(formName) {
+            this.$refs[formName].validate((valid) => {
+                if (valid) {
+                    alert('submit!');
+                } else {
+                    console.log('error submit!!');
+                    return false;
+                }
+            });
+        },
+
+    }
+})
+
+</script>
+</body>
+</html>

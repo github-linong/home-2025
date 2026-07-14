@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>实现一个 package.json 依赖分析的功能</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="Vn5Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+<textarea name="" id="packageJson" cols="" rows=""></textarea>
+<style>
+    *{padding:0;margin:0;}
+    textarea{width:100%;height: 300px;}
+</style>
+<script>
+    packageJson.onChange = ()=>{
+        localStorage.packageJson = packageJson.value;
+    }
+    packageJson.value = localStorage.packageJson
+</script>
+<script>
+    rules=[
+    {
+        rule:'UI库',
+        libs:['@ant-design/icons','@douyinfe/semi-icons','@douyinfe/semi-illustrations','@敏感信息/inner-system-theme','@敏感信息/铭感信息d-b','@敏感信息/铭感信息d-b-icons','antd','icons','qnn-react-cron','react-dnd','react-dnd-html5-backend','react-json-view']
+    },
+    {
+        rule:'图表库',
+        libs:['@antv/g6','@tisoap/react-flow-smart-edge','echarts','echarts-for-react']
+    },
+    {
+        rule:'webpack插件',
+        libs:['@douyinfe/semi-webpack-plugin']
+    },
+    {
+        rule:'编辑器',
+        libs:['@monaco-editor/react','monaco-editor']
+    },
+    {
+        rule:'SDK',
+        libs:['@敏感信息/lowcode-sdk']
+    },
+    {
+        rule:'脚手架',
+        libs:['@敏感信息/铭感信息t-scripts']
+    },
+    {
+        rule:'性能监控',
+        libs:['@敏感信息/perf','web-vitals']
+    },
+    {
+        rule:'错误监控',
+        libs:['@敏感信息/sentry']
+    },
+    {
+        rule:'测试库',
+        libs:['@testing-library/jest-dom','@testing-library/react','@testing-library/user-event','@types/jest']
+    },
+    {
+        rule:'类型库',
+        libs:['@types/json-bigint','@types/node','@types/react','@types/react-dom','@types/lodash-es','@types/react-json-editor-ajrm','@types/uuid']
+    },
+    {
+        rule:'工具库',
+        libs:['diff2html','html2canvas','json-bigint','lodash','lodash-es','qs','shelljs','uuid','axios','driver.js','history','prettier']
+    },
+    {
+        rule:'时间库',
+        libs:['date-fns','dayjs']
+    },
+    {
+        rule:'语言库',
+        libs:['typescript']
+    },
+    {
+        rule:'国际化',
+        libs:['react-intl']
+    },
+    {
+        rule:'样式库',
+        libs:['less','less-loader']
+    },
+    {
+        rule:'路由库',
+        libs:['react-router','react-router-dom']
+    },
+    {
+        rule:'状态管理',
+        libs:['react-query','zustand']
+    }
+]
+</script>
+<script>
+
+</script>
+</body>
+</html>

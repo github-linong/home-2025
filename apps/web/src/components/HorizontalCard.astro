@@ -7,10 +7,10 @@ const isAnswer = kind === "answer";
 <div
   class="rounded-lg bg-base-100 hover:shadow-xl transition ease-in-out hover:scale-[102%]"
 >
-  <a href={url} target={target}>
-    <div class="hero-content flex-col md:flex-row">
-      {
-        img && (
+  <div class="hero-content flex-col md:flex-row">
+    {
+      img && (
+        <a href={url} target={target} class="shrink-0">
           <Image
             src={img}
             width={750}
@@ -19,9 +19,11 @@ const isAnswer = kind === "answer";
             alt={title}
             class="max-w-full md:max-w-[13rem] rounded-lg"
           />
-        )
-      }
-      <div class="grow w-full">
+        </a>
+      )
+    }
+    <div class="grow w-full">
+      <a href={url} target={target} class="block no-underline text-inherit">
         <h1 class="text-xl font-bold">
           {isAnswer && <span class="text-base-content/50 font-normal text-sm block mb-1">Q</span>}
           {title}
@@ -35,17 +37,18 @@ const isAnswer = kind === "answer";
           {isAnswer && <span class="text-base-content/50 font-medium">A · </span>}
           {desc}
         </p>
-        <div class="card-actions justify-end">
-          {
-            tags &&
-              tags.map((tag) => (
-                <a href={`/search/?tag=${encodeURIComponent(tag)}`} class="badge badge-outline">
-                  {tag}
-                </a>
-              ))
-          }
-        </div>
-      </div>
+      </a>
+      {
+        tags && tags.length > 0 && (
+          <div class="card-actions justify-end">
+            {tags.map((tag) => (
+              <a href={`/search/?tag=${encodeURIComponent(tag)}`} class="badge badge-outline">
+                {tag}
+              </a>
+            ))}
+          </div>
+        )
+      }
     </div>
-  </a>
+  </div>
 </div>

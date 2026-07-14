@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>canvas 创建大图。自动下载</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="EpUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<style>
+    canvas{
+        max-width: 500px;
+        max-height: 500px;
+    }
+</style>
+<script>
+    download = (blob)=>{
+        blobUrl = URL.createObjectURL(blob);
+        el = document.createElement('a');
+        el.href = blobUrl;
+        el.download = Math.random()
+        el.target="_blank"
+        el.click();
+    }
+</script>
+<script>
+    width = 9999;
+    height = 9999;
+    canvas.width = width;
+    canvas.height = height;
+    ctx = canvas.getContext('2d');
+    for(var j = 0; j < 10; j++){
+        ctx.lineWidth = 50
+        ctx.beginPath();
+        for(var i = 0; i < 100; i ++){
+            ctx.lineTo(Math.random() * width, Math.random() * height);
+        }
+        ctx.strokeStyle = `#${(Math.random() * 0xffffff >>> 0).toString(16).padStart(6,0)}`
+        ctx.closePath();
+        ctx.stroke();
+    }
+    // console.log(canvas)
+    canvas.toBlob(v=>{
+        console.log(v);
+        download(v)
+    }, 'image/png', 1)
+    canvas.toBlob(v=>{
+        console.log(v);
+        download(v)
+    }, 'image/jpeg', 1)
+</script>
+<script>
+
+</script>
+</body>
+</html>

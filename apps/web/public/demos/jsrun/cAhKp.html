@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://juejin.im/post/59ab7b36f265da24934b2470</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="cAhKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+
+<script>
+var scriptBegin = Date.now();
+// 需要执行20ms的工作单元
+function act(functionName) {
+    console.log(functionName, Date.now() - scriptBegin);
+    let begin = Date.now();
+    while(Date.now() - begin < 20);
+    console.log(functionName,'end', Date.now() - scriptBegin);
+}
+function fun1() {
+    let fun3 = () => act("fun3");
+    setTimeout(fun3, 0);
+    act("fun1");
+}
+var _interval = 0
+function fun2() {
+    act("fun2 - 1");
+    var fun4 = () => {act("fun4");};
+    // var fun4 = () => {act("fun4");clearInterval(_interval)};
+    _interval = setInterval(fun4, 20);
+    act("fun2 - 2");
+}
+
+// fun1();
+
+// fun2();
+
+fun1();
+fun2();
+</script>
+</body>
+</html>

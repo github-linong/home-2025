@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000014953066</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="CjgKp" />
+  <style>
+.video-list{
+    -moz-column-count:2; /* Firefox */
+    -webkit-column-count:2; /* Safari and Chrome */
+    column-count:2;
+    column-gap:15px;
+    -moz-column-fill:auto;
+    -webkit-column-fill:auto;
+    column-fill:auto;
+    overflow:hidden;
+    margin-bottom:120rpx;
+}
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class='video-list'>
+        <img :src='item'   v-for='item in urls' :key='item' />
+  </div>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    urls:['https://tpc.googlesyndication.com/daca_images/simgad/4073498386659803801','http://7xlzf0.com1.z0.glb.clouddn.com/css/img/logo.png','https://tpc.googlesyndication.com/daca_images/simgad/4073498386659803801','http://7xlzf0.com1.z0.glb.clouddn.com/css/img/logo.png']
+  }
+})
+</script>
+</body>
+</html>

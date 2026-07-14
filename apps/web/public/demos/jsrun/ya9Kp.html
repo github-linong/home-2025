@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>贫富差距产生 模拟:100人 初始有每人有100元， 每次每个人随机给一个人2块钱。</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="ya9Kp" />
+  <style>
+#chart {
+    background: #FFF;
+    width: 400px;
+    height: 400px;
+    margin: auto;
+}
+
+li {
+    margin-left: 1px;
+    float: left;
+    background: #3db4e8;
+    width: 3px;
+    height: 10px;
+}
+.info {
+    margin: auto;
+    width: 380px;
+    color: #eee;
+    font-size: 12px;
+    background: #333;
+    padding: 10px;
+}
+  </style>
+</head>
+<body>
+<div class="info">
+    100人 初始每人有100元， 每次交易每个人随机给另一个人2块钱。在这个几乎是平等的机制下经历的时间越长贫富差距被拉开越大。
+</div>
+<button onclick='init(0)'>
+    平等模式
+</button>
+<button onclick='init(1)'>
+     5个富二代
+</button>
+<button onclick='init(2)'>
+     5个穷人
+</button>
+<button onclick="forCount++">
+    加速
+</button>
+<button onclick="forCount+= 30">
+    加速 += 30
+</button>
+<button onclick="forCount--">
+    减速
+</button>
+<p id="clog" style="word-break:break-all"></p>
+<ul id="chart">
+    <li>
+    </li>
+</ul>
+<script>
+    var arr = new Array();
+ intervalDeal = 0;
+ intervalRender = 0;
+ forCount = 1;
+
+function init(mode) {
+    console.log(mode)
+    for (var i = 1; i <= 100; i++) {
+        arr[i] = 100;
+        if (mode == 1) {
+            //前5名 富二代 有200元
+            if (i < 6) {
+                arr[i] = 200;
+            }
+        } else if (mode == 2) {
+            //前5名 穷人 只有2元
+            if (i < 6) {
+                arr[i] = 2;
+            }
+        }
+    }
+    clearInterval(intervalRender);
+    clearInterval(intervalDeal);
+    intervalRender = setInterval(rendUI, 100);
+    intervalDeal = setInterval(deal, 10);
+    // setInterval(deal, 1);
+    // setInterval(deal, 1);
+    // setInterval(deal, 1);
+    // setInterval(deal, 1);
+}
+
+
+function deal() {
+    console.time()
+    for(var i = 0; i < forCount; i++){
+        for (var i = 1; i <= 100; i++) {
+            // if (arr[i] > 2) {
+                arr[i] -= 2;
+                var id = Math.ceil(Math.random()*100);
+                arr[id] += 2;
+            // }
+        }
+    }
+    console.timeEnd()
+    // rendUI();
+} 
+function rendUI() {
+    clog.innerHTML = arr.concat().sort((n,m)=>n-m).join()
+    var chart = document.getElementById("chart");
+    chart.innerHTML = '';
+    str = ''
+    for (var i = 1; i <= 100; i++) {
+        str += '<li style="height:' + arr[i] + 'px" ></li>';
+    }
+    chart.innerHTML = str;
+}
+
+
+init(0);
+</script>
+<script>
+
+</script>
+</body>
+</html>

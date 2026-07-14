@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>float bfc 测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="5pPKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div class="box">
+    <div class="left"></div>
+    <div class="right"></div>
+</div>
+<div class="box demo1">
+    <div class="left"></div>
+    <div class="right"></div>
+</div>
+<style>
+    div{
+        min-height: 100px;
+        min-width: 100px;
+        padding: 10px;
+        margin: 10px;
+        resize: both;
+    }
+    .box{background: #f00}
+    .left{background: #0f0;min-width: 80px;min-height: 80px;}
+    .right{background: #00f}
+
+    .box.demo1 .left{
+        float: left;
+    }
+    .box.demo1 .right{
+        overflow: hidden;
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

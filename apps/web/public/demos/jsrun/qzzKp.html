@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>可视化布局</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="qzzKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<div id="app" class="flex">
+    <div class="left">
+        <div class="group">
+            <div class="group-title">Gird 布局</div>
+            <div class="item"> Row </div>
+            <div class="item"> Row 12 </div>
+            <div class="item"> Row 6 6 </div>
+            <div class="item"> Row 4 4 4 </div>
+            <div class="item"> Row 3 3 3 </div>
+            <div class="item"> Column </div>
+
+            <div class="group-title">Flex 布局</div>
+            <div class="item"> Flex </div>
+            <div class="item"> Flex 1 </div>
+            <div class="item"> Flex 2 </div>
+            <div class="item"> Flex 3 </div>
+        </div>
+
+        <div class="group">
+            <div class="group-title">Text 文案</div>
+            <div class="item"> Span </div>
+        </div>
+    </div>
+    
+    <div class="right flex-auto">
+        <div class="" container>
+            <div class="row">
+                <div class="col-6">col-6</div>
+                <div class="col-6">col-6</div>
+            </div>
+            <div class="row">
+                <div class="col">col</div>
+                <div class="col">col</div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    *{padding:0;margin:0;box-sizing: border-box;}
+
+    .flex{display: flex;}
+    .flex-auto{flex: auto;}
+    
+    .left{width: 200px;flex: none;background: #ccc}
+    .left .group{padding: 10px;}
+    .left .group-title{font-size: 14px;color: #fff;text-shadow: 0 1px 0 rgb(0 0 0 / 30%);}
+    .left .item{background: #bbb;margin: 8px;padding: 4px 6px;border-radius: 4px;font-size: 12px;cursor: move;}
+    
+    .right div{
+        /* padding: 20px 12px 12px 12px; */
+        box-shadow: inset 0 1px 13px rgb(0 0 0 / 10%);
+        min-height: 10px;
+        min-width: 10px;
+        /* margin-left: 20px; */
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

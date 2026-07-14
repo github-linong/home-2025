@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>执行浏览器复制命令</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="7XiKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<textarea cols="20" rows="10" id="biao1">王雅静</textarea>
+<input type="button" onClick="copyUrl2()" value="点击复制代码" />
+<script>
+
+function copyUrl2()
+{
+var Url2=document.getElementById("biao1");
+Url2.select(); // 选择对象
+document.execCommand("Copy"); // 执行浏览器复制命令
+alert("已复制好，可贴粘。");
+}
+</script>
+</body>
+</html>

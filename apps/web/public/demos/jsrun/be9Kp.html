@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>怎么用css做一个流动的边框，大佬们求教</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="be9Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<style>
+    *{padding:0;margin:0;}
+    hr{margin: 20px;}
+</style>
+<style>
+     .box{
+      padding:4px;
+      position: relative;
+      overflow: hidden;
+      /* 必须正方形，不然速度会变化。 */
+      width: 100px;height: 100px;
+    }
+
+    .box>*{
+      /* 遮罩层，让用户只能看到边框处颜色  */
+      background-color: #fff;
+      background-color: rgba(255,255,255,.98);
+      position: relative;
+    }
+
+    .box:before{
+      content: '';
+      animation: roll linear 2s infinite ;
+      /* 径向渐变 */
+      background: conic-gradient(#58e, #fff);
+      position: absolute;
+      /* 需要大于父级 */
+      width: 1000px;height: 1000px;
+      left: 50%;
+      top: 50%;
+    }
+
+    @keyframes roll {
+      from{
+        transform: translate(-50%, -50%) rotateZ(0deg) ;
+      }
+      to{
+        transform:translate(-50%, -50%) rotateZ(-360deg) ;
+      }
+    }
+</style>
+<div class="box">
+  <!-- <div style="height: 20vw;"></div> -->
+  <div style="height: 100px;"></div>
+</div>
+
+<hr>
+
+
+
+
+
+<!-- 1111111111111111111111111111111111111111 -->
+
+
+
+
+<div class="test" style="
+    width: 100px;
+    height: 100px;
+    background-image: linear-gradient(transparent, #58e);">
+</div>
+
+
+
+
+  <div class="flow-border">
+    <div class="b-left"></div>
+    <div class="b-bottom"></div>
+    <div class="b-right"></div>
+    <div class="b-top"></div>
+    <span>
+      按钮
+    </span>
+  </div>
+  <style>
+      body {
+  /* background: #fff; */
+}
+.flow-border {
+  width: 300px;
+  height: 100px;
+  position: relative;
+  font: bold 36px/100px Arial;
+  text-align: center;
+}
+
+.flow-border > [class^="b-"]{
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 100px;
+  /* 从上到下渐变色 */
+  background-image: linear-gradient(transparent, #58e);
+  /* 4 是宽度，重叠区域。 800 是 边长。因为结束边没有让位，所以会有重叠问题。 */
+  background-size: 4px 800px;
+  /* 这句看不太出来效果 */
+  background-repeat: repeat;
+  /* background-position: 0px 0px; */
+  animation: 5s linear 0s backwards infinite none;
+}
+.flow-border > .b-left {
+  animation-name: b-left;
+}
+.flow-border > .b-bottom {
+  height: 300px;
+  height: 296px;
+  /* background-position: 0px 700px; */
+  transform: translate(148px, -52px) rotate(-90deg);
+  transform: translate(4px, 100px) rotate(-90deg);
+  transform-origin: top left;
+  animation-name: b-bottom;
+}
+.flow-border > .b-right {
+  /* background-position: 0px 400px; */
+  transform: translate(300px, 0) rotate(180deg);
+  animation-name: b-right;
+}
+.flow-border > .b-top {
+  height: 300px;
+  height: 296px;
+  /* background-position: 0px 300px; */
+  transform: translate(152px, -148px) rotate(90deg);
+  transform: translate(300px, 0px) rotate(90deg);
+  transform-origin: top left;
+  animation-name: b-top;
+}
+
+.flow-border .b-left {
+  /* background-position: 0px 800px; */
+}
+.flow-border .b-bottom {
+  /* background-position: 0px 1500px; */
+}
+.flow-border .b-right {
+  /* background-position: 0px 1200px; */
+}
+.flow-border .b-top {
+  /* background-position: 0px 1100px; */
+}
+
+@keyframes b-left {
+  from {background-position: 0px 0px;}
+  to {background-position: 0px 800px;}
+}
+@keyframes b-bottom {
+  from {background-position: 0px 700px;}
+  to {background-position: 0px 1500px;}
+}
+@keyframes b-right {
+  from {background-position: 0px 400px;}
+  to {background-position: 0px 1200px;}
+}
+@keyframes b-top {
+  from {background-position: 0px 300px;}
+  to {background-position: 0px 1100px;}
+}
+
+/* .flow-border > [class^="b-"]:nth-child(1){
+    left: 10px;
+}
+.flow-border > [class^="b-"]:nth-child(2){
+    left: 20px;
+}
+.flow-border > [class^="b-"]:nth-child(3){
+    left: 30px;
+}
+.flow-border > [class^="b-"]:nth-child(4){
+    left: 40px;
+} */
+  </style>
+
+
+  <hr>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ <style>
+            :root {
+                --border-flow-size: 10em;
+                --border-flow-width: calc(var(--border-flow-size) / 40);
+                --border-flow-width-double: calc(var(--border-flow-width)*2);
+                --border-flow-duration: 2s;
+                --border-flow-border-color: #0073aa;
+                --border-flow-hover-color: LightCoral;
+            }
+
+            .border-flow {
+                width: var(--border-flow-size);
+                height: var(--border-flow-size);
+                position: relative;
+                padding: 5px;
+            }
+
+            .border-flow::before, .border-flow::after {
+                content: '';
+                position: absolute;
+                border: var(--border-flow-width) solid var(--border-flow-border-color);
+                /* 让边框在内容区域内绘制 */
+                box-sizing: border-box;
+                transition: background-color 1s;
+            }
+
+            .border-flow::before {
+                animation: flow-border-run calc(var(--border-flow-duration) * 2) linear infinite;
+            }
+
+            .border-flow::after {
+                animation: flow-border-run calc(var(--border-flow-duration) * 2) calc(var(--border-flow-duration) / -1) linear infinite;
+            }
+
+            .border-flow:hover::before, .border-flow:hover::after {
+                background-color: var(--border-flow-hover-color);
+            }
+
+            .border-flow-content {
+                width: calc(100% - var(--border-flow-width-double));
+                height: calc(100% - var(--border-flow-width-double));
+                margin: var(--border-flow-width);
+                background: #ccc;
+            }
+
+            @keyframes flow-border-run {
+                /* 这里将动画分成了4步；也可以改为2步，这时before和after用的就要是两套keyframes了 */
+                from, to {
+                    width: var(--border-flow-width-double);
+                    height: 100%;
+                    top: 0;
+                    left: 0;
+                }
+
+                25% {
+                    width: 100%;
+                    height: var(--border-flow-width-double);
+                    top: calc(100% - var(--border-flow-width-double));
+                    left: 0;
+                }
+
+                50% {
+                    width: var(--border-flow-width-double);
+                    height: 100%;
+                    top: 0;
+                    left: calc(100% - var(--border-flow-width-double));
+                }
+
+                75% {
+                    width: 100%;
+                    height: var(--border-flow-width-double);
+                    top: 0%;
+                    left: 0%;
+                }
+
+                /* 需要设置临界效果，否则会渐变 */
+                from, to, 24.9% {
+                    border-left-color: var(--border-flow-border-color);
+                    border-top-color: transparent;
+                    border-right-color: transparent;
+                    border-bottom-color: var(--border-flow-border-color);
+                }
+
+                25%, 49.9% {
+                    border-left-color: transparent;
+                    border-top-color: transparent;
+                    border-right-color: var(--border-flow-border-color);
+                    border-bottom-color: var(--border-flow-border-color);
+                }
+
+                50%, 74.9% {
+                    border-left-color: transparent;
+                    border-top-color: var(--border-flow-border-color);
+                    border-right-color: var(--border-flow-border-color);
+                    border-bottom-color: transparent;
+                }
+
+                75%, 99.9% {
+                    border-left-color: var(--border-flow-border-color);
+                    border-top-color: var(--border-flow-border-color);
+                    border-right-color: transparent;
+                    border-bottom-color: transparent;
+                }
+            }
+        </style>
+        <style>
+            .border-flow2 {
+                width: var(--border-flow-size);
+                height: var(--border-flow-size);
+                position: relative;
+                padding: 5px;
+            }
+
+            .border-flow2-edge {
+                position: absolute;
+                /* 必须把其他边框置0，否则有默认值存在 */
+                border: 0px solid var(--border-flow-border-color);
+                box-sizing: border-box;
+            }
+
+            /*
+注意：CSS中不能前向选择，而只能后向选择！ 
+因为如果CSS支持了父选择器，那就必须要页面所有子元素加载完毕才能渲染HTML文档，
+因为所谓“父选择器”，就是后代元素影响祖先元素，如果后代元素还没加载处理，如何影响祖先元素的样式？
+于是，网页渲染呈现速度就会大大减慢，浏览器会出现长时间的白板。
+*/
+            /* 波浪号和加号都是选择其后的元素，区别是加号只取一个，波浪取所有 
+.border-flow-content:hover ~ .border-flow2-edge { */
+            .border-flow2:hover > .border-flow2-edge {
+                background-color: var(--border-flow-hover-color);
+            }
+
+            .border-flow2-left {
+                width: var(--border-flow-width-double);
+                height: 100%;
+                left: 0;
+                border-left-width: var(--border-flow-width);
+                animation: flow2-border-run-left var(--border-flow-duration) calc(var(--border-flow-duration) / -2) linear infinite;
+            }
+
+            .border-flow2-top {
+                height: var(--border-flow-width-double);
+                width: 100%;
+                top: 0;
+                border-top-width: var(--border-flow-width);
+                animation: flow2-border-run-top var(--border-flow-duration) linear infinite;
+            }
+
+            .border-flow2-right {
+                width: var(--border-flow-width-double);
+                height: 100%;
+                right: 0;
+                border-right-width: var(--border-flow-width);
+                animation: flow2-border-run-right var(--border-flow-duration) calc(var(--border-flow-duration) / -2) linear infinite;
+            }
+
+            .border-flow2-bottom {
+                height: var(--border-flow-width-double);
+                width: 100%;
+                bottom: 0;
+                border-bottom-width: var(--border-flow-width);
+                animation: flow2-border-run-bottom var(--border-flow-duration) linear infinite;
+            }
+
+            @keyframes flow2-border-run-left {
+                from, to {
+                    height: 0;
+                }
+
+                50% {
+                    height: 100%;
+                }
+
+                from, to, 49.9% {
+                    top: 0;
+                    bottom: auto;
+                }
+
+                50%, 99.9% {
+                    top: auto;
+                    bottom: 0;
+                }
+            }
+
+            @keyframes flow2-border-run-top {
+                from, to {
+                    width: 0;
+                }
+
+                50% {
+                    width: 100%;
+                }
+
+                from, to, 49.9% {
+                    left: auto;
+                    right: 0;
+                }
+
+                50%, 99.9% {
+                    left: 0;
+                    right: auto;
+                }
+            }
+
+            @keyframes flow2-border-run-right {
+                from, to {
+                    height: 0;
+                }
+
+                50% {
+                    height: 100%;
+                }
+
+                from, to, 49.9% {
+                    top: auto;
+                    bottom: 0;
+                }
+
+                50%, 99.9% {
+                    top: 0;
+                    bottom: auto;
+                }
+            }
+
+            @keyframes flow2-border-run-bottom {
+                from, to {
+                    width: 0;
+                }
+
+                50% {
+                    width: 100%;
+                }
+
+                from, to, 49.9% {
+                    left: 0;
+                    right: auto;
+                }
+
+                50%, 99.9% {
+                    left: auto;
+                    right: 0;
+                }
+            }
+        </style>
+        <style>
+            .border-flow3 {
+                width: var(--border-flow-size);
+                height: var(--border-flow-size);
+                position: relative;
+                box-sizing: border-box;
+                padding: 5px;
+            }
+
+            .border-flow3::before, .border-flow3::after {
+                content: '';
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+            }
+
+            .border-flow3::before {
+                box-shadow: 0 0 0 var(--border-flow-width) var(--border-flow-border-color) inset;
+                animation: flow3-border-run calc(var(--border-flow-duration) * 2) calc(var(--border-flow-duration) / -1) linear infinite;
+            }
+
+            .border-flow3::after {
+                box-shadow: 0 0 0 var(--border-flow-width) var(--border-flow-border-color) inset;
+                animation: flow3-border-run calc(var(--border-flow-duration) * 2) linear infinite;
+            }
+
+            .border-flow3:hover::before, .border-flow3:hover::after {
+                /* 如果只在hover的时候设置transition，那么进入有效，但是退出无效(即退出时不会有缓动) */
+                transition: background-color 1s;
+                background-color: var(--border-flow-hover-color);
+            }
+
+            @keyframes flow3-border-run {
+                /*
+	clip通过对元素进行剪切来控制元素的可显示区域(clip的区域显示，其他隐藏)
+	clip属性只能在元素设置了“position:absolute”或者“position:fixed”属性起作用
+	shape函数声明：rect(top right bottom left)
+	rect()和<top>和<bottom>指定偏移量是从元素盒子顶部边缘算起；<left>和<right>指定的偏移量是从元素盒子左边边缘算起（包括边框）。
+	如果<right>和<bottom>设置为auto时，他们就相当于元素的宽度（这个宽度包括元素的border、padding和width），或者简单的理解为100%
+	注意：1.值不能设置为百分比。 2.在动画设置过程里不能使用auto，使用auto没有动画效果（因此建议使用SCSS或者LESS之类的预处理器）
+	*/
+                /*
+	clip动画有3种方案，但是都有点小瑕疵（在线条粗的时候明显，线条细的情况下完全看不出来）
+	(1)使用如下的1和9作为边界，当拐弯的时候，尾部多余的边界会跟着动
+	(2)将下面的1和9替换为0和10，当拐弯的时候，线条宽度会变为0
+	(3)在每个状态后面一步立即重置它，但是会出现抖动
+	*/
+                from, to {
+                    clip: rect(0, 1em, 10em, 0);
+                }
+
+                1% {
+                    clip: rect(1em, 1em, 10em, 0);
+                }
+
+                25% {
+                    clip: rect(9em, 10em, 10em, 0);
+                }
+
+                25.1% {
+                    clip: rect(9em, 10em, 10em, 1em);
+                }
+
+                50% {
+                    clip: rect(0, 10em, 10em, 9em);
+                }
+
+                50.1% {
+                    clip: rect(0, 10em, 9em, 9em);
+                }
+
+                75% {
+                    clip: rect(0, 10em, 1em, 0);
+                }
+
+                75.1% {
+                    clip: rect(0, 9em, 1em, 0);
+                }
+            }
+        </style>
+<section>
+<h1>1.通过两矩形的移动来制作动画</h1>
+<div class="border-flow">
+    <div class="border-flow-content"></div>
+</div>
+</section>
+<section>
+<h1>2.通过四个边框的长度来控制动画</h1>
+<div class="border-flow2">
+    <div class="border-flow-content"></div>
+    <div class="border-flow2-edge border-flow2-left"></div>
+    <div class="border-flow2-edge border-flow2-top"></div>
+    <div class="border-flow2-edge border-flow2-right"></div>
+    <div class="border-flow2-edge border-flow2-bottom"></div>
+</div>
+</section>
+<section>
+<h1>3.通过clip的裁剪来显示动画</h1>
+<div class="border-flow3">
+    <div class="border-flow-content"></div>
+</div>
+<section>
+<script>
+
+</script>
+</body>
+</html>

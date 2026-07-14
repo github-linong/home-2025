@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>email测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="U6EKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<input type="" id="abc">
+<script>
+    slice = ()=>{
+        abc.value = abc.value.slice(0, -1);
+        if(abc.value) abc.oninput();
+    }
+    abc.oninput = ()=>{
+        // str = '12-34'
+        str = abc.value;
+        if (
+            !(/[^a-z0-9\@\.\`\~\!\#\$\^\&\*\(\)\=\|\{\}\'\:\;\,\\\[\]\<\>\/\?\！\￥\…\（\）\—\【\】\‘\’\；\：\”\“\。\，\、\？\%\✘\#\+\_\～\‖\-+]/i.test(str))
+        ) {
+          console.log("无汉字规则");
+          if (/^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((.[a-zA-Z0-9_-]{2,3}){1,2})$/.test(str)) {
+            if (str.length < 50) {
+              // 不处理
+            }else {
+              slice();
+            }
+          }
+      }else{
+        slice();
+      }
+    }
+</script>
+<script>
+
+</script>
+</body>
+</html>

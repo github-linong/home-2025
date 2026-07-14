@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue 被 appendChild 两次</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="Fu9Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    {{1}}. {{currentTime}}
+</div>
+<div id="list"></div>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+
+<script>
+new Vue({
+    el: '#app',
+    data(){
+        return {
+            currentTime: Date.now()
+        }
+    },
+    mounted(){
+        setInterval(()=>{
+            this.currentTime= Date.now()
+        }, 300)
+    }
+})
+</script>
+
+<script>
+vm2 = new Vue({
+    template: `<div> vm2. {{1}}. {{currentTime}} <p id="vm2p">123</p></div>`,
+    // el: '#list',
+    data(){
+        return {
+            currentTime: Date.now()
+        }
+    },
+    mounted(){
+        setInterval(()=>{
+            this.currentTime= Date.now()
+        }, 300)
+    }
+})
+vm2El = document.createElement('div');
+vm2El.id = 'vm2ElDom';
+// 只需要在dom中，即可，display：none 也是不影响的。
+list.style.display="none"
+// 需要是页面中可见的
+list.appendChild(vm2El)
+vm2.$mount(vm2El);
+
+// 这样我们可以修改内容
+vm2p.innerText = ('vm2123')
+list.style.display="block"
+
+
+</script>
+<script>
+
+</script>
+</body>
+</html>

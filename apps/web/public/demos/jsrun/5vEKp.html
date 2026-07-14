@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>测试 /^([0-9]{3,4}-)?[0-9]{7,8}$/ 输入规则</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="5vEKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<input type="" id="abc">
+<script>
+    slice = ()=>{
+        abc.value = abc.value.slice(0, -1);
+        if(abc.value) abc.oninput();
+    }
+    abc.oninput = ()=>{
+        // str = '12-34'
+        str = abc.value;
+        if(/^\d+$/.test(str)){
+            console.log('纯数字规则')
+            if(str.length < 7){
+                // 不处理
+            }else if(/^\d{7,8}$/.test(str)){
+                // 合规
+            }else{
+                console.log('违规回退 slice')
+                slice();
+            }
+        }else if(/^\d{3,4}-\d*$/.test(str)){
+            console.log('区号 + 数字规则')
+            if(str.length < 11){
+                // 不处理
+            }else if(/^([0-9]{3,4}-)?[0-9]{7,8}$/.test(str)){
+                // 合规
+            }else{
+                console.log('违规回退 slice')
+                slice();
+            }
+        }else{
+            console.log('违规回退 slice')
+            slice();
+        }
+    }
+</script>
+<script>
+
+</script>
+</body>
+</html>

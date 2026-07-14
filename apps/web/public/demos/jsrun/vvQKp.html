@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>canvas 裁图，选中区域</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="vvQKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<img id="img" src="https://ali-camera.dabanjia.com/stage/20220407/ac5b560ed7123d532c06edfee8a76fa5.jpg">
+<canvas id="canvas"></canvas>
+<style>
+    img,canvas{display: block;border: 1px solid #f00;margin: 10px;}
+    img{width: 50px;height: 50px;}
+    
+</style>
+<script>
+    ctx = canvas.getContext('2d');
+    canvas.width = canvas.height = 400;
+
+    img.onload = ()=>{
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        ctx.drawImage(img, 0, 0);
+        // ctx.strokeStyle = 'red';
+        ctx.lineWidth = 2;
+        for(let i = 0; i < 30; i++){
+            ctx.beginPath();
+            ctx.moveTo(0, i * 20);
+            ctx.lineTo(400, i * 20);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo( i * 20, 0);
+            ctx.lineTo( i * 20, 400);
+            ctx.stroke();
+        }
+        ctx.strokeStyle = 'blue';
+        strokeRect(50, 10, 30, 30);
+        strokeRectDeg(50, 10, 30, 30, 10)
+
+        let x1 = 1019,y1 = 378,
+        x2 = 1104,y2 = 516;
+        ctx.strokeStyle = 'red';
+        strokeRect(x1, y1, x2-x1, y2-y1);
+    }
+    function strokeRect(x, y, width, height){
+        ctx.resetTransform();
+        // x, y, width, height
+        ctx.strokeRect(x, y, width, height);
+        // ctx.setTransform(0.500000,0.866025,-0.866025,0.500000,0,0)//(a, b, c, d, e, f);
+        // ctx.strokeRect(x, y, width, height);
+    }
+
+    function strokeRectDeg(x, y, width, height, deg){
+        var maxVal = 360, 
+            minVal = 0, 
+            value = deg;
+        value = Math.min(maxVal, value);
+        value = Math.max(minVal, value);
+        var cosVal = Math.cos(value * Math.PI / 180),
+            sinVal = Math.sin(value * Math.PI / 180);
+        var valTransform = 'matrix('+ cosVal.toFixed(6) +','+ sinVal.toFixed(6) +','+ (-1 * sinVal).toFixed(6) +','+ cosVal.toFixed(6) +',0,0)'
+        // console.log(valTransform)
+        // ctx.setTransform(cosVal.toFixed(6) , sinVal.toFixed(6) , (-1 * sinVal).toFixed(6) , cosVal.toFixed(6) ,0,0)
+        // ctx.transform(0,1,1,0,15,15)
+        ctx.transform(cosVal.toFixed(6) , sinVal.toFixed(6) , (-1 * sinVal).toFixed(6) , cosVal.toFixed(6) ,0,0)
+        ctx.strokeRect(x, y, width, height);
+    }
+    start = null;
+    end = null
+    canvas.addEventListener('mousedown',(event)=>{
+        start = event;
+    })
+    canvas.addEventListener('mousemove',(event)=>{
+        end = event;
+
+    })
+    canvas.addEventListener('mouseup',(event)=>{
+        end = event;
+        var maxX = Math.max(start.offsetX, end.offsetX);
+        var maxY = Math.max(start.offsetY, end.offsetY);
+        var minX = Math.min(start.offsetX, end.offsetX);
+        var minY = Math.min(start.offsetY, end.offsetY);
+        strokeRect(minX, minY, Math.abs(minX - maxX), Math.abs(minY - maxY))
+        end = start = null;
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

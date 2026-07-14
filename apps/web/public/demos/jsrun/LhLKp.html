@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000023453968</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="LhLKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div class="weui-tab">
+	<div class="weui-tab__panel">
+		<div class="qddls-main qddls-ordermain">
+			<div class="qddls-cards">
+				<div class="qddls-carname">
+					<a href="javascript:;" class="check-label check-local-part">
+						<b class="check-name"><img src="images/qddls-katong.png" alt="" /><i>店铺名</i></b>
+                                    </a>
+                                </div>
+                                <div class="qddls-carorder">
+                                    <div class="qddls-ordertop">
+                                        <span class="qddls-orderimg"><img src="images/img1.jpg" alt="" /></span>
+                                        <div class="qddls-caright">
+                                            <span class="order-cartitle"><em>这个是产品标题</em><i>¥<b>198</b>.00</i></span>
+                                            <span class="order-carnum"><em>NB 2包装</em><i>x1</i></span>
+                                        </div>
+                                    </div>
+                                    <div class="qddls-orderbottom">
+                                        <div
+                                            class="weui-cell weui-cell_active weui-cell_access weui-cell_select weui-cell_select-after">
+                                            <div class="weui-cell__hd"><label class="weui-label">配送方式</label></div>
+                                            <div class="weui-cell__bd showPicker">普通配送 快递免邮</div>
+                                        </div>
+                                        <div class="weui-cell weui-cell_active">
+                                            <div class="weui-cell__hd"><label class="weui-label">订单备注</label></div>
+                                            <div class="weui-cell__bd">
+                                                <input class="weui-input" placeholder="订单备注">
+                                            </div>
+                                        </div>
+                                        <span class="pay_xiaoji"><em>共1件</em> 小计：<b>¥</b><i>98</i><b>.00</b></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="qddls-cards">
+                                <div class="qddls-carname">
+                                    <a href="javascript:;" class="check-label check-local-part">
+                                        <b class="check-name"><img src="images/qddls-katong.png" alt="" /><i>店铺名</i></b>
+                                    </a>
+                                </div>
+                                <div class="qddls-carorder">
+                                    <div class="qddls-ordertop">
+                                        <span class="qddls-orderimg"><img src="images/img2.jpg" alt="" /></span>
+                                        <div class="qddls-caright">
+                                            <span class="order-cartitle"><em>这个是产品标题</em><i>¥<b>198</b>.00</i></span>
+                                            <span class="order-carnum"><em>NB 2包装</em><i>x3</i></span>
+                                        </div>
+                                    </div>
+                                    <div class="qddls-orderbottom">
+                                        <div
+                                            class="weui-cell weui-cell_active weui-cell_access weui-cell_select weui-cell_select-after">
+                                            <div class="weui-cell__hd"><label class="weui-label">配送方式</label></div>
+                                            <div class="weui-cell__bd showPicker">普通配送 快递免邮</div>
+                                        </div>
+                                        <div class="weui-cell weui-cell_active">
+                                            <div class="weui-cell__hd"><label class="weui-label">订单备注</label></div>
+                                            <div class="weui-cell__bd">
+                                                <input class="weui-input" placeholder="订单备注">
+                                            </div>
+                                        </div>
+                                        <span class="pay_xiaoji"><em>共1件</em> 小计：<b>¥</b><i>98</i><b>.00</b></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="weui-tabbar payment-tabbar">
+                        <div class="qddls-allbtn">
+                            <div class="cart-foot-right">
+                                <span class="cartright_span">共1件，</span>
+                                <em class="total-bill">合计：<span class="bill-price">￥<i
+                                            class="all-price">487</i>.55</span></em>
+                                <a href="javascript:;" class="order-btn ban-order" id="showIOSDialog1">提交订单</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+<script>
+// // 获取总额
+// var allNum = 0;
+// var numDan = 0;
+
+// $(".qddls-ordertop").each(function () {
+//     var jiage = parseInt($(this).find(".order-cartitle b").text()); //获取全部单价
+//     var num = parseInt($(this).find(".order-carnum i").text().match(/\d+/)); //获取全部订单数量
+
+//     numDan += num;
+//     $(this).siblings(".qddls-orderbottom").find(".pay_xiaoji em").text("共" + numDan + "件");
+
+//     var numJisuan = jiage * num;
+//     allNum += numJisuan;
+//     $(".all-price").text(allNum.toFixed(2)); //合计
+// });
+
+
+// $('.qddls-cards') 遍历，
+// 找到下面的 $('.order-carnum) 
+// 计算后给 $('.pay_xiaoji')
+var allSum = 0;
+var allSum_jiage = 0;
+$('.qddls-cards').each(function(idx, el){
+    var sum = 0;
+    var sum_jiage = 0;
+    $(el).find('.qddls-ordertop').each(function () {
+        var jiage = parseInt($(this).find(".order-cartitle b").text()); //获取全部单价
+        var num = parseInt($(this).find(".order-carnum i").text().match(/\d+/)); //获取全部订单数量
+        sum += num;
+        var numJisuan = jiage * num;
+        sum_jiage += numJisuan;
+        // console.log({jiage, num, sum, sum_jiage})
+        $(this).siblings(".qddls-orderbottom")
+            .find('.pay_xiaoji')
+            .html(`<span class="pay_xiaoji"><em>共${Math.ceil(sum)}件</em> 小计：<b>¥</b><i>${Math.ceil(sum_jiage)}</i><b>.${sum_jiage % 1}</b></span>`);
+    })
+    allSum += sum;
+    allSum_jiage += sum_jiage
+})
+$('.cartright_span').text('共'+allSum+'件 ，')
+$('.bill-price').html(`<span class="bill-price">￥<i class="all-price">${Math.ceil(allSum_jiage)}</i>${(allSum_jiage)%1}</span>`); //合计
+</script>
+</body>
+</html>

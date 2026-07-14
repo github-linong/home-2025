@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1590000016981519</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="3QhKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div>
+        <select name="" id="">
+            <option :value="item.v" v-for="item in list">{{item.s}}</option>
+        </select>
+        <input type="" v-model="input">
+        <button @click="push(tree, input)">增加</button>
+    </div>
+    <div>
+        {{tree}}
+    </div>
+</div>
+<script>
+new Vue({
+    el: "#app",
+    data(){
+        return {
+            tree: {},
+            list: [
+                {
+                    v: '1',s: '第一个选项'
+                },
+                {
+                    v: '2',s: '第2个选项'
+                },
+                {
+                    v: '3',s: '第3个选项'
+                },
+                {
+                    v: '4',s: '第4个选项'
+                }
+            ],
+            input: ''
+        }
+    },
+    methods: {
+        push(node, value){
+            this.$set(node, 'value', value);
+            this.$set(node, 'children', []);
+            // node.value = value;
+            // node.children = [];
+        }
+    }
+})
+</script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000015222194</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="QKgKp" />
+  <style>
+* {
+            margin: 0;
+            padding: 0;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .wrapper {
+            padding: 10px;
+            border: 1px solid #000;
+            width: 300px;
+            margin: 0 auto;
+        }
+
+        .container {
+            height: 200px;
+            position: relative;
+            font-size: 0px;
+            overflow: hidden;
+        }
+
+        .banner {
+            position: absolute;
+            width: 1800px;
+        }
+
+        .banner a {
+            display: inline-block;
+            width: 300px;
+            height: 200px;
+            font-size: 50px;
+        }
+
+        .banner a:nth-child(1) {
+            background-color: rgb(219, 106, 106);
+        }
+
+        .banner a:nth-child(2) {
+            background-color: rgb(108, 223, 73);
+        }
+
+        .banner a:nth-child(3) {
+            background-color: rgb(194, 57, 212);
+        }
+
+        .banner a:nth-child(4) {
+            background-color: rgb(219, 106, 106);
+        }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+        <div class="container">
+            <div class="banner">
+                <a href="#">1</a>
+                <a href="#">2</a>
+                <a href="#">3</a>
+                <a href="#">3(2)</a>
+            </div>
+        </div>
+    </div>
+<script>
+let banner = document.getElementsByClassName('banner')[0],
+        unitWidth = 300,
+        unitNum = 3
+
+    let move = function (e, ds, callback) {
+        e.move = setInterval(function () {
+          	// console.log(ds)
+            if (ds > 0) {
+                e.style.left = e.offsetLeft + 10 + 'px'
+                ds -= 10
+            } else if (ds < 0) {
+                e.style.left = e.offsetLeft - 10 + 'px'
+                ds += 10
+            } else {
+                clearInterval(e.move)
+                callback()
+            }
+        }, 20)
+    }
+
+    let autoStart = function () {
+        banner.auto = setInterval(function () {
+            move(banner, -300, function () {
+                if (banner.offsetLeft === -unitWidth * unitNum) {
+                    banner.style.left = 0
+                }
+            })
+            console.log(+new Date())
+        }, 1600)
+    }
+
+    autoStart()
+</script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>jquery动画</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="UghKp" />
+  <style>
+div{
+  /* float:left; */
+  /* width: 30%; */
+}
+/* #app4{
+  position: absolute;
+  left:0 ;
+}
+#app3{
+  position: absolute;
+  right:0 ;
+} */
+  </style>
+</head>
+<body>
+<div id="clog"></div>
+<!-- <hr /> -->
+<div id="app4"></div>
+<!-- <hr /> -->
+<div id="app3">
+  <li></li>
+  <li></li>
+  <li></li>
+</div>
+<!-- <hr /> -->
+<!-- <div id="app2">
+</div>
+<hr />
+<div id="app">
+  <li>
+    1
+  </li>
+  <li>
+    2
+  </li>
+  <li>
+    3
+  </li>
+  <li>
+    4
+  </li>
+</div>
+<hr />
+<div id="app1">
+  <li>
+    1
+  </li>
+  <li>
+    2
+  </li>
+  <li>
+    3
+  </li>
+  <li>
+    4
+  </li>
+</div> -->
+<script>
+setInterval(()=>{
+  clog.innerText += document.hidden+','
+},300)
+// setInterval(() => {
+//   $('#app')
+//     .append('<li>' + Date.now() + '</li>')
+//     .children()
+//     .first()
+//     .fadeOut(function() {
+//       this.remove();
+//     });
+// }, 1000);
+// setInterval(() => {
+//   var _num = Math.random() * 5 + 2;
+//   $('#app1')
+//     .append(
+//     	('<li>' + Date.now() + '</li>').repeat(_num))
+//     .children()
+//     .slice(0, _num)
+//     .fadeOut(function() {
+//       this.remove();
+//     });
+// }, 1000);
+// setInterval(() => {
+//   var _num = Math.random() * 5 + 2;
+//   $('#app2')
+//     .append(
+//     	(`<li>
+// 				<span>1</span>
+// 				<span>3</span>
+// 				<span>4</span>
+// 				<span>${Date.now()}</span>
+// 			</li>`).repeat(_num))
+//     .children()
+//   	.first()
+//     .fadeOut(function() {
+//       this.remove();
+//     });
+// }, 1000);
+// $('#app4').html(`
+//   <li>' + ${Date.now()} +1 '</li>
+//   <li>' + ${Date.now()} +2 '</li>
+//   <li>' + ${Date.now()} +3 '</li>
+//   <li>' + ${Date.now()} +4 '</li>
+// `)
+var _index = 1;
+var _now = 0;
+setInterval(() => {
+  var _children = $('#app3')
+    .append('<li>' + (_index++) + '</li>')
+    .children()
+  _children.last().css({opacity: 0}).animate({opacity: 1});
+  
+  console.log(Date.now(),Date.now() - _now,_children.length)
+ _now = Date.now()
+  if(_children.length > 2){
+    if(_children.length>6) console.log(_children.length,_children,_children.first().innerHTML)
+    _children.eq(0)
+    .animate({
+    	opacity: 0,
+    	marginTop: '-20px'
+    },function() {
+      this.remove();
+    });
+  }
+}, 1000);
+// setInterval(() => {
+//   // $('#app4')
+//   //   .prepend('<li>' + Date.now() + '</li>')
+//   //   // .children()
+//   //   // .first()
+//   //   // .animate({
+//   //   // 	opacity: 0,
+//   //   // 	marginTop: '-20px'
+//   //   // },function() {
+//   //   //   this.remove();
+//   //   // });
+//   $('<li>' + Date.now() + '</li>')
+//     .prependTo($('#app4'))
+//   	.css({height: 0,overflow: 'hidden'})
+//   	.animate({height: '30px'})
+//     .parent()
+//     .children()
+//   	.last().fadeOut(function(){$(this).remove()});
+// }, 1000);
+</script>
+</body>
+</html>

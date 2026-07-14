@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>flex的order测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="X8XKp" />
+  <style>
+div{
+  display: flex;
+  flex-wrap: wrap;
+}
+/* p{
+  width: 100%;
+  order: 9007199254740991;
+} */
+  </style>
+</head>
+<body>
+<!-- <div>
+  <p>css-Number.MAX_SAFE_INTEGER:9007199254740991</p>
+  <p style="order:1;">style-1</p>
+  <p style="order:3;">style-3</p>
+  <p style="order:2;">style-2</p>
+  <p style="color:#f00;order:9007199254740993;">style-9007199254740993</p>
+  <p style="color:#f00;order:9007199254740992;">style-9007199254740992</p>
+</div> -->
+<div>
+  
+</div>
+<script>
+str="";
+for(var i = 0;i<9999999;i++){
+	str+=`<p style="order:${i};">style-${i}</p>`;
+}
+document.querySelector('div').innerHTML = str;
+</script>
+</body>
+</html>

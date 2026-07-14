@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue 异步数据展示, 去重在合并</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="znQKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js">
+
+</script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js">
+
+</script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js">
+
+</script>
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js">
+
+</script>
+
+
+<div id="app">
+	<ul>
+		<li v-for="item in list">{{item}}</li>
+		<br/>
+			<br/>
+				调用次数: {{config}}
+	</ul>
+</div>
+<script>
+	ajax = function(req,rsp,timeout = 1000){
+            console.log('ajax')
+            return new Promise(function(reslove){
+                setTimeout(()=>reslove(rsp), timeout)
+            })
+        }
+
+</script>
+<script>
+	vm = new Vue({
+            el: '#app',
+            data(){
+                return {
+                    list: [],
+                    config: {
+                        index1: 0,
+                        index2: 0
+                    },
+                    hash: {},
+                }
+            },
+            async mounted(){
+                await this.initData()
+                await this.handleSetShowItem()
+            },
+            methods: {
+                async initData(){
+                    let res = await ajax('xxx', [
+                        {cenCode: "a0001", accCode: "b0001", res:{"a0001": false, "b0001": false},count:0 },
+                        {cenCode: "a0001", accCode: "b0001", res:{"a0001": false, "b0001": false},count:1 }, 
+                        {cenCode: "a0003", accCode: "b0001", res:{"a0003": false, "b0001": true},count:2 },
+                        {cenCode: "a0004", accCode: "b0003", res:{"b0004": true, "b0003": false},count:3 }, 
+                        {cenCode: "a0004", accCode: "b0003", res:{"b0004": true, "b0003": false},count:4 },
+                        {cenCode: "a0005", accCode: "b0005", res:{"a0005": false, "b0005": false},count:5 },
+                        {cenCode: "a0005", accCode: "b0005", res:{"a0005": false, "b0005": false},count:6 }
+                    ], 600)
+                    this.list= res
+                    
+                },
+                // 数据源设置权限
+                async handleSetShowItem() {
+                    
+                    await Promise.all( this.list.map( async item => {
+                        this.$set(item, "show", false)
+                        // 缓存
+                        let mock__1 = await this.handleCache(`item.cenCode${item.cenCode}`, ()=>this.getRootcenCodeMock(item.cenCode, item.count))
+                        let mock__2
+                        if(!mock__1) mock__2 = await this.handleCache(`item.accCode${item.accCode}`, ()=>this.getRootaccCodeMock(item.accCode, item.count))
+                        this.$set(item, "show", mock__1 || mock__2)
+                        return item
+                    }))
+                },
+                async handleCache(key, fun) {
+                    if(this.hash[key]){
+                        return this.hash[key]
+                    }
+                    return this.hash[key] = fun()
+                },
+                // 模拟特殊变态场景1
+                getRootcenCodeMock(cenCode,index) {
+                   return new Promise((resolve, reject) => {
+                        setTimeout(()=>{
+                            let listItem = this.list[index]
+                            this.config.index1++
+                            resolve( ['a0004'].includes(cenCode))
+                        }, 100)
+                    })
+                },
+                // 模拟特殊变态场景2
+                getRootaccCodeMock(accCode, index) {
+                    return new Promise((resolve, reject) => {
+                        setTimeout(()=>{
+                            let listItem = this.list[index]
+                            // 模拟变态场景
+                            let __root = index == 2 ? ['a0003'].includes(listItem.cenCode) && ['b0001'].includes(listItem.accCode) : ['b0003'].includes(accCode)
+                            this.config.index2++
+                            resolve(__root)
+                        }, 100)
+                    })
+                },
+
+            }
+        })
+
+</script>
+<script>
+
+</script>
+</body>
+</html>

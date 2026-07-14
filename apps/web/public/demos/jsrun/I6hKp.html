@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://www.lodashjs.com/docs/4.17.5.html#throttle</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="I6hKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+
+<script>
+// // Avoid excessively updating the position while scrolling.
+// jQuery(window).on('scroll', _.throttle(updatePosition, 100));
+ 
+// // Invoke `renewToken` when the click event is fired, but not more than once every 5 minutes.
+// var throttled = _.throttle(renewToken, 300000, { 'trailing': false });
+// jQuery(element).on('click', throttled);
+ 
+// // Cancel the trailing throttled invocation.
+// jQuery(window).on('popstate', throttled.cancel);
+
+// cLog = _.throttle((val)=>{
+//   console.log(val,Date.now())
+// }, 300, { 'trailing': true });
+cLog = _.throttle((val)=>{
+  console.log(val,Date.now())
+}, 300);
+
+cLog(1)
+cLog(2)
+cLog(3)
+setTimeout(()=>{
+  cLog(21)
+	cLog(31)
+},1300)
+
+
+throttle2 = (func, time = 500)=>{
+  var _tag = true;
+  var _data = undefined;
+  return function(...args){
+    if(_tag){
+        func(...args);
+        _tag = false;
+      	setTimeout(()=>{
+          if(_data === undefined){
+            _tag = true;
+          }else{
+            func(..._data);
+            _data = undefined
+          }
+          
+        }, time)
+    }else{
+        _data = args;
+    }
+  }
+}
+
+
+
+</script>
+</body>
+</html>

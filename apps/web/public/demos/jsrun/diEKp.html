@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>图片处理处理</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="diEKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+	<button @click="lookImgId(showImgUrl1,'1')">传图片</button>
+	<div class="mantle my-edit-mantle imgLook"style="display:none;" v-show="imgLookId">
+            <div style="background-color: #FFF; padding: 20px; border-radius: 10px;">
+                    <div v-if="showImgUrl.length>0" class="signImgList operaImg">
+                        <div v-for="(itemImg, i) in showImgUrl"  :key="itemImg">  
+                            <div class="img-show-block"><img :src="itemImg" :style="showImgStyle[itemImg] && {transformOrigin:'center center',transform:'translate('+(showImgStyle[itemImg].multiples-1)*0.5*100+'%,'+(showImgStyle[itemImg].multiples-1)*0.5*100+'%) rotate('+showImgStyle[itemImg].degs+'deg)  '+'scale('+showImgStyle[itemImg].multiples+')'}" alt="" id="image"></div>
+                            <!-- <div class="img-show-block"><img :src="itemImg" :style="showImgStyle[itemImg] && {transformOrigin:'top left',transform:'rotate('+(showImgStyle[itemImg].degs % 180)+'deg) '+'scale('+showImgStyle[itemImg].multiples+')'}" alt="" id="image"></div> -->
+                            <div class="btn-show" v-show="btnOperation">
+                               <!-- 方法一：使用插件实现
+                                <button class="edit-btn grend" @click="bigImg('itemImg', $event)">放大</button>
+                                <button class="edit-btn grend" @click="rotateImg('itemImg', $event)">旋转</button>
+                                <button class="edit-btn grend" @click="resetImg('itemImg', $event)">重置</button> -->
+                                <!-- 方法二：通过控制样式实现 -->
+                                <button class="edit-btn grend" @click="toBIgChange(itemImg)">放大</button>
+                                <button class="edit-btn grend" @click="toSmallChange(itemImg)">缩小</button>
+                                <button class="edit-btn grend" @click="toRotateChange(itemImg)">旋转</button>
+                                <button class="edit-btn grend" @click="handleCancel(itemImg)">重置</button>
+                            </div>
+                        </div>
+                    </div>
+                    <span v-else>暂无数据</span>
+                    <!-- 弹框信息 -->
+                    <div class="edit-btm">
+                        
+                        <button class="edit-btn grend" @click="hide('imgLookId')">关闭</button>
+                    </div>
+                </div>     
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<link href="https://cdn.bootcdn.net/ajax/libs/cropper/4.0.0/cropper.min.css" rel="stylesheet">
+<script src="https://cdn.bootcdn.net/ajax/libs/cropper/4.0.0/cropper.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery-cropper/1.0.1/jquery-cropper.min.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                multiples: 1,//图片放大
+            degs:0,
+            showImgStyle: {},
+imgLookId: true,
+btnOperation: true,
+showImgUrl: [],
+    showImgUrl1:[
+"https://img0.baidu.com/it/u=1719623811,706660392&fm=253&fmt=auto&app=138&f=GIF?w=353&h=500",
+"//cors-www.lilnong.top/static/img/ml-active-btn5.png",
+    "//cors-www.lilnong.top/static/img/avator/avator-17.jpg",
+"//cors-www.lilnong.top/static/img/avator/avator-16.jpg",
+"//cors-www.lilnong.top/static/img/avator/avator-15.jpg",
+]
+            }
+        },
+        methods: {
+            lookImgId(val,operationType) {
+                top.console.log('11111111111',val)
+                top.console.log('333333333333',this.btnOperation)
+                for(var i=0; i<val.length; i++){
+                    if(val[i]===null || val[i]==='null'){
+                        val[i]=''
+                    }
+                }
+                if(operationType && operationType=='1'){
+                    this.btnOperation=true
+                }else{
+                    this.btnOperation=false
+                }
+                this.imgLookId = true
+                this.showImgUrl=val
+                top.console.log(this.showImgUrl,'多张照片--222')
+                top.console.log(this.btnOperation,'多张照片--333')
+                
+            },
+            /*方法二：通过控制样式实现 放大，转向,重置*/
+      handleCancel(val) {
+        this.multiples = 1;
+        this.degs = 0;
+        this.$set(this.showImgStyle, val, {
+          degs: this.degs,
+          multiples: this.multiples, // + 0.25
+        });
+      },
+      //放大
+      toBIgChange(val) {
+        console.log("000--this.showImgStyle[val]", this.showImgStyle[val]);
+        if (!this.showImgStyle[val]) {
+          this.$set(this.showImgStyle, val, {
+            degs: this.degs,
+            multiples: this.multiples, // + 0.25
+          });
+        }
+        if (this.showImgStyle[val].multiples >= 2) {
+          return;
+        }
+        this.showImgStyle[val].multiples += 0.25;
+      },
+      // 缩小
+      toSmallChange(val) {
+        if (!this.showImgStyle[val]) {
+          this.$set(this.showImgStyle, val, {
+            degs: this.degs,
+            multiples: this.multiples, // + 0.25
+          });
+        }
+        if (this.showImgStyle[val].multiples <= 1) {
+          return;
+        }
+        this.showImgStyle[val].multiples -= 0.25;
+      },
+      //旋转
+      toRotateChange(val) {
+        if (!this.showImgStyle[val]) {
+          this.$set(this.showImgStyle, val, {
+            degs: this.degs,
+            multiples: this.multiples, // + 0.25
+          });
+        }
+        this.showImgStyle[val].degs -= 90;
+        if (this.showImgStyle[val].degs >= 360) {
+          this.showImgStyle[val].degs = 0;
+        }
+      },
+        }
+    })
+</script>
+<style>
+.my-edit-mantle ul {
+            margin-top: 20px;
+            margin-left: 36px;
+            line-height: 33px;
+            font-size: 16px;
+        }
+        
+        .my-edit-mantle ul li {
+            margin: 8px 0;
+        }
+        
+        .my-edit-mantle ul li input {
+            padding-left: 10px;
+        }
+        
+        .my-edit-mantle button {
+            width: 130px;
+        }
+        
+        .mantle-spec .m-s-content {
+            width: 85%;
+            padding: 50px 40px;
+            border-radius: 30px;
+        }
+        
+        .mantle-spec .m-s-content .content-loca {
+            text-align: left;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .mantle-spec .m-s-content .h_c_content {
+            margin: 30px auto;
+        }
+        
+        .content-loca ul li .left {
+            text-align: left;
+        }
+        
+        .left {
+            display: inline-block;
+            width: 115px;
+            text-align: center;
+        }
+        
+        .sexS {
+            display: inline-block;
+        }
+        
+        .sexS input {
+            margin: 5px;
+        }
+        
+        .inputC {
+            display: inline-block;
+            border: solid #333333 1px;
+        }
+        
+        .inputC input {
+            border: none;
+        }
+        
+        .none {
+            display: none;
+        }
+        
+        .signImgBtn {
+            width: 100%;
+            padding: 20px;
+        }
+        
+        .signImgBtn button {
+            padding: 5px;
+            border-radius: 5px;
+            border: solid 1px #666;
+            width: 100px;
+        }
+        
+        .isChecked {
+            background-color: rgb(74, 74, 240);
+            color: #FFF;
+        }
+        
+        .isNotChecked {
+            background-color: rgb(239, 239, 239);
+            color: #333;
+        }
+        
+        .signImgList {
+            max-width: 700px;
+            max-height: 400px;
+            overflow: auto;
+        }
+        
+        .signImgList img {
+           
+            /* max-height: 400px; */
+        }
+        .signImgList .img-show-block{
+            margin: 20px;
+            width: 100%;
+            display:flex;
+            justify-content:center;
+            overflow:hidden;
+        }
+        .signImgList .img-show-block img {
+            display:block;
+            max-width:100%;
+        }
+        .signImgList .btn-show{
+            margin-top:20px;
+        }
+        .spec-m-img .signImgLists{/* 合同样式处理 */
+            max-width:700px;
+            max-height: 400px;
+            overflow: auto;
+        }
+        .spec-m-img .signImgLists img {
+            margin: 20px;
+            width: 100% !important;
+        }
+
+/* translate(50%) scale(2)  rotate(-360deg)  */
+.signImgList .img-show-block {
+    margin: 20px;
+    width: 100%;
+    min-height: 200px;
+    display: flex;
+    justify-content: center;
+    overflow: auto;
+}
+</style>
+<script>
+
+</script>
+</body>
+</html>

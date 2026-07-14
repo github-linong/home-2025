@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>select 单选问题测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="w9XKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- import Vue before Element -->
+<!-- <script src="https://unpkg.com/vue/dist/vue.js"></script> -->
+<!-- 引入样式 -->
+<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+<!-- 引入组件库 -->
+<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+
+<div id="app">
+  <el-button @click="arr.push('')">add</el-button>
+  <div>
+    {{arr}}
+  </div>
+  <div v-for="(item, index) in arr">
+    <el-select v-model="arr[index]" placeholder="请选择">
+      <el-option
+        v-for="item in disabledOptions"
+        :disabled="item.disabled"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value">
+      </el-option>
+    </el-select>
+  </div>
+</div>
+<script>
+ new Vue({
+    el: '#app',
+    data: function() {
+      return {
+        arr: [''],
+        options: [{
+          value: '选项1',
+          label: '黄金糕'
+        }, {
+          value: '选项2',
+          label: '双皮奶'
+        }, {
+          value: '选项3',
+          label: '蚵仔煎'
+        }, {
+          value: '选项4',
+          label: '龙须面'
+        }, {
+          value: '选项5',
+          label: '北京烤鸭'
+        }]
+      }
+    },
+   computed:{
+     disabledOptions(){
+       return this.options.map(v=>{
+         if(~this.arr.indexOf(v.value)){
+           v.disabled = true;
+         }else{
+           v.disabled = false;
+         }
+         return v
+       })
+     }
+   }
+  })
+</script>
+</body>
+</html>

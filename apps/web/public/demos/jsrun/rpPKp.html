@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>优化裹脚布代码</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="rpPKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js">
+
+</script>
+<div id="app">
+    <p>vdValue下拉选择的key：{{vdValue}}</p>
+    <p>configData下拉对应的关系的key：{{configData}}</p>
+    <p>config配置化key：{{config}}</p>
+	<el-form ref="form" :model="form" label-width="150px">
+		<el-form-item v-for="(item,index) in modelData.partyList">
+			<span slot="label">配置化: </span>
+			    <el-select v-model="vdValue" multiple  placeholder="请选择">
+                    <el-option
+                    v-for="item in item.vendorDataList"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                    <span style="float: left">{{ item.label }}</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">{{ item.value }}</span>
+                    </el-option>
+                </el-select>
+		</el-form-item>
+        <el-form-item label="填写1">
+            <el-input v-model="strings1"></el-input>
+        </el-form-item>
+        <el-form-item label="填写2">
+            <el-input v-model="strings2"></el-input>
+        </el-form-item>
+	</el-form>
+
+    <el-button>提交</el-button>
+    <div>
+        <div>
+            vdValue: {{vdValue}}
+        </div>
+        <div>
+            oldVdValue: {{oldVdValue}}
+        </div>
+    </div>
+</div>
+<script>
+new Vue({
+    el: '#app',
+    data() {
+        return {
+            form: {},
+            vdValue:[ "12301", "12302", "12304", "12303", "12306" ],
+            oldVdValue: [],
+            modelData: {
+                partyList: [
+                    {
+                        "vendorId": "13423",
+                        "vendorDataList": [
+                            {
+                                value: '12301',
+                                label: '黄金糕'
+                            }, {
+                                value: '12302',
+                                label: '双皮奶',
+                            }, {
+                                value: '12303',
+                                label: '蚵仔煎'
+                            }, {
+                                value: '12304',
+                                label: '龙须面'
+                            }, {
+                                value: '12305',
+                                label: '北京烤鸭'
+                            },{
+                                value: '12306',
+                                label: '北京烤鸭'
+                            },{
+                                value: '12307',
+                                label: '北京烤鸭'
+                            },{
+                                value: '12308',
+                                label: '北京烤鸭'
+                            },{
+                                value: '12309',
+                                label: '北京烤鸭'
+                            },{
+                                value: '123010',
+                                label: '北京烤鸭'
+                            },{
+                                value: '123011',
+                                label: '北京烤鸭'
+                            }
+                        ],
+                    },
+                ]
+            },
+            res: {
+                data: [
+                    {
+                        value: 'A111',
+                        label: '活动333'
+                    },
+                    {
+                        value: '222',
+                        label: '阿萨达萨达撒的'
+                    }
+                ],
+            },
+            hashData: {
+                "12301": "111",
+                "12302": "111",
+                "12303": "111",
+                "12304": "222",
+                "12305": "333",
+                "12306": "333",
+                "12307": "444",
+                "12308": "444",
+                "12309": "666",
+                "123010": "777",
+                "123011": "88",
+            },
+            config: ['111','222'],
+            strings1:'如果配置没有在配置化中， 这里就清空',
+            strings2:'',
+        };
+    },
+    created(){
+      this.oldVdValue = [...this.vdValue];
+    },
+    computed: {
+        configData() {
+            let data = []
+                for(var i = 0; i< this.vdValue.length; i++){
+                    let __value = this.vdValue[i]
+                    if(this.hashData[__value] !== undefined){
+                        data.push(this.hashData[__value])
+                    }
+                }
+            return data
+        },
+
+    },
+    methods: {
+        findArrDiff(oldValue,newValue){
+            // console.log(oldValue,newValue, "diyic")
+                let set
+                let diff
+                let type
+                if(newValue.length > oldValue.length){
+                    type = 'add'
+                    // console.log('add')
+                    set = new Set(oldValue);
+                    diff = newValue.filter(v=>!set.has(v));
+                }else{
+                    type = 'delete'
+                    set = new Set(newValue);
+                    diff = oldValue.filter(v=>!set.has(v)); 
+                    // console.log('delete')
+                }
+                return {diff,type}
+            },
+    },
+    watch:{
+        vdValue(){
+            const oldValue = this.oldVdValue.filter(v=>!this.vdValue.includes(v))
+            if(oldValue?.length){
+                top.console.log('删除了', oldValue)
+            }
+            const newValue = this.vdValue.filter(v=>!this.oldVdValue.includes(v));
+            if(newValue?.length){
+                top.console.log('添加了', newValue)
+            }
+            // 放开就是本次和上次，注释掉就是和第一次
+            // this.oldVdValue = [...this.vdValue];
+        },
+        configData:{
+            deep:true,
+            handler(newVal,oldVal){
+                // console.log(newVal,oldVal, "newVal,oldVal")
+                let diifArrVal = this.findArrDiff(oldVal, newVal)
+                // console.log(`${diifArrVal.diff}`,diifArrVal, "diifArrVal")
+                // console.log(`${diifArrVal.diff}`, "删除的数组")
+            }
+        }
+    }
+})
+</script>
+</body>
+</html>

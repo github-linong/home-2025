@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>多行换行, 第一行2个位置占位</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="GxIKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <div>
+        <button @click="data.push({name: '题'+(data.length + 1)})">add</button>
+    </div>
+    <div>
+        <el-button size="mini" style="float:right;">清空</el-button>
+        <el-button size="mini" style="float:right;">更多</el-button>
+        <div v-for="item in data" style="display: inline-block">{{item.name}}</div>
+    </div>
+</div>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                data: [
+                    {name: "题1"},
+                    {name: "题2"},
+                    {name: "题3"},
+                    {name: "题4"},
+                    {name: "题5"},
+                    {name: "题6"},
+                    {name: "题7"}
+                ]
+            }
+        },
+        methods: {
+            clickPushData() {
+                this.test = this.data.concat(this.dep)
+            }
+        },
+        })
+</script>
+<script>
+
+</script>
+</body>
+</html>

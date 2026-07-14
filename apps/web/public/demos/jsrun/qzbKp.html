@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>让CSS flex布局最后一行列表左对齐的N种方法</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="qzbKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<div class="demo1">
+  <p><button class="add">add</button>问题描述</p>
+  <div class="container">
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+  </div>
+</div>
+<div class="demo2">
+  <p><button class="add">add</button>使用margin进行控制,模拟space-between和间隙</p>
+  <div class="container">
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+  </div>
+</div>
+<div class="demo3">
+  <p><button class="add">add</button>使用margin进行控制,根据个数计算最后一个元素动态margin</p>
+  <div class="container">
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+  </div>
+</div>
+<div class="demo4">
+  <p><button class="add">add</button>使用margin进行控制,最后一项margin-right:auto</p>
+  <div class="container">
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+  </div>
+</div>
+<div class="demo4">
+  <p><button class="add">add</button>同4,但不定宽</p>
+  <div class="container">
+    <div class="list" style="width: 50px"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list" style="width: 80px"></div>
+    <div class="list"></div>
+    <div class="list" style="width: 150px"></div>
+    <div class="list"></div>
+  </div>
+</div>
+<div class="demo5">
+  <p><button class="add">add</button>创建伪元素并设置flex:auto或flex:1</p>
+  <div class="container">
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+  </div>
+</div>
+<div class="demo5">
+  <p><button class="add">add</button>同5,但不定宽</p>
+  <div class="container">
+    <div class="list" style="width: 50px"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list" style="width: 80px"></div>
+    <div class="list"></div>
+    <div class="list" style="width: 150px"></div>
+    <div class="list"></div>
+  </div>
+</div>
+<div class="demo6">
+  <p><button class="add">add</button>节点填充</p>
+  <div class="container">
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+  </div>
+</div>
+<div class="demo7">
+  <p><button class="add">add</button>Grid布局</p>
+  <div class="container">
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+    <div class="list"></div>
+  </div>
+</div>
+
+
+<p>https://www.zhangxinxu.com/wordpress/2019/08/css-flex-last-align/</p>
+<p>https://www.zhangxinxu.com/wordpress/2019/03/nth-last-child-css-layout/ 伪类匹配列表数目实现微信群头像CSS布局的技巧</p>
+<script>
+$('body').on('click', '.list', function(){
+  $(this).remove();
+})
+$('body').on('click', '.add', function(){
+  $(this).parents('div').find('.container').append('<div class="list"></div>')
+})
+</script>
+</body>
+</html>

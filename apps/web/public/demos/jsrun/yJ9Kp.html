@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue中dialog弹框弹出时怎么聚焦到相关input的输入框中</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="yJ9Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+    <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+
+    <div id="app">
+        <button @click="swtichDialog">checkBarCode=!{{checkBarCode}}</button>
+        <el-dialog
+      title="电机条形码绑定"
+      width="40%"
+      :visible.sync="checkBarCode"
+      :close-on-click-modal="false"
+    >
+      <el-input
+        placeholder="请输入绑定的电机条形码"
+        v-model="input"
+        clearable
+        @keyup.enter.native="findBarCode"
+        :autofocus="true"
+        ref="input"
+        id="inputBarCode"
+      ></el-input>
+    </el-dialog>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data(){
+                return {
+                    checkBarCode: false,
+                    input: '123'
+                }
+            },
+            methods: {
+                swtichDialog(){
+                    this.checkBarCode=!this.checkBarCode
+                    setTimeout(()=>{
+                        top.console.log(this.$refs.input)
+                        this.$refs.input.focus();
+                    })
+                },
+                findBarCode: console.log
+            }
+        })
+    </script>
+<script>
+
+</script>
+</body>
+</html>

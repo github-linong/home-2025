@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>单选多选bug</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="eWUKp" />
+  <style>
+#app {
+    width: 100%;
+    height: 100%;
+}
+
+.breadcrumb_box .bdb-item-box {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+}
+
+.breadcrumb_box .bdb-item-box .children_menu {
+    cursor: pointer;
+    box-sizing: border-box;
+    position: absolute;
+    left: 0;
+    top: 20px;
+    display: block;
+    content: "";
+    width: 235px;
+    min-height: 250px;
+    background: #ffffff;
+    box-shadow: 0 4px 4px -4px rgba(0, 0, 0, 0.1), 0 5px 10px 1px rgba(0, 0, 0, 0.06), 0 -4px 14px 1px rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    z-index: 10;
+}
+
+.breadcrumb_box .bdb-item-box .children_menu .cf-input {
+    width: 211px;
+    background: #FFFFFF;
+    border-radius: 4px;
+    margin: 10px 0 5px 10px;
+}
+
+.breadcrumb_box .bdb-item-box .children_menu .children_menu_item {
+    padding-left: 10px;
+    height: 40px;
+    line-height: 40px;
+}
+
+.breadcrumb_box .bdb-item-box .children_menu .children_menu_item:hover {
+    color: #3A84FB;
+    background: #F5F7FB;
+}
+
+.breadcrumb_box .bdb-item-box .children_menu .active-text {
+    color: #3A84FB;
+}
+
+.breadcrumb_box .bdb-item-box .cf_el-icon {
+    cursor: pointer;
+}
+  </style>
+</head>
+<body>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js">
+
+</script>
+
+<div id="app">
+    <el-button @click="classhandle">{{multiples? '多选':'单选'}}</el-button>
+    <el-select
+        :key="`${multiples}`"
+        v-model="value"
+        :multiple="multiples"
+        filterable
+        remote
+        reserve-keyword
+        placeholder="请输入关键词"
+        :remote-method="remoteMethod"
+        :loading="loading">
+        <el-option
+        v-for="item in options"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value">
+        </el-option>
+    </el-select>
+</div>
+<script>
+new Vue({
+    el: '#app',
+    data: {
+        options: [],
+        value: [],
+        list: [],
+        loading: false,
+        states: ["Alabama", "Alaska", "Arizona",
+            "Arkansas", "California", "Colorado",
+            "Connecticut", "Delaware", "Florida",
+            "Georgia", "Hawaii", "Idaho", "Illinois",
+            "Indiana", "Iowa", "Kansas", "Kentucky",
+            "Louisiana", "Maine", "Maryland",
+            "Massachusetts", "Michigan", "Minnesota",
+            "Mississippi", "Missouri", "Montana",
+            "Nebraska", "Nevada", "New Hampshire",
+            "New Jersey", "New Mexico", "New York",
+            "North Carolina", "North Dakota", "Ohio",
+            "Oklahoma", "Oregon", "Pennsylvania",
+            "Rhode Island", "South Carolina",
+            "South Dakota", "Tennessee", "Texas",
+            "Utah", "Vermont", "Virginia",
+            "Washington", "West Virginia", "Wisconsin",
+            "Wyoming"],
+            multiples:false
+    },
+    mounted() {
+        this.list = this.states.map(item => {
+            return { value: `value:${item}`, label: `label:${item}` };
+        });
+    }, methods: {
+        classhandle() {
+            this.multiples = !this.multiples
+            if(this.multiples) {
+                this.value = []
+            }else {
+                this.value = null
+            }
+
+        },
+        remoteMethod(query) {
+            if (query !== '') {
+                this.loading = true;
+                setTimeout(() => {
+                    this.loading = false;
+                    this.options = this.list.filter(item => {
+                        return item.label.toLowerCase()
+                            .indexOf(query.toLowerCase()) > -1;
+                    });
+                }, 200);
+            } else {
+                this.options = [];
+            }
+        }
+    }
+})
+</script>
+</body>
+</html>

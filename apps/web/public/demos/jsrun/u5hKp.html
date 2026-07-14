@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1590000017322755</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="u5hKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<div id="app">
+  <table>
+    <thead>
+      <tr>
+        <th v-for="item in dataLength">{{item}}</th><th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <template v-for="item in dataLength">
+        <tr>
+          <td  v-for="itemtd in dataLength">{{item}}.{{itemtd}}</td>
+          <td>
+            <button @click="showIndex = item" v-show="showIndex != item">查看</button>
+            <button @click="showIndex = -1" v-show="showIndex == item">收起</button>
+            <button>删除</button></td>
+        </tr>
+        <tr :class="{show: item == showIndex}">
+          <td :colspan="dataLength+1">
+            <div>{{item}}的内容 
+              <span class="top">置顶</span>
+              <span class="bottom">置底</span>
+            </div>
+          </td>
+        </tr>
+      </template>
+    </tbody>
+  </table>
+  <table>
+    <thead>
+      
+      <tr>
+        <th>1</th><th>2</th><th>3</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1.1</td><td>1.2</td><td>1.3</td><td><button>查看</button><button>删除</button></td>
+      </tr>
+      <tr>
+        <td colspan='3'>
+          <div>1.内容</div>
+        </td>
+      </tr>
+      <tr>
+        <td>2.1</td><td>2.2</td><td>2.3</td><td></td>
+      </tr>
+      <tr>
+        <td colspan='3'>
+          <div>1.内容</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    dataLength: 10,
+    showIndex: -1,
+  },
+  mounted(){
+    this.$nextTick(()=>{
+      
+    })
+  }
+})
+</script>
+</body>
+</html>

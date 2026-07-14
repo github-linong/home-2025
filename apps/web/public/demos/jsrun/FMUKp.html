@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iframe 事件测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="FMUKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<iframe id="iframe" frameborder="0" src="https://www.lilnong.top/cors/1"></iframe>
+<style>
+    iframe{
+        padding: 100px;
+        margin: 100px;
+    }
+</style>
+<script>
+    window.addEventListener('click', ()=>{
+        top.console.log('window', 'click')
+    })
+    window.addEventListener('click', ()=>{
+        top.console.log('window', 'click', false)
+    }, false)
+    window.addEventListener('click', ()=>{
+        top.console.log('window', 'click', true)
+    }, true)
+    window.addEventListener('keydown', ()=>{
+        top.console.log('window', 'keydown')
+    })
+    window.addEventListener('keydown', ()=>{
+        top.console.log('window', 'keydown', false)
+    }, false)
+    window.addEventListener('keydown', ()=>{
+        top.console.log('window', 'keydown', true)
+    }, true)
+    window.addEventListener('keypress', ()=>{
+        top.console.log('window', 'keypress')
+    })
+    window.addEventListener('keypress', ()=>{
+        top.console.log('window', 'keypress', false)
+    }, false)
+    window.addEventListener('keypress', ()=>{
+        top.console.log('window', 'keypress', true)
+    }, true)
+</script>
+
+<script>
+
+    iframe.addEventListener('click', ()=>{
+        top.console.log('iframe', 'click')
+    })
+    iframe.addEventListener('click', ()=>{
+        top.console.log('iframe', 'click', false)
+    }, false)
+    iframe.addEventListener('click', ()=>{
+        top.console.log('iframe', 'click', true)
+    }, true)
+    iframe.addEventListener('keydown', ()=>{
+        top.console.log('iframe', 'keydown')
+    })
+    iframe.addEventListener('keydown', ()=>{
+        top.console.log('iframe', 'keydown', false)
+    }, false)
+    iframe.addEventListener('keydown', ()=>{
+        top.console.log('iframe', 'keydown', true)
+    }, true)
+    iframe.addEventListener('keypress', ()=>{
+        top.console.log('iframe', 'keypress')
+    })
+    iframe.addEventListener('keypress', ()=>{
+        top.console.log('iframe', 'keypress', false)
+    }, false)
+    iframe.addEventListener('keypress', ()=>{
+        top.console.log('iframe', 'keypress', true)
+    }, true)
+</script>
+<script>
+
+</script>
+</body>
+</html>

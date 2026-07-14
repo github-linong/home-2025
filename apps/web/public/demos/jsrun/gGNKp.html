@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue checkbox value</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="gGNKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<style>
+    .flex{display: flex;}
+        .flex-item{flex: auto;border: 1px solid #f00;}
+</style>
+<div id="app">
+    <div v-for="item in list">
+        <div v-for="item2 in item.list">
+            <input type="checkbox" v-model="item2.checked">
+            <span>{{item2.type}}</span>
+            <input type="text" v-model="item2.val">
+        </div>
+    </div>
+    <div class="flex">
+        <pre class="flex-item">{{JSON.stringify(list, null, 4)}}</pre>
+        <pre class="flex-item">{{JSON.stringify(result, null, 4)}}</pre>
+    </div>
+</div>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                list: [{
+                    list: [{
+                        type: '鲜花',
+                        val: '100',
+                        checked: true,
+                    },{
+                        type: '月币',
+                        val: '',
+                        checked: false,
+                    },{
+                        type: '音符',
+                        val: '',
+                        checked: false,
+                    }]
+                },{
+                    list: [{
+                        type: '鲜花',
+                        val: '100',
+                        checked: true,
+                    },{
+                        type: '月币',
+                        val: '2',
+                        checked: true,
+                    },{
+                        type: '音符',
+                        val: '',
+                        checked: false,
+                    }]
+                }]
+            }
+        },
+        computed: {
+            result(){
+                var list = JSON.parse(JSON.stringify(this.list))
+                return list.reduce((s,n)=>{
+                    var result = {
+                        list: n.list.reduce((s,n)=>{
+                            if(n.checked){
+                                s.push({
+                                    type: n.type,
+                                    val: n.val
+                                })
+                            }
+                            return s;
+                        }, [])
+                    }
+                    if(result.list.length){
+                        s.push(result)
+                    }
+                    return s;
+                }, [])
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

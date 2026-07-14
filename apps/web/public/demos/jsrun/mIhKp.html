@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>宽度自适应DEMO</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="mIhKp" />
+  <style>
+body{
+  padding-top: 30px;
+}
+
+.ellipsis{
+    overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+/* flex方案 */
+.main_warp{
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.main_warp  .main_img{
+  height: 16px;
+  margin-left: 5px;
+  /* flex:1 */
+}
+/* BFC方案 */
+.main_warp1{
+  display: inline-block;max-width: 100%;overflow:hidden;
+}
+.main_warp1 .main_txt{
+  overflow: hidden;text-overflow: ellipsis;white-space: nowrap;
+}
+.main_warp1 .main_img{
+  float: right;
+}
+
+.main_warp1 .main_img img{
+  height: 16px;
+}
+/* 试图解决空白格 */
+.main_warp2{
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+ .main_warp2 .main_imgWarp{
+    white-space: nowrap;
+    /* overflow: hidden; */
+    font-size: 0;
+    flex: 1;
+  }
+ .main_warp2 .main_img{
+    height: 16px;
+    display:inline-block;
+    margin-left: 5px;
+    /* float:left; */
+  }
+  </style>
+</head>
+<body>
+<div class="main_warp">
+  <span class="main_txt ellipsis">我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字</span>
+  <img class="main_img" src="http://cdn.jsrun.top/css/img/logo.png" alt="" />
+  <img class="main_img" src="http://cdn.jsrun.top/css/img/logo.png" alt="" />
+</div>
+<div class="main_warp">
+  <span class="main_txt ellipsis">我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字</span>
+  <img class="main_img" src="http://cdn.jsrun.net/css/img/logo.png" alt="" />
+  <!-- <img class="main_img" src="http://cdn.jsrun.net/css/img/logo.png" alt="" /> -->
+</div>
+
+<div class="main_warp">
+  <span class="main_txt ellipsis">我是一个长名字</span>
+  <img class="main_img" src="http://cdn.jsrun.top/css/img/logo.png" alt="" />
+  <img class="main_img" src="http://cdn.jsrun.top/css/img/logo.png" alt="" />
+</div>
+<div class="main_warp">
+  <span class="main_txt ellipsis">我是一个长名字</span>
+  <img class="main_img" src="http://cdn.jsrun.top/css/img/logo.png" alt="" />
+  <!-- <img class="main_img" src="http://cdn.jsrun.net/css/img/logo.png" alt="" /> -->
+</div>
+<hr />
+<div class="main_warp1">
+  <div  class="main_img">
+    <img src="http://cdn.jsrun.top/css/img/logo.png" alt="" />
+  </div>
+  <div class="main_txt ellipsis">我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字</div>
+</div>
+<div class="main_warp1">
+  <div  class="main_img">
+    <img src="http://cdn.jsrun.top/css/img/logo.png" alt="" />
+    <img src="http://cdn.jsrun.top/css/img/logo.png" alt="" />
+  </div>
+  <div class="main_txt ellipsis">我是一个长名字</div>
+</div>
+<hr />
+<div class="main_warp2">
+  <span class="main_txt ellipsis">我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字</span>
+  <div class="main_imgWarp">
+    <img class="main_img" src="http://cdn.jsrun.top/css/img/logo.png" alt="" />
+    <img class="main_img" src="http://cdn.jsrun.top/css/img/logo.png" alt="" />
+  </div>
+</div>
+<div class="main_warp2">
+  <span class="main_txt ellipsis">我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字我是一个长名字</span>
+  <div class="main_imgWarp">
+    <img class="main_img" src="http://cdn.jsrun.top/css/img/logo.png" alt="" />
+  </div>
+</div>
+<script>
+
+</script>
+</body>
+</html>

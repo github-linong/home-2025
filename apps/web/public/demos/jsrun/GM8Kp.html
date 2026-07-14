@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CSS 文本超出提示效果</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="GM8Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<article>
+    <section>
+        巧妙的通过<b>文档流</b>来实现效果。
+    </section>
+</article>
+<div id="app">
+    <h2>1. 长内容可以鼠标移上可以看 title </h2>
+    <ul class="demo1">
+        <li v-for="item in list">
+            <div class="text">{{item}}</div>
+            <div class="text-title ellipsis" :title="item">{{item}}</div>
+        </li>
+    </ul>
+
+    <h2>2. 显示省略号，省略号显示在中间</h2>
+    <ul class="demo2">
+        <li v-for="item in list">
+            <div class="text-title ellipsis justify" :title="item">{{item}}</div>
+            <div class="text justify">{{item}}</div>
+        </li>
+    </ul>
+
+    <h2>3. 1+2 整活</h2>
+    <ul class="demo1 demo3">
+        <li v-for="item in list">
+            <div class="text">{{item}}</div>
+            <div class="text-title ellipsis" :title="item">{{item}}。</div>
+        </li>
+    </ul>
+    <h2>3. 1+2 整活(前省略号)（为啥会截断啊）</h2>
+    <ul class="demo1 demo3 demo3-1">
+        <li v-for="item in list">
+            <div class="text">{{item}}</div>
+            <div class="text-title ellipsis" :title="item">{{item}}。</div>
+        </li>
+    </ul>
+    <h2>3. 1+2 整活(后省略号)</h2>
+    <ul class="demo1 demo3 demo3-2">
+        <li v-for="item in list">
+            <div class="text">{{item}}</div>
+            <div class="text-title ellipsis" :title="item">{{item}}。</div>
+        </li>
+    </ul>
+    <h2>4. 长内容可以鼠标移上可以滚动看</h2>
+    <ul class="demo4">
+        <li v-for="item in list">
+            <div class="text">{{item}}</div>
+            <div class="text-title ellipsis"  :title="item">
+                <!-- <div class="text-scroll" :title="item">{{item}}。</div> -->
+                {{item}}。
+                <!-- <div class="text-scroll" :title="item">{{item}}。</div> -->
+            </div>
+        </li>
+    </ul>
+</div>
+<style>
+    *{margin:0;padding:0;}
+    ul.demo1{line-height: 1em;}
+    /* h2{line-height:} */
+
+    .demo1 .text{color: #f00;}
+    .demo1 .text-title{color: #0f0;}
+
+    .demo1 li{overflow: hidden;margin: 10px;height: 1em;}
+    .demo1 .text{overflow: hidden;max-height: 2em;}
+    .demo1 .text-title{height: 1em;overflow:hidden;position: relative;top:-2em;}
+
+    .demo1 .ellipsis{
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        background: #0cc;
+    }
+</style>
+<style>
+    .demo2 {line-height: 1em;}
+    .demo2 .text{color: #f00;height: 2em;overflow: hidden;}
+    .demo2 .text-title{color: #0f0;float: right;width: 50%;direction: rtl;}
+    .demo2 li{margin: 10px;}
+    .demo2 .justify{text-align: justify;}
+    .demo2 .ellipsis{
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        background: #0cc;
+    }
+</style>
+<style>
+    .demo3 .text-title:before{
+        content: attr(title);
+        
+        color: #00f;float: right;width: 50%;direction: rtl;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    .demo3-2 .text-title{
+         white-space: unset;
+    }
+</style>
+<style>
+    ul.demo4{line-height: 1em;}
+    .demo4 .text{color: #f00;}
+    .demo4 .text-title{color: #0f0;}
+
+    .demo4 li{overflow: hidden;margin: 10px;height: 1em;}
+    .demo4 .text{overflow: hidden;max-height: 2em;}
+    .demo4 .text-title{
+        height: 1em;overflow:hidden;position: relative;top:-2em;
+        /* padding-right: 8em; */
+    }
+    .demo4 .text-title:hover{
+        /* text-overflow: unset; */
+        display: inline-block;
+        overflow: visible;
+        /* animation: textscroll 3s; */
+        animation: textscroll 6s linear infinite;
+    }
+    .demo4 .text-title:after{content: attr(title);color: #0ff;padding: 0 5em;}
+    .demo4 .text-scroll:after{content: attr(title);color: #0f0;}
+    /* .demo4 .text-title:hover .text-scroll{ */
+    .demo4 .text-scroll:hover{
+        /* position:relative; */
+        animation: textscroll 10s linear infinite;
+        /* transition: all 1s; */
+        /* transform: translate(-100%); */
+        /* transform: translate(-50%); */
+    }
+    .demo4 .ellipsis{
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        background: #0cc;
+    }
+</style>
+<style>
+    @keyframes textscroll{
+        100%{transform: translate(-50%);}
+    }
+</style>
+<script>
+    str = '蒹葭苍苍，白露为霜。所谓伊人，在水一方。溯洄从之，道阻且长。溯游从之，宛在水中央。蒹葭萋萋，白露未晞。所谓伊人，在水之湄。溯洄从之，道阻且跻。溯游从之，宛在水中坻。蒹葭采采，白露未已。所谓伊人，在水之涘。溯洄从之，道阻且右。溯游从之，宛在水中沚。';
+    arr = str.split('。')
+    arr1 = arr.reduce((s,n)=>{
+        let lastStr = s[s.length - 1] || '';
+        s.push(
+            (lastStr?lastStr+'。':'')  + n 
+        )
+        return s
+    },[])
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                list: arr1
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

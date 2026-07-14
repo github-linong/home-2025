@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000038500588</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="MaIKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    <h2>已知任意直线的点A,B， 和直线外一点C，计算平面点到线段的垂足问题</h2>
+    <div>
+        <span class="label">pointAX:</span><input type="number" v-model="pointAX">,<span class="label">pointAY:</span><input type="number" v-model="pointAY">
+    </div>
+    <div>
+        <span class="label">pointBX:</span><input type="number" v-model="pointBX">,<span class="label">pointBY:</span><input type="number" v-model="pointBY">
+    </div>
+    <div>
+        <span class="label">pointCX:</span><input type="number" v-model="pointCX">,<span class="label">pointCY:</span><input type="number" v-model="pointCY">
+    </div>
+    <div>
+        <span class="label">pointDX垂足:</span><input type="number" v-model="pointDX">,<span class="label">pointDY垂足:</span><input type="number" v-model="pointDY">
+    </div>
+    <canvas ref="canvas" width="200" height="200"></canvas>
+</div>
+<style>
+    .label{display: inline-block;width: 7em;text-align:right;}
+    canvas{background: #ffc}
+</style>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<script>
+    var ctx = null
+    var vm = new Vue({
+        el: '#app',
+        data(){
+            return {
+                pointAX: 100,
+                pointAY: 100,
+                pointBX: 150,
+                pointBY: 150,
+                pointCX: 100,
+                pointCY: 120,
+                pointDX: 0,
+                pointDY: 0,
+            }
+        },
+        mounted(){
+            ctx = this.$refs.canvas.getContext('2d')
+            this.draw()
+        },
+        computed:{
+            pointWatch(){
+                return [
+                    this.pointAX,
+                    this.pointAY,
+                    this.pointBX,
+                    this.pointBY,
+                    this.pointCX,
+                    this.pointCY
+                ]
+            }
+        },
+        watch: {
+            pointWatch(){this.draw()}
+        },
+        methods: {
+            getLenthPointToLine(){
+                var A = this.pointBY - this.pointAY;
+                var B = this.pointAX - this.pointBX;
+                var C = this.pointAY*(this.pointBX - this.pointAX) - this.pointAX*(this.pointBY - this.pointAY);
+                //直线为Ax+By+C=0
+                // console.log("A = %f,B = %f,C = %f",A,B,C);
+                var d = Math.abs(A*this.pointCX+B*this.pointCY+C)/Math.sqrt(A*A+B*B);
+                // console.log("d = %f",d);
+                return d;
+            },
+            getPointToLineChuiZu(){
+                var A = this.pointBY - this.pointAY;
+                var B = this.pointAX - this.pointBX;
+                var C = this.pointAY*(this.pointBX - this.pointAX) - this.pointAX*(this.pointBY - this.pointAY);
+                var D = A*this.pointCY - B*this.pointCX;
+                var xd = -(B*D + A*C)/(B*B + A*A);
+                var yd;
+                if (B == 0){
+                    yd = this.pointCY;
+                }else{
+                    yd = -(A*xd+C)/B;
+                }
+                // console.log("c(%f,%f)",xd,yd);
+                return [xd,yd];
+            },
+            draw(){
+                this.getLenthPointToLine()
+                ctx.clearRect(0,0,1000,1000)
+                ctx.beginPath();
+                ctx.moveTo(this.pointAX,this.pointAY)
+                ctx.lineTo(this.pointBX,this.pointBY)
+                ctx.stroke()
+                ctx.closePath()
+
+                var [x,y]=this.getPointToLineChuiZu();
+                this.pointDX = x;
+                this.pointDY = y;
+                ctx.beginPath();
+                ctx.moveTo(this.pointCX,this.pointCY)
+                ctx.lineTo(this.pointDX,this.pointDY)
+                ctx.stroke()
+                ctx.closePath()
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

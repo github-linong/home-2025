@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>jquery的addClass测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="XzhKp" />
+  <style>
+.select{
+    color:#f00;
+}
+  </style>
+</head>
+<body>
+<div class="quesWarp">
+    <div class="qest qest4">-------------------------</div>
+    <div class="anslist swiper-button-next fourBtn four1" data-ans="1">
+        <div class="chose"><img src="../images/A.png" alt="" />1</div>
+    </div>
+    <div class="anslist swiper-button-next fourBtn four2" data-ans="5">
+        <div class="chose"><img src="../images/B.png" alt="" />2</div>
+    </div>
+    <div class="anslist swiper-button-next fourBtn four3" data-ans="5">
+        <div class="chose"><img src="../images/C.png" alt="" />3</div>
+    </div>
+    <div class="anslist swiper-button-next fourBtn four4" data-ans="5">
+        <div class="chose"><img src="../images/D.png" alt="" />4</div>
+    </div>
+</div>
+ <div class="quesWarp">
+    <div class="qest qest4">-----------------------</div>
+    <div class="anslist swiper-button-next fourBtn four1" data-ans="1">
+        <div class="chose"><img src="../images/A.png" alt="" />1</div>
+    </div>
+    <div class="anslist swiper-button-next fourBtn four2" data-ans="5">
+        <div class="chose"><img src="../images/B.png" alt="" />2</div>
+    </div>
+    <div class="anslist swiper-button-next fourBtn four3" data-ans="5">
+        <div class="chose"><img src="../images/C.png" alt="" />3</div>
+    </div>
+    <div class="anslist swiper-button-next fourBtn four4" data-ans="5">
+        <div class="chose"><img src="../images/D.png" alt="" />4</div>
+    </div>
+</div>
+ <div class="quesWarp">
+    <div class="qest qest4">------------------------------</div>
+    <div class="anslist swiper-button-next fourBtn four1" data-ans="1">
+        <div class="chose"><img src="../images/A.png" alt="" />1</div>
+    </div>
+    <div class="anslist swiper-button-next fourBtn four2" data-ans="5">
+        <div class="chose"><img src="../images/B.png" alt="" />2</div>
+    </div>
+    <div class="anslist swiper-button-next fourBtn four3" data-ans="5">
+        <div class="chose"><img src="../images/C.png" alt="" />3</div>
+    </div>
+    <div class="anslist swiper-button-next fourBtn four4" data-ans="5">
+        <div class="chose"><img src="../images/D.png" alt="" />4</div>
+    </div>
+</div>
+<script>
+$('.anslist').off('click').on('click', function(){
+    $(this).addClass('select').siblings().removeClass('select')
+})
+</script>
+</body>
+</html>

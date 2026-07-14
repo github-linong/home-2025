@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>setInterval 测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="bjzKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script>
+    setInterval(function(){
+        top.console.log(`%csetInterval A ${performance.now().toFixed(0)}, ${performance.now().toFixed(0) - (this.lastNow1 || 0)}`, 'color: #0cc')
+        this.lastNow1 = performance.now().toFixed(0)
+    }, 1000)
+</script>
+
+<script>
+    initSetTimeout = function(){
+        setTimeout(() => {
+            top.console.log(`%csetTimeout A ${performance.now().toFixed(0)}, ${performance.now().toFixed(0) - (this.lastNow2 || 0)}`, 'color: #00c')
+            this.lastNow2 = performance.now().toFixed(0);
+            initSetTimeout();
+        }, 1000)
+    }
+    initSetTimeout();
+</script>
+<script>
+    window.sleep = function sleep(time = 0){
+        const start = Date.now();
+        while(Date.now() - start < time){
+
+        }
+        top.console.log(`%csleep ${Date.now() - start}`)
+    }
+</script>
+<script>
+    this.currentNow = performance.now()
+    setInterval(function(){
+        top.console.log(`%c ${(performance.now().toFixed(0) - (this.currentNow || 0) )/1000 >>> 0} 次`, 'color: #c00')
+    }, 1000)
+</script>
+<button onclick="sleep(500)">sleep 500ms</button>
+<button onclick="sleep(1000)">sleep 1000ms</button>
+<button onclick="sleep(1500)">sleep 1500ms</button>
+<button onclick="sleep(3000)">sleep 3000ms</button>
+<script>
+
+</script>
+</body>
+</html>

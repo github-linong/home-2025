@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000038747493?_ea=91143829</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="RnIKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="div">
+            <button onclick="changBgcolor()">点击换背景色</button>
+        </div>
+        <script>
+            var mystyle = document.documentElement.style;
+            mystyle = document.styleSheets[1].rules[2].style
+            console.log('bgcolor=' + mystyle.getPropertyValue("--bg_color").trim());
+
+            function changBgcolor() {
+                if (mystyle.getPropertyValue("--bg_color").trim() === "green") {
+                    mystyle.setProperty("--bg_color", "red");
+                } else {
+                    mystyle.setProperty("--bg_color", "green");
+                }
+                console.log('在setProperty后bgcolor=' + mystyle.getPropertyValue("--bg_color").trim());
+            }
+        </script>
+<script>
+
+</script>
+</body>
+</html>

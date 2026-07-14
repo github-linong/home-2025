@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>点击红色按钮一下，就画一个红色框。点一下蓝色按钮，画一个蓝色框。所有框可拖动。点击坐标，获取所框有坐标。</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="2n3Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="h-coverImg" class="active"   onmousemove="rect_mousemove(event)" >
+    <div  class="myImg"  border="0" draggable="false" id="region_cover" style="height:100%;width:100%;position: absolute;z-index:0;margin-left:0px;margin-top:0px;border:1px solid #ccc;"/>
+</div>
+</div>
+<div class="" style="position: absolute; margin-left:16px">
+    <input type="button" onclick="Protection()" class="btn-button"  value="红色框" />
+    <input type="button" onclick="Shielding()" class="btn-button"  value="蓝色框" />
+    <input type="button" onclick="clear_draw()"  class="btn-button mgl-20"  value="清除"/>
+    <input type="button" onclick="coordinate()"  class="btn-button mgl-20"  value="坐标"/>
+
+</div>
+<script>
+
+</script>
+</body>
+</html>

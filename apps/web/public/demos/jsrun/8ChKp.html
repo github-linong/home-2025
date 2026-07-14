@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000017358849</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="8ChKp" />
+  <style>
+.m2{
+     /* position: absolute; */
+    width: 100px;height: 120px;
+    border: 1px solid #f00;
+     /* width: 100%; */
+     /* height: 44%; */
+     /* margin-top: 30%; */
+     /* margin-left: 4%; */
+     /* background-image: url(monster.png); */
+     /* background-Size: 100% 100%; */
+     /* background-Repeat: no-repeat; */
+     z-index: 90;     
+     /* -webkit-animation-name: scaleDraw;关键帧名称
+     -webkit-animation-timing-function: linear; 动画的速度曲线
+     -webkit-animation-iteration-count: 1;  动画播放的次数
+     -webkit-animation-duration: 0.7s; 动画所花费的时间
+     -webkit-animation-delay:0;
+     animation-name: scaleDraw; 
+     animation-timing-function: linear; 
+     animation-iteration-count: 1;
+     animation-duration: 0.7s;  
+     animation-delay:0; */
+      animation: scaleDraw 1s linear,scaleDraw2 1s linear 3s;
+}
+@keyframes scaleDraw {  /*定义关键帧、scaleDraw是需要绑定到选择器的关键帧名称*/
+     0%  {transform: scale(1.0); }
+     5%  {transform: scale(0.95);}
+     10% {transform: scale(0.90);}
+     15% {transform: scale(1.0); }
+     20% {transform: scale(1.2); }
+     25% {transform: scale(1.4); }
+     30% {transform: scale(1.6); }
+     35% {transform: scale(1.8); }
+     40% {transform: scale(2.0); }
+     45% {transform: scale(2.2); }
+     50% {transform: scale(2.4); }
+     55% {transform: scale(2.0); }
+     60% {transform: scale(1.8); }
+     65% {transform: scale(1.6); }
+     70% {transform: scale(1.4); }
+     75% {transform: scale(1.2); }
+     80% {transform: scale(1.0); }
+     85% {transform: scale(0.95);}
+     90% {transform: scale(0.90);}
+     95% {transform: scale(0.95);}
+     100%{transform: scale(1.0); } 
+}
+@keyframes scaleDraw2 {  /*定义关键帧、scaleDraw是需要绑定到选择器的关键帧名称*/
+     /* 0%  {transform: translate(100%); }
+     100%{transform: translate(0); }  */
+  0%{
+    /* position: relative;
+    left: -100%; */
+    transform: translate(100%);
+  }
+  50%{
+    /* position: relative;
+    left: -100%; */
+    transform: translate(-100%);
+  }
+  100%{
+    /* position: relative;
+    left: 100%; */
+    transform: translate(0);
+  }
+}
+@keyframes scaleDraw3 {
+  
+}
+.m3{
+  animation: scaleDraw3 1s linear;
+}
+  </style>
+</head>
+<body>
+<div class="m2"></div>
+<div class="m2 m3"></div>
+<script>
+
+</script>
+</body>
+</html>

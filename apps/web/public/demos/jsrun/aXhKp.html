@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>canvas 八卦</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="aXhKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<canvas id="ctx_1" width="300" height="300"></canvas>
+<canvas id="ctx_2" width="300" height="300"></canvas>
+<script>
+var _x = 100;
+var _y = 100;
+var _r = 50;
+var c=document.getElementById("ctx_1");
+var ctx=c.getContext("2d");
+ctx.beginPath();
+ctx.arc(_x,_y,_r,Math.PI/2,Math.PI+Math.PI/2);
+ctx.fill();
+
+ctx.beginPath();
+ctx.arc(_x,_y,_r,-Math.PI/2,Math.PI-Math.PI/2);
+ctx.fillStyle="#FF0000";
+ctx.fill();
+ctx.beginPath();
+ctx.beginPath();
+ctx.arc(_x,_y-(_r/2),_r/2,Math.PI/2,Math.PI+Math.PI/2);
+ctx.fill();
+
+
+ctx.beginPath();
+ctx.arc(_x,_y+(_r/2),_r/2,-Math.PI/2,Math.PI-Math.PI/2);
+ctx.fillStyle="#000000";
+ctx.fill();
+ctx.beginPath();
+ctx.arc(_x,_y-(_r/2),_r/2/2/2 ,0 ,Math.PI*2);
+ctx.fill();
+
+
+ctx.beginPath();
+ctx.arc(_x,_y+(_r/2),_r/2/2/2 ,0 ,Math.PI*2);
+ctx.fillStyle="#FF0000";
+ctx.fill();
+
+
+// var _x = 100;
+// var _y = 100;
+// var _r = 50;
+// var c=document.getElementById("ctx_2");
+// var ctx=c.getContext("2d");
+
+// ctx.beginPath();
+// ctx.arc(_x,_y,_r,0,Math.PI*2);
+// ctx.fill();
+// ctx.beginPath();
+// ctx.arc(_x,_y,_r,Math.PI/2,Math.PI+Math.PI/2);
+// ctx.bezierCurveTo(_x-_r,_y,_x+_r,_y+_r,_x,_y-_r);
+// ctx.fillStyle="#FF0000";
+// ctx.fill();
+</script>
+</body>
+</html>

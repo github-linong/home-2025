@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000040248156</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="jxVKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.min.js"></script>
+<div id="app">
+    <vv-component require="3"></vv-component>
+</div>
+<script>
+    Vue.component('vv-component', {
+        props: ['require'],
+        data(){return {require2:1}},
+        // // beforeCreate(){var that = this;top.console.log('component-beforeCreate', that, that&&that.require, that&&that.require2)},
+        created(){top.console.log('component-created', this, this?.require, this?.require2)},
+        beforeMount(){top.console.log('component-beforeMount', this, this?.require, this?.require2)},
+        mounted(){top.console.log('component-mounted', this, this?.require, this?.require2)},
+        beforeDestroy(){top.console.log('component-beforeDestroy', this, this?.require, this?.require2)},
+        destroyed(){top.console.log('component-destroyed', this, this?.require, this?.require2)}
+    })
+    new Vue({
+        el: '#app',
+        data(){return {require2:2}},
+        // // beforeCreate(){var that = this;top.console.log('parent-beforeCreate', that, that&&that.require, that&&that.require2)},
+        created(){top.console.log('parent-created', this, this?.require, this?.require2)},
+        beforeMount(){top.console.log('parent-beforeMount', this, this?.require, this?.require2)},
+        mounted(){top.console.log('parent-mounted', this, this?.require, this?.require2)},
+        beforeDestroy(){top.console.log('parent-beforeDestroy', this, this?.require, this?.require2)},
+        destroyed(){top.console.log('parent-destroyed', this, this?.require, this?.require2)}
+
+    })
+</script>
+
+选项 / 生命周期钩子
+beforeCreate
+created
+beforeMount
+mounted
+beforeUpdate
+updated
+activated
+deactivated
+beforeDestroy
+destroyed
+errorCaptured
+<script>
+
+</script>
+</body>
+</html>

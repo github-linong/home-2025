@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>-webkit-mask</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="RzgKp" />
+  <style>
+.element{
+  background: url(http://7xlzf0.com1.z0.glb.clouddn.com/css/img/logo.png) repeat;
+  -webkit-mask: url(img/mask.png);
+}
+.element2 {
+background: url(http://7xlzf0.com1.z0.glb.clouddn.com/css/img/logo.png) repeat;
+background-size: 25px;
+-webkit-mask: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,1)), to(rgba(0,0,0,0)));
+}
+h1 {-webkit-text-stroke: 2px blue;color:#fff;}
+h2 {-webkit-text-stroke: 1px transparent}
+
+h3 {
+color: transparent;
+-webkit-text-stroke: 4px red;
+}
+.reflect{
+  -webkit-box-reflect: right 0 -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,1)), to(rgba(0,0,0,0)));
+}
+.reflect2{
+  -webkit-box-reflect: below 5px;
+}
+
+.marquee {
+white-space: nowrap;
+overflow:-webkit-marquee;
+width: 70px;
+-webkit-marquee-direction: forwards;
+-webkit-marquee-speed: slow;
+-webkit-marquee-style: alternate;
+}
+  </style>
+</head>
+<body>
+<div class="element">123</div>
+<div class="element2">123</div>
+<h1>linong</h1>
+<h2>linong</h2>
+<h3>linong</h3>
+<img class="reflect" src="http://7xlzf0.com1.z0.glb.clouddn.com/css/img/logo.png" alt="" />
+<br />
+<img class="reflect2" src="http://7xlzf0.com1.z0.glb.clouddn.com/css/img/logo.png" alt="" />
+<div class="marquee">1234567890张王李赵去玩儿推哦</div>
+<script>
+
+</script>
+</body>
+</html>

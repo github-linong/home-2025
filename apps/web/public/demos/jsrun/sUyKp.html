@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>video vue onload测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="sUyKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+<div id="app">
+  <p>{{url}}</p>
+  <p>https://developer.mozilla.org/zh-CN/docs/Web/Guide/Events/Media_events</p>
+  <button @click="switchHandler">switchHandler</button>
+  <video :src="url" @load="loadHandler" @durationchange="durationchange" @loadedmetadata="loadedmetadata" @canplay="canplayHandler" ref="video"></video>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data(){
+    return {
+      list: ['https://www.lilnong.top/static/video/video.mp4', 'https://www.lilnong.top/static/video/v1705221.mp4', 'https://www.lilnong.top/static/video/90335115-0.mka'],
+      url: '',
+      num: 0
+    }
+  },
+  mounted(){
+    this.$refs.video.addEventListener('onload', function(){
+      console.log('this.$refs.video', 'onload')
+    })
+    this.$refs.video.addEventListener('canplay', function(){
+      console.log('this.$refs.video', 'canplay')
+    })
+    this.$refs.video.addEventListener('durationchange', function(){
+      console.log('this.$refs.video', 'durationchange')
+    })
+    this.$refs.video.addEventListener('loadedmetadata', function(){
+      console.log('this.$refs.video', 'loadedmetadata')
+    })
+    
+  },
+  methods: {
+    loadHandler(){
+      console.log('load')
+    },
+    canplayHandler(){
+      console.log('canplay')
+    },
+    durationchange(){
+      console.log('durationchange')
+    },
+    loadedmetadata(){
+      
+      console.log('loadedmetadata')
+    },
+    switchHandler(){
+      this.url = this.list[this.num++];
+    }
+  }
+})
+</script>
+</body>
+</html>

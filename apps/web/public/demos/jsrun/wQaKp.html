@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>步骤条动画问题</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="wQaKp" />
+  <style>
+服务异常，请稍候再试
+  </style>
+</head>
+<body>
+<div id="app">
+    <!-- 水平步骤条 -->
+    <ul class="candy-steps candy-steps--horizontal is-center">
+        <li class="candy-step col-md-4" v-for="(item, index) in stepsHorizontal" :key="item.key">
+            <!-- head(line, icon) -->
+            <div class="candy-step-head">
+            <div class="candy-step-head__line"
+                :class="{'is-finish': currentHorStepIndex > index}">
+                <i class="candy-step-head__line-inner"></i>
+            </div>
+            <div class="candy-step-head__icon"
+                :class="{
+                'is-wait': currentHorStepIndex < index, 
+                'is-test':currentHorStepIndex === index, 
+                'is-finish': currentHorStepIndex > index
+                }" @click="stepClick(index)">
+                <i class="candy-step-head__icon-inner"
+                :class="{'glyphicon glyphicon-ok': currentHorStepIndex > index}"
+                v-if="currentHorStepIndex > index"></i>
+                <div class="candy-step-head__icon-inner" v-if="currentHorStepIndex <= index">{{ item.key }}</div>
+            </div>
+            </div>
+            <!-- main(title) -->
+            <div class="candy-step-main" 
+            :class="{
+                'is-wait': currentHorStepIndex < index, 
+                'is-test':currentHorStepIndex === index, 
+            }">
+            <div class="candy-step-main__title">{{ item.title }}</div>
+            </div>
+        </li>
+    </ul>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data(){
+            return {
+                stepsHorizontal:[
+                    { key: '1', title: '步骤1' },
+                    { key: '2', title: '步骤2' },
+                    { key: '3', title: '步骤3' }
+                ],
+                currentHorStepIndex: 0
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

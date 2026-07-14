@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>qs 规则测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="dHzKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/qs/6.10.5/qs.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.min.js"></script>
+
+<div id="app">
+    <textarea v-model="value"></textarea>
+    <div>value:{{value}}</div>
+    <div>obj:{{obj}}</div>
+    <div>stringify1:{{stringify1}}</div>
+    <div>indices:{{stringifyindices}}</div>
+    <div>brackets:{{stringifybrackets}}</div>
+    <div>repeat:{{stringifyrepeat}}</div>
+    <div>comma:{{stringifycomma}}</div>
+</div>
+<style>
+    div{
+        margin: 15px;
+    }
+</style>
+<script>
+    vm = new Vue({
+        el: "#app",
+        data(){
+            return {
+                value: '{A:1,b:[1,2,3]}'
+            }
+        },
+        computed:{
+            obj(){
+                return eval(`(${this.value || '{}'})`)
+            },
+            stringify1(){
+                return decodeURIComponent(Qs.stringify(this.obj))
+            },
+            stringifyindices(){
+                return  decodeURIComponent(Qs.stringify(this.obj, {
+                    arrayFormat: 'indices'
+                }))
+            },
+            stringifybrackets(){
+                return  decodeURIComponent(Qs.stringify(this.obj, {
+                    arrayFormat: 'brackets'
+                }))
+            },
+            stringifyrepeat(){
+                return  decodeURIComponent(Qs.stringify(this.obj, {
+                    arrayFormat: 'repeat'
+                }))
+            },
+            stringifycomma(){
+                return  decodeURIComponent(Qs.stringify(this.obj, {
+                    arrayFormat: 'comma'
+                }))
+            },
+            
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

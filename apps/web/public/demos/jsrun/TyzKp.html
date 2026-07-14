@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue 虚拟化</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="TyzKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<link rel="stylesheet" href="//www.lilnong.top/static/css/vue-virtual-scroller.css"/>
+<!-- http://www.lilnong.top/static/css/vue-virtual-scroller.css -->
+<!-- <script src="vue.js"></script> -->
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<script src="//www.lilnong.top/static/js/vue-virtual-scroller.min.js"></script>
+
+
+<div id="app1">
+    <style type="text/css">
+		.scroller {
+		  height: 100%;
+		}
+
+		.user {
+		  height: 32%;
+		  padding: 0 12px;
+		  display: flex;
+		  align-items: center;
+		}
+		#app{
+		  height: 500px
+		}
+	</style>
+	<p>
+		要注意vue版本。
+	</p>
+	<div id="app">
+	  <abcdef
+	    class="scroller"
+	    :items="list"
+	    :item-size="21"
+	    :prerender="20"
+	    key-field="id"
+	          size-field="height"
+	  >
+	    <template v-slot="{item}">
+	      <div>
+	         {{author}} . {{ item.name }}
+	        <img src="//www.baidu.com" alt="" />
+	      </div>     
+	    </template>
+	  </abcdef>
+	</div>
+
+
+	<RecycleScroller>
+	  <!-- Wrapper element with a pre-calculated total height -->
+	  <wrapper
+	    :style="{ height: computedTotalHeight + 'px' }"
+	  >
+	    <!-- Each view is translated to the computed position -->
+	    <view
+	      v-for="view of pool"
+	      :style="{ transform: 'translateY(' + view.computedTop + 'px)' }"
+	    >
+	      <!-- Your elements will be rendered here -->
+	      <slot
+	        :item="view.item"
+	        :index="view.nr.index"
+	        :active="view.nr.used"
+	      />
+	    </view>
+	  </wrapper>
+	</RecycleScroller>
+</div>
+<script>
+    
+		Vue.component('abcdef', VueVirtualScroller.RecycleScroller)
+		top.vm = vm = new Vue({
+		  el: '#app',
+		  data:{
+		    list: new Array(1000).fill(1).map((v,i)=>({name: '1'+i,id:i})),
+		    author: 'lilnong.top'
+		  }
+		})
+</script>
+<script>
+
+</script>
+</body>
+</html>

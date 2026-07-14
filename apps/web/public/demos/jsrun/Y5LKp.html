@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue xss</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="Y5LKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+    {{html}}
+    <div>
+        
+    {{toHtml(html)}}
+    </div>
+</div>
+<script>
+window.base = {
+    //获取url参数
+    getUrlParam : function(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+        var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+        if (r != null) {
+            return r[2];
+        } else {
+            return null; //返回参数值
+        }
+    },
+    toHtml: function (val) {
+        if( typeof val != 'string' ) return '';
+        var entityMap = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': '&quot;',
+            "'": '&#39;',
+            "/": '&#x2F;'
+        };
+        return String(val).replace(/[&<>"'\/]/g, function (s) {
+            return entityMap[s];
+        });
+    },
+    toUrl: function (url, defaultUrl) {
+        if(defaultUrl == undefined) defaultUrl = 'https://music.51vv.com/wx/m/vv-base/images/logo.png'
+        if( typeof url != 'string' ) return defaultUrl;
+        if(url.match(/^http/i)){
+            return encodeURI(url)
+        }
+        return defaultUrl
+    }
+};
+new Vue({
+    el: '#app',
+    data(){
+        return {
+            html: '&<>"\'/asdf@#$%^&*()'
+        }
+    },
+    methods:{
+        toHtml(v){
+            return base.toHtml(v)
+        }
+    }
+})
+</script>
+</body>
+</html>

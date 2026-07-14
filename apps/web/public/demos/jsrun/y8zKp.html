@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>两个点击事件</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="y8zKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+<div id="app">
+    
+    <el-popconfirm
+  title="这是一段内容确定删除吗？"
+>
+    <template slot="reference" >
+        <button>button</button>
+        <el-button>el-button</el-button>
+        <el-checkbox v-model="checked">备选项</el-checkbox>
+        {{checked}}
+    </template>
+</el-popconfirm>
+<hr>
+
+    <el-popconfirm
+  title="这是一段内容确定删除吗？"
+>
+    <template slot="reference" >
+        <el-checkbox v-model="checked">备选项</el-checkbox>
+    </template>
+</el-popconfirm>
+<hr>
+
+    <el-popconfirm
+  title="这是一段内容确定删除吗？"
+>
+        <el-checkbox  slot="reference" v-model="checked">备选项</el-checkbox>
+
+</el-popconfirm>
+<hr>
+<ttt>
+    <template slot="reference" >
+
+    <el-checkbox  v-model="checked">备选项</el-checkbox>
+
+        <button>button</button>
+        <el-button>el-button</el-button>
+    </template>
+</ttt>
+<hr>
+@click.native.prevent=""
+    <el-popconfirm
+  title="这是一段内容确定删除吗？"
+>
+        <el-checkbox  @click.native.prevent="" slot="reference" v-model="checked">备选项</el-checkbox>
+
+</el-popconfirm>
+</div>
+<style>
+  .demo-table-expand {
+    font-size: 0;
+  }
+  .demo-table-expand label {
+    width: 90px;
+    color: #99a9bf;
+  }
+  .demo-table-expand .el-form-item {
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 50%;
+  }
+</style>
+<script>
+    Vue.component('ttt', {
+        template: `<div ref="abc">
+  <el-popover
+    v-bind="$attrs"
+    v-model="visible"
+    trigger="click"
+  >
+  <div class="el-popconfirm">
+    <p class="el-popconfirm__main">
+    <i
+      v-if="!hideIcon"
+      :class="icon"
+      class="el-popconfirm__icon"
+      :style="{color: iconColor}"
+    ></i>
+      {{title}}
+    </p>
+    <div class="el-popconfirm__action">
+      <el-button 
+        size="mini" 
+        :type="cancelButtonType" 
+        @click="cancel"
+      >
+        {{ displayCancelButtonText }}
+      </el-button>
+      <el-button 
+        size="mini" 
+        :type="confirmButtonType" 
+        @click="confirm"
+      >
+        {{ displayConfirmButtonText }}
+      </el-button>
+    </div>
+  </div>
+  <slot name="reference" slot="reference"></slot>
+</el-popover>
+</div>`,
+
+  name: 'ElPopconfirm',
+  props: {
+    title: {
+      type: String
+    },
+    confirmButtonText: {
+      type: String
+    },
+    cancelButtonText: {
+      type: String
+    },
+    confirmButtonType: {
+      type: String,
+      default: 'primary'
+    },
+    cancelButtonType: {
+      type: String,
+      default: 'text'
+    },
+    icon: {
+      type: String,
+      default: 'el-icon-question'
+    },
+    iconColor: {
+      type: String,
+      default: '#f90'
+    },
+    hideIcon: {
+      type: Boolean,
+      default: false
+    }
+  },
+  components: {
+  },
+  data() {
+    return {
+      visible: false
+    };
+  },
+  mounted(){
+      this.$refs.abc.addEventListener('click', ()=>{
+          this.visible
+      })
+  },
+  computed: {
+    displayConfirmButtonText() {
+      return this.confirmButtonText ;
+    },
+    displayCancelButtonText() {
+      return this.cancelButtonText ;
+    }
+  },
+  methods: {
+    confirm() {
+      this.visible = false;
+      this.$emit('confirm');
+    },
+    cancel() {
+      this.visible = false;
+      this.$emit('cancel');
+    }
+  }
+    })
+</script>
+<script>
+  new Vue( {
+      el: '#app',
+    data() {
+      return {
+          checked: false,
+       tableData1: [{
+		          id: 1,
+		          date: '2016-05-02',
+		          name: '王小虎',
+		          address: '上海市普陀区金沙江路 1518 弄'
+		        }, {
+		          id: 2,
+		          date: '2016-05-04',
+		          name: '王小虎',
+		          address: '上海市普陀区金沙江路 1517 弄'
+		        }, {
+		          id: 3,
+		          date: '2016-05-01',
+		          name: '王小虎',
+		          address: '上海市普陀区金沙江路 1519 弄',
+		          hasChildren: true
+		        }, {
+		          id: 4,
+		          date: '2016-05-03',
+		          name: '王小虎',
+		          address: '上海市普陀区金沙江路 1516 弄'
+		        }]
+      }
+    },
+    methods: {
+        handleEdit(...args){console.log(args)},
+handleDelete(...args){console.log(args)},
+         rowClick(row, column, event){
+        top.console.log (event.target, event.currentTarget)
+      },
+		load(tree, treeNode, resolve) {
+		        setTimeout(() => {
+		          resolve([
+		            {
+		              id: 31,
+		              date: '2016-05-010',
+		              name: '王小虎',
+		              address: '上海市普陀区金沙江路 1519 弄'
+		            }, {
+		              id: 32,
+		              date: '2016-05-012',
+		              name: '王小虎',
+		              address: '上海市普陀区金沙江路 1519 弄'
+		            }
+		          ])
+		        }, 1000)
+		      },
+    }
+  })
+</script>
+<script>
+
+</script>
+</body>
+</html>

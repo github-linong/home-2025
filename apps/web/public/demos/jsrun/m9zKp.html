@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>messageBox render</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="m9zKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js">
+</script>
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js">
+</script>
+
+
+<div id="app">
+    <button @click="show">show</button>
+</div>
+
+<script>
+    top.vm = vm = new Vue({
+        el: '#app',
+        data(){
+            return {
+
+            }
+        },
+        methods: {
+            a(){
+                console.log('a', arguments)
+                top.console.log('a', arguments)
+            },
+            show(){
+                const h = this.$createElement;
+                this.$msgbox({
+                    title: '消息',
+                    message: h('p', null, [
+                        h('span', null, '内容可以是 '),
+                        h('i', { style: 'color: red', on:{click: ()=>this.a(1,2,3)} }, '()=>this.a(1,2,3)'),
+                        h('i', { style: 'color: teal' }, 'VNode')
+                    ]),
+                    showCancelButton: true,
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    beforeClose: (action, instance, done) => {
+                        if (action === 'confirm') {
+                            instance.confirmButtonLoading = true;
+                            instance.confirmButtonText = '执行中...';
+                            setTimeout(() => {
+                                done();
+                                setTimeout(() => {
+                                instance.confirmButtonLoading = false;
+                                }, 300);
+                            }, 3000);
+                        } else {
+                            done();
+                        }
+                    }
+                }).catch(console.log)
+            }
+        }
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

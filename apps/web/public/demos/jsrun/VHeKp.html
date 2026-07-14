@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>关于浏览器重绘，资源占用</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="VHeKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<style>
+    .demo1{
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .demo1 div{
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        text-align: center;
+        /* position: relative; */
+        /* z-index: 3; */
+        /* transform: translateZ(1px,1px,1px) */
+    }
+    .rotate{
+        animation: rotate 1s infinite;
+    }
+    .rotate:nth-child(2n){
+        animation: rotate 1s infinite .1s;
+    }
+    .rotate:nth-child(3n){
+        animation: rotate 0.9s infinite .2s;
+    }
+    .rotate:nth-child(4n){
+        animation: rotate 1.1s infinite .3s;
+    }
+    .rotate:nth-child(5n){
+        animation: rotate .1s infinite .3s;
+    }
+    .rotate.rotate.rotate{
+        /* animation-play-state: paused; */
+    }
+    @keyframes rotate{
+        0%{transform: rotate(0)}
+        100%{transform: rotate(360deg)}
+    }
+    .demo2{
+        transition: all 9s;
+        transform: rotate(0deg);
+    }
+    .demo2:hover{
+        transform: rotate(20turn);
+    }
+    .demo2:after{
+        content: '1';
+        transition: all 9s;
+        transform: rotate(0deg);
+    }
+
+</style>
+<div class="demo1 rotate">
+    demo2
+</div>
+<div class="demo1">
+    <script>
+        for(let i = 0 ; i<1000; i++){
+        // for(let i = 0 ; i<500; i++){
+            document.write(`<div>T${i}</div>`)
+        }
+        for(let i = 0 ; i<5000; i++){
+        // for(let i = 0 ; i<500; i++){
+            document.write(`<div class="rotate">${i}</div>`)
+        }
+        for(let i = 0 ; i<1000; i++){
+        // for(let i = 0 ; i<500; i++){
+            document.write(`<div>B${i}</div>`)
+        }
+    </script>
+</div>
+
+<div class="demo2">
+    demo2
+</div>
+<script>
+
+</script>
+</body>
+</html>

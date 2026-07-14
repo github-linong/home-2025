@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000016014393</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="wHgKp" />
+  <style>
+input{
+  width:100%;
+}
+.videowarp{
+  width:50%;float:left
+}
+.videowarp video{
+  width:100%;
+}
+  </style>
+</head>
+<body>
+<input type="file" id="fileInput" />
+<div class="waitUpload1 videowarp">
+</div>
+<div class="waitUpload videowarp">
+</div>
+<script>
+document.querySelector('#fileInput').addEventListener('change', function() {
+
+  $('.waitUpload1').html('<div class="videoCtn"><video src="' + URL.createObjectURL(this.files[0]) + '" controls></video></div>');
+  
+  
+  var reader = new FileReader();
+  reader.onload = (evt) => {
+    $('.waitUpload').html('<div class="videoCtn"><video src="' + evt.target.result + '" controls></video></div>');
+    $(this).val('');
+  };
+  reader.readAsDataURL(this.files[0]);
+
+})
+</script>
+</body>
+</html>

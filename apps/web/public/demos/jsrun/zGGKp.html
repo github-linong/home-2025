@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>fabric裁剪</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="zGGKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="400" height="400"></canvas>
+
+    <script>
+        // 创建 Fabric.js canvas 对象
+        var canvas = new fabric.Canvas('canvas');
+
+        // 图片路径（替换为你的图片路径）
+        var imageUrl = 'https://www.lilnong.top/static/img/Penguins.jpg';
+
+        // 加载图片并在 canvas 上渲染
+        fabric.Image.fromURL(imageUrl, function(img) {
+            // 设置图片位置
+            img.set({ left: 0, top: 0 });
+
+            // 添加图片到 canvas
+            canvas.add(img);
+
+            // 获取图片的宽度和高度
+            var imgWidth = Math.min(img.width,400);
+            var imgHeight = Math.min(img.height,400);
+
+            // 创建裁剪矩形，与图片大小一致
+            var clipRect = new fabric.Rect({
+                left: 0,  // 与图片位置一致
+                top: 0,   // 与图片位置一致
+                width: img.width,
+                height: img.height,
+            });
+
+            // 将裁剪矩形应用于图片
+            img.set({ 
+                width: imgWidth,
+                height: imgHeight,
+                clipPath: clipRect 
+                });
+
+            // 更新 canvas
+            canvas.renderAll();
+        });
+    </script>
+<script>
+
+</script>
+</body>
+</html>

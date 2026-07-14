@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>识别优化</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="Zd8Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<article>
+    <section >
+        <h2>富文本区域</h2>
+        <p>哈哈哈<span>123</span><i>456</i><strong>789</strong></p>
+        <p>biubiubiu~<font color="#f00" size="5">biubiubiu~~~</font></p>
+        <img src="//cors-www.lilnong.top/favicon.ico" alt="">
+        <p>biubiubiu~<font style="color: #00f;font-size: 12px;">biubiubiu~~~</font></p>
+        <img src="//cors-www.lilnong.top/favicon.ico" alt="www.lilnong.top">
+    </section>
+</article>
+
+<textarea 
+    id="textarea"
+    class="textarea">
+放置区域
+</textarea>
+<div style="background: red">
+    <h2>文件预览区域</h2>
+    <div class="view" id="viewFiles">
+
+    </div>
+    <h2>全量内容预览区域</h2>
+    <div class="view" id="viewItems">
+
+    </div>
+</div>
+<style>
+    *{padding:0;margin:0;}
+    .textarea{
+        height: 200px;
+        width: 200px;
+        border: 1px solid #f00;
+        box-sizing: border-box;
+        margin: 10px;
+    }
+</style>
+<script>
+    textarea.onpaste = function(e){
+        // debugger;
+        // top.console.log(e.clipboardData)
+        // top.console.log(e.clipboardData.files.length, e.clipboardData.files)
+        // top.console.log(e.clipboardData.items.length, e.clipboardData.items)
+        top.console.log(
+            e.clipboardData.types, 
+            e.clipboardData.files.length, 
+            e.clipboardData.items.length
+        )
+
+        let files = e.clipboardData.files;
+        let fileResult = ''
+        for(var i = 0; i < files.length; i++){
+            const file = files[i];
+            const blobUrl = URL.createObjectURL(file);
+            fileResult += `<div>
+                ${i+1}. ${blobUrl}
+                <div>${JSON.stringify({name: file.name,size: file.size,type: file.type})}</div>
+                ${file.type?.indexOf('image') == 0?`<img style="max-height: 100px;max-widtht: 100px" src="${blobUrl}">`:''}
+            </div>`
+        }
+        viewFiles.innerHTML = fileResult
+
+        let items = e.clipboardData.items;
+        let itemReuslt = []
+        for(let i = 0; i < items.length; i++){
+            const item = items[i];
+            console.log(item);
+            if(item.kind == 'file'){
+                const file = item.getAsFile()
+                if(!file) continue;
+                top.console.log(file)
+                const blobUrl = URL.createObjectURL(file);
+                top.console.log(blobUrl)
+                itemReuslt.push(`<div>
+                    ${i+1}. ${blobUrl}
+                    <div>${JSON.stringify({name: file.name,size: file.size,type: file.type})}</div>
+                    ${file.type?.indexOf('image') == 0?`<img style="max-height: 100px;max-widtht: 100px" src="${blobUrl}">`:''}
+                </div>`)
+            }else{
+                itemReuslt.push('')
+                item.getAsString(function(val){
+                    itemReuslt.splice(i,1,val)
+                    viewItems.innerHTML = itemReuslt.join('')
+                })
+            }
+        }
+        viewItems.innerHTML = itemReuslt.join('')
+    }
+</script>
+<script>
+    textarea.ondrop = // 放置
+    // textarea.ondrag = 
+    // textarea.ondragend = 
+    textarea.ondragenter = // 拖拽进入
+    textarea.ondragleave = // 拖拽离开
+    textarea.ondragover = // 在上面移动
+    // textarea.ondragstart =  
+    function(e){
+        e.preventDefault();
+        // top.console.log(e.type, arguments, )
+        // top.console.log(e.type, e.dataTransfer.files, e.dataTransfer.items, e.dataTransfer.types)
+    }
+    textarea.addEventListener('drop', function(e){
+        top.console.log(e.type, e.dataTransfer.files, e.dataTransfer.items, e.dataTransfer.types)
+
+
+        let files = e.dataTransfer.files;
+        let fileResult = ''
+        for(var i = 0; i < files.length; i++){
+            const file = files[i];
+            const blobUrl = URL.createObjectURL(file);
+            fileResult += `<div>
+                ${i+1}. ${blobUrl}
+                <div>${JSON.stringify({name: file.name,size: file.size,type: file.type})}</div>
+                ${file.type?.indexOf('image') == 0?`<img style="max-height: 100px;max-widtht: 100px" src="${blobUrl}">`:''}
+            </div>`
+        }
+        viewFiles.innerHTML = fileResult
+
+        let items = e.dataTransfer.items;
+        let itemReuslt = []
+        for(let i = 0; i < items.length; i++){
+            const item = items[i];
+            console.log(item);
+            if(item.kind == 'file'){
+                const file = item.getAsFile()
+                if(!file) continue;
+                top.console.log(file)
+                const blobUrl = URL.createObjectURL(file);
+                top.console.log(blobUrl)
+                itemReuslt.push(`<div>
+                    ${i+1}. ${blobUrl}
+                    <div>${JSON.stringify({name: file.name,size: file.size,type: file.type})}</div>
+                    ${file.type?.indexOf('image') == 0?`<img style="max-height: 100px;max-widtht: 100px" src="${blobUrl}">`:''}
+                </div>`)
+            }else{
+                itemReuslt.push('')
+                item.getAsString(function(val){
+                    itemReuslt.splice(i,1,val)
+                    viewItems.innerHTML = itemReuslt.join('')
+                })
+            }
+        }
+        viewItems.innerHTML = itemReuslt.join('')
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

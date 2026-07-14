@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>zenorocha/clipboard.js</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="hIhKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- Target -->
+<input id="foo" value="https://github.com/zenorocha/clipboard.js.git">
+
+<!-- Trigger -->
+<button class="btn" data-clipboard-target="#foo">
+    <img src="assets/clippy.svg" alt="Copy to clipboard">
+</button>
+<br />
+<!-- Target -->
+<span id="bar" value="https://github.com/zenorocha/clipboard.js.git">asdfasdfasdfasdfasdf</span>
+
+<!-- Trigger -->
+<button class="btn" data-clipboard-target="#bar">
+    <img src="assets/clippy.svg" alt="Copy to clipboard">
+</button>
+<script>
+// new ClipboardJS('.btn');
+// https://github.com/zenorocha/clipboard.js.githttps://github.com/zenorocha/clipboard.js.githttps://github.com/zenorocha/clipboard.js.git
+
+// <button class="btn" data-clipboard-target="#bar">
+//     <img src="assets/clippy.svg" alt="Copy to clipboard">
+// </button>
+    
+    
+new ClipboardJS('.btn', {
+    text: function(trigger) {
+        return 'LN'
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue 相同子组件销毁问题</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="mF8Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+<div id="app">
+    {{1}} <input type="checkbox" v-model="bool">
+    <ln-a-component v-if="bool"></ln-a-component>
+    <ln-b-component v-else></ln-b-component>
+</div>
+<style>
+    div{border: 1px solid #f00;padding: 4px;}
+</style>
+<script>
+    Vue.component('ln-c',{
+        template: `<div>ln-c {{id}}</div>`,
+        data(){
+            return {id: Math.random()}
+        },
+        created(){
+            this.initWS();
+        },
+        beforeDestroy(){
+            this.closeWS();
+        },
+        methods: {
+            initWS(){
+                let ws = new WebSocket('ws://ws.lilnong.top')
+                this.ws = {
+                    id: this.id,
+                    ws: ws
+                }
+                top.console.log('initWS', this.ws)
+            },
+            closeWS(){
+                this.ws.ws.close();
+                top.console.log('closeWS', this.ws)
+            }
+        }
+    })
+    Vue.component('ln-a-component', {
+        template: `<div>ln-a-component <ln-c></ln-c></div>`,
+    })
+    Vue.component('ln-b-component', {
+        template: `<div>ln-b-component <ln-c></ln-c></div>`,
+    })
+</script>
+<script>
+    new Vue({
+        el: '#app',
+        data(){return {bool:true}}
+    })
+</script>
+<script>
+
+</script>
+</body>
+</html>

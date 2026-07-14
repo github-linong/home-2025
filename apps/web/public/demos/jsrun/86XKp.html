@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>发布订阅测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="86XKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <button @click="onEvent('test1')">订阅 test1</button>
+  <button @click="onEvent('test2')">订阅 test2</button>
+  <button @click="onEvent('test3')">订阅 test3</button>
+  <button @click="emitEvent('test3', 3)">发布3</button>
+  <button @click="emitEvent('test2', 2)">发布2</button>
+  <button @click="emitEvent('test1', 1)">发布1</button>
+</div>
+<script>
+new Vue({
+  el: '#app',
+  data(){
+    return {
+      event:{
+        
+      }
+    }
+  },
+  methods:{
+    onEvent(eventName){
+      if(!this.event[eventName]){
+        this.event[eventName] = []
+      }
+      let onTime = Date.now();
+      this.event[eventName].push((val)=>{
+        console.log(onTime, val, Date.now() - onTime)
+      })
+    },
+    emitEvent(eventName, value){
+      if(this.event[eventName]){
+         this.event[eventName].forEach(v=>{
+           v(value);
+         })
+      }
+    }
+  }
+})
+</script>
+</body>
+</html>

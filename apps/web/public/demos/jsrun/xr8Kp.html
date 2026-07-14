@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>css 动画，荡开</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="xr8Kp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div class="animation-wrap">
+    <div class="animation-round animation-round"></div>
+    <div class="animation-round animation-round"></div>
+    <div class="animation-round animation-round"></div>
+</div>
+<style>
+    .animation-wrap{
+        background: #fff;
+        position: relative;
+        width: 100px;
+        height: 100px;
+    }
+    .animation-round{
+        width: 100px;
+        height: 100px;
+        background: rgba(0, 0, 255, 0);
+        border-radius: 100px;
+        position: absolute;
+        left: 50%;top: 50%;
+        margin-left: -50px;
+        margin-top: -50px;
+        animation: centerRotateTransition 3s linear infinite;
+    }
+    .animation-round:nth-child(2){
+        animation: centerRotateTransition 3s linear 1s infinite;
+    }
+    .animation-round:nth-child(3){
+        animation: centerRotateTransition 3s linear 2s infinite;
+    }
+    @keyframes centerRotateTransition {
+        0% {transform: scale(0);background: rgba(0, 0, 255, 0);}
+        10% {transform: scale(.5);background: rgba(0, 0, 255, .5);}
+        90%{background: rgba(0, 0, 255, .1);}
+        100% {transform: scale(1);background: rgba(0, 0, 255, 0);}
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

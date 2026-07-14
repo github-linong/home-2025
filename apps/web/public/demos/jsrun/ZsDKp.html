@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>https://segmentfault.com/q/1010000045149086</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="ZsDKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="div1">
+    背景移动
+</div>
+<div id="div2">
+    视口移动
+    <img src="https://www.lilnong.top/static/img/wx-linong.jpg" alt="">
+</div>
+
+<style>
+    div{
+        min-height: 100px;
+        border: 1px solid #f00;
+        margin: 10px;
+        padding: 10px;
+        background: url(https://www.lilnong.top/static/img/wx-linong.jpg);
+        background-size: 200px;
+        overflow: auto;
+    }
+</style>
+
+<script>
+    setInterval(()=>div2.scrollLeft+=10,30)
+    setInterval(()=>{
+        div1.style.backgroundPositionX=(parseInt(div1.style.backgroundPositionX) || 0)-10+'px';
+    },30)
+    setInterval(()=>div2.scrollLeft=0,10 * 1 * 1000)
+</script>
+<script>
+
+</script>
+</body>
+</html>

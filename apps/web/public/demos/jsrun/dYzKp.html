@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>flex 对齐</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="dYzKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div class="flex">
+    <div class="flex-1"></div>
+    <div class="flex-1"></div>
+    <div class="flex-1"></div>
+    <div class="flex-2"></div>
+    <div class="flex-1"></div>
+    <div class="flex-1"></div>
+</div>
+
+<style>
+    div{
+        min-width: 100px;
+        min-height: 100px;
+        background: rgba(100,240,125, .5);
+    }
+    .flex{
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .flex > [class^="flex"]{
+        margin: 20px 20px;
+    }
+    .flex-1{
+        min-width: 100px;
+        flex: 1;
+    }
+    .flex-2{
+        min-width: 200px;
+        /* flex: auto; */
+        felx: 2;
+    }
+    .flex > [class^="flex"]:last-child{
+        flex: auto;
+    }
+</style>
+<script>
+
+</script>
+</body>
+</html>

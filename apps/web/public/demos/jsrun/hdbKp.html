@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vue ref 用于v-for的dom元素，出现问题</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="hdbKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<div id="app">
+   <div class="goodList" ref="goodList">
+      <dl  class="foodList" v-for="(item, index) in goods" :key="index" ref="foodList">
+        <dt class="name">{{item.name}}</dt>
+        <dd class="food" v-for="(food, i) in item.foods" :key="i">
+          <img :src="food.image" :alt="food.name" width="57" height="57">
+        </dd>
+      </dl>
+  </div>
+</div>
+<script>
+new Vue({
+  el:'#app',
+  data(){
+    return{
+      goods: []
+    }
+  },
+  methods: {
+    // 后台数据
+    get_goods () {
+      setTimeout(()=>{
+          this.goods = [{name:1,foods:[{}]}]
+          console.log('get_goods', this.$refs.foodList)//  ===>undefined
+          console.log('get_goods',this.$refs.goodList)//  ===><div class="goodList">...</div>
+          this.$nextTick(() => {
+            console.log('get_goods',this.$refs.foodList)// ===><div class="foodList">...</div>
+            console.log('get_goods',this.$refs.goodList)// ===><div class="goodList">...</div>
+          })
+      }, 100)
+    }
+  },
+  created () {
+    this.get_goods()
+    console.log('created', this.$refs.foodList)//   ===>undefined
+    console.log('created', this.$refs.goodList)//   ===>undefined
+    this.$nextTick(() => {
+      console.log('created $nextTick', this.$refs.foodList)// ===>undefined
+      console.log('created $nextTick', this.$refs.goodList)// ===><div class="goodList">...</div>
+    })
+  },
+  mounted() {
+    console.log('mounted', this.$refs.foodList)//  ===>undefined
+    console.log('mounted', this.$refs.goodList)//  ===><div class="goodList">...</div>
+    this.$nextTick(() => {
+      console.log('mounted $nextTick', this.$refs.foodList)// ===>undefined
+      console.log('mounted $nextTick', this.$refs.goodList)// ===><div class="goodList">...</div>
+    })
+  }
+})
+</script>
+</body>
+</html>

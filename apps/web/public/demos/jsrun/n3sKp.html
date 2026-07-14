@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>下图中本意是想按A001、A002分类后再按日期绘制3天的K线，但下述代码只按第一列做了分类，日期部分的绘图重合到一起了，怎么才能在同一分类里并排绘出3个日期的K线呢？总感觉Echarts不至于...</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="n3sKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js">
+</script>
+
+<div id="main" style="width: 600px;height:400px;"></div>
+<script type="text/javascript">
+	// 基于准备好的dom，初始化echarts实例
+      var myChart = echarts.init(document.getElementById('main'));
+</script>
+<script>
+	var data = [
+     ['A001', '2022-10-16', 11.77, 12.44, 11.42, 12.68],
+    ['A001', '2022-10-23', 12.33, 15.03, 12.1, 15.03],
+    ['A001', '2022-10-30', 15.15, 15.91, 13.8, 18.0],
+    ['A002', '2022-10-16', 4.92, 5.66, 4.92, 5.87],
+    ['A002', '2022-10-23', 5.59, 5.49, 5.18, 6.23],
+    ['A002', '2022-10-30', 5.46, 6.74, 5.04, 6.74]
+];
+
+option = {
+    tooltip : {},
+    grid: [{}],
+    dataset:{ 
+        //sourceHeader:False,
+        source:data
+    },
+    xAxis :[
+      {type : 'category',gridIndex: 0, encode: { x: [0]}},
+      // {type : 'category',gridIndex: 1,encode: { x: [1]}}
+             ],
+    yAxis : [{type : 'value', gridIndex: 0 },
+             //{type : 'value', gridIndex: 1 }
+             ],
+    series: [
+        {
+            type: 'candlestick',
+            encode: {
+                x: [0],
+                y: [2,3,4,5], seriesLayoutBy: 'row' 
+            },
+            data: [
+                ['A001', '2022-10-16', 11.77, 12.44, 11.42, 12.68],
+                ['A002', '2022-10-16', 4.92, 5.66, 4.92, 5.87], 
+            ]
+        },
+        {
+            type: 'candlestick',
+            encode: {
+                x: [0],
+                y: [2,3,4,5], seriesLayoutBy: 'row' 
+            }
+        },
+    ]
+};
+</script>
+<script>
+	// 使用刚指定的配置项和数据显示图表。
+      myChart.setOption(option);
+</script>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>canvas获取字体测试</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="IBiKp" />
+  <style>
+
+  </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<pre id="pre" style="font-family:Monaco,Menlo,Consolas,monospace; line-height: 0.8; font-size: 12px; color: black;"></pre>
+<script>
+var d = document, c = document.querySelector('#canvas')
+c.height = c.width = 100;
+var ctx = c.getContext('2d');
+ctx.textBaseline = "top";
+var hanzi2dianzhen = { 
+    paintFont : function(char, size, font) {
+        ctx.clearRect(0, 0, c.width, c.height);
+        ctx.font = [size, 'px', ' ', font].join('');
+        ctx.fillText(char, 0, 0); 
+    },
+    getDianZhen : function(x, y, percent, offsetX, offsetY) {
+        var result  = [], imgData = ctx.getImageData(offsetX, offsetY, x, y);
+      console.log(ctx.getImageData(1, 1, 20, 20))
+        for(var i = 0; i < x; i++) {
+            for(var j = 0; j < y; j++){
+      /*console.log((i * y + j) * 4 + 3);*/ result.push( imgData.data[ (i * y + j) * 4 + 3] / 255 > percent ? 1 : 0 );}
+        }
+        return result;    
+    } 
+};
+var s = 'canvas获取字体测试'.split(''), i = 0, size = 24;
+(function() {
+    hanzi2dianzhen.paintFont(s[i++ % s.length], size, '楷体');
+    var r = hanzi2dianzhen.getDianZhen(size, size, 0, 0, 0);
+    var ss = '';
+  	var space = s[i% s.length].charCodeAt(0)<127?' ':'  '
+    for(var j = 0; j < r.length;) {
+        ss += r[j] ? s[i% s.length] : space;
+        if( ++j % size === 0) ss += '\n';
+    }
+    document.querySelector('#pre').innerHTML = ss;
+    setTimeout(arguments.callee, 500);
+})();
+
+    
+
+    
+</script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>这段代码就是控制表格自动向上滚动的</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="q4gKp" />
+  <style>
+/* td{
+  margin-left: 50px
+}
+tr{
+  margin-left: 100px
+} */
+*{
+  margin:0;padding:0;
+}
+div{
+  height: 200px;
+  overflow: scroll;
+  background-color: #0cc;
+}
+div tr:nth-child(2n){
+  background-color: #0f0;
+}
+div.bg_even tr:nth-child(2n){
+  background-color: rgba(0,0,0,0);
+}
+div.bg_even tr:nth-child(2n+1){
+  background-color: #0f0;
+}
+  </style>
+</head>
+<body>
+<div id="city-all-data-scroll">
+  <table id="city-all-data">
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>2</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>4</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>6</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>8</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+  <tr><td>1</td></tr>
+</table>
+</div>
+<script>
+var $this = $("#city-all-data");
+var _scroll = $("#city-all-data-scroll");
+var scrollTimer;
+
+$this.hover(function() {
+  clearInterval(scrollTimer);
+},function() {
+  scrollTimer = setInterval(function() {
+    scrollNews($this);
+  },
+  2000);
+}).trigger("mouseleave");
+
+function scrollNews(obj) {
+  var $self = obj.find("tbody");
+  var lineHeight = $self.find("tr:first").height();
+  _scroll.animate({
+    "scrollTop": lineHeight + 3
+    // "scrollTop": lineHeight + 8
+  },
+  1000, function() {
+    $self.find("tr:first").appendTo($self);
+    _scroll.toggleClass('bg_even').scrollTop(0);
+  })
+}
+</script>
+</body>
+</html>

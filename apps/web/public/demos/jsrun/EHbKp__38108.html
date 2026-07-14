@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>刮奖 demo</title>
+  <meta name="generator" content="migrate-jsrun-demos.mjs" />
+  <meta name="jsrun:slug" content="EHbKp" />
+  <style>
+#canvas{
+  background: url(https://www.lilnong.top/static/img/avator/avator-21.jpg) #fff no-repeat center center;
+  background-size: cover;
+  background-size: contain;
+  border: 1px solid #f00;
+}
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="300" height="200"></canvas>
+<script>
+ctx = canvas.getContext('2d');
+ctx.beginPath();
+ctx.moveTo(0, 0);//window.getComputedStyle(canvas).width
+ctx.lineTo(300, 0);
+ctx.lineTo(300, 200);
+ctx.lineTo(0, 200);
+ctx.fill();
+clearRectTag = false;
+
+clearRectLen = 30
+clearRectLen2 = clearRectLen / 2
+clearRectCanvas = (e)=>{
+  // ctx.clearRect(e.x - clearRectLen2, e.y - clearRectLen2, clearRectLen, clearRectLen);
+  
+ctx.beginPath();
+ctx.globalCompositeOperation = 'destination-out';
+ctx.arc(e.x, e.y, clearRectLen, 0, Math.PI * 2);
+ctx.fill();
+}
+canvas.addEventListener('mousedown', (e)=>{
+  clearRectTag = true
+  clearRectCanvas(e)
+})
+canvas.addEventListener('mousemove', (e)=>{
+  if(clearRectTag) clearRectCanvas(e)
+})
+canvas.addEventListener('mouseup', (e)=>{
+  clearRectTag = false
+})
+canvas.addEventListener('mouseout', (e)=>{
+  clearRectTag = false
+})
+
+
+</script>
+</body>
+</html>
