@@ -17,12 +17,9 @@ DEPLOY_HOST="${DEPLOY_HOST:-root@60.205.9.135}"
 SSH_KEY="${SSH_KEY:-$HOME/.ssh/id_ed25519}"
 WEB_ROOT="${WEB_ROOT:-/var/www/lilnong.top}"
 DIST="$ROOT/apps/web/dist"
-TGZ="/tmp/lilnong-dist-$$.tgz"
-SSH=(ssh -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new)
-SCP=(scp -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new)
-
-cleanup() { rm -f "$TGZ"; }
-trap cleanup EXIT
+SSH_BASE=( -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=15 -o ServerAliveCountMax=6 -o ConnectTimeout=30 -o IPQoS=none )
+SSH=(ssh "${SSH_BASE[@]}")
+RSYNC_SSH="ssh ${SSH_BASE[*]}"
 
 cd "$ROOT"
 
@@ -50,24 +47,20 @@ if [[ ! -d "$DIST" ]]; then
   exit 1
 fi
 
-echo "==> Packaging dist ($(du -sh "$DIST" | cut -f1))..."
-tar czf "$TGZ" -C "$DIST" .
+echo "==> Checking SSH..."
+"${SSH[@]}" "$DEPLOY_HOST" "echo ssh-ok; mkdir -p '$WEB_ROOT'"
 
-echo "==> Backing up remote $WEB_ROOT ..."
-"${SSH[@]}" "$DEPLOY_HOST" "ts=\$(date +%Y%m%d-%H%M%S); cp -a '$WEB_ROOT' '${WEB_ROOT}.backup-'\$ts; echo backup=\$ts"
+echo "==> rsync dist → $DEPLOY_HOST:$WEB_ROOT (keep remote demos/project)..."
+# --delete removes stale site files; excluded demos/project is not deleted on remote.
+rsync -az --delete --info=stats2 \
+  --exclude 'demos/project/' \
+  -e "$RSYNC_SSH" \
+  "$DIST"/ "$DEPLOY_HOST:$WEB_ROOT/"
 
-echo "==> Uploading to $DEPLOY_HOST ..."
-"${SCP[@]}" "$TGZ" "$DEPLOY_HOST:/tmp/lilnong-dist.tgz"
-
-echo "==> Extracting on server ..."
-"${SSH[@]}" "$DEPLOY_HOST" "set -e
-  rm -rf '$WEB_ROOT'/*
-  tar xzf /tmp/lilnong-dist.tgz -C '$WEB_ROOT'
-  rm -f /tmp/lilnong-dist.tgz
-  du -sh '$WEB_ROOT'
-  test -f '$WEB_ROOT/index.html'
-"
+echo "==> Verify..."
+"${SSH[@]}" "$DEPLOY_HOST" "du -sh '$WEB_ROOT' '$WEB_ROOT/demos/jsrun' 2>/dev/null; test -f '$WEB_ROOT/index.html'"
 
 echo "==> Done. Smoke check:"
 curl -sI "https://www.lilnong.top/" | head -5
 curl -sI "https://www.lilnong.top/demos/" | head -5
+curl -sI "https://www.lilnong.top/demos/jsrun/DRYKp.html" | head -5
