@@ -52,7 +52,7 @@ echo "==> Checking SSH..."
 
 echo "==> rsync dist → $DEPLOY_HOST:$WEB_ROOT (keep remote demos/project)..."
 # --delete removes stale site files; excluded demos/project is not deleted on remote.
-rsync -az --delete --info=stats2 \
+rsync -az --delete --human-readable --progress \
   --exclude 'demos/project/' \
   -e "$RSYNC_SSH" \
   "$DIST"/ "$DEPLOY_HOST:$WEB_ROOT/"
