@@ -126,7 +126,7 @@ export const CROP_TIMELINE_EVENTS = [
     yearLabel: "升级期",
     stage: "升级 · 产业",
     event: "第九种植中心",
-    impact: "实验室、制药与养殖并入；栽培指南/特效药开始对外技术输出",
+    impact: "实验室成果转可推广种子；发芽率 / 二元素稳定 / 攻击性戕进化比率成为量化门槛；栽培指南对外输出",
     kinds: ["tech"],
   },
   {

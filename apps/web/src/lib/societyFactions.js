@@ -188,15 +188,15 @@ export const SOCIETY_TEAM_ROWS = [
 export const SOCIETY_SPACE_CARDS = [
   {
     title: "晖三安全区",
-    summary: "晖三人类主聚居地；积分兑换；区内信号有限恢复。",
+    summary: "晖三人类主聚居地；分内城 / 外城；积分兑换；区内信号有限恢复。",
     detail:
-      "管理层、军队、战队、种植/养殖/检测等部门俱全。基地长调度战队与跨基地任务。",
+      "外城多为简易营建，内城更坚固。管理层、军队、战队、种植/养殖/检测等部门俱全。基地长调度战队与跨基地任务。",
   },
   {
     title: "北部一区领地群",
     summary: "晖三区外合法耕垦带；按号认领（约 1–26 号）；夏青三号地主舞台。",
     detail:
-      "铁网墙 + 隔离带贴四十九 / 五十号山。排查小队分组护卫；五十号山试验区承载土壤修复；孤身领主亦是掠夺风险对象。",
+      "铁网墙 + 隔离带贴四十九 / 五十号山。领地内常含缓冲林（领主防护林）与耕地。五十号山试验区承载土壤修复。",
   },
   {
     title: "跨基地交换网",
@@ -234,7 +234,7 @@ export const SOCIETY_FACTION_ROWS = [
     group: "基地与官方",
     camp: "白/科研",
     role: "原第九中心；实验室成果转可推广种子（发芽率、二元素稳定、攻击性戕进化比率）",
-    stance: "负责人张三，推广专家张陶；基地农业现代化与夏青技术支持主阵地",
+    stance: "负责人张三（七号领主），指定管理者夏青、种植技术指导张陶；夏青亦曾就「不再扩充」等公开表态以平息觊觎",
   },
   {
     name: "领地管理部 / 排查体系",
@@ -255,8 +255,8 @@ export const SOCIETY_FACTION_ROWS = [
     name: "十一号领地",
     group: "领地",
     camp: "争夺焦点",
-    role: "领主身亡后的空缺地块；晖一名义管辖",
-    stance: "霍家试图入主屡不得门；张十、叶杨等亦因底子薄难抗大势力",
+    role: "相对三号偏东北的待定空缺地；晖一名义管辖",
+    stance: "霍家父子侥幸中签尚未正式接管；夏青希望其入主以使北方连片。张十、叶杨等亦曾相关",
   },
   {
     name: "二号领地",
@@ -270,7 +270,8 @@ export const SOCIETY_FACTION_ROWS = [
     group: "领地",
     camp: "灰白协作",
     role: "北部一区种田互助、规则与农产品协作",
-    stance: "夏青盟主；刻意不吸纳战队以保独立",
+    stance:
+      "夏青盟主；刻意不吸纳战队以保独立。核心/长期合作领主侧成员见 SOCIETY_ALLIANCE_LORDS（匡庆威、齐富、时舯、赵泽、辛瑜、唐怀等）",
   },
   {
     name: "五十号山试验区",
@@ -313,8 +314,8 @@ export const SOCIETY_FACTION_ROWS = [
     name: "霍家",
     group: "私人武装",
     camp: "灰",
-    role: "借「新领主」名义染指十一号领地",
-    stance: "实力不足，被多方牵制，迟迟不得入主",
+    role: "十一号中签待接管（霍雷四级、霍准七级）",
+    stance: "已侥幸中签但尚未正式入主；成行则可为夏青同盟北翼增援，北线连片",
   },
   {
     name: "张十、叶杨",
@@ -330,6 +331,13 @@ export const SOCIETY_FACTION_ROWS = [
     camp: "白/灰/黑之间",
     role: "三号领主；本书主角",
     stance: "游走三色势力：既是合作方也是竞争者，资源与规则的枢纽",
+  },
+  {
+    name: "匡庆威、齐富、时舯、赵泽、辛瑜、唐怀",
+    group: "游走个人",
+    camp: "协作侧",
+    role: "夏青同盟／长期合作领主与成员（贸易、种田、农具、邻地、陨铁兵装、后勤）",
+    stance: "以三号地为枢纽互惠；详表见 SOCIETY_ALLIANCE_LORDS",
   },
   {
     name: "岳海营、谭君杰、彭林",
@@ -351,6 +359,44 @@ export const SOCIETY_FACTION_ROWS = [
     camp: "灰白协作",
     role: "北/西/南狼、熊、虎、飞禽等",
     stance: "林缘巡逻、护山、协议与灭灾共建；详见地图族群表",
+  },
+];
+
+/**
+ * Xia Qing alliance / long-term co-op lords and members (human side).
+ * Distinct from war-team embeds and from cross-species packs.
+ * @type {{ name: string, role: string, note: string }[]}
+ */
+export const SOCIETY_ALLIANCE_LORDS = [
+  {
+    name: "匡庆威",
+    role: "二道贩子 · 情报与人脉",
+    note: "人脉广、消息灵通；多承担货品流转与消息交换。",
+  },
+  {
+    name: "齐富",
+    role: "种田骨干",
+    note: "种田经验丰富；田间实践与粮食生产侧协作。",
+  },
+  {
+    name: "时舯",
+    role: "农具制造／改进",
+    note: "动手能力强；能制造和改进农具，补后勤与生产资料。",
+  },
+  {
+    name: "赵泽",
+    role: "四号领地领主",
+    note: "与夏青三号领地相邻；巡视应答、邻地联防中常出现。",
+  },
+  {
+    name: "辛瑜",
+    role: "陨铁资源方",
+    note: "拥有陨铁资源，可与同盟交换武器与金属件。",
+  },
+  {
+    name: "唐怀",
+    role: "听觉进化者 · 后勤随行",
+    note: "曾主二号线；听觉进化，愿为后勤随行；亦是科研酶基因样本线关键人物。",
   },
 ];
 
@@ -401,7 +447,7 @@ export const SOCIETY_GRAPH_NODES = [
   { id: "safe", name: "晖三安全区", category: 3, x: 18, y: 72, symbolSize: [100, 28] },
   { id: "north", name: "北部一区", category: 3, x: 38, y: 72, symbolSize: [88, 28] },
   { id: "lords", name: "领地联盟", category: 3, x: 56, y: 72, symbolSize: [88, 28] },
-  { id: "lab7", name: "五十号山试验区", category: 3, x: 74, y: 72, symbolSize: [120, 28] },
+  { id: "lab50", name: "五十号山试验区", category: 3, x: 74, y: 72, symbolSize: [120, 28] },
   { id: "center9", name: "第九种植中心", category: 3, x: 92, y: 72, symbolSize: [108, 28] },
 
   { id: "plot11", name: "十一号领地", category: 4, x: 12, y: 88, symbolSize: [100, 28] },
@@ -452,8 +498,8 @@ export const SOCIETY_GRAPH_EDGES = [
   { source: "qinglong", target: "hanshuang", label: "情报互通", lineType: "dashed" },
   { source: "qinglong", target: "forest", label: "作战/争药" },
   { source: "sufeng", target: "north", label: "插手", lineType: "dashed" },
-  { source: "lab7", target: "lords", label: "复耕试验" },
-  { source: "lords", target: "lab7", label: "主管", lineType: "dashed" },
+  { source: "lab50", target: "lords", label: "复耕试验" },
+  { source: "lords", target: "lab50", label: "主管", lineType: "dashed" },
   { source: "chonglian", target: "center9", label: "资本介入", lineType: "dashed" },
   { source: "chonglian", target: "plot11", label: "染指", lineType: "dashed" },
   { source: "fire", target: "lords", label: "对抗/交易" },
@@ -463,7 +509,7 @@ export const SOCIETY_GRAPH_EDGES = [
   { source: "gui3", target: "pressure", label: "难民", lineType: "dashed" },
   { source: "bai1", target: "hui3", label: "公务", lineType: "dashed" },
   { source: "hong1", target: "center9", label: "考察", lineType: "dashed" },
-  { source: "hong1", target: "lords", label: "肝脏/卫生协作", lineType: "dashed" },
+  { source: "hong1", target: "lords", label: "肝脏酶科研", lineType: "dashed" },
   { source: "blue", target: "lords", label: "渗透" },
   { source: "blue", target: "hui1", label: "勾结", lineType: "dashed" },
   { source: "blue", target: "plot11", label: "争夺", lineType: "dashed" },
@@ -514,6 +560,7 @@ export function assertSocietyGraph(nodes, edges) {
     "heibao",
     "forest-n",
     "center9",
+    "lab50",
     "chonglian",
     "plot11",
     "blue",

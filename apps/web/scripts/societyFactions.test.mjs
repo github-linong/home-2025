@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import {
+  SOCIETY_ALLIANCE_LORDS,
   SOCIETY_BASE_ROWS,
   SOCIETY_FACTION_ROWS,
   SOCIETY_FOREST_CARDS,
@@ -21,8 +22,20 @@ assert.ok(SOCIETY_FACTION_ROWS.some((r) => r.name.includes("五十号山试验")
 assert.ok(SOCIETY_FACTION_ROWS.some((r) => r.name.includes("十一号")));
 assert.ok(SOCIETY_FACTION_ROWS.some((r) => r.name.includes("蓝血")));
 assert.ok(SOCIETY_FACTION_ROWS.some((r) => r.camp.includes("黑")));
+assert.ok(SOCIETY_FACTION_ROWS.some((r) => r.name.includes("辛瑜")));
+assert.ok(SOCIETY_FACTION_ROWS.some((r) => r.name === "霍家" && /中签|霍准|霍雷/.test(r.role + r.stance)));
+assert.ok(SOCIETY_FACTION_ROWS.some((r) => r.name.includes("十一号") && /霍家/.test(r.stance)));
+assert.equal(SOCIETY_ALLIANCE_LORDS.length, 6);
+assert.ok(SOCIETY_ALLIANCE_LORDS.some((r) => r.name === "辛瑜"));
+assert.ok(SOCIETY_ALLIANCE_LORDS.some((r) => /陨铁/.test(r.note + r.role)));
+assert.ok(SOCIETY_ALLIANCE_LORDS.some((r) => r.name === "匡庆威"));
+assert.ok(SOCIETY_ALLIANCE_LORDS.some((r) => r.name === "齐富"));
+assert.ok(SOCIETY_ALLIANCE_LORDS.some((r) => r.name === "时舯"));
+assert.ok(SOCIETY_ALLIANCE_LORDS.some((r) => r.name === "赵泽"));
+assert.ok(SOCIETY_ALLIANCE_LORDS.some((r) => r.name === "唐怀"));
 assert.ok(SOCIETY_GRAPH_NODES.some((n) => n.id === "center9"));
 assert.ok(SOCIETY_GRAPH_NODES.some((n) => n.name.includes("第九种植")));
+assert.ok(SOCIETY_GRAPH_NODES.some((n) => n.id === "lab50"));
 assert.ok(SOCIETY_GRAPH_NODES.some((n) => n.name.includes("五十号山")));
 assert.ok(SOCIETY_GRAPH_NODES.some((n) => n.id === "chonglian"));
 assert.ok(SOCIETY_GRAPH_NODES.some((n) => n.id === "plot11"));

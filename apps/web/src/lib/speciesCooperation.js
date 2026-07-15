@@ -28,7 +28,7 @@ export const SPECIES_FACTION_CARDS = [
     title: "狼族（多支系）",
     relation: "邻居 → 盟友 → 协议伙伴",
     members:
-      "北部狼群：头狼/女王、断腰狼、帅巨狼、狼犬老二、病狼等；西部狼群；南部狼群：老四、翠眼女王；东侧东部豺群；晖一东/西/南狼群亦有独立命名",
+      "北部狼群：头狼/女王、断腰狼、帅巨狼、狼犬老二、病狼等；西部狼群；南部狼群：老四等；晖一东/西/南狼群另有独立命名。东侧邻族为「东部豺狼群」（豺狼≠狼族，勿混称）",
     notes:
       "不是驯化，而是基于交换与信任的同伴关系：巡逻、护山、联合作战换颐石、药物、知识与通讯工具",
   },
@@ -65,6 +65,47 @@ export const SPECIES_FACTION_CARDS = [
       "羊是首个深度绑定伙伴；猴与松鼠承担技术活、采样、助战——简介原句「猴和松鼠？姐的员工！」",
   },
 ];
+
+/**
+ * Zhang San’s reading of Xia Qing as a living “human ↔ evolved-animal” case.
+ * @type {{ title: string, summary: string }}
+ */
+export const SPECIES_SYMBIOSIS_THESIS = {
+  title: "张三视域：活案例夏青",
+  summary:
+    "张三把夏青视为「人与进化动物和谐共生」的活案例。他推崇的不是单纯「能和动物住一起」，而是她无意中验证了：人类与进化动物可以在信任、平等、分工与保护框架下形成稳定共生体——这正符合他长期的研究设想。",
+};
+
+/**
+ * Core traits of the cooperation model Zhang San endorses.
+ * @type {{ name: string, note: string }[]}
+ */
+export const SPECIES_SYMBIOSIS_PRINCIPLES = [
+  {
+    name: "平等共生而非单向利用",
+    note:
+      "夏青把进化兽当「同伴」而非「资源」或「宠物」。清理林地时羊啃树、狼犬拖枝、自己砍树，分工明确、互惠互利。",
+  },
+  {
+    name: "信任与安全感",
+    note:
+      "动物愿主动搬进夏青住处，说明对人类充分信任；夏青亦以日常照料、共享空间巩固这种信任。",
+  },
+  {
+    name: "科研价值与实际应用并重",
+    note:
+      "张三看重的是可验证的共生可行性：日常协作同时产出可观察数据，服务农业、安保与医疗等应用，而非停留在奇闻轶事。",
+  },
+  {
+    name: "谨慎保护",
+    note:
+      "对动物身体状况保密、只允许少量采样：既保证科研，又避免外界觊觎，为合作模式提供可持续安全框架。",
+  },
+];
+
+/** One-line doctrine underneath the four principles. */
+export const SPECIES_SYMBIOSIS_DOCTRINE =
+  "在相互信任、平等对待的基础上，人类与进化动物形成分工协作、资源共享的共生体；再以保密与保护措施，让合作既能持续，又能产出可验证的科研价值。";
 
 /**
  * Cooperation chronology. Chapter markers are approximate public anchors.
@@ -221,6 +262,24 @@ export const SPECIES_COOPERATION_EVENTS = [
 export function filterSpeciesCooperationEvents(events, faction) {
   if (faction === "all") return events;
   return events.filter((item) => item.factions.includes(faction));
+}
+
+/**
+ * @param {{ name: string, note: string }[]} principles
+ * @param {{ title: string, summary: string }} thesis
+ */
+export function assertSpeciesSymbiosis(principles, thesis) {
+  if (!thesis?.title || !thesis?.summary) {
+    throw new Error("species symbiosis thesis incomplete");
+  }
+  if (!Array.isArray(principles) || principles.length !== 4) {
+    throw new Error("species symbiosis needs four principles");
+  }
+  for (const row of principles) {
+    if (!row.name || !row.note) {
+      throw new Error(`invalid symbiosis principle: ${JSON.stringify(row)}`);
+    }
+  }
 }
 
 /**

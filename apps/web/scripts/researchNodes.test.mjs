@@ -8,6 +8,7 @@ import {
 assertResearchNodes(RESEARCH_NODES);
 assert.equal(RESEARCH_NODES.length, 5);
 assert.ok(RESEARCH_NODES.some((n) => n.lead.includes("张陶")));
+assert.ok(RESEARCH_NODES.some((n) => n.lead.includes("夏青") && n.name.includes("第九")));
 assert.ok(RESEARCH_NODES.some((n) => n.lead.includes("张何")));
 assert.ok(RESEARCH_NODES.some((n) => n.lead.includes("唐怀")));
 assert.ok(RESEARCH_NODES.some((n) => n.mission.includes("恢复因子")));

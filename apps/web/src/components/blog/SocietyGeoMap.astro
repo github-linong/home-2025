@@ -1,20 +1,77 @@
 ---
 /**
- * Schematic geographic map — north↑, relative distances from published anchors.
- * Local: 61–60–52–55–49–50–51 belt north of plots; deep-south 22 + packs far below.
+ * Multi-style geographic map — same SOCIETY_MAP_* data, three visual modes:
+ * board (card markers), nodes (constellation dots), relief (topo peaks).
  */
 import {
+  SOCIETY_ADMIN_NESTS,
   SOCIETY_MAP_ANNOTATIONS,
   SOCIETY_MAP_MARKERS,
   SOCIETY_MAP_PATHS,
   SOCIETY_MAP_ZONES,
+  buildSocietyMapPayload,
 } from "../../lib/societyMap.js";
+
+const mapPayload = buildSocietyMapPayload();
 
 const VB_W = 1000;
 const VB_H = 900;
 
+const ENGINES = [
+  { id: "svg", label: "SVG 手绘", blurb: "零依赖示意；含板块 / 星座 / 地貌三种画法。" },
+  { id: "echarts", label: "ECharts", blurb: "按类型用不同图标；滚轮缩放与 tooltip。" },
+  { id: "g6", label: "AntV G6", blurb: "通路散点，或切换「层层包含」看行政包络地图。" },
+  { id: "leaflet", label: "Leaflet Map", blurb: "点位通路，或「区划相邻」用 Voronoi 生成贴边省界式色块。" },
+];
+
+const MODES = [
+  {
+    id: "board",
+    label: "板块卡片",
+    blurb: "色块卡片 + 纸感底，信息密度高、适合扫读标签。",
+  },
+  {
+    id: "nodes",
+    label: "星座节点",
+    blurb: "深色底 + 圆点连线：更像关系/航路图，强调通路与相对距离。",
+  },
+  {
+    id: "relief",
+    label: "地貌示意",
+    blurb: "等高线晕渲 + 山峰符号：山域更「地形」，领地降为小旗点。",
+  },
+];
+
+const G6_MODES = [
+  {
+    id: "routes",
+    label: "通路散点",
+    blurb: "基地 / 山域 / 领地散点 + 通路；可拖拽节点。",
+  },
+  {
+    id: "admin",
+    label: "层层包含",
+    blurb: "Combo 包络示意（父子套盒）；要贴边相邻请看 Leaflet「区划相邻」。",
+  },
+];
+
+const LEAFLET_MODES = [
+  {
+    id: "points",
+    label: "点位通路",
+    blurb: "CRS.Simple 散点 + 通路；平移缩放与气泡。",
+  },
+  {
+    id: "regions",
+    label: "区划相邻",
+    blurb: "层级 Voronoi：五大区 → 区内裁进父界 → 晖三细；「完整拼图」可拼成一张全国图。",
+  },
+];
+
+const NEST_PROFILES = Object.values(SOCIETY_ADMIN_NESTS);
+
 /** @type {Record<string, { fill: string, stroke: string, text: string }>} */
-const KIND_STYLE = {
+const BOARD_KIND = {
   region: { fill: "transparent", stroke: "transparent", text: "#6b7280" },
   base: { fill: "#2f3540", stroke: "#d7dbe3", text: "#f4f6f8" },
   forest: { fill: "#3f5230", stroke: "#c9d9b8", text: "#f5f8f0" },
@@ -23,6 +80,17 @@ const KIND_STYLE = {
   plot: { fill: "#5c6b3a", stroke: "#e2ecc8", text: "#f7faef" },
   pack: { fill: "#4a3f2e", stroke: "#e6d7bf", text: "#faf6ef" },
   creature: { fill: "#6b5340", stroke: "#f0e2d0", text: "#fffaf4" },
+};
+
+const NODE_DOT = {
+  region: "#6b7280",
+  base: "#e8eef8",
+  forest: "#9fcea0",
+  landmark: "#f0a080",
+  local: "#b8d4a8",
+  plot: "#c6e07a",
+  pack: "#e0c090",
+  creature: "#f0d0b0",
 };
 
 const ZONE_FILL = {
@@ -44,20 +112,16 @@ function pathD(fromId, toId, curved = false) {
   const a = byId[fromId];
   const b = byId[toId];
   if (!a || !b) return "";
-  if (!curved) {
-    return `M ${a.x} ${a.y} L ${b.x} ${b.y}`;
-  }
+  if (!curved) return `M ${a.x} ${a.y} L ${b.x} ${b.y}`;
   const mx = (a.x + b.x) / 2;
   const my = (a.y + b.y) / 2;
   const dx = b.x - a.x;
   const dy = b.y - a.y;
-  const cx = mx - dy * 0.12;
-  const cy = my + dx * 0.12;
-  return `M ${a.x} ${a.y} Q ${cx} ${cy} ${b.x} ${b.y}`;
+  return `M ${a.x} ${a.y} Q ${mx - dy * 0.12} ${my + dx * 0.12} ${b.x} ${b.y}`;
 }
 
 /**
- * @param {{ from: string, to: string, curved?: boolean, label: string }} path
+ * @param {{ from: string, to: string }} path
  */
 function pathLabelPos(path) {
   const a = byId[path.from];
@@ -65,13 +129,55 @@ function pathLabelPos(path) {
   if (!a || !b) return { x: 0, y: 0 };
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - 8 };
 }
+
+const visibleMarkers = SOCIETY_MAP_MARKERS.filter((m) => m.kind !== "region");
 ---
 
 <div
   class="society-geo-map rounded-xl border border-base-300 bg-base-100 overflow-hidden"
   data-society-map
+  data-map-engine="svg"
+  data-map-style="board"
+  data-map-payload={JSON.stringify(mapPayload)}
 >
-  <div class="flex flex-wrap items-center justify-between gap-2 px-3 pt-3 pb-1 text-xs text-base-content/55">
+  <div class="flex flex-wrap gap-1.5 px-3 pt-3">
+    {
+      ENGINES.map((engine) => (
+        <button
+          type="button"
+          class="map-engine-btn btn btn-xs"
+          data-map-engine-btn={engine.id}
+          aria-pressed={engine.id === "svg" ? "true" : "false"}
+        >
+          {engine.label}
+        </button>
+      ))
+    }
+  </div>
+  <p class="px-3 pt-1.5 pb-0 text-[0.7rem] leading-snug text-base-content/50 m-0" data-map-engine-blurb>
+    {ENGINES[0].blurb}
+  </p>
+
+  <div class="map-engine-panel" data-map-engine-panel="svg">
+  <div class="flex flex-wrap gap-1.5 px-3 pt-2">
+    {
+      MODES.map((mode) => (
+        <button
+          type="button"
+          class="map-style-btn btn btn-xs"
+          data-map-style-btn={mode.id}
+          aria-pressed={mode.id === "board" ? "true" : "false"}
+        >
+          {mode.label}
+        </button>
+      ))
+    }
+  </div>
+  <p class="px-3 pt-1.5 pb-0 text-[0.7rem] leading-snug text-base-content/50 m-0" data-map-style-blurb>
+    {MODES[0].blurb}
+  </p>
+
+  <div class="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 pt-2 pb-1 text-xs text-base-content/55" data-map-kind-legend>
     <span class="inline-flex items-center gap-1.5">
       <span class="inline-block h-2.5 w-2.5 rounded-sm" style="background:#2f3540"></span>
       基地
@@ -94,33 +200,25 @@ function pathLabelPos(path) {
     </span>
   </div>
 
-  <div class="w-full overflow-x-auto px-1 sm:px-2">
+  <div class="w-full overflow-x-auto px-1 sm:px-2 pb-1">
+    {/* —— Style A: board cards —— */}
     <svg
-      class="block mx-auto w-full min-w-[360px] max-w-[980px] h-auto"
+      class="map-panel block mx-auto w-full min-w-[360px] max-w-[980px] h-auto"
+      data-map-panel="board"
       viewBox={`0 0 ${VB_W} ${VB_H}`}
       role="img"
-      aria-label="晖三周边编号山域地理示意：六十一至五十号山序列、二十二号山南部狼群、领地与狼群个体"
+      aria-label="地理示意 · 板块卡片风格"
     >
       <defs>
-        <pattern id="map-grain" width="12" height="12" patternUnits="userSpaceOnUse">
+        <pattern id="map-grain-board" width="12" height="12" patternUnits="userSpaceOnUse">
           <circle cx="1" cy="1" r="0.7" fill="rgba(60, 70, 50, 0.07)"></circle>
         </pattern>
-        <marker
-          id="map-arrow"
-          viewBox="0 0 10 10"
-          refX="9"
-          refY="5"
-          markerWidth="6"
-          markerHeight="6"
-          orient="auto-start-reverse"
-        >
+        <marker id="map-arrow-board" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
           <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="rgba(70, 78, 60, 0.7)"></path>
         </marker>
       </defs>
-
       <rect width={VB_W} height={VB_H} fill="#f7f5ef"></rect>
-      <rect width={VB_W} height={VB_H} fill="url(#map-grain)"></rect>
-
+      <rect width={VB_W} height={VB_H} fill="url(#map-grain-board)"></rect>
       {
         SOCIETY_MAP_ZONES.map((z) => (
           <g>
@@ -130,66 +228,40 @@ function pathLabelPos(path) {
               width={z.w}
               height={z.h}
               rx="18"
-              ry="18"
               fill={ZONE_FILL[z.id] || "rgba(120,130,110,0.1)"}
               stroke="rgba(80, 90, 70, 0.22)"
               stroke-width="1.5"
               stroke-dasharray="6 5"
             />
-            <text
-              x={z.x + 12}
-              y={z.y + 20}
-              fill="rgba(70, 78, 60, 0.5)"
-              font-size="12"
-              font-weight="600"
-            >
+            <text x={z.x + 12} y={z.y + 20} fill="rgba(70, 78, 60, 0.5)" font-size="12" font-weight="600">
               {z.label}
             </text>
           </g>
         ))
       }
-
-      <!-- compass + scale bar -->
       <g transform="translate(70, 70)">
         <circle r="26" fill="rgba(255,255,255,0.75)" stroke="rgba(70,78,60,0.35)" stroke-width="1.5"></circle>
         <polygon points="0,-16 4,-2 0,2 -4,-2" fill="#2f3540"></polygon>
         <polygon points="0,16 4,2 0,-2 -4,2" fill="rgba(47,53,64,0.35)"></polygon>
-        <text x="0" y="-20" text-anchor="middle" font-size="11" font-weight="700" fill="#2f3540">
-          N
-        </text>
+        <text x="0" y="-20" text-anchor="middle" font-size="11" font-weight="700" fill="#2f3540">N</text>
       </g>
       <g transform="translate(120, 88)">
         <line x1="0" y1="0" x2="90" y2="0" stroke="rgba(47,53,64,0.7)" stroke-width="2.5"></line>
         <line x1="0" y1="-5" x2="0" y2="5" stroke="rgba(47,53,64,0.7)" stroke-width="2"></line>
         <line x1="90" y1="-5" x2="90" y2="5" stroke="rgba(47,53,64,0.7)" stroke-width="2"></line>
-        <text x="45" y="16" text-anchor="middle" font-size="10" fill="rgba(47,53,64,0.65)">
-          ≈60里（49→60）
-        </text>
+        <text x="45" y="16" text-anchor="middle" font-size="10" fill="rgba(47,53,64,0.65)">≈60里（49→60）</text>
       </g>
-
       {
         SOCIETY_MAP_ANNOTATIONS.map((a) => (
-          <text
-            x={a.x}
-            y={a.y}
-            text-anchor="middle"
-            font-size="11"
-            font-weight="600"
-            fill="rgba(70, 78, 60, 0.55)"
-          >
+          <text x={a.x} y={a.y} text-anchor="middle" font-size="11" font-weight="600" fill="rgba(70, 78, 60, 0.55)">
             {a.text}
           </text>
         ))
       }
-
       {
         SOCIETY_MAP_PATHS.map((p) => {
           const mid = pathLabelPos(p);
-          const far =
-            p.id === "p-south-gap" ||
-            p.id === "p-lan-60" ||
-            p.id === "p-hong-51" ||
-            p.id === "p-gui";
+          const far = ["p-south-gap", "p-lan-60", "p-hong-51", "p-gui"].includes(p.id);
           return (
             <g>
               <path
@@ -198,16 +270,10 @@ function pathLabelPos(path) {
                 stroke={far ? "rgba(122, 59, 40, 0.45)" : "rgba(70, 78, 60, 0.4)"}
                 stroke-width={far ? 1.4 : 1.6}
                 stroke-dasharray={far || p.curved ? "5 4" : "0"}
-                marker-end="url(#map-arrow)"
+                marker-end="url(#map-arrow-board)"
               />
               {p.label ? (
-                <text
-                  x={mid.x}
-                  y={mid.y}
-                  text-anchor="middle"
-                  font-size="9"
-                  fill="rgba(40, 44, 36, 0.7)"
-                >
+                <text x={mid.x} y={mid.y} text-anchor="middle" font-size="9" fill="rgba(40, 44, 36, 0.7)">
                   {p.label}
                 </text>
               ) : null}
@@ -215,44 +281,29 @@ function pathLabelPos(path) {
           );
         })
       }
-
       {
-        SOCIETY_MAP_MARKERS.map((m) => {
-          const style = KIND_STYLE[m.kind] || KIND_STYLE.base;
+        visibleMarkers.map((m) => {
+          const style = BOARD_KIND[m.kind] || BOARD_KIND.base;
           const w = m.w || 80;
           const h = m.h || 30;
-          const isLandmark = m.kind === "landmark";
-          const isForest = m.kind === "forest";
-          const isPlot = m.kind === "plot";
-          const isPack = m.kind === "pack";
-          const isCreature = m.kind === "creature";
           return (
             <g>
-              {isLandmark ? (
+              {m.kind === "landmark" ? (
                 <polygon
                   points={`${m.x},${m.y - h / 2 - 4} ${m.x + w / 2},${m.y + h / 2} ${m.x - w / 2},${m.y + h / 2}`}
                   fill={style.fill}
                   stroke={style.stroke}
                   stroke-width="2"
                 />
-              ) : isCreature ? (
-                <ellipse
-                  cx={m.x}
-                  cy={m.y}
-                  rx={w / 2}
-                  ry={h / 2}
-                  fill={style.fill}
-                  stroke={style.stroke}
-                  stroke-width="1.6"
-                />
+              ) : m.kind === "creature" ? (
+                <ellipse cx={m.x} cy={m.y} rx={w / 2} ry={h / 2} fill={style.fill} stroke={style.stroke} stroke-width="1.6" />
               ) : (
                 <rect
                   x={m.x - w / 2}
                   y={m.y - h / 2}
                   width={w}
                   height={h}
-                  rx={isForest ? 14 : isPack ? 11 : isPlot ? 5 : 7}
-                  ry={isForest ? 14 : isPack ? 11 : isPlot ? 5 : 7}
+                  rx={m.kind === "forest" ? 14 : m.kind === "pack" ? 11 : m.kind === "plot" ? 5 : 7}
                   fill={style.fill}
                   stroke={style.stroke}
                   stroke-width={m.id === "mt-49" || m.id === "mt-50" ? 2.4 : 1.8}
@@ -262,24 +313,8 @@ function pathLabelPos(path) {
                 x={m.x}
                 y={m.y + 4}
                 text-anchor="middle"
-                font-size={
-                  m.id === "mt-49" || m.id === "mt-50" || m.id === "hui3"
-                    ? 12
-                    : isCreature
-                      ? 9
-                      : isPlot
-                        ? 10
-                        : 11
-                }
-                font-weight={
-                  m.id === "hui3" ||
-                  m.id === "t3" ||
-                  m.id === "mt-49" ||
-                  m.id === "c-laosi" ||
-                  m.id === "c-laoer"
-                    ? 700
-                    : 650
-                }
+                font-size={m.id === "mt-49" || m.id === "mt-50" || m.id === "hui3" ? 12 : m.kind === "creature" ? 9 : m.kind === "plot" ? 10 : 11}
+                font-weight={m.id === "hui3" || m.id === "t3" || m.id === "mt-49" || m.id === "c-laosi" || m.id === "c-laoer" ? 700 : 650}
                 fill={style.text}
               >
                 {m.label}
@@ -288,21 +323,705 @@ function pathLabelPos(path) {
           );
         })
       }
-
-      <!-- ocean at true south -->
-      <path
-        d="M 280 870 Q 500 855 720 870 L 720 895 L 280 895 Z"
-        fill="rgba(90, 150, 170, 0.18)"
-        stroke="rgba(70, 130, 150, 0.35)"
-        stroke-width="1"
-      />
-      <text x="500" y="888" text-anchor="middle" font-size="11" fill="rgba(50, 90, 110, 0.65)">
-        南部海域 · 桂城临海
-      </text>
+      <path d="M 280 870 Q 500 855 720 870 L 720 895 L 280 895 Z" fill="rgba(90, 150, 170, 0.18)" stroke="rgba(70, 130, 150, 0.35)" />
+      <text x="500" y="888" text-anchor="middle" font-size="11" fill="rgba(50, 90, 110, 0.65)">南部海域 · 桂城临海</text>
     </svg>
+
+    {/* —— Style B: constellation nodes —— */}
+    <svg
+      class="map-panel hidden block mx-auto w-full min-w-[360px] max-w-[980px] h-auto"
+      data-map-panel="nodes"
+      viewBox={`0 0 ${VB_W} ${VB_H}`}
+      role="img"
+      aria-label="地理示意 · 星座节点风格"
+    >
+      <defs>
+        <radialGradient id="map-nodes-bg" cx="50%" cy="40%" r="70%">
+          <stop offset="0%" stop-color="#243044"></stop>
+          <stop offset="100%" stop-color="#121820"></stop>
+        </radialGradient>
+        <filter id="map-node-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2.2" result="b"></feGaussianBlur>
+          <feMerge>
+            <feMergeNode in="b"></feMergeNode>
+            <feMergeNode in="SourceGraphic"></feMergeNode>
+          </feMerge>
+        </filter>
+      </defs>
+      <rect width={VB_W} height={VB_H} fill="url(#map-nodes-bg)"></rect>
+      {
+        SOCIETY_MAP_ZONES.map((z) => (
+          <rect
+            x={z.x}
+            y={z.y}
+            width={z.w}
+            height={z.h}
+            rx="20"
+            fill="rgba(255,255,255,0.03)"
+            stroke="rgba(180,200,230,0.18)"
+            stroke-dasharray="4 6"
+          />
+        ))
+      }
+      <g transform="translate(70, 70)">
+        <circle r="24" fill="rgba(255,255,255,0.06)" stroke="rgba(210,220,240,0.45)"></circle>
+        <polygon points="0,-14 3.5,-1 0,2 -3.5,-1" fill="#f0f4ff"></polygon>
+        <text x="0" y="-18" text-anchor="middle" font-size="11" font-weight="700" fill="#dce6f8">N</text>
+      </g>
+      {
+        SOCIETY_MAP_PATHS.map((p) => {
+          const mid = pathLabelPos(p);
+          const far = ["p-south-gap", "p-lan-60", "p-hong-51", "p-gui"].includes(p.id);
+          return (
+            <g>
+              <path
+                d={pathD(p.from, p.to, Boolean(p.curved))}
+                fill="none"
+                stroke={far ? "rgba(240,160,120,0.35)" : "rgba(160,190,230,0.28)"}
+                stroke-width={far ? 1.2 : 1.4}
+                stroke-dasharray={far || p.curved ? "3 5" : "0"}
+              />
+              {p.label ? (
+                <text x={mid.x} y={mid.y} text-anchor="middle" font-size="9" fill="rgba(200,215,240,0.55)">
+                  {p.label}
+                </text>
+              ) : null}
+            </g>
+          );
+        })
+      }
+      {
+        visibleMarkers.map((m) => {
+          const color = NODE_DOT[m.kind] || NODE_DOT.base;
+          const r =
+            m.kind === "forest" ? 7 : m.kind === "base" ? 6 : m.kind === "plot" ? 4 : m.kind === "creature" ? 3.5 : 5;
+          const labelY = m.y + (m.kind === "forest" || m.kind === "base" ? 18 : 14);
+          return (
+            <g filter="url(#map-node-glow)">
+              <circle cx={m.x} cy={m.y} r={r + 4} fill={color} opacity="0.18"></circle>
+              <circle cx={m.x} cy={m.y} r={r} fill={color}></circle>
+              <text x={m.x} y={labelY} text-anchor="middle" font-size={m.kind === "plot" ? 9 : 10} fill="rgba(230,238,252,0.88)">
+                {m.label}
+              </text>
+            </g>
+          );
+        })
+      }
+      <text x="500" y="888" text-anchor="middle" font-size="11" fill="rgba(140,180,200,0.55)">南部海域 · 桂城临海</text>
+    </svg>
+
+    {/* —— Style C: relief / topo —— */}
+    <svg
+      class="map-panel hidden block mx-auto w-full min-w-[360px] max-w-[980px] h-auto"
+      data-map-panel="relief"
+      viewBox={`0 0 ${VB_W} ${VB_H}`}
+      role="img"
+      aria-label="地理示意 · 地貌风格"
+    >
+      <defs>
+        <linearGradient id="map-relief-bg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#e7efe4"></stop>
+          <stop offset="55%" stop-color="#f3efe4"></stop>
+          <stop offset="100%" stop-color="#e4eef2"></stop>
+        </linearGradient>
+      </defs>
+      <rect width={VB_W} height={VB_H} fill="url(#map-relief-bg)"></rect>
+      {
+        visibleMarkers
+          .filter((m) => m.kind === "forest" || m.kind === "landmark")
+          .map((m) => (
+            <g opacity="0.55">
+              <ellipse cx={m.x} cy={m.y + 6} rx={(m.w || 80) * 0.7} ry={(m.h || 30) * 1.4} fill="none" stroke="rgba(90,110,70,0.35)" stroke-width="1.2" />
+              <ellipse cx={m.x} cy={m.y + 6} rx={(m.w || 80) * 0.45} ry={(m.h || 30) * 0.9} fill="none" stroke="rgba(90,110,70,0.28)" stroke-width="1" />
+              <ellipse cx={m.x} cy={m.y + 6} rx={(m.w || 80) * 0.22} ry={(m.h || 30) * 0.45} fill="rgba(120,140,90,0.12)" stroke="rgba(90,110,70,0.22)" />
+            </g>
+          ))
+      }
+      {
+        SOCIETY_MAP_ZONES.map((z) => (
+          <text x={z.x + 14} y={z.y + 22} fill="rgba(80,100,70,0.4)" font-size="12" font-weight="600">
+            {z.label}
+          </text>
+        ))
+      }
+      <g transform="translate(70, 70)">
+        <circle r="24" fill="rgba(255,255,255,0.55)" stroke="rgba(80,100,70,0.4)"></circle>
+        <polygon points="0,-14 3.5,-1 0,2 -3.5,-1" fill="#355035"></polygon>
+        <text x="0" y="-18" text-anchor="middle" font-size="11" font-weight="700" fill="#355035">N</text>
+      </g>
+      {
+        SOCIETY_MAP_PATHS.map((p) => {
+          const mid = pathLabelPos(p);
+          return (
+            <g>
+              <path
+                d={pathD(p.from, p.to, Boolean(p.curved))}
+                fill="none"
+                stroke="rgba(100,90,60,0.35)"
+                stroke-width="1.3"
+                stroke-dasharray={p.curved ? "4 4" : "2 3"}
+              />
+              {p.label ? (
+                <text x={mid.x} y={mid.y} text-anchor="middle" font-size="9" fill="rgba(70,60,40,0.55)">
+                  {p.label}
+                </text>
+              ) : null}
+            </g>
+          );
+        })
+      }
+      {
+        visibleMarkers.map((m) => {
+          if (m.kind === "forest" || m.kind === "landmark") {
+            const peak = (m.h || 28) * 0.7;
+            return (
+              <g>
+                <polygon
+                  points={`${m.x},${m.y - peak} ${m.x + 14},${m.y + 10} ${m.x - 14},${m.y + 10}`}
+                  fill={m.kind === "landmark" ? "#8a4a32" : "#4d6140"}
+                  stroke="#2f3a28"
+                  stroke-width="1.2"
+                />
+                <text x={m.x + 18} y={m.y + 4} font-size="11" font-weight="650" fill="#2f3a28">
+                  {m.label}
+                </text>
+              </g>
+            );
+          }
+          if (m.kind === "plot") {
+            return (
+              <g>
+                <path d={`M ${m.x} ${m.y - 8} L ${m.x + 6} ${m.y + 4} L ${m.x - 6} ${m.y + 4} Z`} fill="#6a7a3e" stroke="#3f4a28" />
+                <text x={m.x} y={m.y + 18} text-anchor="middle" font-size="9" fill="#3f4a28">
+                  {m.label}
+                </text>
+              </g>
+            );
+          }
+          if (m.kind === "base") {
+            return (
+              <g>
+                <rect x={m.x - 10} y={m.y - 10} width="20" height="20" rx="3" fill="#2f3540" stroke="#d7dbe3" />
+                <text x={m.x + 14} y={m.y + 4} font-size="11" font-weight="650" fill="#2f3540">
+                  {m.label}
+                </text>
+              </g>
+            );
+          }
+          return (
+            <g>
+              <circle cx={m.x} cy={m.y} r={m.kind === "creature" ? 4 : 5.5} fill={m.kind === "pack" ? "#6b5340" : "#5a4a38"} stroke="#efe6d8" stroke-width="1.2" />
+              <text x={m.x + 10} y={m.y + 4} font-size="10" fill="#3a3228">
+                {m.label}
+              </text>
+            </g>
+          );
+        })
+      }
+      <path d="M 280 870 Q 500 855 720 870 L 720 895 L 280 895 Z" fill="rgba(90, 150, 170, 0.22)" />
+      <text x="500" y="888" text-anchor="middle" font-size="11" fill="rgba(50, 90, 110, 0.65)">南部海域 · 桂城临海</text>
+    </svg>
+  </div>
+  </div>
+
+  <div class="map-engine-panel hidden px-2 pb-2" data-map-engine-panel="echarts">
+    <div
+      class="w-full h-[34rem] sm:h-[40rem] rounded-lg border border-base-300 bg-base-100"
+      data-map-echarts
+      role="img"
+      aria-label="ECharts 地理示意：散点与通路"
+    >
+    </div>
+  </div>
+
+  <div class="map-engine-panel hidden px-2 pb-2" data-map-engine-panel="g6">
+    <div class="flex flex-wrap gap-1.5 px-1 pt-1">
+      {
+        G6_MODES.map((mode) => (
+          <button
+            type="button"
+            class="map-g6-mode-btn btn btn-xs"
+            data-g6-mode-btn={mode.id}
+            aria-pressed={mode.id === "routes" ? "true" : "false"}
+          >
+            {mode.label}
+          </button>
+        ))
+      }
+    </div>
+    <p class="px-1 pt-1.5 pb-1 text-[0.7rem] leading-snug text-base-content/50 m-0" data-g6-mode-blurb>
+      {G6_MODES[0].blurb}
+    </p>
+
+    <div data-g6-mode-panel="routes">
+      <div
+        class="w-full h-[34rem] sm:h-[40rem] rounded-lg border border-base-300 bg-[#f6f7f3] overflow-hidden"
+        data-map-g6
+        role="img"
+        aria-label="AntV G6 通路散点"
+      >
+      </div>
+    </div>
+
+    <div class="hidden" data-g6-mode-panel="admin">
+      <div class="flex flex-wrap gap-1.5 px-1 pb-1">
+        {
+          NEST_PROFILES.map((profile) => (
+            <button
+              type="button"
+              class="map-nest-btn btn btn-xs"
+              data-nest-btn={profile.id}
+              aria-pressed={profile.id === "hui3" ? "true" : "false"}
+            >
+              {profile.title}
+            </button>
+          ))
+        }
+      </div>
+      <p class="px-1 pb-1 text-[0.7rem] leading-snug text-base-content/50 m-0" data-nest-blurb>
+        {SOCIETY_ADMIN_NESTS.hui3.blurb}
+      </p>
+      <div
+        class="w-full h-[34rem] sm:h-[40rem] rounded-lg border border-base-300 overflow-hidden"
+        data-map-admin-g6
+        role="img"
+        aria-label="AntV G6 行政层层包含示意地图"
+      >
+      </div>
+    </div>
+  </div>
+
+  <div class="map-engine-panel hidden px-2 pb-2" data-map-engine-panel="leaflet">
+    <div class="flex flex-wrap gap-1.5 px-1 pt-1">
+      {
+        LEAFLET_MODES.map((mode) => (
+          <button
+            type="button"
+            class="map-leaflet-mode-btn btn btn-xs"
+            data-leaflet-mode-btn={mode.id}
+            aria-pressed={mode.id === "points" ? "true" : "false"}
+          >
+            {mode.label}
+          </button>
+        ))
+      }
+    </div>
+    <p class="px-1 pt-1.5 pb-1 text-[0.7rem] leading-snug text-base-content/50 m-0" data-leaflet-mode-blurb>
+      {LEAFLET_MODES[0].blurb}
+    </p>
+
+    <div data-leaflet-mode-panel="points">
+      <div
+        class="w-full h-[34rem] sm:h-[40rem] rounded-lg border border-base-300 overflow-hidden z-0"
+        data-map-leaflet
+        role="img"
+        aria-label="Leaflet 点位通路示意"
+      >
+      </div>
+    </div>
+
+    <div class="hidden" data-leaflet-mode-panel="regions">
+      <div
+        class="w-full h-[34rem] sm:h-[40rem] rounded-lg border border-base-300 overflow-hidden z-0"
+        data-map-leaflet-regions
+        role="img"
+        aria-label="Leaflet Voronoi 区划相邻示意"
+      >
+      </div>
+    </div>
   </div>
 
   <p class="px-3 pb-2.5 text-[0.7rem] leading-snug text-base-content/40 m-0">
-    上北下南。贴林主轴：六十一→六十→五十二→五十五→四十九→五十→五十一；四十九东邻五十，北距六十约六十里。二十二号山与南部狼群在更南（约数百里）；烈火山偏晖一西，距北部一区亦约数百里。比例为方位示意，非测绘成果。
+    上北下南；SVG / ECharts / AntV G6 / Leaflet 共用同一套坐标数据。比例为方位示意，非测绘成果。
   </p>
 </div>
+
+<script>
+  import { SOCIETY_ADMIN_NESTS } from "../../lib/societyMap.js";
+  import {
+    initEchartsSocietyMap,
+    initG6AdminNestMap,
+    initG6SocietyMap,
+    initLeafletRegionMap,
+    initLeafletSocietyMap,
+  } from "../../lib/societyMapEngines.js";
+
+  const root = document.querySelector("[data-society-map]");
+  if (root) {
+    const styleBlurbs = {
+      board: "色块卡片 + 纸感底，信息密度高、适合扫读标签。",
+      nodes: "深色底 + 圆点连线：更像关系/航路图，强调通路与相对距离。",
+      relief: "等高线晕渲 + 山峰符号：山域更「地形」，领地降为小旗点。",
+    };
+    const nestBlurbs = {
+      hui1: "华国 ⊃ 晖城大区 ⊃ 晖一 ⊃ 安全区（内/外城）⊃ 区外领主防护林与进化林。",
+      hui3: "华国 ⊃ 晖城 ⊃ 晖三 ⊃ 内外城 ⊃ 北部一区（含领主缓冲林）⊃ 隔离带外进化林。",
+    };
+    const g6ModeBlurbs = {
+      routes: "基地 / 山域 / 领地散点 + 通路；可拖拽节点。",
+      admin: "Combo 包络示意；要贴边相邻请看 Leaflet → 区划相邻。",
+    };
+    const leafletModeBlurbs = {
+      points: "CRS.Simple 散点 + 通路；平移缩放与气泡。",
+      regions: "层级 Voronoi：五大区下钻区内（裁进父界）；完整拼图 / 完整+晖三细可铺满全国。",
+    };
+    const engineBlurbs = {
+      svg: "零依赖示意；含板块 / 星座 / 地貌三种画法。",
+      echarts: "散点图例区分形状（山形/方块/三角等）；滚轮缩放与 tooltip。",
+      g6: "通路散点，或 Combo「层层包含」。",
+      leaflet: "点位通路，或「区划相邻」Voronoi 贴边色块。",
+    };
+
+    /** @type {Record<string, { dispose: () => void } | null>} */
+    const engHandles = { echarts: null, g6: null, leaflet: null, leafletRegions: null };
+    /** @type {Record<string, boolean>} */
+    const engInited = { echarts: false, g6: false, leaflet: false };
+    /** @type {{ dispose: () => void } | null} */
+    let adminNestHandle = null;
+    let nestProfileId = "hui3";
+    let g6Mode = "routes";
+    let leafletMode = "points";
+
+    const styleBlurbEl = root.querySelector("[data-map-style-blurb]");
+    const engineBlurbEl = root.querySelector("[data-map-engine-blurb]");
+    const nestBlurbEl = root.querySelector("[data-nest-blurb]");
+    const g6ModeBlurbEl = root.querySelector("[data-g6-mode-blurb]");
+    const leafletModeBlurbEl = root.querySelector("[data-leaflet-mode-blurb]");
+    const kindLegendEl = root.querySelector("[data-map-kind-legend]");
+    const adminG6El = root.querySelector("[data-map-admin-g6]");
+    const styleButtons = root.querySelectorAll("[data-map-style-btn]");
+    const engineButtons = root.querySelectorAll("[data-map-engine-btn]");
+    const nestButtons = root.querySelectorAll("[data-nest-btn]");
+    const g6ModeButtons = root.querySelectorAll("[data-g6-mode-btn]");
+    const leafletModeButtons = root.querySelectorAll("[data-leaflet-mode-btn]");
+    const stylePanels = root.querySelectorAll("[data-map-panel]");
+    const enginePanels = root.querySelectorAll("[data-map-engine-panel]");
+    const g6ModePanels = root.querySelectorAll("[data-g6-mode-panel]");
+    const leafletModePanels = root.querySelectorAll("[data-leaflet-mode-panel]");
+
+    let payload = {};
+    try {
+      payload = JSON.parse(root.getAttribute("data-map-payload") || "{}");
+    } catch {
+      payload = {};
+    }
+
+    async function ensureRoutesMap() {
+      if (engInited.g6 && engHandles.g6) {
+        window.dispatchEvent(new Event("resize"));
+        return;
+      }
+      engInited.g6 = true;
+      const el = root.querySelector("[data-map-g6]");
+      try {
+        if (el) engHandles.g6 = await initG6SocietyMap(/** @type {HTMLElement} */ (el), payload);
+      } catch (err) {
+        console.error("[society-map] g6 routes init failed", err);
+        if (el) el.innerHTML = `<p class="p-4 text-sm text-error">初始化失败：${String(err?.message || err)}</p>`;
+      }
+    }
+
+    async function ensureAdminNestMap() {
+      if (!adminG6El) return;
+      if (adminNestHandle) {
+        adminNestHandle.dispose();
+        adminNestHandle = null;
+      }
+      const profile = SOCIETY_ADMIN_NESTS[nestProfileId];
+      if (!profile) return;
+      try {
+        adminNestHandle = await initG6AdminNestMap(/** @type {HTMLElement} */ (adminG6El), profile);
+      } catch (err) {
+        console.error("[society-map] admin nest init failed", err);
+        adminG6El.innerHTML = `<p class="p-4 text-sm text-error">初始化失败：${String(err?.message || err)}</p>`;
+      }
+    }
+
+    async function ensureLeafletPoints() {
+      if (engInited.leaflet && engHandles.leaflet) {
+        window.dispatchEvent(new Event("resize"));
+        return;
+      }
+      engInited.leaflet = true;
+      const el = root.querySelector("[data-map-leaflet]");
+      try {
+        if (el) engHandles.leaflet = await initLeafletSocietyMap(/** @type {HTMLElement} */ (el), payload);
+      } catch (err) {
+        console.error("[society-map] leaflet points init failed", err);
+        if (el) el.innerHTML = `<p class="p-4 text-sm text-error">初始化失败：${String(err?.message || err)}</p>`;
+      }
+    }
+
+    async function ensureLeafletRegions() {
+      if (engHandles.leafletRegions) {
+        window.dispatchEvent(new Event("resize"));
+        return;
+      }
+      const el = root.querySelector("[data-map-leaflet-regions]");
+      try {
+        if (el) {
+          engHandles.leafletRegions = await initLeafletRegionMap(/** @type {HTMLElement} */ (el), {
+            vbW: payload.vbW || 1000,
+            vbH: payload.vbH || 900,
+          });
+        }
+      } catch (err) {
+        console.error("[society-map] leaflet regions init failed", err);
+        if (el) el.innerHTML = `<p class="p-4 text-sm text-error">初始化失败：${String(err?.message || err)}</p>`;
+      }
+    }
+
+    function setStyle(id) {
+      root.setAttribute("data-map-style", id);
+      styleButtons.forEach((btn) => {
+        const active = btn.getAttribute("data-map-style-btn") === id;
+        btn.setAttribute("aria-pressed", active ? "true" : "false");
+        btn.classList.toggle("btn-neutral", active);
+        btn.classList.toggle("btn-ghost", !active);
+      });
+      stylePanels.forEach((panel) => {
+        const on = panel.getAttribute("data-map-panel") === id;
+        panel.classList.toggle("hidden", !on);
+      });
+      if (styleBlurbEl) styleBlurbEl.textContent = styleBlurbs[id] || "";
+      if (kindLegendEl) kindLegendEl.classList.remove("hidden");
+    }
+
+    async function setG6Mode(id) {
+      g6Mode = id;
+      g6ModeButtons.forEach((btn) => {
+        const active = btn.getAttribute("data-g6-mode-btn") === id;
+        btn.setAttribute("aria-pressed", active ? "true" : "false");
+        btn.classList.toggle("btn-neutral", active);
+        btn.classList.toggle("btn-ghost", !active);
+      });
+      g6ModePanels.forEach((panel) => {
+        const on = panel.getAttribute("data-g6-mode-panel") === id;
+        panel.classList.toggle("hidden", !on);
+      });
+      if (g6ModeBlurbEl) g6ModeBlurbEl.textContent = g6ModeBlurbs[id] || "";
+      if (id === "routes") await ensureRoutesMap();
+      if (id === "admin") await ensureAdminNestMap();
+    }
+
+    async function setLeafletMode(id) {
+      leafletMode = id;
+      leafletModeButtons.forEach((btn) => {
+        const active = btn.getAttribute("data-leaflet-mode-btn") === id;
+        btn.setAttribute("aria-pressed", active ? "true" : "false");
+        btn.classList.toggle("btn-neutral", active);
+        btn.classList.toggle("btn-ghost", !active);
+      });
+      leafletModePanels.forEach((panel) => {
+        const on = panel.getAttribute("data-leaflet-mode-panel") === id;
+        panel.classList.toggle("hidden", !on);
+      });
+      if (leafletModeBlurbEl) leafletModeBlurbEl.textContent = leafletModeBlurbs[id] || "";
+      if (id === "points") await ensureLeafletPoints();
+      if (id === "regions") await ensureLeafletRegions();
+    }
+
+    function setNest(id) {
+      nestProfileId = id;
+      nestButtons.forEach((btn) => {
+        const active = btn.getAttribute("data-nest-btn") === id;
+        btn.setAttribute("aria-pressed", active ? "true" : "false");
+        btn.classList.toggle("btn-neutral", active);
+        btn.classList.toggle("btn-ghost", !active);
+      });
+      if (nestBlurbEl) nestBlurbEl.textContent = nestBlurbs[id] || "";
+      if (root.getAttribute("data-map-engine") === "g6" && g6Mode === "admin") {
+        void ensureAdminNestMap();
+      }
+    }
+
+    async function setEngine(id) {
+      root.setAttribute("data-map-engine", id);
+      engineButtons.forEach((btn) => {
+        const active = btn.getAttribute("data-map-engine-btn") === id;
+        btn.setAttribute("aria-pressed", active ? "true" : "false");
+        btn.classList.toggle("btn-primary", active);
+        btn.classList.toggle("btn-ghost", !active);
+      });
+      enginePanels.forEach((panel) => {
+        const on = panel.getAttribute("data-map-engine-panel") === id;
+        panel.classList.toggle("hidden", !on);
+      });
+      if (engineBlurbEl) engineBlurbEl.textContent = engineBlurbs[id] || "";
+
+      if (id === "g6") {
+        await setG6Mode(g6Mode);
+        return;
+      }
+      if (id === "leaflet") {
+        await setLeafletMode(leafletMode);
+        return;
+      }
+      if (id === "echarts") {
+        if (!engInited.echarts) {
+          engInited.echarts = true;
+          const el = root.querySelector("[data-map-echarts]");
+          try {
+            if (el) engHandles.echarts = await initEchartsSocietyMap(el, payload);
+          } catch (err) {
+            console.error("[society-map] echarts init failed", err);
+            if (el) el.innerHTML = `<p class="p-4 text-sm text-error">初始化失败：${String(err?.message || err)}</p>`;
+          }
+        } else {
+          window.dispatchEvent(new Event("resize"));
+        }
+      }
+    }
+
+    styleButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-map-style-btn");
+        if (id) setStyle(id);
+      });
+    });
+    g6ModeButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-g6-mode-btn");
+        if (id) void setG6Mode(id);
+      });
+    });
+    leafletModeButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-leaflet-mode-btn");
+        if (id) void setLeafletMode(id);
+      });
+    });
+    nestButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-nest-btn");
+        if (id) setNest(id);
+      });
+    });
+    engineButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-map-engine-btn");
+        if (id) void setEngine(id);
+      });
+    });
+    setNest("hui3");
+    setStyle("board");
+    void setEngine("svg");
+  }
+</script>
+
+<style>
+  .society-geo-map :global(.map-style-btn[aria-pressed="true"]),
+  .society-geo-map :global(.map-engine-btn[aria-pressed="true"]),
+  .society-geo-map :global(.map-g6-mode-btn[aria-pressed="true"]),
+  .society-geo-map :global(.map-leaflet-mode-btn[aria-pressed="true"]),
+  .society-geo-map :global(.map-nest-btn[aria-pressed="true"]) {
+    font-weight: 600;
+  }
+
+  .society-geo-map :global(.society-leaflet-zone) {
+    background: transparent;
+    border: 0;
+  }
+
+  .society-geo-map :global(.society-leaflet-zone span) {
+    color: rgba(70, 78, 60, 0.55);
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .society-geo-map :global(.leaflet-container) {
+    width: 100%;
+    height: 100%;
+    background: #ebe8df;
+    font: inherit;
+  }
+
+  .society-geo-map :global(.society-region-toolbar) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem 0.85rem;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.72rem;
+    color: rgba(47, 53, 64, 0.7);
+    border-bottom: 1px solid rgba(80, 90, 70, 0.12);
+    background: rgba(255, 255, 255, 0.65);
+    flex-shrink: 0;
+  }
+
+  .society-geo-map :global(.society-region-toolbar strong) {
+    color: #2f3540;
+    font-size: 0.8rem;
+  }
+
+  .society-geo-map :global(.society-region-toolbar label) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+  }
+
+  .society-geo-map :global(.society-region-north) {
+    background: transparent;
+    border: 0;
+  }
+
+  .society-geo-map :global(.society-region-north span) {
+    display: inline-flex;
+    width: 1.4rem;
+    height: 1.4rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(47, 53, 64, 0.35);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #2f3540;
+  }
+
+  .society-geo-map :global(.society-g6-legend) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.75rem;
+    padding: 0.4rem 0.65rem 0.2rem;
+    font-size: 0.7rem;
+    color: rgba(45, 52, 38, 0.72);
+    flex-shrink: 0;
+  }
+
+  .society-geo-map :global(.society-g6-legend__item) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .society-geo-map :global(.society-g6-legend__item i) {
+    font-style: normal;
+    font-size: 0.85rem;
+    line-height: 1;
+  }
+
+  .society-geo-map :global(.map-nest-btn[aria-pressed="true"]) {
+    font-weight: 600;
+  }
+
+  .society-geo-map :global(.society-admin-g6-title) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 0.85rem;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.75rem;
+    color: rgba(47, 53, 64, 0.62);
+    border-bottom: 1px solid rgba(80, 90, 70, 0.12);
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.55);
+  }
+
+  .society-geo-map :global(.society-admin-g6-title strong) {
+    color: #2f3540;
+    font-size: 0.85rem;
+  }
+</style>

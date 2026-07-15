@@ -6,9 +6,15 @@ import QiangYiRelationGraph from "./QiangYiRelationGraph.astro";
 import SocietyFactionGraph from "./SocietyFactionGraph.astro";
 import SocietyGeoMap from "./SocietyGeoMap.astro";
 import { DISASTER_TIMELINE_EVENTS } from "../../lib/disasterTimeline.js";
-import { SPECIES_FACTION_CARDS } from "../../lib/speciesCooperation.js";
+import {
+  SPECIES_FACTION_CARDS,
+  SPECIES_SYMBIOSIS_DOCTRINE,
+  SPECIES_SYMBIOSIS_PRINCIPLES,
+  SPECIES_SYMBIOSIS_THESIS,
+} from "../../lib/speciesCooperation.js";
 import { CROP_KIND_CARDS } from "../../lib/cropTimeline.js";
 import {
+  SOCIETY_ALLIANCE_LORDS,
   SOCIETY_FACTION_ROWS,
   SOCIETY_BASE_ROWS,
   SOCIETY_CAMP_NOTE,
@@ -20,7 +26,12 @@ import {
 import {
   SOCIETY_MOUNTAIN_ROWS,
   SOCIETY_PACK_ROWS,
+  SOCIETY_TERRITORY_ADJACENCY,
+  SOCIETY_TERRITORY_OUTPOST_NOTE,
   SOCIETY_TERRITORY_ROWS,
+  SOCIETY_XIAQING_FRONTS,
+  SOCIETY_XIAQING_LAYOUT_DIAGRAM,
+  SOCIETY_XIAQING_LAYOUT_NOTE,
 } from "../../lib/societyMap.js";
 import {
   EVOLUTION_BODY_TRACKS,
@@ -80,7 +91,7 @@ import { RESEARCH_NODES, RESEARCH_OUTPUT_ROWS } from "../../lib/researchNodes.js
 
       <p class="text-sm leading-relaxed m-0 text-base-content/75">
         <span class="font-semibold text-base-content">夏青：</span>
-        三号领地领主。对外四级力量型；实际力量 / 视觉 / 听觉三系隐藏（后期升级，并涉磁觉）。狙击 + 领地管理并重。
+        三号领地领主。对外曾报四级力量型；实际早期力量 / 视觉 / 听觉三系隐藏，后确认磁觉成为四系（脑域若激发可问鼎五系）。狙击 + 领地管理并重。
       </p>
 
       <p class="text-xs text-base-content/45 m-0">
@@ -373,6 +384,7 @@ import { RESEARCH_NODES, RESEARCH_OUTPUT_ROWS } from "../../lib/researchNodes.js
         <h3 class="font-semibold text-base m-0 mb-3">华国基地地理示意</h3>
         <p class="text-sm text-base-content/60 m-0 mb-3 leading-relaxed">
           上北下南，按相对直距排：贴林主轴六十一→六十→五十二→五十五→四十九→五十→五十一；二十二号山与南部狼群在更南约数百里处。
+          下方地图：SVG / ECharts / AntV G6 / Leaflet。行政区「贴边相邻」见 Leaflet → 区划相邻（层级 Voronoi；「完整拼图」可铺满全国）。
         </p>
         <SocietyGeoMap />
         <div class="mt-3 overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
@@ -704,7 +716,7 @@ import { RESEARCH_NODES, RESEARCH_OUTPUT_ROWS } from "../../lib/researchNodes.js
       <div class="board-card rounded-xl border border-warning/30 bg-warning/10 text-sm leading-relaxed">
         <p class="font-semibold m-0 mb-1">制度意图</p>
         <p class="m-0 text-base-content/80">
-          熬过前三年后，死亡人口中相当比例死于同类。基地用「巡逻 + 领主合法防卫权」鼓励有实力者出区种粮，缓解安全区粮食压力。
+          公开设定：熬过灾变前期后，同类相残占比上升。基地用「巡逻 + 领主合法防卫权」鼓励有实力者出区种粮，缓解安全区粮食压力。
         </p>
       </div>
       <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
@@ -738,6 +750,91 @@ import { RESEARCH_NODES, RESEARCH_OUTPUT_ROWS } from "../../lib/researchNodes.js
             </tr>
           </tbody>
         </table>
+      </div>
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">夏青同盟／长期合作（人类侧）</h3>
+        <p class="text-sm text-base-content/60 m-0 mb-3 leading-relaxed">
+          以三号地为枢纽的领主互助与长期协作成员（非战队编制）。跨物种盟友见「物种协作」专章。
+        </p>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>成员</th>
+                <th>角色</th>
+                <th>要点</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                SOCIETY_ALLIANCE_LORDS.map((row) => (
+                  <tr>
+                    <td>{row.name}</td>
+                    <td>{row.role}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">夏青三向布局（北／西／东北）</h3>
+        <p class="text-sm text-base-content/60 m-0 mb-3 leading-relaxed">
+          {SOCIETY_XIAQING_LAYOUT_NOTE}
+        </p>
+        <pre class="board-card rounded-xl border border-base-300 bg-base-100 text-xs sm:text-sm leading-relaxed p-3 m-0 mb-3 overflow-x-auto whitespace-pre font-mono text-base-content/80">{SOCIETY_XIAQING_LAYOUT_DIAGRAM.join("\n")}</pre>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>方向</th>
+                <th>焦点</th>
+                <th>要点</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                SOCIETY_XIAQING_FRONTS.map((row) => (
+                  <tr>
+                    <td>{row.direction}</td>
+                    <td>{row.focus}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">一～四号前哨邻接（★＝明确剧情）</h3>
+        <p class="text-sm text-base-content/60 m-0 mb-3 leading-relaxed">
+          {SOCIETY_TERRITORY_OUTPOST_NOTE}
+        </p>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>领地</th>
+                <th>直接邻居</th>
+                <th>主要联系或特点</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                SOCIETY_TERRITORY_ADJACENCY.map((row) => (
+                  <tr>
+                    <td>{row.plot}</td>
+                    <td>{row.neighbors}</td>
+                    <td>{row.link}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
       <div>
         <h3 class="font-semibold text-base m-0 mb-3">北部一区编号领地（节选）</h3>
@@ -784,7 +881,7 @@ import { RESEARCH_NODES, RESEARCH_OUTPUT_ROWS } from "../../lib/researchNodes.js
               </tr>
               <tr>
                 <td>共生</td>
-                <td>收服羊老大、建立狼群邻里信任</td>
+                <td>与羊老大结伴、建立狼群邻里信任</td>
               </tr>
               <tr>
                 <td>技术</td>
@@ -792,7 +889,9 @@ import { RESEARCH_NODES, RESEARCH_OUTPUT_ROWS } from "../../lib/researchNodes.js
               </tr>
               <tr>
                 <td>协同</td>
-                <td>领主联盟、跨物种协议、区域灭灾</td>
+                <td>
+                  领主联盟（匡庆威、齐富、时舯、赵泽、辛瑜、唐怀等）、跨物种协议、区域灭灾
+                </td>
               </tr>
             </tbody>
           </table>
@@ -850,7 +949,7 @@ import { RESEARCH_NODES, RESEARCH_OUTPUT_ROWS } from "../../lib/researchNodes.js
       <div>
         <h3 class="font-semibold text-base m-0 mb-3">五大关键科研节点</h3>
         <p class="text-sm text-base-content/60 m-0 mb-3 leading-relaxed">
-          情节里最能体现「科研突破 / 制高点」的五条主线：农业现代化、环境修复、生物医学、创伤修复与军用医疗。汇聚顶尖人才、核心样本与突破性项目，决定各方竞争力与话语权。
+          情节里最能体现「科研突破 / 制高点」的五条主线：农业现代化、环境修复、生物医学、创伤修复与军用医疗。汇聚核心样本、人才与项目，阶段性影响各方竞争力与话语权。
         </p>
         <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
           <table class="board-table w-full text-sm">
@@ -913,7 +1012,38 @@ import { RESEARCH_NODES, RESEARCH_OUTPUT_ROWS } from "../../lib/researchNodes.js
         <h2 class="text-xl font-bold m-0 mb-2">跨物种关系</h2>
         <p class="text-sm text-base-content/60 m-0 leading-relaxed">
           不是「杀光变异兽」套路，而是把进化动物当作同伴、邻居、交易对象与员工。
-          狼有北/南/西多支系，熊可交易亦可联军，虎族后期进入医疗协作，飞禽负责空情——最终指向共生。
+          狼有北/南/西多支系，熊可交易亦可联军，虎族后期进入医疗协作，飞禽负责空情——主线落点是和谐共生，而非驯化征服。
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-2">{SPECIES_SYMBIOSIS_THESIS.title}</h3>
+        <p class="text-sm text-base-content/75 m-0 mb-3 leading-relaxed">
+          {SPECIES_SYMBIOSIS_THESIS.summary}
+        </p>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>合作特征</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                SPECIES_SYMBIOSIS_PRINCIPLES.map((row) => (
+                  <tr>
+                    <td>{row.name}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="text-sm text-base-content/70 m-0 mt-3 leading-relaxed">
+          <span class="font-medium text-base-content">总括：</span>
+          {SPECIES_SYMBIOSIS_DOCTRINE}
         </p>
       </div>
 
@@ -944,7 +1074,8 @@ import { RESEARCH_NODES, RESEARCH_OUTPUT_ROWS } from "../../lib/researchNodes.js
       <article class="board-card rounded-xl border border-base-300 bg-base-100">
         <h3 class="font-semibold m-0 mb-2">理念侧写</h3>
         <p class="text-sm text-base-content/75 m-0 leading-relaxed">
-          主线情感并非浪漫霸权，而是「以地为本」：从食物链顶端征服者，转向生态协作者。跨物种协议、领地联盟与有机农场扩张，是这一理念的制度化表达。
+          主线情感并非浪漫霸权，而是「以地为本」：从食物链顶端征服者，转向生态协作者。
+          跨物种协议、领地联盟与有机农场扩张，把「信任、平等分工、科研可验证、谨慎保护」写成可复制的制度。
         </p>
       </article>
     </section>
