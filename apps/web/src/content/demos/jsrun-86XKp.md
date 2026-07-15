@@ -1,5 +1,6 @@
 ---
 title: "发布订阅测试"
+heroImage: "/heroes/demo/jsrun-86XKp.webp"
 description: "JSRUN 代码片段：发布订阅测试（原地址 https://jsrun.net/86XKp）。"
 pubDate: "2019-03-04"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "vue 模拟 textarea"
+heroImage: "/heroes/demo/jsrun-ZQXKp.webp"
 description: "JSRUN 代码片段：vue 模拟 textarea（原地址 https://jsrun.net/ZQXKp）。"
 pubDate: "2019-03-26"
 type: web

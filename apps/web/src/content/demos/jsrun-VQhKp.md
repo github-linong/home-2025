@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1590000016981519?_ea=5036169"
+heroImage: "/heroes/demo/jsrun-VQhKp.webp"
 description: "https://cn.vuejs.org/v2/examples/tree-view.html 树形视图 Example"
 pubDate: "2018-11-12"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "vue3"
+heroImage: "/heroes/demo/jsrun-QgTKp.webp"
 description: "计数器组件在表单组件内绑定对象的属性时，计数器组件为什么无法使用？"
 pubDate: "2021-09-06"
 type: web

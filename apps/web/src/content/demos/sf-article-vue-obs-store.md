@@ -1,5 +1,6 @@
 ---
 title: "Vue Obs Store"
+heroImage: "/heroes/demo/sf-article-vue-obs-store.webp"
 description: "SegmentFault交互示例：Vue Obs Store。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "SegmentFault"
 badge: "思否"
 tags: ["legacy", "SegmentFault"]
 ---
+

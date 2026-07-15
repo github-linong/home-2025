@@ -1,5 +1,6 @@
 ---
 title: "这种效果一般怎样写，有点像轮播图，点击我想吃的时候把当前食物放进餐盘"
+heroImage: "/heroes/demo/jsrun-idwKp.webp"
 description: "https://segmentfault.com/q/1010000038277738"
 pubDate: "2020-11-25"
 type: web

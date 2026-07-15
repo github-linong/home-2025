@@ -2,7 +2,7 @@
 title: "程序员如何保持健康：我的 2026 健康计划"
 description: "2025 年体检报告敲响警钟，记录我的 2026 健康计划：运动、饮食、作息与心理调节的完整执行策略。"
 pubDate: "Mar 19 2026"
-heroImage: "/post_img.webp"
+heroImage: "/heroes/blog/programmer-health-plan-2026.webp"
 tags: ["健康", "生活", "2026"]
 ---
 

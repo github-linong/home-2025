@@ -1,5 +1,6 @@
 ---
 title: "flex nowrap hidden e"
+heroImage: "/heroes/demo/jsrun-BzfKp.webp"
 description: "JSRUN 代码片段：flex nowrap hidden e（原地址 https://jsrun.net/BzfKp）。"
 pubDate: "2020-03-24"
 type: web

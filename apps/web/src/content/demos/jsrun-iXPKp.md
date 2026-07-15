@@ -1,5 +1,6 @@
 ---
 title: "iframe 测试"
+heroImage: "/heroes/demo/jsrun-iXPKp.webp"
 description: "JSRUN 代码片段：iframe 测试（原地址 https://jsrun.net/iXPKp）。"
 pubDate: "2022-07-27"
 type: web

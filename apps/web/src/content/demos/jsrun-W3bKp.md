@@ -1,5 +1,6 @@
 ---
 title: "https://www.vue2editor.com/guide.html#installation"
+heroImage: "/heroes/demo/jsrun-W3bKp.webp"
 description: "JSRUN 代码片段：https://www.vue2editor.com/guide.html#installation（原地址 https://jsrun.net/W3bKp）。"
 pubDate: "2019-08-05"
 type: web

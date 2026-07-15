@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000037692294"
+heroImage: "/heroes/demo/jsrun-SS6Kp.webp"
 description: "想要在canvas渲染一张可自动放大缩小的图片，一个指定大小的区域，裁剪区域里的图片，再下图和代码"
 pubDate: "2020-11-03"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "大图片适配"
+heroImage: "/heroes/demo/jsrun-h8PKp.webp"
 description: "JSRUN 代码片段：大图片适配（原地址 https://jsrun.net/h8PKp）。"
 pubDate: "2022-08-16"
 type: web

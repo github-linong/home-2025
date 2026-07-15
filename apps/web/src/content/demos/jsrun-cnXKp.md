@@ -1,5 +1,6 @@
 ---
 title: "JS 测试电脑/手机上的浏览器JS引擎性能。可以大致对比PC、手机、ipad的性能。"
+heroImage: "/heroes/demo/jsrun-cnXKp.webp"
 description: "JSRUN 代码片段：JS 测试电脑/手机上的浏览器JS引擎性能。可以大致对比PC、手机、ipad的性能。（原地址 https://jsrun.net/cnXKp）。"
 pubDate: "2019-04-22"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "刮奖 demo"
+heroImage: "/heroes/demo/jsrun-cHbKp.webp"
 description: "JSRUN 代码片段：刮奖 demo（原地址 https://jsrun.net/cHbKp）。"
 pubDate: "2019-09-04"
 type: web

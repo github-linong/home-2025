@@ -1,5 +1,6 @@
 ---
 title: "导航制作-周年庆"
+heroImage: "/heroes/demo/jsrun-imwKp.webp"
 description: "JSRUN 代码片段：导航制作-周年庆（原地址 https://jsrun.net/imwKp）。"
 pubDate: "2020-11-30"
 type: web

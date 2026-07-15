@@ -1,5 +1,6 @@
 ---
 title: "ECharts GL 三维饼/环图"
+heroImage: "/heroes/demo/jsrun-VsUKp.webp"
 description: "用 echarts-gl 的 surface 参数方程绘制林地/草地/耕地三维饼图，支持点击与悬停。"
 pubDate: "2021-11-21"
 type: web

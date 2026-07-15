@@ -1,7 +1,8 @@
 ---
 title: "剪贴板 execCommand 复制"
+heroImage: "/heroes/demo/copy-execCommand.webp"
 description: "交互交互示例：剪贴板 execCommand 复制。"
-pubDate: "2019-06-01"
+pubDate: "2020-05-28"
 type: web
 demoUrl: "/demos/html/copy-execCommand.html"
 legacyUrl: "/static/html/copy-execCommand.html"

@@ -1,5 +1,6 @@
 ---
 title: "focusin"
+heroImage: "/heroes/demo/jsrun-kkLKp.webp"
 description: "focusout 事件测试页面：http://jsrun.net/upLKp/edit 功能实现页面：http://jsrun.net/kkLKp/edit"
 pubDate: "2020-07-27"
 type: web

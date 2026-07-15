@@ -1,7 +1,8 @@
 ---
 title: "动态加载 Web 字体"
+heroImage: "/heroes/demo/createfont.webp"
 description: "图形交互示例：动态加载 Web 字体。"
-pubDate: "2019-06-01"
+pubDate: "2020-03-18"
 type: web
 demoUrl: "/demos/html/createfont.html"
 legacyUrl: "/static/html/createfont.html"

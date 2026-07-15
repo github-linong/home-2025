@@ -1,5 +1,6 @@
 ---
 title: "两个Obj-array怎么过滤掉其中相同的项"
+heroImage: "/heroes/demo/jsrun-w8ZKp.webp"
 description: "https://segmentfault.com/q/1010000014367157"
 pubDate: "2018-04-13"
 type: web

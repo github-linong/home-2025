@@ -1,5 +1,6 @@
 ---
 title: "css高度变化让其产生动画"
+heroImage: "/heroes/demo/jsrun-kv3Kp.webp"
 description: "JSRUN 代码片段：css高度变化让其产生动画（原地址 https://jsrun.net/kv3Kp）。"
 pubDate: "2021-04-14"
 type: web

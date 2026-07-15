@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rot.js + Pathfinding.js 迷宫测试实验室</title>
+    <style>
+        body {
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* 左侧控制栏 */
+        .sidebar {
+            width: 320px;
+            background: #252525;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border-right: 1px solid #333;
+            overflow-y: auto;
+        }
+
+        .section {
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+        }
+
+        .section.collapsed .control-group,
+        .section.collapsed .legend-grid,
+        .section.collapsed p {
+            display: none;
+        }
+
+        .section h3 {
+            margin: 0 0 10px 0;
+            color: #88c0d0;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .section h3::after {
+            content: '▼';
+            font-size: 0.8em;
+            transition: transform 0.2s;
+        }
+
+        .section.collapsed h3::after {
+            transform: rotate(-90deg);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* 按钮样式 */
+        button {
+            padding: 8px 12px;
+            background-color: #3b4252;
+            color: #d8dee9;
+            border: 1px solid #4c566a;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: #434c5e;
+            border-color: #88c0d0;
+        }
+
+        button.active {
+            background-color: #5e81ac;
+            border-color: #81a1c1;
+            color: white;
+        }
+
+        /* 寻路选项 */
+        select {
+            padding: 8px;
+            background: #2e3440;
+            color: white;
+            border: 1px solid #4c566a;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        /* 右侧主视口 */
+        .main-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #111;
+            position: relative;
+        }
+
+        #game-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+            cursor: crosshair;
+        }
+
+        .stats-bar {
+            background: #252525;
+            padding: 10px 20px;
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+
+        .badge.success {
+            background: #2e5a2e;
+            color: #a3be8c;
+        }
+
+        .badge.error {
+            background: #5a2e2e;
+            color: #bf616a;
+        }
+
+        .badge.info {
+            background: #2e4a5a;
+            color: #88c0d0;
+        }
+
+        .param-group {
+            margin-top: 10px;
+            padding: 10px;
+            background: #2e3440;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            display: none;
+            /* 默认隐藏，根据算法显示 */
+        }
+
+        .param-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .param-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .param-row input[type="number"] {
+            width: 50px;
+            background: #3b4252;
+            border: 1px solid #4c566a;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+
+        .param-row input[type="range"] {
+            width: 80px;
+        }
+
+        /* Legend Style */
+        .legend-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-item span {
+            font-family: monospace;
+            font-weight: bold;
+            display: inline-block;
+            width: 16px;
+            text-align: center;
+            border-radius: 2px;
+        }
+    </style>
+
+    <!-- 引入库 -->
+    <script src="https://cdn.jsdelivr.net/npm/rot-js@2.2.0/dist/rot.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pathfinding@0.4.18/visual/lib/pathfinding-browser.min.js"></script>
+</head>
+
+<body>
+
+    <!-- 左侧侧边栏 -->
+    <div class="sidebar">
+        <div class="section">
+            <h3>1. 迷宫生成算法</h3>
+            <div class="control-group" id="maze-buttons">
+                <button onclick="setAlgo('DividedMaze')" class="active">递归分割 (Divided)</button>
+                <button onclick="setAlgo('EllerMaze')">Eller 算法 (无限迷宫)</button>
+                <button onclick="setAlgo('IceyMaze')">冰层 (Icey)</button>
+                <button onclick="setAlgo('Digger')">地牢挖掘 (Digger)</button>
+                <button onclick="setAlgo('Uniform')">统一分布 (Uniform)</button>
+                <button onclick="setAlgo('Rogue')">Rogue (经典地牢)</button>
+                <button onclick="setAlgo('Cellular')">细胞自动机 (洞穴)</button>
+            </div>
+
+            <!-- 动态参数面板 -->
+            <div id="algo-params" class="param-group">
+                <!-- 内容由 JS 动态生成 -->
+            </div>
+        </div>
+
+        <div class="section">
+            <h3 onclick="toggleSection(this)">2. 视野与交互 (新增)</h3>
+            <div class="control-group">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" id="enable-fov" onchange="toggleFOV()">
+                    启用战争迷雾 (FOV)
+                </label>
+
+                <div class="param-row" id="fov-radius-row" style="display:none; margin-left:24px;">
+                    <span>视距:</span>
+                    <input type="range" id="fov-radius" min="3" max="20" value="8"
+                        oninput="updateFOVRadius(this.value)">
+                    <span id="fov-val">8</span>
+                </div>
+
+                <button onclick="movePlayerStep()">👣 沿路径移动一步</button>
+                <button onclick="autoPlay()">▶️ 自动移动演示</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3 onclick="toggleSection(this)">3. 寻路策略</h3>
+            <div class="control-group">
+                <select id="path-algo" onchange="findPath()">
+                    <option value="AStar">A* (推荐: 平衡)</option>
+                    <option value="Dijkstra">Dijkstra (保证最短)</option>
+                    <option value="BFS">广度优先 (保证最短)</option>
+                    <option value="BestFirst">最佳优先 (贪婪: 极快)</option>
+                    <option value="BiAStar">双向 A* (双倍快乐)</option>
+                    <option value="BiDijkstra">双向 Dijkstra</option>
+                    <option value="BiBFS">双向 BFS</option>
+                    <option value="JPS">Jump Point Search (针对网格优化)</option>
+                </select>
+                <div style="margin-top: 10px; font-size: 0.8rem; color: #666;">
+                    <label>
+                        <input type="checkbox" id="allow-diagonal" onchange="findPath()"> 允许斜向移动
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3 onclick="toggleSection(this)">4. 操作</h3>
+            <div class="control-group">
+                <button onclick="regenerate()">🔄 重新生成迷宫</button>
+                <button onclick="clearPath()">🧹 清除路径</button>
+            </div>
+            <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">
+                🖱️ 点击地图: 设置终点<br>
+                ⌨️ R: 重置 | M: 移动 | F: 迷雾
+            </p>
+        </div>
+
+        <div class="section">
+            <h3 onclick="toggleSection(this)">5. 图例说明</h3>
+            <div class="legend-grid">
+                <div class="legend-item"><span style="color:#fff; background:#bf616a">S</span> 起点</div>
+                <div class="legend-item"><span style="color:#fff; background:#ebcb8b">E</span> 终点</div>
+                <div class="legend-item"><span style="color:#a3be8c">•</span> 路径</div>
+                <div class="legend-item"><span style="color:#bf616a">M</span> 怪物</div>
+                <div class="legend-item"><span style="color:#ebcb8b">$</span> 宝藏</div>
+                <div class="legend-item"><span style="color:#5e81ac">@</span> NPC</div>
+                <div class="legend-item"><span style="color:#4c566a">#</span> 墙壁</div>
+                <div class="legend-item"><span style="color:#3b4252">·</span> 地面</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧主视图 -->
+    <div class="main-view">
+        <div id="game-container"></div>
+
+        <div class="stats-bar">
+            <div class="status-item" id="status-algo">算法: DividedMaze</div>
+            <div class="status-item" id="status-time">耗时: 0ms</div>
+            <div class="status-item" id="status-path">步数: 0</div>
+            <div class="status-item" id="status-msg"></div>
+        </div>
+    </div>
+
+    <script>
+        // 配置
+        const WIDTH = 120;
+        const HEIGHT = 70;
+
+        // 状态
+        let currentMazeAlgo = 'DividedMaze';
+        let display = null;
+        let currentGrid = null; // Pathfinding grid
+        let mapData = [];       // 原始地图数据
+        let entities = [];      // 实体数据
+        let startPos = null;
+        let endPos = null;
+        let currentPath = [];
+
+        // FOV & 探索相关状态
+        let fov = null;
+        let isFovEnabled = false;
+        let fovRadius = 8;
+        let visibleMap = {};    // 当前可见的坐标 "x,y": true
+        let exploredMap = {};   // 已经探索过的坐标 "x,y": true
+        let autoPlayTimer = null;
+
+        // 默认参数配置
+        const algoParams = {
+            'Cellular': {
+                randomness: { val: 0.5, min: 0.1, max: 0.9, step: 0.05, label: '随机度' },
+                iterations: { val: 4, min: 1, max: 10, step: 1, label: '平滑迭代' }
+            },
+            'Digger': {
+                roomWidth: { val: [3, 9], min: 2, max: 15, label: '房间宽度' },
+                roomHeight: { val: [3, 5], min: 2, max: 10, label: '房间高度' },
+                corridorLength: { val: [3, 10], min: 2, max: 20, label: '走廊长度' },
+                dugPercentage: { val: 0.2, min: 0.1, max: 0.5, step: 0.05, label: '挖掘比例' }
+            },
+            'Uniform': {
+                roomWidth: { val: [3, 9], min: 2, max: 15, label: '房间宽度' },
+                roomHeight: { val: [3, 5], min: 2, max: 10, label: '房间高度' },
+                roomDugPercentage: { val: 0.1, min: 0.05, max: 0.3, step: 0.01, label: '房间比例' }
+            },
+            'Rogue': {
+                cellWidth: { val: 3, min: 1, max: 10, label: '单元格宽' }, // Rogue 特有参数，比较抽象
+                cellHeight: { val: 3, min: 1, max: 10, label: '单元格高' }
+            },
+            'IceyMaze': {
+                regularity: { val: 0, min: 0, max: 30, step: 1, label: '规则度' } // 0=最乱
+            }
+        };
+
+        // 初始化
+        function init() {
+            const container = document.getElementById('game-container');
+            display = new ROT.Display({
+                width: WIDTH,
+                height: HEIGHT,
+                fontSize: 10,
+                bg: "#111",
+                fontFamily: "Menlo, Consolas, monospace",
+                forceSquareRatio: true
+            });
+            container.appendChild(display.getContainer());
+
+            // 事件监听
+            display.getContainer().addEventListener('mousedown', (e) => {
+                const [x, y] = display.eventToPosition(e);
+                handleClick(x, y);
+            });
+
+            // 键盘监听
+            document.addEventListener('keydown', (e) => {
+                const k = e.key.toLowerCase();
+                if (k === 'r') regenerate();
+                if (k === 'm') movePlayerStep();
+                if (k === 'f') {
+                    // Toggle checkbox
+                    const cb = document.getElementById('enable-fov');
+                    cb.checked = !cb.checked;
+                    toggleFOV();
+                }
+            });
+
+            // 初始化参数UI
+            renderParamsUI();
+
+            regenerate();
+        }
+
+        // 切换折叠
+        window.toggleSection = (el) => {
+            el.parentElement.classList.toggle('collapsed');
+        }
+
+        // FOV 控制
+        window.toggleFOV = () => {
+            isFovEnabled = document.getElementById('enable-fov').checked;
+            const radiusRow = document.getElementById('fov-radius-row');
+            radiusRow.style.display = isFovEnabled ? 'flex' : 'none';
+
+            if (isFovEnabled) {
+                // 初始化 FOV 算法 (精确阴影投射)
+                // 回调函数：判断某点是否透光 (非墙壁)
+                fov = new ROT.FOV.PreciseShadowcasting((x, y) => {
+                    if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) return false;
+                    return mapData[y][x] === 0; // 0是地板(透光)，1是墙(不透光)
+                });
+                computeFOV();
+            } else {
+                visibleMap = {};
+                // 关闭时不需要清空 exploredMap
+            }
+            draw();
+        }
+
+        window.updateFOVRadius = (val) => {
+            fovRadius = parseInt(val);
+            document.getElementById('fov-val').innerText = fovRadius;
+            if (isFovEnabled) {
+                computeFOV();
+                draw();
+            }
+        }
+
+        // 计算当前视野
+        function computeFOV() {
+            if (!startPos || !fov) return;
+
+            visibleMap = {};
+
+            // 计算可见区域
+            fov.compute(startPos.x, startPos.y, fovRadius, (x, y, r, visibility) => {
+                const key = `${x},${y}`;
+                visibleMap[key] = true;
+                exploredMap[key] = true; // 看到的即探索过
+            });
+        }
+
+        // 移动一步
+        window.movePlayerStep = () => {
+            if (!currentPath || currentPath.length <= 1) return;
+
+            // 路径的第一个点是当前位置，第二个点是下一步
+            const nextStep = currentPath[1];
+
+            // 移动 startPos 到下一步
+            startPos = { x: nextStep[0], y: nextStep[1] };
+
+            // 移除路径的第一个点
+            currentPath.shift();
+
+            // 如果到达终点
+            if (startPos.x === endPos.x && startPos.y === endPos.y) {
+                updateStatus("🎉 到达终点！", "success");
+                stopAutoPlay();
+            }
+
+            // 重新计算 FOV
+            if (isFovEnabled) computeFOV();
+
+            draw();
+        }
+
+        // 自动演示
+        window.autoPlay = () => {
+            if (autoPlayTimer) {
+                stopAutoPlay();
+                return;
+            }
+
+            if (!currentPath || currentPath.length < 2) {
+                updateStatus("请先生成路径", "error");
+                return;
+            }
+
+            updateStatus("▶️ 自动演示中...", "info");
+            autoPlayTimer = setInterval(() => {
+                if (!currentPath || currentPath.length <= 1) {
+                    stopAutoPlay();
+                    return;
+                }
+                movePlayerStep();
+            }, 80); // 80ms 一步
+        }
+
+        function stopAutoPlay() {
+            if (autoPlayTimer) {
+                clearInterval(autoPlayTimer);
+                autoPlayTimer = null;
+            }
+        }
+
+        // 渲染参数面板
+        function renderParamsUI() {
+            const container = document.getElementById('algo-params');
+            container.innerHTML = '';
+
+            const params = algoParams[currentMazeAlgo];
+
+            if (!params) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'block';
+            container.innerHTML = `<div style="margin-bottom:8px; color:#88c0d0; font-weight:bold;">⚙️ ${currentMazeAlgo} 参数</div>`;
+
+            Object.keys(params).forEach(key => {
+                const conf = params[key];
+                const row = document.createElement('div');
+                row.className = 'param-row';
+
+                // 标签
+                const label = document.createElement('span');
+                label.innerText = conf.label || key;
+                row.appendChild(label);
+
+                // 控件
+                if (Array.isArray(conf.val)) {
+                    // 范围输入 (Min - Max)
+                    const wrapper = document.createElement('div');
+                    wrapper.style.display = 'flex';
+                    wrapper.style.gap = '5px';
+
+                    const inputMin = document.createElement('input');
+                    inputMin.type = 'number';
+                    inputMin.value = conf.val[0];
+                    inputMin.min = conf.min;
+                    inputMin.max = conf.max;
+                    inputMin.onchange = (e) => {
+                        conf.val[0] = parseInt(e.target.value);
+                        regenerate();
+                    };
+
+                    const inputMax = document.createElement('input');
+                    inputMax.type = 'number';
+                    inputMax.value = conf.val[1];
+                    inputMax.min = conf.min;
+                    inputMax.max = conf.max;
+                    inputMax.onchange = (e) => {
+                        conf.val[1] = parseInt(e.target.value);
+                        regenerate();
+                    };
+
+                    wrapper.appendChild(inputMin);
+                    wrapper.appendChild(document.createTextNode('-'));
+                    wrapper.appendChild(inputMax);
+                    row.appendChild(wrapper);
+
+                } else {
+                    // 单一数值 (Slider + Number)
+                    const wrapper = document.createElement('div');
+                    wrapper.style.display = 'flex';
+                    wrapper.style.gap = '5px';
+                    wrapper.style.alignItems = 'center';
+
+                    const slider = document.createElement('input');
+                    slider.type = 'range';
+                    slider.min = conf.min;
+                    slider.max = conf.max;
+                    slider.step = conf.step || 1;
+                    slider.value = conf.val;
+
+                    const numInput = document.createElement('input');
+                    numInput.type = 'number';
+                    numInput.min = conf.min;
+                    numInput.max = conf.max;
+                    numInput.step = conf.step || 1;
+                    numInput.value = conf.val;
+                    numInput.style.width = '40px';
+
+                    // 双向绑定
+                    slider.oninput = (e) => {
+                        numInput.value = e.target.value;
+                        conf.val = parseFloat(e.target.value);
+                        // 防抖动优化：拖动时也可以实时生成，但这里简单起见，onchange再生成
+                    };
+                    slider.onchange = regenerate;
+
+                    numInput.onchange = (e) => {
+                        slider.value = e.target.value;
+                        conf.val = parseFloat(e.target.value);
+                        regenerate();
+                    };
+
+                    wrapper.appendChild(slider);
+                    wrapper.appendChild(numInput);
+                    row.appendChild(wrapper);
+                }
+
+                container.appendChild(row);
+            });
+        }
+
+        // 设置算法
+        window.setAlgo = (algo) => {
+            currentMazeAlgo = algo;
+            // 更新按钮样式
+            document.querySelectorAll('#maze-buttons button').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText.includes(algo) || btn.innerText.includes(algo.replace('Maze', '')));
+            });
+
+            // 更新参数面板
+            renderParamsUI();
+
+            regenerate();
+        }
+
+        // 重新生成
+        window.regenerate = () => {
+            stopAutoPlay();
+
+            currentGrid = new PF.Grid(WIDTH, HEIGHT);
+            mapData = Array(HEIGHT).fill().map(() => Array(WIDTH).fill(0));
+            entities = [];
+            currentPath = [];
+
+            // 重置 FOV 状态
+            exploredMap = {};
+            visibleMap = {};
+
+            const floors = [];
+
+            // 获取当前算法参数
+            const params = algoParams[currentMazeAlgo] || {};
+
+            // 1. 生成迷宫
+            let map;
+            switch (currentMazeAlgo) {
+                case 'DividedMaze': map = new ROT.Map.DividedMaze(WIDTH, HEIGHT); break;
+                case 'EllerMaze': map = new ROT.Map.EllerMaze(WIDTH, HEIGHT); break;
+                case 'IceyMaze':
+                    map = new ROT.Map.IceyMaze(WIDTH, HEIGHT, params.regularity ? params.regularity.val : 0);
+                    break;
+                case 'Digger':
+                    map = new ROT.Map.Digger(WIDTH, HEIGHT, {
+                        roomWidth: params.roomWidth.val,
+                        roomHeight: params.roomHeight.val,
+                        corridorLength: params.corridorLength.val,
+                        dugPercentage: params.dugPercentage.val
+                    });
+                    break;
+                case 'Uniform':
+                    map = new ROT.Map.Uniform(WIDTH, HEIGHT, {
+                        roomWidth: params.roomWidth.val,
+                        roomHeight: params.roomHeight.val,
+                        roomDugPercentage: params.roomDugPercentage.val
+                    });
+                    break;
+                case 'Rogue':
+                    map = new ROT.Map.Rogue(WIDTH, HEIGHT, {
+                        cellWidth: params.cellWidth.val,
+                        cellHeight: params.cellHeight.val
+                    });
+                    break;
+                case 'Cellular':
+                    map = new ROT.Map.Cellular(WIDTH, HEIGHT);
+                    map.randomize(params.randomness.val);
+                    for (let i = 0; i < params.iterations.val; i++) map.create();
+                    break;
+                default: map = new ROT.Map.DividedMaze(WIDTH, HEIGHT);
+            }
+
+            map.create((x, y, value) => {
+                // 统一墙壁逻辑 (1=墙)
+                const isWall = (value === 1);
+                mapData[y][x] = isWall ? 1 : 0;
+                currentGrid.setWalkableAt(x, y, !isWall);
+                if (!isWall) floors.push({ x, y });
+            });
+
+            if (floors.length < 2) return;
+
+            // 2. 随机起终点
+            // 简单的随机洗牌函数
+            const shuffle = (array) => {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            };
+
+            // 洗牌地板列表，确保随机性
+            const shuffledFloors = shuffle([...floors]);
+
+            startPos = shuffledFloors.pop();
+            // 确保终点离起点有一定距离
+            let endCandidate;
+            for (let i = 0; i < shuffledFloors.length; i++) {
+                const candidate = shuffledFloors[i];
+                if (Math.abs(startPos.x - candidate.x) + Math.abs(startPos.y - candidate.y) > 20) {
+                    endCandidate = candidate;
+                    shuffledFloors.splice(i, 1); // 移除选中的终点
+                    break;
+                }
+            }
+            endPos = endCandidate || shuffledFloors.pop();
+
+            // 标记起点为已探索
+            exploredMap[`${startPos.x},${startPos.y}`] = true;
+
+            // 3. 生成实体 (怪物、宝藏、NPC)
+            const entityCount = Math.floor(floors.length * 0.05); // 5% 的地板上有东西
+
+            for (let i = 0; i < entityCount; i++) {
+                if (shuffledFloors.length === 0) break;
+                const pos = shuffledFloors.pop();
+
+                const rand = Math.random();
+                let type, char, color;
+
+                if (rand < 0.6) {
+                    type = 'monster';
+                    char = ['M', 'g', 'k', 'z'][Math.floor(Math.random() * 4)]; // 多种怪物
+                    color = '#bf616a'; // Red
+                } else if (rand < 0.9) {
+                    type = 'treasure';
+                    char = '$';
+                    color = '#ebcb8b'; // Yellow
+                } else {
+                    type = 'npc';
+                    char = '@';
+                    color = '#5e81ac'; // Blue
+                }
+
+                entities.push({ ...pos, type, char, color });
+            }
+
+            // 更新 FOV (如果有地图变更)
+            if (isFovEnabled) {
+                fov = new ROT.FOV.PreciseShadowcasting((x, y) => {
+                    if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) return false;
+                    return mapData[y][x] === 0;
+                });
+                computeFOV();
+            }
+
+            findPath();
+            updateStatus(`迷宫生成完成 (实体: ${entities.length})`, 'success');
+        }
+
+        // 处理点击
+        function handleClick(x, y) {
+            if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) return;
+
+            // 如果开启了迷雾，不能点击未知区域 (除非作弊模式，但这里为了真实体验)
+            if (isFovEnabled && !exploredMap[`${x},${y}`]) {
+                updateStatus('无法移动到未知区域', 'error');
+                return;
+            }
+
+            if (!currentGrid.isWalkableAt(x, y)) {
+                updateStatus('无法移动到墙壁', 'error');
+                return;
+            }
+            endPos = { x, y };
+            findPath();
+        }
+
+        // 寻路
+        window.findPath = () => {
+            if (!startPos || !endPos) return;
+
+            const algoName = document.getElementById('path-algo').value;
+            const allowDiagonal = document.getElementById('allow-diagonal').checked;
+
+            let finder;
+            const opts = { allowDiagonal, dontCrossCorners: true };
+
+            // 实例化 Finder
+            switch (algoName) {
+                case 'AStar': finder = new PF.AStarFinder(opts); break;
+                case 'Dijkstra': finder = new PF.DijkstraFinder(opts); break;
+                case 'BFS': finder = new PF.BreadthFirstFinder(opts); break;
+                case 'BestFirst': finder = new PF.BestFirstFinder(opts); break;
+                case 'BiAStar': finder = new PF.BiAStarFinder(opts); break;
+                case 'BiDijkstra': finder = new PF.BiDijkstraFinder(opts); break;
+                case 'BiBFS': finder = new PF.BiBreadthFirstFinder(opts); break;
+                case 'JPS': finder = new PF.JumpPointFinder(opts); break;
+                default: finder = new PF.AStarFinder(opts);
+            }
+
+            const startTime = performance.now();
+            // 必须 clone grid
+            const path = finder.findPath(startPos.x, startPos.y, endPos.x, endPos.y, currentGrid.clone());
+            const endTime = performance.now();
+
+            currentPath = path;
+            draw();
+
+            // 更新 UI
+            document.getElementById('status-algo').innerText = `算法: ${currentMazeAlgo} + ${algoName}`;
+            document.getElementById('status-time').innerText = `耗时: ${(endTime - startTime).toFixed(2)}ms`;
+            document.getElementById('status-path').innerText = `步数: ${path.length}`;
+
+            if (path.length === 0) updateStatus('无路可走', 'error');
+            else updateStatus('路径已找到', 'info');
+        }
+
+        window.clearPath = () => {
+            currentPath = [];
+            draw();
+        }
+
+        // 渲染
+        function draw() {
+            display.clear();
+
+            // 1. 地图 (墙与地)
+            for (let y = 0; y < HEIGHT; y++) {
+                for (let x = 0; x < WIDTH; x++) {
+                    const key = `${x},${y}`;
+
+                    // FOV 逻辑
+                    let isVisible = true;
+                    let isExplored = true;
+
+                    if (isFovEnabled) {
+                        isVisible = visibleMap[key];
+                        isExplored = exploredMap[key];
+                    }
+
+                    // 如果未探索，跳过
+                    if (isFovEnabled && !isExplored) continue;
+
+                    const isWall = mapData[y][x] === 1;
+
+                    let fg, bg;
+                    if (isWall) {
+                        fg = "#4c566a"; // 墙
+                        bg = "#2e3440";
+                    } else {
+                        fg = "#3b4252"; // 地
+                        bg = "#111";
+                    }
+
+                    // 记忆区域变暗
+                    if (isFovEnabled && !isVisible) {
+                        fg = "#222";
+                        bg = "#000";
+                    }
+
+                    display.draw(x, y, isWall ? "#" : "·", fg, bg);
+                }
+            }
+
+            // 2. 实体 (怪物/宝藏/NPC)
+            entities.forEach(ent => {
+                const key = `${ent.x},${ent.y}`;
+                // 只有在视野内可见
+                if (!isFovEnabled || visibleMap[key]) {
+                    display.draw(ent.x, ent.y, ent.char, ent.color, "#111");
+                }
+            });
+
+            // 3. 路径
+            if (currentPath.length > 0) {
+                for (let i = 1; i < currentPath.length - 1; i++) {
+                    const [px, py] = currentPath[i];
+
+                    // 只有已探索区域才显示路径
+                    if (isFovEnabled && !exploredMap[`${px},${py}`]) continue;
+
+                    const entityOnPath = entities.find(e => e.x === px && e.y === py);
+                    const inView = !isFovEnabled || visibleMap[`${px},${py}`];
+
+                    const pathColor = inView ? "#a3be8c" : "#2e5a2e";
+
+                    if (entityOnPath && inView) {
+                        display.draw(px, py, entityOnPath.char, pathColor, "#4c566a");
+                    } else {
+                        display.draw(px, py, "•", pathColor, inView ? "#111" : "#000");
+                    }
+                }
+            }
+
+            // 4. 起终点
+            // 起点 (Player)
+            display.draw(startPos.x, startPos.y, "S", "#fff", "#bf616a");
+
+            // 终点 (只有探索过才显示)
+            if (endPos && (!isFovEnabled || exploredMap[`${endPos.x},${endPos.y}`])) {
+                display.draw(endPos.x, endPos.y, "E", "#fff", "#ebcb8b");
+            }
+        }
+
+        function updateStatus(msg, type = 'info') {
+            const el = document.getElementById('status-msg');
+            el.innerText = msg;
+            el.className = `status-item badge ${type}`;
+        }
+
+        window.onload = init;
+
+    </script>
+</body>
+
+</html>

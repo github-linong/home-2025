@@ -1,5 +1,6 @@
 ---
 title: "Unlock Music"
+heroImage: "/heroes/demo/project-unlock-music-modern.webp"
 description: "浏览器端音乐格式解锁 / 转换工具。"
 pubDate: "2019-06-01"
 type: web

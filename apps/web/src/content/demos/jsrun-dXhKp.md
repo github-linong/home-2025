@@ -1,5 +1,6 @@
 ---
 title: "css隐藏按钮"
+heroImage: "/heroes/demo/jsrun-dXhKp.webp"
 description: "JSRUN 代码片段：css隐藏按钮（原地址 https://jsrun.net/dXhKp）。"
 pubDate: "2018-09-29"
 type: web

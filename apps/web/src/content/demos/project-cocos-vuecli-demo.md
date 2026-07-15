@@ -1,5 +1,6 @@
 ---
 title: "Cocos + Vue CLI Demo"
+heroImage: "/heroes/demo/project-cocos-vuecli-demo.webp"
 description: "Cocos 与 Vue CLI 结合的前端示例。"
 pubDate: "2019-06-01"
 type: web

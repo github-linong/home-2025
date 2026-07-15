@@ -1,5 +1,6 @@
 ---
 title: "Chrome Timeline / Profiles"
+heroImage: "/heroes/demo/timeLine__profiles.webp"
 description: "Timeline 学习页。"
 pubDate: "2018-06-01"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "navigator 遍历"
+heroImage: "/heroes/demo/navigator.webp"
 description: "遍历 navigator 属性。"
 pubDate: "2018-06-01"
 type: web

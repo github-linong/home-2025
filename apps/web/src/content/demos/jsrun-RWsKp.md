@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000042672485"
+heroImage: "/heroes/demo/jsrun-RWsKp.webp"
 description: "css :hover和:active的bug及canvas层级问题?"
 pubDate: "2022-10-24"
 type: web

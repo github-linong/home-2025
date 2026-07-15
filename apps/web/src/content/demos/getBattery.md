@@ -1,5 +1,6 @@
 ---
 title: "Battery Status API"
+heroImage: "/heroes/demo/getBattery.webp"
 description: "监听充电状态、电量与剩余时间。"
 pubDate: "2018-06-01"
 type: web

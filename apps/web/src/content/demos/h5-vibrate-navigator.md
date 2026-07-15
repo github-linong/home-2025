@@ -1,5 +1,6 @@
 ---
 title: "手机震动 vibrate"
+heroImage: "/heroes/demo/h5-vibrate-navigator.webp"
 description: "navigator.vibrate 震动反馈。"
 pubDate: "2019-06-01"
 type: web

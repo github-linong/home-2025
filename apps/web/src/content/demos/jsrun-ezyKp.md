@@ -1,5 +1,6 @@
 ---
 title: "端内 Upload 组件（客户端/H5 分流）"
+heroImage: "/heroes/demo/jsrun-ezyKp.webp"
 description: "封装 vv-upload：按 UA 与开关在 App 内客户端上传与 H5 file 输入间切换。"
 pubDate: "2019-06-19"
 type: web

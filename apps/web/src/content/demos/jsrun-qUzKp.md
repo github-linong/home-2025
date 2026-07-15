@@ -1,5 +1,6 @@
 ---
 title: "svg 线 动画"
+heroImage: "/heroes/demo/jsrun-qUzKp.webp"
 description: "JSRUN 代码片段：svg 线 动画（原地址 https://jsrun.net/QUzKp）。"
 pubDate: "2022-06-14"
 type: web

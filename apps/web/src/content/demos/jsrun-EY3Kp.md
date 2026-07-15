@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000039768955"
+heroImage: "/heroes/demo/jsrun-EY3Kp.webp"
 description: "MutationObserver 监听DOM改变"
 pubDate: "2021-04-04"
 type: web

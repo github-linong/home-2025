@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000038187630"
+heroImage: "/heroes/demo/jsrun-UVwKp.webp"
 description: "input[type='range']中,设置max:1.5和min:1，如何适配进度高亮，如下图和代码"
 pubDate: "2020-11-17"
 type: web

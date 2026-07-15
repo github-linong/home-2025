@@ -1,5 +1,6 @@
 ---
 title: "陀螺仪小球"
+heroImage: "/heroes/demo/h5-vue-devicemotion-accelerationIncludingGravity-ball.webp"
 description: "陀螺仪驱动小球滚动。"
 pubDate: "2019-06-01"
 type: web

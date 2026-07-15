@@ -1,5 +1,6 @@
 ---
 title: "svg-icon"
+heroImage: "/heroes/demo/jsrun-tYPKp.webp"
 description: "JSRUN 代码片段：svg-icon（原地址 https://jsrun.net/tYPKp）。"
 pubDate: "2022-07-20"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "移动端 fixed + input Bug"
+heroImage: "/heroes/demo/test-mobile-fixed-input-BUG.webp"
 description: "theme：fixed 与 input 组合 Bug。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "测试"
 badge: "Bug 复现"
 tags: ["legacy", "测试"]
 ---
+

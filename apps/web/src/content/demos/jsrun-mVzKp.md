@@ -1,5 +1,6 @@
 ---
 title: "el-table lazy load"
+heroImage: "/heroes/demo/jsrun-mVzKp.webp"
 description: "https://segmentfault.com/q/1010000041955846"
 pubDate: "2022-06-09"
 type: web

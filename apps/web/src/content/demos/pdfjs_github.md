@@ -1,5 +1,6 @@
 ---
 title: "https://github.com/mozilla/pdf.js  http://mozilla.github.io/pdf.js/getting_started/"
+heroImage: "/heroes/demo/pdfjs_github.webp"
 description: "早期 theme 目录实验页：https://github.com/mozilla/pdf.js  http://mozilla.github.io/pdf.js/getting_started/。自 home-2023 lilnong/theme 迁入。"
 pubDate: "2018-06-01"
 type: web

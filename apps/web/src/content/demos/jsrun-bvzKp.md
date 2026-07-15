@@ -1,5 +1,6 @@
 ---
 title: "js 压缩、解压缩"
+heroImage: "/heroes/demo/jsrun-bvzKp.webp"
 description: "JSRUN 代码片段：js 压缩、解压缩（原地址 https://jsrun.net/bvzKp）。"
 pubDate: "2022-05-26"
 type: web

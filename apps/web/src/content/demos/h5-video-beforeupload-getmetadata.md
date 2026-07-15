@@ -1,5 +1,6 @@
 ---
 title: "上传前读视频时长"
+heroImage: "/heroes/demo/h5-video-beforeupload-getmetadata.webp"
 description: "上传前读取视频元数据（时长等）。"
 pubDate: "2019-06-01"
 type: web

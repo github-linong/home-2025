@@ -1,5 +1,6 @@
 ---
 title: "flex 对齐"
+heroImage: "/heroes/demo/jsrun-dYzKp.webp"
 description: "JSRUN 代码片段：flex 对齐（原地址 https://jsrun.net/dYzKp）。"
 pubDate: "2022-05-12"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "mobileSelect"
+heroImage: "/heroes/demo/jsrun-vibKp.webp"
 description: "JSRUN 代码片段：mobileSelect（原地址 https://jsrun.net/vibKp）。"
 pubDate: "2019-07-15"
 type: web

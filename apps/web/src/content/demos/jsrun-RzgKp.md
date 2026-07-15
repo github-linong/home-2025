@@ -1,5 +1,6 @@
 ---
 title: "-webkit-mask"
+heroImage: "/heroes/demo/jsrun-RzgKp.webp"
 description: "-webkit-text-stroke -webkit-box-reflect"
 pubDate: "2018-07-27"
 type: web

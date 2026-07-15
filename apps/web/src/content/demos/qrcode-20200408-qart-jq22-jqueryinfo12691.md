@@ -1,7 +1,8 @@
 ---
 title: "qart.js 艺术二维码"
+heroImage: "/heroes/demo/qrcode-20200408-qart-jq22-jqueryinfo12691.webp"
 description: "二维码交互示例：qart.js 艺术二维码。"
-pubDate: "2019-06-01"
+pubDate: "2020-04-08"
 type: web
 demoUrl: "/demos/html/qrcode-20200408-qart-jq22-jqueryinfo12691.html"
 legacyUrl: "/static/html/qrcode-20200408-qart-jq22-jqueryinfo12691.html"

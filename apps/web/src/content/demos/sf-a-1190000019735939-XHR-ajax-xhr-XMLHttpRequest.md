@@ -1,7 +1,8 @@
 ---
 title: "XHR Ajax Xhr XMLHttpRequest"
+heroImage: "/heroes/demo/sf-a-1190000019735939-XHR-ajax-xhr-XMLHttpRequest.webp"
 description: "SegmentFault交互示例：XHR Ajax Xhr XMLHttpRequest。"
-pubDate: "2019-06-01"
+pubDate: "2019-07-17"
 type: web
 demoUrl: "/demos/html/sf-a-1190000019735939-XHR-ajax-xhr-XMLHttpRequest.html"
 legacyUrl: "/static/html/sf-a-1190000019735939-XHR-ajax-xhr-XMLHttpRequest.html"

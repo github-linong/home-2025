@@ -1,5 +1,6 @@
 ---
 title: "https://www.cnblogs.com/sichaoyun/p/6647458.html"
+heroImage: "/heroes/demo/jsrun-LghKp.webp"
 description: "JSRUN 代码片段：https://www.cnblogs.com/sichaoyun/p/6647458.html（原地址 https://jsrun.net/LghKp）。"
 pubDate: "2018-09-25"
 type: web

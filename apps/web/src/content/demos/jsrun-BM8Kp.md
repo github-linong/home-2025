@@ -1,5 +1,6 @@
 ---
 title: "flex 平分区间测试"
+heroImage: "/heroes/demo/jsrun-BM8Kp.webp"
 description: "JSRUN 代码片段：flex 平分区间测试（原地址 https://jsrun.net/BM8Kp）。"
 pubDate: "2021-08-27"
 type: web

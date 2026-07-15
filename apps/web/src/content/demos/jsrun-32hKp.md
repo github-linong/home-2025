@@ -1,5 +1,6 @@
 ---
 title: "榜单特效测试"
+heroImage: "/heroes/demo/jsrun-32hKp.webp"
 description: "JSRUN 代码片段：榜单特效测试（原地址 https://jsrun.net/32hKp）。"
 pubDate: "2018-10-12"
 type: web

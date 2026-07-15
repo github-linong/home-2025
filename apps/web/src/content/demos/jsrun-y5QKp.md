@@ -1,5 +1,6 @@
 ---
 title: "vant watch field"
+heroImage: "/heroes/demo/jsrun-y5QKp.webp"
 description: "JSRUN 代码片段：vant watch field（原地址 https://jsrun.net/y5QKp）。"
 pubDate: "2022-04-25"
 type: web

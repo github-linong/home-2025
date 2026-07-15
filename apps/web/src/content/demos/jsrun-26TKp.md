@@ -1,5 +1,6 @@
 ---
 title: "曝光埋点测试"
+heroImage: "/heroes/demo/jsrun-26TKp.webp"
 description: "JSRUN 代码片段：曝光埋点测试（原地址 https://jsrun.net/26TKp）。"
 pubDate: "2021-09-15"
 type: web

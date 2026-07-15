@@ -1,5 +1,6 @@
 ---
 title: "Upload Input File Accept Capture"
+heroImage: "/heroes/demo/test-upload-input-file-accept-capture.webp"
 description: "测试交互示例：Upload Input File Accept Capture。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "测试"
 badge: "Bug 复现"
 tags: ["legacy", "测试"]
 ---
+

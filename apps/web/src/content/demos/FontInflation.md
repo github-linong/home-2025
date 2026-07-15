@@ -1,5 +1,6 @@
 ---
 title: "FontInflation 字号膨胀"
+heroImage: "/heroes/demo/FontInflation.webp"
 description: "Android FontInflation 字号膨胀复现。"
 pubDate: "2018-06-01"
 type: web

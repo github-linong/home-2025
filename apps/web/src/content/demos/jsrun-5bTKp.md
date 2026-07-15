@@ -1,5 +1,6 @@
 ---
 title: "Flex 蛇形走位布局"
+heroImage: "/heroes/demo/jsrun-5bTKp.webp"
 description: "把列表按行切分后，奇数行用 flex 反向排列，模拟蛇形折返顺序。"
 pubDate: "2021-09-09"
 type: web

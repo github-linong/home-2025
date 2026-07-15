@@ -1,5 +1,6 @@
 ---
 title: "canvas 截图"
+heroImage: "/heroes/demo/jsrun-fKNKp.webp"
 description: "JSRUN 代码片段：canvas 截图（原地址 https://jsrun.net/fKNKp）。"
 pubDate: "2021-03-06"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "我现在这么写的他把单元格给撑高了。"
+heroImage: "/heroes/demo/jsrun-6JZKp.webp"
 description: "JSRUN 代码片段：我现在这么写的他把单元格给撑高了。（原地址 https://jsrun.net/6JZKp）。"
 pubDate: "2018-05-10"
 type: web

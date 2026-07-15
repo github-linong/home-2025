@@ -1,5 +1,6 @@
 ---
 title: "粘贴与拖放内容识别"
+heroImage: "/heroes/demo/jsrun-Zd8Kp.webp"
 description: "演示在 textarea 上监听 paste/drop，解析 clipboardData 与 dataTransfer 中的 files 与 items 并预览。"
 pubDate: "2021-08-11"
 type: web

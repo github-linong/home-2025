@@ -1,5 +1,6 @@
 ---
 title: "进度条测试"
+heroImage: "/heroes/demo/jsrun-Y6EKp.webp"
 description: "JSRUN 代码片段：进度条测试（原地址 https://jsrun.net/Y6EKp）。"
 pubDate: "2022-09-28"
 type: web

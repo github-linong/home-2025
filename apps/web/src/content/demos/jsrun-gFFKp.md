@@ -1,5 +1,6 @@
 ---
 title: "table border test"
+heroImage: "/heroes/demo/jsrun-gFFKp.webp"
 description: "JSRUN 代码片段：table border test（原地址 https://jsrun.net/gFFKp）。"
 pubDate: "2023-06-21"
 type: web

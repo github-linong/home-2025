@@ -1,5 +1,6 @@
 ---
 title: "CSS 翻页簿实验（残片）"
+heroImage: "/heroes/demo/jsrun-YnhKp.webp"
 description: "原先尝试做纸张翻页/Turn.js 翻书效果，迁移后正文与脚本几乎全部被注释。"
 pubDate: "2018-12-14"
 type: web

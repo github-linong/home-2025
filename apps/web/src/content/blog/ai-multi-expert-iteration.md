@@ -2,7 +2,7 @@
 title: "用 AI 多专家系统迭代个人站是什么体验"
 description: "记录用 8 个 AI 专家角色对个人站进行持续迭代检查的实践，包括踩坑、反思和改进。"
 pubDate: "Mar 19 2026"
-heroImage: "/post_img.webp"
+heroImage: "/heroes/blog/ai-multi-expert-iteration.webp"
 tags: ["AI","Next.js","个人站","React","TypeScript"]
 ---
 

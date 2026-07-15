@@ -1,5 +1,6 @@
 ---
 title: "扫雷地图与邻雷计数"
+heroImage: "/heroes/demo/jsrun-sfQKp.webp"
 description: "Vue 生成 10×10 棋盘，随机布雷并用负数展示邻雷数，点击可翻开与蔓延。"
 pubDate: "2022-04-07"
 type: web

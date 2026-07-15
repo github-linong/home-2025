@@ -1,7 +1,8 @@
 ---
 title: "隐藏 DOM 元素测试"
+heroImage: "/heroes/demo/hidden-dom.webp"
 description: "实验交互示例：隐藏 DOM 元素测试。"
-pubDate: "2019-06-01"
+pubDate: "2020-12-03"
 type: web
 demoUrl: "/demos/html/hidden-dom.html"
 legacyUrl: "/static/html/hidden-dom.html"

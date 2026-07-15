@@ -1,5 +1,6 @@
 ---
 title: "img 压缩测试"
+heroImage: "/heroes/demo/jsrun-TUtKp.webp"
 description: "JSRUN 代码片段：img 压缩测试（原地址 https://jsrun.net/TUtKp）。"
 pubDate: "2024-11-18"
 type: web

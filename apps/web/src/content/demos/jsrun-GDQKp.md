@@ -1,5 +1,6 @@
 ---
 title: "css 动画造成页面卡顿"
+heroImage: "/heroes/demo/jsrun-GDQKp.webp"
 description: "JSRUN 代码片段：css 动画造成页面卡顿（原地址 https://jsrun.net/GDQKp）。"
 pubDate: "2022-04-26"
 type: web

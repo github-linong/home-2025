@@ -1,5 +1,6 @@
 ---
 title: "CSS 文本超出提示效果"
+heroImage: "/heroes/demo/jsrun-GM8Kp.webp"
 description: "不得不说，这个思路，真的秀 https://segmentfault.com/a/1190000040057525"
 pubDate: "2021-08-27"
 type: web

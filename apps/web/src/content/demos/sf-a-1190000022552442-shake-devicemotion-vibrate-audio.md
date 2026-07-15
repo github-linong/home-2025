@@ -1,7 +1,8 @@
 ---
 title: "摇一摇 + 震动 + 音频"
+heroImage: "/heroes/demo/sf-a-1190000022552442-shake-devicemotion-vibrate-audio.webp"
 description: "SegmentFault交互示例：摇一摇 + 震动 + 音频。"
-pubDate: "2019-06-01"
+pubDate: "2020-05-21"
 type: web
 demoUrl: "/demos/html/sf-a-1190000022552442-shake-devicemotion-vibrate-audio.html"
 legacyUrl: "/static/html/sf-a-1190000022552442-shake-devicemotion-vibrate-audio.html"

@@ -1,7 +1,8 @@
 ---
 title: "Vue ERP 插槽示例 (2.6.11)"
+heroImage: "/heroes/demo/h-3b1f3eff7aa5735f.webp"
 description: "Vue交互示例：Vue ERP 插槽示例 (2.6.11)。"
-pubDate: "2019-06-01"
+pubDate: "2020-10-05"
 type: web
 demoUrl: "/demos/html/vue-erp-test-vue@2.6.11.html"
 legacyUrl: "/static/html/vue-erp-test-vue@2.6.11.html"

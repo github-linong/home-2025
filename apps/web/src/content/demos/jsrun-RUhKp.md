@@ -1,5 +1,6 @@
 ---
 title: "canvas五等分"
+heroImage: "/heroes/demo/jsrun-RUhKp.webp"
 description: "JSRUN 代码片段：canvas五等分（原地址 https://jsrun.net/RUhKp）。"
 pubDate: "2018-11-05"
 type: web

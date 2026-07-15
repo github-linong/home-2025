@@ -1,5 +1,6 @@
 ---
 title: "Vue公告栏"
+heroImage: "/heroes/demo/jsrun-93aKp.webp"
 description: "JSRUN 代码片段：Vue公告栏（原地址 https://jsrun.net/93aKp）。"
 pubDate: "2021-01-29"
 type: web

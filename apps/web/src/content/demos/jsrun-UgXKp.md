@@ -1,5 +1,6 @@
 ---
 title: "背景图尝试"
+heroImage: "/heroes/demo/jsrun-UgXKp.webp"
 description: "JSRUN 代码片段：背景图尝试（原地址 https://jsrun.net/UgXKp）。"
 pubDate: "2019-01-31"
 type: web

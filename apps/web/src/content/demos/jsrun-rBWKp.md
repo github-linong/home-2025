@@ -1,5 +1,6 @@
 ---
 title: "canvas 绘图游戏"
+heroImage: "/heroes/demo/jsrun-rBWKp.webp"
 description: "JSRUN 代码片段：canvas 绘图游戏（原地址 https://jsrun.net/rBWKp）。"
 pubDate: "2020-01-04"
 type: web

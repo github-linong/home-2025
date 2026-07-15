@@ -1,7 +1,55 @@
 ---
-const { title, img, desc, url, badge, tags, target = "_blank", kind, votes, accepted } = Astro.props;
 import { Image } from "astro:assets";
+import dayjs from "dayjs";
+
+export interface Props {
+  title: string;
+  img?: string;
+  desc: string;
+  url: string;
+  badge?: string;
+  tags?: string[];
+  target?: string;
+  kind?: string;
+  votes?: number;
+  accepted?: boolean;
+  pubDate?: Date | string;
+  updatedDate?: Date | string;
+  category?: string;
+  /** When true, prefer "更新于" as the primary date label (demos). */
+  dateAsUpdate?: boolean;
+}
+
+const {
+  title,
+  img,
+  desc,
+  url,
+  badge,
+  tags,
+  target = "_blank",
+  kind,
+  votes,
+  accepted,
+  pubDate,
+  updatedDate,
+  category,
+  dateAsUpdate = false,
+} = Astro.props;
+
 const isAnswer = kind === "answer";
+
+function toDay(value?: Date | string) {
+  if (!value) return null;
+  const d = dayjs(value);
+  return d.isValid() ? d : null;
+}
+
+const published = toDay(pubDate);
+const updated = toDay(updatedDate);
+const publishedLabel = published?.format("YYYY-MM-DD") ?? "";
+const updatedLabel = updated?.format("YYYY-MM-DD") ?? "";
+const hasDistinctUpdate = Boolean(updatedLabel && updatedLabel !== publishedLabel);
 ---
 
 <div
@@ -33,6 +81,34 @@ const isAnswer = kind === "answer";
             <div class="badge badge-ghost mx-1">👍 {votes}</div>
           )}
         </h1>
+        {
+          (publishedLabel || updatedLabel || category) && (
+            <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/50">
+              {dateAsUpdate ? (
+                <>
+                  {(updatedLabel || publishedLabel) && (
+                    <time datetime={updated?.toISOString() || published?.toISOString()}>
+                      更新于 {updatedLabel || publishedLabel}
+                    </time>
+                  )}
+                  {hasDistinctUpdate && publishedLabel && (
+                    <time datetime={published!.toISOString()}>发布于 {publishedLabel}</time>
+                  )}
+                </>
+              ) : (
+                <>
+                  {publishedLabel && (
+                    <time datetime={published!.toISOString()}>发布于 {publishedLabel}</time>
+                  )}
+                  {hasDistinctUpdate && (
+                    <time datetime={updated!.toISOString()}>更新于 {updatedLabel}</time>
+                  )}
+                </>
+              )}
+              {category && <span class="opacity-80">{category}</span>}
+            </div>
+          )
+        }
         <p class={`py-1 text-1xl ${isAnswer ? "text-base-content/80 line-clamp-3" : ""}`}>
           {isAnswer && <span class="text-base-content/50 font-medium">A · </span>}
           {desc}

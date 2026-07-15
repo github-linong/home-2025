@@ -1,5 +1,6 @@
 ---
 title: "百度地图与Vue有冲突？"
+heroImage: "/heroes/demo/jsrun-8kTKp.webp"
 description: "JSRUN 代码片段：百度地图与Vue有冲突？（原地址 https://jsrun.net/8kTKp）。"
 pubDate: "2021-09-01"
 type: web

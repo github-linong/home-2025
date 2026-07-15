@@ -1,5 +1,6 @@
 ---
 title: "Canvas 笔刷马赛克"
+heroImage: "/heroes/demo/jsrun-7NxKp.webp"
 description: "在图片上按住拖动，用 Canvas 从原图随机取样绘制马赛克块。"
 pubDate: "2023-10-13"
 type: web

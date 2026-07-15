@@ -1,5 +1,6 @@
 ---
 title: "屏幕录制并下载"
+heroImage: "/heroes/demo/MediaDevices-getDisplayMedia-MediaRecorder-download.webp"
 description: "屏幕录制并下载本地文件。"
 pubDate: "2019-06-01"
 type: web

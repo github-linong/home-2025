@@ -1,5 +1,6 @@
 ---
 title: "固定宽度卡片自动换行过渡"
+heroImage: "/heroes/demo/jsrun-rfUKp.webp"
 description: "容器可缩放时，按列数重算 absolute 定位，用 CSS transition 实现换行动画。"
 pubDate: "2021-10-30"
 type: web

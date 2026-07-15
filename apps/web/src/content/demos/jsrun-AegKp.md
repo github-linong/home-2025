@@ -1,5 +1,6 @@
 ---
 title: "Vue 多选选中效果三种写法"
+heroImage: "/heroes/demo/jsrun-AegKp.webp"
 description: "用三个并列 Vue 实例对比数组、对象映射、条目属性三种多选状态管理。"
 pubDate: "2018-07-24"
 type: web

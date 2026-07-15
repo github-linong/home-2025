@@ -1,5 +1,6 @@
 ---
 title: "Iframe Newtork Onerror"
+heroImage: "/heroes/demo/iframe-newtork-onerror.webp"
 description: "实验交互示例：Iframe Newtork Onerror。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---
+

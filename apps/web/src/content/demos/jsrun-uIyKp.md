@@ -1,5 +1,6 @@
 ---
 title: "svg 五边形测试"
+heroImage: "/heroes/demo/jsrun-uIyKp.webp"
 description: "JSRUN 代码片段：svg 五边形测试（原地址 https://jsrun.net/uIyKp）。"
 pubDate: "2019-06-04"
 type: web

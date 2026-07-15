@@ -1,5 +1,6 @@
 ---
 title: "const state = Vue.observable({ count: 0 })"
+heroImage: "/heroes/demo/jsrun-UbUKp.webp"
 description: "JSRUN 代码片段：const state = Vue.observable({ count: 0 })（原地址 https://jsrun.net/uBUKp）。"
 pubDate: "2021-12-07"
 type: web

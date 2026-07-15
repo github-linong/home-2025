@@ -1,5 +1,6 @@
 ---
 title: "vue-swiper动画失效"
+heroImage: "/heroes/demo/jsrun-nDhKp.webp"
 description: "JSRUN 代码片段：vue-swiper动画失效（原地址 https://jsrun.net/nDhKp）。"
 pubDate: "2018-12-12"
 type: web

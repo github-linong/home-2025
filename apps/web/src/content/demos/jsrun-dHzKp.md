@@ -1,5 +1,6 @@
 ---
 title: "qs 规则测试"
+heroImage: "/heroes/demo/jsrun-dHzKp.webp"
 description: "JSRUN 代码片段：qs 规则测试（原地址 https://jsrun.net/dHzKp）。"
 pubDate: "2022-06-30"
 type: web

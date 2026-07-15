@@ -1,7 +1,8 @@
 ---
 title: "Flex 垂直布局 · section flex:1 居中"
+heroImage: "/heroes/demo/flex-direction-column-sf.2.webp"
 description: "中间 section 用 flex:1 撑开，并 display:flex + align-items:center 让内容垂直居中。"
-pubDate: "2019-06-01"
+pubDate: "2020-10-15"
 type: web
 demoUrl: "/demos/html/flex-direction-column-sf.2.html"
 legacyUrl: "/static/html/flex-direction-column-sf.2.html"

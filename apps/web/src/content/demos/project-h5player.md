@@ -1,5 +1,6 @@
 ---
 title: "H5 播放器"
+heroImage: "/heroes/demo/project-h5player.webp"
 description: "基于 jPlayer 的 H5 音视频播放演示。"
 pubDate: "2019-06-01"
 type: web

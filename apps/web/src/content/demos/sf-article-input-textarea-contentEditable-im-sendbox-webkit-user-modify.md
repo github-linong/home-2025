@@ -1,5 +1,6 @@
 ---
 title: "IM 发送框 · webkit-user-modify"
+heroImage: "/heroes/demo/sf-article-input-textarea-contentEditable-im-sendbox-webkit-user-modify.webp"
 description: "SegmentFault交互示例：IM 发送框 · webkit-user-modify。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "SegmentFault"
 badge: "思否"
 tags: ["legacy", "SegmentFault"]
 ---
+

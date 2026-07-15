@@ -1,5 +1,6 @@
 ---
 title: "动画队列 css"
+heroImage: "/heroes/demo/jsrun-tbXKp.webp"
 description: "JSRUN 代码片段：动画队列 css（原地址 https://jsrun.net/tbXKp）。"
 pubDate: "2019-02-22"
 type: web

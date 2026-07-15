@@ -1,5 +1,6 @@
 ---
 title: "摄像头采集 getUserMedia"
+heroImage: "/heroes/demo/MediaDevices-getUserMedia.webp"
 description: "浏览器摄像头 / 麦克风采集实验，基于 MediaDevices.getUserMedia。"
 pubDate: "2019-06-01"
 type: web

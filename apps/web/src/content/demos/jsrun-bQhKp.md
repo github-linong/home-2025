@@ -1,5 +1,6 @@
 ---
 title: "二次确认switch"
+heroImage: "/heroes/demo/jsrun-bQhKp.webp"
 description: "JSRUN 代码片段：二次确认switch（原地址 https://jsrun.net/bQhKp）。"
 pubDate: "2018-11-12"
 type: web

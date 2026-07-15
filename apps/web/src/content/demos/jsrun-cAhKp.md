@@ -1,5 +1,6 @@
 ---
 title: "https://juejin.im/post/59ab7b36f265da24934b2470"
+heroImage: "/heroes/demo/jsrun-cAhKp.webp"
 description: "JSRUN 代码片段：https://juejin.im/post/59ab7b36f265da24934b2470（原地址 https://jsrun.net/cAhKp）。"
 pubDate: "2018-12-28"
 type: web

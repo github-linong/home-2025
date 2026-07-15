@@ -1,5 +1,6 @@
 ---
 title: "http://www.layui.com/doc/modules/table.html"
+heroImage: "/heroes/demo/jsrun-skZKp.webp"
 description: "JSRUN 代码片段：http://www.layui.com/doc/modules/table.html（原地址 https://jsrun.net/skZKp）。"
 pubDate: "2018-03-15"
 type: web

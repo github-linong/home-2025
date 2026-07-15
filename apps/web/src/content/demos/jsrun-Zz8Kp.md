@@ -1,5 +1,6 @@
 ---
 title: "轮播时间轴"
+heroImage: "/heroes/demo/jsrun-Zz8Kp.webp"
 description: "JSRUN 代码片段：轮播时间轴（原地址 https://jsrun.net/Zz8Kp）。"
 pubDate: "2021-08-06"
 type: web

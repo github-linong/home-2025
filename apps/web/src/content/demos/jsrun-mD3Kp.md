@@ -1,5 +1,6 @@
 ---
 title: "element-ui table 测试"
+heroImage: "/heroes/demo/jsrun-mD3Kp.webp"
 description: "JSRUN 代码片段：element-ui table 测试（原地址 https://jsrun.net/mD3Kp）。"
 pubDate: "2021-05-16"
 type: web

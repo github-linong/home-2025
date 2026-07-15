@@ -1,5 +1,6 @@
 ---
 title: "鼠标悬停聚焦高亮元素"
+heroImage: "/heroes/demo/jsrun-CMQKp.webp"
 description: "监听 mouseover，给当前元素加超大 box-shadow，形成聚光灯式遮罩高亮。"
 pubDate: "2022-05-06"
 type: web

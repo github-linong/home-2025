@@ -1,7 +1,8 @@
 ---
 title: "Weex Flex Emoji Unicode Sf A 1190000021281633"
+heroImage: "/heroes/demo/weex-flex-emoji-unicode-sf-a-1190000021281633.webp"
 description: "实验交互示例：Weex Flex Emoji Unicode Sf A 1190000021281633。"
-pubDate: "2019-06-01"
+pubDate: "2020-01-03"
 type: web
 demoUrl: "/demos/html/weex-flex-emoji-unicode-sf-a-1190000021281633.html"
 legacyUrl: "/static/html/weex-flex-emoji-unicode-sf-a-1190000021281633.html"

@@ -1,7 +1,8 @@
 ---
 title: "Textarea 事件触发测试"
+heroImage: "/heroes/demo/textarea-event-test.webp"
 description: "交互式演示 input、change、keydown、keypress、keyup 在 textarea 上的触发时机与冒泡/阻止默认行为差异。"
-pubDate: "2019-06-01"
+pubDate: "2020-05-16"
 type: web
 demoUrl: "/demos/html/textarea-event-test.html"
 legacyUrl: "/static/html/textarea-event-test.html"

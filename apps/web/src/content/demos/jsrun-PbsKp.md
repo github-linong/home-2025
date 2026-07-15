@@ -1,5 +1,6 @@
 ---
 title: "echarts 问题"
+heroImage: "/heroes/demo/jsrun-PbsKp.webp"
 description: "JSRUN 代码片段：echarts 问题（原地址 https://jsrun.net/PbsKp）。"
 pubDate: "2022-10-23"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "看上去是 3d 进度条"
+heroImage: "/heroes/demo/jsrun-ysUKp.webp"
 description: "JSRUN 代码片段：看上去是 3d 进度条（原地址 https://jsrun.net/ysUKp）。"
 pubDate: "2021-11-21"
 type: web

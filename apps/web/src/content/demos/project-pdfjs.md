@@ -1,5 +1,6 @@
 ---
 title: "PDF.js 示例包"
+heroImage: "/heroes/demo/project-pdfjs.webp"
 description: "较早的 PDF.js 示例与 viewer snippet。"
 pubDate: "2019-06-01"
 type: web

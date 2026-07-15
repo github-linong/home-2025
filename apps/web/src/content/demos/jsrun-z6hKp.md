@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1590000016704075"
+heroImage: "/heroes/demo/jsrun-z6hKp.webp"
 description: "http://www.mesdk.com/TP5_learning/progress/progress_book/1/1/1/2/1/9/14 ?knowsid=14&subject=1&version=2&grade=1&section=9"
 pubDate: "2018-10-16"
 type: web

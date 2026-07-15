@@ -1,5 +1,6 @@
 ---
 title: "iframe 事件测试"
+heroImage: "/heroes/demo/jsrun-FMUKp.webp"
 description: "JSRUN 代码片段：iframe 事件测试（原地址 https://jsrun.net/FMUKp）。"
 pubDate: "2021-12-09"
 type: web

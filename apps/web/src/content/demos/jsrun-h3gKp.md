@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000015634350"
+heroImage: "/heroes/demo/jsrun-h3gKp.webp"
 description: "html中使用了自定义键盘，将input设置了readonly属性，请问如何重新获取input焦点？"
 pubDate: "2018-07-16"
 type: web

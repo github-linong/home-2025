@@ -1,5 +1,6 @@
 ---
 title: "格式化对象"
+heroImage: "/heroes/demo/jsrun-N3zKp.webp"
 description: "snakeCase camelCase"
 pubDate: "2022-06-07"
 type: web

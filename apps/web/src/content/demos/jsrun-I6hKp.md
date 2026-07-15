@@ -1,5 +1,6 @@
 ---
 title: "https://www.lodashjs.com/docs/4.17.5.html#throttle"
+heroImage: "/heroes/demo/jsrun-I6hKp.webp"
 description: "JSRUN 代码片段：https://www.lodashjs.com/docs/4.17.5.html#throttle（原地址 https://jsrun.net/I6hKp）。"
 pubDate: "2018-10-16"
 type: web

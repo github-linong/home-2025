@@ -1,5 +1,6 @@
 ---
 title: "Element UI 导航联动"
+heroImage: "/heroes/demo/elementui-nav-3.webp"
 description: "Element UI 导航联动。"
 pubDate: "2019-06-01"
 type: web

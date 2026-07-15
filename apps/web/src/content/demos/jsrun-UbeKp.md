@@ -1,5 +1,6 @@
 ---
 title: "Vue2/Vue3 共存与组件 API 化探索"
+heroImage: "/heroes/demo/jsrun-UbeKp.webp"
 description: "同页加载 Vue2 与 Vue3，挂载 Vue2 组件并草拟框架无关的 create/update/destroy API。"
 pubDate: "2022-03-03"
 type: web

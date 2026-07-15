@@ -1,5 +1,6 @@
 ---
 title: "测试文件上传"
+heroImage: "/heroes/demo/jsrun-hANKp.webp"
 description: "JSRUN 代码片段：测试文件上传（原地址 https://jsrun.net/hANKp）。"
 pubDate: "2021-03-29"
 type: web

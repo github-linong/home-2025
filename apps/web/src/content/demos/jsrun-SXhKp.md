@@ -1,5 +1,6 @@
 ---
 title: "Vue 大转盘旋转与分区指示"
+heroImage: "/heroes/demo/jsrun-SXhKp.webp"
 description: "用 Vue 驱动圆形转盘持续旋转，并根据角度计算当前朝上分区编号。"
 pubDate: "2018-09-30"
 type: web

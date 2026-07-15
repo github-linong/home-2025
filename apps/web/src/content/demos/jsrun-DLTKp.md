@@ -1,5 +1,6 @@
 ---
 title: "ccccc1"
+heroImage: "/heroes/demo/jsrun-DLTKp.webp"
 description: "JSRUN 代码片段：ccccc1（原地址 https://jsrun.net/DLTKp）。"
 pubDate: "2021-09-15"
 type: web

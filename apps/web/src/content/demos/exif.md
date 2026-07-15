@@ -1,7 +1,8 @@
 ---
 title: "EXIF 图片元数据读取"
+heroImage: "/heroes/demo/exif.webp"
 description: "图形交互示例：EXIF 图片元数据读取。"
-pubDate: "2019-06-01"
+pubDate: "2020-03-19"
 type: web
 demoUrl: "/demos/html/exif.html"
 legacyUrl: "/static/html/exif.html"

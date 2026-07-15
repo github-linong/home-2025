@@ -1,5 +1,6 @@
 ---
 title: "Element UI i18n · 5.x"
+heroImage: "/heroes/demo/vue-elementui-i18n-5.x.x.webp"
 description: "Element UI 5.x 国际化切换实验。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "Vue"
 badge: "实验"
 tags: ["legacy", "Vue"]
 ---
+

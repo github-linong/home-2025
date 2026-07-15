@@ -1,5 +1,6 @@
 ---
 title: "Close Autosave Password Hidden"
+heroImage: "/heroes/demo/close-autosave-password-hidden.webp"
 description: "实验交互示例：Close Autosave Password Hidden。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---
+

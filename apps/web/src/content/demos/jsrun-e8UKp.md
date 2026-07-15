@@ -1,5 +1,6 @@
 ---
 title: "img 转视频"
+heroImage: "/heroes/demo/jsrun-e8UKp.webp"
 description: "JSRUN 代码片段：img 转视频（原地址 https://jsrun.net/e8UKp）。"
 pubDate: "2021-11-12"
 type: web

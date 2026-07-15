@@ -1,5 +1,6 @@
 ---
 title: "大数计算"
+heroImage: "/heroes/demo/jsrun-Nf9Kp.webp"
 description: "JSRUN 代码片段：大数计算（原地址 https://jsrun.net/Nf9Kp）。"
 pubDate: "2021-12-23"
 type: web

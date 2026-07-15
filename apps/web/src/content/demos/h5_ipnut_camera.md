@@ -1,5 +1,6 @@
 ---
 title: "h5_ipnut_camera"
+heroImage: "/heroes/demo/h5_ipnut_camera.webp"
 description: "早期 theme 目录实验页：h5_ipnut_camera。自 home-2023 lilnong/theme 迁入。"
 pubDate: "2018-06-01"
 type: web

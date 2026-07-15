@@ -1,5 +1,6 @@
 ---
 title: "PPTXjs 演示"
+heroImage: "/heroes/demo/project-PPTXjs-1.21.1.webp"
 description: "浏览器端 PPTX 预览库演示。"
 pubDate: "2019-06-01"
 type: web

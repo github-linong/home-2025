@@ -1,5 +1,6 @@
 ---
 title: "tabs 搜索重置"
+heroImage: "/heroes/demo/vue-tabs-sort.webp"
 description: "activeName: sort: 用户管理"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "Vue"
 badge: "实验"
 tags: ["legacy", "Vue"]
 ---
+

@@ -1,5 +1,6 @@
 ---
 title: "canvas 画矩形"
+heroImage: "/heroes/demo/jsrun-bs8Kp.webp"
 description: "JSRUN 代码片段：canvas 画矩形（原地址 https://jsrun.net/bs8Kp）。"
 pubDate: "2021-08-10"
 type: web

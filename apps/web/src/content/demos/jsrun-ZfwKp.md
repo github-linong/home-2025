@@ -1,5 +1,6 @@
 ---
 title: "垂直滚动动画效果"
+heroImage: "/heroes/demo/jsrun-ZfwKp.webp"
 description: "JSRUN 代码片段：垂直滚动动画效果（原地址 https://jsrun.net/ZfwKp）。"
 pubDate: "2020-11-11"
 type: web

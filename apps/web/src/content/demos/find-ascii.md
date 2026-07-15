@@ -1,5 +1,6 @@
 ---
 title: "ASCII对照表"
+heroImage: "/heroes/demo/find-ascii.webp"
 description: "ASCII对照表 ASCII值 控制字符"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---
+

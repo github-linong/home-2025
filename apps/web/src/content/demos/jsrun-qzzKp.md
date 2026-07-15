@@ -1,5 +1,6 @@
 ---
 title: "可视化布局"
+heroImage: "/heroes/demo/jsrun-qzzKp.webp"
 description: "JSRUN 代码片段：可视化布局（原地址 https://jsrun.net/qzzKp）。"
 pubDate: "2022-06-17"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000023389850"
+heroImage: "/heroes/demo/jsrun-ekLKp.webp"
 description: "实现点击顶部导航栏动态改变侧边导航的效果"
 pubDate: "2020-07-28"
 type: web

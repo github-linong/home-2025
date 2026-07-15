@@ -1,5 +1,6 @@
 ---
 title: "蝴蝶结打开，卷轴展开"
+heroImage: "/heroes/demo/jsrun-u2gKp.webp"
 description: "JSRUN 代码片段：蝴蝶结打开，卷轴展开（原地址 https://jsrun.net/u2gKp）。"
 pubDate: "2018-07-02"
 type: web

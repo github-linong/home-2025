@@ -1,5 +1,6 @@
 ---
 title: "ie_select_display"
+heroImage: "/heroes/demo/ie_select_display.webp"
 description: "早期 theme 目录实验页：ie_select_display。自 home-2023 lilnong/theme 迁入。"
 pubDate: "2018-06-01"
 type: web

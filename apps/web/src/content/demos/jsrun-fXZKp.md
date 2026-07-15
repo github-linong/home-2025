@@ -1,5 +1,6 @@
 ---
 title: "纯 CSS 瀑布流 / 多列布局骨架"
+heroImage: "/heroes/demo/jsrun-fXZKp.webp"
 description: "本意对比 column、flex、grid 与 masonry 类结构做纯 CSS 瀑布流，但迁移后样式丢失。"
 pubDate: "2018-03-22"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "bootstrap"
+heroImage: "/heroes/demo/jsrun-VRqKp.webp"
 description: "JSRUN 代码片段：bootstrap（原地址 https://jsrun.net/VRqKp）。"
 pubDate: "2018-03-09"
 type: web

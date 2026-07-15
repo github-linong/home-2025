@@ -1,5 +1,6 @@
 ---
 title: "tabs切换"
+heroImage: "/heroes/demo/jsrun-N9LKp.webp"
 description: "JSRUN 代码片段：tabs切换（原地址 https://jsrun.net/N9LKp）。"
 pubDate: "2020-08-20"
 type: web

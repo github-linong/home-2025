@@ -1,5 +1,6 @@
 ---
 title: "//cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js"
+heroImage: "/heroes/demo/jsrun-PXZKp.webp"
 description: "JSRUN 代码片段：//cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js（原地址 https://jsrun.net/PXZKp）。"
 pubDate: "2018-03-23"
 type: web

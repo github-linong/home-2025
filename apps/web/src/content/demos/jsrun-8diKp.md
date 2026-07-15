@@ -1,5 +1,6 @@
 ---
 title: "CSS :link / :visited 伪类与透明背景实验"
+heroImage: "/heroes/demo/jsrun-8diKp.webp"
 description: "对比链接未访问/已访问/悬停/按下样式，并用不同 alpha 的背景测 :visited 限制。"
 pubDate: "2017-11-20"
 type: web

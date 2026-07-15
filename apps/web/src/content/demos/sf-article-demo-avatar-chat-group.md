@@ -1,5 +1,6 @@
 ---
 title: "Demo Avatar Chat Group"
+heroImage: "/heroes/demo/sf-article-demo-avatar-chat-group.webp"
 description: "SegmentFault交互示例：Demo Avatar Chat Group。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "SegmentFault"
 badge: "思否"
 tags: ["legacy", "SegmentFault"]
 ---
+

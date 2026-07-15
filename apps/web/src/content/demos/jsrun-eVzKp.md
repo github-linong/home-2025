@@ -1,5 +1,6 @@
 ---
 title: "element el-table"
+heroImage: "/heroes/demo/jsrun-eVzKp.webp"
 description: "两个popover切换抖动请问有遇到过吗"
 pubDate: "2022-06-09"
 type: web

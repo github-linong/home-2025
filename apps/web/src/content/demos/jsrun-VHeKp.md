@@ -1,5 +1,6 @@
 ---
 title: "关于浏览器重绘，资源占用"
+heroImage: "/heroes/demo/jsrun-VHeKp.webp"
 description: "问题1：我有上百个元素，在浏览器视口外做动画，是否会占用浏览器资源？是否会引起重绘？"
 pubDate: "2022-03-18"
 type: web

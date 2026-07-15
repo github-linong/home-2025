@@ -1,5 +1,6 @@
 ---
 title: "CSS 流动边框多种实现"
+heroImage: "/heroes/demo/jsrun-be9Kp.webp"
 description: "演示锥形渐变旋转、四边渐变位移动画，以及矩形移动、边长控制和 clip 裁剪等多种流动边框。"
 pubDate: "2022-01-07"
 type: web

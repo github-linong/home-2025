@@ -1,0 +1,32 @@
+---
+export interface Props {
+  type: "blog" | "demo";
+  slug: string;
+}
+
+const { type, slug } = Astro.props;
+---
+
+{/* data-astro-rerun: re-fire after View Transitions soft navigations */}
+<script is:inline data-astro-rerun define:vars={{ type, slug }}>
+  (function () {
+    try {
+      var payload = JSON.stringify({ type: type, slug: slug });
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(
+          "/api/content-views",
+          new Blob([payload], { type: "application/json" }),
+        );
+        return;
+      }
+      fetch("/api/content-views", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+        keepalive: true,
+      }).catch(function () {});
+    } catch (e) {
+      /* ignore */
+    }
+  })();
+</script>

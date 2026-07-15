@@ -1,5 +1,6 @@
 ---
 title: "canvas 选中区域"
+heroImage: "/heroes/demo/jsrun-JB8Kp.webp"
 description: "JSRUN 代码片段：canvas 选中区域（原地址 https://jsrun.net/JB8Kp）。"
 pubDate: "2021-08-24"
 type: web

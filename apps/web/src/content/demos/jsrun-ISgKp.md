@@ -1,5 +1,6 @@
 ---
 title: "Vue 递归树形组件"
+heroImage: "/heroes/demo/jsrun-ISgKp.webp"
 description: "用自引用 item 组件实现可折叠、可增子节点的树形视图。"
 pubDate: "2018-09-12"
 type: web

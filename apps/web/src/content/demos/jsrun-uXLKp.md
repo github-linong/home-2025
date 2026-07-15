@@ -1,5 +1,6 @@
 ---
 title: "flex 垂直布局"
+heroImage: "/heroes/demo/jsrun-uXLKp.webp"
 description: "JSRUN 代码片段：flex 垂直布局（原地址 https://jsrun.net/uXLKp）。"
 pubDate: "2020-08-03"
 type: web

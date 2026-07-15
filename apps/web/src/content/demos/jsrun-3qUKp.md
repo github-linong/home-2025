@@ -1,5 +1,6 @@
 ---
 title: "echarts-gauge"
+heroImage: "/heroes/demo/jsrun-3qUKp.webp"
 description: "JSRUN 代码片段：echarts-gauge（原地址 https://jsrun.net/3qUKp）。"
 pubDate: "2021-10-21"
 type: web

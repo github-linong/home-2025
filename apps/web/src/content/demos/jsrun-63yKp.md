@@ -1,5 +1,6 @@
 ---
 title: "angular audio"
+heroImage: "/heroes/demo/jsrun-63yKp.webp"
 description: "JSRUN 代码片段：angular audio（原地址 https://jsrun.net/63yKp）。"
 pubDate: "2019-06-06"
 type: web

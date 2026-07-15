@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000041595452"
+heroImage: "/heroes/demo/jsrun-ajeKp.webp"
 description: "JS input框 限制金额输入"
 pubDate: "2022-03-23"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "Excel 表格读取"
+heroImage: "/heroes/demo/xlsx-sheet.webp"
 description: "前端读取 / 展示 Excel（xlsx）。"
 pubDate: "2019-06-01"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "Canvas 签名 · 抖音/Phaser"
+heroImage: "/heroes/demo/canvas-draw-signature-douyin.webp"
 description: "Canvas 签名 · 抖音风格 / Phaser 实验。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "图形"
 badge: "实验"
 tags: ["legacy", "图形"]
 ---
+

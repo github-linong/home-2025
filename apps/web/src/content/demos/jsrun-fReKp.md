@@ -1,5 +1,6 @@
 ---
 title: "Vue keep-alive 动态 include 缓存"
+heroImage: "/heroes/demo/jsrun-fReKp.webp"
 description: "按路由访问把组件名写入 include 列表，从列表删除即可销毁对应缓存。"
 pubDate: "2022-03-24"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "css练习-例子来自于下面的博客"
+heroImage: "/heroes/demo/jsrun-BfgKp.webp"
 description: "https://segmentfault.com/u/comehope http://www.zhang-ou.com/"
 pubDate: "2018-06-29"
 type: web

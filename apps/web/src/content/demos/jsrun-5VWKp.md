@@ -1,5 +1,6 @@
 ---
 title: "父子组件生命周期"
+heroImage: "/heroes/demo/jsrun-5VWKp.webp"
 description: "JSRUN 代码片段：父子组件生命周期（原地址 https://jsrun.net/5VWKp）。"
 pubDate: "2019-11-12"
 type: web

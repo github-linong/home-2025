@@ -1,5 +1,6 @@
 ---
 title: "D3.js 树状图（行政区划）"
+heroImage: "/heroes/demo/jsrun-k8iKp.webp"
 description: "内联 D3 v3，用 layout.tree 与 svg.diagonal 绘制「中国→省→市」层级树。"
 pubDate: "2017-10-31"
 type: web

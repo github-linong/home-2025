@@ -1,5 +1,6 @@
 ---
 title: "数据显示测试"
+heroImage: "/heroes/demo/jsrun-DVWKp.webp"
 description: "JSRUN 代码片段：数据显示测试（原地址 https://jsrun.net/DVWKp）。"
 pubDate: "2019-11-12"
 type: web

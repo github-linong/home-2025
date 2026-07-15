@@ -1,5 +1,6 @@
 ---
 title: "df 输出解析为 Vue 进度条"
+heroImage: "/heroes/demo/jsrun-L5WKp.webp"
 description: "把 Linux df -h 风格文本拆成挂载点与占用，并用进度条可视化。"
 pubDate: "2019-12-17"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "应用 先于 组件"
+heroImage: "/heroes/demo/jsrun-I7UKp.webp"
 description: "组件 先于 应用 测试 vue 分离"
 pubDate: "2021-11-22"
 type: web

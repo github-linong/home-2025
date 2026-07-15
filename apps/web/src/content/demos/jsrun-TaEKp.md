@@ -1,5 +1,6 @@
 ---
 title: "手势操作 + 鼠标操作"
+heroImage: "/heroes/demo/jsrun-TaEKp.webp"
 description: "JSRUN 代码片段：手势操作 + 鼠标操作（原地址 https://jsrun.net/TaEKp）。"
 pubDate: "2022-09-29"
 type: web

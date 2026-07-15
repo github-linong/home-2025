@@ -1,5 +1,6 @@
 ---
 title: "Canvas 签名 · 原生"
+heroImage: "/heroes/demo/canvas-draw-signature-ori.webp"
 description: "Canvas 签名 · 原生实现。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "图形"
 badge: "实验"
 tags: ["legacy", "图形"]
 ---
+

@@ -1,5 +1,6 @@
 ---
 title: "UserAgent 解析"
+heroImage: "/heroes/demo/userAgent.webp"
 description: "UA 字符串解析。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---
+

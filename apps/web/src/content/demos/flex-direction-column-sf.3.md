@@ -1,7 +1,8 @@
 ---
 title: "Flex 垂直布局 · 空白块 flex 分隔"
+heroImage: "/heroes/demo/flex-direction-column-sf.3.webp"
 description: "内容上下各插 flexempty（flex:1 1 20px），用可伸缩空白控制上下留白比例。"
-pubDate: "2019-06-01"
+pubDate: "2020-10-15"
 type: web
 demoUrl: "/demos/html/flex-direction-column-sf.3.html"
 legacyUrl: "/static/html/flex-direction-column-sf.3.html"

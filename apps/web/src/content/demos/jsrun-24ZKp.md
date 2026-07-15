@@ -1,5 +1,6 @@
 ---
 title: "ng判断 天"
+heroImage: "/heroes/demo/jsrun-24ZKp.webp"
 description: "JSRUN 代码片段：ng判断 天（原地址 https://jsrun.net/24ZKp）。"
 pubDate: "2018-06-06"
 type: web

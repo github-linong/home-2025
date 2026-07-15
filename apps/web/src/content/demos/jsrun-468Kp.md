@@ -1,5 +1,6 @@
 ---
 title: "SortableJS 与 Vue 列表同步排序"
+heroImage: "/heroes/demo/jsrun-468Kp.webp"
 description: "Sortable 拖拽 ul 项后，在 onEnd 中 splice 同步 Vue 的 list 数组。"
 pubDate: "2021-07-27"
 type: web

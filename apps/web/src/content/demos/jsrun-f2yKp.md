@@ -1,5 +1,6 @@
 ---
 title: "vue 权限控制"
+heroImage: "/heroes/demo/jsrun-f2yKp.webp"
 description: "JSRUN 代码片段：vue 权限控制（原地址 https://jsrun.net/f2yKp）。"
 pubDate: "2019-05-29"
 type: web

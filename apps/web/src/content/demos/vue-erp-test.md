@@ -1,7 +1,8 @@
 ---
 title: "Vue Erp Test"
+heroImage: "/heroes/demo/vue-erp-test.webp"
 description: "Vue交互示例：Vue Erp Test。"
-pubDate: "2019-06-01"
+pubDate: "2020-10-05"
 type: web
 demoUrl: "/demos/html/vue-erp-test.html"
 legacyUrl: "/static/html/vue-erp-test.html"

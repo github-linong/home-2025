@@ -1,5 +1,6 @@
 ---
 title: "react 学习"
+heroImage: "/heroes/demo/jsrun-628Kp.webp"
 description: "JSRUN 代码片段：react 学习（原地址 https://jsrun.net/628Kp）。"
 pubDate: "2021-07-23"
 type: web

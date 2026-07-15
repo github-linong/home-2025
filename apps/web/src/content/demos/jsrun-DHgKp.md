@@ -1,5 +1,6 @@
 ---
 title: "https://cn.vuejs.org/v2/guide/instance.html#%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%9B%BE%E7%A4%BA"
+heroImage: "/heroes/demo/jsrun-DHgKp.webp"
 description: "JSRUN 代码片段：https://cn.vuejs.org/v2/guide/instance.html#%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%9B%BE%E7%A4%BA（原地址 https://jsrun.net/DHgKp）。"
 pubDate: "2018-08-15"
 type: web

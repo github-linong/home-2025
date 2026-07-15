@@ -1,5 +1,6 @@
 ---
 title: "刮奖 demo"
+heroImage: "/heroes/demo/jsrun-StbKp.webp"
 description: "正方形-圆-节流 记录节点 遮罩图"
 pubDate: "2019-09-11"
 type: web

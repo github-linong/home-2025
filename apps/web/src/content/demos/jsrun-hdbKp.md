@@ -1,5 +1,6 @@
 ---
 title: "vue ref 用于v-for的dom元素，出现问题"
+heroImage: "/heroes/demo/jsrun-hdbKp.webp"
 description: "https://segmentfault.com/q/1010000020194999"
 pubDate: "2019-08-27"
 type: web

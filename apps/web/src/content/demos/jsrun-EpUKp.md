@@ -1,5 +1,6 @@
 ---
 title: "canvas 创建大图。自动下载"
+heroImage: "/heroes/demo/jsrun-EpUKp.webp"
 description: "JSRUN 代码片段：canvas 创建大图。自动下载（原地址 https://jsrun.net/EpUKp）。"
 pubDate: "2021-10-18"
 type: web

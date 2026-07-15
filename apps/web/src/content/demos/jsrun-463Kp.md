@@ -1,5 +1,6 @@
 ---
 title: "vue组件通信"
+heroImage: "/heroes/demo/jsrun-463Kp.webp"
 description: "JSRUN 代码片段：vue组件通信（原地址 https://jsrun.net/463Kp）。"
 pubDate: "2021-04-16"
 type: web

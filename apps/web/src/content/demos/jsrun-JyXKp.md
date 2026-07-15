@@ -1,5 +1,6 @@
 ---
 title: "https://www.yuque.com/fe9/basic/khrne0"
+heroImage: "/heroes/demo/jsrun-JyXKp.webp"
 description: "JSRUN 代码片段：https://www.yuque.com/fe9/basic/khrne0（原地址 https://jsrun.net/JyXKp）。"
 pubDate: "2019-02-19"
 type: web

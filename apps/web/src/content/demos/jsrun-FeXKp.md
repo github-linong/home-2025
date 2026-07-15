@@ -1,5 +1,6 @@
 ---
 title: "https://www.cnblogs.com/leona-d/p/6047654.html"
+heroImage: "/heroes/demo/jsrun-FeXKp.webp"
 description: "JSRUN 代码片段：https://www.cnblogs.com/leona-d/p/6047654.html（原地址 https://jsrun.net/FeXKp）。"
 pubDate: "2019-03-25"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "http://bl.ocks.org/robschmuecker/7880033"
+heroImage: "/heroes/demo/jsrun-ufhKp__26786.webp"
 description: "JSRUN 代码片段：http://bl.ocks.org/robschmuecker/7880033（原地址 https://jsrun.net/ufhKp）。"
 pubDate: "2018-10-11"
 type: web

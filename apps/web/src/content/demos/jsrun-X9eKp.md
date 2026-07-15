@@ -1,5 +1,6 @@
 ---
 title: "上传文件方法对比"
+heroImage: "/heroes/demo/jsrun-X9eKp.webp"
 description: "JSRUN 代码片段：上传文件方法对比（原地址 https://jsrun.net/X9eKp）。"
 pubDate: "2022-03-11"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "两个点击事件"
+heroImage: "/heroes/demo/jsrun-y8zKp.webp"
 description: "https://segmentfault.com/q/1010000041944947"
 pubDate: "2022-06-09"
 type: web

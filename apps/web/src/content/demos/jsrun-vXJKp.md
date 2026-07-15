@@ -1,5 +1,6 @@
 ---
 title: "拖拽测试，"
+heroImage: "/heroes/demo/jsrun-vXJKp.webp"
 description: "vue input tag"
 pubDate: "2023-08-11"
 type: web

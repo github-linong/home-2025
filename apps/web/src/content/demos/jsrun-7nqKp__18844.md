@@ -1,5 +1,6 @@
 ---
 title: "https://github.com/maxchehab/CSS-Keylogging"
+heroImage: "/heroes/demo/jsrun-7nqKp__18844.webp"
 description: "JSRUN 代码片段：https://github.com/maxchehab/CSS-Keylogging（原地址 https://jsrun.net/7nqKp）。"
 pubDate: "2018-03-02"
 type: web

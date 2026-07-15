@@ -1,5 +1,6 @@
 ---
 title: "gary"
+heroImage: "/heroes/demo/jsrun-IY8Kp.webp"
 description: "JSRUN 代码片段：gary（原地址 https://jsrun.net/IY8Kp）。"
 pubDate: "2021-07-15"
 type: web

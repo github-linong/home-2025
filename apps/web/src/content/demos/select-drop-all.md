@@ -1,5 +1,6 @@
 ---
 title: "Select Drop All"
+heroImage: "/heroes/demo/select-drop-all.webp"
 description: "表单交互示例：Select Drop All。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "表单"
 badge: "实验"
 tags: ["legacy", "表单"]
 ---
+

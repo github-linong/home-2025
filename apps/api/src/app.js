@@ -17,6 +17,7 @@ const loggerRoutes = require("./routes/logger");
 const invitationRoutes = require("./routes/invitation");
 const tencentRoutes = require("./routes/tencent");
 const miscRoutes = require("./routes/misc");
+const contentViewsRoutes = require("./routes/content-views");
 
 fs.mkdirSync(config.paths.uploads, { recursive: true });
 fs.mkdirSync(config.paths.fontmin, { recursive: true });
@@ -45,13 +46,16 @@ function createApp() {
   app.use("/api3", douyinRoutes);
   app.use("/vapi", musicRoutes);
 
-  // POST /api/* legacy commands (OCR / mongo / memory)
-  app.use("/api", legacyApiRoutes);
+  // Content view counters (before catch-all POST /api/*)
+  app.use(contentViewsRoutes);
 
   // Lightweight health for compose / probes (GET only; does not collide with POST /api/*)
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, service: "lilnong-legacy-api" });
   });
+
+  // POST /api/* legacy commands (OCR / mongo / memory)
+  app.use("/api", legacyApiRoutes);
 
   app.use(corsDemoRoutes);
   app.use(proxyRoutes);

@@ -1,5 +1,6 @@
 ---
 title: "删除字符限制"
+heroImage: "/heroes/demo/jsrun-rjWKp.webp"
 description: "JSRUN 代码片段：删除字符限制（原地址 https://jsrun.net/rjWKp）。"
 pubDate: "2020-01-02"
 type: web

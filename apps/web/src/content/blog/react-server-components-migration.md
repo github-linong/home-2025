@@ -2,7 +2,7 @@
 title: "React Server Components 实战：从客户端渲染到 SSG 的完整迁移"
 description: "记录如何将 Next.js 项目从客户端 fetch + innerHTML 迁移到 Server Component + SSG，包含完整代码对比与性能数据。"
 pubDate: "Mar 19 2026"
-heroImage: "/post_img.webp"
+heroImage: "/heroes/blog/react-server-components-migration.webp"
 tags: ["React","RSC","Next.js","AJAX","TypeScript"]
 ---
 

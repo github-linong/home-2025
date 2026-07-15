@@ -1,5 +1,6 @@
 ---
 title: "图片加水印"
+heroImage: "/heroes/demo/jsrun-WZGKp.webp"
 description: "JSRUN 代码片段：图片加水印（原地址 https://jsrun.net/WZGKp）。"
 pubDate: "2023-11-03"
 type: web

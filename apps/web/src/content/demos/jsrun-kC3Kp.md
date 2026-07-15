@@ -1,5 +1,6 @@
 ---
 title: "vue table"
+heroImage: "/heroes/demo/jsrun-kC3Kp.webp"
 description: "JSRUN 代码片段：vue table（原地址 https://jsrun.net/kC3Kp）。"
 pubDate: "2021-05-18"
 type: web

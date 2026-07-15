@@ -1,5 +1,6 @@
 ---
 title: "笔记本，如何划线"
+heroImage: "/heroes/demo/jsrun-TszKp.webp"
 description: "JSRUN 代码片段：笔记本，如何划线（原地址 https://jsrun.net/TszKp）。"
 pubDate: "2022-06-21"
 type: web

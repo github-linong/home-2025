@@ -1,5 +1,6 @@
 ---
 title: "时区测试"
+heroImage: "/heroes/demo/datetime-local.webp"
 description: "早期 theme 目录实验页：时区测试。自 home-2023 lilnong/theme 迁入。"
 pubDate: "2018-06-01"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "vue input 数字校验"
+heroImage: "/heroes/demo/jsrun-YdQKp.webp"
 description: "JSRUN 代码片段：vue input 数字校验（原地址 https://jsrun.net/YdQKp）。"
 pubDate: "2022-04-22"
 type: web

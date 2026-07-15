@@ -1,5 +1,6 @@
 ---
 title: "vue测试，组件v-model"
+heroImage: "/heroes/demo/jsrun-9NhKp.webp"
 description: "JSRUN 代码片段：vue测试，组件v-model（原地址 https://jsrun.net/9NhKp）。"
 pubDate: "2018-10-24"
 type: web

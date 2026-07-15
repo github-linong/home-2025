@@ -1,5 +1,6 @@
 ---
 title: "flex 布局"
+heroImage: "/heroes/demo/jsrun-G53Kp.webp"
 description: "JSRUN 代码片段：flex 布局（原地址 https://jsrun.net/G53Kp）。"
 pubDate: "2021-05-14"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "点阵心形标记生成器"
+heroImage: "/heroes/demo/jsrun-cUUKp.webp"
 description: "在 20×20 网格上点选打标签，上方格子按标记播放进场动画并铺头像图。"
 pubDate: "2021-11-15"
 type: web

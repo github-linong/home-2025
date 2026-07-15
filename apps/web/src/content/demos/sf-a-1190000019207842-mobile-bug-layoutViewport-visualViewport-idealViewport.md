@@ -1,5 +1,6 @@
 ---
 title: "移动端三种 Viewport 对比"
+heroImage: "/heroes/demo/sf-a-1190000019207842-mobile-bug-layoutViewport-visualViewport-idealViewport.webp"
 description: "SegmentFault交互示例：移动端三种 Viewport 对比。"
 pubDate: "2019-06-01"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "定位控制 大小字体"
+heroImage: "/heroes/demo/jsrun-rNTKp.webp"
 description: "JSRUN 代码片段：定位控制 大小字体（原地址 https://jsrun.net/rNTKp）。"
 pubDate: "2021-09-21"
 type: web

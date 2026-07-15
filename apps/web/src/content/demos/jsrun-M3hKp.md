@@ -1,5 +1,6 @@
 ---
 title: "Canvas 鼠标探照灯效果"
+heroImage: "/heroes/demo/jsrun-M3hKp.webp"
 description: "用 getImageData/putImageData 与径向渐变描边，随鼠标移动模拟探照灯遮罩。"
 pubDate: "2018-10-29"
 type: web

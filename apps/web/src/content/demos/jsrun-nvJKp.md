@@ -1,5 +1,6 @@
 ---
 title: "在canvas监听鼠标右键，如何屏蔽默认的菜单？"
+heroImage: "/heroes/demo/jsrun-nvJKp.webp"
 description: "https://segmentfault.com/q/1010000044136456"
 pubDate: "2023-08-22"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "ECharts 径向决策树（预算超降）"
+heroImage: "/heroes/demo/jsrun-BdIKp.webp"
 description: "用 Vue 2 编辑各地区科目的预算与支出，ECharts tree（radial）按超降比例着色并持久化。"
 pubDate: "2020-12-27"
 type: web

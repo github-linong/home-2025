@@ -1,5 +1,6 @@
 ---
 title: "html2canvas"
+heroImage: "/heroes/demo/jsrun-xihKp.webp"
 description: "JSRUN 代码片段：html2canvas（原地址 https://jsrun.net/xihKp）。"
 pubDate: "2018-09-20"
 type: web

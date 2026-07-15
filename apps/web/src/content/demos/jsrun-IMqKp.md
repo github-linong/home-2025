@@ -1,5 +1,6 @@
 ---
 title: "https://github.com/davidshimjs/qrcodejs/blob/master/qrcode.min.js"
+heroImage: "/heroes/demo/jsrun-IMqKp.webp"
 description: "JSRUN 代码片段：https://github.com/davidshimjs/qrcodejs/blob/master/qrcode.min.js（原地址 https://jsrun.net/IMqKp）。"
 pubDate: "2018-03-12"
 type: web

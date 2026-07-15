@@ -1,5 +1,6 @@
 ---
 title: "zenorocha/clipboard.js"
+heroImage: "/heroes/demo/jsrun-hIhKp.webp"
 description: "JSRUN 代码片段：zenorocha/clipboard.js（原地址 https://jsrun.net/hIhKp）。"
 pubDate: "2018-10-19"
 type: web

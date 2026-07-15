@@ -1,5 +1,6 @@
 ---
 title: "Cocos Hello World 2"
+heroImage: "/heroes/demo/project-cocos-hello-world-2.webp"
 description: "Cocos Hello World 变体构建产物。"
 pubDate: "2019-06-01"
 type: web

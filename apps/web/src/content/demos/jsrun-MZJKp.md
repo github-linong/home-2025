@@ -1,5 +1,6 @@
 ---
 title: "flex 布局测试"
+heroImage: "/heroes/demo/jsrun-MZJKp.webp"
 description: "JSRUN 代码片段：flex 布局测试（原地址 https://jsrun.net/MZJKp）。"
 pubDate: "2023-08-08"
 type: web

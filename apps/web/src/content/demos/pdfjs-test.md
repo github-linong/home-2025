@@ -1,5 +1,6 @@
 ---
 title: "PDF.js 预览"
+heroImage: "/heroes/demo/pdfjs-test.webp"
 description: "PDF.js 前端预览 PDF。"
 pubDate: "2019-06-01"
 type: web

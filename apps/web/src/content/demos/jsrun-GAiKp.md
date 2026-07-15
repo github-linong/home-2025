@@ -1,5 +1,6 @@
 ---
 title: "input 图片预览"
+heroImage: "/heroes/demo/jsrun-GAiKp.webp"
 description: "JSRUN 代码片段：input 图片预览（原地址 https://jsrun.net/GAiKp）。"
 pubDate: "2017-12-08"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "判断滚动结束显示内容"
+heroImage: "/heroes/demo/jsrun-HGVKp.webp"
 description: "JSRUN 代码片段：判断滚动结束显示内容（原地址 https://jsrun.net/HGVKp）。"
 pubDate: "2021-06-28"
 type: web

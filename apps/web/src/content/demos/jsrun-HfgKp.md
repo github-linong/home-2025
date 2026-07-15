@@ -1,5 +1,6 @@
 ---
 title: "数据遍历渲染"
+heroImage: "/heroes/demo/jsrun-HfgKp.webp"
 description: "JSRUN 代码片段：数据遍历渲染（原地址 https://jsrun.net/HfgKp）。"
 pubDate: "2018-06-29"
 type: web

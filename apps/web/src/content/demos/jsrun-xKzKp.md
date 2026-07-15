@@ -1,5 +1,6 @@
 ---
 title: "去抖（后置）"
+heroImage: "/heroes/demo/jsrun-xKzKp.webp"
 description: "JSRUN 代码片段：去抖（后置）（原地址 https://jsrun.net/xKzKp）。"
 pubDate: "2022-05-09"
 type: web

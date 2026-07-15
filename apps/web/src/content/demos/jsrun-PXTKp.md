@@ -1,5 +1,6 @@
 ---
 title: "Array.from"
+heroImage: "/heroes/demo/jsrun-PXTKp.webp"
 description: "JSRUN 代码片段：Array.from（原地址 https://jsrun.net/PXTKp）。"
 pubDate: "2021-09-07"
 type: web

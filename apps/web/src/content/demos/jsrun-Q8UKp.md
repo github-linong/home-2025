@@ -1,5 +1,6 @@
 ---
 title: "v-for用来循环div 里面的v-model 也是双向绑定了的 但是问题就来了 值是通过传输的 当新增一个div的时候 突然发现 input框 却被绑定了值 怎么才能 让他们分开呢"
+heroImage: "/heroes/demo/jsrun-Q8UKp.webp"
 description: "JSRUN 代码片段：v-for用来循环div 里面的v-model 也是双向绑定了的 但是问题就来了 值是通过传输的 当新增一个div的时候 突然发现 input框 却被绑定了值 怎么才能 让他们分开呢（原地址 https://jsrun.net/Q8UKp）。"
 pubDate: "2021-11-12"
 type: web

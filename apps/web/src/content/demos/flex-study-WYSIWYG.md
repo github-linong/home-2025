@@ -1,7 +1,8 @@
 ---
 title: "Flex 可视化学习"
+heroImage: "/heroes/demo/flex-study-WYSIWYG.webp"
 description: "Flexbox 属性可视化学习工具。"
-pubDate: "2019-06-01"
+pubDate: "2021-02-07"
 type: web
 demoUrl: "/demos/html/flex-study-WYSIWYG.html"
 legacyUrl: "/static/html/flex-study-WYSIWYG.html"

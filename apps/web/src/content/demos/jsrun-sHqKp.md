@@ -1,5 +1,6 @@
 ---
 title: "vue reder测试"
+heroImage: "/heroes/demo/jsrun-sHqKp.webp"
 description: "JSRUN 代码片段：vue reder测试（原地址 https://jsrun.net/sHqKp）。"
 pubDate: "2018-02-24"
 type: web

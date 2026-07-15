@@ -1,5 +1,6 @@
 ---
 title: "driver.js 添加 Feed 引导"
+heroImage: "/heroes/demo/jsrun-PmQKp.webp"
 description: "用 driver.js 高亮「添加」按钮并串联弹窗内多字段，测试多步产品引导。"
 pubDate: "2022-04-29"
 type: web

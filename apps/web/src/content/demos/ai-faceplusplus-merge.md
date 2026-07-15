@@ -1,5 +1,6 @@
 ---
 title: "Face++ 人脸融合"
+heroImage: "/heroes/demo/ai-faceplusplus-merge.webp"
 description: "Face++ 人脸融合交互 Demo。"
 pubDate: "2019-06-01"
 type: web

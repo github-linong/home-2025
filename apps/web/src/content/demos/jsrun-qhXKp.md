@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/a/1190000018088062"
+heroImage: "/heroes/demo/jsrun-qhXKp.webp"
 description: "翻转动画实现 ------------------------ 实现方案"
 pubDate: "2019-02-11"
 type: web

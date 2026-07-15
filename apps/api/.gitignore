@@ -3,6 +3,7 @@ data/uploads/*
 data/fontmin/*
 data/logs/*
 data/felog/*
+data/content-views.json
 !data/uploads/.gitkeep
 !data/fontmin/.gitkeep
 !data/logs/.gitkeep

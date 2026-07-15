@@ -1,5 +1,6 @@
 ---
 title: "上传前本地文件预览（拖放/粘贴）"
+heroImage: "/heroes/demo/jsrun-ANCKp.webp"
 description: "拖放、点击或粘贴文件后，在上传前本地预览并展示音频/视频/图片/文本/JSON/PDF/Excel 信息。"
 pubDate: "2025-09-22"
 type: web

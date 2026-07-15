@@ -1,5 +1,6 @@
 ---
 title: "v-model自定义组件"
+heroImage: "/heroes/demo/jsrun-2sbKp.webp"
 description: "JSRUN 代码片段：v-model自定义组件（原地址 https://jsrun.net/2sbKp）。"
 pubDate: "2019-08-22"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "Vue.Draggable 拖拽排序"
+heroImage: "/heroes/demo/zlh-Vue.Draggable.webp"
 description: "实验交互示例：Vue.Draggable 拖拽排序。"
 pubDate: "2019-06-01"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "测试 /^([0-9]{3,4}-)?[0-9]{7,8}$/ 输入规则"
+heroImage: "/heroes/demo/jsrun-5vEKp.webp"
 description: "JSRUN 代码片段：测试 /^([0-9]{3,4}-)?[0-9]{7,8}$/ 输入规则（原地址 https://jsrun.net/5vEKp）。"
 pubDate: "2022-09-27"
 type: web

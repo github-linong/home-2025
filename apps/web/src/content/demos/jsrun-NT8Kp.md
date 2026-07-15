@@ -1,5 +1,6 @@
 ---
 title: "远程搜索反选"
+heroImage: "/heroes/demo/jsrun-NT8Kp.webp"
 description: "JSRUN 代码片段：远程搜索反选（原地址 https://jsrun.net/NT8Kp）。"
 pubDate: "2021-08-02"
 type: web

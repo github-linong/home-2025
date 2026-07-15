@@ -1,5 +1,6 @@
 ---
 title: "动画测试"
+heroImage: "/heroes/demo/jsrun-zUzKp.webp"
 description: "http://abidemo.esensoft.com/abi/eportal/pcportal/portal.do?portalid=20DHY&original=true&id=demo&pw=demo"
 pubDate: "2022-06-14"
 type: web

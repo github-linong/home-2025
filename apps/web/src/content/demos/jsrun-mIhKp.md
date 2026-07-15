@@ -1,5 +1,6 @@
 ---
 title: "长标题省略与右侧图标宽度自适应"
+heroImage: "/heroes/demo/jsrun-mIhKp.webp"
 description: "对比 Flex、BFC/float 等方案：长文 ellipsis，右侧图标区宽度随数量自适应。"
 pubDate: "2018-10-22"
 type: web

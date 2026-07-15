@@ -1,5 +1,6 @@
 ---
 title: "Fixed + Input Bug 现象"
+heroImage: "/heroes/demo/h-ddbc22ff57118142.webp"
 description: "theme：fixed 底栏与 input 焦点 Bug 现象。"
 pubDate: "2018-06-01"
 type: web

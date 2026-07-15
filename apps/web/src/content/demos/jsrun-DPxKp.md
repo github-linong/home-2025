@@ -1,5 +1,6 @@
 ---
 title: "插件注册测试"
+heroImage: "/heroes/demo/jsrun-DPxKp.webp"
 description: "JSRUN 代码片段：插件注册测试（原地址 https://jsrun.net/DPxKp）。"
 pubDate: "2023-10-19"
 type: web

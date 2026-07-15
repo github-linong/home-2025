@@ -1,5 +1,6 @@
 ---
 title: "pdfh5 移动端预览"
+heroImage: "/heroes/demo/project-pdfh5-master.webp"
 description: "面向移动端的 PDF 翻页预览组件演示。"
 pubDate: "2019-06-01"
 type: web

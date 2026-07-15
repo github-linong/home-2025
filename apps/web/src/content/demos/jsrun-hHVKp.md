@@ -1,5 +1,6 @@
 ---
 title: "select 效果"
+heroImage: "/heroes/demo/jsrun-hHVKp.webp"
 description: "JSRUN 代码片段：select 效果（原地址 https://jsrun.net/hHVKp）。"
 pubDate: "2021-06-29"
 type: web

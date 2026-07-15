@@ -1,5 +1,6 @@
 ---
 title: "Cocos Hello World"
+heroImage: "/heroes/demo/project-cocos-hellow-world.webp"
 description: "Cocos 入门 Hello World 构建产物。"
 pubDate: "2019-06-01"
 type: web

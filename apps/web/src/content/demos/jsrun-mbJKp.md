@@ -1,5 +1,6 @@
 ---
 title: "vue-i18n"
+heroImage: "/heroes/demo/jsrun-mbJKp.webp"
 description: "JSRUN 代码片段：vue-i18n（原地址 https://jsrun.net/mbJKp）。"
 pubDate: "2023-08-16"
 type: web

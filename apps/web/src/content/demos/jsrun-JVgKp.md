@@ -1,5 +1,6 @@
 ---
 title: "svg测试"
+heroImage: "/heroes/demo/jsrun-JVgKp.webp"
 description: "JSRUN 代码片段：svg测试（原地址 https://jsrun.net/JVgKp）。"
 pubDate: "2018-07-17"
 type: web

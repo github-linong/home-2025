@@ -1,5 +1,6 @@
 ---
 title: "jquery show test"
+heroImage: "/heroes/demo/jsrun-a73Kp.webp"
 description: "JSRUN 代码片段：jquery show test（原地址 https://jsrun.net/a73Kp）。"
 pubDate: "2021-05-07"
 type: web

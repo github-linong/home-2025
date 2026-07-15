@@ -1,5 +1,6 @@
 ---
 title: "swiper 测试"
+heroImage: "/heroes/demo/jsrun-T5hKp.webp"
 description: "JSRUN 代码片段：swiper 测试（原地址 https://jsrun.net/T5hKp）。"
 pubDate: "2018-12-07"
 type: web

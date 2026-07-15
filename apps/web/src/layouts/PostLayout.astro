@@ -4,6 +4,7 @@ import BaseLayout from "./BaseLayout.astro";
 import QADisplay from "../components/QADisplay.astro";
 import type { QaData } from "../components/QADisplay.astro";
 import BlogAnalytics from "../components/BlogAnalytics.astro";
+import ViewBeacon from "../components/ViewBeacon.astro";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { Image } from "astro:assets";
@@ -111,4 +112,5 @@ const contentSource = source ?? (sourceUrl ? "segmentfault" : "site");
   </main>
 
   <BlogAnalytics slug={slug} kind={kind} source={contentSource} answerId={answerId} />
+  <ViewBeacon type="blog" slug={slug} />
 </BaseLayout>

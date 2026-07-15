@@ -1,5 +1,6 @@
 ---
 title: "上传图片-预览图片"
+heroImage: "/heroes/demo/jsrun-chXKp__29732.webp"
 description: "JSRUN 代码片段：上传图片-预览图片（原地址 https://jsrun.net/chXKp）。"
 pubDate: "2019-02-13"
 type: web

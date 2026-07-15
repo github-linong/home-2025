@@ -1,5 +1,6 @@
 ---
 title: "ElementUI 实现导航联动功能"
+heroImage: "/heroes/demo/elementui-nav-3-route.webp"
 description: "前端实验交互示例：ElementUI 实现导航联动功能。历史前端实验与 Bug 复现页。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---
+

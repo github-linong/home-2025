@@ -1,5 +1,6 @@
 ---
 title: "数据处理 qb"
+heroImage: "/heroes/demo/jsrun-7NWKp.webp"
 description: "JSRUN 代码片段：数据处理 qb（原地址 https://jsrun.net/7NWKp）。"
 pubDate: "2019-11-08"
 type: web

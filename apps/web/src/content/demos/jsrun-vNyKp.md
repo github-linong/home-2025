@@ -1,5 +1,6 @@
 ---
 title: "https://www.iviewui.com/components/table"
+heroImage: "/heroes/demo/jsrun-vNyKp.webp"
 description: "iview 随机删除一列"
 pubDate: "2019-06-05"
 type: web

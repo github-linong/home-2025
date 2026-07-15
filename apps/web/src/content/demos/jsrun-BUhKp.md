@@ -1,5 +1,6 @@
 ---
 title: "树状前缀内容"
+heroImage: "/heroes/demo/jsrun-BUhKp.webp"
 description: "JSRUN 代码片段：树状前缀内容（原地址 https://jsrun.net/BUhKp）。"
 pubDate: "2018-11-05"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "面板内元素拖动与滚轮缩放"
+heroImage: "/heroes/demo/jsrun-F6JKp.webp"
 description: "在固定视口内拖动天气卡片，并用滚轮通过 transform:scale 缩放。"
 pubDate: "2023-08-24"
 type: web

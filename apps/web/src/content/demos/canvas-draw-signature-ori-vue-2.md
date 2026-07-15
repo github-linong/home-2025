@@ -1,5 +1,6 @@
 ---
 title: "Canvas Draw Signature Ori Vue 2"
+heroImage: "/heroes/demo/canvas-draw-signature-ori-vue-2.webp"
 description: "图形交互示例：Canvas Draw Signature Ori Vue 2。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "图形"
 badge: "实验"
 tags: ["legacy", "图形"]
 ---
+

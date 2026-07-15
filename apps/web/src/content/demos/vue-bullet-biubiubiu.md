@@ -1,7 +1,8 @@
 ---
 title: "Vue 弹幕效果"
+heroImage: "/heroes/demo/vue-bullet-biubiubiu.webp"
 description: "Vue交互示例：Vue 弹幕效果。"
-pubDate: "2019-06-01"
+pubDate: "2020-05-17"
 type: web
 demoUrl: "/demos/html/vue-bullet-biubiubiu.html"
 legacyUrl: "/static/html/vue-bullet-biubiubiu.html"

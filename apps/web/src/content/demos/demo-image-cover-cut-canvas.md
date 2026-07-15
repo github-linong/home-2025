@@ -1,5 +1,6 @@
 ---
 title: "图片封面裁剪 Canvas"
+heroImage: "/heroes/demo/demo-image-cover-cut-canvas.webp"
 description: "图形交互示例：图片封面裁剪 Canvas。"
 pubDate: "2019-06-01"
 type: web

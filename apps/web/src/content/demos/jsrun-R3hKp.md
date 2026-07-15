@@ -1,5 +1,6 @@
 ---
 title: "视口操作，DOM"
+heroImage: "/heroes/demo/jsrun-R3hKp.webp"
 description: "JSRUN 代码片段：视口操作，DOM（原地址 https://jsrun.net/R3hKp）。"
 pubDate: "2018-10-29"
 type: web

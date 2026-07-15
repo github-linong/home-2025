@@ -1,5 +1,6 @@
 ---
 title: "执行浏览器复制命令"
+heroImage: "/heroes/demo/jsrun-7XiKp.webp"
 description: "JSRUN 代码片段：执行浏览器复制命令（原地址 https://jsrun.net/7XiKp）。"
 pubDate: "2017-09-25"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "vue vue-router测试"
+heroImage: "/heroes/demo/jsrun-arzKp__100169.webp"
 description: "路由切换是否会关闭 ajax"
 pubDate: "2022-07-04"
 type: web

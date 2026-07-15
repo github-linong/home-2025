@@ -1,7 +1,8 @@
 ---
 title: "Sf 1190000020625420 File FileReader Blob"
+heroImage: "/heroes/demo/sf-1190000020625420-file-FileReader-blob.webp"
 description: "SegmentFault交互示例：Sf 1190000020625420 File FileReader Blob。"
-pubDate: "2019-06-01"
+pubDate: "2019-10-09"
 type: web
 demoUrl: "/demos/html/sf-1190000020625420-file-FileReader-blob.html"
 legacyUrl: "/static/html/sf-1190000020625420-file-FileReader-blob.html"

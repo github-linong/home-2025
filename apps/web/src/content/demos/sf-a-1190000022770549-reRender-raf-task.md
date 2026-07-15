@@ -1,5 +1,6 @@
 ---
 title: "Vue 重渲染 + rAF 任务"
+heroImage: "/heroes/demo/sf-a-1190000022770549-reRender-raf-task.webp"
 description: "SegmentFault交互示例：Vue 重渲染 + rAF 任务。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "SegmentFault"
 badge: "思否"
 tags: ["legacy", "SegmentFault"]
 ---
+

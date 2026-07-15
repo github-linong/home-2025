@@ -1,5 +1,6 @@
 ---
 title: "grid 实现布局切换"
+heroImage: "/heroes/demo/jsrun-AzLKp.webp"
 description: "JSRUN 代码片段：grid 实现布局切换（原地址 https://jsrun.net/AzLKp）。"
 pubDate: "2020-08-25"
 type: web

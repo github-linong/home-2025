@@ -1,5 +1,6 @@
 ---
 title: "createRange bug复现"
+heroImage: "/heroes/demo/jsrun-HigKp.webp"
 description: "JSRUN 代码片段：createRange bug复现（原地址 https://jsrun.net/HigKp）。"
 pubDate: "2018-06-13"
 type: web

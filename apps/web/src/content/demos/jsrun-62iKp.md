@@ -1,5 +1,6 @@
 ---
 title: "BFC的作用及原理"
+heroImage: "/heroes/demo/jsrun-62iKp.webp"
 description: "http://www.cnblogs.com/heimanba/p/3774086.html"
 pubDate: "2017-10-09"
 type: web

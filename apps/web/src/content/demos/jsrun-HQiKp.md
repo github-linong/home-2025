@@ -1,5 +1,6 @@
 ---
 title: "jquery 滚动条定位问题"
+heroImage: "/heroes/demo/jsrun-HQiKp.webp"
 description: "https://segmentfault.com/q/1010000011872029?_ea=2791846"
 pubDate: "2017-11-07"
 type: web

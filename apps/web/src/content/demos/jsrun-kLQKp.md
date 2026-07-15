@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000041671643"
+heroImage: "/heroes/demo/jsrun-kLQKp.webp"
 description: "如何使用纯CSS、JavaScript实现淡入淡出的模块切换效果"
 pubDate: "2022-04-09"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "vue props 测试"
+heroImage: "/heroes/demo/jsrun-4ucKp.webp"
 description: "JSRUN 代码片段：vue props 测试（原地址 https://jsrun.net/4ucKp）。"
 pubDate: "2023-03-15"
 type: web

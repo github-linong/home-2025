@@ -1,5 +1,6 @@
 ---
 title: "CSS position: sticky 粘性定位示例"
+heroImage: "/heroes/demo/jsrun-f2iKp.webp"
 description: "纵向滚动页中演示 sticky：顶部块 top:50px 吸附，分区标题吸顶直到离开所在 section。"
 pubDate: "2017-10-09"
 type: web

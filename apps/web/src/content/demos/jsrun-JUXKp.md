@@ -1,5 +1,6 @@
 ---
 title: "Iconfont 做一个微信下面导航"
+heroImage: "/heroes/demo/jsrun-JUXKp.webp"
 description: "JSRUN 代码片段：Iconfont 做一个微信下面导航（原地址 https://jsrun.net/JUXKp）。"
 pubDate: "2019-03-21"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "svg show"
+heroImage: "/heroes/demo/jsrun-YuPKp.webp"
 description: "JSRUN 代码片段：svg show（原地址 https://jsrun.net/YuPKp）。"
 pubDate: "2022-09-14"
 type: web

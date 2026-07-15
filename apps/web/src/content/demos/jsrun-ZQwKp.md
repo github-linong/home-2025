@@ -1,5 +1,6 @@
 ---
 title: "数据处理界面"
+heroImage: "/heroes/demo/jsrun-ZQwKp.webp"
 description: "JSRUN 代码片段：数据处理界面（原地址 https://jsrun.net/ZQwKp）。"
 pubDate: "2020-11-20"
 type: web

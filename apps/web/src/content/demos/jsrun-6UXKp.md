@@ -1,5 +1,6 @@
 ---
 title: "头像控件-测试"
+heroImage: "/heroes/demo/jsrun-6UXKp.webp"
 description: "JSRUN 代码片段：头像控件-测试（原地址 https://jsrun.net/6UXKp）。"
 pubDate: "2019-03-20"
 type: web

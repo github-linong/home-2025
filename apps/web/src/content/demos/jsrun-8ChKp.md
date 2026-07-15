@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000017358849"
+heroImage: "/heroes/demo/jsrun-8ChKp.webp"
 description: "JSRUN 代码片段：https://segmentfault.com/q/1010000017358849（原地址 https://jsrun.net/8ChKp）。"
 pubDate: "2018-12-19"
 type: web

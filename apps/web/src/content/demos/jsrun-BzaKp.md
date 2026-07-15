@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000039182330"
+heroImage: "/heroes/demo/jsrun-BzaKp.webp"
 description: "请问怎样实现全屏幕样式全覆盖？"
 pubDate: "2021-02-07"
 type: web

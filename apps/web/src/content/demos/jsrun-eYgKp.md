@@ -1,5 +1,6 @@
 ---
 title: "datetime-local"
+heroImage: "/heroes/demo/jsrun-eYgKp.webp"
 description: "JSRUN 代码片段：datetime-local（原地址 https://jsrun.net/eYgKp）。"
 pubDate: "2018-06-12"
 type: web

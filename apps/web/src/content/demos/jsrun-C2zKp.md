@@ -1,5 +1,6 @@
 ---
 title: "js 逻辑查询"
+heroImage: "/heroes/demo/jsrun-C2zKp.webp"
 description: "JSRUN 代码片段：js 逻辑查询（原地址 https://jsrun.net/C2zKp）。"
 pubDate: "2022-05-26"
 type: web

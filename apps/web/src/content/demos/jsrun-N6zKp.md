@@ -1,5 +1,6 @@
 ---
 title: "vue elementui select"
+heroImage: "/heroes/demo/jsrun-N6zKp.webp"
 description: "JSRUN 代码片段：vue elementui select（原地址 https://jsrun.net/N6zKp）。"
 pubDate: "2022-05-31"
 type: web

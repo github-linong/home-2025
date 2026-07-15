@@ -1,5 +1,6 @@
 ---
 title: "jqueryui测试"
+heroImage: "/heroes/demo/test-jqueryUI-Sortable.webp"
 description: "http://www.runoob.com/jqueryui/example-sortable.html https://www.cnblogs.com/xjnotxj/p/5551548.html Item 1"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "测试"
 badge: "Bug 复现"
 tags: ["legacy", "测试"]
 ---
+

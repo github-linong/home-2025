@@ -1,5 +1,6 @@
 ---
 title: "messageBox render"
+heroImage: "/heroes/demo/jsrun-m9zKp.webp"
 description: "JSRUN 代码片段：messageBox render（原地址 https://jsrun.net/m9zKp）。"
 pubDate: "2022-06-14"
 type: web

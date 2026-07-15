@@ -1,5 +1,6 @@
 ---
 title: "vue2.x 动态参数测试"
+heroImage: "/heroes/demo/jsrun-UbUKp__85127.webp"
 description: "JSRUN 代码片段：vue2.x 动态参数测试（原地址 https://jsrun.net/UbUKp）。"
 pubDate: "2021-10-27"
 type: web

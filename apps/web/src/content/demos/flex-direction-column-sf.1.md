@@ -1,7 +1,8 @@
 ---
 title: "Flex 垂直布局 · space-between"
+heroImage: "/heroes/demo/flex-direction-column-sf.1.webp"
 description: "在 column 基础上加 justify-content: space-between，头底两端对齐；微调位置较难。"
-pubDate: "2019-06-01"
+pubDate: "2020-10-15"
 type: web
 demoUrl: "/demos/html/flex-direction-column-sf.1.html"
 legacyUrl: "/static/html/flex-direction-column-sf.1.html"

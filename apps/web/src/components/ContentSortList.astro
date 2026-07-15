@@ -1,0 +1,533 @@
+---
+/**
+ * Client-side list sorter for blog / demos.
+ * SSR shows the current page; switching sort re-renders from catalog + live views.
+ */
+export interface Props {
+  kind: "blog" | "demo";
+  items?: Array<{
+    id: string;
+    url: string;
+    title: string;
+    desc: string;
+    img?: string;
+    badge?: string;
+    tags?: string[];
+    pubDate: string;
+    updatedDate?: string;
+    category?: string;
+    baseWeight: number;
+    kind?: string;
+    votes?: number;
+    accepted?: boolean;
+    dateAsUpdate?: boolean;
+  }>;
+  /** Fetch catalog from this URL (preferred for large lists / paginated pages). */
+  catalogUrl?: string;
+  pageSize?: number;
+  defaultSort?: "date" | "date-asc" | "hot";
+  sortModes?: Array<"date" | "date-asc" | "hot">;
+  catalogKey?: string;
+}
+
+const {
+  kind,
+  items = [],
+  catalogUrl = "",
+  pageSize = 10,
+  defaultSort = "date",
+  sortModes = ["date", "date-asc", "hot"],
+  catalogKey = kind,
+} = Astro.props;
+
+const sortLabels: Record<"date" | "date-asc" | "hot", string> = {
+  date: "最新",
+  "date-asc": "最早",
+  hot: "热度",
+};
+
+/** Escape `<` so a title/desc cannot close the JSON script tag early. */
+const catalogJson = JSON.stringify(items).replace(/</g, "\\u003c");
+---
+
+<div
+  class="content-sort"
+  data-content-sort
+  data-kind={kind}
+  data-catalog-key={catalogKey}
+  data-catalog-url={catalogUrl || undefined}
+  data-page-size={String(pageSize)}
+  data-default-sort={defaultSort}
+  transition:name={`content-sort-${catalogKey}`}
+>
+  <script type="application/json" data-sort-catalog set:html={catalogJson} />
+
+  <div class="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label="排序">
+    <span class="text-sm opacity-70 mr-1">排序</span>
+    {
+      sortModes.map((mode) => (
+        <button
+          type="button"
+          class:list={["btn", "btn-sm", mode === defaultSort ? "" : "btn-ghost"]}
+          data-sort={mode}
+        >
+          {sortLabels[mode]}
+        </button>
+      ))
+    }
+    <span class="text-xs opacity-50 ml-1" data-sort-meta></span>
+  </div>
+
+  <div data-sort-ssr>
+    <slot />
+  </div>
+
+  <div class="hidden" data-sort-client>
+    <ul data-sort-list></ul>
+    <div class="flex justify-between items-center" data-sort-pager>
+      <button type="button" class="btn btn-ghost my-10" data-page-prev>上一页</button>
+      <span class="text-sm opacity-60" data-page-label></span>
+      <button type="button" class="btn btn-ghost my-10" data-page-next>下一页</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  type SortMode = "date" | "date-asc" | "hot";
+
+  type Item = {
+    id: string;
+    url: string;
+    title: string;
+    desc: string;
+    img?: string;
+    badge?: string;
+    tags?: string[];
+    pubDate: string;
+    updatedDate?: string;
+    category?: string;
+    baseWeight: number;
+    kind?: string;
+    votes?: number;
+    accepted?: boolean;
+    dateAsUpdate?: boolean;
+    views?: number;
+  };
+
+  type RootCtl = { abort: AbortController; catalogKey: string };
+
+  function heatScore(baseWeight: number, views = 0) {
+    return baseWeight + views * 4;
+  }
+
+  function compare(a: Item, b: Item, mode: SortMode) {
+    if (mode === "date" || mode === "date-asc") {
+      const dateOf = (item: Item) =>
+        Date.parse(item.dateAsUpdate ? item.updatedDate || item.pubDate : item.pubDate);
+      const delta = dateOf(b) - dateOf(a);
+      const byDate = mode === "date" ? delta : -delta;
+      if (byDate !== 0) return byDate;
+      const byWeight = (b.baseWeight || 0) - (a.baseWeight || 0);
+      if (byWeight !== 0) return byWeight;
+      return a.title.localeCompare(b.title, "zh");
+    }
+    const hot = heatScore(b.baseWeight, b.views) - heatScore(a.baseWeight, a.views);
+    if (hot !== 0) return hot;
+    const dateOf = (item: Item) =>
+      Date.parse(item.dateAsUpdate ? item.updatedDate || item.pubDate : item.pubDate);
+    const byDate = dateOf(b) - dateOf(a);
+    if (byDate !== 0) return byDate;
+    return a.title.localeCompare(b.title, "zh");
+  }
+
+  function escapeHtml(s: string) {
+    return s
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function formatDay(iso?: string) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "";
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
+  function renderDateMeta(item: Item) {
+    const published = formatDay(item.pubDate);
+    const updated = formatDay(item.updatedDate);
+    const hasDistinctUpdate = Boolean(updated && updated !== published);
+    const parts: string[] = [];
+
+    if (item.dateAsUpdate) {
+      const primary = updated || published;
+      if (primary) {
+        parts.push(
+          `<time datetime="${escapeHtml(item.updatedDate || item.pubDate)}">更新于 ${primary}</time>`,
+        );
+      }
+      if (hasDistinctUpdate && published) {
+        parts.push(`<time datetime="${escapeHtml(item.pubDate)}">发布于 ${published}</time>`);
+      }
+    } else {
+      if (published) {
+        parts.push(`<time datetime="${escapeHtml(item.pubDate)}">发布于 ${published}</time>`);
+      }
+      if (hasDistinctUpdate && updated && item.updatedDate) {
+        parts.push(`<time datetime="${escapeHtml(item.updatedDate)}">更新于 ${updated}</time>`);
+      }
+    }
+    if (item.category) {
+      parts.push(`<span class="opacity-80">${escapeHtml(item.category)}</span>`);
+    }
+    if (!parts.length) return "";
+    return `<div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/50">${parts.join("")}</div>`;
+  }
+
+  function renderCard(item: Item) {
+    const isAnswer = item.kind === "answer";
+    const badges = [
+      item.badge ? `<div class="badge badge-secondary mx-2">${escapeHtml(item.badge)}</div>` : "",
+      isAnswer && item.accepted ? `<div class="badge badge-success mx-1">已采纳</div>` : "",
+      isAnswer && item.votes != null && item.votes > 0
+        ? `<div class="badge badge-ghost mx-1">👍 ${item.votes}</div>`
+        : "",
+      item.views && item.views > 0
+        ? `<div class="badge badge-outline mx-1">${item.views} 次浏览</div>`
+        : "",
+    ].join("");
+
+    const tags =
+      item.tags && item.tags.length
+        ? `<div class="card-actions justify-end">${item.tags
+            .map(
+              (tag) =>
+                `<a href="/search/?tag=${encodeURIComponent(tag)}" class="badge badge-outline">${escapeHtml(tag)}</a>`,
+            )
+            .join("")}</div>`
+        : "";
+
+    const img = item.img
+      ? `<a href="${escapeHtml(item.url)}" class="shrink-0"><img src="${escapeHtml(item.img)}" alt="" width="208" height="117" class="max-w-full md:max-w-[13rem] rounded-lg object-cover" loading="lazy" /></a>`
+      : "";
+
+    return `<li>
+      <div class="rounded-lg bg-base-100 hover:shadow-xl transition ease-in-out hover:scale-[102%]">
+        <div class="hero-content flex-col md:flex-row">
+          ${img}
+          <div class="grow w-full">
+            <h2 class="card-title">
+              <a href="${escapeHtml(item.url)}" class="hover:underline">${escapeHtml(item.title)}</a>
+              ${badges}
+            </h2>
+            ${renderDateMeta(item)}
+            <p class="py-1 text-base-content/80">${escapeHtml(item.desc)}</p>
+            ${tags}
+          </div>
+        </div>
+      </div>
+      <div class="divider my-0"></div>
+    </li>`;
+  }
+
+  function readItems(root: HTMLElement): Item[] {
+    const node = root.querySelector<HTMLScriptElement>(
+      "script[type='application/json'][data-sort-catalog]",
+    );
+    if (!node?.textContent) return [];
+    try {
+      const parsed = JSON.parse(node.textContent) as Item[];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function writeItems(root: HTMLElement, items: Item[]) {
+    const node = root.querySelector<HTMLScriptElement>(
+      "script[type='application/json'][data-sort-catalog]",
+    );
+    if (!node) return;
+    node.textContent = JSON.stringify(items).replace(/</g, "\\u003c");
+  }
+
+  async function fetchCatalog(url: string): Promise<Item[]> {
+    try {
+      const res = await fetch(url, { credentials: "omit" });
+      if (!res.ok) return [];
+      const data = await res.json();
+      return Array.isArray(data) ? (data as Item[]) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async function loadViews(kind: string): Promise<Record<string, number>> {
+    try {
+      const res = await fetch("/api/content-views", { credentials: "omit" });
+      if (!res.ok) return {};
+      const data = await res.json();
+      const views = (data?.views || {}) as Record<string, number>;
+      const prefix = `${kind}:`;
+      const out: Record<string, number> = {};
+      for (const [key, n] of Object.entries(views)) {
+        if (key.startsWith(prefix)) out[key.slice(prefix.length)] = Number(n) || 0;
+      }
+      return out;
+    } catch {
+      return {};
+    }
+  }
+
+  function getRootCtl(root: HTMLElement): RootCtl | undefined {
+    return (root as HTMLElement & { __sortCtl?: RootCtl }).__sortCtl;
+  }
+
+  function setRootCtl(root: HTMLElement, ctl: RootCtl | undefined) {
+    (root as HTMLElement & { __sortCtl?: RootCtl }).__sortCtl = ctl;
+  }
+
+  /** /blog/2 or /demos/3 — SSR pagination paths must keep SSR until user sorts. */
+  function isSsrPagedPath() {
+    return /\/(blog|demos)\/\d+\/?$/.test(window.location.pathname);
+  }
+
+  function listRootPath() {
+    const path = window.location.pathname.replace(/\/+$/, "") || "/";
+    if (/\/blog\/\d+$/.test(path)) return "/blog/";
+    if (/\/demos\/\d+$/.test(path)) return "/demos/";
+    return window.location.pathname.endsWith("/")
+      ? window.location.pathname
+      : `${window.location.pathname}/`;
+  }
+
+  async function initRoot(root: HTMLElement) {
+    const kind = root.dataset.kind || "blog";
+    const catalogKey = root.dataset.catalogKey || kind;
+    const catalogUrl = root.dataset.catalogUrl || "";
+    const pageSize = Number(root.dataset.pageSize || 10) || 10;
+    const defaultSort = (root.dataset.defaultSort || "date") as SortMode;
+
+    let items = readItems(root);
+    if (!items.length && catalogUrl) {
+      items = await fetchCatalog(catalogUrl);
+      if (items.length) writeItems(root, items);
+    }
+    if (!items.length) return;
+
+    getRootCtl(root)?.abort.abort();
+    const abort = new AbortController();
+    const { signal } = abort;
+    setRootCtl(root, { abort, catalogKey });
+
+    let mode: SortMode = defaultSort;
+    let page = 1;
+    let viewsMap: Record<string, number> = {};
+    let usingClient = false;
+
+    const params = new URLSearchParams(window.location.search);
+    const qScope = params.get("sortScope");
+    const qSort = params.get("sort") as SortMode | null;
+    const qPage = Number(params.get("p") || "1");
+
+    // Explicit client sort (non-default mode, or client pager). Ignore bare ?sort=date on /blog/2.
+    const hasClientSortIntent =
+      qScope === catalogKey &&
+      qSort != null &&
+      (qSort === "date" || qSort === "date-asc" || qSort === "hot") &&
+      (qSort !== defaultSort || qPage > 1);
+
+    if (hasClientSortIntent) {
+      mode = qSort!;
+      if (qPage > 1) page = qPage;
+      usingClient = true;
+    }
+
+    function els() {
+      return {
+        ssr: root.querySelector<HTMLElement>("[data-sort-ssr]"),
+        client: root.querySelector<HTMLElement>("[data-sort-client]"),
+        list: root.querySelector<HTMLElement>("[data-sort-list]"),
+        meta: root.querySelector<HTMLElement>("[data-sort-meta]"),
+        pageLabel: root.querySelector<HTMLElement>("[data-page-label]"),
+        prevBtn: root.querySelector<HTMLButtonElement>("[data-page-prev]"),
+        nextBtn: root.querySelector<HTMLButtonElement>("[data-page-next]"),
+        buttons: Array.from(root.querySelectorAll<HTMLButtonElement>("[data-sort]")),
+      };
+    }
+
+    function setPeerListMetaHidden(hidden: boolean) {
+      document
+        .querySelectorAll(`[data-ssr-list-meta="${CSS.escape(catalogKey)}"]`)
+        .forEach((node) => {
+          (node as HTMLElement).hidden = hidden;
+          node.classList.toggle("hidden", hidden);
+        });
+    }
+
+    function syncUrl() {
+      const url = new URL(window.location.href);
+      if (usingClient && isSsrPagedPath()) {
+        url.pathname = listRootPath();
+      }
+      if (mode === defaultSort && page === 1 && !usingClient) {
+        url.searchParams.delete("sort");
+        url.searchParams.delete("sortScope");
+        url.searchParams.delete("p");
+      } else if (usingClient) {
+        url.searchParams.set("sort", mode);
+        url.searchParams.set("sortScope", catalogKey);
+        if (page > 1) url.searchParams.set("p", String(page));
+        else url.searchParams.delete("p");
+      } else {
+        url.searchParams.delete("sort");
+        url.searchParams.delete("sortScope");
+        url.searchParams.delete("p");
+      }
+      history.replaceState({}, "", url);
+    }
+
+    function setActiveButtons() {
+      for (const btn of els().buttons) {
+        const active = btn.dataset.sort === mode;
+        btn.classList.toggle("btn-primary", active);
+        btn.classList.toggle("btn-ghost", !active);
+      }
+    }
+
+    function sorted(): Item[] {
+      return items
+        .map((item) => ({ ...item, views: viewsMap[item.id] || 0 }))
+        .sort((a, b) => compare(a, b, mode));
+    }
+
+    function showSsr(ssr: HTMLElement, client: HTMLElement) {
+      ssr.hidden = false;
+      ssr.classList.remove("hidden");
+      client.hidden = true;
+      client.classList.add("hidden");
+      setPeerListMetaHidden(false);
+    }
+
+    function showClient(ssr: HTMLElement, client: HTMLElement) {
+      ssr.hidden = true;
+      ssr.classList.add("hidden");
+      client.hidden = false;
+      client.classList.remove("hidden");
+      setPeerListMetaHidden(true);
+    }
+
+    function keepListInView() {
+      root.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function render() {
+      const { ssr, client, list, meta, pageLabel, prevBtn, nextBtn } = els();
+      if (!list || !client || !ssr) return;
+
+      // Keep SSR pagination pages (/blog/2) until the user explicitly sorts.
+      if (isSsrPagedPath() && !usingClient) {
+        showSsr(ssr, client);
+        if (meta) meta.textContent = "";
+        setActiveButtons();
+        syncUrl();
+        return;
+      }
+
+      const all = sorted();
+      const lastPage = Math.max(1, Math.ceil(all.length / pageSize));
+      if (page > lastPage) page = lastPage;
+      const start = (page - 1) * pageSize;
+      const slice = all.slice(start, start + pageSize);
+
+      const canUseSsr = mode === defaultSort && page === 1 && !usingClient && !isSsrPagedPath();
+
+      if (canUseSsr) {
+        showSsr(ssr, client);
+        if (meta) meta.textContent = `共 ${all.length} 篇`;
+        setActiveButtons();
+        syncUrl();
+        return;
+      }
+
+      usingClient = true;
+      showClient(ssr, client);
+      list.innerHTML = slice.map(renderCard).join("");
+      if (pageLabel) pageLabel.textContent = `第 ${page} / ${lastPage} 页 · 共 ${all.length} 个`;
+      if (prevBtn) prevBtn.disabled = page <= 1;
+      if (nextBtn) nextBtn.disabled = page >= lastPage;
+      if (meta) {
+        meta.textContent =
+          mode === "hot" ? "综合热度 = 内容权重 + 访问量" : `共 ${all.length} 篇`;
+      }
+      setActiveButtons();
+      syncUrl();
+    }
+
+    root.addEventListener(
+      "click",
+      (event) => {
+        const target = event.target as HTMLElement | null;
+        if (!target) return;
+
+        const sortBtn = target.closest<HTMLButtonElement>("button[data-sort]");
+        if (sortBtn && root.contains(sortBtn)) {
+          const next = sortBtn.dataset.sort as SortMode;
+          if (!next) return;
+          mode = next;
+          page = 1;
+          usingClient = true;
+          render();
+          keepListInView();
+          return;
+        }
+
+        if (target.closest("[data-page-prev]") && root.contains(target)) {
+          if (page <= 1) return;
+          page -= 1;
+          usingClient = true;
+          render();
+          keepListInView();
+          return;
+        }
+
+        if (target.closest("[data-page-next]") && root.contains(target)) {
+          page += 1;
+          usingClient = true;
+          render();
+          keepListInView();
+        }
+      },
+      { signal },
+    );
+
+    setActiveButtons();
+    render();
+
+    loadViews(kind).then((map) => {
+      if (signal.aborted) return;
+      viewsMap = map;
+      if (usingClient || mode === "hot" || Object.keys(map).length) render();
+    });
+  }
+
+  function bootSortLists() {
+    document.querySelectorAll<HTMLElement>("[data-content-sort]").forEach((root) => {
+      void initRoot(root);
+    });
+  }
+
+  bootSortLists();
+
+  const w = window as Window & { __contentSortOnLoad?: () => void };
+  if (w.__contentSortOnLoad) {
+    document.removeEventListener("astro:page-load", w.__contentSortOnLoad);
+  }
+  w.__contentSortOnLoad = bootSortLists;
+  document.addEventListener("astro:page-load", bootSortLists);
+</script>

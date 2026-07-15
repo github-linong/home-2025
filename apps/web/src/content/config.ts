@@ -23,6 +23,8 @@ const demoSchema = z.object({
     title: z.string(),
     description: z.string(),
     pubDate: z.coerce.date(),
+    /** Last meaningful update; falls back to pubDate in UI when absent. */
+    updatedDate: z.coerce.date().optional(),
     heroImage: z.string().optional(),
     badge: z.string().optional(),
     tags: z.array(z.string()).optional(),

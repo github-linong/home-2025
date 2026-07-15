@@ -1,5 +1,6 @@
 ---
 title: "导航下划线跟随选中项"
+heroImage: "/heroes/demo/jsrun-3nTKp.webp"
 description: "纯 CSS 利用伪元素与兄弟选择器，让导航下划线在选中项间滑动跟随。"
 pubDate: "2021-10-11"
 type: web

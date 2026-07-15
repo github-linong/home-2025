@@ -1,5 +1,6 @@
 ---
 title: "js 压缩、解压缩"
+heroImage: "/heroes/demo/jsrun-wvzKp.webp"
 description: "加密、解密 https://pieroxy.net/blog/pages/lz-string/index.html"
 pubDate: "2022-05-27"
 type: web

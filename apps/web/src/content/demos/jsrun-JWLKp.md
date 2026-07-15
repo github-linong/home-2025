@@ -1,5 +1,6 @@
 ---
 title: "Vue.Draggable 勾选批量拖拽"
+heroImage: "/heroes/demo/jsrun-JWLKp.webp"
 description: "左侧源列表勾选多项后拖入目标列表，一次把所有勾选项批量放入。"
 pubDate: "2020-08-06"
 type: web

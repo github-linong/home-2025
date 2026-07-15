@@ -1,5 +1,6 @@
 ---
 title: "Canvas 按网格拼贴爱心图案"
+heroImage: "/heroes/demo/jsrun-8dgKp.webp"
 description: "用二维 0/1 矩阵定爱心形状，随机从 CDN 拉图并延时 drawImage 拼成马赛克。"
 pubDate: "2018-08-08"
 type: web

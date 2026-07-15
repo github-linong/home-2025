@@ -1,5 +1,6 @@
 ---
 title: "二维码加图片 · awesome-qr"
+heroImage: "/heroes/demo/qrcode-awesome-qr.webp"
 description: "awesome-qr 二维码叠图。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "二维码"
 badge: "实验"
 tags: ["legacy", "二维码"]
 ---
+

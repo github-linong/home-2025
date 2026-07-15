@@ -1,5 +1,6 @@
 ---
 title: "websocket 测试服务"
+heroImage: "/heroes/demo/suyue-websocket-test.webp"
 description: "reset getConfig getLogs"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "WebSocket"
 badge: "实验"
 tags: ["legacy", "WebSocket"]
 ---
+

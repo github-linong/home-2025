@@ -1,5 +1,6 @@
 ---
 title: "url 提取 path 和 search 测试"
+heroImage: "/heroes/demo/jsrun-NGEKp.webp"
 description: "JSRUN 代码片段：url 提取 path 和 search 测试（原地址 https://jsrun.net/NGEKp）。"
 pubDate: "2022-10-11"
 type: web

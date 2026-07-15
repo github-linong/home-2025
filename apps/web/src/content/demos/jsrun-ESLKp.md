@@ -1,5 +1,6 @@
 ---
 title: "vue 插槽"
+heroImage: "/heroes/demo/jsrun-ESLKp.webp"
 description: "JSRUN 代码片段：vue 插槽（原地址 https://jsrun.net/ESLKp）。"
 pubDate: "2020-09-15"
 type: web

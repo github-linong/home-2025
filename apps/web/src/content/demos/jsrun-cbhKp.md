@@ -1,5 +1,6 @@
 ---
 title: "sort动画"
+heroImage: "/heroes/demo/jsrun-cbhKp.webp"
 description: "JSRUN 代码片段：sort动画（原地址 https://jsrun.net/cbhKp）。"
 pubDate: "2018-10-08"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "操作记录"
+heroImage: "/heroes/demo/jsrun-PhQKp.webp"
 description: "1. 单击 2. 移动 3. hover"
 pubDate: "2022-04-01"
 type: web

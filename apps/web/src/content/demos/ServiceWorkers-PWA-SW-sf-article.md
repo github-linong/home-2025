@@ -1,7 +1,8 @@
 ---
 title: "Service Worker / PWA"
+heroImage: "/heroes/demo/ServiceWorkers-PWA-SW-sf-article.webp"
 description: "Service Worker / PWA 配套演示。"
-pubDate: "2019-06-01"
+pubDate: "2019-06-21"
 type: web
 demoUrl: "/demos/html/ServiceWorkers-PWA-SW-sf-article.html"
 legacyUrl: "/static/html/ServiceWorkers-PWA-SW-sf-article.html"

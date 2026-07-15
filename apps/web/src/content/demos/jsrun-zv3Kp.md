@@ -1,5 +1,6 @@
 ---
 title: "reduce"
+heroImage: "/heroes/demo/jsrun-zv3Kp.webp"
 description: "JSRUN 代码片段：reduce（原地址 https://jsrun.net/zv3Kp）。"
 pubDate: "2021-04-14"
 type: web

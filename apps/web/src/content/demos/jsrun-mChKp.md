@@ -1,5 +1,6 @@
 ---
 title: "https://uploadfiles.nowcoder.com/images/20161116/5918115_1479277839388_168B8EE75BC16BB2FD847487A3..."
+heroImage: "/heroes/demo/jsrun-mChKp.webp"
 description: "JSRUN 代码片段：https://uploadfiles.nowcoder.com/images/20161116/5918115_1479277839388_168B8EE75BC16BB2FD847487A3...（原地址 https://jsrun.net/mChKp）。"
 pubDate: "2018-12-21"
 type: web

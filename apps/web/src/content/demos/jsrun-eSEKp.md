@@ -1,5 +1,6 @@
 ---
 title: "原生 curd"
+heroImage: "/heroes/demo/jsrun-eSEKp.webp"
 description: "JSRUN 代码片段：原生 curd（原地址 https://jsrun.net/eSEKp）。"
 pubDate: "2022-10-17"
 type: web

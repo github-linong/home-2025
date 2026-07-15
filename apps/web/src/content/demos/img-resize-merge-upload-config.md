@@ -1,7 +1,8 @@
 ---
 title: "人脸融合上传配置"
+heroImage: "/heroes/demo/img-resize-merge-upload-config.webp"
 description: "文件 IO交互示例：人脸融合上传配置。"
-pubDate: "2019-06-01"
+pubDate: "2019-03-22"
 type: web
 demoUrl: "/demos/html/img-resize-merge-upload-config.html"
 legacyUrl: "/static/html/img-resize-merge-upload-config.html"

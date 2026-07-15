@@ -111,7 +111,7 @@ const sf = profile.segmentfault;
           <a href={a.url} target="_blank" rel="noreferrer">{a.title}</a>
           {" "}
           <span class="opacity-70">
-            · {a.votes} 票{a.accepted ? " · 已采纳" : ""}
+            · {a.votes} 票{"accepted" in a && a.accepted ? " · 已采纳" : ""}
           </span>
         </li>
       ))}

@@ -1,5 +1,6 @@
 ---
 title: "图片处理处理"
+heroImage: "/heroes/demo/jsrun-diEKp.webp"
 description: "JSRUN 代码片段：图片处理处理（原地址 https://jsrun.net/diEKp）。"
 pubDate: "2022-09-21"
 type: web

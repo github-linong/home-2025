@@ -1,5 +1,6 @@
 ---
 title: "vue 时间视频联动"
+heroImage: "/heroes/demo/jsrun-GBTKp.webp"
 description: "JSRUN 代码片段：vue 时间视频联动（原地址 https://jsrun.net/GBTKp）。"
 pubDate: "2021-10-12"
 type: web

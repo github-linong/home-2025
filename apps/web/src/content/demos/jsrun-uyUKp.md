@@ -1,5 +1,6 @@
 ---
 title: "vue 列表 滚动 特效"
+heroImage: "/heroes/demo/jsrun-uyUKp.webp"
 description: "JSRUN 代码片段：vue 列表 滚动 特效（原地址 https://jsrun.net/uyUKp）。"
 pubDate: "2021-10-27"
 type: web

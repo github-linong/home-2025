@@ -1,5 +1,6 @@
 ---
 title: "Font Family Monospacedfont"
+heroImage: "/heroes/demo/test-font-family-monospacedfont.webp"
 description: "测试交互示例：Font Family Monospacedfont。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "测试"
 badge: "Bug 复现"
 tags: ["legacy", "测试"]
 ---
+

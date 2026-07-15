@@ -1,5 +1,6 @@
 ---
 title: "setInterval 测试"
+heroImage: "/heroes/demo/jsrun-bjzKp.webp"
 description: "JSRUN 代码片段：setInterval 测试（原地址 https://jsrun.net/bjzKp）。"
 pubDate: "2022-07-07"
 type: web

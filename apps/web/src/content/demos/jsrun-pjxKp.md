@@ -1,5 +1,6 @@
 ---
 title: "http://ovolve.github.io/2048-AI/"
+heroImage: "/heroes/demo/jsrun-pjxKp.webp"
 description: "JSRUN 代码片段：http://ovolve.github.io/2048-AI/（原地址 https://jsrun.net/pjxKp）。"
 pubDate: "2023-10-30"
 type: web

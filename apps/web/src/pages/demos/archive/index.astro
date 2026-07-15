@@ -1,55 +1,40 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
-import createSlug from "../../../lib/createSlug";
 
-const allDemos = (await getCollection("demos"))
-  .filter((d) => d.data.tags?.includes("legacy"))
-  .sort((a, b) => a.data.title.localeCompare(b.data.title, "zh"));
-
-const q = Astro.url.searchParams.get("q")?.toLowerCase().trim() ?? "";
-const cat = Astro.url.searchParams.get("cat")?.trim() ?? "";
-
-const filtered = allDemos.filter((d) => {
-  if (cat && d.data.category !== cat) return false;
-  if (!q) return true;
-  const hay = [d.data.title, d.data.description, d.slug, d.data.category, ...(d.data.tags ?? [])]
-    .join(" ")
-    .toLowerCase();
-  return hay.includes(q);
-});
+const legacyCount = (await getCollection("demos")).filter((d) =>
+  d.data.tags?.includes("legacy"),
+).length;
 ---
 
-<BaseLayout
-  title="Demo 归档"
-  sideBarActiveItemID="demos"
->
-  <div class="not-prose">
-    <a href="/demos" class="link link-hover text-sm" data-astro-reload>← 项目展示</a>
+<BaseLayout title="Demo 归档" sideBarActiveItemID="demos">
+  <div class="not-prose" data-archive-root data-catalog-url="/data/demo-legacy-catalog.json">
+    <a href="/demos/" class="link link-hover text-sm">← 项目展示</a>
     <h1 class="text-3xl font-bold mt-2">Demo 归档</h1>
     <p class="opacity-80 mt-2 mb-4">
-      共 {allDemos.length} 个历史交互示例，按名称排序。需要按标签筛选时请用
-      <a href="/search/?type=demo" class="link" data-astro-reload>统一搜索</a>。
+      共 {legacyCount} 个历史交互示例。需要按标签筛选时请用
+      <a href="/search/?type=demo" class="link">统一搜索</a>。
     </p>
 
     <form method="get" action="/search/" class="flex flex-wrap gap-2 mb-4 max-w-3xl">
       <input
         type="search"
         name="q"
-        value={q}
         placeholder="搜索标题、描述、标签…"
         class="input input-bordered flex-1 min-w-[200px]"
       />
       <input type="hidden" name="type" value="demo" />
-      {cat && <input type="hidden" name="tag" value={cat} />}
       <button type="submit" class="btn btn-primary">去搜索</button>
       <a href="/search/?type=demo" class="btn btn-outline">标签筛选</a>
-      {(q || cat) && <a href="/demos/archive/" class="btn btn-ghost">清除</a>}
     </form>
 
-    <p class="text-sm opacity-70 mb-4">
-      {q || cat ? `匹配 ${filtered.length} / ${allDemos.length}` : "按名称排序"}
-    </p>
+    <div class="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label="排序">
+      <span class="text-sm opacity-70 mr-1">排序</span>
+      <button type="button" class="btn btn-sm btn-primary" data-archive-sort="title">名称</button>
+      <button type="button" class="btn btn-sm btn-ghost" data-archive-sort="date">最新</button>
+      <button type="button" class="btn btn-sm btn-ghost" data-archive-sort="hot">热度</button>
+      <span class="text-xs opacity-50 ml-1" data-archive-meta></span>
+    </div>
 
     <div class="overflow-x-auto">
       <table class="table table-sm table-zebra">
@@ -58,35 +43,189 @@ const filtered = allDemos.filter((d) => {
             <th>#</th>
             <th>项目</th>
             <th>分类</th>
+            <th>更新</th>
             <th>文章</th>
+            <th class="text-right">浏览</th>
           </tr>
         </thead>
-        <tbody>
-          {
-            filtered.map((demo, i) => {
-              const url = "/demos/" + createSlug(demo.data.title, demo.slug);
-              const posts = demo.data.relatedPosts?.length ?? 0;
-              return (
-                <tr>
-                  <td class="opacity-50">{i + 1}</td>
-                  <td class="max-w-lg">
-                    <a class="link link-hover font-medium" href={url}>
-                      {demo.data.title}
-                    </a>
-                    <div class="text-xs opacity-60 truncate mt-0.5">{demo.data.description}</div>
-                  </td>
-                  <td class="whitespace-nowrap text-xs">
-                    {demo.data.category && (
-                      <span class="badge badge-outline badge-sm">{demo.data.category}</span>
-                    )}
-                  </td>
-                  <td class="text-xs opacity-70">{posts > 0 ? `${posts} 篇` : "—"}</td>
-                </tr>
-              );
-            })
-          }
-        </tbody>
+        <tbody data-archive-tbody></tbody>
       </table>
     </div>
   </div>
 </BaseLayout>
+
+<script>
+  type Mode = "title" | "date" | "hot";
+  type Row = {
+    id: string;
+    url: string;
+    title: string;
+    desc: string;
+    category: string;
+    posts: number;
+    pubDate: string;
+    updatedDate?: string;
+    baseWeight: number;
+    views?: number;
+  };
+
+  type RootCtl = { abort: AbortController };
+
+  function heat(base: number, views = 0) {
+    return base + views * 4;
+  }
+
+  function escapeHtml(s: string) {
+    return s
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function formatDay(iso?: string) {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "—";
+    return d.toISOString().slice(0, 10);
+  }
+
+  async function loadViews(): Promise<Record<string, number>> {
+    try {
+      const res = await fetch("/api/content-views", { credentials: "omit" });
+      if (!res.ok) return {};
+      const data = await res.json();
+      const views = (data?.views || {}) as Record<string, number>;
+      const out: Record<string, number> = {};
+      for (const [key, n] of Object.entries(views)) {
+        if (key.startsWith("demo:")) out[key.slice(5)] = Number(n) || 0;
+      }
+      return out;
+    } catch {
+      return {};
+    }
+  }
+
+  async function fetchCatalog(url: string): Promise<Row[]> {
+    try {
+      const res = await fetch(url, { credentials: "omit" });
+      if (!res.ok) return [];
+      const data = await res.json();
+      return Array.isArray(data) ? (data as Row[]) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function getCtl(root: HTMLElement): RootCtl | undefined {
+    return (root as HTMLElement & { __archiveCtl?: RootCtl }).__archiveCtl;
+  }
+
+  function setCtl(root: HTMLElement, ctl: RootCtl | undefined) {
+    (root as HTMLElement & { __archiveCtl?: RootCtl }).__archiveCtl = ctl;
+  }
+
+  async function initArchive(root: HTMLElement) {
+    const catalogUrl = root.dataset.catalogUrl || "/data/demo-legacy-catalog.json";
+    const items = await fetchCatalog(catalogUrl);
+    if (!items.length) return;
+
+    getCtl(root)?.abort.abort();
+    const abort = new AbortController();
+    const { signal } = abort;
+    setCtl(root, { abort });
+
+    const tbody = root.querySelector<HTMLElement>("[data-archive-tbody]");
+    const meta = root.querySelector<HTMLElement>("[data-archive-meta]");
+    const buttons = Array.from(
+      root.querySelectorAll<HTMLButtonElement>("[data-archive-sort]"),
+    );
+
+    let mode: Mode = "title";
+    let viewsMap: Record<string, number> = {};
+
+    function dateOf(row: Row) {
+      return Date.parse(row.updatedDate || row.pubDate);
+    }
+
+    function compare(a: Row, b: Row) {
+      if (mode === "title") return a.title.localeCompare(b.title, "zh");
+      if (mode === "date") return dateOf(b) - dateOf(a);
+      const hot = heat(b.baseWeight, b.views) - heat(a.baseWeight, a.views);
+      if (hot !== 0) return hot;
+      return a.title.localeCompare(b.title, "zh");
+    }
+
+    function render() {
+      if (!tbody) return;
+      const rows = items
+        .map((item) => ({ ...item, views: viewsMap[item.id] || 0 }))
+        .sort(compare);
+      tbody.innerHTML = rows
+        .map((demo, i) => {
+          return `<tr>
+            <td class="opacity-50">${i + 1}</td>
+            <td class="max-w-lg">
+              <a class="link link-hover font-medium" href="${escapeHtml(demo.url)}">${escapeHtml(demo.title)}</a>
+              <div class="text-xs opacity-60 truncate mt-0.5">${escapeHtml(demo.desc)}</div>
+            </td>
+            <td class="whitespace-nowrap text-xs">${
+              demo.category
+                ? `<span class="badge badge-outline badge-sm">${escapeHtml(demo.category)}</span>`
+                : ""
+            }</td>
+            <td class="whitespace-nowrap text-xs opacity-70">${formatDay(demo.updatedDate || demo.pubDate)}</td>
+            <td class="text-xs opacity-70">${demo.posts > 0 ? `${demo.posts} 篇` : "—"}</td>
+            <td class="text-xs opacity-70 text-right">${demo.views || "—"}</td>
+          </tr>`;
+        })
+        .join("");
+      if (meta) {
+        meta.textContent =
+          mode === "hot" ? "综合热度 = 内容权重 + 访问量" : `共 ${rows.length} 个`;
+      }
+      for (const btn of buttons) {
+        const active = btn.dataset.archiveSort === mode;
+        btn.classList.toggle("btn-primary", active);
+        btn.classList.toggle("btn-ghost", !active);
+      }
+    }
+
+    root.addEventListener(
+      "click",
+      (event) => {
+        const target = event.target as HTMLElement | null;
+        if (!target) return;
+        const btn = target.closest<HTMLButtonElement>("[data-archive-sort]");
+        if (!btn || !root.contains(btn)) return;
+        const next = btn.dataset.archiveSort as Mode;
+        if (!next || next === mode) return;
+        mode = next;
+        render();
+      },
+      { signal },
+    );
+
+    render();
+    loadViews().then((map) => {
+      if (signal.aborted) return;
+      viewsMap = map;
+      render();
+    });
+  }
+
+  function bootArchive() {
+    document.querySelectorAll<HTMLElement>("[data-archive-root]").forEach((root) => {
+      void initArchive(root);
+    });
+  }
+
+  bootArchive();
+
+  const w = window as Window & { __archiveOnLoad?: () => void };
+  if (w.__archiveOnLoad) {
+    document.removeEventListener("astro:page-load", w.__archiveOnLoad);
+  }
+  w.__archiveOnLoad = bootArchive;
+  document.addEventListener("astro:page-load", bootArchive);
+</script>

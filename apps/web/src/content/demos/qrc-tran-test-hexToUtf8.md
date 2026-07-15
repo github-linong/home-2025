@@ -1,5 +1,6 @@
 ---
 title: "Qrc Tran Test HexToUtf8"
+heroImage: "/heroes/demo/qrc-tran-test-hexToUtf8.webp"
 description: "实验交互示例：Qrc Tran Test HexToUtf8。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---
+

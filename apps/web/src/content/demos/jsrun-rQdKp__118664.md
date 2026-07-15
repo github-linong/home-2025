@@ -1,5 +1,6 @@
 ---
 title: "阻止默认事件"
+heroImage: "/heroes/demo/jsrun-rQdKp__118664.webp"
 description: "JSRUN 代码片段：阻止默认事件（原地址 https://jsrun.net/rQdKp）。"
 pubDate: "2023-04-07"
 type: web

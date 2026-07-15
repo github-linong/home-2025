@@ -1,5 +1,6 @@
 ---
 title: "遍历、vue、重复渲染测试"
+heroImage: "/heroes/demo/jsrun-eVyKp.webp"
 description: "JSRUN 代码片段：遍历、vue、重复渲染测试（原地址 https://jsrun.net/eVyKp）。"
 pubDate: "2019-06-10"
 type: web

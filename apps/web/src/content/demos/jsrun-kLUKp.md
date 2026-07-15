@@ -1,5 +1,6 @@
 ---
 title: "echartsshow"
+heroImage: "/heroes/demo/jsrun-kLUKp.webp"
 description: "JSRUN 代码片段：echartsshow（原地址 https://jsrun.net/kLUKp）。"
 pubDate: "2021-11-02"
 type: web

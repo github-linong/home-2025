@@ -1,5 +1,6 @@
 ---
 title: "这段代码就是控制表格自动向上滚动的"
+heroImage: "/heroes/demo/jsrun-q4gKp__25940.webp"
 description: "JSRUN 代码片段：这段代码就是控制表格自动向上滚动的（原地址 https://jsrun.net/q4gKp）。"
 pubDate: "2018-09-12"
 type: web

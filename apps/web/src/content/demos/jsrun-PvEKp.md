@@ -1,5 +1,6 @@
 ---
 title: "font-smooth CSS 属性用来控制字体渲染时的平滑效果。"
+heroImage: "/heroes/demo/jsrun-PvEKp.webp"
 description: "JSRUN 代码片段：font-smooth CSS 属性用来控制字体渲染时的平滑效果。（原地址 https://jsrun.net/PvEKp）。"
 pubDate: "2022-09-27"
 type: web

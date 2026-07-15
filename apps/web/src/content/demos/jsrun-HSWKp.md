@@ -1,5 +1,6 @@
 ---
 title: "transfrom测试"
+heroImage: "/heroes/demo/jsrun-HSWKp.webp"
 description: "JSRUN 代码片段：transfrom测试（原地址 https://jsrun.net/HSWKp）。"
 pubDate: "2020-01-09"
 type: web

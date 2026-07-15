@@ -1,5 +1,6 @@
 ---
 title: "屏幕方向锁定"
+heroImage: "/heroes/demo/screenOrientationLock.webp"
 description: "screen.orientation.lock 实验。"
 pubDate: "2018-06-01"
 type: web

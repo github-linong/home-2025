@@ -1,5 +1,6 @@
 ---
 title: "一个关于flex的测试"
+heroImage: "/heroes/demo/jsrun-ehTKp.webp"
 description: "JSRUN 代码片段：一个关于flex的测试（原地址 https://jsrun.net/ehTKp）。"
 pubDate: "2021-09-06"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "Vue Virtual Scroller"
+heroImage: "/heroes/demo/vue-virtual-scroller.webp"
 description: "Vue交互示例：Vue Virtual Scroller。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "Vue"
 badge: "实验"
 tags: ["legacy", "Vue"]
 ---
+

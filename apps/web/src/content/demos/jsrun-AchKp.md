@@ -1,5 +1,6 @@
 ---
 title: "pc rem策略方案，异常情况查询"
+heroImage: "/heroes/demo/jsrun-AchKp.webp"
 description: "JSRUN 代码片段：pc rem策略方案，异常情况查询（原地址 https://jsrun.net/AchKp）。"
 pubDate: "2018-11-26"
 type: web

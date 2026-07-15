@@ -1,5 +1,6 @@
 ---
 title: "onbeforeunload"
+heroImage: "/heroes/demo/onbeforeunload.webp"
 description: "早期 theme 目录实验页：onbeforeunload。自 home-2023 lilnong/theme 迁入。"
 pubDate: "2018-06-01"
 type: web

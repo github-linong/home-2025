@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000021603224"
+heroImage: "/heroes/demo/jsrun-upfKp.webp"
 description: "css中calc(100%-10px)这个calc的百分比参考的什么？"
 pubDate: "2020-01-17"
 type: web

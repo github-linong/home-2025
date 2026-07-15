@@ -1,5 +1,6 @@
 ---
 title: "video vue onload测试"
+heroImage: "/heroes/demo/jsrun-sUyKp.webp"
 description: "JSRUN 代码片段：video vue onload测试（原地址 https://jsrun.net/sUyKp）。"
 pubDate: "2019-06-13"
 type: web

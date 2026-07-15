@@ -1,5 +1,6 @@
 ---
 title: "Vue 组件 focus 管理"
+heroImage: "/heroes/demo/vue-component-focus.webp"
 description: "Vue交互示例：Vue 组件 focus 管理。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "Vue"
 badge: "实验"
 tags: ["legacy", "Vue"]
 ---
+

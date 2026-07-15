@@ -1,5 +1,6 @@
 ---
 title: "css 动画，荡开"
+heroImage: "/heroes/demo/jsrun-NnTKp.webp"
 description: "尝试维护连续状态 消除边界"
 pubDate: "2021-10-11"
 type: web

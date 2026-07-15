@@ -1,5 +1,6 @@
 ---
 title: "列表 computed 第一个加icon"
+heroImage: "/heroes/demo/jsrun-SCLKp.webp"
 description: "JSRUN 代码片段：列表 computed 第一个加icon（原地址 https://jsrun.net/SCLKp）。"
 pubDate: "2020-09-08"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "字符编码检测 jschardet"
+heroImage: "/heroes/demo/js-encode-char-jschardet.webp"
 description: "实验交互示例：字符编码检测 jschardet。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---
+

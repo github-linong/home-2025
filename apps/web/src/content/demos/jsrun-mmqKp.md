@@ -1,5 +1,6 @@
 ---
 title: "滚动容器尺寸变化时候最上方元素位置不变实例页面"
+heroImage: "/heroes/demo/jsrun-mmqKp.webp"
 description: "http://www.zhangxinxu.com/study/201801/store-scroll-position.html"
 pubDate: "2018-03-06"
 type: web

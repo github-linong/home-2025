@@ -1,5 +1,6 @@
 ---
 title: "http://www.jq22.com/yanshi4654"
+heroImage: "/heroes/demo/jsrun-JkhKp.webp"
 description: "JSRUN 代码片段：http://www.jq22.com/yanshi4654（原地址 https://jsrun.net/JkhKp）。"
 pubDate: "2018-09-18"
 type: web

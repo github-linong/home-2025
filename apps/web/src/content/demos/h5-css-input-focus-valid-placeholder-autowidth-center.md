@@ -1,5 +1,6 @@
 ---
 title: "H5 Css Input Focus Valid Placeholder Autowidth Center"
+heroImage: "/heroes/demo/h5-css-input-focus-valid-placeholder-autowidth-center.webp"
 description: "移动端交互示例：H5 Css Input Focus Valid Placeholder Autowidth Center。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "移动端"
 badge: "实验"
 tags: ["legacy", "移动端"]
 ---
+

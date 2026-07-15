@@ -1,5 +1,6 @@
 ---
 title: "Vue Print Mask Watermark"
+heroImage: "/heroes/demo/vue-print-mask-watermark.webp"
 description: "Vue交互示例：Vue Print Mask Watermark。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "Vue"
 badge: "实验"
 tags: ["legacy", "Vue"]
 ---
+

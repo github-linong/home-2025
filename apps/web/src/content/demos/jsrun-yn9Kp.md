@@ -1,5 +1,6 @@
 ---
 title: "Axios 自动重试与取消"
+heroImage: "/heroes/demo/jsrun-yn9Kp.webp"
 description: "封装 axiosAutoTry：支持重试次数、超时重试、503 退避，以及 CancelToken 取消。"
 pubDate: "2022-01-26"
 type: web

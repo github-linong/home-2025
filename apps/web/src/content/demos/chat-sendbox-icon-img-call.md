@@ -1,5 +1,6 @@
 ---
 title: "消息发送框 · 图标通话"
+heroImage: "/heroes/demo/chat-sendbox-icon-img-call.webp"
 description: "实验交互示例：消息发送框 · 图标通话。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---
+

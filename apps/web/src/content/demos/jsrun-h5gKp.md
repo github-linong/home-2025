@@ -1,5 +1,6 @@
 ---
 title: "vue table过滤"
+heroImage: "/heroes/demo/jsrun-h5gKp.webp"
 description: "JSRUN 代码片段：vue table过滤（原地址 https://jsrun.net/h5gKp）。"
 pubDate: "2018-08-16"
 type: web

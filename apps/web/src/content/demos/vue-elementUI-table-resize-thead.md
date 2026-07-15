@@ -1,7 +1,8 @@
 ---
 title: "elementUI table 组件动态修改表头大小并联动"
+heroImage: "/heroes/demo/vue-elementUI-table-resize-thead.webp"
 description: "Vue 示例交互示例：elementUI table 组件动态修改表头大小并联动。"
-pubDate: "2019-06-01"
+pubDate: "2021-07-30"
 type: web
 demoUrl: "/demos/html/vue-elementUI-table-resize-thead.html"
 legacyUrl: "/static/html/vue-elementUI-table-resize-thead.html"

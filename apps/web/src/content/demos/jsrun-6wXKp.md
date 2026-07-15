@@ -1,5 +1,6 @@
 ---
 title: "css动画"
+heroImage: "/heroes/demo/jsrun-6wXKp.webp"
 description: "JSRUN 代码片段：css动画（原地址 https://jsrun.net/6wXKp）。"
 pubDate: "2019-03-05"
 type: web

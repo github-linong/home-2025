@@ -1,5 +1,6 @@
 ---
 title: "js 单击模拟双击"
+heroImage: "/heroes/demo/jsrun-7nqKp.webp"
 description: "JSRUN 代码片段：js 单击模拟双击（原地址 https://jsrun.net/7NQKp）。"
 pubDate: "2022-04-12"
 type: web

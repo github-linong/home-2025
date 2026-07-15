@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000015117721"
+heroImage: "/heroes/demo/jsrun-5RZKp__22500.webp"
 description: "input文本框输入不了，怎么解决"
 pubDate: "2018-06-01"
 type: web

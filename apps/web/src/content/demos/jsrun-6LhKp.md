@@ -1,5 +1,6 @@
 ---
 title: "https://cn.vuejs.org/v2/guide/render-function.html#createElement-%E5%8F%82%E6%95%B0"
+heroImage: "/heroes/demo/jsrun-6LhKp.webp"
 description: "https://segmentfault.com/q/1010000016686564"
 pubDate: "2018-10-15"
 type: web

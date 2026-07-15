@@ -1,5 +1,6 @@
 ---
 title: "ckeditor"
+heroImage: "/heroes/demo/jsrun-nkzKp.webp"
 description: "JSRUN 代码片段：ckeditor（原地址 https://jsrun.net/nkzKp）。"
 pubDate: "2022-05-11"
 type: web

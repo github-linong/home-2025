@@ -1,7 +1,8 @@
 ---
 title: "Touch 击穿与 300ms 延迟"
+heroImage: "/heroes/demo/touchstart-click.webp"
 description: "交互交互示例：Touch 击穿与 300ms 延迟。"
-pubDate: "2019-06-01"
+pubDate: "2020-05-28"
 type: web
 demoUrl: "/demos/html/touchstart-click.html"
 legacyUrl: "/static/html/touchstart-click.html"

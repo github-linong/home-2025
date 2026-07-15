@@ -1,5 +1,6 @@
 ---
 title: "数据大屏 Dashboard"
+heroImage: "/heroes/demo/project-dashboard.webp"
 description: "多套可视化大屏静态页合集（015 等编号页面）。"
 pubDate: "2019-06-01"
 type: web

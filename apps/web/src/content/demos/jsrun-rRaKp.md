@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000039324235"
+heroImage: "/heroes/demo/jsrun-rRaKp.webp"
 description: "js 鼠标拖拽元素的时候鼠标位置发生偏移"
 pubDate: "2021-03-03"
 type: web

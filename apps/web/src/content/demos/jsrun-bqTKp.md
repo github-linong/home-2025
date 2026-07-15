@@ -1,5 +1,6 @@
 ---
 title: "grid 布局 图片不拉伸"
+heroImage: "/heroes/demo/jsrun-bqTKp.webp"
 description: "JSRUN 代码片段：grid 布局 图片不拉伸（原地址 https://jsrun.net/bqTKp）。"
 pubDate: "2021-09-03"
 type: web

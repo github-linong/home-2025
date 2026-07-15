@@ -2,7 +2,7 @@
 title: "Next.js 16 Static Export 踩坑记录"
 description: "个人站使用 Next.js 16 静态导出的完整踩坑记录，包括 sitemap、Google Fonts、headers 和 dangerouslySetInnerHTML 等问题。"
 pubDate: "Mar 19 2026"
-heroImage: "/post_img.webp"
+heroImage: "/heroes/blog/nextjs16-static-export-pitfalls.webp"
 tags: ["Next.js","静态导出","踩坑","静态站点","JavaScript"]
 ---
 

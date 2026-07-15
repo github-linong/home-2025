@@ -1,5 +1,6 @@
 ---
 title: "JQuery获取（text\\file\\radio\\checkbox\\select)"
+heroImage: "/heroes/demo/jsrun-dQWKp.webp"
 description: "JSRUN 代码片段：JQuery获取（text\\file\\radio\\checkbox\\select)（原地址 https://jsrun.net/dQWKp）。"
 pubDate: "2019-11-21"
 type: web

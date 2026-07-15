@@ -1,5 +1,6 @@
 ---
 title: "vue template 转 render"
+heroImage: "/heroes/demo/jsrun-d7zKp.webp"
 description: "JSRUN 代码片段：vue template 转 render（原地址 https://jsrun.net/d7zKp）。"
 pubDate: "2022-06-22"
 type: web

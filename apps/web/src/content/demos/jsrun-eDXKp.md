@@ -1,5 +1,6 @@
 ---
 title: "elementUI - select"
+heroImage: "/heroes/demo/jsrun-eDXKp.webp"
 description: "JSRUN 代码片段：elementUI - select（原地址 https://jsrun.net/eDXKp）。"
 pubDate: "2019-04-17"
 type: web

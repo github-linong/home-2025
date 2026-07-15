@@ -1,5 +1,6 @@
 ---
 title: "vue-virtual-scroller"
+heroImage: "/heroes/demo/jsrun-euXKp.webp"
 description: "JSRUN 代码片段：vue-virtual-scroller（原地址 https://jsrun.net/euXKp）。"
 pubDate: "2019-05-05"
 type: web

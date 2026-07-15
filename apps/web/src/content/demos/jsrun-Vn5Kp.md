@@ -1,5 +1,6 @@
 ---
 title: "实现一个 package.json 依赖分析的功能"
+heroImage: "/heroes/demo/jsrun-Vn5Kp.webp"
 description: "JSRUN 代码片段：实现一个 package.json 依赖分析的功能（原地址 https://jsrun.net/Vn5Kp）。"
 pubDate: "2024-05-09"
 type: web

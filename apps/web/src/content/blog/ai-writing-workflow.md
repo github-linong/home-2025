@@ -2,7 +2,7 @@
 title: "如何用 AI 写技术博客：从选题到发布的完整工作流"
 description: "记录我使用 AI 辅助写技术博客的完整流程，包括选题、大纲、初稿、润色、配图、发布，以及如何保持个人风格。"
 pubDate: "Mar 19 2026"
-heroImage: "/post_img.webp"
+heroImage: "/heroes/blog/ai-writing-workflow.webp"
 tags: ["AI","写作","博客","Next.js","TypeScript"]
 ---
 

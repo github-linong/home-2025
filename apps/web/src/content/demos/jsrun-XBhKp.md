@@ -1,5 +1,6 @@
 ---
 title: "递归选择框 删除bug"
+heroImage: "/heroes/demo/jsrun-XBhKp.webp"
 description: "---------------------------------"
 pubDate: "2019-01-02"
 type: web

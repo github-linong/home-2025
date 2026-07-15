@@ -1,5 +1,6 @@
 ---
 title: "intro.js 引导测试"
+heroImage: "/heroes/demo/jsrun-wmQKp.webp"
 description: "功能测试。独立设置 setp"
 pubDate: "2022-04-29"
 type: web

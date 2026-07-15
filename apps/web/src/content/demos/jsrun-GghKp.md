@@ -1,5 +1,6 @@
 ---
 title: "jquery动画"
+heroImage: "/heroes/demo/jsrun-GghKp.webp"
 description: "JSRUN 代码片段：jquery动画（原地址 https://jsrun.net/GghKp）。"
 pubDate: "2018-09-26"
 type: web

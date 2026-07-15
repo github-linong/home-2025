@@ -1,5 +1,6 @@
 ---
 title: "Sf Textarea Autoheight"
+heroImage: "/heroes/demo/sf-textarea-autoheight.webp"
 description: "SegmentFault交互示例：Sf Textarea Autoheight。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "SegmentFault"
 badge: "思否"
 tags: ["legacy", "SegmentFault"]
 ---
+

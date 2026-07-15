@@ -1,5 +1,6 @@
 ---
 title: "纯CSS touch左滑按钮显示demo实例页面"
+heroImage: "/heroes/demo/jsrun-M99Kp.webp"
 description: "https://www.zhangxinxu.com/study/202012/css-touch-scroll-button-show-demo.php"
 pubDate: "2022-01-07"
 type: web

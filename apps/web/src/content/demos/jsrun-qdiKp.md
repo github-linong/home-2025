@@ -1,5 +1,6 @@
 ---
 title: "2017年11月17日17:36:092"
+heroImage: "/heroes/demo/jsrun-qdiKp.webp"
 description: "JSRUN 代码片段：2017年11月17日17:36:092（原地址 https://jsrun.net/qdiKp）。"
 pubDate: "2017-11-17"
 type: web

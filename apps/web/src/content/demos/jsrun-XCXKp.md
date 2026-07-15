@@ -1,5 +1,6 @@
 ---
 title: "vuedraggable test"
+heroImage: "/heroes/demo/jsrun-XCXKp.webp"
 description: "JSRUN 代码片段：vuedraggable test（原地址 https://jsrun.net/XCXKp）。"
 pubDate: "2019-04-23"
 type: web

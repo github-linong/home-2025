@@ -1,5 +1,6 @@
 ---
 title: "导出 csv"
+heroImage: "/heroes/demo/jsrun-2vUKp.webp"
 description: "JSRUN 代码片段：导出 csv（原地址 https://jsrun.net/2vUKp）。"
 pubDate: "2021-11-01"
 type: web

@@ -1,7 +1,8 @@
 ---
 title: "DOM HTML Test Demo"
+heroImage: "/heroes/demo/sf-article-1190000019520438-DOM-HTML-test-demo.webp"
 description: "SegmentFault交互示例：DOM HTML Test Demo。"
-pubDate: "2019-06-01"
+pubDate: "2019-06-20"
 type: web
 demoUrl: "/demos/html/sf-article-1190000019520438-DOM-HTML-test-demo.html"
 legacyUrl: "/static/html/sf-article-1190000019520438-DOM-HTML-test-demo.html"

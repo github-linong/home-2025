@@ -1,7 +1,8 @@
 ---
 title: "Vue 弹幕 Bug · 对比页"
+heroImage: "/heroes/demo/vue-bug-bullet.3.webp"
 description: "iframe 并排嵌入 .1 / .2，便于对照复现与修复。"
-pubDate: "2019-06-01"
+pubDate: "2020-10-19"
 type: web
 demoUrl: "/demos/html/vue-bug-bullet.3.html"
 legacyUrl: "/static/html/vue-bug-bullet.3.html"

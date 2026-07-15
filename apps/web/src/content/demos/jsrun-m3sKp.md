@@ -1,5 +1,6 @@
 ---
 title: "Quill 编辑器自定义"
+heroImage: "/heroes/demo/jsrun-m3sKp.webp"
 description: "JSRUN 代码片段：Quill 编辑器自定义（原地址 https://jsrun.net/m3sKp）。"
 pubDate: "2022-10-30"
 type: web

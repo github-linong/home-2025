@@ -1,5 +1,6 @@
 ---
 title: "Flex/Calc/绝对定位底部固定对比"
+heroImage: "/heroes/demo/jsrun-vIzKp.webp"
 description: "对比多种 header-content-footer 布局在固定高度、max-height、min-height 下的底部固定表现。"
 pubDate: "2022-06-02"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "穿梭框-统一数据源"
+heroImage: "/heroes/demo/jsrun-59bKp.webp"
 description: "JSRUN 代码片段：穿梭框-统一数据源（原地址 https://jsrun.net/59bKp）。"
 pubDate: "2019-08-13"
 type: web

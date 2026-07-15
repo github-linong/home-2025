@@ -1,5 +1,6 @@
 ---
 title: "图片旋转 demo"
+heroImage: "/heroes/demo/jsrun-F8zKp.webp"
 description: "JSRUN 代码片段：图片旋转 demo（原地址 https://jsrun.net/F8zKp）。"
 pubDate: "2022-06-10"
 type: web

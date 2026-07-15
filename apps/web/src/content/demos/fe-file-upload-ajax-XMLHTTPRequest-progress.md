@@ -1,5 +1,6 @@
 ---
 title: "XHR 上传进度条"
+heroImage: "/heroes/demo/fe-file-upload-ajax-XMLHTTPRequest-progress.webp"
 description: "XHR 上传进度条。"
 pubDate: "2019-06-01"
 type: web

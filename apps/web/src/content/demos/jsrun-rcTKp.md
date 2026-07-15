@@ -1,5 +1,6 @@
 ---
 title: "多组件el-table, 编辑列在外层"
+heroImage: "/heroes/demo/jsrun-rcTKp.webp"
 description: "JSRUN 代码片段：多组件el-table, 编辑列在外层（原地址 https://jsrun.net/rcTKp）。"
 pubDate: "2021-10-08"
 type: web

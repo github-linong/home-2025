@@ -1,5 +1,6 @@
 ---
 title: "https://blog.csdn.net/weixin_44521678/article/details/86765356"
+heroImage: "/heroes/demo/jsrun-57yKp.webp"
 description: "JSRUN 代码片段：https://blog.csdn.net/weixin_44521678/article/details/86765356（原地址 https://jsrun.net/57yKp）。"
 pubDate: "2019-06-25"
 type: web

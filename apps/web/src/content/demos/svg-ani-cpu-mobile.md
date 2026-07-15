@@ -1,5 +1,6 @@
 ---
 title: "Svg Ani Cpu Mobile"
+heroImage: "/heroes/demo/svg-ani-cpu-mobile.webp"
 description: "图形交互示例：Svg Ani Cpu Mobile。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "图形"
 badge: "实验"
 tags: ["legacy", "图形"]
 ---
+

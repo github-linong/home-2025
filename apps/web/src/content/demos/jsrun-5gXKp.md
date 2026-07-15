@@ -1,5 +1,6 @@
 ---
 title: "https://leetcode-cn.com/problems/prime-palindrome/submissions/"
+heroImage: "/heroes/demo/jsrun-5gXKp.webp"
 description: "JSRUN 代码片段：https://leetcode-cn.com/problems/prime-palindrome/submissions/（原地址 https://jsrun.net/5gXKp）。"
 pubDate: "2019-02-02"
 type: web

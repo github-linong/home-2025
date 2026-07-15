@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000019228517"
+heroImage: "/heroes/demo/jsrun-ugyKp.webp"
 description: "vue的v-model绑定不了json对象的第二层？"
 pubDate: "2019-05-20"
 type: web

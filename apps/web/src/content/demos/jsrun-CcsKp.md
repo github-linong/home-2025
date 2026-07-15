@@ -1,5 +1,6 @@
 ---
 title: "vue表单日期范围"
+heroImage: "/heroes/demo/jsrun-CcsKp.webp"
 description: "JSRUN 代码片段：vue表单日期范围（原地址 https://jsrun.net/CcsKp）。"
 pubDate: "2022-11-09"
 type: web

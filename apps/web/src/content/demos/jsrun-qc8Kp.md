@@ -1,5 +1,6 @@
 ---
 title: "vue 表单组件"
+heroImage: "/heroes/demo/jsrun-qc8Kp.webp"
 description: "JSRUN 代码片段：vue 表单组件（原地址 https://jsrun.net/qc8Kp）。"
 pubDate: "2021-08-11"
 type: web

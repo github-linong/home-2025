@@ -1,5 +1,6 @@
 ---
 title: "vue中flex最底行布局失效？"
+heroImage: "/heroes/demo/jsrun-yu9Kp.webp"
 description: "https://segmentfault.com/q/1010000041402362"
 pubDate: "2022-02-15"
 type: web

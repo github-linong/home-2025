@@ -1,5 +1,6 @@
 ---
 title: "perspective 测试"
+heroImage: "/heroes/demo/jsrun-kfXKp.webp"
 description: "JSRUN 代码片段：perspective 测试（原地址 https://jsrun.net/kfXKp）。"
 pubDate: "2019-02-25"
 type: web

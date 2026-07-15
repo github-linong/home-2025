@@ -1,5 +1,6 @@
 ---
 title: "isComposing 输入法状态"
+heroImage: "/heroes/demo/Composing.webp"
 description: "input 事件 isComposing 实验。"
 pubDate: "2018-06-01"
 type: web

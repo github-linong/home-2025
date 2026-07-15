@@ -1,5 +1,6 @@
 ---
 title: "用户列表 flex order"
+heroImage: "/heroes/demo/userlist-flex-order-test.webp"
 description: "实验交互示例：用户列表 flex order。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---
+

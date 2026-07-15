@@ -1,5 +1,6 @@
 ---
 title: "服务常用代码"
+heroImage: "/heroes/blog/service-code.webp"
 description: "阿里云 ECS（Ubuntu 22.04）上的 snapd、certbot、nvm、nginx、Node 与 code-server 等常用安装与配置命令备忘。"
 pubDate: "Apr 3 2024"
 tags: ["运维", "随笔"]

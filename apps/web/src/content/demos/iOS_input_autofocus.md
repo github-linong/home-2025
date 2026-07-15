@@ -1,5 +1,6 @@
 ---
 title: "iOS input autofocus"
+heroImage: "/heroes/demo/iOS_input_autofocus.webp"
 description: "iOS 自动聚焦实验。"
 pubDate: "2018-06-01"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "element expand"
+heroImage: "/heroes/demo/jsrun-nbzKp.webp"
 description: "JSRUN 代码片段：element expand（原地址 https://jsrun.net/nbzKp）。"
 pubDate: "2022-05-23"
 type: web

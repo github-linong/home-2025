@@ -1,5 +1,6 @@
 ---
 title: "优化裹脚布代码"
+heroImage: "/heroes/demo/jsrun-FMzKp.webp"
 description: "JSRUN 代码片段：优化裹脚布代码（原地址 https://jsrun.net/FMzKp）。"
 pubDate: "2022-07-13"
 type: web

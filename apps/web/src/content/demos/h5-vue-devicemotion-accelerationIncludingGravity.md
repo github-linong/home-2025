@@ -1,5 +1,6 @@
 ---
 title: "摇一摇检测"
+heroImage: "/heroes/demo/h5-vue-devicemotion-accelerationIncludingGravity.webp"
 description: "devicemotion 摇一摇。"
 pubDate: "2019-06-01"
 type: web

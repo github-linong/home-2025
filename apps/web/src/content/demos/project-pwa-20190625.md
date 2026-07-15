@@ -1,7 +1,8 @@
 ---
 title: "PWA 实验（2019）"
+heroImage: "/heroes/demo/project-pwa-20190625.webp"
 description: "Service Worker / 离线缓存与安装相关的 PWA 演示集合。"
-pubDate: "2019-06-01"
+pubDate: "2019-06-25"
 type: web
 demoUrl: "/demos/project/pwa-20190625/index.5.html"
 legacyUrl: "/static/project/pwa-20190625/index.5.html"

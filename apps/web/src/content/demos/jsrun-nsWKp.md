@@ -1,5 +1,6 @@
 ---
 title: "vue"
+heroImage: "/heroes/demo/jsrun-nsWKp.webp"
 description: "checkbox radio"
 pubDate: "2019-11-29"
 type: web

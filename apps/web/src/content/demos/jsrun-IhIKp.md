@@ -1,5 +1,6 @@
 ---
 title: "拖拽111111"
+heroImage: "/heroes/demo/jsrun-IhIKp.webp"
 description: "JSRUN 代码片段：拖拽111111（原地址 https://jsrun.net/IhIKp）。"
 pubDate: "2020-12-11"
 type: web

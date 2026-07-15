@@ -1,5 +1,6 @@
 ---
 title: "https://github.com/mozilla/pdf.js http://mozilla.github.io/pdf.js/getting_started/"
+heroImage: "/heroes/demo/test-pdfjs-github.webp"
 description: "https://github.com/mozilla/pdf.js/blob/master/examples/helloworld/hello.js"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "测试"
 badge: "Bug 复现"
 tags: ["legacy", "测试"]
 ---
+

@@ -1,5 +1,6 @@
 ---
 title: "拖拽分割条调整侧栏宽度"
+heroImage: "/heroes/demo/jsrun-9EVKp.webp"
 description: "通过中间 resize 条拖动，动态改变 Element UI 菜单侧栏宽度（最小 200px）。"
 pubDate: "2021-06-21"
 type: web

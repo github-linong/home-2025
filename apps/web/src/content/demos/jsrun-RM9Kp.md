@@ -1,5 +1,6 @@
 ---
 title: "vue3 使用 vue2 的组件"
+heroImage: "/heroes/demo/jsrun-RM9Kp.webp"
 description: "JSRUN 代码片段：vue3 使用 vue2 的组件（原地址 https://jsrun.net/RM9Kp）。"
 pubDate: "2022-02-17"
 type: web

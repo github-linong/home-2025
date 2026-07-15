@@ -1,5 +1,6 @@
 ---
 title: "vuex 保存状态"
+heroImage: "/heroes/demo/jsrun-ekTKp.webp"
 description: "JSRUN 代码片段：vuex 保存状态（原地址 https://jsrun.net/ekTKp）。"
 pubDate: "2021-09-01"
 type: web

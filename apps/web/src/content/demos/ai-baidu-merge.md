@@ -1,5 +1,6 @@
 ---
 title: "百度 AI 人脸混合"
+heroImage: "/heroes/demo/ai-baidu-merge.webp"
 description: "百度 AI 人脸混合实验。"
 pubDate: "2019-06-01"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "https://run.iviewui.com/60LTdRmn"
+heroImage: "/heroes/demo/jsrun-LhyKp.webp"
 description: "JSRUN 代码片段：https://run.iviewui.com/60LTdRmn（原地址 https://jsrun.net/LhyKp）。"
 pubDate: "2019-05-20"
 type: web

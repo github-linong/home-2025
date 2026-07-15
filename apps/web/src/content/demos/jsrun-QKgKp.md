@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000015222194"
+heroImage: "/heroes/demo/jsrun-QKgKp.webp"
 description: "浏览器对非当前标签页元素的控制问题。"
 pubDate: "2018-06-08"
 type: web

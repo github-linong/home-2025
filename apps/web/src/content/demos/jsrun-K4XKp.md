@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000019117325"
+heroImage: "/heroes/demo/jsrun-K4XKp.webp"
 description: "vue的自定义指令中，如何向el中插入一段html（如 \"）？"
 pubDate: "2019-05-09"
 type: web

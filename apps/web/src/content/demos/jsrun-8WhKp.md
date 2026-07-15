@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1590000016631964"
+heroImage: "/heroes/demo/jsrun-8WhKp.webp"
 description: "http://www.echartsjs.com/examples/editor.html?c=tree-basic"
 pubDate: "2018-10-10"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "flex 布局问题"
+heroImage: "/heroes/demo/jsrun-ktQKp.webp"
 description: "JSRUN 代码片段：flex 布局问题（原地址 https://jsrun.net/ktQKp）。"
 pubDate: "2022-04-26"
 type: web

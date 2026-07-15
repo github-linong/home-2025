@@ -1,5 +1,6 @@
 ---
 title: "html2canvas 邀请卡截图"
+heroImage: "/heroes/demo/html2canvas-invite-vvmusic.webp"
 description: "图形交互示例：html2canvas 邀请卡截图。"
 pubDate: "2019-06-01"
 type: web

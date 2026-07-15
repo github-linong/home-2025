@@ -1,5 +1,6 @@
 ---
 title: "text-align:center 测试"
+heroImage: "/heroes/demo/jsrun-jzgKp.webp"
 description: "JSRUN 代码片段：text-align:center 测试（原地址 https://jsrun.net/jzgKp）。"
 pubDate: "2018-07-27"
 type: web

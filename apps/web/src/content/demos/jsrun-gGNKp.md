@@ -1,5 +1,6 @@
 ---
 title: "vue checkbox value"
+heroImage: "/heroes/demo/jsrun-gGNKp.webp"
 description: "JSRUN 代码片段：vue checkbox value（原地址 https://jsrun.net/gGNKp）。"
 pubDate: "2021-03-25"
 type: web

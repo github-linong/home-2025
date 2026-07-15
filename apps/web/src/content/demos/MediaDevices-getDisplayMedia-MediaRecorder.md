@@ -1,5 +1,6 @@
 ---
 title: "屏幕录制 MediaRecorder"
+heroImage: "/heroes/demo/MediaDevices-getDisplayMedia-MediaRecorder.webp"
 description: "屏幕共享录制实验，基于 getDisplayMedia + MediaRecorder。"
 pubDate: "2019-06-01"
 type: web

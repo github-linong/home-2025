@@ -1,5 +1,6 @@
 ---
 title: "Vant@2.6 Vue@2.2 VantCell Click Bug"
+heroImage: "/heroes/demo/h-8e6273b09644786c.webp"
 description: "实验交互示例：Vant@2.6 Vue@2.2 VantCell Click Bug。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---
+

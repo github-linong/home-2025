@@ -1,7 +1,8 @@
 ---
 title: "WebSocket 测试"
+heroImage: "/heroes/demo/sum-websocket-test.webp"
 description: "WebSocket 联调测试页。"
-pubDate: "2019-06-01"
+pubDate: "2021-02-24"
 type: web
 demoUrl: "/demos/html/sum-websocket-test.html"
 legacyUrl: "/static/html/sum-websocket-test.html"

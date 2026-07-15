@@ -1,5 +1,6 @@
 ---
 title: "dom 修改测试"
+heroImage: "/heroes/demo/jsrun-eFEKp.webp"
 description: "JSRUN 代码片段：dom 修改测试（原地址 https://jsrun.net/eFEKp）。"
 pubDate: "2022-10-10"
 type: web

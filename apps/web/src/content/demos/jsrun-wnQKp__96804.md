@@ -1,5 +1,6 @@
 ---
 title: "vue 异步数据展示, 去重在合并"
+heroImage: "/heroes/demo/jsrun-wnQKp__96804.webp"
 description: "JSRUN 代码片段：vue 异步数据展示, 去重在合并（原地址 https://jsrun.net/wnQKp）。"
 pubDate: "2022-04-27"
 type: web

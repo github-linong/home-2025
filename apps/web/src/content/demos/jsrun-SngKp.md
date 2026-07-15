@@ -1,5 +1,6 @@
 ---
 title: "双列表过滤"
+heroImage: "/heroes/demo/jsrun-SngKp.webp"
 description: "突然想到问题，type和state不是同一级，容我想想再来写"
 pubDate: "2018-08-22"
 type: web

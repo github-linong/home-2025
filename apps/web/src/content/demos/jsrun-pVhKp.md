@@ -1,5 +1,6 @@
 ---
 title: "排序时间测试"
+heroImage: "/heroes/demo/jsrun-pVhKp.webp"
 description: "JSRUN 代码片段：排序时间测试（原地址 https://jsrun.net/pVhKp）。"
 pubDate: "2018-10-29"
 type: web

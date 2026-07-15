@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000021494166"
+heroImage: "/heroes/demo/jsrun-tRWKp.webp"
 description: "一个箭头沿着曲线路径前进，并且箭头角度与曲线一致"
 pubDate: "2020-01-06"
 type: web

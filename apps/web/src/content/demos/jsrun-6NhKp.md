@@ -1,5 +1,6 @@
 ---
 title: "隐藏显示控制，手风琴"
+heroImage: "/heroes/demo/jsrun-6NhKp.webp"
 description: "JSRUN 代码片段：隐藏显示控制，手风琴（原地址 https://jsrun.net/6NhKp）。"
 pubDate: "2018-10-24"
 type: web

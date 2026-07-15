@@ -1,5 +1,6 @@
 ---
 title: "照片渲染成心"
+heroImage: "/heroes/demo/jsrun-sUUKp.webp"
 description: "JSRUN 代码片段：照片渲染成心（原地址 https://jsrun.net/sUUKp）。"
 pubDate: "2021-11-15"
 type: web

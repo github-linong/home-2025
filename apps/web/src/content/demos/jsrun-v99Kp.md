@@ -1,5 +1,6 @@
 ---
 title: "css 动画实现旋转"
+heroImage: "/heroes/demo/jsrun-v99Kp.webp"
 description: "https://juejin.cn/pin/7051376537496453150?utm_source=gold_browser_extension https://www.zhangxinxu.com/wordpress/2015/03/css-only-parallax-effect/"
 pubDate: "2022-01-07"
 type: web

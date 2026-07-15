@@ -1,5 +1,6 @@
 ---
 title: "THREE 地图"
+heroImage: "/heroes/demo/jsrun-zf9Kp.webp"
 description: "作者：JesseLuo 链接：https://juejin.cn/post/6844904054896885768 来源：稀土掘金 著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"
 pubDate: "2021-12-23"
 type: web

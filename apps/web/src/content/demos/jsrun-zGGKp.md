@@ -1,5 +1,6 @@
 ---
 title: "fabric裁剪"
+heroImage: "/heroes/demo/jsrun-zGGKp.webp"
 description: "JSRUN 代码片段：fabric裁剪（原地址 https://jsrun.net/zGGKp）。"
 pubDate: "2023-11-30"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "SVG 路径描边与沿线运动动画"
+heroImage: "/heroes/demo/jsrun-QUzKp__98981.webp"
 description: "汇总 SVG stroke-dasharray 流光描边与 CSS offset-path 沿线粒子动画片段。"
 pubDate: "2022-06-14"
 type: web

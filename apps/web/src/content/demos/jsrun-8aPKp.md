@@ -1,5 +1,6 @@
 ---
 title: "vue Draggable 测试"
+heroImage: "/heroes/demo/jsrun-8aPKp.webp"
 description: "JSRUN 代码片段：vue Draggable 测试（原地址 https://jsrun.net/8aPKp）。"
 pubDate: "2022-08-11"
 type: web

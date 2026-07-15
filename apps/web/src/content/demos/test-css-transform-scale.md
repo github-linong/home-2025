@@ -1,5 +1,6 @@
 ---
 title: "Css Transform Scale"
+heroImage: "/heroes/demo/test-css-transform-scale.webp"
 description: "测试交互示例：Css Transform Scale。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "测试"
 badge: "Bug 复现"
 tags: ["legacy", "测试"]
 ---
+

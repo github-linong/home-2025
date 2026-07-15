@@ -1,5 +1,6 @@
 ---
 title: "preventOverscroll 演示"
+heroImage: "/heroes/demo/preventoverscrolljs.webp"
 description: "阻止过度滚动。"
 pubDate: "2018-06-01"
 type: web

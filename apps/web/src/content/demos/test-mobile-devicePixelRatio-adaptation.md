@@ -1,5 +1,6 @@
 ---
 title: "移动端 DPR 适配"
+heroImage: "/heroes/demo/test-mobile-devicePixelRatio-adaptation.webp"
 description: "theme：devicePixelRatio 适配。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "测试"
 badge: "Bug 复现"
 tags: ["legacy", "测试"]
 ---
+

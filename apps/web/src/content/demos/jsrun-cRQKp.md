@@ -1,5 +1,6 @@
 ---
 title: "聚焦元素"
+heroImage: "/heroes/demo/jsrun-cRQKp.webp"
 description: "JSRUN 代码片段：聚焦元素（原地址 https://jsrun.net/cRQKp）。"
 pubDate: "2022-05-04"
 type: web

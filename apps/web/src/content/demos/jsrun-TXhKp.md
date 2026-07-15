@@ -1,5 +1,6 @@
 ---
 title: "动画卡顿测试"
+heroImage: "/heroes/demo/jsrun-TXhKp.webp"
 description: "JSRUN 代码片段：动画卡顿测试（原地址 https://jsrun.net/TXhKp）。"
 pubDate: "2018-09-29"
 type: web

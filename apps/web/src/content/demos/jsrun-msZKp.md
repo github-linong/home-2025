@@ -1,5 +1,6 @@
 ---
 title: "树形视图 组件的递归使用。"
+heroImage: "/heroes/demo/jsrun-msZKp.webp"
 description: "JSRUN 代码片段：树形视图 组件的递归使用。（原地址 https://jsrun.net/msZKp）。"
 pubDate: "2018-05-03"
 type: web

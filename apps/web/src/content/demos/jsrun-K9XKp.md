@@ -1,5 +1,6 @@
 ---
 title: "上传图片-预览图片-input-upload-file"
+heroImage: "/heroes/demo/jsrun-K9XKp.webp"
 description: "JSRUN 代码片段：上传图片-预览图片-input-upload-file（原地址 https://jsrun.net/K9XKp）。"
 pubDate: "2019-03-21"
 type: web

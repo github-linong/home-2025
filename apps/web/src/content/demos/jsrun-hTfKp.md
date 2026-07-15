@@ -1,5 +1,6 @@
 ---
 title: "flex"
+heroImage: "/heroes/demo/jsrun-hTfKp.webp"
 description: "https://segmentfault.com/q/1010000022031045?_ea=34185154"
 pubDate: "2020-03-16"
 type: web

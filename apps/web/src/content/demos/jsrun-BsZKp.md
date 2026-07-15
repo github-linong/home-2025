@@ -1,5 +1,6 @@
 ---
 title: "内嵌组件 jQuery 插件（select2）"
+heroImage: "/heroes/demo/jsrun-BsZKp.webp"
 description: "JSRUN 代码片段：内嵌组件 jQuery 插件（select2）（原地址 https://jsrun.net/BsZKp）。"
 pubDate: "2018-05-03"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "聊天窗口 test"
+heroImage: "/heroes/demo/jsrun-v5XKp.webp"
 description: "JSRUN 代码片段：聊天窗口 test（原地址 https://jsrun.net/v5XKp）。"
 pubDate: "2019-04-15"
 type: web

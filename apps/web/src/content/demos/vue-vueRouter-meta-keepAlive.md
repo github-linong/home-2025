@@ -1,5 +1,6 @@
 ---
 title: "Vue VueRouter Meta KeepAlive"
+heroImage: "/heroes/demo/vue-vueRouter-meta-keepAlive.webp"
 description: "Vue交互示例：Vue VueRouter Meta KeepAlive。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "Vue"
 badge: "实验"
 tags: ["legacy", "Vue"]
 ---
+

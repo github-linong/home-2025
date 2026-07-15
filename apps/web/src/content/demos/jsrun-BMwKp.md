@@ -1,5 +1,6 @@
 ---
 title: "provide：Object | () => Object"
+heroImage: "/heroes/demo/jsrun-BMwKp.webp"
 description: "inject：Array | { [key: string]: string | Symbol | Object }"
 pubDate: "2020-12-03"
 type: web

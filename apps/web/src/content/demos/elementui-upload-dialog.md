@@ -1,7 +1,8 @@
 ---
 title: "Element UI 上传弹窗"
+heroImage: "/heroes/demo/elementui-upload-dialog.webp"
 description: "Element UI 上传弹窗与进度展示。"
-pubDate: "2019-06-01"
+pubDate: "2021-02-04"
 type: web
 demoUrl: "/demos/html/elementui-upload-dialog.html"
 legacyUrl: "/static/html/elementui-upload-dialog.html"

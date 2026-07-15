@@ -1,5 +1,6 @@
 ---
 title: "flex简介"
+heroImage: "/heroes/demo/jsrun-HmqKp.webp"
 description: "JSRUN 代码片段：flex简介（原地址 https://jsrun.net/HmqKp）。"
 pubDate: "2018-03-06"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "http://element-cn.eleme.io/#/zh-CN/component/tree#mo-ren-zhan-kai-he-mo-ren-xuan-zhong"
+heroImage: "/heroes/demo/jsrun-6AhKp.webp"
 description: "JSRUN 代码片段：http://element-cn.eleme.io/#/zh-CN/component/tree#mo-ren-zhan-kai-he-mo-ren-xuan-zhong（原地址 https://jsrun.net/6AhKp）。"
 pubDate: "2018-12-28"
 type: web

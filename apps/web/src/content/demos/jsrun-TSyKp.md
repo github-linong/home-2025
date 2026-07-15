@@ -1,5 +1,6 @@
 ---
 title: "vue .sync"
+heroImage: "/heroes/demo/jsrun-TSyKp.webp"
 description: "JSRUN 代码片段：vue .sync（原地址 https://jsrun.net/TSyKp）。"
 pubDate: "2019-07-10"
 type: web

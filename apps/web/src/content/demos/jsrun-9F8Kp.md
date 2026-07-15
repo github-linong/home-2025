@@ -1,5 +1,6 @@
 ---
 title: "css瀑布流布局"
+heroImage: "/heroes/demo/jsrun-9F8Kp.webp"
 description: "JSRUN 代码片段：css瀑布流布局（原地址 https://jsrun.net/9F8Kp）。"
 pubDate: "2021-08-12"
 type: web

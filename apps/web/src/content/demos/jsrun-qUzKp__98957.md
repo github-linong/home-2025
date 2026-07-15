@@ -1,5 +1,6 @@
 ---
 title: "div 自动创建结构图"
+heroImage: "/heroes/demo/jsrun-qUzKp__98957.webp"
 description: "JSRUN 代码片段：div 自动创建结构图（原地址 https://jsrun.net/qUzKp）。"
 pubDate: "2022-06-13"
 type: web

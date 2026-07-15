@@ -1,5 +1,6 @@
 ---
 title: "Pic Creator"
+heroImage: "/heroes/demo/pic-creator.webp"
 description: "实验交互示例：Pic Creator。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---
+

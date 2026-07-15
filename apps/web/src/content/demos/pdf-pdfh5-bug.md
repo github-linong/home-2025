@@ -1,5 +1,6 @@
 ---
 title: "Pdf Pdfh5 Bug"
+heroImage: "/heroes/demo/pdf-pdfh5-bug.webp"
 description: "PDF交互示例：Pdf Pdfh5 Bug。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "PDF"
 badge: "实验"
 tags: ["legacy", "PDF"]
 ---
+

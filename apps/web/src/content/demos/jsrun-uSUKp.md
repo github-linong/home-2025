@@ -1,5 +1,6 @@
 ---
 title: "vue 组件定义优先级测试"
+heroImage: "/heroes/demo/jsrun-uSUKp.webp"
 description: "JSRUN 代码片段：vue 组件定义优先级测试（原地址 https://jsrun.net/uSUKp）。"
 pubDate: "2021-12-10"
 type: web

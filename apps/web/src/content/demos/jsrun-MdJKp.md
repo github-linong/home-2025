@@ -1,5 +1,6 @@
 ---
 title: "piexifjs 写入 EXIF Orientation"
+heroImage: "/heroes/demo/jsrun-MdJKp.webp"
 description: "把 Canvas 导出为 JPEG，用 piexifjs 分别写入 Orientation 1–8 并展示。"
 pubDate: "2023-09-13"
 type: web

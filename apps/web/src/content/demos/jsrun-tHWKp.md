@@ -1,5 +1,6 @@
 ---
 title: "flex 实现图标加多行文本功能"
+heroImage: "/heroes/demo/jsrun-tHWKp.webp"
 description: "原型来自于weex中 限制文字长度"
 pubDate: "2019-12-16"
 type: web

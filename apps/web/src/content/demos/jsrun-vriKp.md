@@ -1,5 +1,6 @@
 ---
 title: "轮播图——特殊"
+heroImage: "/heroes/demo/jsrun-vriKp.webp"
 description: "JSRUN 代码片段：轮播图——特殊（原地址 https://jsrun.net/vriKp）。"
 pubDate: "2017-12-05"
 type: web

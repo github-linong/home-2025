@@ -1,5 +1,6 @@
 ---
 title: "vue render 测试"
+heroImage: "/heroes/demo/jsrun-acQKp.webp"
 description: "nextTick useeffect"
 pubDate: "2022-04-21"
 type: web

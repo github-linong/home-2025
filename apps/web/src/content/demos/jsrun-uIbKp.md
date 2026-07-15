@@ -1,5 +1,6 @@
 ---
 title: "vue"
+heroImage: "/heroes/demo/jsrun-uIbKp.webp"
 description: "https://segmentfault.com/q/1010000019944316?_ea=16140074 vue为什么直接在元素上绑定scroll事件不会监听到？"
 pubDate: "2019-08-01"
 type: web

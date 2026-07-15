@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000020182732"
+heroImage: "/heroes/demo/jsrun-icbKp.webp"
 description: "select影响input[type=radio]选项的疑惑"
 pubDate: "2019-08-26"
 type: web

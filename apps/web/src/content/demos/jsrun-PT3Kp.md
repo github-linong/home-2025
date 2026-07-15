@@ -1,5 +1,6 @@
 ---
 title: "不确定高度列表展开收起动画"
+heroImage: "/heroes/demo/jsrun-PT3Kp.webp"
 description: "先测量 ul 实际高度再在固定矮高度与全高之间 transition，实现动态高度折叠。"
 pubDate: "2021-04-22"
 type: web

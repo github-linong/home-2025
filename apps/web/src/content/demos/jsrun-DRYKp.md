@@ -1,5 +1,6 @@
 ---
 title: "基于 HTML5 的跨容器拖放"
+heroImage: "/heroes/demo/jsrun-DRYKp.webp"
 description: "用原生 HTML5 Drag and Drop，把红色区域的可拖拽标签拖进绿色空容器。"
 pubDate: "2017-08-23"
 type: web

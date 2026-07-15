@@ -1,5 +1,6 @@
 ---
 title: "intro.js 表单引导测试"
+heroImage: "/heroes/demo/jsrun-KAQKp.webp"
 description: "在 Element UI 添加 Feed 弹窗流程中嵌入 intro.js，试验无按钮步进式新手引导。"
 pubDate: "2022-04-29"
 type: web

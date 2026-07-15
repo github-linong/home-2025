@@ -1,5 +1,6 @@
 ---
 title: "https://www.52pojie.cn/forum.php?mod=viewthread&tid=956307&page=1"
+heroImage: "/heroes/demo/jsrun-KMyKp.webp"
 description: "JSRUN 代码片段：https://www.52pojie.cn/forum.php?mod=viewthread&tid=956307&page=1（原地址 https://jsrun.net/KMyKp）。"
 pubDate: "2019-07-09"
 type: web

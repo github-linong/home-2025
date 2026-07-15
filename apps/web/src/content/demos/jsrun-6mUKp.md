@@ -1,5 +1,6 @@
 ---
 title: "查看 vue computed 的 dep"
+heroImage: "/heroes/demo/jsrun-6mUKp.webp"
 description: "JSRUN 代码片段：查看 vue computed 的 dep（原地址 https://jsrun.net/6mUKp）。"
 pubDate: "2021-12-03"
 type: web

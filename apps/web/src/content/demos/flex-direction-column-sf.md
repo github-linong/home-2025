@@ -1,7 +1,8 @@
 ---
 title: "Flex 垂直布局 · 基础 column"
+heroImage: "/heroes/demo/flex-direction-column-sf.webp"
 description: "仅 display:flex + flex-direction:column。博客系列起点，尚未做两端对齐或撑开。"
-pubDate: "2019-06-01"
+pubDate: "2020-10-15"
 type: web
 demoUrl: "/demos/html/flex-direction-column-sf.html"
 legacyUrl: "/static/html/flex-direction-column-sf.html"

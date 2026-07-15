@@ -1,5 +1,6 @@
 ---
 title: "随机转账与贫富分化模拟"
+heroImage: "/heroes/demo/jsrun-ya9Kp.webp"
 description: "100 人各持 100 元，每人每轮随机转出 2 元，用柱状图观察财富两极分化。"
 pubDate: "2021-12-29"
 type: web

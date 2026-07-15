@@ -1,7 +1,8 @@
 ---
 title: "预览文件并显示上传进度"
+heroImage: "/heroes/demo/sf-a-1190000022597533-file-preview-input-drop-progress-del.webp"
 description: "预览文件并显示上传进度 v0.1 支持预览：音频、视频、图片、文本、json v0.2（2020-12-30） 支持预览：PDF。"
-pubDate: "2019-06-01"
+pubDate: "2020-05-22"
 type: web
 demoUrl: "/demos/html/sf-a-1190000022597533-file-preview-input-drop-progress-del.html"
 legacyUrl: "/static/html/sf-a-1190000022597533-file-preview-input-drop-progress-del.html"

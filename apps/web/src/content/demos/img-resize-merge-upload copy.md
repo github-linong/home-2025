@@ -1,5 +1,6 @@
 ---
 title: "人脸融合上传 · 副本"
+heroImage: "/heroes/demo/h-263bf37d127a8ced.webp"
 description: "文件 IO交互示例：人脸融合上传 · 副本。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "文件 IO"
 badge: "实验"
 tags: ["legacy", "文件 IO"]
 ---
+

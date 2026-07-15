@@ -1,5 +1,6 @@
 ---
 title: "可编辑的表格，弹出框"
+heroImage: "/heroes/demo/jsrun-cS3Kp.webp"
 description: "JSRUN 代码片段：可编辑的表格，弹出框（原地址 https://jsrun.net/cS3Kp）。"
 pubDate: "2021-05-25"
 type: web

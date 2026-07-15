@@ -1,5 +1,6 @@
 ---
 title: "contenteditable的bug复现"
+heroImage: "/heroes/demo/jsrun-gsgKp.webp"
 description: "JSRUN 代码片段：contenteditable的bug复现（原地址 https://jsrun.net/gsgKp）。"
 pubDate: "2018-08-01"
 type: web

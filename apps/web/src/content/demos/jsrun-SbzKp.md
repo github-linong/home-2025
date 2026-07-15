@@ -1,5 +1,6 @@
 ---
 title: "el-table lazy load"
+heroImage: "/heroes/demo/jsrun-SbzKp.webp"
 description: "JSRUN 代码片段：el-table lazy load（原地址 https://jsrun.net/SbzKp）。"
 pubDate: "2022-05-23"
 type: web

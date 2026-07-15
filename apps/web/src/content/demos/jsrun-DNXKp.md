@@ -1,5 +1,6 @@
 ---
 title: "模拟麻将打牌"
+heroImage: "/heroes/demo/jsrun-DNXKp.webp"
 description: "JSRUN 代码片段：模拟麻将打牌（原地址 https://jsrun.net/DNXKp）。"
 pubDate: "2019-03-12"
 type: web

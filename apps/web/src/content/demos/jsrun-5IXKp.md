@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/a/1190000018405295?_ea=7855598"
+heroImage: "/heroes/demo/jsrun-5IXKp.webp"
 description: "dragover：拖动目标且鼠标移动在投放区时触发（每隔 350 毫秒会触发一次）"
 pubDate: "2019-03-07"
 type: web

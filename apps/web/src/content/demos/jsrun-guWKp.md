@@ -1,5 +1,6 @@
 ---
 title: "弹幕滚动与 DOM 池复用"
+heroImage: "/heroes/demo/jsrun-guWKp.webp"
 description: "用通道与 DOM 池实现弹幕从右向左滚动，并支持输入框发送自定义弹幕。"
 pubDate: "2020-01-06"
 type: web

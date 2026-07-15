@@ -1,5 +1,6 @@
 ---
 title: "跟随鼠标的 el"
+heroImage: "/heroes/demo/jsrun-88sKp.webp"
 description: "JSRUN 代码片段：跟随鼠标的 el（原地址 https://jsrun.net/88sKp）。"
 pubDate: "2022-11-01"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000018225246"
+heroImage: "/heroes/demo/jsrun-LbXKp.webp"
 description: "如何将高度自适应toast的border-radius设置为高度的一半？"
 pubDate: "2019-02-21"
 type: web

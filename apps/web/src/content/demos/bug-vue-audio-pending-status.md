@@ -1,7 +1,8 @@
 ---
 title: "Vue Audio Pending 状态复现"
+heroImage: "/heroes/demo/bug-vue-audio-pending-status.webp"
 description: "Bug交互示例：Vue Audio Pending 状态复现。"
-pubDate: "2019-06-01"
+pubDate: "2020-10-13"
 type: web
 demoUrl: "/demos/html/bug-vue-audio-pending-status.html"
 legacyUrl: "/static/html/bug-vue-audio-pending-status.html"

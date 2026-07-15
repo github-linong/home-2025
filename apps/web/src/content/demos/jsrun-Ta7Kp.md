@@ -1,5 +1,6 @@
 ---
 title: "flex如何分散均匀布局（先竖向，在横向）?"
+heroImage: "/heroes/demo/jsrun-Ta7Kp.webp"
 description: "https://segmentfault.com/q/1010000043032792 https://plnkr.co/edit/kkIAIf6B0uylynBl?preview"
 pubDate: "2022-12-10"
 type: web

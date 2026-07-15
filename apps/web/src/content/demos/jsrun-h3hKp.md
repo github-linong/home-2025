@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000016806674"
+heroImage: "/heroes/demo/jsrun-h3hKp.webp"
 description: "一起来解决下这个JS问题吧"
 pubDate: "2018-10-26"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "flv.js 播放"
+heroImage: "/heroes/demo/flvjs_github.webp"
 description: "Bilibili flv.js 示例。"
 pubDate: "2018-06-01"
 type: web

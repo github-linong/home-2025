@@ -1,5 +1,6 @@
 ---
 title: "背景融合抠图"
+heroImage: "/heroes/demo/ai-bg-merge-matting.webp"
 description: "背景融合与抠图实验（云毕业证相关）。"
 pubDate: "2019-06-01"
 type: web

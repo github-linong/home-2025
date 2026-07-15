@@ -1,5 +1,6 @@
 ---
 title: "递归测试"
+heroImage: "/heroes/demo/jsrun-BFJKp.webp"
 description: "https://segmentfault.com/q/1010000044218741"
 pubDate: "2023-09-14"
 type: web

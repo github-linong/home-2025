@@ -1,5 +1,6 @@
 ---
 title: "阻止默认事件"
+heroImage: "/heroes/demo/jsrun-rQdKp.webp"
 description: "contextmenu 人为选中区域"
 pubDate: "2023-04-07"
 type: web

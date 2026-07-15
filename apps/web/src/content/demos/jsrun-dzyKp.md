@@ -1,5 +1,6 @@
 ---
 title: "https://clipboardjs.com"
+heroImage: "/heroes/demo/jsrun-dzyKp.webp"
 description: "table border"
 pubDate: "2019-06-19"
 type: web

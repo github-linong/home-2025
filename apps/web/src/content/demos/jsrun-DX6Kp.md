@@ -1,5 +1,6 @@
 ---
 title: "https://element.eleme.cn/#/zh-CN/component/menu"
+heroImage: "/heroes/demo/jsrun-DX6Kp.webp"
 description: "JSRUN 代码片段：https://element.eleme.cn/#/zh-CN/component/menu（原地址 https://jsrun.net/DX6Kp）。"
 pubDate: "2020-09-22"
 type: web

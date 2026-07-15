@@ -1,5 +1,6 @@
 ---
 title: "https://github.com/fanjyy/lemon-imui/blob/master/dist/index.umd.min.js"
+heroImage: "/heroes/demo/jsrun-EGJKp.webp"
 description: "JSRUN 代码片段：https://github.com/fanjyy/lemon-imui/blob/master/dist/index.umd.min.js（原地址 https://jsrun.net/EGJKp）。"
 pubDate: "2023-09-18"
 type: web

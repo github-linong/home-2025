@@ -1,5 +1,6 @@
 ---
 title: "Canvas 重叠圆面积占比（面试题）"
+heroImage: "/heroes/demo/jsrun-yH6Kp.webp"
 description: "用 destination-out 画多个圆挖空，再按透明像素占比估算重叠区域相对整幅画布的面积。"
 pubDate: "2020-10-21"
 type: web

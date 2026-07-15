@@ -1,5 +1,6 @@
 ---
 title: "星悦系统管理后台"
+heroImage: "/heroes/demo/hhh.webp"
 description: "早期 theme 目录实验页：星悦系统管理后台。自 home-2023 lilnong/theme 迁入。"
 pubDate: "2018-06-01"
 type: web

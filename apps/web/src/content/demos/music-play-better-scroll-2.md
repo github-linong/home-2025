@@ -1,5 +1,6 @@
 ---
 title: "Music Play Better Scroll 2"
+heroImage: "/heroes/demo/music-play-better-scroll-2.webp"
 description: "实验交互示例：Music Play Better Scroll 2。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---
+

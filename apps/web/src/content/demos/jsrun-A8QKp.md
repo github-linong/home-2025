@@ -1,5 +1,6 @@
 ---
 title: "elementui"
+heroImage: "/heroes/demo/jsrun-A8QKp.webp"
 description: "table 异步组件测试"
 pubDate: "2022-04-14"
 type: web

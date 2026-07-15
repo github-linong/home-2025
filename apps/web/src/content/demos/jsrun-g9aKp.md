@@ -1,5 +1,6 @@
 ---
 title: "vux 功能呢"
+heroImage: "/heroes/demo/jsrun-g9aKp.webp"
 description: "https://doc.vux.li/zh-CN/components/datetime.html"
 pubDate: "2021-02-02"
 type: web

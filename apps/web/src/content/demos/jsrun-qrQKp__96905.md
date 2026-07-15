@@ -1,5 +1,6 @@
 ---
 title: "intro.js 引导测试"
+heroImage: "/heroes/demo/jsrun-qrQKp__96905.webp"
 description: "JSRUN 代码片段：intro.js 引导测试（原地址 https://jsrun.net/qrQKp）。"
 pubDate: "2022-04-28"
 type: web

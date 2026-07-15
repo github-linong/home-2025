@@ -1,5 +1,6 @@
 ---
 title: "angular 回显数据"
+heroImage: "/heroes/demo/jsrun-B8WKp.webp"
 description: "JSRUN 代码片段：angular 回显数据（原地址 https://jsrun.net/B8WKp）。"
 pubDate: "2019-11-14"
 type: web

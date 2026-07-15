@@ -1,5 +1,6 @@
 ---
 title: "vue nextTick 微任务"
+heroImage: "/heroes/demo/jsrun-GL3Kp.webp"
 description: "JSRUN 代码片段：vue nextTick 微任务（原地址 https://jsrun.net/GL3Kp）。"
 pubDate: "2021-04-15"
 type: web

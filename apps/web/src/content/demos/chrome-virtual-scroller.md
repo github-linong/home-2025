@@ -1,5 +1,6 @@
 ---
 title: "虚拟滚动实验"
+heroImage: "/heroes/demo/chrome-virtual-scroller.webp"
 description: "Chrome 虚拟滚动实验。"
 pubDate: "2019-06-01"
 type: web

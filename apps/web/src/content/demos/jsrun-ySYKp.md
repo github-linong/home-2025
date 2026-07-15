@@ -1,5 +1,6 @@
 ---
 title: "图片边框的一些操作，图片居中"
+heroImage: "/heroes/demo/jsrun-ySYKp.webp"
 description: "JSRUN 代码片段：图片边框的一些操作，图片居中（原地址 https://jsrun.net/ySYKp）。"
 pubDate: "2017-08-28"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "select 单选问题测试"
+heroImage: "/heroes/demo/jsrun-w9XKp.webp"
 description: "JSRUN 代码片段：select 单选问题测试（原地址 https://jsrun.net/w9XKp）。"
 pubDate: "2019-03-22"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "Proxy Lrc Filereader Encode Char"
+heroImage: "/heroes/demo/proxy-lrc-filereader-encode-char.webp"
 description: "实验交互示例：Proxy Lrc Filereader Encode Char。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---
+

@@ -1,5 +1,6 @@
 ---
 title: "canvas获取字体测试"
+heroImage: "/heroes/demo/jsrun-ibiKp.webp"
 description: "JSRUN 代码片段：canvas获取字体测试（原地址 https://jsrun.net/IBiKp）。"
 pubDate: "2017-12-12"
 type: web

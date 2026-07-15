@@ -1,5 +1,6 @@
 ---
 title: "拖放DOM大小"
+heroImage: "/heroes/demo/jsrun-feVKp.webp"
 description: "JSRUN 代码片段：拖放DOM大小（原地址 https://jsrun.net/feVKp）。"
 pubDate: "2021-06-17"
 type: web

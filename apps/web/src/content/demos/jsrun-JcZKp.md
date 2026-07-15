@@ -1,5 +1,6 @@
 ---
 title: "JcZKp"
+heroImage: "/heroes/demo/jsrun-JcZKp.webp"
 description: "JSRUN 代码片段：JcZKp（原地址 https://jsrun.net/JcZKp）。"
 pubDate: "2018-05-07"
 type: web

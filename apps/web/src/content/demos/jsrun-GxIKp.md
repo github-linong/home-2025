@@ -1,5 +1,6 @@
 ---
 title: "多行换行, 第一行2个位置占位"
+heroImage: "/heroes/demo/jsrun-GxIKp.webp"
 description: "JSRUN 代码片段：多行换行, 第一行2个位置占位（原地址 https://jsrun.net/GxIKp）。"
 pubDate: "2020-12-28"
 type: web

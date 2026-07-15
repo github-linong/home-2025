@@ -1,5 +1,6 @@
 ---
 title: "table 组件"
+heroImage: "/heroes/demo/jsrun-xsZKp.webp"
 description: "JSRUN 代码片段：table 组件（原地址 https://jsrun.net/xsZKp）。"
 pubDate: "2018-05-03"
 type: web

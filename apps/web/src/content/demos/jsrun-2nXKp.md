@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000018937418"
+heroImage: "/heroes/demo/jsrun-2nXKp.webp"
 description: "JS如何实现拷贝网页部分内容进剪贴板（含文字、base64图片）"
 pubDate: "2019-04-22"
 type: web

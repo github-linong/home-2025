@@ -1,5 +1,6 @@
 ---
 title: "Download Ff Test"
+heroImage: "/heroes/demo/download-ff-test.webp"
 description: "文件 IO交互示例：Download Ff Test。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "文件 IO"
 badge: "实验"
 tags: ["legacy", "文件 IO"]
 ---
+

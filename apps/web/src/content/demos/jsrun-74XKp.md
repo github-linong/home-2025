@@ -1,5 +1,6 @@
 ---
 title: "svg 圆"
+heroImage: "/heroes/demo/jsrun-74XKp.webp"
 description: "JSRUN 代码片段：svg 圆（原地址 https://jsrun.net/74XKp）。"
 pubDate: "2019-05-09"
 type: web

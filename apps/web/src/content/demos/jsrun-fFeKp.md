@@ -1,5 +1,6 @@
 ---
 title: "编辑器取值问题"
+heroImage: "/heroes/demo/jsrun-fFeKp.webp"
 description: "JSRUN 代码片段：编辑器取值问题（原地址 https://jsrun.net/fFeKp）。"
 pubDate: "2022-03-15"
 type: web

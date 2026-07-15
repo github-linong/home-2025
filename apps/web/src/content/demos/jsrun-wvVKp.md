@@ -1,5 +1,6 @@
 ---
 title: "动画，手移动"
+heroImage: "/heroes/demo/jsrun-wvVKp.webp"
 description: "JSRUN 代码片段：动画，手移动（原地址 https://jsrun.net/wvVKp）。"
 pubDate: "2021-06-08"
 type: web

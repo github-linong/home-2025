@@ -1,5 +1,6 @@
 ---
 title: "移动端日期时间选择面板"
+heroImage: "/heroes/demo/mobile-datetime-panel.webp"
 description: "移动端/H5交互示例：移动端日期时间选择面板。历史前端实验与 Bug 复现页。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "移动端"
 badge: "实验"
 tags: ["legacy", "移动端"]
 ---
+

@@ -1,5 +1,6 @@
 ---
 title: "https://element.eleme.cn/#/zh-CN/component/tooltip"
+heroImage: "/heroes/demo/jsrun-JgbKp.webp"
 description: "Element中的tooltip怎么才能让提示固定位置，不让它位置随着窗口的大小而动 如果我的窗口不改变它的显示是这样的"
 pubDate: "2019-07-22"
 type: web

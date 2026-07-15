@@ -1,5 +1,6 @@
 ---
 title: "图片主题色提取"
+heroImage: "/heroes/demo/fe-image-getcolor-canvas.webp"
 description: "用 Canvas 提取图片主题色。"
 pubDate: "2019-06-01"
 type: web

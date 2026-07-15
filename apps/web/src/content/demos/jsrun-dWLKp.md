@@ -1,5 +1,6 @@
 ---
 title: "jquery批量拖拽"
+heroImage: "/heroes/demo/jsrun-dWLKp.webp"
 description: "JSRUN 代码片段：jquery批量拖拽（原地址 https://jsrun.net/dWLKp）。"
 pubDate: "2020-08-06"
 type: web

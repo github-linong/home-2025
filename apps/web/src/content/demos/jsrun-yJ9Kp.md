@@ -1,5 +1,6 @@
 ---
 title: "vue中dialog弹框弹出时怎么聚焦到相关input的输入框中"
+heroImage: "/heroes/demo/jsrun-yJ9Kp.webp"
 description: "JSRUN 代码片段：vue中dialog弹框弹出时怎么聚焦到相关input的输入框中（原地址 https://jsrun.net/yJ9Kp）。"
 pubDate: "2022-01-19"
 type: web

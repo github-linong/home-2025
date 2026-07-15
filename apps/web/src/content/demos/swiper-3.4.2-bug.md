@@ -1,5 +1,6 @@
 ---
 title: "Swiper 3.4.2 Bug"
+heroImage: "/heroes/demo/swiper-3.4.2-bug.webp"
 description: "实验交互示例：Swiper 3.4.2 Bug。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---
+

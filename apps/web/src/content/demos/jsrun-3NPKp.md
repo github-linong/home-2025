@@ -1,5 +1,6 @@
 ---
 title: "进度条 测试"
+heroImage: "/heroes/demo/jsrun-3NPKp.webp"
 description: "background 九宫格"
 pubDate: "2022-08-12"
 type: web

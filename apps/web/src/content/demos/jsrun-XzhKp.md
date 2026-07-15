@@ -1,5 +1,6 @@
 ---
 title: "jquery的addClass测试"
+heroImage: "/heroes/demo/jsrun-XzhKp.webp"
 description: "JSRUN 代码片段：jquery的addClass测试（原地址 https://jsrun.net/XzhKp）。"
 pubDate: "2018-11-13"
 type: web

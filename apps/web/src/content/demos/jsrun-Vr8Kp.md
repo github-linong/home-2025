@@ -1,5 +1,6 @@
 ---
 title: "获取图片base64地址"
+heroImage: "/heroes/demo/jsrun-Vr8Kp.webp"
 description: "1. 手动上传 2. 复制上传 3. 拖拽上传"
 pubDate: "2021-08-20"
 type: web

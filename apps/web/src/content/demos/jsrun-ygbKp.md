@@ -1,5 +1,6 @@
 ---
 title: "自适应动画"
+heroImage: "/heroes/demo/jsrun-ygbKp.webp"
 description: "JSRUN 代码片段：自适应动画（原地址 https://jsrun.net/ygbKp）。"
 pubDate: "2019-07-20"
 type: web

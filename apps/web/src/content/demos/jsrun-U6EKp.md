@@ -1,5 +1,6 @@
 ---
 title: "email测试"
+heroImage: "/heroes/demo/jsrun-U6EKp.webp"
 description: "JSRUN 代码片段：email测试（原地址 https://jsrun.net/U6EKp）。"
 pubDate: "2022-09-28"
 type: web

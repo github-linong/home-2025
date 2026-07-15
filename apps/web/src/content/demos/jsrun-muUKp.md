@@ -1,5 +1,6 @@
 ---
 title: "requestAnimationFrame 数字增长动画"
+heroImage: "/heroes/demo/jsrun-muUKp.webp"
 description: "JSRUN 代码片段：requestAnimationFrame 数字增长动画（原地址 https://jsrun.net/muUKp）。"
 pubDate: "2021-12-09"
 type: web

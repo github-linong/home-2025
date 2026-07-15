@@ -1,5 +1,6 @@
 ---
 title: "input 长度限制"
+heroImage: "/heroes/demo/jsrun-CFPKp.webp"
 description: "JSRUN 代码片段：input 长度限制（原地址 https://jsrun.net/CFPKp）。"
 pubDate: "2022-08-31"
 type: web

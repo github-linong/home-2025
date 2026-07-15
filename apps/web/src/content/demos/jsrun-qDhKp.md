@@ -1,5 +1,6 @@
 ---
 title: "Rx.js学习"
+heroImage: "/heroes/demo/jsrun-qDhKp.webp"
 description: "https://segmentfault.com/a/1190000017282577"
 pubDate: "2018-12-11"
 type: web

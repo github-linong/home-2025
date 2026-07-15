@@ -1,5 +1,6 @@
 ---
 title: "Canvas 刮刮卡"
+heroImage: "/heroes/demo/canvas-active-h5-scratchCard.webp"
 description: "图形交互示例：Canvas 刮刮卡。"
 pubDate: "2019-06-01"
 type: web

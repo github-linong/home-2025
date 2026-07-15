@@ -1,5 +1,6 @@
 ---
 title: "数字翻牌 / 滚动切换特效骨架"
+heroImage: "/heroes/demo/jsrun-DKbKp.webp"
 description: "多列 0–9 数字条按随机五位数切换 class，实现翻牌滚动所需 DOM，但样式与 jQuery 缺失。"
 pubDate: "2019-07-11"
 type: web

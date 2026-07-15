@@ -1,5 +1,6 @@
 ---
 title: "canvas 裁图，选中区域"
+heroImage: "/heroes/demo/jsrun-vvQKp.webp"
 description: "JSRUN 代码片段：canvas 裁图，选中区域（原地址 https://jsrun.net/vvQKp）。"
 pubDate: "2022-04-08"
 type: web

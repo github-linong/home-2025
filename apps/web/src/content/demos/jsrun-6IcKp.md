@@ -1,5 +1,6 @@
 ---
 title: "转盘活动实现"
+heroImage: "/heroes/demo/jsrun-6IcKp.webp"
 description: "JSRUN 代码片段：转盘活动实现（原地址 https://jsrun.net/6IcKp）。"
 pubDate: "2023-02-14"
 type: web

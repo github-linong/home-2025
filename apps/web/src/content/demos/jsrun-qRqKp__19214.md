@@ -1,5 +1,6 @@
 ---
 title: "skew calc"
+heroImage: "/heroes/demo/jsrun-qRqKp__19214.webp"
 description: "JSRUN 代码片段：skew calc（原地址 https://jsrun.net/qRqKp）。"
 pubDate: "2018-03-08"
 type: web

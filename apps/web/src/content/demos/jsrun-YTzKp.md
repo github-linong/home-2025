@@ -1,5 +1,6 @@
 ---
 title: "vue2 的 watch 和 computed"
+heroImage: "/heroes/demo/jsrun-YTzKp.webp"
 description: "JSRUN 代码片段：vue2 的 watch 和 computed（原地址 https://jsrun.net/YTzKp）。"
 pubDate: "2022-06-10"
 type: web

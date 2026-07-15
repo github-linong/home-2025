@@ -1,5 +1,6 @@
 ---
 title: "H5 刮刮卡"
+heroImage: "/heroes/demo/active-h5-scratchCard.webp"
 description: "H5 刮刮卡活动页。"
 pubDate: "2019-06-01"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "vue-下拉菜单"
+heroImage: "/heroes/demo/jsrun-Z66Kp.webp"
 description: "JSRUN 代码片段：vue-下拉菜单（原地址 https://jsrun.net/Z66Kp）。"
 pubDate: "2020-09-28"
 type: web

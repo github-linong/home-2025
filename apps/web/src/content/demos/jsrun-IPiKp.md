@@ -1,5 +1,6 @@
 ---
 title: "http://www.zhangxinxu.com/wordpress/2016/11/css-content-pre-animation-character-loading/"
+heroImage: "/heroes/demo/jsrun-IPiKp.webp"
 description: "CSS content换行技术实现字符animation loading效果"
 pubDate: "2017-11-09"
 type: web

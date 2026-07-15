@@ -1,5 +1,6 @@
 ---
 title: "请问这段代码，canvas绘制的时候效果出不来是什么原因？没报错没效果"
+heroImage: "/heroes/demo/jsrun-AJWKp.webp"
 description: "https://segmentfault.com/q/1010000021247864"
 pubDate: "2019-12-10"
 type: web

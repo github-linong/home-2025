@@ -1,5 +1,6 @@
 ---
 title: "flex居中demo问题"
+heroImage: "/heroes/demo/jsrun-2p8Kp.webp"
 description: "JSRUN 代码片段：flex居中demo问题（原地址 https://jsrun.net/2p8Kp）。"
 pubDate: "2021-07-14"
 type: web

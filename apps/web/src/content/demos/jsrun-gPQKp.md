@@ -1,5 +1,6 @@
 ---
 title: "vue 异步数据展示"
+heroImage: "/heroes/demo/jsrun-gPQKp.webp"
 description: "JSRUN 代码片段：vue 异步数据展示（原地址 https://jsrun.net/gPQKp）。"
 pubDate: "2022-04-18"
 type: web

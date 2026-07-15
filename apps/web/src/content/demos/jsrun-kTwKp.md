@@ -1,5 +1,6 @@
 ---
 title: "打工人-zl"
+heroImage: "/heroes/demo/jsrun-kTwKp.webp"
 description: "JSRUN 代码片段：打工人-zl（原地址 https://jsrun.net/kTwKp）。"
 pubDate: "2020-11-18"
 type: web

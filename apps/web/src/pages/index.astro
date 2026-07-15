@@ -1,15 +1,20 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import HorizontalCard from "../components/HorizontalCard.astro";
+import ContentSortList from "../components/ContentSortList.astro";
 import { getCollection } from "astro:content";
 import createSlug from "../lib/createSlug";
 import { SITE_AUTHOR, SITE_TAGLINE, SITE_SUBTITLE } from "../config";
+import { getHomeDemoPicks } from "../lib/demoHighlights";
 
 const posts = (await getCollection("blog")).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
-
 const lastPosts = posts.slice(0, 5);
+
+const allDemos = await getCollection("demos");
+const homePicks = getHomeDemoPicks(allDemos);
+const homeShow = homePicks.slice(0, 6);
 ---
 
 <BaseLayout sideBarActiveItemID="home">
@@ -21,8 +26,57 @@ const lastPosts = posts.slice(0, 5);
     </div>
   </div>
 
+  <div class="mb-8">
+    <div class="mb-2 flex flex-wrap items-end justify-between gap-3">
+      <div class="text-3xl font-bold">精选项目</div>
+      <a href="/demos/" class="btn btn-ghost btn-sm">全部项目 →</a>
+    </div>
+    <p class="opacity-70 mb-4 text-sm">
+      精选实验与博客配套 Demo，可按最新或热度浏览。
+    </p>
+
+    {
+      homePicks.length === 0 ? (
+        <p class="opacity-70">暂无精选项目。</p>
+      ) : (
+        <ContentSortList
+          kind="demo"
+          catalogKey="home-demo"
+          catalogUrl="/data/home-demo-catalog.json"
+          pageSize={6}
+          defaultSort="date"
+          sortModes={["date", "hot"]}
+        >
+          {
+            homeShow.map((demo) => (
+              <>
+                <HorizontalCard
+                  title={demo.data.title}
+                  img={demo.data.heroImage}
+                  desc={demo.data.description}
+                  url={"/demos/" + createSlug(demo.data.title, demo.slug)}
+                  target="_self"
+                  badge={demo.data.badge}
+                  tags={demo.data.tags}
+                  pubDate={demo.data.pubDate}
+                  updatedDate={demo.data.updatedDate}
+                  category={demo.data.category}
+                  dateAsUpdate={true}
+                />
+                <div class="divider my-0" />
+              </>
+            ))
+          }
+        </ContentSortList>
+      )
+    }
+  </div>
+
   <div>
-    <div class="text-3xl w-full font-bold mb-5">✍️ 最新文章</div>
+    <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+      <div class="text-3xl font-bold">最新文章</div>
+      <a href="/blog/" class="btn btn-ghost btn-sm">全部文章 →</a>
+    </div>
   </div>
 
   {
@@ -42,6 +96,8 @@ const lastPosts = posts.slice(0, 5);
             kind={post.data.kind}
             votes={post.data.votes}
             accepted={post.data.accepted}
+            pubDate={post.data.pubDate}
+            updatedDate={post.data.updatedDate}
           />
           <div class="divider my-0" />
         </>

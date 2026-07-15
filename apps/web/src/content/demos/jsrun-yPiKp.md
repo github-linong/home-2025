@@ -1,5 +1,6 @@
 ---
 title: "纯 CSS 按钮 Loading 菊花"
+heroImage: "/heroes/demo/jsrun-yPiKp.webp"
 description: "给按钮加 loading 类即可隐藏文字并显示无图片旋转菊花指示器。"
 pubDate: "2017-11-08"
 type: web

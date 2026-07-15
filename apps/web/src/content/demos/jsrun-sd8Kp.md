@@ -1,5 +1,6 @@
 ---
 title: "RxJS 测试"
+heroImage: "/heroes/demo/jsrun-sd8Kp.webp"
 description: "JSRUN 代码片段：RxJS 测试（原地址 https://jsrun.net/sd8Kp）。"
 pubDate: "2021-08-11"
 type: web

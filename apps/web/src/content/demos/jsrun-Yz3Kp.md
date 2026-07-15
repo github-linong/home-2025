@@ -1,5 +1,6 @@
 ---
 title: "vue 声明周期全观察"
+heroImage: "/heroes/demo/jsrun-Yz3Kp.webp"
 description: "JSRUN 代码片段：vue 声明周期全观察（原地址 https://jsrun.net/Yz3Kp）。"
 pubDate: "2021-04-29"
 type: web

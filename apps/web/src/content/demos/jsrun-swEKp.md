@@ -1,5 +1,6 @@
 ---
 title: "panzoom 测试"
+heroImage: "/heroes/demo/jsrun-swEKp.webp"
 description: "JSRUN 代码片段：panzoom 测试（原地址 https://jsrun.net/swEKp）。"
 pubDate: "2022-09-28"
 type: web

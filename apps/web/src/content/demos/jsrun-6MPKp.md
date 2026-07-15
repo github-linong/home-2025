@@ -1,5 +1,6 @@
 ---
 title: "两端对齐测试"
+heroImage: "/heroes/demo/jsrun-6MPKp.webp"
 description: "JSRUN 代码片段：两端对齐测试（原地址 https://jsrun.net/6MPKp）。"
 pubDate: "2022-09-15"
 type: web

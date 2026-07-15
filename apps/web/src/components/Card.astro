@@ -1,5 +1,13 @@
 ---
-const { title, img, desc, url, badge, tags, target = "_blank" } = Astro.props;
+const { title, img, desc, url, badge, tags, target = "_blank" } = Astro.props as {
+  title: string;
+  img: any;
+  desc: string;
+  url: string;
+  badge?: string;
+  tags?: string[];
+  target?: string;
+};
 import { Image } from "astro:assets";
 ---
 
@@ -20,4 +28,3 @@ import { Image } from "astro:assets";
     </div>
   </a>
 </div>
-

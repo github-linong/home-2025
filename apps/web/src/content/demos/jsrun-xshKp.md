@@ -1,5 +1,6 @@
 ---
 title: "element ui 测试"
+heroImage: "/heroes/demo/jsrun-xshKp.webp"
 description: "JSRUN 代码片段：element ui 测试（原地址 https://jsrun.net/xshKp）。"
 pubDate: "2018-11-21"
 type: web

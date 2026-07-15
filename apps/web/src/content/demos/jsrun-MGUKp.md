@@ -1,5 +1,6 @@
 ---
 title: "canvas 3d 进度条"
+heroImage: "/heroes/demo/jsrun-MGUKp.webp"
 description: "JSRUN 代码片段：canvas 3d 进度条（原地址 https://jsrun.net/MGUKp）。"
 pubDate: "2021-11-28"
 type: web

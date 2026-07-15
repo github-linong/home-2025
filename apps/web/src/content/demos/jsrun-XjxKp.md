@@ -1,5 +1,6 @@
 ---
 title: "2048 AI（Alpha-Beta 搜素）"
+heroImage: "/heroes/demo/jsrun-XjxKp.webp"
 description: "移植 ovolve 2048-AI：评估函数 + 迭代加深 Alpha-Beta，用于择优走子。"
 pubDate: "2023-10-30"
 type: web

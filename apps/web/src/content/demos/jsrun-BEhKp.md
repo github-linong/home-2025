@@ -1,5 +1,6 @@
 ---
 title: "BEhKp"
+heroImage: "/heroes/demo/jsrun-BEhKp.webp"
 description: "JSRUN 代码片段：BEhKp（原地址 https://jsrun.net/BEhKp）。"
 pubDate: "2018-11-20"
 type: web

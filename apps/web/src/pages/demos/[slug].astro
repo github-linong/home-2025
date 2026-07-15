@@ -1,7 +1,10 @@
 ---
-import { CollectionEntry, getCollection } from "astro:content";
-import { DemoSchema } from "../../content/config";
+import type { CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
+import type { DemoSchema } from "../../content/config";
+import { Image } from "astro:assets";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import ViewBeacon from "../../components/ViewBeacon.astro";
 import createSlug from "../../lib/createSlug";
 
 export async function getStaticPaths() {
@@ -18,6 +21,7 @@ interface Props {
 
 const { entry } = Astro.props;
 const demo: DemoSchema = entry.data;
+const pathSlug = createSlug(demo.title, entry.slug);
 const { Content } = await entry.render();
 
 const blogPosts =
@@ -38,6 +42,8 @@ const isLegacy = demo.tags?.includes("legacy");
 
 <BaseLayout
   title={demo.title}
+  description={demo.description}
+  image={demo.heroImage}
   sideBarActiveItemID="demos"
 >
   <article class="prose max-w-none" data-pagefind-body>
@@ -53,6 +59,39 @@ const isLegacy = demo.tags?.includes("legacy");
       </a>
       <h1 class="text-4xl font-bold mt-2">{demo.title}</h1>
       <p class="text-lg opacity-80 mt-2">{demo.description}</p>
+      {
+        demo.heroImage && (
+          <Image
+            src={demo.heroImage}
+            width={1200}
+            height={675}
+            format="webp"
+            alt={demo.title}
+            class="w-full max-h-72 object-cover rounded-lg mt-4"
+          />
+        )
+      }
+      <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm opacity-60">
+        {
+          (() => {
+            const published = demo.pubDate.toISOString().slice(0, 10);
+            const updated = demo.updatedDate?.toISOString().slice(0, 10);
+            if (updated && updated !== published) {
+              return (
+                <>
+                  <time datetime={demo.pubDate.toISOString()}>发布于 {published}</time>
+                  <time datetime={demo.updatedDate!.toISOString()}>更新于 {updated}</time>
+                </>
+              );
+            }
+            return (
+              <time datetime={(demo.updatedDate ?? demo.pubDate).toISOString()}>
+                更新于 {updated || published}
+              </time>
+            );
+          })()
+        }
+      </div>
       <div class="flex flex-wrap gap-2 mt-4">
         <span class="badge badge-primary">{typeLabels[demo.type] ?? demo.type}</span>
         {
@@ -105,11 +144,19 @@ const isLegacy = demo.tags?.includes("legacy");
     {
       demo.type === "web" && demo.demoUrl && (
         <div class="not-prose my-8">
-          <div class="text-sm font-semibold mb-2">在线预览</div>
+          <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <div class="text-sm font-semibold">在线预览</div>
+            <a class="link link-hover text-sm" href={demo.demoUrl} target="_blank" rel="noreferrer" data-astro-reload>
+              全屏打开
+            </a>
+          </div>
           <iframe
             src={demo.demoUrl}
             title={demo.title}
-            class="w-full h-[480px] rounded-lg border border-base-300 bg-base-100"
+            class:list={[
+              "w-full rounded-lg border border-base-300",
+              demo.demoUrl.includes("/demos/project/") ? "h-[min(85vh,900px)] bg-[#0b1220]" : "h-[480px] bg-base-100",
+            ]}
             loading="lazy"></iframe>
         </div>
       )
@@ -138,4 +185,5 @@ const isLegacy = demo.tags?.includes("legacy");
       )
     }
   </article>
+  <ViewBeacon type="demo" slug={pathSlug} />
 </BaseLayout>

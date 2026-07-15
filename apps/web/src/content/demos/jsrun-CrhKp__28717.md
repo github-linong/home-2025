@@ -1,5 +1,6 @@
 ---
 title: "递归选择框 删除bug"
+heroImage: "/heroes/demo/jsrun-CrhKp__28717.webp"
 description: "JSRUN 代码片段：递归选择框 删除bug（原地址 https://jsrun.net/CrhKp）。"
 pubDate: "2018-12-26"
 type: web

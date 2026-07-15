@@ -1,5 +1,6 @@
 ---
 title: "vue3 测试"
+heroImage: "/heroes/demo/jsrun-q78Kp.webp"
 description: "vue2 通过 $destory vue3 通过 unmount"
 pubDate: "2021-08-10"
 type: web

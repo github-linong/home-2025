@@ -1,5 +1,6 @@
 ---
 title: "二维grid布局"
+heroImage: "/heroes/demo/jsrun-6gZKp.webp"
 description: "JSRUN 代码片段：二维grid布局（原地址 https://jsrun.net/6gZKp）。"
 pubDate: "2018-03-20"
 type: web

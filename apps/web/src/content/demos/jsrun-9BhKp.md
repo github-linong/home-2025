@@ -1,5 +1,6 @@
 ---
 title: "图片居中https://juejin.im/post/599ececb5188252423583c27"
+heroImage: "/heroes/demo/jsrun-9BhKp.webp"
 description: "JSRUN 代码片段：图片居中https://juejin.im/post/599ececb5188252423583c27（原地址 https://jsrun.net/9BhKp）。"
 pubDate: "2019-01-02"
 type: web

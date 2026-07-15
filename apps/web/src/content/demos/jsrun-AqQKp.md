@@ -1,5 +1,6 @@
 ---
 title: "数据 map 处理"
+heroImage: "/heroes/demo/jsrun-AqQKp.webp"
 description: "JSRUN 代码片段：数据 map 处理（原地址 https://jsrun.net/AqQKp）。"
 pubDate: "2022-03-30"
 type: web

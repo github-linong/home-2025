@@ -1,5 +1,6 @@
 ---
 title: "https://chartjs.bootcss.com/docs/getting-started/usage.html"
+heroImage: "/heroes/demo/jsrun-kmqKp.webp"
 description: "JSRUN 代码片段：https://chartjs.bootcss.com/docs/getting-started/usage.html（原地址 https://jsrun.net/kmqKp）。"
 pubDate: "2018-03-05"
 type: web

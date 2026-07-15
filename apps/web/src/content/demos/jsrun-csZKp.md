@@ -1,5 +1,6 @@
 ---
 title: "Markdown 编辑器"
+heroImage: "/heroes/demo/jsrun-csZKp.webp"
 description: "JSRUN 代码片段：Markdown 编辑器（原地址 https://jsrun.net/csZKp）。"
 pubDate: "2018-05-03"
 type: web

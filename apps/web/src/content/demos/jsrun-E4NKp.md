@@ -1,5 +1,6 @@
 ---
 title: "字符跳动效果"
+heroImage: "/heroes/demo/jsrun-E4NKp.webp"
 description: "JSRUN 代码片段：字符跳动效果（原地址 https://jsrun.net/E4NKp）。"
 pubDate: "2021-04-01"
 type: web

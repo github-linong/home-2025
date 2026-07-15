@@ -1,5 +1,6 @@
 ---
 title: "多图预览放大缩小与旋转"
+heroImage: "/heroes/demo/jsrun-PuzKp.webp"
 description: "弹层展示多张图，用 CSS transform 的 scale/rotate 做放大、缩小、重置、旋转。"
 pubDate: "2022-07-12"
 type: web

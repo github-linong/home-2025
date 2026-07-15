@@ -1,5 +1,6 @@
 ---
 title: "H5 download · 测试"
+heroImage: "/heroes/demo/test-h5-download.webp"
 description: "download 属性测试。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "测试"
 badge: "Bug 复现"
 tags: ["legacy", "测试"]
 ---
+

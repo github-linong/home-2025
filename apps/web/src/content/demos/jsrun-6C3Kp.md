@@ -1,5 +1,6 @@
 ---
 title: "nav scroll"
+heroImage: "/heroes/demo/jsrun-6C3Kp.webp"
 description: "JSRUN 代码片段：nav scroll（原地址 https://jsrun.net/6C3Kp）。"
 pubDate: "2021-05-18"
 type: web

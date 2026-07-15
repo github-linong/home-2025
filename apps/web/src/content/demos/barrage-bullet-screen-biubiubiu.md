@@ -1,5 +1,6 @@
 ---
 title: "原生弹幕效果"
+heroImage: "/heroes/demo/barrage-bullet-screen-biubiubiu.webp"
 description: "原生弹幕滚动效果。"
 pubDate: "2019-06-01"
 type: web

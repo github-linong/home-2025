@@ -1,5 +1,6 @@
 ---
 title: "人像抠图分割"
+heroImage: "/heroes/demo/ai-faceplusplus-HumanBodySegment.webp"
 description: "人像抠图 / 人体分割实验。"
 pubDate: "2019-06-01"
 type: web

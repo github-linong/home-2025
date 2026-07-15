@@ -1,5 +1,6 @@
 ---
 title: "Canvas 圆弧绘制太极八卦图"
+heroImage: "/heroes/demo/jsrun-aXhKp.webp"
 description: "用多次 arc + fill 拼接半圆与阴阳鱼眼，在 canvas 上画出太极图。"
 pubDate: "2018-09-29"
 type: web

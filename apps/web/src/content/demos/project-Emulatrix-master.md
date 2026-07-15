@@ -1,5 +1,6 @@
 ---
 title: "Emulatrix 模拟器"
+heroImage: "/heroes/demo/project-Emulatrix-master.webp"
 description: "浏览器端游戏机模拟器静态站。"
 pubDate: "2019-06-01"
 type: web

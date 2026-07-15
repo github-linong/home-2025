@@ -1,5 +1,6 @@
 ---
 title: "https://github.com/Amterasu/editor"
+heroImage: "/heroes/demo/jsrun-9UgKp.webp"
 description: "JSRUN 代码片段：https://github.com/Amterasu/editor（原地址 https://jsrun.net/9UgKp）。"
 pubDate: "2018-07-19"
 type: web

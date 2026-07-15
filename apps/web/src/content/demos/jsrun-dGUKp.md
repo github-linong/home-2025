@@ -1,5 +1,6 @@
 ---
 title: "3d 进度条"
+heroImage: "/heroes/demo/jsrun-dGUKp.webp"
 description: "JSRUN 代码片段：3d 进度条（原地址 https://jsrun.net/dGUKp）。"
 pubDate: "2021-11-27"
 type: web

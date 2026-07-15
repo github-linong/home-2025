@@ -1,5 +1,6 @@
 ---
 title: "video 缩放测试"
+heroImage: "/heroes/demo/jsrun-MV9Kp.webp"
 description: "JSRUN 代码片段：video 缩放测试（原地址 https://jsrun.net/MV9Kp）。"
 pubDate: "2022-01-04"
 type: web

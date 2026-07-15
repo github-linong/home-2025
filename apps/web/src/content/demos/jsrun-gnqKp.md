@@ -1,5 +1,6 @@
 ---
 title: "滚动效果news"
+heroImage: "/heroes/demo/jsrun-gnqKp.webp"
 description: "JSRUN 代码片段：滚动效果news（原地址 https://jsrun.net/gnqKp）。"
 pubDate: "2018-03-01"
 type: web

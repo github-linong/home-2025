@@ -1,5 +1,6 @@
 ---
 title: "flex: 1测试等分情况"
+heroImage: "/heroes/demo/jsrun-fe3Kp.webp"
 description: "JSRUN 代码片段：flex: 1测试等分情况（原地址 https://jsrun.net/fe3Kp）。"
 pubDate: "2021-04-26"
 type: web

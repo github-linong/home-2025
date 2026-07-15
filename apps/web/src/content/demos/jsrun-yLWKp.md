@@ -1,5 +1,6 @@
 ---
 title: "vue table渲染"
+heroImage: "/heroes/demo/jsrun-yLWKp.webp"
 description: "JSRUN 代码片段：vue table渲染（原地址 https://jsrun.net/yLWKp）。"
 pubDate: "2019-10-30"
 type: web

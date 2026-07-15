@@ -1,5 +1,6 @@
 ---
 title: "http://www.layui.com/admin/std/dist/views/"
+heroImage: "/heroes/demo/jsrun-RagKp.webp"
 description: "JSRUN 代码片段：http://www.layui.com/admin/std/dist/views/（原地址 https://jsrun.net/RagKp）。"
 pubDate: "2018-07-13"
 type: web

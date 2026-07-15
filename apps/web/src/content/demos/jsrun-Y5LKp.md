@@ -1,5 +1,6 @@
 ---
 title: "vue xss"
+heroImage: "/heroes/demo/jsrun-Y5LKp.webp"
 description: "JSRUN 代码片段：vue xss（原地址 https://jsrun.net/Y5LKp）。"
 pubDate: "2020-09-03"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "图片放大 cropper"
+heroImage: "/heroes/demo/jsrun-5RZKp.webp"
 description: "JSRUN 代码片段：图片放大 cropper（原地址 https://jsrun.net/5RzKp）。"
 pubDate: "2022-07-11"
 type: web

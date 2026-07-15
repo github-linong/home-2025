@@ -1,5 +1,6 @@
 ---
 title: "异型 容器 测试"
+heroImage: "/heroes/demo/jsrun-grDKp.webp"
 description: "JSRUN 代码片段：异型 容器 测试（原地址 https://jsrun.net/grDKp）。"
 pubDate: "2024-09-09"
 type: web

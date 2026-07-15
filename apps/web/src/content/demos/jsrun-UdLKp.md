@@ -1,5 +1,6 @@
 ---
 title: "flex 换行"
+heroImage: "/heroes/demo/jsrun-UdLKp.webp"
 description: "JSRUN 代码片段：flex 换行（原地址 https://jsrun.net/UdLKp）。"
 pubDate: "2020-08-31"
 type: web

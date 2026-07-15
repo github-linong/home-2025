@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rot.js + Pathfinding.js 迷宫测试实验室</title>
+    <style>
+        body {
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* 左侧控制栏 */
+        .sidebar {
+            width: 320px;
+            background: #252525;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border-right: 1px solid #333;
+            overflow-y: auto;
+        }
+
+        .section {
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+        }
+
+        .section.collapsed .control-group,
+        .section.collapsed .legend-grid,
+        .section.collapsed p,
+        .section.collapsed .param-group,
+        .section.collapsed .analysis-grid {
+            display: none;
+        }
+
+        .section h3 {
+            margin: 0 0 10px 0;
+            color: #88c0d0;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .section h3::after {
+            content: '▼';
+            font-size: 0.8em;
+            transition: transform 0.2s;
+        }
+
+        .section.collapsed h3::after {
+            transform: rotate(-90deg);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* 按钮样式 */
+        button {
+            padding: 8px 12px;
+            background-color: #3b4252;
+            color: #d8dee9;
+            border: 1px solid #4c566a;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: #434c5e;
+            border-color: #88c0d0;
+        }
+
+        button.active {
+            background-color: #5e81ac;
+            border-color: #81a1c1;
+            color: white;
+        }
+
+        /* 寻路选项 */
+        select {
+            padding: 8px;
+            background: #2e3440;
+            color: white;
+            border: 1px solid #4c566a;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        /* 右侧主视口 */
+        .main-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #111;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #viewport-wrapper {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            overflow: auto;
+            align-items: center;
+            justify-content: center;
+            background: #0a0a0a;
+        }
+
+        .canvas-container {
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 2px solid #333;
+            cursor: crosshair;
+            transform-origin: 0 0;
+            image-rendering: pixelated;
+        }
+
+        .canvas-label {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #88c0d0;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* 编辑器工具栏 */
+        .editor-tools {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tool-btn {
+            padding: 4px 8px;
+            font-size: 12px;
+            background: #3b4252;
+            border: 1px solid #4c566a;
+            color: #d8dee9;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .tool-btn.active {
+            background: #a3be8c;
+            color: #2e3440;
+            border-color: #a3be8c;
+        }
+
+        /* 分析面板 */
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: #ccc;
+        }
+
+        .analysis-item {
+            background: #2e3440;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .analysis-val {
+            display: block;
+            font-size: 1.1rem;
+            color: #ebcb8b;
+            font-weight: bold;
+        }
+
+        .stats-bar {
+            background: #252525;
+            padding: 10px 20px;
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+
+        .badge.success {
+            background: #2e5a2e;
+            color: #a3be8c;
+        }
+
+        .badge.error {
+            background: #5a2e2e;
+            color: #bf616a;
+        }
+
+        .badge.info {
+            background: #2e4a5a;
+            color: #88c0d0;
+        }
+
+        .param-group {
+            margin-top: 10px;
+            padding: 10px;
+            background: #2e3440;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .param-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .param-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .param-row input[type="number"] {
+            width: 50px;
+            background: #3b4252;
+            border: 1px solid #4c566a;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+
+        .param-row input[type="range"] {
+            width: 80px;
+        }
+
+        /* Legend Style */
+        .legend-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-item span {
+            font-family: monospace;
+            font-weight: bold;
+            display: inline-block;
+            width: 16px;
+            text-align: center;
+            border-radius: 2px;
+        }
+
+        /* 算法说明模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: #2e3440;
+            margin: 50px auto;
+            padding: 20px;
+            border: 2px solid #4c566a;
+            border-radius: 8px;
+            max-width: 800px;
+            color: #d8dee9;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #4c566a;
+            padding-bottom: 10px;
+        }
+
+        .modal-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #4c566a;
+        }
+
+        .modal-tab {
+            padding: 8px 16px;
+            background: #3b4252;
+            border: none;
+            border-radius: 4px 4px 0 0;
+            color: #d8dee9;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-tab.active {
+            background: #5e81ac;
+            color: white;
+        }
+
+        .modal-tab:hover {
+            background: #434c5e;
+        }
+
+        .close-modal {
+            color: #bf616a;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: #d08770;
+        }
+
+        .algo-info-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #3b4252;
+            border-radius: 4px;
+            border-left: 3px solid #5e81ac;
+        }
+
+        .algo-info-item h4 {
+            margin: 0 0 10px 0;
+            color: #88c0d0;
+        }
+
+        .algo-info-item p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .algo-info-item .complexity {
+            color: #ebcb8b;
+            font-weight: bold;
+        }
+    </style>
+
+    <!-- 引入库 -->
+    <script src="https://cdn.jsdelivr.net/npm/rot-js@2.2.0/dist/rot.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pathfinding@0.4.18/visual/lib/pathfinding-browser.min.js"></script>
+</head>
+
+<body>
+
+    <!-- 左侧侧边栏 -->
+    <div class="sidebar">
+        <div class="section">
+            <h3>1. 迷宫生成算法</h3>
+            <div class="control-group" id="maze-buttons">
+                <button onclick="setAlgo('DividedMaze')" class="active">递归分割 (Divided)</button>
+                <button onclick="setAlgo('EllerMaze')">Eller 算法</button>
+                <button onclick="setAlgo('IceyMaze')">冰层 (Icey)</button>
+                <button onclick="setAlgo('Digger')">地牢 (Digger)</button>
+                <button onclick="setAlgo('Uniform')">分布 (Uniform)</button>
+                <button onclick="setAlgo('Rogue')">Rogue 经典</button>
+                <button onclick="setAlgo('Cellular')">细胞 (洞穴)</button>
+            </div>
+
+            <div style="margin-top:10px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.9rem; color:#ccc;">
+                    <input type="checkbox" id="enable-terrain" onchange="regenerate()">
+                    生成复杂地形 (森林/沼泽)
+                </label>
+            </div>
+
+            <div id="algo-params" class="param-group"></div>
+        </div>
+
+        <div class="section">
+            <h3 onclick="toggleSection(this)">2. 视觉与交互</h3>
+            <div class="control-group">
+                <label><input type="checkbox" id="enable-fov" onchange="toggleFOV()"> 战争迷雾</label>
+
+                <div class="param-row" id="fov-radius-row" style="display:none; margin-left:24px;">
+                    <span>视距:</span>
+                    <input type="range" id="fov-radius" min="3" max="20" value="8"
+                        oninput="updateFOVRadius(this.value)">
+                    <span id="fov-val">8</span>
+                </div>
+
+                <label><input type="checkbox" id="enable-lighting" onchange="toggleLighting()"> 动态光照</label>
+                <label><input type="checkbox" id="enable-dynamic-obstacles" onchange="toggleDynamicObstacles()">
+                    动态障碍物</label>
+                <button onclick="movePlayerStep()">👣 移动一步</button>
+                <button onclick="autoPlay()">▶️ 自动移动</button>
+                <button onclick="toggleHeatmap()">🌡️ 热力图</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3 onclick="toggleSection(this)">3. 多算法九宫格对比</h3>
+            <div class="control-group" id="algo-checkboxes"
+                style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                <label style="color:#a3be8c"><input type="checkbox" value="AStar" checked onchange="findPath()">
+                    A*</label>
+                <label style="color:#81a1c1"><input type="checkbox" value="Dijkstra" onchange="findPath()">
+                    Dijkstra</label>
+                <label style="color:#b48ead"><input type="checkbox" value="BFS" onchange="findPath()"> BFS</label>
+                <label style="color:#ebcb8b"><input type="checkbox" value="BestFirst" onchange="findPath()">
+                    BestFirst</label>
+                <label style="color:#8fbcbb"><input type="checkbox" value="JPS" onchange="findPath()"> JPS</label>
+                <label style="color:#bf616a"><input type="checkbox" value="BiAStar" onchange="findPath()">
+                    BiAStar</label>
+            </div>
+            <div style="margin-top: 10px; font-size: 0.8rem; color: #666;">
+                <label><input type="checkbox" id="allow-diagonal" onchange="findPath()"> 斜向移动</label>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3 onclick="toggleSection(this)">4. 编辑器</h3>
+            <div class="control-group">
+                <div class="editor-tools">
+                    <button class="tool-btn active" onclick="setTool('path', this)">👣 终点</button>
+                    <button class="tool-btn" onclick="setTool('wall', this)"># 墙壁</button>
+                    <button class="tool-btn" onclick="setTool('floor', this)">· 地面</button>
+                    <button class="tool-btn" onclick="setTool('start', this)">S 起点</button>
+                    <button class="tool-btn" onclick="setTool('target', this)">🎯 多目标</button>
+                </div>
+                <button onclick="clearMap()" style="margin-top:10px; background:#5a2e2e;">🗑️ 清空地图</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3 onclick="toggleSection(this)">5. 统计</h3>
+            <div class="analysis-grid">
+                <div class="analysis-item">死胡同 <span id="stat-deadends" class="analysis-val">0</span></div>
+                <div class="analysis-item">可达率 <span id="stat-reachable" class="analysis-val">0%</span></div>
+            </div>
+            <div id="path-stats" style="margin-top:10px; font-size:0.8rem; color:#ccc; display:none;">
+                <div><strong>路径统计:</strong></div>
+                <div>实际距离: <span id="stat-actual" style="color:#ebcb8b">0</span></div>
+                <div>曼哈顿距离: <span id="stat-manhattan" style="color:#a3be8c">0</span></div>
+                <div>欧几里得距离: <span id="stat-euclidean" style="color:#81a1c1">0</span></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3 onclick="toggleSection(this)">6. 操作</h3>
+            <div class="control-group">
+                <button onclick="regenerate()">🔄 重新生成</button>
+                <button onclick="exportMap()">💾 导出</button>
+                <button onclick="document.getElementById('map-upload').click()">📂 导入</button>
+                <input id="map-upload" type="file" accept=".json" style="display:none" onchange="importMap(this)">
+                <select id="map-size" onchange="applyMapSize()" style="margin-top:5px;">
+                    <option value="60x30">60x30</option>
+                    <option value="80x40">80x40</option>
+                    <option value="120x70">120x70</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3 onclick="toggleSection(this)">7. 图例与百科</h3>
+            <div class="legend-grid">
+                <div class="legend-item"><span style="color:#fff; background:#bf616a">S</span> 起点</div>
+                <div class="legend-item"><span style="color:#fff; background:#ebcb8b">E</span> 终点</div>
+                <div class="legend-item"><span style="color:#a3be8c">•</span> 路径A</div>
+                <div class="legend-item"><span style="color:#81a1c1">◦</span> 路径B</div>
+                <div class="legend-item"><span style="color:#ebcb8b">$</span> 宝藏</div>
+                <div class="legend-item"><span style="color:#8fbcbb">♣</span> 森林</div>
+                <div class="legend-item"><span style="color:#b48ead">≈</span> 沼泽</div>
+            </div>
+            <button onclick="showAlgoInfo('pathfinding')" style="margin-top:10px; width:100%;">📚 寻路算法说明</button>
+            <button onclick="showAlgoInfo('maze')" style="margin-top:5px; width:100%;">🏗️ 迷宫生成算法说明</button>
+        </div>
+    </div>
+
+    <!-- 算法说明模态框 -->
+    <div id="algo-info-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">📚 算法说明</h2>
+                <span class="close-modal" onclick="closeAlgoInfo()">&times;</span>
+            </div>
+            <div class="modal-tabs">
+                <button class="modal-tab active" onclick="switchTab('pathfinding')">寻路算法</button>
+                <button class="modal-tab" onclick="switchTab('maze')">迷宫生成算法</button>
+            </div>
+            <div id="algo-info-content"></div>
+        </div>
+    </div>
+
+    <!-- 右侧主视图 -->
+    <div class="main-view">
+        <div id="viewport-wrapper">
+            <div id="canvas-container" class="canvas-container">
+                <div class="canvas-label">九宫格对比模式</div>
+                <div id="game-container"></div>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="status-item" id="status-algo">就绪</div>
+            <div class="status-item" id="status-time">缩放: 100%</div>
+            <div class="status-item" id="status-path">步数: 0</div>
+        </div>
+    </div>
+
+    <script>
+        const DEFAULT_WIDTH = 120, DEFAULT_HEIGHT = 70;
+        const urlParams = new URLSearchParams(location.search);
+        const WIDTH = parseInt(urlParams.get('w')) || DEFAULT_WIDTH;
+        const HEIGHT = parseInt(urlParams.get('h')) || DEFAULT_HEIGHT;
+        const P_WIDTH = WIDTH * 3, P_HEIGHT = HEIGHT * 3;
+
+        let display = null, currentGrid = null, mapData = [], entities = [], startPos = null, endPos = null;
+        let activePaths = {}, currentMazeAlgo = 'DividedMaze', currentTool = 'path', zoomLevel = 1.0, isMouseDown = false;
+        let panX = 0, panY = 0, isPanning = false, lastMouseX = 0, lastMouseY = 0;
+        let fov = null, isFovEnabled = false, isLightingEnabled = false, isHeatmapEnabled = false;
+        let fovRadius = 8, visibleMap = {}, exploredMap = {}, lighting = null, lightData = {}, lamps = [], heatmapData = {}, maxDistance = 0, autoPlayTimer = null;
+        let targetPoints = [], isDynamicObstaclesEnabled = false, dynamicObstacleTimer = null, lastEditPos = null;
+
+        const algoColors = { 'AStar': "#a3be8c", 'Dijkstra': "#81a1c1", 'BFS': "#b48ead", 'BestFirst': "#ebcb8b", 'JPS': "#8fbcbb", 'BiAStar': "#bf616a" };
+        const algoOffsets = { 'AStar': [0, 0], 'Dijkstra': [1, 0], 'BFS': [2, 0], 'BestFirst': [0, 1], 'JPS': [2, 1], 'BiAStar': [0, 2] };
+
+        const algoParams = {
+            'Cellular': { randomness: { val: 0.5, min: 0.1, max: 0.9, step: 0.05, label: '随机度' }, iterations: { val: 4, min: 1, max: 10, step: 1, label: '平滑迭代' } },
+            'Digger': { roomWidth: { val: [3, 9], min: 2, max: 15, label: '房宽' }, roomHeight: { val: [3, 5], min: 2, max: 10, label: '房高' }, corridorLength: { val: [3, 10], min: 2, max: 20, label: '廊长' }, dugPercentage: { val: 0.2, min: 0.1, max: 0.5, step: 0.05, label: '挖掘%' } },
+            'Uniform': { roomWidth: { val: [3, 9], min: 2, max: 15, label: '房宽' }, roomHeight: { val: [3, 5], min: 2, max: 10, label: '房高' }, roomDugPercentage: { val: 0.1, min: 0.05, max: 0.3, step: 0.01, label: '房%' } },
+            'Rogue': { cellWidth: { val: 3, min: 1, max: 10, label: '单元格宽' }, cellHeight: { val: 3, min: 1, max: 10, label: '单元格高' } },
+            'IceyMaze': { regularity: { val: 0, min: 0, max: 30, step: 1, label: '规则度' } }
+        };
+
+        function init() {
+            display = new ROT.Display({ width: P_WIDTH, height: P_HEIGHT, fontSize: 4, bg: "#111", fontFamily: "monospace", forceSquareRatio: true });
+            const container = document.getElementById('game-container');
+            const wrapper = document.getElementById('viewport-wrapper');
+
+            container.appendChild(display.getContainer());
+
+            // 初始居中
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const fontSize = display.getOptions().fontSize;
+            // canvas 的实际像素尺寸 = P_WIDTH * fontSize x P_HEIGHT * fontSize
+            panX = (wrapperRect.width - P_WIDTH * fontSize * zoomLevel) / 2;
+            panY = (wrapperRect.height - P_HEIGHT * fontSize * zoomLevel) / 2;
+            updateViewportTransform();
+
+            // 精准的以鼠标为中心缩放
+            wrapper.onwheel = (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const fontSize = display.getOptions().fontSize;
+
+                const rect = wrapper.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left; // 鼠标在容器内的相对坐标
+                const mouseY = e.clientY - rect.top;
+
+                // 计算当前鼠标位置对应的未缩放像素坐标
+                const unscaledPixelX = (mouseX - panX) / zoomLevel;
+                const unscaledPixelY = (mouseY - panY) / zoomLevel;
+
+                const newZoom = Math.min(Math.max(0.1, zoomLevel * delta), 10);
+
+                // 更新偏移量，使得同一个像素位置在缩放后依然对应鼠标当前的屏幕位置
+                panX = mouseX - unscaledPixelX * newZoom;
+                panY = mouseY - unscaledPixelY * newZoom;
+
+                zoomLevel = newZoom;
+                updateViewportTransform();
+                document.getElementById('status-time').innerText = `缩放: ${Math.round(zoomLevel * 100)}%`;
+            };
+
+            // 平移与交互
+            wrapper.onmousedown = (e) => {
+                if (e.button === 1 || e.button === 2) {
+                    isPanning = true;
+                    lastMouseX = e.clientX;
+                    lastMouseY = e.clientY;
+                    wrapper.style.cursor = 'grabbing';
+                } else if (e.button === 0) {
+                    isMouseDown = true;
+                    handleMapInteraction(e);
+                }
+                e.preventDefault();
+            };
+
+            window.onmousemove = (e) => {
+                if (isPanning) {
+                    panX += e.clientX - lastMouseX;
+                    panY += e.clientY - lastMouseY;
+                    lastMouseX = e.clientX;
+                    lastMouseY = e.clientY;
+                    updateViewportTransform();
+                } else if (isMouseDown) {
+                    handleMapInteraction(e);
+                }
+            };
+
+            window.onmouseup = () => {
+                isPanning = false;
+                isMouseDown = false;
+                lastEditPos = null; // 重置编辑位置
+                wrapper.style.cursor = 'auto';
+            };
+
+            wrapper.oncontextmenu = (e) => e.preventDefault();
+            document.addEventListener('keydown', handleKeyDown);
+            renderParamsUI(); initMapSizeSelector(); regenerate();
+        }
+
+        function updateViewportTransform() {
+            const canvasContainer = document.getElementById('canvas-container');
+            if (canvasContainer) {
+                canvasContainer.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+            }
+        }
+
+        function handleMapInteraction(e) {
+            const canvas = display.getContainer();
+            const canvasRect = canvas.getBoundingClientRect();
+            const fontSize = display.getOptions().fontSize; // 4
+
+            // 鼠标相对于 canvas 实际 DOM 元素的位置（已考虑 transform）
+            const scaledPixelX = e.clientX - canvasRect.left;
+            const scaledPixelY = e.clientY - canvasRect.top;
+
+            // 重要：getBoundingClientRect() 返回的是缩放后的尺寸
+            // 我们需要除以 zoomLevel 得到未缩放时的像素坐标
+            const unscaledPixelX = scaledPixelX / zoomLevel;
+            const unscaledPixelY = scaledPixelY / zoomLevel;
+
+            // canvas 的实际像素尺寸 = P_WIDTH * fontSize x P_HEIGHT * fontSize
+            // 转换为字符单元格坐标
+            const charX = unscaledPixelX / fontSize;
+            const charY = unscaledPixelY / fontSize;
+
+            // 每个逻辑格子对应 3x3 字符单元格
+            const logicalX = Math.floor(charX / 3);
+            const logicalY = Math.floor(charY / 3);
+
+            // 边界检查
+            if (logicalX < 0 || logicalX >= WIDTH || logicalY < 0 || logicalY >= HEIGHT) return;
+
+            const targetX = logicalX;
+            const targetY = logicalY;
+
+            // 拖拽优化：避免重复编辑同一位置
+            const posKey = `${targetX},${targetY}`;
+            if (lastEditPos === posKey && (currentTool === 'wall' || currentTool === 'floor')) return;
+            lastEditPos = posKey;
+
+            if (currentTool === 'path' && currentGrid.isWalkableAt(targetX, targetY)) {
+                endPos = { x: targetX, y: targetY };
+                targetPoints = []; // 清除多目标
+                findPath();
+            }
+            else if (currentTool === 'target' && currentGrid.isWalkableAt(targetX, targetY)) {
+                const idx = targetPoints.findIndex(p => p.x === targetX && p.y === targetY);
+                if (idx >= 0) {
+                    targetPoints.splice(idx, 1); // 移除已存在的目标
+                } else {
+                    targetPoints.push({ x: targetX, y: targetY }); // 添加新目标
+                }
+                findPath();
+            }
+            else if (currentTool === 'wall') {
+                mapData[targetY][targetX] = 1;
+                currentGrid.setWalkableAt(targetX, targetY, false);
+                // 移除该位置的实体和目标点
+                entities = entities.filter(ent => !(ent.x === targetX && ent.y === targetY));
+                targetPoints = targetPoints.filter(p => !(p.x === targetX && p.y === targetY));
+                if (endPos && endPos.x === targetX && endPos.y === targetY) endPos = null;
+                findPath();
+                analyzeMap();
+            }
+            else if (currentTool === 'floor') {
+                mapData[targetY][targetX] = 0;
+                currentGrid.setWalkableAt(targetX, targetY, true);
+                findPath();
+                analyzeMap();
+            }
+            else if (currentTool === 'start' && currentGrid.isWalkableAt(targetX, targetY)) {
+                startPos = { x: targetX, y: targetY };
+                if (isFovEnabled) computeFOV();
+                findPath();
+            }
+        }
+
+        function handleKeyDown(e) {
+            const k = e.key.toLowerCase();
+            if (k === 'r') regenerate();
+            let dx = 0, dy = 0;
+            if (k === 'w' || e.key === 'ArrowUp') dy = -1; else if (k === 's' || e.key === 'ArrowDown') dy = 1; else if (k === 'a' || e.key === 'ArrowLeft') dx = -1; else if (k === 'd' || e.key === 'ArrowRight') dx = 1;
+            if ((dx || dy) && startPos) {
+                const nx = startPos.x + dx, ny = startPos.y + dy;
+                if (nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT && mapData[ny][nx] !== 1) {
+                    startPos = { x: nx, y: ny }; if (isFovEnabled) computeFOV(); if (isLightingEnabled) computeLighting(); findPath();
+                }
+            }
+        }
+
+        window.findPath = () => {
+            if (!startPos) return;
+
+            // 多目标寻路（TSP）
+            if (targetPoints.length > 0) {
+                findTSPPath();
+                return;
+            }
+
+            // 单目标寻路
+            if (!endPos) return;
+
+            activePaths = {};
+            const grid = buildDynamicGrid();
+            const algos = Array.from(document.querySelectorAll('#algo-checkboxes input:checked')).map(el => el.value);
+            const opts = { allowDiagonal: document.getElementById('allow-diagonal').checked, dontCrossCorners: true };
+
+            algos.forEach(n => {
+                let f;
+                switch (n) { case 'AStar': f = new PF.AStarFinder(opts); break; case 'Dijkstra': f = new PF.DijkstraFinder(opts); break; case 'BFS': f = new PF.BreadthFirstFinder(opts); break; case 'BestFirst': f = new PF.BestFirstFinder(opts); break; case 'BiAStar': f = new PF.BiAStarFinder(opts); break; case 'JPS': f = new PF.JumpPointFinder(opts); break; }
+                const s = performance.now();
+                const p = f.findPath(startPos.x, startPos.y, endPos.x, endPos.y, grid.clone());
+                activePaths[n] = { p, t: (performance.now() - s).toFixed(2) };
+            });
+
+            updatePathStats();
+            document.getElementById('status-algo').innerHTML = Object.keys(activePaths).map(n => `<span style="color:${algoColors[n]}">${n}:${activePaths[n].t}ms</span>`).join(" | ");
+            draw();
+        };
+
+        // 构建考虑动态障碍物的网格
+        function buildDynamicGrid() {
+            const grid = currentGrid.clone();
+            if (isDynamicObstaclesEnabled) {
+                entities.filter(e => e.type === 'monster').forEach(monster => {
+                    grid.setWalkableAt(monster.x, monster.y, false);
+                });
+            }
+            return grid;
+        }
+
+        // TSP 多目标寻路
+        function findTSPPath() {
+            if (targetPoints.length === 0) return;
+
+            activePaths = {};
+            const grid = buildDynamicGrid();
+            const algos = Array.from(document.querySelectorAll('#algo-checkboxes input:checked')).map(el => el.value);
+            const opts = { allowDiagonal: document.getElementById('allow-diagonal').checked, dontCrossCorners: true };
+
+            // 使用最近邻 + 2-opt 优化计算TSP路径
+            const points = [startPos, ...targetPoints];
+            const finder = new PF.AStarFinder(opts);
+
+            // 计算所有点之间的距离矩阵
+            const distMatrix = [];
+            for (let i = 0; i < points.length; i++) {
+                distMatrix[i] = [];
+                for (let j = 0; j < points.length; j++) {
+                    if (i === j) {
+                        distMatrix[i][j] = 0;
+                    } else {
+                        const path = finder.findPath(points[i].x, points[i].y, points[j].x, points[j].y, grid.clone());
+                        distMatrix[i][j] = path.length > 0 ? path.length : Infinity;
+                    }
+                }
+            }
+
+            // 最近邻算法构建初始路径
+            let tour = [0]; // 从起点开始
+            let visited = new Set([0]);
+            while (visited.size < points.length) {
+                let minDist = Infinity;
+                let nextIdx = -1;
+                for (let i = 0; i < points.length; i++) {
+                    if (!visited.has(i) && distMatrix[tour[tour.length - 1]][i] < minDist) {
+                        minDist = distMatrix[tour[tour.length - 1]][i];
+                        nextIdx = i;
+                    }
+                }
+                if (nextIdx >= 0) {
+                    tour.push(nextIdx);
+                    visited.add(nextIdx);
+                } else break;
+            }
+
+            // 2-opt 优化
+            let improved = true;
+            while (improved) {
+                improved = false;
+                for (let i = 1; i < tour.length - 2; i++) {
+                    for (let j = i + 1; j < tour.length; j++) {
+                        const oldDist = distMatrix[tour[i - 1]][tour[i]] + distMatrix[tour[j]][tour[j + 1] || tour[0]];
+                        const newDist = distMatrix[tour[i - 1]][tour[j]] + distMatrix[tour[i]][tour[j + 1] || tour[0]];
+                        if (newDist < oldDist) {
+                            tour = [...tour.slice(0, i), ...tour.slice(i, j + 1).reverse(), ...tour.slice(j + 1)];
+                            improved = true;
+                        }
+                    }
+                }
+            }
+
+            // 构建完整路径
+            const fullPath = [];
+            for (let i = 0; i < tour.length; i++) {
+                const from = points[tour[i]];
+                const to = points[tour[(i + 1) % tour.length]];
+                const segment = finder.findPath(from.x, from.y, to.x, to.y, grid.clone());
+                if (i === 0) {
+                    fullPath.push(...segment);
+                } else {
+                    fullPath.push(...segment.slice(1)); // 避免重复点
+                }
+            }
+
+            activePaths['TSP'] = { p: fullPath, t: 'TSP' };
+            updatePathStats();
+            document.getElementById('status-algo').innerHTML = `<span style="color:#ebcb8b">TSP路径: ${targetPoints.length}个目标点</span>`;
+            draw();
+        }
+
+        // 更新路径统计
+        function updatePathStats() {
+            const firstPath = Object.values(activePaths)[0]?.p;
+            if (!firstPath || firstPath.length === 0) {
+                document.getElementById('path-stats').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('path-stats').style.display = 'block';
+            const actualDist = firstPath.length - 1; // 实际路径步数
+            const start = firstPath[0];
+            const end = firstPath[firstPath.length - 1];
+            const manhattanDist = Math.abs(end[0] - start[0]) + Math.abs(end[1] - start[1]);
+            const euclideanDist = Math.sqrt(Math.pow(end[0] - start[0], 2) + Math.pow(end[1] - start[1], 2));
+
+            document.getElementById('stat-actual').innerText = actualDist;
+            document.getElementById('stat-manhattan').innerText = manhattanDist.toFixed(1);
+            document.getElementById('stat-euclidean').innerText = euclideanDist.toFixed(2);
+        }
+
+        function draw() {
+            display.clear();
+            for (let y = 0; y < HEIGHT; y++) {
+                for (let x = 0; x < WIDTH; x++) {
+                    const key = `${x},${y}`;
+                    if (isFovEnabled && !exploredMap[key]) continue;
+                    const type = mapData[y][x], isWall = (type === 1);
+                    let fg = isWall ? "#4c566a" : "#3b4252", bg = isWall ? "#2e3440" : "#111", char = isWall ? "#" : "·";
+                    if (type === 2) { fg = "#8fbcbb"; char = "♣"; } else if (type === 3) { fg = "#b48ead"; char = "≈"; }
+                    if (isLightingEnabled && (!isFovEnabled || visibleMap[key]) && lightData[key] && !isHeatmapEnabled) { fg = ROT.Color.toHex(ROT.Color.multiply(ROT.Color.fromString(fg), lightData[key])); }
+                    if (isFovEnabled && !visibleMap[key]) { fg = "#222"; bg = "#000"; }
+                    if (isHeatmapEnabled && heatmapData[key] !== undefined) { const r = Math.min(heatmapData[key] / (maxDistance * 0.8), 1.0); bg = `hsl(${Math.floor(r * 240)}, 60%, 15%)`; fg = `hsl(${Math.floor(r * 240)}, 80%, 70%)`; }
+
+                    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) display.draw(x * 3 + i, y * 3 + j, isWall ? "#" : " ", fg, bg);
+                    display.draw(x * 3 + 1, y * 3 + 1, char, fg, bg);
+                }
+            }
+            Object.keys(activePaths).forEach(n => {
+                const color = algoColors[n] || "#ebcb8b"; // TSP使用默认颜色
+                const off = algoOffsets[n] || [1, 1]; // TSP使用中心位置
+                activePaths[n].p.forEach(([px, py], i) => {
+                    if (i === 0 || i === activePaths[n].p.length - 1 || (isFovEnabled && !exploredMap[`${px},${py}`])) return;
+                    const inView = !isFovEnabled || visibleMap[`${px},${py}`];
+                    display.draw(px * 3 + off[0], py * 3 + off[1], "•", inView ? color : "#333", inView ? "#111" : "#000");
+                });
+            });
+
+            // 渲染实体 (怪物、宝藏、NPC) - 在路径之后，起终点之前
+            entities.forEach(ent => {
+                const key = `${ent.x},${ent.y}`;
+                if (!isFovEnabled || visibleMap[key] || exploredMap[key]) {
+                    const inView = !isFovEnabled || visibleMap[key];
+                    display.draw(ent.x * 3 + 1, ent.y * 3 + 1, ent.char, inView ? ent.color : "#444", inView ? "#111" : "#000");
+                }
+            });
+
+            // 渲染多目标点
+            targetPoints.forEach((tp, idx) => {
+                const key = `${tp.x},${tp.y}`;
+                if (!isFovEnabled || exploredMap[key]) {
+                    display.draw(tp.x * 3 + 1, tp.y * 3 + 1, String(idx + 1), "#fff", "#5e81ac");
+                }
+            });
+
+            display.draw(startPos.x * 3 + 1, startPos.y * 3 + 1, "S", "#fff", "#bf616a");
+            if (endPos && (!isFovEnabled || exploredMap[`${endPos.x},${endPos.y}`])) display.draw(endPos.x * 3 + 1, endPos.y * 3 + 1, "E", "#fff", "#ebcb8b");
+        }
+
+        window.regenerate = () => {
+            currentGrid = new PF.Grid(WIDTH, HEIGHT); mapData = Array(HEIGHT).fill().map(() => Array(WIDTH).fill(0)); entities = []; exploredMap = {}; visibleMap = {}; lamps = []; targetPoints = [];
+            const floors = [];
+            const params = algoParams[currentMazeAlgo] || {};
+            let map; switch (currentMazeAlgo) { case 'DividedMaze': map = new ROT.Map.DividedMaze(WIDTH, HEIGHT); break; case 'EllerMaze': map = new ROT.Map.EllerMaze(WIDTH, HEIGHT); break; case 'IceyMaze': map = new ROT.Map.IceyMaze(WIDTH, HEIGHT); break; case 'Digger': map = new ROT.Map.Digger(WIDTH, HEIGHT); break; case 'Uniform': map = new ROT.Map.Uniform(WIDTH, HEIGHT); break; case 'Rogue': map = new ROT.Map.Rogue(WIDTH, HEIGHT); break; case 'Cellular': map = new ROT.Map.Cellular(WIDTH, HEIGHT); map.randomize(0.5); for (let i = 0; i < 4; i++) map.create(); break; default: map = new ROT.Map.DividedMaze(WIDTH, HEIGHT); }
+            map.create((x, y, v) => { mapData[y][x] = v; currentGrid.setWalkableAt(x, y, v !== 1); if (v !== 1) floors.push({ x, y }); });
+
+            if (floors.length < 2) return;
+
+            // 复杂地形
+            if (document.getElementById('enable-terrain').checked) {
+                const terrainFloors = [...floors].sort(() => Math.random() - 0.5);
+                terrainFloors.slice(0, Math.floor(floors.length * 0.15)).forEach(p => {
+                    mapData[p.y][p.x] = Math.random() < 0.6 ? 2 : 3;
+                });
+            }
+
+            // 起终点
+            const s = [...floors].sort(() => Math.random() - 0.5);
+            startPos = s[0];
+            endPos = s.find(p => Math.abs(p.x - startPos.x) + Math.abs(p.y - startPos.y) > 20) || s[1];
+            exploredMap[`${startPos.x},${startPos.y}`] = true;
+
+            // 实体生成 (怪物、宝藏、NPC) - 排除起终点
+            const entityCount = Math.floor(floors.length * 0.05);
+            const availableFloors = s.filter(p => p !== startPos && p !== endPos);
+            availableFloors.slice(0, entityCount).forEach(p => {
+                const r = Math.random();
+                if (r < 0.6) {
+                    entities.push({ x: p.x, y: p.y, char: 'M', color: '#bf616a', type: 'monster' });
+                    lamps.push({ x: p.x, y: p.y, color: [200, 50, 50] });
+                } else if (r < 0.9) {
+                    entities.push({ x: p.x, y: p.y, char: '$', color: '#ebcb8b', type: 'treasure' });
+                    lamps.push({ x: p.x, y: p.y, color: [200, 200, 50] });
+                } else {
+                    entities.push({ x: p.x, y: p.y, char: '@', color: '#5e81ac', type: 'npc' });
+                    lamps.push({ x: p.x, y: p.y, color: [50, 100, 250] });
+                }
+            });
+
+            setTimeout(() => { analyzeMap(); if (isFovEnabled) computeFOV(); if (isLightingEnabled) computeLighting(); findPath(); }, 50);
+        };
+
+        function analyzeMap() {
+            let de = 0, fl = 0; for (let y = 0; y < HEIGHT; y++) for (let x = 0; x < WIDTH; x++) if (mapData[y][x] !== 1) { fl++; let n = 0;[[0, 1], [0, -1], [1, 0], [-1, 0]].forEach(d => { const nx = x + d[0], ny = y + d[1]; if (nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT && mapData[ny][nx] !== 1) n++; }); if (n === 1) de++; }
+            document.getElementById('stat-deadends').innerText = de;
+            const q = [startPos], v = new Set([`${startPos.x},${startPos.y}`]); let h = 0;
+            while (h < q.length) { const c = q[h++];[[0, 1], [0, -1], [1, 0], [-1, 0]].forEach(d => { const nx = c.x + d[0], ny = c.y + d[1], key = `${nx},${ny}`; if (nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT && mapData[ny][nx] !== 1 && !v.has(key)) { v.add(key); q.push({ x: nx, y: ny }); } }); }
+            document.getElementById('stat-reachable').innerText = Math.round((v.size / fl) * 100) + "%";
+        }
+
+        function computeFOV() {
+            if (!startPos) return;
+            visibleMap = {};
+            fov = new ROT.FOV.PreciseShadowcasting((x, y) => x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT && mapData[y][x] !== 1);
+            fov.compute(startPos.x, startPos.y, fovRadius, (x, y) => { visibleMap[`${x},${y}`] = true; exploredMap[`${x},${y}`] = true; });
+        }
+        function computeLighting() {
+            if (!isLightingEnabled || !startPos) return;
+            lighting = new ROT.Lighting((x, y) => (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT && mapData[y][x] === 1) ? 0.3 : 0.1, { range: 12, passes: 2 });
+            lighting.setFOV(fov);
+            lightData = {};
+            lighting.setLight(startPos.x, startPos.y, [250, 180, 50]);
+            lamps.forEach(l => lighting.setLight(l.x, l.y, l.color));
+            lighting.compute((x, y, color) => lightData[`${x},${y}`] = color);
+        }
+        function toggleHeatmap() { isHeatmapEnabled = !isHeatmapEnabled; if (isHeatmapEnabled) { heatmapData = {}; maxDistance = 0; const q = [{ ...startPos, d: 0 }], v = { [`${startPos.x},${startPos.y}`]: true }; let h = 0; while (h < q.length) { const c = q[h++]; heatmapData[`${c.x},${c.y}`] = c.d; if (c.d > maxDistance) maxDistance = c.d;[[0, 1], [0, -1], [1, 0], [-1, 0]].forEach(d => { const nx = c.x + d[0], ny = c.y + d[1], key = `${nx},${ny}`; if (nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT && !v[key] && mapData[ny][nx] !== 1) { v[key] = true; let cost = 1; if (mapData[ny][nx] === 2) cost = 3; if (mapData[ny][nx] === 3) cost = 5; q.push({ x: nx, y: ny, d: c.d + cost }); } }); } } draw(); }
+        function toggleFOV() { isFovEnabled = document.getElementById('enable-fov').checked; document.getElementById('fov-radius-row').style.display = isFovEnabled ? 'flex' : 'none'; if (isFovEnabled) computeFOV(); draw(); }
+        function toggleLighting() { isLightingEnabled = document.getElementById('enable-lighting').checked; if (isLightingEnabled) computeLighting(); draw(); }
+        function toggleDynamicObstacles() {
+            isDynamicObstaclesEnabled = document.getElementById('enable-dynamic-obstacles').checked;
+            if (isDynamicObstaclesEnabled) {
+                if (dynamicObstacleTimer) clearInterval(dynamicObstacleTimer);
+                dynamicObstacleTimer = setInterval(moveMonsters, 500);
+            } else {
+                if (dynamicObstacleTimer) {
+                    clearInterval(dynamicObstacleTimer);
+                    dynamicObstacleTimer = null;
+                }
+            }
+            findPath();
+        }
+        function moveMonsters() {
+            const monsters = entities.filter(e => e.type === 'monster');
+            if (monsters.length === 0) return;
+
+            monsters.forEach(monster => {
+                const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+                const validDirs = dirs.filter(([dx, dy]) => {
+                    const nx = monster.x + dx;
+                    const ny = monster.y + dy;
+                    return nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT &&
+                        mapData[ny][nx] !== 1 &&
+                        !entities.some(e => e !== monster && e.x === nx && e.y === ny) &&
+                        !(startPos && startPos.x === nx && startPos.y === ny);
+                });
+                if (validDirs.length > 0) {
+                    const [dx, dy] = validDirs[Math.floor(Math.random() * validDirs.length)];
+                    monster.x += dx;
+                    monster.y += dy;
+                }
+            });
+            findPath();
+            draw();
+        }
+        function clearMap() {
+            if (!confirm('确定要清空整个地图吗？')) return;
+            mapData = Array(HEIGHT).fill().map(() => Array(WIDTH).fill(0));
+            currentGrid = new PF.Grid(WIDTH, HEIGHT);
+            entities = [];
+            lamps = [];
+            targetPoints = [];
+            startPos = null;
+            endPos = null;
+            exploredMap = {};
+            visibleMap = {};
+            activePaths = {};
+            analyzeMap();
+            findPath();
+            draw();
+        }
+        function updateFOVRadius(v) { fovRadius = parseInt(v); document.getElementById('fov-val').innerText = v; if (isFovEnabled) { computeFOV(); draw(); } }
+        function movePlayerStep() { const p = Object.values(activePaths)[0]?.p; if (p && p.length > 1) { startPos = { x: p[1][0], y: p[1][1] }; if (isFovEnabled) computeFOV(); if (isLightingEnabled) computeLighting(); findPath(); } }
+        function autoPlay() { if (autoPlayTimer) { clearInterval(autoPlayTimer); autoPlayTimer = null; } else { autoPlayTimer = setInterval(() => { const p = Object.values(activePaths)[0]?.p; if (!p || p.length <= 1) { clearInterval(autoPlayTimer); autoPlayTimer = null; } else movePlayerStep(); }, 100); } }
+        function setTool(t, b) { currentTool = t; document.querySelectorAll('.tool-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); }
+        function renderParamsUI() { const c = document.getElementById('algo-params'), p = algoParams[currentMazeAlgo]; if (!p) { c.style.display = 'none'; return; } c.style.display = 'block'; c.innerHTML = `<b>⚙️ ${currentMazeAlgo}</b>`; Object.keys(p).forEach(k => { const r = document.createElement('div'); r.className = 'param-row'; r.innerHTML = `<span>${p[k].label}</span>`; const i = document.createElement('input'); i.type = 'number'; i.value = p[k].val[0] || p[k].val; i.onchange = (e) => { if (p[k].val[0]) p[k].val[0] = +e.target.value; else p[k].val = +e.target.value; regenerate(); }; r.appendChild(i); c.appendChild(r); }); }
+        function initMapSizeSelector() { const s = document.getElementById('map-size'); if (s) s.value = `${WIDTH}x${HEIGHT}`; }
+        function toggleSection(el) { el.parentElement.classList.toggle('collapsed'); }
+        function exportMap() {
+            const payload = {
+                width: WIDTH,
+                height: HEIGHT,
+                mapData,
+                entities,
+                lamps,
+                startPos,
+                endPos,
+                currentMazeAlgo,
+                enableTerrain: document.getElementById('enable-terrain')?.checked || false,
+                timestamp: new Date().toISOString()
+            };
+            const b = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(b);
+            a.download = `maze-${WIDTH}x${HEIGHT}.json`;
+            a.click();
+        }
+
+        // 导入地图：从 JSON 恢复 mapData / entities / lamps / 起终点 / 算法
+        function importMap(input) {
+            const file = input.files && input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!data.mapData || typeof data.width !== 'number' || typeof data.height !== 'number') {
+                        alert('导入文件格式不正确');
+                        return;
+                    }
+                    if (data.width !== WIDTH || data.height !== HEIGHT) {
+                        alert(`尺寸不匹配: 当前 ${WIDTH}x${HEIGHT}, 文件 ${data.width}x${data.height}`);
+                        return;
+                    }
+
+                    mapData = data.mapData;
+                    entities = data.entities || [];
+                    lamps = data.lamps || [];
+                    startPos = data.startPos || null;
+                    endPos = data.endPos || null;
+                    currentMazeAlgo = data.currentMazeAlgo || currentMazeAlgo;
+
+                    // 还原复杂地形开关
+                    const terrainCheckbox = document.getElementById('enable-terrain');
+                    if (terrainCheckbox && typeof data.enableTerrain === 'boolean') {
+                        terrainCheckbox.checked = data.enableTerrain;
+                    }
+
+                    // 重建 PF Grid
+                    currentGrid = new PF.Grid(WIDTH, HEIGHT);
+                    for (let y = 0; y < HEIGHT; y++) {
+                        for (let x = 0; x < WIDTH; x++) {
+                            currentGrid.setWalkableAt(x, y, mapData[y][x] !== 1);
+                        }
+                    }
+
+                    // 重置视野 / 光照 / 热力图
+                    exploredMap = {};
+                    visibleMap = {};
+                    lightData = {};
+                    heatmapData = {};
+                    maxDistance = 0;
+                    if (startPos) exploredMap[`${startPos.x},${startPos.y}`] = true;
+
+                    analyzeMap();
+                    if (isFovEnabled) computeFOV();
+                    if (isLightingEnabled) computeLighting();
+                    findPath();
+                } catch (err) {
+                    console.error(err);
+                    alert('导入失败: ' + err.message);
+                } finally {
+                    input.value = '';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        window.applyMapSize = () => { const [w, h] = document.getElementById('map-size').value.split('x'); location.search = `?w=${w}&h=${h}`; };
+        window.setAlgo = (a) => { currentMazeAlgo = a; document.querySelectorAll('#maze-buttons button').forEach(b => b.classList.toggle('active', b.onclick.toString().includes(a))); renderParamsUI(); regenerate(); };
+
+        // 寻路算法说明
+        const pathfindingAlgoInfo = {
+            'AStar': {
+                name: 'A* (A-Star)',
+                principle: '结合了Dijkstra的最短路径保证和贪心算法的启发式搜索。使用 f(n) = g(n) + h(n) 评估节点，其中 g(n) 是实际成本，h(n) 是启发式估计。',
+                complexity: '时间复杂度: O(b^d)，空间复杂度: O(b^d)，其中 b 是分支因子，d 是解的深度',
+                usage: '适用于需要最优路径的场景，如游戏AI、机器人导航、地图应用。当启发式函数满足可接受性（admissible）时保证找到最短路径。'
+            },
+            'Dijkstra': {
+                name: 'Dijkstra',
+                principle: '从起点开始，逐步扩展到距离起点最近的未访问节点，直到到达终点。保证找到最短路径，但会探索更多节点。',
+                complexity: '时间复杂度: O((V+E)log V)，空间复杂度: O(V)，其中 V 是节点数，E 是边数',
+                usage: '适用于所有边权重非负的图，保证找到最短路径。适合需要精确最短路径的场景，如网络路由、GPS导航。'
+            },
+            'BFS': {
+                name: 'BFS (广度优先搜索)',
+                principle: '从起点开始，逐层扩展，先访问距离起点最近的节点。在无权图中保证找到最短路径（步数最少）。',
+                complexity: '时间复杂度: O(V+E)，空间复杂度: O(V)',
+                usage: '适用于无权图或所有边权重相等的图。适合寻找最短步数路径，如迷宫求解、社交网络中的最短关系链。'
+            },
+            'BestFirst': {
+                name: 'Best-First Search',
+                principle: '总是优先探索启发式估计值最小的节点，类似于贪心算法。可能不是最优解，但通常很快。',
+                complexity: '时间复杂度: O(b^m)，空间复杂度: O(b^m)，其中 m 是最大搜索深度',
+                usage: '适用于对路径质量要求不高但需要快速找到可行路径的场景。适合实时游戏、快速原型开发。'
+            },
+            'BiAStar': {
+                name: '双向A*',
+                principle: '同时从起点和终点开始搜索，当两个搜索相遇时停止。通常比单向A*更快，因为搜索空间被分成两半。',
+                complexity: '时间复杂度: O(b^(d/2))，空间复杂度: O(b^(d/2))',
+                usage: '适用于起点和终点都已知的场景，如路径规划、网络路由。当搜索空间很大时，双向搜索可以显著减少探索的节点数。'
+            },
+            'JPS': {
+                name: 'JPS (Jump Point Search)',
+                principle: 'A*的优化版本，通过"跳跃"跳过不必要的节点，只探索关键节点。利用网格地图的对称性减少搜索空间。',
+                complexity: '时间复杂度: O(k)，其中 k 是跳跃点数量，通常远小于总节点数',
+                usage: '专门为网格地图设计，适合大型地图的路径查找。在游戏开发中广泛应用，特别是RTS游戏和大型开放世界游戏。'
+            }
+        };
+
+        // 迷宫生成算法说明
+        const mazeAlgoInfo = {
+            'DividedMaze': {
+                name: '递归分割 (Recursive Division)',
+                principle: '将地图递归地分割成更小的区域，然后在分割线上随机开洞连接相邻区域。从整个地图开始，随机选择分割方向（水平或垂直），在分割线上随机留一个开口。',
+                complexity: '时间复杂度: O(n log n)，空间复杂度: O(log n)，其中 n 是地图格子数',
+                usage: '生成的迷宫具有明显的"房间"结构，适合地牢类游戏。算法简单高效，生成的迷宫连通性好，但可能缺乏随机性。'
+            },
+            'EllerMaze': {
+                name: 'Eller 算法',
+                principle: '逐行生成迷宫，使用并查集（Union-Find）数据结构维护连通性。每行生成时，随机连接相邻的格子，确保每行至少有一个连通区域延伸到下一行。',
+                complexity: '时间复杂度: O(n)，空间复杂度: O(w)，其中 n 是格子数，w 是地图宽度',
+                usage: '内存效率极高，适合生成超大型迷宫。生成的迷宫随机性强，但可能在某些区域形成长走廊。适合需要一次性生成完整迷宫的场景。'
+            },
+            'IceyMaze': {
+                name: '冰层迷宫 (Icey Maze)',
+                principle: '生成类似冰层裂缝的迷宫结构。通过控制"规则度"参数，可以生成从完全随机到高度规则的迷宫。规则度越高，迷宫越有序，形成更多直线走廊。',
+                complexity: '时间复杂度: O(n)，空间复杂度: O(n)',
+                usage: '适合需要控制迷宫"规则性"的场景。低规则度生成随机迷宫，高规则度生成有序的网格状结构。适合需要特定美学效果的场景。'
+            },
+            'Digger': {
+                name: '地牢生成器 (Digger)',
+                principle: '模拟"挖掘"过程，随机创建房间和连接房间的走廊。算法随机选择位置挖掘房间，然后用走廊连接房间。可以控制房间大小、走廊长度等参数。',
+                complexity: '时间复杂度: O(n)，空间复杂度: O(n)',
+                usage: '生成的迷宫具有明显的房间-走廊结构，非常适合RPG地牢。可以通过参数控制房间密度、大小等，适合需要可定制地牢的场景。'
+            },
+            'Uniform': {
+                name: '均匀分布 (Uniform)',
+                principle: '在整个地图上均匀分布房间，然后用走廊连接。与Digger类似，但房间分布更加均匀，不会出现大片的空白区域。',
+                complexity: '时间复杂度: O(n)，空间复杂度: O(n)',
+                usage: '适合需要均匀分布房间的场景，如大型地牢、多层建筑。生成的迷宫结构清晰，适合需要可预测布局的场景。'
+            },
+            'Rogue': {
+                name: 'Rogue 经典',
+                principle: '经典的Rogue-like游戏地牢生成算法。将地图分成规则的单元格，每个单元格随机生成房间或走廊。单元格之间通过门连接。',
+                complexity: '时间复杂度: O(n)，空间复杂度: O(n)',
+                usage: '经典的Rogue-like游戏风格，适合需要传统地牢美学的场景。生成的迷宫具有明显的单元格结构，适合回合制RPG游戏。'
+            },
+            'Cellular': {
+                name: '细胞自动机 (Cellular Automata)',
+                principle: '使用细胞自动机规则生成洞穴状迷宫。首先随机初始化地图，然后应用多轮"生命游戏"规则，平滑边界，形成自然的洞穴结构。通过控制随机度和迭代次数可以调整洞穴的复杂度。',
+                complexity: '时间复杂度: O(n × k)，空间复杂度: O(n)，其中 k 是迭代次数',
+                usage: '生成的迷宫具有自然的洞穴外观，适合需要有机、不规则结构的场景。适合生成地下洞穴、自然地形等。可以通过参数控制洞穴的"平滑度"和"复杂度"。'
+            }
+        };
+
+        let currentTab = 'pathfinding';
+
+        function showAlgoInfo(type) {
+            currentTab = type || 'pathfinding';
+            const modal = document.getElementById('algo-info-modal');
+            const title = document.getElementById('modal-title');
+
+            // 更新标签页状态
+            document.querySelectorAll('.modal-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            if (currentTab === 'pathfinding') {
+                document.querySelectorAll('.modal-tab')[0].classList.add('active');
+                title.textContent = '📚 寻路算法说明';
+            } else {
+                document.querySelectorAll('.modal-tab')[1].classList.add('active');
+                title.textContent = '🏗️ 迷宫生成算法说明';
+            }
+
+            renderAlgoInfo();
+            modal.style.display = 'block';
+        }
+
+        function switchTab(type) {
+            currentTab = type;
+            showAlgoInfo(type);
+        }
+
+        function renderAlgoInfo() {
+            const content = document.getElementById('algo-info-content');
+            content.innerHTML = '';
+
+            const info = currentTab === 'pathfinding' ? pathfindingAlgoInfo : mazeAlgoInfo;
+
+            Object.keys(info).forEach(key => {
+                const algo = info[key];
+                const div = document.createElement('div');
+                div.className = 'algo-info-item';
+                div.innerHTML = `
+                    <h4>${algo.name}</h4>
+                    <p><strong>原理:</strong> ${algo.principle}</p>
+                    <p class="complexity"><strong>复杂度:</strong> ${algo.complexity}</p>
+                    <p><strong>适用场景:</strong> ${algo.usage}</p>
+                `;
+                content.appendChild(div);
+            });
+        }
+
+        function closeAlgoInfo() {
+            document.getElementById('algo-info-modal').style.display = 'none';
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = (e) => {
+            const modal = document.getElementById('algo-info-modal');
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+        window.onload = init;
+    </script>
+</body>
+
+</html>

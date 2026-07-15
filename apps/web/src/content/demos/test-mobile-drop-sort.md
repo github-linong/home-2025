@@ -1,5 +1,6 @@
 ---
 title: "移动端拖拽"
+heroImage: "/heroes/demo/test-mobile-drop-sort.webp"
 description: "Bug 复现交互示例：移动端拖拽。历史前端实验与 Bug 复现页。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "测试"
 badge: "Bug 复现"
 tags: ["legacy", "测试"]
 ---
+

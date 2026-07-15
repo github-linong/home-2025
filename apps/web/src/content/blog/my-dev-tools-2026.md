@@ -2,7 +2,7 @@
 title: "我的 2026 开发工具栈：前端工程师的 Uses 清单"
 description: "记录我日常使用的开发工具、软件、硬件和服务。从编辑器到浏览器扩展，从设计工具到部署平台，一份完整的前端工程师 Uses 清单。"
 pubDate: "Mar 19 2026"
-heroImage: "/post_img.webp"
+heroImage: "/heroes/blog/my-dev-tools-2026.webp"
 tags: ["工具","Uses","开发效率","Vue","React"]
 ---
 

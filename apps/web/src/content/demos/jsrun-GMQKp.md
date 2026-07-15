@@ -1,5 +1,6 @@
 ---
 title: "聚焦元素"
+heroImage: "/heroes/demo/jsrun-GMQKp.webp"
 description: "mouseover 层级控制 popper"
 pubDate: "2022-05-06"
 type: web

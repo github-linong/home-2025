@@ -1,7 +1,8 @@
 ---
 title: "_template"
+heroImage: "/heroes/demo/_template.webp"
 description: "实验交互示例：_template。"
-pubDate: "2019-06-01"
+pubDate: "2020-10-27"
 type: web
 demoUrl: "/demos/html/_template.html"
 legacyUrl: "/static/html/_template.html"

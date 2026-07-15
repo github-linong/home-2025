@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000016429844"
+heroImage: "/heroes/demo/jsrun-VkhKp.webp"
 description: "vue 怎么从v-for 调用函数给button 的@click事件"
 pubDate: "2018-09-17"
 type: web

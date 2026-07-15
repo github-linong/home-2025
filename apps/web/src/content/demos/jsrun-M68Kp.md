@@ -1,5 +1,6 @@
 ---
 title: "sortable 排序"
+heroImage: "/heroes/demo/jsrun-M68Kp.webp"
 description: "JSRUN 代码片段：sortable 排序（原地址 https://jsrun.net/M68Kp）。"
 pubDate: "2021-07-27"
 type: web

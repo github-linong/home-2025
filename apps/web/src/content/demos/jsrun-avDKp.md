@@ -1,5 +1,6 @@
 ---
 title: "Canvas 可见水印与通道解码示意"
+heroImage: "/heroes/demo/jsrun-avDKp.webp"
 description: "上传图片后绘制半透明文字水印，并用按通道奇偶重映射的方式示意解码。"
 pubDate: "2024-07-02"
 type: web

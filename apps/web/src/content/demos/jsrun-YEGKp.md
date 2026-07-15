@@ -1,5 +1,6 @@
 ---
 title: "resize test"
+heroImage: "/heroes/demo/jsrun-YEGKp.webp"
 description: "JSRUN 代码片段：resize test（原地址 https://jsrun.net/YEGKp）。"
 pubDate: "2023-11-23"
 type: web

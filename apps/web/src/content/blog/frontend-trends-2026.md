@@ -2,7 +2,7 @@
 title: "2026 前端技术雷达：值得关注的 10 个趋势"
 description: "基于我对前端社区的观察和实践，整理出 2026 年值得关注的 10 个前端技术趋势，包括 RSC、边缘计算、AI 集成等。"
 pubDate: "Mar 19 2026"
-heroImage: "/post_img.webp"
+heroImage: "/heroes/blog/frontend-trends-2026.webp"
 tags: ["前端","趋势","2026","React","AI"]
 ---
 

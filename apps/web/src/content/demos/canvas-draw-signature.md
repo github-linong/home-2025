@@ -1,5 +1,6 @@
 ---
 title: "Canvas 手写签名"
+heroImage: "/heroes/demo/canvas-draw-signature.webp"
 description: "Canvas 手写签名，支持清空与导出。"
 pubDate: "2019-06-01"
 type: web

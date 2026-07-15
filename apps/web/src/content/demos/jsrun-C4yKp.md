@@ -1,5 +1,6 @@
 ---
 title: "echarts"
+heroImage: "/heroes/demo/jsrun-C4yKp.webp"
 description: "JSRUN 代码片段：echarts（原地址 https://jsrun.net/C4yKp）。"
 pubDate: "2019-07-11"
 type: web

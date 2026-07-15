@@ -1,5 +1,6 @@
 ---
 title: "Vue Bug Key Sf Bullet Test 1"
+heroImage: "/heroes/demo/vue-bug-key-sf-bullet-test-1.webp"
 description: "Vue交互示例：Vue Bug Key Sf Bullet Test 1。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "Vue"
 badge: "实验"
 tags: ["legacy", "Vue"]
 ---
+

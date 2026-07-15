@@ -1,5 +1,6 @@
 ---
 title: "Canvas 刮奖涂层与擦除比例"
+heroImage: "/heroes/demo/jsrun-4tbKp.webp"
 description: "用 destination-out 刮开涂层，统计透明像素占比，并支持轨迹回放与重新覆盖。"
 pubDate: "2019-09-11"
 type: web

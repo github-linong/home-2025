@@ -1,7 +1,8 @@
 ---
 title: "PDF.js 阅读器（ES5）"
+heroImage: "/heroes/demo/project-pdfjs-es5-2.5.207.webp"
 description: "基于 PDF.js 的浏览器内 PDF 预览，默认可打开内置样例 PDF。"
-pubDate: "2019-06-01"
+pubDate: "2021-07-13"
 type: web
 demoUrl: "/demos/project/pdfjs-es5-2.5.207/web/viewer-1.html?file=compressed.tracemonkey-pldi-09.pdf"
 legacyUrl: "/static/project/pdfjs-es5-2.5.207/web/viewer-1.html?file=compressed.tracemonkey-pldi-09.pdf"

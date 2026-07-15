@@ -1,5 +1,6 @@
 ---
 title: "PDF.js 阅读器"
+heroImage: "/heroes/demo/project-pdfjs-2.5.207.webp"
 description: "PDF.js 2.5 完整 viewer 构建。"
 pubDate: "2019-06-01"
 type: web

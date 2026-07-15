@@ -1,5 +1,6 @@
 ---
 title: "Flex 图标与多行文本对比"
+heroImage: "/heroes/demo/jsrun-HxWKp.webp"
 description: "对比普通流式、默认 Flex、以及逐字 wrap 的 Flex，观察图标旁多行中文排版差异。"
 pubDate: "2019-12-12"
 type: web

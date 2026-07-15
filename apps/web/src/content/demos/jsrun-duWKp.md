@@ -1,5 +1,6 @@
 ---
 title: "barrage;"
+heroImage: "/heroes/demo/jsrun-duWKp.webp"
 description: "弹幕; vue; http://jsrun.pro/guWKp/edit"
 pubDate: "2020-01-07"
 type: web

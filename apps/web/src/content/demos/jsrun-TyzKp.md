@@ -1,5 +1,6 @@
 ---
 title: "vue 虚拟化"
+heroImage: "/heroes/demo/jsrun-TyzKp.webp"
 description: "JSRUN 代码片段：vue 虚拟化（原地址 https://jsrun.net/TyzKp）。"
 pubDate: "2022-05-20"
 type: web

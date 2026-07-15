@@ -1,5 +1,6 @@
 ---
 title: "https://segmentfault.com/q/1010000016014393"
+heroImage: "/heroes/demo/jsrun-wHgKp.webp"
 description: "FileReader readAsDataURL读取视频文件 一直预览失败 怎么解决？"
 pubDate: "2018-08-15"
 type: web

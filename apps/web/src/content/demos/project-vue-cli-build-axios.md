@@ -1,5 +1,6 @@
 ---
 title: "Vue CLI + Axios Demo"
+heroImage: "/heroes/demo/project-vue-cli-build-axios.webp"
 description: "Vue CLI 构建的 Axios 请求示例。"
 pubDate: "2019-06-01"
 type: web

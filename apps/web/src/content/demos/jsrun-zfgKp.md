@@ -1,5 +1,6 @@
 ---
 title: "svg背景"
+heroImage: "/heroes/demo/jsrun-zfgKp.webp"
 description: "JSRUN 代码片段：svg背景（原地址 https://jsrun.net/zfgKp）。"
 pubDate: "2018-06-29"
 type: web

@@ -1,7 +1,8 @@
 ---
 title: "瀑布流布局"
+heroImage: "/heroes/demo/waterfall.webp"
 description: "CSS交互示例：瀑布流布局。"
-pubDate: "2019-06-01"
+pubDate: "2021-07-16"
 type: web
 demoUrl: "/demos/html/waterfall.html"
 legacyUrl: "/static/html/waterfall.html"

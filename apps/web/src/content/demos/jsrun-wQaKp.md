@@ -1,5 +1,6 @@
 ---
 title: "步骤条动画问题"
+heroImage: "/heroes/demo/jsrun-wQaKp.webp"
 description: "JSRUN 代码片段：步骤条动画问题（原地址 https://jsrun.net/wQaKp）。"
 pubDate: "2021-02-04"
 type: web

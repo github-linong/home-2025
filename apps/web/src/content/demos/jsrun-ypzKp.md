@@ -1,5 +1,6 @@
 ---
 title: "Office 文件浏览器端预览"
+heroImage: "/heroes/demo/jsrun-ypzKp.webp"
 description: "选择本地 Word/PPT/Excel 等文件，用多个库在页面内渲染预览。"
 pubDate: "2022-05-10"
 type: web

@@ -11,5 +11,11 @@
         "src/layouts/*"
       ]
     }
-  }
+  },
+  "exclude": [
+    "dist",
+    "public",
+    "node_modules",
+    ".astro"
+  ]
 }

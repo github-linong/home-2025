@@ -2,7 +2,7 @@
 title: "从零到一：我的第一个开源项目复盘"
 description: "记录我从 0 到 1 开发第一个开源项目的全过程，包括想法验证、技术选型、开发节奏、推广策略，以及踩过的坑。"
 pubDate: "Mar 19 2026"
-heroImage: "/post_img.webp"
+heroImage: "/heroes/blog/first-open-source-project.webp"
 tags: ["开源","复盘","Node.js","TypeScript","JavaScript"]
 ---
 

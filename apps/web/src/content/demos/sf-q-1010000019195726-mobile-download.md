@@ -1,5 +1,6 @@
 ---
 title: "Mobile Download"
+heroImage: "/heroes/demo/sf-q-1010000019195726-mobile-download.webp"
 description: "SegmentFault交互示例：Mobile Download。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "SegmentFault"
 badge: "思否"
 tags: ["legacy", "SegmentFault"]
 ---
+

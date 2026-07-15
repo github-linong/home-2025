@@ -1,5 +1,6 @@
 ---
 title: "Vue Bug Function Computed Components"
+heroImage: "/heroes/demo/vue-bug-function-computed-components.webp"
 description: "Vue交互示例：Vue Bug Function Computed Components。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "Vue"
 badge: "实验"
 tags: ["legacy", "Vue"]
 ---
+

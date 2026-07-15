@@ -1,5 +1,6 @@
 ---
 title: "canvas切开图片测试"
+heroImage: "/heroes/demo/jsrun-GXXKp.webp"
 description: "JSRUN 代码片段：canvas切开图片测试（原地址 https://jsrun.net/GXXKp）。"
 pubDate: "2019-02-15"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "优化select体验"
+heroImage: "/heroes/demo/jsrun-AMaKp.webp"
 description: "JSRUN 代码片段：优化select体验（原地址 https://jsrun.net/AMaKp）。"
 pubDate: "2021-03-04"
 type: web

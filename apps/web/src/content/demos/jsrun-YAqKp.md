@@ -1,5 +1,6 @@
 ---
 title: "CSS shape-outside 模拟 iPhone X 刘海绕排"
+heroImage: "/heroes/demo/jsrun-YAqKp.webp"
 description: "用 shape-outside: polygon 让列表随滚动绕开刘海形轮廓，并附 clip-path 变形动画。"
 pubDate: "2018-03-06"
 type: web

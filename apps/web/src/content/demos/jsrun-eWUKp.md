@@ -1,5 +1,6 @@
 ---
 title: "单选多选bug"
+heroImage: "/heroes/demo/jsrun-eWUKp.webp"
 description: "JSRUN 代码片段：单选多选bug（原地址 https://jsrun.net/eWUKp）。"
 pubDate: "2021-10-28"
 type: web

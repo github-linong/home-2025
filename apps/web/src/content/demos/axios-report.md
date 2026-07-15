@@ -1,5 +1,6 @@
 ---
 title: "Axios Report"
+heroImage: "/heroes/demo/axios-report.webp"
 description: "HTTP交互示例：Axios Report。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "HTTP"
 badge: "实验"
 tags: ["legacy", "HTTP"]
 ---
+

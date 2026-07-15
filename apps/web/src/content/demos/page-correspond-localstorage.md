@@ -1,5 +1,6 @@
 ---
 title: "跨页通信 · localStorage"
+heroImage: "/heroes/demo/page-correspond-localstorage.webp"
 description: "实验交互示例：跨页通信 · localStorage。"
 pubDate: "2019-06-01"
 type: web
@@ -9,3 +10,4 @@ category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
 ---
+

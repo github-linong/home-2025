@@ -1,5 +1,6 @@
 ---
 title: "模式组件"
+heroImage: "/heroes/demo/jsrun-jsZKp.webp"
 description: "组件，prop 传递，内容插入(content insertion)，过渡（transitions）"
 pubDate: "2018-05-03"
 type: web

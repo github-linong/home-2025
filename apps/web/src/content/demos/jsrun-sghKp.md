@@ -1,5 +1,6 @@
 ---
 title: "滑块动画测试，top和bottom"
+heroImage: "/heroes/demo/jsrun-sghKp.webp"
 description: "JSRUN 代码片段：滑块动画测试，top和bottom（原地址 https://jsrun.net/sghKp）。"
 pubDate: "2018-09-26"
 type: web

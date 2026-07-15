@@ -1,5 +1,6 @@
 ---
 title: "请求生成器"
+heroImage: "/heroes/demo/jsrun-ZmcKp.webp"
 description: "JSRUN 代码片段：请求生成器（原地址 https://jsrun.net/ZmcKp）。"
 pubDate: "2023-03-10"
 type: web

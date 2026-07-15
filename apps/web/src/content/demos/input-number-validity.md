@@ -1,7 +1,8 @@
 ---
 title: "Input number 校验 Bug 复现"
+heroImage: "/heroes/demo/input-number-validity.webp"
 description: "表单交互示例：Input number 校验 Bug 复现。"
-pubDate: "2019-06-01"
+pubDate: "2020-10-29"
 type: web
 demoUrl: "/demos/html/input-number-validity.html"
 legacyUrl: "/static/html/input-number-validity.html"

@@ -1,5 +1,6 @@
 ---
 title: "canvas rotate 测试"
+heroImage: "/heroes/demo/jsrun-Q7JKp.webp"
 description: "JSRUN 代码片段：canvas rotate 测试（原地址 https://jsrun.net/Q7JKp）。"
 pubDate: "2023-09-12"
 type: web

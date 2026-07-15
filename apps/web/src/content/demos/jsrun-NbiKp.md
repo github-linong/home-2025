@@ -1,5 +1,6 @@
 ---
 title: "滚动条事件"
+heroImage: "/heroes/demo/jsrun-NbiKp.webp"
 description: "JSRUN 代码片段：滚动条事件（原地址 https://jsrun.net/NbiKp）。"
 pubDate: "2017-09-28"
 type: web

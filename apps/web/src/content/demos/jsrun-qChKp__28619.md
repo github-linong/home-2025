@@ -1,5 +1,6 @@
 ---
 title: "https://juejin.im/post/5ac73397518825556534bf47"
+heroImage: "/heroes/demo/jsrun-qChKp__28619.webp"
 description: "Vue实现内部组件轮播切换效果"
 pubDate: "2018-12-18"
 type: web

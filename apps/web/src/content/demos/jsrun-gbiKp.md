@@ -1,5 +1,6 @@
 ---
 title: "gbiKp"
+heroImage: "/heroes/demo/jsrun-gbiKp.webp"
 description: "JSRUN 代码片段：gbiKp（原地址 https://jsrun.net/gbiKp）。"
 pubDate: "2017-09-28"
 type: web

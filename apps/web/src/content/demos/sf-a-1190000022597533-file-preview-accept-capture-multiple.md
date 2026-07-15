@@ -1,7 +1,8 @@
 ---
 title: "上传前预览 · accept/capture/multiple"
+heroImage: "/heroes/demo/sf-a-1190000022597533-file-preview-accept-capture-multiple.webp"
 description: "SegmentFault交互示例：上传前预览 · accept/capture/multiple。"
-pubDate: "2019-06-01"
+pubDate: "2020-05-22"
 type: web
 demoUrl: "/demos/html/sf-a-1190000022597533-file-preview-accept-capture-multiple.html"
 legacyUrl: "/static/html/sf-a-1190000022597533-file-preview-accept-capture-multiple.html"

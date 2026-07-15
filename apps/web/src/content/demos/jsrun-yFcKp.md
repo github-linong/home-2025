@@ -1,5 +1,6 @@
 ---
 title: "canvas 保存命名"
+heroImage: "/heroes/demo/jsrun-yFcKp.webp"
 description: "JSRUN 代码片段：canvas 保存命名（原地址 https://jsrun.net/yFcKp）。"
 pubDate: "2023-03-03"
 type: web

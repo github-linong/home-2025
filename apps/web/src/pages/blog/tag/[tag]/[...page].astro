@@ -1,4 +1,6 @@
 ---
+import type { Page } from "astro";
+import type { CollectionEntry } from "astro:content";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import HorizontalCard from "@components/HorizontalCard.astro";
 import { getCollection } from "astro:content";
@@ -21,7 +23,11 @@ export async function getStaticPaths({ paginate }) {
   });
 }
 
-const { page } = Astro.props;
+type Props = {
+  page: Page<CollectionEntry<"blog">>;
+};
+
+const { page } = Astro.props as Props;
 const params = Astro.params;
 ---
 
@@ -53,6 +59,8 @@ const params = Astro.params;
               kind={post.data.kind}
               votes={post.data.votes}
               accepted={post.data.accepted}
+              pubDate={post.data.pubDate}
+              updatedDate={post.data.updatedDate}
             />
             <div class="divider my-0" />
           </>
@@ -73,7 +81,7 @@ const params = Astro.params;
             height="24"
             viewBox="0 0 24 24"
           >
-            <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" />
+            <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"></path>
           </svg>{" "}
           Recent posts
         </a>
@@ -93,7 +101,7 @@ const params = Astro.params;
             viewBox="0 0 24 24"
           >
             {" "}
-            <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
+            <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path>
           </svg>
         </a>
       ) : (

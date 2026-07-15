@@ -1,5 +1,6 @@
 ---
 title: "http://cdn.jsrun.net/avatar/2345_1490748629173.png"
+heroImage: "/heroes/demo/jsrun-wriKp.webp"
 description: "JSRUN 代码片段：http://cdn.jsrun.net/avatar/2345_1490748629173.png（原地址 https://jsrun.net/wriKp）。"
 pubDate: "2017-12-05"
 type: web

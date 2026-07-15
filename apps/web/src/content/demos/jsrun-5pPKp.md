@@ -1,5 +1,6 @@
 ---
 title: "float bfc 测试"
+heroImage: "/heroes/demo/jsrun-5pPKp.webp"
 description: "JSRUN 代码片段：float bfc 测试（原地址 https://jsrun.net/5pPKp）。"
 pubDate: "2022-07-17"
 type: web

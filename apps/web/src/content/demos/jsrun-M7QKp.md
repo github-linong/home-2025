@@ -1,5 +1,6 @@
 ---
 title: "iframe 缓存测试"
+heroImage: "/heroes/demo/jsrun-M7QKp.webp"
 description: "JSRUN 代码片段：iframe 缓存测试（原地址 https://jsrun.net/M7QKp）。"
 pubDate: "2022-04-21"
 type: web

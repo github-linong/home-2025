@@ -1,5 +1,6 @@
 ---
 title: "el-progress"
+heroImage: "/heroes/demo/jsrun-F9aKp.webp"
 description: "JSRUN 代码片段：el-progress（原地址 https://jsrun.net/F9aKp）。"
 pubDate: "2021-02-03"
 type: web

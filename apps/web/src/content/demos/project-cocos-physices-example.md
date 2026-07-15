@@ -1,5 +1,6 @@
 ---
 title: "Cocos 物理示例"
+heroImage: "/heroes/demo/project-cocos-physices-example.webp"
 description: "Cocos 物理引擎示例工程构建产物。"
 pubDate: "2019-06-01"
 type: web

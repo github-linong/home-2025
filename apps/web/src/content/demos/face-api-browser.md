@@ -1,5 +1,6 @@
 ---
 title: "浏览器端人脸识别"
+heroImage: "/heroes/demo/face-api-browser.webp"
 description: "浏览器端 face-api.js 人脸识别。"
 pubDate: "2019-06-01"
 type: web

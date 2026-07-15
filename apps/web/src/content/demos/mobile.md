@@ -1,5 +1,6 @@
 ---
 title: "移动端适配"
+heroImage: "/heroes/demo/mobile.webp"
 description: "theme：移动端适配总览页。"
 pubDate: "2018-06-01"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "异步 Clipboard API"
+heroImage: "/heroes/demo/clipboard-api-async.webp"
 description: "异步 Clipboard API 读写实验。"
 pubDate: "2019-06-01"
 type: web

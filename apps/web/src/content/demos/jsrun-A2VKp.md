@@ -1,5 +1,6 @@
 ---
 title: "文档流测试"
+heroImage: "/heroes/demo/jsrun-A2VKp.webp"
 description: "JSRUN 代码片段：文档流测试（原地址 https://jsrun.net/A2VKp）。"
 pubDate: "2021-06-07"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "Vue 时间轮盘结构草稿"
+heroImage: "/heroes/demo/jsrun-cCXKp.webp"
 description: "用 Vue 渲染秒、分、时三段数字列表，对应抖音风格时间轮盘屏保思路。"
 pubDate: "2019-04-24"
 type: web

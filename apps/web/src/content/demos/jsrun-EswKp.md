@@ -1,5 +1,6 @@
 ---
 title: "列表item测试"
+heroImage: "/heroes/demo/jsrun-EswKp.webp"
 description: "JSRUN 代码片段：列表item测试（原地址 https://jsrun.net/EswKp）。"
 pubDate: "2020-11-24"
 type: web

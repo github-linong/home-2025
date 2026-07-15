@@ -1,5 +1,6 @@
 ---
 title: "渲染是否会发生在微任务之间?"
+heroImage: "/heroes/demo/jsrun-IZcKp.webp"
 description: "图片测试 https://cdns.jsrun.top/res/983409260qqcom/topwriter_linong 2.png"
 pubDate: "2023-01-16"
 type: web

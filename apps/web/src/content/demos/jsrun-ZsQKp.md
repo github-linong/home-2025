@@ -1,5 +1,6 @@
 ---
 title: "vue select test"
+heroImage: "/heroes/demo/jsrun-ZsQKp.webp"
 description: "https://segmentfault.com/q/1010000041726872 vue select v-on:change 事件只执行一次如何解决？ 小七哥 231 发布于 今天 18:11"
 pubDate: "2022-04-19"
 type: web

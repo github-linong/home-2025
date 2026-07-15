@@ -1,5 +1,6 @@
 ---
 title: "CSS 局部光照（径向渐变跟随鼠标）"
+heroImage: "/heroes/demo/jsrun-PJNKp.webp"
 description: "设置风格卡片上用 radial-gradient 与 CSS 变量实现聚光灯式局部高光。"
 pubDate: "2021-03-24"
 type: web

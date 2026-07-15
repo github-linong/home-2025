@@ -1,5 +1,6 @@
 ---
 title: "回退马赛克步骤"
+heroImage: "/heroes/demo/jsrun-P9xKp.webp"
 description: "JSRUN 代码片段：回退马赛克步骤（原地址 https://jsrun.net/P9xKp）。"
 pubDate: "2023-10-16"
 type: web

@@ -1,5 +1,6 @@
 ---
 title: "video.js 播放器"
+heroImage: "/heroes/demo/videojs_github.webp"
 description: "video.js GitHub 示例。"
 pubDate: "2018-06-01"
 type: web

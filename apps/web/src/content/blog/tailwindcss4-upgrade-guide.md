@@ -2,7 +2,7 @@
 title: "TailwindCSS 4 升级指南：新特性与踩坑记录"
 description: "TailwindCSS 4 新特性详解，包括 Oxide 引擎、CSS 变量配置、升级步骤和常见踩坑记录。"
 pubDate: "Mar 19 2026"
-heroImage: "/post_img.webp"
+heroImage: "/heroes/blog/tailwindcss4-upgrade-guide.webp"
 tags: ["TailwindCSS","CSS","升级指南","AI","JavaScript"]
 ---
 

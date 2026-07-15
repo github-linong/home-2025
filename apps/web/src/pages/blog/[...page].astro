@@ -1,8 +1,11 @@
 ---
+import type { Page } from "astro";
+import type { CollectionEntry } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import HorizontalCard from "../../components/HorizontalCard.astro";
+import ContentSortList from "../../components/ContentSortList.astro";
 import { getCollection } from "astro:content";
-import createSlug from "../../lib/createSlug"
+import createSlug from "../../lib/createSlug";
 
 export async function getStaticPaths({ paginate }) {
   const posts = await getCollection("blog");
@@ -10,7 +13,11 @@ export async function getStaticPaths({ paginate }) {
   return paginate(posts, { pageSize: 10 });
 }
 
-const { page } = Astro.props;
+type Props = {
+  page: Page<CollectionEntry<"blog">>;
+};
+
+const { page } = Astro.props as Props;
 ---
 
 <BaseLayout title="Blog" sideBarActiveItemID="blog">
@@ -19,73 +26,82 @@ const { page } = Astro.props;
     <a href="/search/?type=blog" class="btn btn-outline btn-sm">搜索文章</a>
   </div>
 
-  {
-    page.data.length === 0 ? (
-      <div class="bg-base-200 border-l-4 border-secondary w-full p-4 min-w-full">
-        <p class="font-bold">Sorry!</p>
-        <p>There are no blog posts to show at the moment. Check back later!</p>
-      </div>
-    ) : (
-      <ul>
-        {page.data.map((post) => (
-          <>
-            <HorizontalCard
-              title={post.data.title}
-              img={post.data.heroImage}
-              desc={post.data.description}
-              url={"/blog/" + createSlug(post.data.title, post.slug)}
-              target="_self"
-              badge={post.data.badge}
-              tags={post.data.tags}
-              kind={post.data.kind}
-              votes={post.data.votes}
-              accepted={post.data.accepted}
-            />
-            <div class="divider my-0" />
-          </>
-        ))}
-      </ul>
-    )
-  }
+  <ContentSortList
+    kind="blog"
+    catalogKey="blog"
+    catalogUrl="/data/blog-catalog.json"
+    pageSize={10}
+  >
+    {
+      page.data.length === 0 ? (
+        <div class="bg-base-200 border-l-4 border-secondary w-full p-4 min-w-full">
+          <p class="font-bold">Sorry!</p>
+          <p>There are no blog posts to show at the moment. Check back later!</p>
+        </div>
+      ) : (
+        <ul>
+          {page.data.map((post) => (
+            <>
+              <HorizontalCard
+                title={post.data.title}
+                img={post.data.heroImage}
+                desc={post.data.description}
+                url={"/blog/" + createSlug(post.data.title, post.slug)}
+                target="_self"
+                badge={post.data.badge}
+                tags={post.data.tags}
+                kind={post.data.kind}
+                votes={post.data.votes}
+                accepted={post.data.accepted}
+                pubDate={post.data.pubDate}
+                updatedDate={post.data.updatedDate}
+              />
+              <div class="divider my-0" />
+            </>
+          ))}
+        </ul>
+      )
+    }
 
-  <div class="flex justify-between">
-    {
-      page.url.prev ? (
-        <a href={page.url.prev} class="btn btn-ghost my-10 mx-5">
-          {" "}
-          <svg
-            class="h-6 w-6 fill-current md:h-8 md:w-8"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-          >
-            <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" />
-          </svg>{" "}
-          Recent posts
-        </a>
-      ) : (
-        <div />
-      )
-    }
-    {
-      page.url.next ? (
-        <a href={page.url.next} class="btn btn-ghost my-10 mx-5">
-          Older Posts{" "}
-          <svg
-            class="h-6 w-6 fill-current md:h-8 md:w-8"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-          >
+    <div class="flex justify-between" data-ssr-pager>
+      {
+        page.url.prev ? (
+          <a href={page.url.prev} class="btn btn-ghost my-10 mx-5">
             {" "}
-            <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
-          </svg>
-        </a>
-      ) : (
-        <div />
-      )
-    }
-  </div>
+            <svg
+              class="h-6 w-6 fill-current md:h-8 md:w-8"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" />
+            </svg>{" "}
+            Recent posts
+          </a>
+        ) : (
+          <div />
+        )
+      }
+      {
+        page.url.next ? (
+          <a href={page.url.next} class="btn btn-ghost my-10 mx-5">
+            Older Posts{" "}
+            <svg
+              class="h-6 w-6 fill-current md:h-8 md:w-8"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              {" "}
+              <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
+            </svg>
+          </a>
+        ) : (
+          <div />
+        )
+      }
+    </div>
+  </ContentSortList>
 </BaseLayout>

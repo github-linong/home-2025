@@ -19,6 +19,7 @@ export const CURATED_DEMO_SECTIONS: CuratedSection[] = [
       "MediaDevices-getDisplayMedia-MediaRecorder",
       "MediaDevices-getDisplayMedia-MediaRecorder-download",
       "canvas-draw-signature",
+      "project-zhh-sign",
       "fe-image-getcolor-canvas",
       "demo-image-cover-cut-canvas",
       "html2canvas-invite-vvmusic",
@@ -39,6 +40,18 @@ export const CURATED_DEMO_SECTIONS: CuratedSection[] = [
     ],
   },
   {
+    id: "games-lab",
+    title: "游戏与可视化实验室",
+    description: "Rot.js 迷宫、Phaser 入门与相关可视化实验。",
+    slugs: [
+      "sf-rotjs-maze-lab",
+      "sf-rotjs-maze-save",
+      "sf-rotjs-maze-3d",
+      "sf-rotjs-maze-fov",
+      "project-phaser3-tutorial-src",
+    ],
+  },
+  {
     id: "interaction",
     title: "交互与动效",
     description: "弹幕、刮刮卡、虚拟滚动、Flex 可视化与架构图编辑器。",
@@ -50,6 +63,7 @@ export const CURATED_DEMO_SECTIONS: CuratedSection[] = [
       "chrome-virtual-scroller",
       "架构图编辑器",
       "zlh-Vue.Draggable",
+      "sf-vue2-file-manager",
     ],
   },
   {
@@ -68,17 +82,19 @@ export const CURATED_DEMO_SECTIONS: CuratedSection[] = [
   {
     id: "engineering",
     title: "工程能力",
-    description: "PWA、WebSocket、上传进度、剪贴板、PDF / Excel 等实用能力。",
+    description: "PWA、WebSocket、上传进度、剪贴板、PDF / Excel 与字体排障等实用能力。",
     slugs: [
       "ServiceWorkers-PWA-SW-sf-article",
       "sum-websocket-test",
       "clipboard-api-async",
       "fe-file-upload-ajax-XMLHTTPRequest-progress",
+      "project-clip-image",
       "pdfjs-test",
       "xlsx-sheet",
       "sf-a-1190000022597533-file-preview-input-drop",
       "elementui-nav-3",
       "elementui-upload-dialog",
+      "sf-mac-pingfang-0-width",
     ],
   },
   {
@@ -177,6 +193,6 @@ export const CURATED_DEMO_SECTIONS: CuratedSection[] = [
 ];
 
 /** Flat set of curated slugs for badge / filter use */
-export const CURATED_DEMO_SLUGS = new Set(
+export const CURATED_DEMO_SLUGS: Set<string> = new Set(
   CURATED_DEMO_SECTIONS.flatMap((s) => s.slugs),
 );

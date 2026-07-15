@@ -1,5 +1,6 @@
 ---
 title: "粘贴剪贴板图片即时预览"
+heroImage: "/heroes/demo/jsrun-ZCqKp.webp"
 description: "监听 paste，用 clipboardData 取文件并用 FileReader 读成 DataURL 显示截图。"
 pubDate: "2018-03-02"
 type: web

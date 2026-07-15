@@ -1,5 +1,6 @@
 ---
 title: "CSS 荡开涟漪动画"
+heroImage: "/heroes/demo/jsrun-5r8Kp.webp"
 description: "多层圆形以错开延迟循环缩放淡出，衬托居中「琅琊榜」文字。"
 pubDate: "2021-08-20"
 type: web

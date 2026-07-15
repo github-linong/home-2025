@@ -1,5 +1,6 @@
 ---
 title: "实现图片马赛克"
+heroImage: "/heroes/demo/jsrun-MNxKp__127962.webp"
 description: "JSRUN 代码片段：实现图片马赛克（原地址 https://jsrun.net/MNxKp）。"
 pubDate: "2023-10-13"
 type: web
