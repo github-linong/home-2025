@@ -1,0 +1,16 @@
+---
+/**
+ * Crop / farming chronology timeline.
+ */
+import FilterableVerticalTimeline from "./FilterableVerticalTimeline.astro";
+import { CROP_TIMELINE_EVENTS, CROP_TIMELINE_TABS } from "../../lib/cropTimeline.js";
+---
+
+<FilterableVerticalTimeline
+  events={CROP_TIMELINE_EVENTS}
+  tabs={CROP_TIMELINE_TABS}
+  filterKey="kinds"
+  defaultTab="all"
+  ariaLabel="农作物时间线"
+  footnote="可按粮油棉 / 蔬果 / 特种作物 / 农技基建筛选；章节节点为公开示意。"
+/>

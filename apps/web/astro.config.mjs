@@ -26,6 +26,16 @@ export default defineConfig({
           changeOrigin: true,
           secure: true,
         },
+        // Better Auth (api2) — more specific paths first
+        '/api/auth': {
+          target: 'http://127.0.0.1:3002',
+          changeOrigin: true,
+        },
+        '/api/me': {
+          target: 'http://127.0.0.1:3002',
+          changeOrigin: true,
+        },
+        // Legacy API (api)
         '/api': {
           target: 'http://127.0.0.1:3001',
           changeOrigin: true,

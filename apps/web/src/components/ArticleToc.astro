@@ -1,0 +1,288 @@
+---
+/**
+ * Sticky in-article TOC. Desktop: left vertical rail. Mobile: compact sticky top chips.
+ * Discovers h2 under [data-article-content].
+ */
+type Props = {
+  minCount?: number;
+  includeH3?: boolean;
+};
+
+const { minCount = 2, includeH3 = false } = Astro.props;
+---
+
+<nav
+  class="article-toc not-prose hidden"
+  aria-label="文章目录"
+  data-article-toc
+  data-min-count={minCount}
+  data-include-h3={includeH3 ? "true" : "false"}
+  hidden
+>
+  <p class="article-toc-title">目录</p>
+  <div class="article-toc-links" data-article-toc-links></div>
+</nav>
+
+<style>
+  .article-toc {
+    margin-bottom: 1rem;
+    border: 1px solid oklch(var(--bc) / 0.12);
+    border-radius: 0.75rem;
+    background: oklch(var(--b1) / 0.95);
+    padding: 0.625rem 0.75rem;
+  }
+
+  .article-toc-title {
+    display: none;
+    margin: 0 0 0.5rem;
+    padding: 0 0.25rem;
+    font-size: 0.75rem;
+    line-height: 1;
+    color: oklch(var(--bc) / 0.45);
+  }
+
+  .article-toc-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+
+  .article-toc :global(.article-toc-link) {
+    display: inline-flex;
+    max-width: 10rem;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border: 1px solid oklch(var(--bc) / 0.14);
+    border-radius: 9999px;
+    background: oklch(var(--b2) / 0.7);
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
+    line-height: 1.25rem;
+    color: oklch(var(--bc) / 0.8);
+    text-decoration: none;
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+  }
+
+  .article-toc :global(.article-toc-link[data-active="true"]) {
+    border-color: oklch(var(--bc) / 0.85);
+    background: oklch(var(--bc) / 0.9);
+    color: oklch(var(--b1));
+  }
+
+  @media (min-width: 1024px) {
+    .article-toc {
+      position: sticky;
+      top: 1.5rem;
+      margin-bottom: 0;
+      max-height: calc(100vh - 3rem);
+      overflow-y: auto;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      padding: 0;
+    }
+
+    .article-toc-title {
+      display: block;
+    }
+
+    .article-toc-links {
+      flex-direction: column;
+      flex-wrap: nowrap;
+      gap: 0.125rem;
+      border-left: 1px solid oklch(var(--bc) / 0.12);
+      padding-left: 0;
+    }
+
+    .article-toc :global(.article-toc-link) {
+      display: block;
+      max-width: none;
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border: none;
+      border-left: 2px solid transparent;
+      border-radius: 0;
+      background: transparent;
+      margin-left: -1px;
+      padding: 0.375rem 0.5rem 0.375rem 0.75rem;
+      font-size: 0.8125rem;
+      line-height: 1.35;
+      color: oklch(var(--bc) / 0.62);
+    }
+
+    .article-toc :global(.article-toc-link:hover) {
+      color: oklch(var(--bc) / 0.92);
+      background: oklch(var(--b2) / 0.55);
+    }
+
+    .article-toc :global(.article-toc-link[data-active="true"]) {
+      border-left-color: oklch(var(--bc) / 0.85);
+      background: oklch(var(--b2) / 0.65);
+      color: oklch(var(--bc) / 0.95);
+      font-weight: 600;
+    }
+
+    .article-toc :global(.article-toc-link[data-depth="3"]) {
+      padding-left: 1.25rem;
+      font-size: 0.75rem;
+      opacity: 0.9;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .article-toc {
+      position: sticky;
+      top: 4rem;
+      z-index: 20;
+      backdrop-filter: blur(8px);
+    }
+  }
+</style>
+
+<script>
+  function slugify(text: string): string {
+    return text
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^\w\u4e00-\u9fff-]/g, "")
+      .replace(/^-+|-+$/g, "") || "section";
+  }
+
+  function shortLabel(text: string, explicit?: string | null): string {
+    if (explicit?.trim()) return explicit.trim();
+    return text
+      .replace(/（[^）]*）/g, "")
+      .replace(/\([^)]*\)/g, "")
+      .split(/\s*[·•|｜]\s*/)[0]
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function ensureId(el: HTMLElement, used: Set<string>): string {
+    const existing = el.id?.trim();
+    if (existing) {
+      used.add(existing);
+      return existing;
+    }
+
+    const fromParent = el.closest<HTMLElement>("section[id], [data-section][id]");
+    let id = fromParent?.id?.trim() || "";
+    if (id && !used.has(id)) {
+      fromParent?.removeAttribute("id");
+    } else {
+      let base = slugify(el.textContent || "section");
+      id = base;
+      let n = 2;
+      while (used.has(id) || document.getElementById(id)) {
+        id = `${base}-${n++}`;
+      }
+    }
+
+    el.id = id;
+    used.add(id);
+    return id;
+  }
+
+  function initArticleToc(toc: HTMLElement) {
+    const layout = toc.closest<HTMLElement>("[data-article-layout]");
+    const article = toc.closest("article");
+    const root =
+      layout?.querySelector<HTMLElement>("[data-article-content]") ??
+      article?.querySelector<HTMLElement>("[data-article-content]") ??
+      article;
+    if (!root) return;
+
+    const minCount = Number(toc.dataset.minCount || "2");
+    const includeH3 = toc.dataset.includeH3 === "true";
+    const selector = includeH3 ? "h2, h3" : "h2";
+    const headings = [...root.querySelectorAll<HTMLElement>(selector)].filter(
+      (el) => !el.closest("[data-article-toc]"),
+    );
+    if (headings.length < minCount) return;
+
+    const used = new Set<string>();
+    const linkBox = toc.querySelector<HTMLElement>("[data-article-toc-links]");
+    if (!linkBox) return;
+
+    const items = headings.map((heading) => {
+      const id = ensureId(heading, used);
+      heading.classList.add("scroll-mt-28", "lg:scroll-mt-10");
+      const depth = heading.tagName === "H3" ? 3 : 2;
+      const label = shortLabel(
+        heading.textContent || "",
+        heading.getAttribute("data-toc-label"),
+      );
+      const link = document.createElement("a");
+      link.href = `#${id}`;
+      link.dataset.toc = id;
+      link.dataset.depth = String(depth);
+      link.textContent = label;
+      link.title = (heading.textContent || "").trim();
+      link.className = "article-toc-link";
+      linkBox.appendChild(link);
+      return { id, heading, link };
+    });
+
+    toc.hidden = false;
+    toc.classList.remove("hidden");
+    layout?.setAttribute("data-toc-ready", "true");
+
+    function setActive(id: string) {
+      items.forEach(({ link }) => {
+        link.dataset.active = link.dataset.toc === id ? "true" : "false";
+      });
+    }
+
+    items.forEach(({ id, heading, link }) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        heading.scrollIntoView({ behavior: "smooth", block: "start" });
+        history.replaceState(null, "", `#${id}`);
+        setActive(id);
+      });
+    });
+
+    function updateActiveFromScroll() {
+      const offset = Math.min(140, Math.round(window.innerHeight * 0.22));
+      let current = items[0]?.id;
+      for (const item of items) {
+        if (item.heading.getBoundingClientRect().top <= offset) {
+          current = item.id;
+        } else {
+          break;
+        }
+      }
+      if (current) setActive(current);
+    }
+
+    window.addEventListener("scroll", updateActiveFromScroll, { passive: true });
+
+    const fromHash = location.hash.replace(/^#/, "");
+    const hashItem = items.find((item) => item.id === fromHash);
+    if (hashItem) {
+      setActive(hashItem.id);
+      requestAnimationFrame(() => {
+        hashItem.heading.scrollIntoView({ block: "start" });
+        updateActiveFromScroll();
+      });
+    } else {
+      updateActiveFromScroll();
+    }
+  }
+
+  function initAllArticleTocs() {
+    document.querySelectorAll<HTMLElement>("[data-article-toc]").forEach((toc) => {
+      const linkBox = toc.querySelector<HTMLElement>("[data-article-toc-links]");
+      if (!linkBox || linkBox.childElementCount > 0) return;
+      initArticleToc(toc);
+    });
+  }
+
+  initAllArticleTocs();
+  document.addEventListener("astro:page-load", initAllArticleTocs);
+</script>

@@ -338,8 +338,8 @@
     {
       "file": "canvas-draw-signature-douyin.html",
       "slug": "canvas-draw-signature-douyin",
-      "title": "Canvas 签名 · 抖音/Phaser",
-      "description": "Canvas 签名 · 抖音风格 / Phaser 实验。",
+      "title": "Canvas 手写签名（附 Phaser 实验）",
+      "description": "Canvas 手写签名板（清屏 / 上传）；同页另有未完成的 Phaser Arcade 精灵实验（与抖音无关）。",
       "url": "/demos/html/canvas-draw-signature-douyin.html",
       "size": 9633,
       "migratedAt": "2026-07-13T01:47:36.795Z"

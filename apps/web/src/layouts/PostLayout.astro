@@ -5,6 +5,7 @@ import QADisplay from "../components/QADisplay.astro";
 import type { QaData } from "../components/QADisplay.astro";
 import BlogAnalytics from "../components/BlogAnalytics.astro";
 import ViewBeacon from "../components/ViewBeacon.astro";
+import ArticleToc from "../components/ArticleToc.astro";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { Image } from "astro:assets";
@@ -39,52 +40,69 @@ const showQa = isAnswer && qaData;
 const contentSource = source ?? (sourceUrl ? "segmentfault" : "site");
 ---
 
-<BaseLayout title={title} description={description} image={heroImage}, ogType="article">
-  <main class="md:flex md:justify-center">
-    <article class="prose prose-lg max-w-none prose-img:mx-auto" data-pagefind-body>
-      <span data-pagefind-meta="title" class="hidden">{title}</span>
-      <span data-pagefind-meta="description" class="hidden">{description}</span>
-      <span data-pagefind-meta="kind" class="hidden">{kind}</span>
-      <span data-pagefind-meta="source" class="hidden">{contentSource}</span>
-      {badge && <span data-pagefind-meta="badge" class="hidden">{badge}</span>}
-      {tags.map((tag) => (
-        <span data-pagefind-filter={`tag:${tag}`} class="hidden" />
-      ))}
+<BaseLayout
+  title={title}
+  description={description}
+  image={heroImage}
+  ogType="article"
+  mainClass="p-6 pt-10 w-full max-w-[100vw] lg:max-w-[1080px]"
+>
+  <article class="max-w-none" data-pagefind-body>
+    <span data-pagefind-meta="title" class="hidden">{title}</span>
+    <span data-pagefind-meta="description" class="hidden">{description}</span>
+    <span data-pagefind-meta="kind" class="hidden">{kind}</span>
+    <span data-pagefind-meta="source" class="hidden">{contentSource}</span>
+    {badge && <span data-pagefind-meta="badge" class="hidden">{badge}</span>}
+    {tags.map((tag) => (
+      <span data-pagefind-filter={`tag:${tag}`} class="hidden" />
+    ))}
 
-      {heroImage && <Image width={750} height={422} format="webp" src={heroImage} alt={title} class="w-full mb-6" />}
+    {heroImage && (
+      <div class="not-prose mb-5 overflow-hidden rounded-lg border border-base-300/60">
+        <Image
+          width={1200}
+          height={400}
+          format="webp"
+          src={heroImage}
+          alt={title}
+          class="m-0 block h-[9.5rem] w-full object-cover object-center sm:h-[11rem] lg:h-[12.5rem]"
+        />
+      </div>
+    )}
 
-      {showQa ? (
-        <>
-          <h1 class="title my-2 text-3xl font-bold leading-snug">{title}</h1>
-          {pubDate && <time class="text-sm text-base-content/60">{displayDate}</time>}
-          {tags.length > 0 && (
-            <div class="not-prose my-3">
-              {tags.map((tag) => (
-                <a href={`/search/?tag=${encodeURIComponent(tag)}`} class="badge badge-outline ml-0 mr-2 no-underline">
-                  {tag}
-                </a>
-              ))}
-            </div>
-          )}
-          <div class="divider my-4"></div>
-          <QADisplay
-            data={qaData}
-            title={title}
-            votes={votes}
-            accepted={accepted}
-            questionUrl={questionUrl}
-            sourceUrl={sourceUrl}
-          />
-        </>
-      ) : isAnswer ? (
-        <>
-          <h1 class="title my-2 text-3xl font-bold">{title}</h1>
-          {pubDate && <time class="text-sm text-base-content/60">{displayDate}</time>}
-          <div class="divider my-4"></div>
-          <slot />
-        </>
-      ) : (
-        <>
+    {showQa ? (
+      <div class="prose prose-lg max-w-none">
+        <h1 class="title my-2 text-3xl font-bold leading-snug">{title}</h1>
+        {pubDate && <time class="text-sm text-base-content/60">{displayDate}</time>}
+        {tags.length > 0 && (
+          <div class="not-prose my-3">
+            {tags.map((tag) => (
+              <a href={`/search/?tag=${encodeURIComponent(tag)}`} class="badge badge-outline ml-0 mr-2 no-underline">
+                {tag}
+              </a>
+            ))}
+          </div>
+        )}
+        <div class="divider my-4 !mx-0"></div>
+        <QADisplay
+          data={qaData}
+          title={title}
+          votes={votes}
+          accepted={accepted}
+          questionUrl={questionUrl}
+          sourceUrl={sourceUrl}
+        />
+      </div>
+    ) : isAnswer ? (
+      <div class="prose prose-lg max-w-none" data-article-content>
+        <h1 class="title my-2 text-3xl font-bold">{title}</h1>
+        {pubDate && <time class="text-sm text-base-content/60">{displayDate}</time>}
+        <div class="divider my-4 !mx-0"></div>
+        <slot />
+      </div>
+    ) : (
+      <>
+        <header class="prose prose-lg max-w-none mb-6">
           <h1 class="title my-2 text-4xl font-bold">{title}</h1>
           {pubDate && <time class="text-sm text-base-content/60">{displayDate}</time>}
           <br />
@@ -99,18 +117,39 @@ const contentSource = source ?? (sourceUrl ? "segmentfault" : "site");
               Last updated on <time>{updatedDate}</time>
             </div>
           )}
-          <div class="divider my-2"></div>
+          <div class="divider my-2 !mx-0"></div>
           {sourceUrl && (
             <p class="not-prose text-sm opacity-70">
               转载自 <a href={sourceUrl} target="_blank" rel="noreferrer">SegmentFault</a>
             </p>
           )}
-          <slot />
-        </>
-      )}
-    </article>
-  </main>
+        </header>
+
+        <div class="article-layout" data-article-layout>
+          <ArticleToc />
+          <div class="prose prose-lg max-w-none min-w-0" data-article-content>
+            <slot />
+          </div>
+        </div>
+      </>
+    )}
+  </article>
 
   <BlogAnalytics slug={slug} kind={kind} source={contentSource} answerId={answerId} />
   <ViewBeacon type="blog" slug={slug} />
 </BaseLayout>
+
+<style>
+  .article-layout {
+    display: block;
+  }
+
+  @media (min-width: 1024px) {
+    .article-layout[data-toc-ready="true"] {
+      display: grid;
+      grid-template-columns: 10.5rem minmax(0, 1fr);
+      gap: 2rem;
+      align-items: start;
+    }
+  }
+</style>

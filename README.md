@@ -29,6 +29,8 @@ npm run dev:api
 # → http://localhost:3001/api/health
 ```
 
+For local auth UI against the API, proxy `/api` in Astro (or open site via nginx on 8080). Dev tip: set `AUTH_ENABLED=true`, `AUTH_SECRET`, and `AUTH_ADMIN_PASSWORD` then visit `/login/`.
+
 Legacy demo endpoints (same paths as old Node app): `/upload*`, `/proxy`, `/CORS/*`, `/vapi/*`, `/api3/*`, `/wx/*`, …
 
 ## Build

@@ -1,0 +1,136 @@
+---
+/**
+ * Dynamic auth status via Better Auth (api2).
+ * Fetches session after page load — works with static HTML.
+ */
+---
+
+<div
+  class="mx-3 mb-3 border-t border-base-content/10 pt-3"
+  data-auth-status
+  aria-live="polite"
+>
+  <div
+    data-auth-loading
+    class="h-9 rounded-lg bg-base-content/[0.04] animate-pulse"
+    aria-hidden="true"
+  >
+  </div>
+
+  <div data-auth-guest class="hidden">
+    <a
+      href="/login/"
+      class="group flex h-9 items-center justify-between gap-2 rounded-lg px-2.5 text-sm transition-colors hover:bg-base-content/[0.06]"
+    >
+      <span class="opacity-70 group-hover:opacity-100">登录</span>
+      <span class="text-xs opacity-40 group-hover:opacity-70">GitHub →</span>
+    </a>
+  </div>
+
+  <div data-auth-user class="hidden">
+    <div class="flex h-9 items-center gap-2 rounded-lg px-1.5">
+      <img
+        data-auth-avatar
+        alt=""
+        width="28"
+        height="28"
+        class="h-7 w-7 shrink-0 rounded-full bg-base-300 ring-1 ring-base-content/10 hidden"
+      />
+      <div
+        data-auth-avatar-fallback
+        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-base-content/10 text-xs font-medium hidden"
+        aria-hidden="true"
+      >
+      </div>
+      <div class="min-w-0 flex-1">
+        <div data-auth-name class="truncate text-sm font-medium leading-tight"></div>
+        <div data-auth-meta class="truncate text-[11px] leading-tight opacity-45"></div>
+      </div>
+      <button
+        type="button"
+        class="shrink-0 rounded-md px-2 py-1 text-xs opacity-45 transition-opacity hover:bg-base-content/[0.06] hover:opacity-100"
+        data-auth-logout
+      >
+        退出
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { authClient } from "../lib/auth-client";
+
+  function bindAuthStatus(root: HTMLElement) {
+    if (root.dataset.bound === "1") return;
+    root.dataset.bound = "1";
+
+    const loading = root.querySelector("[data-auth-loading]");
+    const guest = root.querySelector("[data-auth-guest]");
+    const userBox = root.querySelector("[data-auth-user]");
+    const nameEl = root.querySelector("[data-auth-name]");
+    const metaEl = root.querySelector("[data-auth-meta]");
+    const avatarEl = root.querySelector<HTMLImageElement>("[data-auth-avatar]");
+    const avatarFallback = root.querySelector<HTMLElement>("[data-auth-avatar-fallback]");
+    const logoutBtn = root.querySelector("[data-auth-logout]");
+
+    function showGuest() {
+      loading?.classList.add("hidden");
+      guest?.classList.remove("hidden");
+      userBox?.classList.add("hidden");
+    }
+
+    function showUser(user: { name?: string | null; email?: string | null; image?: string | null }) {
+      loading?.classList.add("hidden");
+      guest?.classList.add("hidden");
+      userBox?.classList.remove("hidden");
+
+      const displayName = user.name || user.email || "已登录";
+      if (nameEl) nameEl.textContent = displayName;
+
+      // Prefer not to repeat the same string on both lines.
+      if (metaEl) {
+        const meta = user.email && user.email !== displayName ? user.email : "";
+        metaEl.textContent = meta;
+        metaEl.classList.toggle("hidden", !meta);
+      }
+
+      const initial = (displayName.trim()[0] || "?").toUpperCase();
+      if (avatarEl && avatarFallback) {
+        if (user.image) {
+          avatarEl.src = user.image;
+          avatarEl.alt = displayName;
+          avatarEl.classList.remove("hidden");
+          avatarFallback.classList.add("hidden");
+        } else {
+          avatarEl.classList.add("hidden");
+          avatarFallback.textContent = initial;
+          avatarFallback.classList.remove("hidden");
+        }
+      }
+    }
+
+    async function refresh() {
+      try {
+        const { data } = await authClient.getSession();
+        if (data?.user) showUser(data.user);
+        else showGuest();
+      } catch {
+        showGuest();
+      }
+    }
+
+    logoutBtn?.addEventListener("click", async () => {
+      await authClient.signOut();
+      await refresh();
+    });
+
+    void refresh();
+  }
+
+  function init() {
+    document.querySelectorAll<HTMLElement>("[data-auth-status]").forEach(bindAuthStatus);
+  }
+
+  init();
+  document.addEventListener("astro:page-load", init);
+</script>

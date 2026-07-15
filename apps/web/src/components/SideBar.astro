@@ -2,6 +2,7 @@
 import SideBarFooter from "./SideBarFooter.astro";
 import { Image } from "astro:assets";
 import SideBarMenu from "./SideBarMenu.astro";
+import AuthStatus from "./AuthStatus.astro";
 import { profile } from "../data/profile";
 
 const { sideBarActiveItemID } = Astro.props;
@@ -20,6 +21,9 @@ const { sideBarActiveItemID } = Astro.props;
       </a>
     </div>
     <SideBarMenu sideBarActiveItemID={sideBarActiveItemID} />
-    <SideBarFooter />
+    <div class="mt-auto">
+      <AuthStatus />
+      <SideBarFooter />
+    </div>
   </aside>
 </div>

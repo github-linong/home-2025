@@ -1,0 +1,16 @@
+[Unit]
+Description=lilnong.top Better Auth API (api2)
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/lilnong-api2
+EnvironmentFile=/opt/lilnong-api2/.env
+ExecStart=/usr/local/bin/node /opt/lilnong-api2/src/server.js
+Restart=on-failure
+RestartSec=3
+Environment=NODE_OPTIONS=--max-old-space-size=256
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

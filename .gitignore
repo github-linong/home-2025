@@ -28,3 +28,7 @@ scripts/data/jsrun/snippets/
 scripts/data/jsrun/state.json
 scripts/data/jsrun/manifest.json
 
+
+# api2 secrets
+apps/api2/.env
+apps/api2/data/

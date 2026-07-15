@@ -1,0 +1,308 @@
+---
+/**
+ * Reusable vertical ECharts timeline with filter tabs.
+ * Expects each event: { yearLabel, stage, event, impact, ...filters }
+ * Filter field name is `filterKey`; event[filterKey] is string[] of tab ids (except "all").
+ */
+type Tab = { id: string; label: string };
+
+type Props = {
+  events: Array<Record<string, unknown>>;
+  tabs: Tab[];
+  filterKey: string;
+  defaultTab?: string;
+  ariaLabel?: string;
+  footnote?: string;
+};
+
+const {
+  events,
+  tabs,
+  filterKey,
+  defaultTab = "all",
+  ariaLabel = "纵向时间线",
+  footnote = "节点为公开设定/章节阶段示意；悬停可看详情。",
+} = Astro.props;
+---
+
+<div
+  class="v-timeline-chart rounded-xl border border-base-300 bg-base-100 overflow-hidden"
+  data-v-timeline
+  data-filter-key={filterKey}
+  data-active-tab={defaultTab}
+  data-events={JSON.stringify(events)}
+>
+  <div
+    class="flex flex-wrap gap-2 border-b border-base-300/80 px-3 py-2.5"
+    role="tablist"
+    aria-label="时间线分段"
+  >
+    {
+      tabs.map((tab) => (
+        <button
+          type="button"
+          role="tab"
+          class="v-timeline-tab"
+          data-tab={tab.id}
+          aria-selected={tab.id === defaultTab ? "true" : "false"}
+        >
+          {tab.label}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="w-full" data-v-timeline-canvas role="img" aria-label={ariaLabel}></div>
+
+  <p class="px-3 pb-2.5 text-[0.7rem] leading-snug text-base-content/40 m-0">
+    {footnote}
+  </p>
+</div>
+
+<style>
+  .v-timeline-tab {
+    border: 1px solid color-mix(in oklab, currentColor 16%, transparent);
+    border-radius: 9999px;
+    background: color-mix(in oklab, currentColor 4%, transparent);
+    color: color-mix(in oklab, currentColor 72%, transparent);
+    font-size: 0.75rem;
+    line-height: 1.25rem;
+    padding: 0.2rem 0.7rem;
+    cursor: pointer;
+    transition:
+      background-color 120ms ease,
+      border-color 120ms ease,
+      color 120ms ease;
+  }
+
+  .v-timeline-tab[aria-selected="true"] {
+    border-color: color-mix(in oklab, currentColor 55%, transparent);
+    background: color-mix(in oklab, currentColor 12%, transparent);
+    color: inherit;
+    font-weight: 600;
+  }
+</style>
+
+<script>
+  import * as echarts from "echarts/core";
+  import { LineChart, ScatterChart } from "echarts/charts";
+  import { GridComponent, TooltipComponent } from "echarts/components";
+  import { CanvasRenderer } from "echarts/renderers";
+
+  echarts.use([
+    LineChart,
+    ScatterChart,
+    GridComponent,
+    TooltipComponent,
+    CanvasRenderer,
+  ]);
+
+  /** @type {WeakMap<Element, import('echarts/core').ECharts>} */
+  const chartByRoot = new WeakMap();
+
+  /**
+   * @typedef {{ yearLabel: string, stage: string, event: string, impact: string } & Record<string, unknown>} TimelineEvent
+   */
+
+  /**
+   * @param {TimelineEvent[]} all
+   * @param {string} filterKey
+   * @param {string} tab
+   */
+  function filterEvents(all, filterKey, tab) {
+    if (tab === "all") return all;
+    return all.filter((item) => {
+      const tags = item[filterKey];
+      return Array.isArray(tags) && tags.includes(tab);
+    });
+  }
+
+  /**
+   * @param {TimelineEvent[]} events
+   * @param {number} viewWidth
+   */
+  function buildOption(events, viewWidth) {
+    const categories = events.map((e) => e.yearLabel);
+    const labelWidth = Math.max(160, Math.min(420, viewWidth - 120));
+
+    return {
+      animationDuration: 360,
+      grid: {
+        left: viewWidth < 480 ? 64 : 78,
+        right: 18,
+        top: 10,
+        bottom: 10,
+        containLabel: false,
+      },
+      tooltip: {
+        trigger: "item",
+        borderWidth: 0,
+        backgroundColor: "rgba(32, 36, 28, 0.92)",
+        textStyle: { color: "#f4f1ea", fontSize: 12 },
+        formatter(params) {
+          const item = events[params.dataIndex];
+          if (!item) return "";
+          return [
+            `<div style="font-weight:600;margin-bottom:4px">${item.stage}</div>`,
+            `<div style="margin-bottom:4px">${item.event}</div>`,
+            `<div style="opacity:.85;max-width:280px;line-height:1.45">${item.impact}</div>`,
+          ].join("");
+        },
+      },
+      xAxis: { type: "value", min: 0, max: 1, show: false },
+      yAxis: {
+        type: "category",
+        data: categories,
+        inverse: true,
+        axisTick: { show: false },
+        axisLine: { show: false },
+        splitLine: {
+          show: true,
+          lineStyle: { type: "dashed", color: "rgba(90, 100, 70, 0.1)" },
+        },
+        axisLabel: {
+          color: "rgba(60, 70, 50, 0.55)",
+          fontSize: 11,
+          width: viewWidth < 480 ? 52 : 66,
+          overflow: "truncate",
+        },
+      },
+      series: [
+        {
+          type: "line",
+          data: events.map((e) => [0.06, e.yearLabel]),
+          symbol: "none",
+          silent: true,
+          lineStyle: { width: 2.5, color: "#5f6f45", cap: "round" },
+          z: 1,
+        },
+        {
+          type: "scatter",
+          data: events.map((e) => [0.06, e.yearLabel]),
+          symbol: "circle",
+          symbolSize: 11,
+          itemStyle: {
+            color: "#3f4d2e",
+            borderColor: "#e8eadf",
+            borderWidth: 2,
+          },
+          emphasis: {
+            scale: 1.25,
+            itemStyle: { color: "#2f3a22" },
+          },
+          label: {
+            show: true,
+            position: "right",
+            distance: 14,
+            align: "left",
+            formatter(params) {
+              const item = events[params.dataIndex];
+              if (!item) return "";
+              return `{title|${item.event}}\n{sub|${item.impact}}`;
+            },
+            rich: {
+              title: {
+                fontSize: 13,
+                fontWeight: 600,
+                color: "rgba(40, 46, 34, 0.95)",
+                lineHeight: 20,
+                width: labelWidth,
+              },
+              sub: {
+                fontSize: 11,
+                color: "rgba(60, 70, 50, 0.58)",
+                lineHeight: 17,
+                width: labelWidth,
+                overflow: "break",
+              },
+            },
+          },
+          z: 2,
+        },
+      ],
+    };
+  }
+
+  /**
+   * @param {HTMLElement} canvas
+   * @param {number} count
+   */
+  function sizeCanvas(canvas, count) {
+    const row = canvas.clientWidth < 480 ? 64 : 58;
+    canvas.style.height = `${Math.max(240, count * row + 24)}px`;
+  }
+
+  /**
+   * @param {HTMLElement} root
+   */
+  function mount(root) {
+    const canvas = root.querySelector("[data-v-timeline-canvas]");
+    if (!(canvas instanceof HTMLElement)) return;
+
+    /** @type {TimelineEvent[]} */
+    let all = [];
+    try {
+      all = JSON.parse(root.getAttribute("data-events") || "[]");
+    } catch {
+      all = [];
+    }
+    if (!all.length) return;
+
+    const filterKey = root.getAttribute("data-filter-key") || "tags";
+    const tab = root.getAttribute("data-active-tab") || "all";
+    const events = filterEvents(all, filterKey, tab);
+
+    let chart = chartByRoot.get(root);
+    if (!chart || chart.isDisposed()) {
+      chart = echarts.init(canvas, undefined, { renderer: "canvas" });
+      chartByRoot.set(root, chart);
+    }
+
+    if (!events.length) {
+      canvas.style.height = "8rem";
+      chart.clear();
+      return;
+    }
+
+    sizeCanvas(canvas, events.length);
+    chart.setOption(buildOption(events, canvas.clientWidth || 640), true);
+    chart.resize();
+  }
+
+  /**
+   * @param {HTMLElement} root
+   */
+  function bindTabs(root) {
+    if (root.dataset.tabsBound === "true") return;
+    root.dataset.tabsBound = "true";
+    root.querySelectorAll("[data-tab]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (!(btn instanceof HTMLElement)) return;
+        const tab = btn.dataset.tab || "all";
+        root.setAttribute("data-active-tab", tab);
+        root.querySelectorAll("[data-tab]").forEach((el) => {
+          el.setAttribute("aria-selected", el === btn ? "true" : "false");
+        });
+        mount(root);
+      });
+    });
+  }
+
+  function mountAll() {
+    document.querySelectorAll("[data-v-timeline]").forEach((root) => {
+      if (!(root instanceof HTMLElement)) return;
+      bindTabs(root);
+      mount(root);
+    });
+  }
+
+  function onResize() {
+    document.querySelectorAll("[data-v-timeline]").forEach((root) => {
+      if (root instanceof HTMLElement) mount(root);
+    });
+  }
+
+  document.addEventListener("astro:page-load", mountAll);
+  window.addEventListener("resize", onResize);
+  mountAll();
+</script>

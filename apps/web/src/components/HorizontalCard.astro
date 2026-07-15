@@ -1,6 +1,7 @@
 ---
 import { Image } from "astro:assets";
 import dayjs from "dayjs";
+import { toPlainText } from "../lib/plainText";
 
 export interface Props {
   title: string;
@@ -38,6 +39,19 @@ const {
 } = Astro.props;
 
 const isAnswer = kind === "answer";
+const plainDesc = toPlainText(desc, 180);
+/** Hide tags redundant with badge / answer status (e.g. tag "问答" vs badge "思否问答"). */
+const visibleTags = (tags || []).filter((tag) => {
+  if (!tag || tag === badge || tag === category) return false;
+  if (badge && (badge.includes(tag) || tag.includes(badge))) return false;
+  if (isAnswer && (tag === "问答" || tag === "思否问答")) return false;
+  return true;
+});
+const showStatusRow =
+  Boolean(badge) ||
+  (isAnswer && accepted) ||
+  (isAnswer && votes != null && votes > 0) ||
+  visibleTags.length > 0;
 
 function toDay(value?: Date | string) {
   if (!value) return null;
@@ -55,35 +69,52 @@ const hasDistinctUpdate = Boolean(updatedLabel && updatedLabel !== publishedLabe
 <div
   class="rounded-lg bg-base-100 hover:shadow-xl transition ease-in-out hover:scale-[102%]"
 >
-  <div class="hero-content flex-col md:flex-row">
+  <div class="hero-content flex-col md:flex-row items-start">
     {
       img && (
-        <a href={url} target={target} class="shrink-0">
+        <a href={url} target={target} class="shrink-0 w-full md:w-auto">
           <Image
             src={img}
             width={750}
             height={422}
             format="webp"
             alt={title}
-            class="max-w-full md:max-w-[13rem] rounded-lg"
+            class="w-full max-w-full md:max-w-[13rem] rounded-lg object-cover aspect-video"
           />
         </a>
       )
     }
-    <div class="grow w-full">
+    <div class="grow w-full min-w-0">
       <a href={url} target={target} class="block no-underline text-inherit">
-        <h1 class="text-xl font-bold">
-          {isAnswer && <span class="text-base-content/50 font-normal text-sm block mb-1">Q</span>}
-          {title}
-          {badge && <div class="badge badge-secondary mx-2">{badge}</div>}
-          {isAnswer && accepted && <div class="badge badge-success mx-1">已采纳</div>}
-          {isAnswer && votes != null && votes > 0 && (
-            <div class="badge badge-ghost mx-1">👍 {votes}</div>
-          )}
-        </h1>
+        {
+          isAnswer && (
+            <span class="text-base-content/50 font-normal text-sm block mb-1">Q</span>
+          )
+        }
+        <h2 class="text-xl font-bold leading-snug">{title}</h2>
+      </a>
+
+      {
+        showStatusRow && (
+          <div class="mt-2 flex flex-wrap items-center gap-1.5">
+            {badge && <span class="badge badge-secondary badge-sm">{badge}</span>}
+            {isAnswer && accepted && <span class="badge badge-success badge-sm">已采纳</span>}
+            {isAnswer && votes != null && votes > 0 && (
+              <span class="badge badge-ghost badge-sm">👍 {votes}</span>
+            )}
+            {visibleTags.map((tag) => (
+              <a href={`/search/?tag=${encodeURIComponent(tag)}`} class="badge badge-outline badge-sm">
+                {tag}
+              </a>
+            ))}
+          </div>
+        )
+      }
+
+      <a href={url} target={target} class="block no-underline text-inherit">
         {
           (publishedLabel || updatedLabel || category) && (
-            <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/50">
+            <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/50">
               {dateAsUpdate ? (
                 <>
                   {(updatedLabel || publishedLabel) && (
@@ -109,22 +140,15 @@ const hasDistinctUpdate = Boolean(updatedLabel && updatedLabel !== publishedLabe
             </div>
           )
         }
-        <p class={`py-1 text-1xl ${isAnswer ? "text-base-content/80 line-clamp-3" : ""}`}>
-          {isAnswer && <span class="text-base-content/50 font-medium">A · </span>}
-          {desc}
-        </p>
+        {
+          plainDesc && (
+            <p class="py-2 text-sm md:text-base text-base-content/75 leading-relaxed line-clamp-3">
+              {isAnswer && <span class="text-base-content/50 font-medium">A · </span>}
+              {plainDesc}
+            </p>
+          )
+        }
       </a>
-      {
-        tags && tags.length > 0 && (
-          <div class="card-actions justify-end">
-            {tags.map((tag) => (
-              <a href={`/search/?tag=${encodeURIComponent(tag)}`} class="badge badge-outline">
-                {tag}
-              </a>
-            ))}
-          </div>
-        )
-      }
     </div>
   </div>
 </div>

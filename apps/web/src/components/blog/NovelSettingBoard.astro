@@ -1,0 +1,1029 @@
+---
+import DisasterTimelineChart from "./DisasterTimelineChart.astro";
+import SpeciesCooperationTimeline from "./SpeciesCooperationTimeline.astro";
+import CropTimeline from "./CropTimeline.astro";
+import QiangYiRelationGraph from "./QiangYiRelationGraph.astro";
+import SocietyFactionGraph from "./SocietyFactionGraph.astro";
+import SocietyGeoMap from "./SocietyGeoMap.astro";
+import { DISASTER_TIMELINE_EVENTS } from "../../lib/disasterTimeline.js";
+import { SPECIES_FACTION_CARDS } from "../../lib/speciesCooperation.js";
+import { CROP_KIND_CARDS } from "../../lib/cropTimeline.js";
+import {
+  SOCIETY_FACTION_ROWS,
+  SOCIETY_BASE_ROWS,
+  SOCIETY_CAMP_NOTE,
+  SOCIETY_FOREST_CARDS,
+  SOCIETY_REGION_CARDS,
+  SOCIETY_SPACE_CARDS,
+  SOCIETY_TEAM_ROWS,
+} from "../../lib/societyFactions.js";
+import {
+  SOCIETY_MOUNTAIN_ROWS,
+  SOCIETY_PACK_ROWS,
+  SOCIETY_TERRITORY_ROWS,
+} from "../../lib/societyMap.js";
+import {
+  EVOLUTION_BODY_TRACKS,
+  EVOLUTION_BRAIN_FUNCS,
+  EVOLUTION_DANGER_TIERS,
+  EVOLUTION_DIMENSION_CARDS,
+  EVOLUTION_MULTI_SYSTEM,
+  EVOLUTION_ORGAN_TRACKS,
+  EVOLUTION_RULE_ROWS,
+  EVOLUTION_SENSE_TRACKS,
+  EVOLUTION_SPECIAL_TRACKS,
+  EVOLUTION_XIAQING_LINE,
+} from "../../lib/evolutionSystem.js";
+import {
+  QIANG_YI_CONTENT_GRADES,
+  QIANG_YI_CORE,
+  QIANG_YI_PROP_ROWS,
+  QIANG_YI_SYNTH_ROWS,
+} from "../../lib/qiangYiCatalog.js";
+import { RESEARCH_NODES, RESEARCH_OUTPUT_ROWS } from "../../lib/researchNodes.js";
+---
+
+<div class="not-prose novel-setting-board" data-setting-board>
+  <div class="space-y-8">
+    {/* 概览 */}
+    <section id="overview" class="scroll-mt-44 lg:scroll-mt-28 space-y-3" data-section="overview">
+      <h2 class="text-xl font-bold m-0">概览</h2>
+      <dl class="flex flex-wrap items-center gap-y-1.5 text-sm m-0 border-b border-base-300 pb-3">
+        {
+          [
+            ["作者", "南极蓝"],
+            ["平台", "起点中文网"],
+            ["时间", "天灾第十年"],
+            ["类型", "科幻 / 末世"],
+            ["感情线", "有男主·戏份少"],
+          ].map(([label, value], index) => (
+            <>
+              {index > 0 && (
+                <span class="mx-2 text-base-content/25 select-none" aria-hidden="true">
+                  |
+                </span>
+              )}
+              <div class="flex items-baseline gap-1.5 m-0">
+                <dt class="text-base-content/45 m-0 shrink-0">{label}</dt>
+                <dd class="font-medium m-0">{value}</dd>
+              </div>
+            </>
+          ))
+        }
+      </dl>
+
+      <p class="text-sm leading-relaxed m-0 text-base-content/80">
+        <span class="font-semibold text-base-content">一句话：</span>
+        灾后第十年，力量型进化者夏青离开安全区认领三号领地，以科学种田为基，与进化动物共生协作。
+        主线偏种田、基建与科研日常；战斗不是唯一爽点。
+      </p>
+
+      <p class="text-sm leading-relaxed m-0 text-base-content/75">
+        <span class="font-semibold text-base-content">夏青：</span>
+        三号领地领主。对外四级力量型；实际力量 / 视觉 / 听觉三系隐藏（后期升级，并涉磁觉）。狙击 + 领地管理并重。
+      </p>
+
+      <p class="text-xs text-base-content/45 m-0">
+        据公开百科与简介整理，细节以原文为准。
+      </p>
+    </section>
+
+    {/* 天灾时间线 */}
+    <section id="disaster" class="scroll-mt-44 lg:scroll-mt-28 space-y-4" data-section="disaster">
+      <div>
+        <h2 class="text-xl font-bold m-0 mb-2">天灾时间线</h2>
+        <p class="text-sm text-base-content/60 m-0 leading-relaxed">
+          全蓝星人普遍将核污染水排海视为天灾起点。公开设定里，灾变层层叠加上来；开篇后按领地建设阶段推进。
+          农作物线见「种田与科技」，族群合作线见「跨物种关系」。开篇后节点以章节阶段示意，并非精确日历年表。
+        </p>
+      </div>
+      <DisasterTimelineChart />
+      <details class="rounded-xl border border-base-300 bg-base-100 open:shadow-sm" data-timeline-table>
+        <summary class="cursor-pointer select-none px-4 py-2.5 text-sm font-medium text-base-content/75">
+          完整对照表（可展开）
+        </summary>
+        <div class="overflow-x-auto border-t border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>阶段</th>
+                <th>事件</th>
+                <th>影响</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                DISASTER_TIMELINE_EVENTS.map((item) => (
+                  <tr data-era={item.era}>
+                    <td>{item.stage}</td>
+                    <td>{item.event}</td>
+                    <td>{item.impact}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    {/* 戕与颐 */}
+    <section id="elements" class="scroll-mt-44 lg:scroll-mt-28 space-y-4" data-section="elements">
+      <div>
+        <h2 class="text-xl font-bold m-0 mb-2">戕与颐</h2>
+        <p class="text-sm text-base-content/60 m-0 leading-relaxed">
+          华国科学家命名的两种神秘元素：对立统一、维持生态。除浓度与灯色外，后文还出现颐6、颐7一类具特殊功效的合成 / 提取组分，以及按颐含量分档的营养液体系。
+        </p>
+      </div>
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">关系图</h3>
+        <QiangYiRelationGraph />
+      </div>
+      <div class="grid gap-3 md:grid-cols-3">
+        {
+          QIANG_YI_CORE.map((row) => (
+            <article class="board-card rounded-xl border border-base-300 bg-base-100">
+              <h3 class="font-semibold m-0 mb-2">{row.name}</h3>
+              <p class="text-sm m-0 leading-relaxed text-base-content/75">{row.note}</p>
+            </article>
+          ))
+        }
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">含量分档 · 营养液</h3>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>档位</th>
+                <th>含量门槛</th>
+                <th>功效</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                QIANG_YI_CONTENT_GRADES.map((row) => (
+                  <tr>
+                    <td>{row.name}</td>
+                    <td>{row.range}</td>
+                    <td>{row.effect}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">颐 N / 戕 N 特殊组分</h3>
+        <p class="text-sm text-base-content/60 m-0 mb-3 leading-relaxed">
+          数字编号的合成元素与单纯「颐含量 = N」不同：颐6、颐7是具名有效组分，功效专一，常自高颐生物提取。
+        </p>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>名称</th>
+                <th>来源 / 定位</th>
+                <th>特殊功效</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                QIANG_YI_SYNTH_ROWS.map((row) => (
+                  <tr>
+                    <td>{row.name}</td>
+                    <td>{row.range}</td>
+                    <td>{row.effect}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">衍生现象与道具</h3>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>名称</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                QIANG_YI_PROP_ROWS.map((row) => (
+                  <tr>
+                    <td>{row.name}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="text-xs text-base-content/45 m-0 mt-2">
+          注：元素浓度与山川水系绑定；颐石有效半径、刺激液副作用与泉水暴露风险，都会改写领地与势力博弈。
+        </p>
+      </div>
+    </section>
+
+    {/* 社会与空间 */}
+    <section id="society" class="scroll-mt-44 lg:scroll-mt-28 space-y-4" data-section="society">
+      <div>
+        <h2 class="text-xl font-bold m-0 mb-2">社会与空间</h2>
+        <p class="text-sm text-base-content/60 m-0 leading-relaxed">
+          华国现存基地分属红 / 兰 / 晖 / 白 / 桂等大区。晖三是主舞台，但晖一、晖二、白一、红一、兰五等通过地理通路、科研申请、抢肥与暗网持续交叉。
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">五大区</h3>
+        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {
+            SOCIETY_REGION_CARDS.map((card) => (
+              <article class="board-card rounded-xl border border-base-300 bg-base-100">
+                <h3 class="font-semibold m-0 mb-2">{card.title}</h3>
+                <p class="text-sm m-0 mb-2 leading-relaxed">{card.summary}</p>
+                <p class="text-sm text-base-content/55 m-0 leading-relaxed">{card.detail}</p>
+              </article>
+            ))
+          }
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">具名基地速览</h3>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>基地</th>
+                <th>大区</th>
+                <th>与晖三线关系</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                SOCIETY_BASE_ROWS.map((row) => (
+                  <tr>
+                    <td>{row.name}</td>
+                    <td>{row.group}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">进化林地理</h3>
+        <p class="text-sm text-base-content/60 m-0 mb-3 leading-relaxed">
+          晖三周缘进化林按山脊 / 湖泊排序编号；几几号山是一片相连山峰，不是单峰名。烈火山在晖一安区外，是烈火盘据点。
+        </p>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap mb-3">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>编号</th>
+                <th>定位</th>
+                <th>备注</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                SOCIETY_MOUNTAIN_ROWS.map((row) => (
+                  <tr>
+                    <td>{row.code}</td>
+                    <td>{row.name}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="grid gap-3 md:grid-cols-2">
+          {
+            SOCIETY_FOREST_CARDS.map((card) => (
+              <article class="board-card rounded-xl border border-base-300 bg-base-100">
+                <h3 class="font-semibold m-0 mb-2">{card.title}</h3>
+                <p class="text-sm m-0 mb-2 leading-relaxed">{card.summary}</p>
+                <p class="text-sm text-base-content/55 m-0 leading-relaxed">{card.detail}</p>
+              </article>
+            ))
+          }
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">基地下属战队</h3>
+        <p class="text-sm text-base-content/60 m-0 mb-3 leading-relaxed">
+          大区冲突经常落到「基地对立、战队可合作」：寒霜可与青龙互通情报，烈火则盘踞烈火山直接施压北部一区。
+        </p>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>战队</th>
+                <th>挂属</th>
+                <th>姿态</th>
+                <th>备注</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                SOCIETY_TEAM_ROWS.map((row) => (
+                  <tr>
+                    <td>{row.name}</td>
+                    <td>{row.base}</td>
+                    <td>{row.stance}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">晖三本地空间</h3>
+        <div class="grid gap-3 md:grid-cols-2">
+          {
+            SOCIETY_SPACE_CARDS.map((card) => (
+              <article class="board-card rounded-xl border border-base-300 bg-base-100">
+                <h3 class="font-semibold m-0 mb-2">{card.title}</h3>
+                <p class="text-sm m-0 mb-2 leading-relaxed">{card.summary}</p>
+                <p class="text-sm text-base-content/55 m-0 leading-relaxed">{card.detail}</p>
+              </article>
+            ))
+          }
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">华国基地地理示意</h3>
+        <p class="text-sm text-base-content/60 m-0 mb-3 leading-relaxed">
+          上北下南，按相对直距排：贴林主轴六十一→六十→五十二→五十五→四十九→五十→五十一；二十二号山与南部狼群在更南约数百里处。
+        </p>
+        <SocietyGeoMap />
+        <div class="mt-3 overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>族群 / 支系</th>
+                <th>方位要点</th>
+                <th>备注</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                SOCIETY_PACK_ROWS.map((row) => (
+                  <tr>
+                    <td>{row.code}</td>
+                    <td>{row.name}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">势力与基地关系图</h3>
+        <SocietyFactionGraph />
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">主要势力概览</h3>
+        <p class="text-sm text-base-content/60 m-0 mb-3 leading-relaxed">
+          {SOCIETY_CAMP_NOTE}
+        </p>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>分类</th>
+                <th>阵营色</th>
+                <th>势力</th>
+                <th>职能 / 定位</th>
+                <th>与主角线关系</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                SOCIETY_FACTION_ROWS.map((row) => (
+                  <tr>
+                    <td>{row.group}</td>
+                    <td>{row.camp}</td>
+                    <td>{row.name}</td>
+                    <td>{row.role}</td>
+                    <td>{row.stance}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="board-card rounded-xl border border-base-300 bg-base-200/50 text-sm leading-relaxed">
+        <p class="font-semibold m-0 mb-1">通讯设定</p>
+        <p class="m-0 text-base-content/75">
+          天灾冲垮现代化通讯后，长期依赖简易电台。晖三基地内部分恢复手机通讯与短信；区外信号塔未复，领地内常无信号。领主频道、对讲机与联盟群是区外协作的关键通道。
+        </p>
+      </div>
+    </section>
+
+    {/* 进化体系 */}
+    <section id="evolution" class="scroll-mt-44 lg:scroll-mt-28 space-y-4" data-section="evolution">
+      <div>
+        <h2 class="text-xl font-bold m-0 mb-2">进化体系</h2>
+        <p class="text-sm text-base-content/60 m-0 leading-relaxed">
+          人与动物均可进化。评定框架有五维（十级标尺、戕进化危险、脑域、木桶均衡、感触战力折算）；具体能力还包括弹力、爆发力、肺活量、胃肠消化、磁觉，以及单系到五系稀有度。
+        </p>
+      </div>
+
+      <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {
+          EVOLUTION_DIMENSION_CARDS.map((card) => (
+            <article class="board-card rounded-xl border border-base-300 bg-base-100">
+              <h3 class="font-semibold m-0 mb-2">{card.title}</h3>
+              <p class="text-sm m-0 mb-2 leading-relaxed">{card.summary}</p>
+              <p class="text-sm text-base-content/55 m-0 leading-relaxed">{card.detail}</p>
+            </article>
+          ))
+        }
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">运动体能分系（十级标尺）</h3>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>分系</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                EVOLUTION_BODY_TRACKS.map((row) => (
+                  <tr>
+                    <td>{row.name}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">脏器与代谢（肺 · 胃）</h3>
+        <p class="text-sm text-base-content/60 m-0 mb-3 leading-relaxed">
+          肺活量决定持久战供氧；胃肠消化决定能量摄取能否跟上能力消耗——这两项常被忽略，却直接卡死账面战力。
+        </p>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>分系</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                EVOLUTION_ORGAN_TRACKS.map((row) => (
+                  <tr>
+                    <td>{row.name}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid gap-3 md:grid-cols-2">
+        <div>
+          <h3 class="font-semibold text-base m-0 mb-3">感触类分系</h3>
+          <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+            <table class="board-table w-full text-sm">
+              <thead>
+                <tr>
+                  <th>分系</th>
+                  <th>说明</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  EVOLUTION_SENSE_TRACKS.map((row) => (
+                    <tr>
+                      <td>{row.name}</td>
+                      <td>{row.note}</td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h3 class="font-semibold text-base m-0 mb-3">特殊能力</h3>
+          <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+            <table class="board-table w-full text-sm">
+              <thead>
+                <tr>
+                  <th>分系</th>
+                  <th>说明</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  EVOLUTION_SPECIAL_TRACKS.map((row) => (
+                    <tr>
+                      <td>{row.name}</td>
+                      <td>{row.note}</td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">多系稀有度</h3>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>档位</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                EVOLUTION_MULTI_SYSTEM.map((row) => (
+                  <tr>
+                    <td>{row.name}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid gap-3 md:grid-cols-2">
+        <div>
+          <h3 class="font-semibold text-base m-0 mb-3">戕进化危险等级</h3>
+          <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+            <table class="board-table w-full text-sm">
+              <thead>
+                <tr>
+                  <th>等级</th>
+                  <th>管控要点</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  EVOLUTION_DANGER_TIERS.map((row) => (
+                    <tr>
+                      <td>{row.name}</td>
+                      <td>{row.note}</td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h3 class="font-semibold text-base m-0 mb-3">脑域功能区</h3>
+          <p class="text-sm text-base-content/60 m-0 mb-3 leading-relaxed">
+            脑域等级：一级、二级、三级。可同时在多类功能区进阶。
+          </p>
+          <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+            <table class="board-table w-full text-sm">
+              <thead>
+                <tr>
+                  <th>功能区</th>
+                  <th>说明</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  EVOLUTION_BRAIN_FUNCS.map((row) => (
+                    <tr>
+                      <td>{row.name}</td>
+                      <td>{row.note}</td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">底层规则</h3>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>规则</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                EVOLUTION_RULE_ROWS.map((row) => (
+                  <tr>
+                    <td>{row.name}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">夏青能力线</h3>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>层面</th>
+                <th>内容</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                EVOLUTION_XIAQING_LINE.map((row) => (
+                  <tr>
+                    <td>{row.name}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="board-card rounded-xl border border-base-300 bg-base-200/50 text-sm leading-relaxed">
+        <p class="font-semibold m-0 mb-1">进化林（能力生态）</p>
+        <p class="m-0 text-base-content/75">
+          安全区外的高危生态区：进化动植物与高颐 / 高戕微环境并存，既出十级战力样本，也出高中低危险戕进化体。编号山域、族群与战队挂属见「社会与空间」。
+        </p>
+      </div>
+    </section>
+
+    {/* 领地制度 */}
+    <section id="territory" class="scroll-mt-44 lg:scroll-mt-28 space-y-4" data-section="territory">
+      <h2 class="text-xl font-bold m-0">领地制度</h2>
+      <div class="board-card rounded-xl border border-warning/30 bg-warning/10 text-sm leading-relaxed">
+        <p class="font-semibold m-0 mb-1">制度意图</p>
+        <p class="m-0 text-base-content/80">
+          熬过前三年后，死亡人口中相当比例死于同类。基地用「巡逻 + 领主合法防卫权」鼓励有实力者出区种粮，缓解安全区粮食压力。
+        </p>
+      </div>
+      <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+        <table class="board-table w-full text-sm">
+          <thead>
+            <tr>
+              <th>规则项</th>
+              <th>内容</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>认领</td>
+              <td>在任务大厅申请，领取土地使用权证；北部一区等地块按号登记（三号、七号等）</td>
+            </tr>
+            <tr>
+              <td>资源权属</td>
+              <td>证标范围内资源归领主</td>
+            </tr>
+            <tr>
+              <td>非法侵入</td>
+              <td>未经允许私闯构成非法侵入领地罪，从严惩处</td>
+            </tr>
+            <tr>
+              <td>正当防卫</td>
+              <td>制止不法侵害致伤/致死，原则上属正当防卫（权限极宽）</td>
+            </tr>
+            <tr>
+              <td>风险</td>
+              <td>人单势孤的领主易遭掠夺；实力不足则粮尽人亡</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">北部一区编号领地（节选）</h3>
+        <p class="text-sm text-base-content/60 m-0 mb-3 leading-relaxed">
+          早期公开情节约有 1–26 号；后期仍按编号扩殖。下表只列高频出场地块。
+        </p>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>编号</th>
+                <th>要点</th>
+                <th>备注</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                SOCIETY_TERRITORY_ROWS.map((row) => (
+                  <tr>
+                    <td>{row.code}</td>
+                    <td>{row.name}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">夏青领地成长主轴</h3>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>阶段</th>
+                <th>关键词</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>开荒</td>
+                <td>三号地、无污染泉水、翻地建棚引水</td>
+              </tr>
+              <tr>
+                <td>共生</td>
+                <td>收服羊老大、建立狼群邻里信任</td>
+              </tr>
+              <tr>
+                <td>技术</td>
+                <td>绿灯作物、降戕、立体种植、颐石防护</td>
+              </tr>
+              <tr>
+                <td>协同</td>
+                <td>领主联盟、跨物种协议、区域灭灾</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    {/* 种田与科技 */}
+    <section id="farming" class="scroll-mt-44 lg:scroll-mt-28 space-y-4" data-section="farming">
+      <div>
+        <h2 class="text-xl font-bold m-0 mb-2">种田与科技</h2>
+        <p class="text-sm text-base-content/60 m-0 leading-relaxed">
+          定位不是玄学点金，而是末世下的科学农业：测元素、选种、防护、交易、联盟供给。
+          绿灯 / 黄灯分级、泉水与颐石微环境，是整条作物时间线的底层逻辑。
+        </p>
+      </div>
+      <div class="grid gap-3 md:grid-cols-2">
+        {
+          CROP_KIND_CARDS.map((card) => (
+            <article class="board-card rounded-xl border border-base-300 bg-base-100">
+              <h3 class="font-semibold text-base m-0 mb-2">{card.title}</h3>
+              <p class="text-sm m-0 mb-2 leading-relaxed">
+                <span class="font-medium">代表：</span>
+                {card.examples}
+              </p>
+              <p class="text-sm text-base-content/65 m-0 leading-relaxed">{card.notes}</p>
+            </article>
+          ))
+        }
+      </div>
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">农作物时间线</h3>
+        <CropTimeline />
+      </div>
+      <div class="grid gap-3 md:grid-cols-2">
+        <article class="board-card rounded-xl border border-base-300 bg-base-100">
+          <h3 class="font-semibold text-sm m-0 mb-2">生产侧</h3>
+          <ul class="board-list text-sm m-0">
+            <li>绿灯作物体系（相对更安全优质）</li>
+            <li>高颐元素作物选育（如菠菜品系）</li>
+            <li>泉水、土壤、蚓粪、立体种植</li>
+            <li>农机、太阳能、人力水车等基建</li>
+          </ul>
+        </article>
+        <article class="board-card rounded-xl border border-base-300 bg-base-100">
+          <h3 class="font-semibold text-sm m-0 mb-2">制度 / 流通侧</h3>
+          <ul class="board-list text-sm m-0">
+            <li>积分与物资兑换</li>
+            <li>农产品交易会与溯源</li>
+            <li>种植中心 / 养殖中心协作</li>
+            <li>科研成果向基地授权转化</li>
+          </ul>
+        </article>
+      </div>
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">五大关键科研节点</h3>
+        <p class="text-sm text-base-content/60 m-0 mb-3 leading-relaxed">
+          情节里最能体现「科研突破 / 制高点」的五条主线：农业现代化、环境修复、生物医学、创伤修复与军用医疗。汇聚顶尖人才、核心样本与突破性项目，决定各方竞争力与话语权。
+        </p>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>节点</th>
+                <th>轴线</th>
+                <th>关键人物</th>
+                <th>任务 / 指标</th>
+                <th>意义</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                RESEARCH_NODES.map((row) => (
+                  <tr>
+                    <td>{row.name}</td>
+                    <td>{row.axis}</td>
+                    <td>{row.lead}</td>
+                    <td>{row.mission}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">突破外溢</h3>
+        <div class="overflow-x-auto rounded-xl border border-base-300 board-table-wrap">
+          <table class="board-table w-full text-sm">
+            <thead>
+              <tr>
+                <th>成果方向</th>
+                <th>节点</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                RESEARCH_OUTPUT_ROWS.map((row) => (
+                  <tr>
+                    <td>{row.name}</td>
+                    <td>{row.via}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    {/* 跨物种关系 */}
+    <section id="creatures" class="scroll-mt-44 lg:scroll-mt-28 space-y-4" data-section="creatures">
+      <div>
+        <h2 class="text-xl font-bold m-0 mb-2">跨物种关系</h2>
+        <p class="text-sm text-base-content/60 m-0 leading-relaxed">
+          不是「杀光变异兽」套路，而是把进化动物当作同伴、邻居、交易对象与员工。
+          狼有北/南/西多支系，熊可交易亦可联军，虎族后期进入医疗协作，飞禽负责空情——最终指向共生。
+        </p>
+      </div>
+
+      <div class="grid gap-3 md:grid-cols-2">
+        {
+          SPECIES_FACTION_CARDS.map((card) => (
+            <article class="board-card rounded-xl border border-base-300 bg-base-100">
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <h3 class="font-semibold text-base m-0">{card.title}</h3>
+                <span class="badge badge-ghost badge-sm shrink-0">{card.relation.split("→").at(-1)?.trim()}</span>
+              </div>
+              <p class="text-xs text-base-content/45 m-0 mb-2 leading-relaxed">{card.relation}</p>
+              <p class="text-sm m-0 mb-2 leading-relaxed">
+                <span class="font-medium">成员示意：</span>
+                {card.members}
+              </p>
+              <p class="text-sm text-base-content/65 m-0 leading-relaxed">{card.notes}</p>
+            </article>
+          ))
+        }
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">族群合作时间线</h3>
+        <SpeciesCooperationTimeline />
+      </div>
+
+      <article class="board-card rounded-xl border border-base-300 bg-base-100">
+        <h3 class="font-semibold m-0 mb-2">理念侧写</h3>
+        <p class="text-sm text-base-content/75 m-0 leading-relaxed">
+          主线情感并非浪漫霸权，而是「以地为本」：从食物链顶端征服者，转向生态协作者。跨物种协议、领地联盟与有机农场扩张，是这一理念的制度化表达。
+        </p>
+      </article>
+    </section>
+  </div>
+</div>
+
+<style>
+  .novel-setting-board {
+    --board-pad-x: 1rem;
+    --board-pad-y: 0.875rem;
+  }
+
+  .novel-setting-board :global(.board-card) {
+    padding: var(--board-pad-y) var(--board-pad-x);
+  }
+
+  .novel-setting-board :global(.board-list) {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.375rem;
+  }
+
+  .novel-setting-board :global(.board-table) {
+    border-collapse: collapse;
+    margin: 0;
+  }
+
+  .novel-setting-board :global(.board-table th),
+  .novel-setting-board :global(.board-table td) {
+    padding: 0.55rem var(--board-pad-x);
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid color-mix(in oklab, currentColor 12%, transparent);
+    line-height: 1.45;
+  }
+
+  .novel-setting-board :global(.board-table th) {
+    font-weight: 600;
+    background: color-mix(in oklab, currentColor 6%, transparent);
+    white-space: nowrap;
+  }
+
+  .novel-setting-board :global(.board-table tbody tr:nth-child(even) td) {
+    background: color-mix(in oklab, currentColor 4%, transparent);
+  }
+
+  .novel-setting-board :global(.board-table tr:last-child td) {
+    border-bottom: none;
+  }
+
+  .novel-setting-board :global(h2),
+  .novel-setting-board :global(h3) {
+    margin-top: 0;
+  }
+</style>
+
+<script>
+  function syncTimelineTable(era) {
+    document.querySelectorAll("[data-timeline-table] tbody tr[data-era]").forEach((row) => {
+      if (!(row instanceof HTMLElement)) return;
+      const show = era === "all" || row.dataset.era === era;
+      row.hidden = !show;
+    });
+  }
+
+  function bindTimelineTable() {
+    const section = document.getElementById("disaster");
+    if (!section || section.dataset.timelineTableBound === "true") return;
+    section.dataset.timelineTableBound = "true";
+    section.addEventListener("timeline-era-change", (event) => {
+      const era = event.detail?.era || "prelude";
+      syncTimelineTable(era);
+    });
+    const active = section.querySelector("[data-disaster-timeline]")?.getAttribute("data-active-era");
+    syncTimelineTable(active || "prelude");
+  }
+
+  document.addEventListener("astro:page-load", bindTimelineTable);
+  bindTimelineTable();
+</script>

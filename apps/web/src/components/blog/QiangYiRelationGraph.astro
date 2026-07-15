@@ -1,0 +1,279 @@
+---
+/**
+ * Dual-track 戕 / 颐 relation graph — fixed layout, high-contrast colors.
+ */
+import {
+  QIANG_YI_CATEGORIES,
+  QIANG_YI_EDGES,
+  QIANG_YI_NODES,
+} from "../../lib/qiangYiGraph.js";
+
+const graphPayload = {
+  categories: QIANG_YI_CATEGORIES,
+  nodes: QIANG_YI_NODES,
+  edges: QIANG_YI_EDGES,
+};
+---
+
+<div
+  class="qiang-yi-graph rounded-xl border border-base-300 bg-base-100 overflow-hidden"
+  data-qiang-yi-graph
+  data-graph={JSON.stringify(graphPayload)}
+>
+  <div class="flex items-center justify-between gap-3 px-3 pt-3 pb-1 text-xs text-base-content/55">
+    <span class="inline-flex items-center gap-1.5">
+      <span class="inline-block h-2.5 w-2.5 rounded-sm" style="background:#7a3b28"></span>
+      左侧 · 戕向
+    </span>
+    <span class="inline-flex items-center gap-1.5">
+      <span class="inline-block h-2.5 w-2.5 rounded-sm" style="background:#3f5230"></span>
+      右侧 · 颐向
+    </span>
+  </div>
+  <div
+    class="w-full h-[28rem] sm:h-[32rem]"
+    data-qiang-yi-canvas
+    role="img"
+    aria-label="戕与颐关系图：左戕右颐，自上而下从异变到种田结果"
+  >
+  </div>
+  <p class="px-3 pb-2.5 text-[0.7rem] leading-snug text-base-content/40 m-0">
+    从上往下读：异变 → 双元素 → 派生 → 调节 → 平衡 → 进化 / 种田。虚线表示人为干预。
+  </p>
+</div>
+
+<script>
+  import * as echarts from "echarts/core";
+  import { GraphChart } from "echarts/charts";
+  import { TooltipComponent, LegendComponent } from "echarts/components";
+  import { CanvasRenderer } from "echarts/renderers";
+
+  echarts.use([GraphChart, TooltipComponent, LegendComponent, CanvasRenderer]);
+
+  /** @type {WeakMap<Element, import('echarts/core').ECharts>} */
+  const chartByRoot = new WeakMap();
+
+  /** High-contrast fills; labels are always light-on-dark. */
+  const CATEGORY_STYLE = [
+    {
+      color: "#2f3540",
+      borderColor: "#d7dbe3",
+      labelColor: "#f4f6f8",
+    },
+    {
+      color: "#7a3b28",
+      borderColor: "#f0d2c4",
+      labelColor: "#fff8f4",
+    },
+    {
+      color: "#3f5230",
+      borderColor: "#d5e2c8",
+      labelColor: "#f5f8f0",
+    },
+    {
+      color: "#5a5340",
+      borderColor: "#e6e0d0",
+      labelColor: "#faf7f0",
+    },
+    {
+      color: "#3a4f5c",
+      borderColor: "#cfe0ea",
+      labelColor: "#f2f8fb",
+    },
+  ];
+
+  /**
+   * @param {{
+   *   categories: { name: string }[],
+   *   nodes: { id: string, name: string, category: number, x: number, y: number, symbolSize?: number | number[] }[],
+   *   edges: { source: string, target: string, label?: string, lineType?: string }[],
+   * }} graph
+   * @param {number} width
+   * @param {number} height
+   */
+  function buildOption(graph, width, height) {
+    const compact = width < 560;
+    const padX = compact ? 28 : 40;
+    const padTop = 28;
+    const padBottom = 48;
+    const plotW = Math.max(280, width - padX * 2);
+    const plotH = Math.max(320, height - padTop - padBottom);
+
+    return {
+      animationDurationUpdate: 300,
+      legend: {
+        show: true,
+        bottom: 4,
+        itemWidth: 12,
+        itemHeight: 12,
+        textStyle: { color: "rgba(45, 52, 38, 0.7)", fontSize: 11 },
+        data: graph.categories.map((c) => c.name),
+      },
+      tooltip: {
+        borderWidth: 0,
+        backgroundColor: "rgba(28, 30, 26, 0.94)",
+        textStyle: { color: "#f4f1ea", fontSize: 12 },
+        formatter(params) {
+          if (params.dataType === "edge") {
+            const lab = params.data.edgeLabel || "";
+            const s = graph.nodes.find((n) => n.id === params.data.source);
+            const t = graph.nodes.find((n) => n.id === params.data.target);
+            const sn = (s?.name || params.data.source).replace(/\n/g, "");
+            const tn = (t?.name || params.data.target).replace(/\n/g, "");
+            return `${sn} → ${tn}${lab ? `（${lab}）` : ""}`;
+          }
+          const cat = graph.categories[params.data.category]?.name || "";
+          return `<div style="font-weight:600;margin-bottom:2px">${String(params.data.name).replace(/\n/g, " ")}</div><div style="opacity:.8">${cat}</div>`;
+        },
+      },
+      series: [
+        {
+          type: "graph",
+          layout: "none",
+          roam: compact,
+          draggable: false,
+          zoom: 1,
+          scaleLimit: { min: 0.7, max: 1.6 },
+          categories: graph.categories.map((c, i) => ({
+            name: c.name,
+            itemStyle: {
+              color: CATEGORY_STYLE[i].color,
+            },
+          })),
+          symbol: "roundRect",
+          label: {
+            show: true,
+            position: "inside",
+            formatter: "{b}",
+            fontSize: compact ? 10 : 12,
+            fontWeight: 650,
+            lineHeight: compact ? 13 : 15,
+            overflow: "truncate",
+            width: compact ? 70 : 110,
+          },
+          edgeSymbol: ["none", "arrow"],
+          edgeSymbolSize: [0, 9],
+          edgeLabel: {
+            show: !compact,
+            fontSize: 10,
+            color: "rgba(40, 44, 36, 0.78)",
+            backgroundColor: "rgba(248, 246, 240, 0.95)",
+            padding: [2, 4],
+            borderRadius: 3,
+            formatter: (params) => params.data.edgeLabel || "",
+          },
+          lineStyle: {
+            width: 1.8,
+            curveness: 0.08,
+            opacity: 0.85,
+          },
+          emphasis: {
+            focus: "adjacency",
+            scale: false,
+            lineStyle: { width: 3 },
+            itemStyle: { shadowBlur: 10, shadowColor: "rgba(0,0,0,0.2)" },
+          },
+          data: graph.nodes.map((node) => {
+            const style = CATEGORY_STYLE[node.category] || CATEGORY_STYLE[0];
+            const size = node.symbolSize || [100, 36];
+            return {
+              id: node.id,
+              name: node.name,
+              category: node.category,
+              x: padX + (node.x / 100) * plotW,
+              y: padTop + (node.y / 100) * plotH,
+              symbolSize: Array.isArray(size)
+                ? compact
+                  ? [Math.max(56, size[0] * 0.78), Math.max(30, size[1] * 0.9)]
+                  : size
+                : size,
+              itemStyle: {
+                color: style.color,
+                borderColor: style.borderColor,
+                borderWidth: 2,
+              },
+              label: {
+                color: style.labelColor,
+              },
+            };
+          }),
+          links: graph.edges.map((edge) => {
+            const fromQiangish =
+              edge.source.includes("qiang") ||
+              edge.source === "yellow-red" ||
+              edge.source === "anti-qiang";
+            const fromYiish =
+              edge.source.includes("yi") ||
+              edge.source === "shelter" ||
+              edge.source === "spring";
+            let color = "rgba(70, 78, 60, 0.55)";
+            if (fromQiangish && !fromYiish) color = "rgba(122, 59, 40, 0.65)";
+            if (fromYiish && !fromQiangish) color = "rgba(63, 82, 48, 0.65)";
+            if (edge.source === "core-field" || edge.source === "balance") {
+              color = "rgba(55, 62, 72, 0.6)";
+            }
+            return {
+              source: edge.source,
+              target: edge.target,
+              edgeLabel: edge.label || "",
+              lineStyle: {
+                color,
+                type: edge.lineType === "dashed" ? "dashed" : "solid",
+                curveness:
+                  edge.source === "qiang" && edge.target === "balance"
+                    ? 0.22
+                    : edge.source === "yi" && edge.target === "balance"
+                      ? -0.22
+                      : 0.04,
+              },
+            };
+          }),
+        },
+      ],
+    };
+  }
+
+  /**
+   * @param {HTMLElement} root
+   */
+  function mount(root) {
+    const canvas = root.querySelector("[data-qiang-yi-canvas]");
+    if (!(canvas instanceof HTMLElement)) return;
+
+    /** @type {Parameters<typeof buildOption>[0] | null} */
+    let graph = null;
+    try {
+      graph = JSON.parse(root.getAttribute("data-graph") || "null");
+    } catch {
+      graph = null;
+    }
+    if (!graph?.nodes?.length) return;
+
+    let chart = chartByRoot.get(root);
+    if (!chart || chart.isDisposed()) {
+      chart = echarts.init(canvas, undefined, { renderer: "canvas" });
+      chartByRoot.set(root, chart);
+    }
+
+    const w = canvas.clientWidth || 640;
+    const h = canvas.clientHeight || 480;
+    chart.setOption(buildOption(graph, w, h), true);
+    chart.resize();
+  }
+
+  function mountAll() {
+    document.querySelectorAll("[data-qiang-yi-graph]").forEach((root) => {
+      if (root instanceof HTMLElement) mount(root);
+    });
+  }
+
+  function onResize() {
+    document.querySelectorAll("[data-qiang-yi-graph]").forEach((root) => {
+      if (root instanceof HTMLElement) mount(root);
+    });
+  }
+
+  document.addEventListener("astro:page-load", mountAll);
+  window.addEventListener("resize", onResize);
+  mountAll();
+</script>

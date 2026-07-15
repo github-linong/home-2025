@@ -22,7 +22,7 @@ export const profile = {
     wechat: "LN4518",
     wechatNote: "交个朋友、付费问答、源码",
     wechatPublicAccount: "前端linong",
-    wechatQrCode: "/wx-qrcode.jpg",
+    wechatQrCode: "/images/wechat-qrcode.jpg",
   },
   legal: {
     icp: "京ICP备18045145号",

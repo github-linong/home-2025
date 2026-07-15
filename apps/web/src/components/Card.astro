@@ -1,4 +1,7 @@
 ---
+import { Image } from "astro:assets";
+import { toPlainText } from "../lib/plainText";
+
 const { title, img, desc, url, badge, tags, target = "_blank" } = Astro.props as {
   title: string;
   img: any;
@@ -8,7 +11,7 @@ const { title, img, desc, url, badge, tags, target = "_blank" } = Astro.props as
   tags?: string[];
   target?: string;
 };
-import { Image } from "astro:assets";
+const plainDesc = toPlainText(desc, 140);
 ---
 
 <div class="md:w-1/3 w-full">
@@ -20,7 +23,7 @@ import { Image } from "astro:assets";
           {title}
           {badge && <div class="badge badge-secondary">{badge}</div>}
         </h2>
-        <p>{desc}</p>
+        <p class="line-clamp-3">{plainDesc}</p>
         <div class="card-actions justify-end">
           {tags && tags.map((tag) => <div class="badge badge-outline">{tag}</div>)}
         </div>

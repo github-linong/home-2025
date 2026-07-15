@@ -1,0 +1,308 @@
+---
+/**
+ * Schematic geographic map — north↑, relative distances from published anchors.
+ * Local: 61–60–52–55–49–50–51 belt north of plots; deep-south 22 + packs far below.
+ */
+import {
+  SOCIETY_MAP_ANNOTATIONS,
+  SOCIETY_MAP_MARKERS,
+  SOCIETY_MAP_PATHS,
+  SOCIETY_MAP_ZONES,
+} from "../../lib/societyMap.js";
+
+const VB_W = 1000;
+const VB_H = 900;
+
+/** @type {Record<string, { fill: string, stroke: string, text: string }>} */
+const KIND_STYLE = {
+  region: { fill: "transparent", stroke: "transparent", text: "#6b7280" },
+  base: { fill: "#2f3540", stroke: "#d7dbe3", text: "#f4f6f8" },
+  forest: { fill: "#3f5230", stroke: "#c9d9b8", text: "#f5f8f0" },
+  landmark: { fill: "#7a3b28", stroke: "#f0d2c4", text: "#fff8f4" },
+  local: { fill: "#4a5d48", stroke: "#d5e2c8", text: "#f5f8f0" },
+  plot: { fill: "#5c6b3a", stroke: "#e2ecc8", text: "#f7faef" },
+  pack: { fill: "#4a3f2e", stroke: "#e6d7bf", text: "#faf6ef" },
+  creature: { fill: "#6b5340", stroke: "#f0e2d0", text: "#fffaf4" },
+};
+
+const ZONE_FILL = {
+  "z-bai": "rgba(148, 163, 184, 0.14)",
+  "z-lan": "rgba(96, 130, 160, 0.16)",
+  "z-hong": "rgba(180, 90, 70, 0.12)",
+  "z-hui": "rgba(90, 120, 80, 0.14)",
+  "z-gui": "rgba(70, 130, 150, 0.14)",
+};
+
+const byId = Object.fromEntries(SOCIETY_MAP_MARKERS.map((m) => [m.id, m]));
+
+/**
+ * @param {string} fromId
+ * @param {string} toId
+ * @param {boolean} [curved]
+ */
+function pathD(fromId, toId, curved = false) {
+  const a = byId[fromId];
+  const b = byId[toId];
+  if (!a || !b) return "";
+  if (!curved) {
+    return `M ${a.x} ${a.y} L ${b.x} ${b.y}`;
+  }
+  const mx = (a.x + b.x) / 2;
+  const my = (a.y + b.y) / 2;
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const cx = mx - dy * 0.12;
+  const cy = my + dx * 0.12;
+  return `M ${a.x} ${a.y} Q ${cx} ${cy} ${b.x} ${b.y}`;
+}
+
+/**
+ * @param {{ from: string, to: string, curved?: boolean, label: string }} path
+ */
+function pathLabelPos(path) {
+  const a = byId[path.from];
+  const b = byId[path.to];
+  if (!a || !b) return { x: 0, y: 0 };
+  return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - 8 };
+}
+---
+
+<div
+  class="society-geo-map rounded-xl border border-base-300 bg-base-100 overflow-hidden"
+  data-society-map
+>
+  <div class="flex flex-wrap items-center justify-between gap-2 px-3 pt-3 pb-1 text-xs text-base-content/55">
+    <span class="inline-flex items-center gap-1.5">
+      <span class="inline-block h-2.5 w-2.5 rounded-sm" style="background:#2f3540"></span>
+      基地
+    </span>
+    <span class="inline-flex items-center gap-1.5">
+      <span class="inline-block h-2.5 w-2.5 rounded-sm" style="background:#3f5230"></span>
+      编号山域
+    </span>
+    <span class="inline-flex items-center gap-1.5">
+      <span class="inline-block h-2.5 w-2.5 rounded-sm" style="background:#5c6b3a"></span>
+      编号领地
+    </span>
+    <span class="inline-flex items-center gap-1.5">
+      <span class="inline-block h-2.5 w-2.5 rounded-sm" style="background:#4a3f2e"></span>
+      族群
+    </span>
+    <span class="inline-flex items-center gap-1.5">
+      <span class="inline-block h-2.5 w-2.5 rounded-sm" style="background:#6b5340"></span>
+      个体
+    </span>
+  </div>
+
+  <div class="w-full overflow-x-auto px-1 sm:px-2">
+    <svg
+      class="block mx-auto w-full min-w-[360px] max-w-[980px] h-auto"
+      viewBox={`0 0 ${VB_W} ${VB_H}`}
+      role="img"
+      aria-label="晖三周边编号山域地理示意：六十一至五十号山序列、二十二号山南部狼群、领地与狼群个体"
+    >
+      <defs>
+        <pattern id="map-grain" width="12" height="12" patternUnits="userSpaceOnUse">
+          <circle cx="1" cy="1" r="0.7" fill="rgba(60, 70, 50, 0.07)"></circle>
+        </pattern>
+        <marker
+          id="map-arrow"
+          viewBox="0 0 10 10"
+          refX="9"
+          refY="5"
+          markerWidth="6"
+          markerHeight="6"
+          orient="auto-start-reverse"
+        >
+          <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="rgba(70, 78, 60, 0.7)"></path>
+        </marker>
+      </defs>
+
+      <rect width={VB_W} height={VB_H} fill="#f7f5ef"></rect>
+      <rect width={VB_W} height={VB_H} fill="url(#map-grain)"></rect>
+
+      {
+        SOCIETY_MAP_ZONES.map((z) => (
+          <g>
+            <rect
+              x={z.x}
+              y={z.y}
+              width={z.w}
+              height={z.h}
+              rx="18"
+              ry="18"
+              fill={ZONE_FILL[z.id] || "rgba(120,130,110,0.1)"}
+              stroke="rgba(80, 90, 70, 0.22)"
+              stroke-width="1.5"
+              stroke-dasharray="6 5"
+            />
+            <text
+              x={z.x + 12}
+              y={z.y + 20}
+              fill="rgba(70, 78, 60, 0.5)"
+              font-size="12"
+              font-weight="600"
+            >
+              {z.label}
+            </text>
+          </g>
+        ))
+      }
+
+      <!-- compass + scale bar -->
+      <g transform="translate(70, 70)">
+        <circle r="26" fill="rgba(255,255,255,0.75)" stroke="rgba(70,78,60,0.35)" stroke-width="1.5"></circle>
+        <polygon points="0,-16 4,-2 0,2 -4,-2" fill="#2f3540"></polygon>
+        <polygon points="0,16 4,2 0,-2 -4,2" fill="rgba(47,53,64,0.35)"></polygon>
+        <text x="0" y="-20" text-anchor="middle" font-size="11" font-weight="700" fill="#2f3540">
+          N
+        </text>
+      </g>
+      <g transform="translate(120, 88)">
+        <line x1="0" y1="0" x2="90" y2="0" stroke="rgba(47,53,64,0.7)" stroke-width="2.5"></line>
+        <line x1="0" y1="-5" x2="0" y2="5" stroke="rgba(47,53,64,0.7)" stroke-width="2"></line>
+        <line x1="90" y1="-5" x2="90" y2="5" stroke="rgba(47,53,64,0.7)" stroke-width="2"></line>
+        <text x="45" y="16" text-anchor="middle" font-size="10" fill="rgba(47,53,64,0.65)">
+          ≈60里（49→60）
+        </text>
+      </g>
+
+      {
+        SOCIETY_MAP_ANNOTATIONS.map((a) => (
+          <text
+            x={a.x}
+            y={a.y}
+            text-anchor="middle"
+            font-size="11"
+            font-weight="600"
+            fill="rgba(70, 78, 60, 0.55)"
+          >
+            {a.text}
+          </text>
+        ))
+      }
+
+      {
+        SOCIETY_MAP_PATHS.map((p) => {
+          const mid = pathLabelPos(p);
+          const far =
+            p.id === "p-south-gap" ||
+            p.id === "p-lan-60" ||
+            p.id === "p-hong-51" ||
+            p.id === "p-gui";
+          return (
+            <g>
+              <path
+                d={pathD(p.from, p.to, Boolean(p.curved))}
+                fill="none"
+                stroke={far ? "rgba(122, 59, 40, 0.45)" : "rgba(70, 78, 60, 0.4)"}
+                stroke-width={far ? 1.4 : 1.6}
+                stroke-dasharray={far || p.curved ? "5 4" : "0"}
+                marker-end="url(#map-arrow)"
+              />
+              {p.label ? (
+                <text
+                  x={mid.x}
+                  y={mid.y}
+                  text-anchor="middle"
+                  font-size="9"
+                  fill="rgba(40, 44, 36, 0.7)"
+                >
+                  {p.label}
+                </text>
+              ) : null}
+            </g>
+          );
+        })
+      }
+
+      {
+        SOCIETY_MAP_MARKERS.map((m) => {
+          const style = KIND_STYLE[m.kind] || KIND_STYLE.base;
+          const w = m.w || 80;
+          const h = m.h || 30;
+          const isLandmark = m.kind === "landmark";
+          const isForest = m.kind === "forest";
+          const isPlot = m.kind === "plot";
+          const isPack = m.kind === "pack";
+          const isCreature = m.kind === "creature";
+          return (
+            <g>
+              {isLandmark ? (
+                <polygon
+                  points={`${m.x},${m.y - h / 2 - 4} ${m.x + w / 2},${m.y + h / 2} ${m.x - w / 2},${m.y + h / 2}`}
+                  fill={style.fill}
+                  stroke={style.stroke}
+                  stroke-width="2"
+                />
+              ) : isCreature ? (
+                <ellipse
+                  cx={m.x}
+                  cy={m.y}
+                  rx={w / 2}
+                  ry={h / 2}
+                  fill={style.fill}
+                  stroke={style.stroke}
+                  stroke-width="1.6"
+                />
+              ) : (
+                <rect
+                  x={m.x - w / 2}
+                  y={m.y - h / 2}
+                  width={w}
+                  height={h}
+                  rx={isForest ? 14 : isPack ? 11 : isPlot ? 5 : 7}
+                  ry={isForest ? 14 : isPack ? 11 : isPlot ? 5 : 7}
+                  fill={style.fill}
+                  stroke={style.stroke}
+                  stroke-width={m.id === "mt-49" || m.id === "mt-50" ? 2.4 : 1.8}
+                />
+              )}
+              <text
+                x={m.x}
+                y={m.y + 4}
+                text-anchor="middle"
+                font-size={
+                  m.id === "mt-49" || m.id === "mt-50" || m.id === "hui3"
+                    ? 12
+                    : isCreature
+                      ? 9
+                      : isPlot
+                        ? 10
+                        : 11
+                }
+                font-weight={
+                  m.id === "hui3" ||
+                  m.id === "t3" ||
+                  m.id === "mt-49" ||
+                  m.id === "c-laosi" ||
+                  m.id === "c-laoer"
+                    ? 700
+                    : 650
+                }
+                fill={style.text}
+              >
+                {m.label}
+              </text>
+            </g>
+          );
+        })
+      }
+
+      <!-- ocean at true south -->
+      <path
+        d="M 280 870 Q 500 855 720 870 L 720 895 L 280 895 Z"
+        fill="rgba(90, 150, 170, 0.18)"
+        stroke="rgba(70, 130, 150, 0.35)"
+        stroke-width="1"
+      />
+      <text x="500" y="888" text-anchor="middle" font-size="11" fill="rgba(50, 90, 110, 0.65)">
+        南部海域 · 桂城临海
+      </text>
+    </svg>
+  </div>
+
+  <p class="px-3 pb-2.5 text-[0.7rem] leading-snug text-base-content/40 m-0">
+    上北下南。贴林主轴：六十一→六十→五十二→五十五→四十九→五十→五十一；四十九东邻五十，北距六十约六十里。二十二号山与南部狼群在更南（约数百里）；烈火山偏晖一西，距北部一区亦约数百里。比例为方位示意，非测绘成果。
+  </p>
+</div>

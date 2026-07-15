@@ -1,0 +1,19 @@
+---
+/**
+ * Thin wrapper: species / faction cooperation timeline.
+ */
+import FilterableVerticalTimeline from "./FilterableVerticalTimeline.astro";
+import {
+  SPECIES_COOPERATION_EVENTS,
+  SPECIES_COOPERATION_TABS,
+} from "../../lib/speciesCooperation.js";
+---
+
+<FilterableVerticalTimeline
+  events={SPECIES_COOPERATION_EVENTS}
+  tabs={SPECIES_COOPERATION_TABS}
+  filterKey="factions"
+  defaultTab="all"
+  ariaLabel="族群合作时间线"
+  footnote="可按狼族 / 熊组 / 虎族 / 飞禽 / 走兽筛选；章节节点为公开示意。"
+/>

@@ -1,0 +1,263 @@
+---
+/**
+ * Fixed-layout faction / space relation graph for society section.
+ */
+import {
+  SOCIETY_GRAPH_CATEGORIES,
+  SOCIETY_GRAPH_EDGES,
+  SOCIETY_GRAPH_NODES,
+} from "../../lib/societyFactions.js";
+
+const graphPayload = {
+  categories: SOCIETY_GRAPH_CATEGORIES,
+  nodes: SOCIETY_GRAPH_NODES,
+  edges: SOCIETY_GRAPH_EDGES,
+};
+---
+
+<div
+  class="society-faction-graph rounded-xl border border-base-300 bg-base-100 overflow-hidden"
+  data-society-graph
+  data-graph={JSON.stringify(graphPayload)}
+>
+  <div class="flex flex-wrap items-center justify-between gap-2 px-3 pt-3 pb-1 text-xs text-base-content/55">
+    <span class="inline-flex items-center gap-1.5">
+      <span class="inline-block h-2.5 w-2.5 rounded-sm" style="background:#2f3540"></span>
+      大区 / 基地
+    </span>
+    <span class="inline-flex items-center gap-1.5">
+      <span class="inline-block h-2.5 w-2.5 rounded-sm" style="background:#3a4f5c"></span>
+      进化林地理
+    </span>
+    <span class="inline-flex items-center gap-1.5">
+      <span class="inline-block h-2.5 w-2.5 rounded-sm" style="background:#4a5d48"></span>
+      下属战队
+    </span>
+    <span class="inline-flex items-center gap-1.5">
+      <span class="inline-block h-2.5 w-2.5 rounded-sm" style="background:#3f5230"></span>
+      晖三协作
+    </span>
+    <span class="inline-flex items-center gap-1.5">
+      <span class="inline-block h-2.5 w-2.5 rounded-sm" style="background:#7a3b28"></span>
+      敌对压力
+    </span>
+  </div>
+  <div
+    class="w-full h-[42rem] sm:h-[50rem]"
+    data-society-canvas
+    role="img"
+    aria-label="社会、进化林与基地下属战队关系图：含烈火山烈火、青龙夙风寒霜黑豹"
+  >
+  </div>
+  <p class="px-3 pb-2.5 text-[0.7rem] leading-snug text-base-content/40 m-0">
+    自上而下：大区/基地 → 进化林走廊与烈火山 → 各基战队 → 晖三协作 → 敌对压力。虚线多为通路、暗线或「基地对立但战队可合作」。
+  </p>
+</div>
+
+<script>
+  import * as echarts from "echarts/core";
+  import { GraphChart } from "echarts/charts";
+  import { TooltipComponent, LegendComponent } from "echarts/components";
+  import { CanvasRenderer } from "echarts/renderers";
+
+  echarts.use([GraphChart, TooltipComponent, LegendComponent, CanvasRenderer]);
+
+  /** @type {WeakMap<Element, import('echarts/core').ECharts>} */
+  const chartByRoot = new WeakMap();
+
+  const CATEGORY_STYLE = [
+    { color: "#2f3540", borderColor: "#d7dbe3", labelColor: "#f4f6f8" },
+    { color: "#3a4f5c", borderColor: "#cfe0ea", labelColor: "#f2f8fb" },
+    { color: "#4a5d48", borderColor: "#d5e2c8", labelColor: "#f5f8f0" },
+    { color: "#3f5230", borderColor: "#d5e2c8", labelColor: "#f5f8f0" },
+    { color: "#7a3b28", borderColor: "#f0d2c4", labelColor: "#fff8f4" },
+  ];
+
+  /**
+   * @param {{
+   *   categories: { name: string }[],
+   *   nodes: { id: string, name: string, category: number, x: number, y: number, symbolSize?: number | number[] }[],
+   *   edges: { source: string, target: string, label?: string, lineType?: string }[],
+   * }} graph
+   * @param {number} width
+   * @param {number} height
+   */
+  function buildOption(graph, width, height) {
+    const compact = width < 560;
+    const padX = compact ? 24 : 36;
+    const padTop = 24;
+    const padBottom = 52;
+    const plotW = Math.max(280, width - padX * 2);
+    const plotH = Math.max(340, height - padTop - padBottom);
+
+    return {
+      animationDurationUpdate: 280,
+      legend: {
+        show: true,
+        bottom: 4,
+        itemWidth: 12,
+        itemHeight: 12,
+        textStyle: { color: "rgba(45, 52, 38, 0.7)", fontSize: 11 },
+        data: graph.categories.map((c) => c.name),
+      },
+      tooltip: {
+        borderWidth: 0,
+        backgroundColor: "rgba(28, 30, 26, 0.94)",
+        textStyle: { color: "#f4f1ea", fontSize: 12 },
+        formatter(params) {
+          if (params.dataType === "edge") {
+            const lab = params.data.edgeLabel || "";
+            const s = graph.nodes.find((n) => n.id === params.data.source);
+            const t = graph.nodes.find((n) => n.id === params.data.target);
+            const sn = (s?.name || params.data.source).replace(/\n/g, "");
+            const tn = (t?.name || params.data.target).replace(/\n/g, "");
+            return `${sn} → ${tn}${lab ? `（${lab}）` : ""}`;
+          }
+          const cat = graph.categories[params.data.category]?.name || "";
+          return `<div style="font-weight:600;margin-bottom:2px">${String(params.data.name).replace(/\n/g, " ")}</div><div style="opacity:.8">${cat}</div>`;
+        },
+      },
+      series: [
+        {
+          type: "graph",
+          layout: "none",
+          roam: compact,
+          draggable: false,
+          categories: graph.categories.map((c, i) => ({
+            name: c.name,
+            itemStyle: { color: CATEGORY_STYLE[i].color },
+          })),
+          symbol: "roundRect",
+          label: {
+            show: true,
+            position: "inside",
+            formatter: "{b}",
+            fontSize: compact ? 10 : 11,
+            fontWeight: 650,
+            lineHeight: 14,
+            overflow: "truncate",
+            width: compact ? 64 : 100,
+          },
+          edgeSymbol: ["none", "arrow"],
+          edgeSymbolSize: [0, 8],
+          edgeLabel: {
+            show: width >= 720,
+            fontSize: 9,
+            color: "rgba(40, 44, 36, 0.78)",
+            backgroundColor: "rgba(248, 246, 240, 0.95)",
+            padding: [1, 3],
+            borderRadius: 3,
+            formatter: (params) => params.data.edgeLabel || "",
+          },
+          lineStyle: { width: 1.7, opacity: 0.85 },
+          emphasis: {
+            focus: "adjacency",
+            scale: false,
+            lineStyle: { width: 3 },
+          },
+          data: graph.nodes.map((node) => {
+            const style = CATEGORY_STYLE[node.category] || CATEGORY_STYLE[0];
+            const size = node.symbolSize || [100, 34];
+            return {
+              id: node.id,
+              name: node.name,
+              category: node.category,
+              x: padX + (node.x / 100) * plotW,
+              y: padTop + (node.y / 100) * plotH,
+              symbolSize: Array.isArray(size)
+                ? compact
+                  ? [Math.max(56, size[0] * 0.78), Math.max(28, size[1] * 0.9)]
+                  : size
+                : size,
+              itemStyle: {
+                color: style.color,
+                borderColor: style.borderColor,
+                borderWidth: 2,
+              },
+              label: { color: style.labelColor },
+            };
+          }),
+          links: graph.edges.map((edge) => {
+            let color = "rgba(70, 78, 60, 0.5)";
+            if (["blue", "fire", "pressure"].includes(edge.source)) {
+              color = "rgba(122, 59, 40, 0.7)";
+            } else if (
+              ["lords", "qinglong", "lab7", "species", "hanshuang"].includes(
+                edge.source,
+              )
+            ) {
+              color = "rgba(63, 82, 48, 0.65)";
+            } else if (
+              edge.source.startsWith("forest") ||
+              edge.source === "huoshan"
+            ) {
+              color = "rgba(58, 79, 92, 0.65)";
+            } else if (
+              ["hui1", "hui2", "hui5", "hui6", "hong1", "lan5", "bai1", "gui3", "sufeng", "heibao"].includes(
+                edge.source,
+              )
+            ) {
+              color = "rgba(58, 79, 92, 0.6)";
+            } else if (edge.source.startsWith("reg-")) {
+              color = "rgba(47, 53, 64, 0.55)";
+            }
+            return {
+              source: edge.source,
+              target: edge.target,
+              edgeLabel: edge.label || "",
+              lineStyle: {
+                color,
+                type: edge.lineType === "dashed" ? "dashed" : "solid",
+                curveness: 0.04,
+              },
+            };
+          }),
+        },
+      ],
+    };
+  }
+
+  /**
+   * @param {HTMLElement} root
+   */
+  function mount(root) {
+    const canvas = root.querySelector("[data-society-canvas]");
+    if (!(canvas instanceof HTMLElement)) return;
+
+    /** @type {Parameters<typeof buildOption>[0] | null} */
+    let graph = null;
+    try {
+      graph = JSON.parse(root.getAttribute("data-graph") || "null");
+    } catch {
+      graph = null;
+    }
+    if (!graph?.nodes?.length) return;
+
+    let chart = chartByRoot.get(root);
+    if (!chart || chart.isDisposed()) {
+      chart = echarts.init(canvas, undefined, { renderer: "canvas" });
+      chartByRoot.set(root, chart);
+    }
+
+    const w = canvas.clientWidth || 640;
+    const h = canvas.clientHeight || 520;
+    chart.setOption(buildOption(graph, w, h), true);
+    chart.resize();
+  }
+
+  function mountAll() {
+    document.querySelectorAll("[data-society-graph]").forEach((root) => {
+      if (root instanceof HTMLElement) mount(root);
+    });
+  }
+
+  function onResize() {
+    document.querySelectorAll("[data-society-graph]").forEach((root) => {
+      if (root instanceof HTMLElement) mount(root);
+    });
+  }
+
+  document.addEventListener("astro:page-load", mountAll);
+  window.addEventListener("resize", onResize);
+  mountAll();
+</script>

@@ -3,6 +3,7 @@ import createSlug from "./createSlug";
 import { CURATED_DEMO_SLUGS } from "../data/curated-demos";
 import { getDemoHighlights, getHomeDemoPicks } from "./demoHighlights";
 import { blogBaseWeight, demoBaseWeight } from "./contentWeight";
+import { toPlainText } from "./plainText";
 
 export type SortCatalogItem = {
   id: string;
@@ -39,7 +40,7 @@ export async function buildBlogSortCatalog(): Promise<SortCatalogItem[]> {
       id: pathSlug,
       url: "/blog/" + pathSlug,
       title: post.data.title,
-      desc: post.data.description,
+      desc: toPlainText(post.data.description, 180),
       img: post.data.heroImage,
       badge: post.data.badge,
       tags: post.data.tags,
@@ -61,7 +62,7 @@ export async function buildDemoHighlightsCatalog(): Promise<SortCatalogItem[]> {
       id: pathSlug,
       url: "/demos/" + pathSlug,
       title: demo.data.title,
-      desc: demo.data.description,
+      desc: toPlainText(demo.data.description, 180),
       img: demo.data.heroImage,
       badge: demo.data.badge,
       tags: demo.data.tags,
@@ -84,7 +85,7 @@ export async function buildHomeDemoCatalog(): Promise<SortCatalogItem[]> {
       id: pathSlug,
       url: "/demos/" + pathSlug,
       title: demo.data.title,
-      desc: demo.data.description,
+      desc: toPlainText(demo.data.description, 180),
       img: demo.data.heroImage,
       badge: demo.data.badge,
       tags: demo.data.tags,
@@ -109,7 +110,7 @@ export async function buildDemoLegacyCatalog() {
       id: pathSlug,
       url: "/demos/" + pathSlug,
       title: demo.data.title,
-      desc: demo.data.description,
+      desc: toPlainText(demo.data.description, 180),
       category: demo.data.category || "",
       posts: demo.data.relatedPosts?.length ?? 0,
       pubDate: demo.data.pubDate.toISOString(),

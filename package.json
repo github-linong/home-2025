@@ -33,6 +33,8 @@
     "enrich:jsrun": "node scripts/enrich-jsrun-curated.mjs",
     "normalize:jsrun-tags": "node scripts/normalize-jsrun-tags.mjs",
     "deploy:web": "bash scripts/deploy-web.sh",
+    "dev:api2": "npm run dev --prefix apps/api2",
+    "start:api2": "npm run start --prefix apps/api2",
     "test:api": "npm test --prefix apps/api"
   },
   "engines": {
