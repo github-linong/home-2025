@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors";
 import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
-import { auth } from "./auth.js";
+import { auth, pool } from "./auth.js";
+import { createLearnRouter } from "./learn/routes.js";
+import { createDemoRouter } from "./demo/stream-routes.js";
 
 process.on("uncaughtException", (err) => {
   console.error("[api2] uncaughtException:", err);
@@ -60,6 +62,9 @@ app.get("/api/me", async (req, res) => {
     res.status(500).json({ ok: false, error: "session_error" });
   }
 });
+
+app.use("/api/learn", createLearnRouter(pool));
+app.use("/api/demo", createDemoRouter());
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`[api2] listening on http://127.0.0.1:${port}`);

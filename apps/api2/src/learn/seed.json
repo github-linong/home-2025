@@ -1,0 +1,229 @@
+{
+  "decks": [
+    {
+      "slug": "daily-basics",
+      "title": "Daily Basics",
+      "description": "Everyday words for commute, work, and small talk.",
+      "cards": [
+        { "en": "commute", "zh": "通勤", "hint": "daily travel to work", "sort_order": 1 },
+        { "en": "deadline", "zh": "截止日期", "hint": "time limit for work", "sort_order": 2 },
+        { "en": "schedule", "zh": "日程；安排", "hint": "plan of activities", "sort_order": 3 },
+        { "en": "priority", "zh": "优先事项", "hint": "what matters most", "sort_order": 4 },
+        { "en": "habit", "zh": "习惯", "hint": "regular practice", "sort_order": 5 },
+        { "en": "focus", "zh": "专注", "hint": "pay close attention", "sort_order": 6 },
+        { "en": "distraction", "zh": "干扰；分心的事物", "hint": "something that breaks attention", "sort_order": 7 },
+        { "en": "break", "zh": "休息", "hint": "short pause", "sort_order": 8 },
+        { "en": "reminder", "zh": "提醒", "hint": "note to remember", "sort_order": 9 },
+        { "en": "appointment", "zh": "预约；约会", "hint": "planned meeting", "sort_order": 10 },
+        { "en": "errand", "zh": "差事；跑腿", "hint": "small task outside", "sort_order": 11 },
+        { "en": "grocery", "zh": "食品杂货", "hint": "food shopping", "sort_order": 12 },
+        { "en": "receipt", "zh": "收据", "hint": "proof of purchase", "sort_order": 13 },
+        { "en": "budget", "zh": "预算", "hint": "money plan", "sort_order": 14 },
+        { "en": "save", "zh": "节省；存钱", "hint": "keep money aside", "sort_order": 15 },
+        { "en": "waste", "zh": "浪费", "hint": "use poorly", "sort_order": 16 },
+        { "en": "convenient", "zh": "方便的", "hint": "easy to use", "sort_order": 17 },
+        { "en": "reliable", "zh": "可靠的", "hint": "can be trusted", "sort_order": 18 },
+        { "en": "polite", "zh": "礼貌的", "hint": "good manners", "sort_order": 19 },
+        { "en": "patient", "zh": "有耐心的", "hint": "calm while waiting", "sort_order": 20 },
+        { "en": "confident", "zh": "自信的", "hint": "sure of yourself", "sort_order": 21 },
+        { "en": "curious", "zh": "好奇的", "hint": "want to know more", "sort_order": 22 },
+        { "en": "grateful", "zh": "感激的", "hint": "thankful", "sort_order": 23 },
+        { "en": "honest", "zh": "诚实的", "hint": "tell the truth", "sort_order": 24 },
+        { "en": "improve", "zh": "改进；提高", "hint": "make better", "sort_order": 25 }
+      ]
+    }
+  ],
+  "words": [
+    {
+      "lemma": "routine",
+      "phonetic": "/ruːˈtiːn/",
+      "zh": "日常；惯例",
+      "pos": "n.",
+      "example": "A morning routine helps me start the day."
+    },
+    {
+      "lemma": "quiet",
+      "phonetic": "/ˈkwaɪət/",
+      "zh": "安静的",
+      "pos": "adj.",
+      "example": "I need a quiet place to read."
+    },
+    {
+      "lemma": "stretch",
+      "phonetic": "/stretʃ/",
+      "zh": "伸展；拉伸",
+      "pos": "v.",
+      "example": "Stretch for five minutes after sitting."
+    },
+    {
+      "lemma": "notebook",
+      "phonetic": "/ˈnəʊtbʊk/",
+      "zh": "笔记本",
+      "pos": "n.",
+      "example": "I write new words in a notebook."
+    },
+    {
+      "lemma": "review",
+      "phonetic": "/rɪˈvjuː/",
+      "zh": "复习；回顾",
+      "pos": "v.",
+      "example": "Review the cards before bed."
+    },
+    {
+      "lemma": "progress",
+      "phonetic": "/ˈprəʊɡres/",
+      "zh": "进步；进展",
+      "pos": "n.",
+      "example": "Small steps still mean progress."
+    },
+    {
+      "lemma": "subway",
+      "phonetic": "/ˈsʌbweɪ/",
+      "zh": "地铁",
+      "pos": "n.",
+      "example": "I take the subway to work."
+    },
+    {
+      "lemma": "crowded",
+      "phonetic": "/ˈkraʊdɪd/",
+      "zh": "拥挤的",
+      "pos": "adj.",
+      "example": "The train is crowded in the morning."
+    },
+    {
+      "lemma": "headphones",
+      "phonetic": "/ˈhedfəʊnz/",
+      "zh": "耳机",
+      "pos": "n.",
+      "example": "She listens to podcasts with headphones."
+    },
+    {
+      "lemma": "podcast",
+      "phonetic": "/ˈpɒdkɑːst/",
+      "zh": "播客",
+      "pos": "n.",
+      "example": "A short podcast fits into my commute."
+    },
+    {
+      "lemma": "station",
+      "phonetic": "/ˈsteɪʃn/",
+      "zh": "车站",
+      "pos": "n.",
+      "example": "Get off at the next station."
+    },
+    {
+      "lemma": "transfer",
+      "phonetic": "/trænsˈfɜː(r)/",
+      "zh": "换乘；转乘",
+      "pos": "v.",
+      "example": "Transfer to line 2 at this stop."
+    },
+    {
+      "lemma": "cafe",
+      "phonetic": "/ˈkæfeɪ/",
+      "zh": "咖啡馆",
+      "pos": "n.",
+      "example": "We meet at a small cafe near the office."
+    },
+    {
+      "lemma": "order",
+      "phonetic": "/ˈɔːdə(r)/",
+      "zh": "点单；订购",
+      "pos": "v.",
+      "example": "I usually order a latte."
+    },
+    {
+      "lemma": "latte",
+      "phonetic": "/ˈlæteɪ/",
+      "zh": "拿铁咖啡",
+      "pos": "n.",
+      "example": "A latte is milkier than espresso."
+    },
+    {
+      "lemma": "table",
+      "phonetic": "/ˈteɪbl/",
+      "zh": "桌子",
+      "pos": "n.",
+      "example": "There is a free table by the window."
+    },
+    {
+      "lemma": "conversation",
+      "phonetic": "/ˌkɒnvəˈseɪʃn/",
+      "zh": "对话；交谈",
+      "pos": "n.",
+      "example": "We had a short conversation about the weekend."
+    },
+    {
+      "lemma": "weekend",
+      "phonetic": "/ˌwiːkˈend/",
+      "zh": "周末",
+      "pos": "n.",
+      "example": "What are your plans for the weekend?"
+    },
+    {
+      "lemma": "library",
+      "phonetic": "/ˈlaɪbrəri/",
+      "zh": "图书馆",
+      "pos": "n.",
+      "example": "The library is quieter than a cafe."
+    },
+    {
+      "lemma": "borrow",
+      "phonetic": "/ˈbɒrəʊ/",
+      "zh": "借",
+      "pos": "v.",
+      "example": "You can borrow two books at a time."
+    },
+    {
+      "lemma": "shelf",
+      "phonetic": "/ʃelf/",
+      "zh": "架子；书架",
+      "pos": "n.",
+      "example": "The novel is on the top shelf."
+    },
+    {
+      "lemma": "return",
+      "phonetic": "/rɪˈtɜːn/",
+      "zh": "归还；返回",
+      "pos": "v.",
+      "example": "Please return the book by Friday."
+    },
+    {
+      "lemma": "focus",
+      "phonetic": "/ˈfəʊkəs/",
+      "zh": "专注",
+      "pos": "v./n.",
+      "example": "It is hard to focus with notifications on."
+    },
+    {
+      "lemma": "habit",
+      "phonetic": "/ˈhæbɪt/",
+      "zh": "习惯",
+      "pos": "n.",
+      "example": "Reading before sleep is a good habit."
+    }
+  ],
+  "passages": [
+    {
+      "slug": "morning-routine",
+      "title": "A Simple Morning Routine",
+      "level": "A2",
+      "body": "I wake up early and keep a quiet morning routine. First I stretch for a few minutes. Then I open my notebook and review five words. Small steps still mean progress. After that I make coffee and plan the day.",
+      "wordLemmas": ["routine", "quiet", "stretch", "notebook", "review", "progress", "habit", "focus"]
+    },
+    {
+      "slug": "subway-commute",
+      "title": "On the Subway",
+      "level": "A2",
+      "body": "The subway is crowded in the morning. I wear headphones and listen to a short podcast. At the next station I transfer to another line. The ride takes twenty minutes. When I arrive I feel ready for work.",
+      "wordLemmas": ["subway", "crowded", "headphones", "podcast", "station", "transfer"]
+    },
+    {
+      "slug": "weekend-cafe",
+      "title": "Weekend at a Cafe",
+      "level": "B1",
+      "body": "On the weekend I meet a friend at a small cafe. We order a latte and sit at a table by the window. Our conversation is slow and relaxed. Sometimes we go to the library later to borrow a book from the shelf and return another one.",
+      "wordLemmas": ["weekend", "cafe", "order", "latte", "table", "conversation", "library", "borrow", "shelf", "return"]
+    }
+  ]
+}

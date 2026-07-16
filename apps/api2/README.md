@@ -31,7 +31,38 @@ npm run dev
 # → http://127.0.0.1:3002/api/auth/*
 ```
 
-Astro 开发服务器已将 `/api/auth`、`/api/me` 代理到 `3002`。
+Astro 开发服务器已将 `/api/auth`、`/api/me`、`/api/learn` 代理到 `3002`。
+
+## 英语学习内容
+
+```bash
+# 建表并导入内置词卡 / 短文 / 国际音标（可重复执行）
+npm run learn:migrate
+```
+
+接口：`GET /api/learn/decks`、`/decks/:slug/cards`、`/passages`、`/passages/:slug`、`/words?q=`、`/ipa`。
+
+音标内容整理自《英语国际音标课》讲义（字母读音、元音/双元音/辅音分组与例词）。
+
+### 发音音频
+
+- `GET /api/learn/audio/status` — 探测本机 TTS 工具是否可用
+- `GET /api/learn/audio/ipa?s=æ` — 音标发音（eSpeak-ng 音素合成）
+- `GET /api/learn/audio/word?q=cat` — 单词发音：优先真人录音（Wiktionary/Lingua Libre/词典 CDN），否则 Piper→eSpeak 兜底
+
+依赖（均为可选外部工具，未安装时相应能力降级）：
+
+```bash
+# 音标发音 + 单词兜底（必备其一，推荐）
+brew install espeak-ng            # macOS
+# apt-get install espeak-ng       # Debian/Ubuntu
+
+# 更自然的单词/短文合成（可选）
+pip install piper-tts
+# 下载 voice 到 data/piper-voices/en_US-lessac-medium.onnx(.json)
+```
+
+真人音频与合成结果会缓存到 `data/learn-audio/`（已 gitignore）。可用环境变量覆盖：`ESPEAK_BIN`、`PIPER_BIN`、`PIPER_MODEL`、`LEARN_AUDIO_UA`。
 
 ## GitHub OAuth
 
@@ -56,3 +87,5 @@ Astro 开发服务器已将 `/api/auth`、`/api/me` 代理到 `3002`。
 | `npm run dev` | 热重载 |
 | `npm start` | 生产启动 |
 | `npm run auth:migrate` | 连通性检查（建表仍用 CLI migrate） |
+| `npm run learn:migrate` | 英语学习表 + 种子数据 |
+| `npm test` | 单元测试 |

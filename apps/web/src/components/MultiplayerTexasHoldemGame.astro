@@ -1,0 +1,1094 @@
+<section class="poker-game" aria-label="六人德州扑克游戏">
+  <div class="game-toolbar">
+    <div>
+      <span class="eyebrow">6-MAX · NO-LIMIT HOLD'EM</span>
+      <h2>午夜绿毡</h2>
+    </div>
+    <button id="new-hand" class="secondary-button" type="button">下一手</button>
+  </div>
+
+  <div class="poker-table">
+    <div id="table-seats" class="table-seats"></div>
+    <div class="table-center">
+      <div class="pot"><span>底池</span><strong id="pot">0</strong></div>
+      <div id="community-cards" class="card-row community" aria-label="公共牌"></div>
+      <p id="game-message" class="game-message" aria-live="polite">正在洗牌…</p>
+    </div>
+  </div>
+
+  <div class="action-panel">
+    <div class="round-info">
+      <span id="street-name">翻牌前</span>
+      <span id="call-info">等待发牌</span>
+    </div>
+    <div class="bet-controls">
+      <label for="bet-amount">加注到</label>
+      <input id="bet-amount" type="number" inputmode="numeric" min="20" step="1" value="20" />
+    </div>
+    <div class="actions">
+      <button id="fold-action" class="action fold-action" type="button">弃牌</button>
+      <button id="call-action" class="action call-action" type="button">跟注</button>
+      <button id="raise-action" class="action raise-action" type="button">加注</button>
+      <button id="all-in-action" class="action all-in-action" type="button">All-in</button>
+    </div>
+  </div>
+
+  <p class="rules-note">
+    六人桌无限注：1 名玩家 + 5 名电脑；庄位、盲注和行动顺序逐手轮换，支持 All-in 与边池。
+  </p>
+</section>
+
+<script>
+  import { compareScores, createDeck, evaluateBestHand } from "../lib/pokerEngine.mjs";
+  import {
+    createSidePots,
+    nextSeatIndex,
+    tablePositions,
+  } from "../lib/pokerBetting.mjs";
+
+  type Suit = "s" | "h" | "d" | "c";
+  type Rank = "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "T" | "J" | "Q" | "K" | "A";
+  type Card = { rank: Rank; suit: Suit };
+  type Street = "preflop" | "flop" | "turn" | "river";
+
+  type Seat = {
+    id: string;
+    name: string;
+    human: boolean;
+    stack: number;
+    hole: Card[];
+    streetBet: number;
+    totalBet: number;
+    folded: boolean;
+    allIn: boolean;
+    acted: boolean;
+  };
+
+  type GameState = {
+    seats: Seat[];
+    deck: Card[];
+    community: Card[];
+    dealerIndex: number;
+    turnIndex: number;
+    street: Street;
+    currentBet: number;
+    lastRaise: number;
+    pot: number;
+    finished: boolean;
+    reveal: boolean;
+    busy: boolean;
+    message: string;
+    handId: number;
+    raiseLockedIds: string[];
+  };
+
+  type RaiseBounds = {
+    fullCallAmount: number;
+    callAmount: number;
+    minimum: number;
+    maximum: number;
+    canRaise: boolean;
+    canFullRaise: boolean;
+  };
+
+  const BIG_BLIND = 10;
+  const SMALL_BLIND = 5;
+  const STARTING_STACK = 500;
+  const suitSymbols: Record<Suit, string> = { s: "♠", h: "♥", d: "♦", c: "♣" };
+  const rankLabels: Partial<Record<Rank, string>> = { T: "10", J: "J", Q: "Q", K: "K", A: "A" };
+  const streetLabels: Record<Street, string> = {
+    preflop: "翻牌前",
+    flop: "翻牌",
+    turn: "转牌",
+    river: "河牌",
+  };
+
+  function getElement<T extends Element>(selector: string): T {
+    const element = document.querySelector<T>(selector);
+    if (!element) throw new Error(`Missing game element: ${selector}`);
+    return element;
+  }
+
+  const elements = {
+    allInAction: getElement<HTMLButtonElement>("#all-in-action"),
+    betAmount: getElement<HTMLInputElement>("#bet-amount"),
+    callAction: getElement<HTMLButtonElement>("#call-action"),
+    callInfo: getElement<HTMLElement>("#call-info"),
+    communityCards: getElement<HTMLElement>("#community-cards"),
+    foldAction: getElement<HTMLButtonElement>("#fold-action"),
+    message: getElement<HTMLElement>("#game-message"),
+    newHand: getElement<HTMLButtonElement>("#new-hand"),
+    pot: getElement<HTMLElement>("#pot"),
+    raiseAction: getElement<HTMLButtonElement>("#raise-action"),
+    seats: getElement<HTMLElement>("#table-seats"),
+    streetName: getElement<HTMLElement>("#street-name"),
+  };
+
+  const initialSeats: Seat[] = [
+    { id: "player", name: "你", human: true },
+    { id: "ai-1", name: "小林", human: false },
+    { id: "ai-2", name: "阿杰", human: false },
+    { id: "ai-3", name: "小周", human: false },
+    { id: "ai-4", name: "安娜", human: false },
+    { id: "ai-5", name: "老陈", human: false },
+  ].map((seat) => ({
+    ...seat,
+    stack: STARTING_STACK,
+    hole: [],
+    streetBet: 0,
+    totalBet: 0,
+    folded: false,
+    allIn: false,
+    acted: false,
+  }));
+
+  let state: GameState = {
+    seats: initialSeats,
+    deck: [],
+    community: [],
+    dealerIndex: -1,
+    turnIndex: -1,
+    street: "preflop",
+    currentBet: 0,
+    lastRaise: BIG_BLIND,
+    pot: 0,
+    finished: false,
+    reveal: false,
+    busy: false,
+    message: "",
+    handId: 0,
+    raiseLockedIds: [],
+  };
+
+  function cardMarkup(card: Card | null, hidden = false, placeholder = false) {
+    if (placeholder) return '<span class="playing-card placeholder" aria-hidden="true"></span>';
+    if (hidden) return '<span class="playing-card card-back" aria-label="隐藏的牌">◆</span>';
+    if (!card) throw new Error("A visible card is required.");
+
+    const red = card.suit === "h" || card.suit === "d";
+    const rank = rankLabels[card.rank] ?? card.rank;
+    return `<span class="playing-card ${red ? "red-card" : ""}" aria-label="${rank}${suitSymbols[card.suit]}">
+      <span>${rank}</span><span>${suitSymbols[card.suit]}</span>
+    </span>`;
+  }
+
+  function drawCard() {
+    const card = state.deck.pop();
+    if (!card) throw new Error("Cannot draw from an empty deck.");
+    return card;
+  }
+
+  function contenders() {
+    return state.seats.filter((seat) => seat.hole.length > 0 && !seat.folded);
+  }
+
+  function canAct(seat: Seat) {
+    return seat.hole.length > 0 && !seat.folded && !seat.allIn;
+  }
+
+  function needsAction(seat: Seat) {
+    return canAct(seat) && (!seat.acted || seat.streetBet < state.currentBet);
+  }
+
+  function boundsFor(seat: Seat): RaiseBounds {
+    const fullCallAmount = Math.max(0, state.currentBet - seat.streetBet);
+    const maximum = seat.streetBet + seat.stack;
+    const minimum = state.currentBet === 0 ? state.lastRaise : state.currentBet + state.lastRaise;
+    return {
+      fullCallAmount,
+      callAmount: Math.min(fullCallAmount, seat.stack),
+      minimum,
+      maximum,
+      canRaise: maximum > state.currentBet,
+      canFullRaise: maximum >= minimum,
+    };
+  }
+
+  function renderSeats() {
+    elements.seats.innerHTML = state.seats.map((seat, index) => {
+      const isDealer = index === state.dealerIndex;
+      const isTurn = index === state.turnIndex && !state.finished;
+      const hidden = !seat.human && !state.reveal;
+      const cards = seat.hole.length > 0
+        ? seat.hole.map((card) => cardMarkup(card, hidden || seat.folded)).join("")
+        : `${cardMarkup(null, false, true)}${cardMarkup(null, false, true)}`;
+      let status = "";
+      if (seat.folded) status = "弃牌";
+      else if (seat.allIn) status = "All-in";
+      else if (isTurn) status = "行动中";
+      else if (seat.streetBet > 0) status = `已下注 ${seat.streetBet}`;
+      else if (seat.stack === 0) status = "等待重置";
+
+      let handName = "";
+      if (!seat.folded && seat.hole.length === 2 && state.community.length >= 3 && (seat.human || state.reveal)) {
+        handName = evaluateBestHand([...seat.hole, ...state.community]).name;
+      }
+
+      return `<article class="seat seat-${index} ${seat.human ? "human-seat" : ""} ${seat.folded ? "is-folded" : ""} ${isTurn ? "is-turn" : ""}">
+        <div class="seat-cards">${cards}</div>
+        <div class="player-meta">
+          <span class="avatar ${seat.human ? "player-avatar" : ""}" aria-hidden="true">${seat.human ? "你" : "AI"}</span>
+          <span class="player-copy"><strong>${seat.name}</strong><small>筹码 ${seat.stack}</small></span>
+          ${isDealer ? '<span class="dealer-button" title="庄家按钮">D</span>' : ""}
+        </div>
+        <span class="seat-status">${handName || status}</span>
+      </article>`;
+    }).join("");
+  }
+
+  function renderCommunity() {
+    const cards = state.community.map((card) => cardMarkup(card));
+    while (cards.length < 5) cards.push(cardMarkup(null, false, true));
+    elements.communityCards.innerHTML = cards.join("");
+  }
+
+  function render() {
+    renderSeats();
+    renderCommunity();
+    elements.pot.textContent = String(state.pot);
+    elements.streetName.textContent = streetLabels[state.street];
+    elements.message.textContent = state.message;
+
+    const human = state.seats[0];
+    const bounds = boundsFor(human);
+    const humanTurn = state.turnIndex === 0 && !state.finished && !state.busy;
+    const raiseLocked = state.raiseLockedIds.includes(human.id);
+
+    if (state.finished) {
+      elements.callInfo.textContent = "本手已结束";
+    } else if (!humanTurn) {
+      const actor = state.seats[state.turnIndex];
+      elements.callInfo.textContent = actor ? `等待 ${actor.name}` : "结算中";
+    } else if (bounds.fullCallAmount > 0) {
+      const short = bounds.callAmount < bounds.fullCallAmount;
+      elements.callInfo.textContent = `需跟注 ${bounds.fullCallAmount}${short ? "（筹码不足）" : ""}`;
+    } else {
+      elements.callInfo.textContent = "可以过牌";
+    }
+
+    elements.callAction.textContent =
+      bounds.fullCallAmount > 0
+        ? `${bounds.callAmount < bounds.fullCallAmount ? "All-in 跟注" : "跟注"} ${bounds.callAmount}`
+        : "过牌";
+    elements.raiseAction.textContent = state.currentBet > 0 ? "加注" : "下注";
+    elements.allInAction.textContent = state.finished ? "All-in" : `All-in ${bounds.maximum}`;
+
+    elements.newHand.disabled = !state.finished;
+    elements.foldAction.disabled = !humanTurn;
+    elements.callAction.disabled = !humanTurn;
+    elements.raiseAction.disabled = !humanTurn || raiseLocked || !bounds.canFullRaise;
+    elements.allInAction.disabled =
+      !humanTurn ||
+      human.stack === 0 ||
+      (raiseLocked && bounds.maximum > state.currentBet);
+    elements.betAmount.disabled = elements.raiseAction.disabled;
+    elements.betAmount.min = String(bounds.minimum);
+    elements.betAmount.max = String(bounds.maximum);
+
+    if (
+      !state.finished &&
+      (
+        Number(elements.betAmount.value) < bounds.minimum ||
+        Number(elements.betAmount.value) > bounds.maximum
+      )
+    ) {
+      elements.betAmount.value = String(Math.min(bounds.minimum, bounds.maximum));
+    }
+    if (state.finished) elements.betAmount.value = "";
+  }
+
+  function commit(seat: Seat, amount: number) {
+    const paid = Math.min(Math.max(0, amount), seat.stack);
+    seat.stack -= paid;
+    seat.streetBet += paid;
+    seat.totalBet += paid;
+    seat.allIn = seat.stack === 0;
+    state.pot += paid;
+    state.currentBet = Math.max(state.currentBet, seat.streetBet);
+    return paid;
+  }
+
+  function finishByFolds(winner: Seat) {
+    winner.stack += state.pot;
+    state.pot = 0;
+    state.finished = true;
+    state.busy = false;
+    state.turnIndex = -1;
+    state.message = `${winner.name}赢得底池，其他玩家均已弃牌。`;
+    render();
+  }
+
+  function showdown() {
+    state.reveal = true;
+    const pots = createSidePots(state.seats) as Array<{ amount: number; eligibleIds: string[] }>;
+    const winnings = new Map<string, number>();
+
+    for (const pot of pots) {
+      const eligible = state.seats.filter((seat) => pot.eligibleIds.includes(seat.id));
+      if (eligible.length === 0) continue;
+
+      let bestScore: number[] | null = null;
+      let winners: Seat[] = [];
+      for (const seat of eligible) {
+        const score = evaluateBestHand([...seat.hole, ...state.community]).score;
+        const comparison = bestScore ? compareScores(score, bestScore) : 1;
+        if (comparison > 0) {
+          bestScore = score;
+          winners = [seat];
+        } else if (comparison === 0) {
+          winners.push(seat);
+        }
+      }
+
+      const orderedWinners = [...winners].sort((left, right) => {
+        const leftIndex = state.seats.indexOf(left);
+        const rightIndex = state.seats.indexOf(right);
+        const leftDistance = (leftIndex - state.dealerIndex + state.seats.length) % state.seats.length;
+        const rightDistance = (rightIndex - state.dealerIndex + state.seats.length) % state.seats.length;
+        return leftDistance - rightDistance;
+      });
+      const share = Math.floor(pot.amount / orderedWinners.length);
+      let remainder = pot.amount % orderedWinners.length;
+      for (const winner of orderedWinners) {
+        const award = share + (remainder > 0 ? 1 : 0);
+        remainder = Math.max(0, remainder - 1);
+        winner.stack += award;
+        winnings.set(winner.id, (winnings.get(winner.id) ?? 0) + award);
+      }
+    }
+
+    state.pot = 0;
+    state.finished = true;
+    state.busy = false;
+    state.turnIndex = -1;
+    const humanWin = winnings.get("player") ?? 0;
+    const winners = state.seats
+      .filter((seat) => (winnings.get(seat.id) ?? 0) > 0)
+      .map((seat) => seat.name)
+      .join("、");
+    state.message = humanWin > 0
+      ? `摊牌结束，你赢得 ${humanWin} 筹码。`
+      : `摊牌结束，${winners || "电脑玩家"}赢得底池。`;
+    render();
+  }
+
+  function runoutAndShowdown(message: string) {
+    state.turnIndex = -1;
+    state.busy = true;
+    if (state.community.length === 0) {
+      state.community.push(drawCard(), drawCard(), drawCard());
+    }
+    while (state.community.length < 5) state.community.push(drawCard());
+    state.message = `${message} 自动发完公共牌。`;
+    render();
+
+    const handId = state.handId;
+    window.setTimeout(() => {
+      if (state.handId === handId && !state.finished) showdown();
+    }, 700);
+  }
+
+  function firstActionableAfter(index: number) {
+    return nextSeatIndex(state.seats, index, (seat: Seat) => canAct(seat));
+  }
+
+  function nextNeedingAction(index: number) {
+    return nextSeatIndex(state.seats, index, (seat: Seat) => needsAction(seat));
+  }
+
+  function setTurn(index: number, message: string) {
+    state.turnIndex = index;
+    const seat = state.seats[index];
+    state.busy = !seat.human;
+    state.message = message;
+    if (seat.human) {
+      const bounds = boundsFor(seat);
+      elements.betAmount.value = String(Math.min(bounds.minimum, bounds.maximum));
+    }
+    render();
+
+    if (!seat.human) {
+      const handId = state.handId;
+      window.setTimeout(() => {
+        if (state.handId === handId && state.turnIndex === index && !state.finished) aiTurn(index);
+      }, 420);
+    }
+  }
+
+  function advanceStreet() {
+    if (state.street === "river") {
+      showdown();
+      return;
+    }
+
+    if (state.street === "preflop") {
+      state.street = "flop";
+      state.community.push(drawCard(), drawCard(), drawCard());
+    } else if (state.street === "flop") {
+      state.street = "turn";
+      state.community.push(drawCard());
+    } else {
+      state.street = "river";
+      state.community.push(drawCard());
+    }
+
+    for (const seat of state.seats) {
+      seat.streetBet = 0;
+      seat.acted = false;
+    }
+    state.currentBet = 0;
+    state.lastRaise = BIG_BLIND;
+    state.raiseLockedIds = [];
+
+    const actionable = contenders().filter(canAct);
+    if (actionable.length <= 1) {
+      runoutAndShowdown("仅剩一名玩家仍可行动，");
+      return;
+    }
+
+    const first = firstActionableAfter(state.dealerIndex);
+    setTurn(first, `${streetLabels[state.street]}发出，${state.seats[first].name}先行动。`);
+  }
+
+  function finishAction(index: number, message: string) {
+    const remaining = contenders();
+    if (remaining.length === 1) {
+      finishByFolds(remaining[0]);
+      return;
+    }
+
+    if (!state.seats.some(needsAction)) {
+      const actionable = remaining.filter(canAct);
+      if (actionable.length <= 1) {
+        runoutAndShowdown("所有有效行动已完成，");
+        return;
+      }
+
+      state.turnIndex = -1;
+      state.busy = true;
+      state.message = message;
+      render();
+      const handId = state.handId;
+      window.setTimeout(() => {
+        if (state.handId === handId && !state.finished) advanceStreet();
+      }, 450);
+      return;
+    }
+
+    const next = nextNeedingAction(index);
+    setTurn(next, message);
+  }
+
+  function fold(index: number) {
+    const seat = state.seats[index];
+    seat.folded = true;
+    seat.acted = true;
+    finishAction(index, `${seat.name}弃牌。`);
+  }
+
+  function checkOrCall(index: number) {
+    const seat = state.seats[index];
+    const required = Math.max(0, state.currentBet - seat.streetBet);
+    const paid = commit(seat, required);
+    seat.acted = true;
+    const message = paid > 0
+      ? `${seat.name}${paid < required ? "以全部筹码" : ""}跟注 ${paid}。`
+      : `${seat.name}过牌。`;
+    finishAction(index, message);
+  }
+
+  function raiseTo(index: number, target: number, allIn = false) {
+    const seat = state.seats[index];
+    const bounds = boundsFor(seat);
+    const normalizedTarget = Math.floor(target);
+    const shortRaise = normalizedTarget > state.currentBet && normalizedTarget < bounds.minimum;
+    const legal =
+      normalizedTarget > state.currentBet &&
+      normalizedTarget <= bounds.maximum &&
+      (normalizedTarget >= bounds.minimum || (allIn && normalizedTarget === bounds.maximum));
+
+    if (!legal || state.raiseLockedIds.includes(seat.id)) return false;
+
+    const previousBet = state.currentBet;
+    const previouslyActed = state.seats.filter((other) => other.id !== seat.id && other.acted);
+    commit(seat, normalizedTarget - seat.streetBet);
+    const raiseSize = state.currentBet - previousBet;
+    seat.acted = true;
+
+    if (shortRaise) {
+      state.raiseLockedIds = previouslyActed.map((other) => other.id);
+    } else {
+      state.lastRaise = raiseSize;
+      state.raiseLockedIds = [];
+      for (const other of state.seats) {
+        if (other.id !== seat.id && canAct(other)) other.acted = false;
+      }
+    }
+
+    const action = previousBet === 0 ? "下注" : "加注到";
+    finishAction(index, `${seat.name}${allIn ? " All-in，" : ""}${action} ${state.currentBet}。`);
+    return true;
+  }
+
+  function preflopStrength(seat: Seat) {
+    const [first, second] = seat.hole;
+    const firstValue = "23456789TJQKA".indexOf(first.rank);
+    const secondValue = "23456789TJQKA".indexOf(second.rank);
+    if (first.rank === second.rank) return firstValue >= 7 ? 5 : 3;
+    if (Math.max(firstValue, secondValue) >= 10) return 2;
+    return first.suit === second.suit ? 1 : 0;
+  }
+
+  function handStrength(seat: Seat) {
+    return state.community.length >= 3
+      ? evaluateBestHand([...seat.hole, ...state.community]).category
+      : preflopStrength(seat);
+  }
+
+  function aiTurn(index: number) {
+    const seat = state.seats[index];
+    if (state.finished || seat.folded || seat.allIn) return;
+
+    const bounds = boundsFor(seat);
+    const strength = handStrength(seat);
+    const roll = Math.random();
+    if (bounds.fullCallAmount > 0) {
+      const pressure = bounds.fullCallAmount / Math.max(1, state.pot);
+      if (strength <= 1 && pressure > 0.35 && roll < 0.58) {
+        fold(index);
+        return;
+      }
+
+      if (
+        strength >= 4 &&
+        roll < 0.32 &&
+        !state.raiseLockedIds.includes(seat.id) &&
+        bounds.canFullRaise
+      ) {
+        const target = Math.min(
+          bounds.maximum,
+          Math.max(bounds.minimum, state.currentBet + Math.floor(state.pot / 2)),
+        );
+        if (raiseTo(index, target)) return;
+      }
+
+      checkOrCall(index);
+      return;
+    }
+
+    if (strength >= 2 && roll < 0.52 && bounds.canRaise) {
+      const target = Math.min(
+        bounds.maximum,
+        Math.max(bounds.minimum, Math.floor(Math.max(BIG_BLIND, state.pot / 2))),
+      );
+      if (raiseTo(index, target, target < bounds.minimum)) return;
+    }
+
+    checkOrCall(index);
+  }
+
+  function dealHoleCards(startIndex: number) {
+    for (let round = 0; round < 2; round += 1) {
+      let index = startIndex;
+      for (let dealt = 0; dealt < state.seats.length; dealt += 1) {
+        const seat = state.seats[index];
+        if (seat.stack > 0) seat.hole.push(drawCard());
+        index = (index + 1) % state.seats.length;
+      }
+    }
+  }
+
+  function startHand() {
+    if (state.seats[0].stack === 0 || state.seats.filter((seat) => seat.stack > 0).length < 2) {
+      for (const seat of state.seats) seat.stack = STARTING_STACK;
+    }
+
+    state.handId += 1;
+    state.deck = createDeck() as Card[];
+    state.community = [];
+    state.street = "preflop";
+    state.currentBet = 0;
+    state.lastRaise = BIG_BLIND;
+    state.pot = 0;
+    state.finished = false;
+    state.reveal = false;
+    state.busy = false;
+    state.turnIndex = -1;
+    state.raiseLockedIds = [];
+
+    for (const seat of state.seats) {
+      seat.hole = [];
+      seat.streetBet = 0;
+      seat.totalBet = 0;
+      seat.folded = seat.stack === 0;
+      seat.allIn = false;
+      seat.acted = false;
+    }
+
+    state.dealerIndex = nextSeatIndex(
+      state.seats,
+      state.dealerIndex,
+      (seat: Seat) => seat.stack > 0,
+    );
+    const positions = tablePositions(state.seats, state.dealerIndex) as {
+      smallBlindIndex: number;
+      bigBlindIndex: number;
+    };
+    dealHoleCards(positions.smallBlindIndex);
+
+    commit(state.seats[positions.smallBlindIndex], SMALL_BLIND);
+    commit(state.seats[positions.bigBlindIndex], BIG_BLIND);
+
+    const first = firstActionableAfter(positions.bigBlindIndex);
+    if (first === -1) {
+      runoutAndShowdown("盲注触发 All-in，");
+      return;
+    }
+    setTurn(first, `${state.seats[state.dealerIndex].name}在庄位，${state.seats[first].name}先行动。`);
+  }
+
+  elements.foldAction.addEventListener("click", () => {
+    if (state.turnIndex === 0 && !state.busy) fold(0);
+  });
+  elements.callAction.addEventListener("click", () => {
+    if (state.turnIndex === 0 && !state.busy) checkOrCall(0);
+  });
+  elements.raiseAction.addEventListener("click", () => {
+    if (state.turnIndex !== 0 || state.busy) return;
+    const target = Number(elements.betAmount.value);
+    if (!Number.isFinite(target) || !raiseTo(0, target)) {
+      const bounds = boundsFor(state.seats[0]);
+      state.message = `合法加注范围为 ${bounds.minimum}–${bounds.maximum}。`;
+      render();
+    }
+  });
+  elements.allInAction.addEventListener("click", () => {
+    if (state.turnIndex !== 0 || state.busy) return;
+    const human = state.seats[0];
+    const bounds = boundsFor(human);
+    if (bounds.maximum <= state.currentBet) checkOrCall(0);
+    else raiseTo(0, bounds.maximum, true);
+  });
+  elements.newHand.addEventListener("click", startHand);
+
+  startHand();
+</script>
+
+<style>
+  .poker-game {
+    --felt: #075b46;
+    --gold: #f4ca64;
+    --ink: #f7f4e8;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .game-toolbar,
+  .action-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .game-toolbar {
+    margin-bottom: 1rem;
+  }
+
+  .eyebrow {
+    display: block;
+    margin-bottom: 0.15rem;
+    color: #967632;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+  }
+
+  h2 {
+    margin: 0;
+    font-family: Georgia, serif;
+    font-size: clamp(1.6rem, 4vw, 2.25rem);
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+
+  .secondary-button {
+    border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+    border-radius: 999px;
+    padding: 0.55rem 1rem;
+    background: transparent;
+    color: currentColor;
+    cursor: pointer;
+  }
+
+  .secondary-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  .poker-table {
+    position: relative;
+    min-height: 650px;
+    overflow: hidden;
+    border: 10px solid #39291e;
+    border-radius: min(24vw, 150px);
+    background:
+      radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.08), transparent 45%),
+      repeating-radial-gradient(circle at 50% 50%, transparent 0 3px, rgba(0, 0, 0, 0.025) 4px),
+      var(--felt);
+    box-shadow:
+      inset 0 0 0 4px #735335,
+      inset 0 0 45px #001c15,
+      0 18px 45px rgba(0, 0, 0, 0.22);
+    color: var(--ink);
+  }
+
+  .poker-table::after {
+    position: absolute;
+    inset: 5%;
+    border: 1px solid rgba(244, 202, 100, 0.22);
+    border-radius: inherit;
+    content: "";
+    pointer-events: none;
+  }
+
+  .table-seats {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+
+  :global(.seat) {
+    position: absolute;
+    display: flex;
+    width: 130px;
+    align-items: center;
+    flex-direction: column;
+    gap: 0.3rem;
+    transform: translate(-50%, -50%);
+    transition: opacity 160ms ease;
+  }
+
+  :global(.seat-0) { left: 50%; top: 84%; }
+  :global(.seat-1) { left: 17%; top: 68%; }
+  :global(.seat-2) { left: 16%; top: 26%; }
+  :global(.seat-3) { left: 50%; top: 10%; }
+  :global(.seat-4) { left: 84%; top: 26%; }
+  :global(.seat-5) { left: 83%; top: 68%; }
+
+  :global(.seat.is-folded) {
+    opacity: 0.45;
+  }
+
+  :global(.player-meta) {
+    display: flex;
+    max-width: 130px;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+    padding: 0.28rem 0.55rem 0.28rem 0.3rem;
+    background: rgba(0, 20, 15, 0.82);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  :global(.seat.is-turn .player-meta) {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(244, 202, 100, 0.2);
+  }
+
+  :global(.avatar) {
+    display: grid;
+    width: 1.65rem;
+    height: 1.65rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 50%;
+    background: #782e35;
+    color: white;
+    font-size: 0.55rem;
+    font-weight: 900;
+  }
+
+  :global(.player-avatar) {
+    background: #275fa6;
+  }
+
+  :global(.player-copy) {
+    display: grid;
+    min-width: 2.8rem;
+    line-height: 1.1;
+  }
+
+  :global(.player-copy strong) {
+    overflow: hidden;
+    font-size: 0.7rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :global(.player-copy small) {
+    color: #b9d1c9;
+    font-size: 0.58rem;
+    white-space: nowrap;
+  }
+
+  :global(.dealer-button) {
+    display: grid;
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 2px solid #d6b24f;
+    border-radius: 50%;
+    background: #fffdf5;
+    color: #322b1b;
+    font-family: Georgia, serif;
+    font-size: 0.58rem;
+    font-weight: 900;
+  }
+
+  :global(.seat-status) {
+    min-height: 0.9rem;
+    color: var(--gold);
+    font-size: 0.62rem;
+    font-weight: 800;
+  }
+
+  :global(.seat-cards),
+  .card-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.3rem;
+  }
+
+  :global(.playing-card) {
+    display: flex;
+    width: clamp(38px, 7vw, 58px);
+    aspect-ratio: 0.7;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid #d7d1c0;
+    border-radius: 6px;
+    padding: 0.3rem;
+    background: #fffdf5;
+    color: #161616;
+    font-family: Georgia, serif;
+    font-size: clamp(0.72rem, 1.8vw, 1rem);
+    font-weight: 700;
+    line-height: 1;
+    box-shadow: 0 4px 9px rgba(0, 0, 0, 0.24);
+  }
+
+  :global(.seat-cards .playing-card) {
+    width: 34px;
+    border-radius: 5px;
+    padding: 0.2rem;
+    font-size: 0.68rem;
+  }
+
+  :global(.playing-card span:last-child) {
+    align-self: flex-end;
+    font-size: 1.2em;
+  }
+
+  :global(.red-card) {
+    color: #bd2634;
+  }
+
+  :global(.card-back) {
+    display: grid;
+    place-items: center;
+    border: 3px solid #f1ead8;
+    padding: 0;
+    background:
+      repeating-linear-gradient(45deg, transparent 0 5px, rgba(255, 255, 255, 0.15) 6px 7px),
+      #8b2635;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  :global(.placeholder) {
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.08);
+    box-shadow: none;
+  }
+
+  .table-center {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    width: min(68%, 560px);
+    align-items: center;
+    flex-direction: column;
+    gap: 0.75rem;
+    transform: translate(-50%, -50%);
+  }
+
+  .pot {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    border-radius: 999px;
+    padding: 0.3rem 0.75rem;
+    background: rgba(0, 0, 0, 0.23);
+  }
+
+  .pot span {
+    color: #b9d1c9;
+    font-size: 0.68rem;
+  }
+
+  .pot strong {
+    color: var(--gold);
+    font-family: Georgia, serif;
+    font-size: 1.2rem;
+  }
+
+  .game-message {
+    min-height: 1.5rem;
+    margin: 0;
+    color: #e9f3ef;
+    font-size: 0.78rem;
+    text-align: center;
+  }
+
+  .action-panel {
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+    border-radius: 16px;
+    padding: 0.9rem;
+    background: color-mix(in srgb, currentColor 4%, transparent);
+  }
+
+  .round-info {
+    display: grid;
+    flex: 1;
+  }
+
+  .round-info span:first-child {
+    font-weight: 800;
+  }
+
+  .round-info span:last-child {
+    opacity: 0.65;
+    font-size: 0.72rem;
+  }
+
+  .bet-controls,
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .bet-controls label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    opacity: 0.7;
+    white-space: nowrap;
+  }
+
+  .bet-controls input {
+    width: 5rem;
+    border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+    border-radius: 9px;
+    padding: 0.62rem 0.5rem;
+    background: color-mix(in srgb, currentColor 5%, transparent);
+    color: currentColor;
+    font-weight: 800;
+  }
+
+  .action {
+    min-width: 4.8rem;
+    border: 0;
+    border-radius: 10px;
+    padding: 0.7rem 0.75rem;
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .action:disabled,
+  .bet-controls input:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  .fold-action { background: #802f36; }
+  .call-action { background: #315f83; }
+  .raise-action { background: #a06b1e; }
+  .all-in-action { background: #4e315f; }
+
+  .rules-note {
+    margin: 0.75rem 0 0;
+    font-size: 0.72rem;
+    opacity: 0.58;
+    text-align: center;
+  }
+
+  @media (max-width: 640px) {
+    .poker-table {
+      min-height: 600px;
+      border-width: 7px;
+      border-radius: 80px;
+    }
+
+    :global(.seat) {
+      width: 100px;
+    }
+
+    :global(.seat-0) { top: 87%; }
+    :global(.seat-1) { left: 14%; top: 70%; }
+    :global(.seat-2) { left: 14%; top: 25%; }
+    :global(.seat-4) { left: 86%; top: 25%; }
+    :global(.seat-5) { left: 86%; top: 70%; }
+
+    :global(.seat-cards .playing-card) {
+      width: 28px;
+    }
+
+    :global(.player-meta) {
+      max-width: 100px;
+      gap: 0.25rem;
+      padding-right: 0.35rem;
+    }
+
+    :global(.avatar) {
+      width: 1.4rem;
+      height: 1.4rem;
+    }
+
+    .table-center {
+      width: 72%;
+    }
+
+    .action-panel {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .round-info {
+      grid-template-columns: 1fr auto;
+    }
+
+    .bet-controls input {
+      flex: 1;
+      width: auto;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .action {
+      min-width: 0;
+      font-size: 0.78rem;
+    }
+  }
+</style>

@@ -35,6 +35,14 @@ export default defineConfig({
           target: 'http://127.0.0.1:3002',
           changeOrigin: true,
         },
+        '/api/learn': {
+          target: 'http://127.0.0.1:3002',
+          changeOrigin: true,
+        },
+        '/api/demo': {
+          target: 'http://127.0.0.1:3002',
+          changeOrigin: true,
+        },
         // Legacy API (api)
         '/api': {
           target: 'http://127.0.0.1:3001',

@@ -1,0 +1,52 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import MultiplayerTexasHoldemGame from "../components/MultiplayerTexasHoldemGame.astro";
+---
+
+<BaseLayout
+  title="德州扑克"
+  description="与五名电脑玩家进行六人桌无限注德州扑克，支持庄位轮换、自由下注、All-in 与边池"
+>
+  <main class="holdem-page">
+    <header>
+      <p>浏览器小游戏</p>
+      <h1>德州扑克</h1>
+      <span>两张底牌，五张公共牌，用最好的五张牌赢下底池。</span>
+    </header>
+    <MultiplayerTexasHoldemGame />
+  </main>
+</BaseLayout>
+
+<style>
+  .holdem-page {
+    width: min(100%, 880px);
+    margin: 0 auto;
+    padding-bottom: 3rem;
+  }
+
+  header {
+    margin-bottom: 2rem;
+  }
+
+  header p {
+    margin: 0 0 0.25rem;
+    color: #967632;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  header h1 {
+    margin: 0;
+    font-family: Georgia, serif;
+    font-size: clamp(2.5rem, 7vw, 4rem);
+    line-height: 1;
+  }
+
+  header span {
+    display: block;
+    margin-top: 0.75rem;
+    opacity: 0.68;
+  }
+</style>

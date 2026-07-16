@@ -1,0 +1,520 @@
+{
+  "groups": [
+    {
+      "slug": "alphabet",
+      "title": "26 个字母读音",
+      "description": "字母名与拼音不同，大小写读音相同。",
+      "sort_order": 0,
+      "symbols": [
+        { "symbol": "eɪ", "name_zh": "Aa", "tip": "字母 A 的读音", "examples": "A a", "sort_order": 1 },
+        { "symbol": "biː", "name_zh": "Bb", "tip": "字母 B 的读音", "examples": "B b", "sort_order": 2 },
+        { "symbol": "siː", "name_zh": "Cc", "tip": "字母 C 的读音", "examples": "C c", "sort_order": 3 },
+        { "symbol": "diː", "name_zh": "Dd", "tip": "字母 D 的读音", "examples": "D d", "sort_order": 4 },
+        { "symbol": "iː", "name_zh": "Ee", "tip": "字母 E 的读音", "examples": "E e", "sort_order": 5 },
+        { "symbol": "ef", "name_zh": "Ff", "tip": "字母 F 的读音", "examples": "F f", "sort_order": 6 },
+        { "symbol": "dʒiː", "name_zh": "Gg", "tip": "字母 G 的读音", "examples": "G g", "sort_order": 7 },
+        { "symbol": "eɪtʃ", "name_zh": "Hh", "tip": "字母 H 的读音", "examples": "H h", "sort_order": 8 },
+        { "symbol": "aɪ", "name_zh": "Ii", "tip": "字母 I 的读音", "examples": "I i", "sort_order": 9 },
+        { "symbol": "dʒeɪ", "name_zh": "Jj", "tip": "字母 J 的读音", "examples": "J j", "sort_order": 10 },
+        { "symbol": "keɪ", "name_zh": "Kk", "tip": "字母 K 的读音", "examples": "K k", "sort_order": 11 },
+        { "symbol": "el", "name_zh": "Ll", "tip": "字母 L 的读音", "examples": "L l", "sort_order": 12 },
+        { "symbol": "em", "name_zh": "Mm", "tip": "字母 M 的读音", "examples": "M m", "sort_order": 13 },
+        { "symbol": "en", "name_zh": "Nn", "tip": "字母 N 的读音", "examples": "N n", "sort_order": 14 },
+        { "symbol": "əʊ", "name_zh": "Oo", "tip": "字母 O 的读音", "examples": "O o", "sort_order": 15 },
+        { "symbol": "piː", "name_zh": "Pp", "tip": "字母 P 的读音", "examples": "P p", "sort_order": 16 },
+        { "symbol": "kjuː", "name_zh": "Qq", "tip": "字母 Q 的读音", "examples": "Q q", "sort_order": 17 },
+        { "symbol": "ɑː", "name_zh": "Rr", "tip": "字母 R 的读音", "examples": "R r", "sort_order": 18 },
+        { "symbol": "es", "name_zh": "Ss", "tip": "字母 S 的读音", "examples": "S s", "sort_order": 19 },
+        { "symbol": "tiː", "name_zh": "Tt", "tip": "字母 T 的读音", "examples": "T t", "sort_order": 20 },
+        { "symbol": "juː", "name_zh": "Uu", "tip": "字母 U 的读音", "examples": "U u", "sort_order": 21 },
+        { "symbol": "viː", "name_zh": "Vv", "tip": "字母 V 的读音", "examples": "V v", "sort_order": 22 },
+        { "symbol": "ˈdʌbljuː", "name_zh": "Ww", "tip": "字母 W 的读音（double u）", "examples": "W w", "sort_order": 23 },
+        { "symbol": "eks", "name_zh": "Xx", "tip": "字母 X 的读音", "examples": "X x", "sort_order": 24 },
+        { "symbol": "waɪ", "name_zh": "Yy", "tip": "字母 Y 的读音", "examples": "Y y", "sort_order": 25 },
+        { "symbol": "ziː", "name_zh": "Zz", "tip": "字母 Z 的读音", "examples": "Z z", "sort_order": 26 }
+      ]
+    },
+    {
+      "slug": "front-vowels",
+      "title": "前元音（4）",
+      "description": "舌前部抬高，口型偏扁。",
+      "sort_order": 1,
+      "symbols": [
+        {
+          "symbol": "iː",
+          "name_zh": "长元音 iː",
+          "voiced": true,
+          "tip": "舌尖抵下齿，舌前部抬得比 /ɪ/ 更高，口型扁平，声带振动。注意与拼音 yi 的区别。",
+          "examples": "she, tree, eat, thief, ceiling, key",
+          "sort_order": 1
+        },
+        {
+          "symbol": "ɪ",
+          "name_zh": "短元音 ɪ",
+          "voiced": true,
+          "tip": "舌尖抵下齿，舌前部抬高，两侧抵上齿内侧，口型扁平。比 /iː/ 更松、更短。",
+          "examples": "big, pretty, busy, money",
+          "sort_order": 2
+        },
+        {
+          "symbol": "e",
+          "name_zh": "短元音 e",
+          "voiced": true,
+          "tip": "舌尖抵下齿，舌前部略抬，位置比 /iː/ 低，开口更大，声带振动。",
+          "examples": "bed, any, head, said, says",
+          "sort_order": 3
+        },
+        {
+          "symbol": "æ",
+          "name_zh": "短元音 æ",
+          "voiced": true,
+          "tip": "舌尖抵下齿，舌位比 /e/ 更低，双唇像微笑一样平伸，声带振动。",
+          "examples": "bad, cat, bag, fat",
+          "sort_order": 4
+        }
+      ]
+    },
+    {
+      "slug": "central-vowels",
+      "title": "中元音（3）",
+      "description": "舌头中部抬起。",
+      "sort_order": 2,
+      "symbols": [
+        {
+          "symbol": "ə",
+          "name_zh": "弱读 ə（schwa）",
+          "voiced": true,
+          "tip": "舌头平放，嘴巴自然放松，舌中部轻抬，声带振动。常见于非重读音节。",
+          "examples": "ago, pilot, campus, sugar, doctor",
+          "sort_order": 1
+        },
+        {
+          "symbol": "ɜː",
+          "name_zh": "长元音 ɜː",
+          "voiced": true,
+          "tip": "舌头放平，中部向上颚靠近，两侧轻触上齿，微笑唇形，声带振动。勿用汉字「饿」硬套。",
+          "examples": "nervous, bird, word, nurse, earth",
+          "sort_order": 2
+        },
+        {
+          "symbol": "ʌ",
+          "name_zh": "短元音 ʌ",
+          "voiced": true,
+          "tip": "舌尖与舌端两侧轻触下齿，舌中部抬起，唇形稍扁，开口较大。",
+          "examples": "run, mother, touch, blood",
+          "sort_order": 3
+        }
+      ]
+    },
+    {
+      "slug": "back-vowels",
+      "title": "后元音（5）",
+      "description": "舌头后部抬起，常伴随圆唇。",
+      "sort_order": 3,
+      "symbols": [
+        {
+          "symbol": "ʊ",
+          "name_zh": "短元音 ʊ",
+          "voiced": true,
+          "tip": "舌尖离开下齿，舌后部向软腭抬起，双唇微微前突但不紧绷。",
+          "examples": "push, wolf, book, could, should",
+          "sort_order": 1
+        },
+        {
+          "symbol": "uː",
+          "name_zh": "长元音 uː",
+          "voiced": true,
+          "tip": "舌后部抬得更高，双唇收圆前突成小孔，肌肉收紧。勿用汉字「屋」硬套。",
+          "examples": "movie, truth, fool, shoe, blue, fruit",
+          "sort_order": 2
+        },
+        {
+          "symbol": "ɒ",
+          "name_zh": "短元音 ɒ",
+          "voiced": true,
+          "tip": "舌后部向软腭抬起并略紧张，双唇微圆但不突出。",
+          "examples": "boss, cost, watch, wash",
+          "sort_order": 3
+        },
+        {
+          "symbol": "ɔː",
+          "name_zh": "长元音 ɔː",
+          "voiced": true,
+          "tip": "舌后部抬高并紧张，双唇收圆前突。勿用汉字「奥」硬套。",
+          "examples": "water, horse, ball, autumn, law, door",
+          "sort_order": 4
+        },
+        {
+          "symbol": "ɑː",
+          "name_zh": "长元音 ɑː",
+          "voiced": true,
+          "tip": "嘴巴张大，舌头压低后缩，后半部略抬，舌尖不抵下齿。",
+          "examples": "father, ask, star, park, far",
+          "sort_order": 5
+        }
+      ]
+    },
+    {
+      "slug": "closing-diphthongs",
+      "title": "合口双元音（5）",
+      "description": "从一个元音滑向另一个更高/更闭的元音。",
+      "sort_order": 4,
+      "symbols": [
+        {
+          "symbol": "eɪ",
+          "name_zh": "双元音 eɪ",
+          "voiced": true,
+          "tip": "先准备 /e/，再滑向 /ɪ/，双唇呈微笑状。音长受后接辅音影响。",
+          "examples": "cake, sail, say, eight, break",
+          "sort_order": 1
+        },
+        {
+          "symbol": "aɪ",
+          "name_zh": "双元音 aɪ",
+          "voiced": true,
+          "tip": "嘴巴张开，舌前部轻抬，从 /a/ 滑向松的 /ɪ/，音长要发够。",
+          "examples": "bike, cry, lie, night, buy",
+          "sort_order": 2
+        },
+        {
+          "symbol": "ɔɪ",
+          "name_zh": "双元音 ɔɪ",
+          "voiced": true,
+          "tip": "嘴巴圆唇准备 /ɔ/，再滑向 /ɪ/；/ɪ/ 不必发得太清晰。",
+          "examples": "oil, boil, boy, joy, toy",
+          "sort_order": 3
+        },
+        {
+          "symbol": "əʊ",
+          "name_zh": "双元音 əʊ",
+          "voiced": true,
+          "tip": "先发 /ə/，再过渡到 /ʊ/，嘴巴由扁变圆；/ə/ 不要拖太长。",
+          "examples": "no, home, boat, toe, show, shoulder",
+          "sort_order": 4
+        },
+        {
+          "symbol": "aʊ",
+          "name_zh": "双元音 aʊ",
+          "voiced": true,
+          "tip": "从 /a/ 滑向 /ʊ/，嘴巴由大变圆并略前突。不要用韵母 ao 代替。",
+          "examples": "out, house, cow, how, power",
+          "sort_order": 5
+        }
+      ]
+    },
+    {
+      "slug": "centring-diphthongs",
+      "title": "集中双元音（3）",
+      "description": "滑向中元音 /ə/。",
+      "sort_order": 5,
+      "symbols": [
+        {
+          "symbol": "ɪə",
+          "name_zh": "双元音 ɪə",
+          "voiced": true,
+          "tip": "先紧一点发 /ɪ/，嘴巴从扁到开，滑向 /ə/。",
+          "examples": "idea, ear, dear, appear, deer, here",
+          "sort_order": 1
+        },
+        {
+          "symbol": "eə",
+          "name_zh": "双元音 eə",
+          "voiced": true,
+          "tip": "舌尖抵下齿准备 /e/，再放松过渡到 /ə/；开始时嘴巴收紧。",
+          "examples": "air, fair, share, care, bear, where",
+          "sort_order": 2
+        },
+        {
+          "symbol": "ʊə",
+          "name_zh": "双元音 ʊə",
+          "voiced": true,
+          "tip": "先圆唇略前移，再快速回到正常口型发 /ə/。",
+          "examples": "poor, tour, sure, assure",
+          "sort_order": 3
+        }
+      ]
+    },
+    {
+      "slug": "plosives",
+      "title": "爆破辅音（6）",
+      "description": "成阻后爆破送气；清浊成对。",
+      "sort_order": 6,
+      "symbols": [
+        {
+          "symbol": "p",
+          "name_zh": "清辅音 p",
+          "voiced": false,
+          "tip": "双唇紧闭蓄气后突然张开爆破，声带不振动。",
+          "examples": "cap, plane, happy, apple",
+          "sort_order": 1
+        },
+        {
+          "symbol": "b",
+          "name_zh": "浊辅音 b",
+          "voiced": true,
+          "tip": "双唇紧闭蓄气后爆破，声带振动。",
+          "examples": "bird, boat, rabbit",
+          "sort_order": 2
+        },
+        {
+          "symbol": "t",
+          "name_zh": "清辅音 t",
+          "voiced": false,
+          "tip": "舌尖抵上齿龈后放开，气流强爆破，声带不振动。",
+          "examples": "cat, time, bottle, letter",
+          "sort_order": 3
+        },
+        {
+          "symbol": "d",
+          "name_zh": "浊辅音 d",
+          "voiced": true,
+          "tip": "舌尖成阻后爆破，送气较弱，声带振动。",
+          "examples": "bread, hand, door, middle",
+          "sort_order": 4
+        },
+        {
+          "symbol": "k",
+          "name_zh": "清辅音 k",
+          "voiced": false,
+          "tip": "舌后抵软腭后放开爆破，吐气较强，声带不振动。",
+          "examples": "cake, dark, cool, back, Christmas",
+          "sort_order": 5
+        },
+        {
+          "symbol": "g",
+          "name_zh": "浊辅音 g",
+          "voiced": true,
+          "tip": "舌后抵软腭后放开爆破，吐气较弱，声带振动。",
+          "examples": "get, green, egg, ghost, guest",
+          "sort_order": 6
+        }
+      ]
+    },
+    {
+      "slug": "fricatives",
+      "title": "摩擦辅音（10）",
+      "description": "气流通过窄缝摩擦成音。",
+      "sort_order": 7,
+      "symbols": [
+        {
+          "symbol": "f",
+          "name_zh": "清辅音 f",
+          "voiced": false,
+          "tip": "上门牙轻触下唇内侧，气流摩擦，声带不振动。",
+          "examples": "four, food, phone, physics, laugh",
+          "sort_order": 1
+        },
+        {
+          "symbol": "v",
+          "name_zh": "浊辅音 v",
+          "voiced": true,
+          "tip": "同上唇齿位置，气流摩擦，声带振动。",
+          "examples": "visit, vest, move, five",
+          "sort_order": 2
+        },
+        {
+          "symbol": "θ",
+          "name_zh": "清辅音 θ",
+          "voiced": false,
+          "tip": "舌尖放在微开的上下门牙之间，气流摩擦，声带不振动。",
+          "examples": "mouth, tooth, three, thought",
+          "sort_order": 3
+        },
+        {
+          "symbol": "ð",
+          "name_zh": "浊辅音 ð",
+          "voiced": true,
+          "tip": "与 /θ/ 同部位，声带振动。",
+          "examples": "father, mother, that, than",
+          "sort_order": 4
+        },
+        {
+          "symbol": "s",
+          "name_zh": "清辅音 s",
+          "voiced": false,
+          "tip": "舌尖靠近上齿龈，气流摩擦，声带不振动；词尾可加强送气。",
+          "examples": "snake, swim, center, class, face",
+          "sort_order": 5
+        },
+        {
+          "symbol": "z",
+          "name_zh": "浊辅音 z",
+          "voiced": true,
+          "tip": "与 /s/ 同部位，声带振动。",
+          "examples": "zoo, cousin, size, nose, rose",
+          "sort_order": 6
+        },
+        {
+          "symbol": "ʃ",
+          "name_zh": "清辅音 ʃ",
+          "voiced": false,
+          "tip": "舌前靠近上齿龈，气流从缝隙摩擦而出，声带不振动。",
+          "examples": "delicious, sure, Asia, show",
+          "sort_order": 7
+        },
+        {
+          "symbol": "ʒ",
+          "name_zh": "浊辅音 ʒ",
+          "voiced": true,
+          "tip": "与 /ʃ/ 同部位，嘴巴微微撅起，声带振动。",
+          "examples": "television, treasure, garage, massage",
+          "sort_order": 8
+        },
+        {
+          "symbol": "h",
+          "name_zh": "清辅音 h",
+          "voiced": false,
+          "tip": "舌头松弛，气流经声门轻微摩擦后出口腔，声带不振动。",
+          "examples": "hat, hand, who",
+          "sort_order": 9
+        },
+        {
+          "symbol": "r",
+          "name_zh": "浊辅音 r",
+          "voiced": true,
+          "tip": "舌尖向齿龈后部与硬腭连接处翘起，气流滑过，双唇略突，声带振动。",
+          "examples": "run, river, parrot, write",
+          "sort_order": 10
+        }
+      ]
+    },
+    {
+      "slug": "affricates",
+      "title": "破擦音（6）",
+      "description": "先爆破再摩擦。",
+      "sort_order": 8,
+      "symbols": [
+        {
+          "symbol": "tʃ",
+          "name_zh": "清辅音 tʃ",
+          "voiced": false,
+          "tip": "先成阻如 /t/，再缓缓分离滑向 /ʃ/，声带不振动。",
+          "examples": "picture, chick, kitchen",
+          "sort_order": 1
+        },
+        {
+          "symbol": "dʒ",
+          "name_zh": "浊辅音 dʒ",
+          "voiced": true,
+          "tip": "先成阻如 /d/，再滑向 /ʒ/ 的摩擦，声带振动。",
+          "examples": "jeep, job, fridge, age",
+          "sort_order": 2
+        },
+        {
+          "symbol": "tr",
+          "name_zh": "清辅音 tr",
+          "voiced": false,
+          "tip": "先准备 /t/，舌尖迅速滑到 /r/，声带不振动。",
+          "examples": "train, tree, trip, try",
+          "sort_order": 3
+        },
+        {
+          "symbol": "dr",
+          "name_zh": "浊辅音 dr",
+          "voiced": true,
+          "tip": "先准备 /d/，再迅速滑到 /r/，声带振动。",
+          "examples": "draw, drink, dress, drive",
+          "sort_order": 4
+        },
+        {
+          "symbol": "ts",
+          "name_zh": "清辅音 ts",
+          "voiced": false,
+          "tip": "舌端抵上齿龈，气流缓缓冲出，声带不振动；词尾可加强送气。",
+          "examples": "hats, fruits, lots, boats",
+          "sort_order": 5
+        },
+        {
+          "symbol": "dz",
+          "name_zh": "浊辅音 dz",
+          "voiced": true,
+          "tip": "与 /ts/ 同部位，声带振动。",
+          "examples": "cards, beds, fields, rides",
+          "sort_order": 6
+        }
+      ]
+    },
+    {
+      "slug": "nasals-approximants",
+      "title": "鼻音 / 半元音 / 舌边音（6）",
+      "description": "气流经鼻腔，或近似元音/舌边音。",
+      "sort_order": 9,
+      "symbols": [
+        {
+          "symbol": "m",
+          "name_zh": "鼻音 m",
+          "voiced": true,
+          "tip": "双唇紧闭，软腭下垂，气流从鼻孔出，声带振动。",
+          "examples": "milk, summer, comb, autumn",
+          "sort_order": 1
+        },
+        {
+          "symbol": "n",
+          "name_zh": "鼻音 n",
+          "voiced": true,
+          "tip": "舌尖抵上齿龈，软腭下垂，气流从鼻孔出，声带振动。",
+          "examples": "neck, number, dinner, knife, know",
+          "sort_order": 2
+        },
+        {
+          "symbol": "ŋ",
+          "name_zh": "鼻音 ŋ",
+          "voiced": true,
+          "tip": "舌后抵软腭，软腭下垂，气流从鼻腔出，声带振动。",
+          "examples": "drink, monkey, pink, bank, thing",
+          "sort_order": 3
+        },
+        {
+          "symbol": "j",
+          "name_zh": "半元音 j",
+          "voiced": true,
+          "tip": "舌前靠近硬腭（近 /iː/ 位），气流通过并振动声带。",
+          "examples": "year, yard, yesterday, yellow",
+          "sort_order": 4
+        },
+        {
+          "symbol": "w",
+          "name_zh": "半元音 w",
+          "voiced": true,
+          "tip": "舌后抬起近 /uː/，圆唇前突，气流摩擦，声带振动。",
+          "examples": "wash, water, swim, wheel, wheat",
+          "sort_order": 5
+        },
+        {
+          "symbol": "l",
+          "name_zh": "舌边音 l",
+          "voiced": true,
+          "tip": "清晰 /l/：气流从舌侧泄出；模糊 /l/：舌后抬起形成共鸣。",
+          "examples": "lock, lion, bell, sale",
+          "sort_order": 6
+        }
+      ]
+    }
+  ],
+  "practicePassages": [
+    {
+      "slug": "ipa-front-vowels",
+      "title": "前元音绕口令",
+      "level": "IPA",
+      "body": "There is a little bee, coming from an apple tree, flying in the flowers, and can't see me. The black cat is catching a fat rat."
+    },
+    {
+      "slug": "ipa-diphthong-ei",
+      "title": "双元音 eɪ 练习",
+      "level": "IPA",
+      "body": "The rain in Spain stays mainly on the plain. The day is grey and I would not like to play."
+    },
+    {
+      "slug": "ipa-th-sounds",
+      "title": "摩擦音 θ / ð 练习",
+      "level": "IPA",
+      "body": "I thought a thought. But the thought I thought wasn't the thought I thought I thought. Father and mother thank them for that."
+    },
+    {
+      "slug": "ipa-plosives",
+      "title": "爆破音练习",
+      "level": "IPA",
+      "body": "Peter's plane is plainly painted. Two ticket takers took a taxi. Big green glass globes glow greenly."
+    }
+  ]
+}

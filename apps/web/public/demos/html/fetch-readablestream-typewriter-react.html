@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fetch ReadableStream × 打字机 × React 渲染优化</title>
+  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+  <style>
+    :root {
+      --bg0: #0f1419;
+      --bg1: #1a2332;
+      --bg2: #243044;
+      --line: #2f3f55;
+      --text: #e8eef6;
+      --muted: #8fa3b8;
+      --accent: #3db8a8;
+      --accent-dim: #2a7a70;
+      --warn: #e8a54b;
+      --danger: #e07070;
+      --ok: #6bcf8e;
+      --mono: "JetBrains Mono", "SF Mono", "Fira Code", ui-monospace, monospace;
+      --sans: "IBM Plex Sans", "Source Han Sans SC", "Noto Sans SC", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #1c3a3a 0%, transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, #1a2840 0%, transparent 50%),
+        var(--bg0);
+      line-height: 1.55;
+    }
+
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+
+    h1 {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.5rem;
+    }
+    .lede {
+      color: var(--muted);
+      margin: 0 0 1.75rem;
+      max-width: 42rem;
+    }
+
+    .panel {
+      background: color-mix(in srgb, var(--bg1) 88%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1.1rem 1.2rem;
+      margin-bottom: 1rem;
+      backdrop-filter: blur(8px);
+    }
+    .panel h2 {
+      margin: 0 0 0.65rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem 1rem;
+      align-items: center;
+      margin-bottom: 0.85rem;
+    }
+    label.field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    select, input[type="text"], input[type="number"] {
+      font: inherit;
+      color: var(--text);
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.45rem 0.65rem;
+      min-width: 10rem;
+    }
+    input[type="text"] { min-width: 16rem; }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border-radius: 8px;
+      border: 1px solid var(--accent-dim);
+      background: var(--accent);
+      color: #06221e;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+    }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    button.ghost {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--line);
+      font-weight: 500;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.65rem;
+      margin-bottom: 0.85rem;
+    }
+    .metric {
+      background: var(--bg2);
+      border-radius: 8px;
+      padding: 0.55rem 0.7rem;
+    }
+    .metric .k {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .metric .v {
+      font-family: var(--mono);
+      font-size: 1.15rem;
+      font-variant-numeric: tabular-nums;
+      margin-top: 0.15rem;
+    }
+    .metric .v.warn { color: var(--warn); }
+    .metric .v.ok { color: var(--ok); }
+
+    .stream-out {
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 9rem;
+      max-height: 18rem;
+      overflow: auto;
+      padding: 0.85rem 1rem;
+      background: #0b1016;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      line-height: 1.65;
+    }
+    .stream-out .cursor {
+      display: inline-block;
+      width: 0.55ch;
+      height: 1.1em;
+      margin-left: 1px;
+      vertical-align: text-bottom;
+      background: var(--accent);
+      animation: blink 1s steps(1) infinite;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    .hint {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin: 0.75rem 0 0;
+    }
+    .hint strong { color: var(--warn); font-weight: 600; }
+
+    pre.code {
+      margin: 0;
+      padding: 0.85rem 1rem;
+      overflow: auto;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 1.5;
+      background: #0b1016;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: #c5d4e4;
+    }
+    .code-tabs {
+      display: flex;
+      gap: 0.35rem;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .code-tabs button {
+      padding: 0.35rem 0.7rem;
+      font-size: 0.8rem;
+      background: var(--bg2);
+      color: var(--muted);
+      border-color: var(--line);
+      font-weight: 500;
+    }
+    .code-tabs button.active {
+      color: var(--accent);
+      border-color: var(--accent-dim);
+    }
+
+    .err {
+      color: var(--danger);
+      font-size: 0.85rem;
+      margin: 0.5rem 0 0;
+    }
+
+    ol.steps {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    ol.steps li { margin-bottom: 0.35rem; }
+    ol.steps code {
+      font-family: var(--mono);
+      font-size: 0.82em;
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="root"></div>
+
+  <script>
+    const { useState, useRef, useEffect, useCallback, createElement: h, Fragment } = React;
+    const { createRoot } = ReactDOM;
+
+    const SAMPLE =
+      "Streaming is not about making the model faster — it is about showing the first token sooner. " +
+      "Fetch gives you response.body as a ReadableStream. Read chunks with getReader(), decode with TextDecoder({ stream: true }), " +
+      "and flush UI updates with requestAnimationFrame so React does not re-render on every byte.";
+
+    /** Read a fetch Response body as UTF-8 text chunks. */
+    async function readTextStream(body, onChunk, signal) {
+      if (!body) throw new Error("Response has no body (not a stream)");
+      const reader = body.getReader();
+      const decoder = new TextDecoder();
+      let reads = 0;
+      try {
+        while (true) {
+          if (signal?.aborted) {
+            await reader.cancel("aborted");
+            throw new DOMException("Aborted", "AbortError");
+          }
+          const { done, value } = await reader.read();
+          if (done) break;
+          reads += 1;
+          const text = decoder.decode(value, { stream: true });
+          if (text) onChunk(text, reads);
+        }
+        const tail = decoder.decode();
+        if (tail) {
+          reads += 1;
+          onChunk(tail, reads);
+        }
+      } finally {
+        reader.releaseLock?.();
+      }
+      return reads;
+    }
+
+    /** Local mock: same API surface as a real fetch Response stream. */
+    function createLocalStreamResponse(text, delayMs, signal) {
+      const encoder = new TextEncoder();
+      const tokens = text.match(/\S+\s*|\s+/g) ?? [text];
+      const stream = new ReadableStream({
+        async start(controller) {
+          for (const token of tokens) {
+            if (signal?.aborted) {
+              controller.error(new DOMException("Aborted", "AbortError"));
+              return;
+            }
+            await new Promise((r) => setTimeout(r, delayMs));
+            controller.enqueue(encoder.encode(token));
+          }
+          controller.close();
+        },
+      });
+      return new Response(stream, {
+        headers: { "Content-Type": "text/plain; charset=utf-8" },
+      });
+    }
+
+    const CODE = {
+      fetch: `const res = await fetch("/api/demo/llm-stream");
+const reader = res.body.getReader();
+const decoder = new TextDecoder();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  const chunk = decoder.decode(value, { stream: true });
+  // append chunk to buffer…
+}`,
+      naive: `// Naive: setState on every network chunk
+onChunk((text) => {
+  setDisplayed((prev) => prev + text); // re-render every time
+});`,
+      raf: `// Optimized: coalesce into one React update per frame
+const pending = useRef("");
+const shown = useRef("");
+let raf = 0;
+
+onChunk((text) => {
+  pending.current += text;
+  if (raf) return;
+  raf = requestAnimationFrame(() => {
+    raf = 0;
+    shown.current += pending.current;
+    pending.current = "";
+    setDisplayed(shown.current); // ≤ ~60 renders / sec
+  });
+});`,
+    };
+
+    function Metric({ label, value, tone }) {
+      return h("div", { className: "metric" },
+        h("div", { className: "k" }, label),
+        h("div", { className: `v${tone ? ` ${tone}` : ""}` }, value),
+      );
+    }
+
+    function App() {
+      const [source, setSource] = useState("local");
+      const [mode, setMode] = useState("raf");
+      const [prompt, setPrompt] = useState("");
+      const [delayMs, setDelayMs] = useState(35);
+      const [running, setRunning] = useState(false);
+      const [displayed, setDisplayed] = useState("");
+      const [error, setError] = useState("");
+      const [codeTab, setCodeTab] = useState("fetch");
+
+      const [stats, setStats] = useState({
+        reads: 0,
+        renders: 0,
+        chars: 0,
+        ms: 0,
+      });
+
+      const abortRef = useRef(null);
+      const pendingRef = useRef("");
+      const shownRef = useRef("");
+      const rafRef = useRef(0);
+      const renderCountRef = useRef(0);
+      const startedAtRef = useRef(0);
+
+      // Count commits of this component (demo metric only).
+      useEffect(() => {
+        renderCountRef.current += 1;
+      });
+
+      const resetBuffers = () => {
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = 0;
+        }
+        pendingRef.current = "";
+        shownRef.current = "";
+        renderCountRef.current = 0;
+        setDisplayed("");
+        setError("");
+        setStats({ reads: 0, renders: 0, chars: 0, ms: 0 });
+      };
+
+      const stop = useCallback(() => {
+        abortRef.current?.abort();
+        abortRef.current = null;
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = 0;
+        }
+        setRunning(false);
+      }, []);
+
+      const start = async () => {
+        stop();
+        resetBuffers();
+        const ac = new AbortController();
+        abortRef.current = ac;
+        setRunning(true);
+        startedAtRef.current = performance.now();
+
+        const flushRaf = () => {
+          rafRef.current = 0;
+          if (!pendingRef.current) return;
+          shownRef.current += pendingRef.current;
+          pendingRef.current = "";
+          setDisplayed(shownRef.current);
+        };
+
+        const onChunk = (text) => {
+          if (mode === "naive") {
+            shownRef.current += text;
+            setDisplayed(shownRef.current);
+            return;
+          }
+          // raf mode: batch into one setState per animation frame
+          pendingRef.current += text;
+          if (!rafRef.current) {
+            rafRef.current = requestAnimationFrame(flushRaf);
+          }
+        };
+
+        try {
+          let res;
+          if (source === "local") {
+            const bodyText = prompt.trim()
+              ? `You asked: ${prompt.trim()}\n\n${SAMPLE}`
+              : SAMPLE;
+            res = createLocalStreamResponse(bodyText, delayMs, ac.signal);
+          } else {
+            const q = new URLSearchParams({
+              delayMs: String(delayMs),
+            });
+            if (prompt.trim()) q.set("prompt", prompt.trim());
+            res = await fetch(`/api/demo/llm-stream?${q}`, {
+              signal: ac.signal,
+            });
+            if (!res.ok) {
+              throw new Error(`HTTP ${res.status}`);
+            }
+          }
+
+          const reads = await readTextStream(res.body, onChunk, ac.signal);
+
+          // Flush any leftover buffered text after the stream ends.
+          if (mode === "raf" && pendingRef.current) {
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            flushRaf();
+          }
+
+          const ms = Math.round(performance.now() - startedAtRef.current);
+          setStats({
+            reads,
+            renders: renderCountRef.current,
+            chars: shownRef.current.length,
+            ms,
+          });
+        } catch (err) {
+          if (err?.name === "AbortError") {
+            setStats({
+              reads: 0,
+              renders: renderCountRef.current,
+              chars: shownRef.current.length,
+              ms: Math.round(performance.now() - startedAtRef.current),
+            });
+          } else {
+            setError(err?.message || String(err));
+          }
+        } finally {
+          setRunning(false);
+          abortRef.current = null;
+        }
+      };
+
+      const renderTone =
+        mode === "naive" && stats.renders > 40
+          ? "warn"
+          : mode === "raf" && stats.renders > 0
+            ? "ok"
+            : "";
+
+      return h(Fragment, null,
+        h("h1", null, "Fetch ReadableStream × 打字机 × React"),
+        h("p", { className: "lede" },
+          "用真实的 ",
+          h("code", null, "fetch → response.body.getReader()"),
+          " 读模拟模型输出；对比「每 chunk 都 setState」与「rAF 合并更新」对 React 提交次数的影响。",
+        ),
+
+        h("div", { className: "panel" },
+          h("h2", null, "原理"),
+          h("ol", { className: "steps" },
+            h("li", null, "服务端（或本地 mock）按 token 往 ", h("code", null, "text/plain"), " 响应里 ", h("code", null, "write"), "。"),
+            h("li", null, "浏览器拿到 ", h("code", null, "ReadableStream"), "，循环 ", h("code", null, "reader.read()"), "。"),
+            h("li", null, h("code", null, "TextDecoder({ stream: true })"), " 正确处理 UTF-8 半包。"),
+            h("li", null, "打字机感来自「边收边展示」；高频 setState 会拖垮 React，用 rAF 把更新压到每帧一次。"),
+          ),
+        ),
+
+        h("div", { className: "panel" },
+          h("h2", null, "控制台"),
+          h("div", { className: "row" },
+            h("label", { className: "field" },
+              "数据源",
+              h("select", {
+                value: source,
+                onChange: (e) => setSource(e.target.value),
+                disabled: running,
+              },
+                h("option", { value: "local" }, "本地 mock Response"),
+                h("option", { value: "api" }, "真实 /api/demo/llm-stream"),
+              ),
+            ),
+            h("label", { className: "field" },
+              "渲染策略",
+              h("select", {
+                value: mode,
+                onChange: (e) => setMode(e.target.value),
+                disabled: running,
+              },
+                h("option", { value: "naive" }, "Naive：每 chunk setState"),
+                h("option", { value: "raf" }, "优化：rAF 批处理"),
+              ),
+            ),
+            h("label", { className: "field" },
+              "token 间隔 (ms)",
+              h("input", {
+                type: "number",
+                min: 0,
+                max: 200,
+                value: delayMs,
+                disabled: running,
+                onChange: (e) => setDelayMs(Number(e.target.value) || 0),
+              }),
+            ),
+            h("label", { className: "field" },
+              "可选 prompt",
+              h("input", {
+                type: "text",
+                placeholder: "留空用默认文案",
+                value: prompt,
+                disabled: running,
+                onChange: (e) => setPrompt(e.target.value),
+              }),
+            ),
+          ),
+          h("div", { className: "row" },
+            h("button", { type: "button", onClick: start, disabled: running },
+              running ? "生成中…" : "开始流式输出",
+            ),
+            h("button", {
+              type: "button",
+              className: "ghost",
+              onClick: stop,
+              disabled: !running,
+            }, "中止 (AbortController)"),
+          ),
+
+          h("div", { className: "metrics" },
+            h(Metric, { label: "stream reads", value: stats.reads }),
+            h(Metric, {
+              label: "React commits",
+              value: stats.renders,
+              tone: renderTone,
+            }),
+            h(Metric, { label: "chars", value: stats.chars }),
+            h(Metric, { label: "elapsed", value: `${stats.ms} ms` }),
+          ),
+
+          h("div", {
+            className: "stream-out",
+            "aria-live": "polite",
+          },
+            displayed || (running ? "" : "（输出区）"),
+            running ? h("span", { className: "cursor", "aria-hidden": "true" }) : null,
+          ),
+
+          error ? h("p", { className: "err" }, error) : null,
+
+          h("p", { className: "hint" },
+            mode === "naive"
+              ? h(Fragment, null,
+                  "当前是 ",
+                  h("strong", null, "Naive"),
+                  "：每个网络 chunk 触发一次 ",
+                  h("code", null, "setState"),
+                  "。把间隔调到 0～10ms，观察 commits 是否接近 reads。",
+                )
+              : h(Fragment, null,
+                  "当前是 ",
+                  h("strong", null, "rAF"),
+                  "：多个 chunk 合并到同一帧再 ",
+                  h("code", null, "setState"),
+                  "。commits 通常远小于 reads（约 ≤ 60/s）。",
+                ),
+          ),
+        ),
+
+        h("div", { className: "panel" },
+          h("h2", null, "关键代码"),
+          h("div", { className: "code-tabs" },
+            ["fetch", "naive", "raf"].map((key) =>
+              h("button", {
+                key,
+                type: "button",
+                className: codeTab === key ? "active" : "",
+                onClick: () => setCodeTab(key),
+              }, key === "fetch" ? "读流" : key === "naive" ? "Naive" : "rAF"),
+            ),
+          ),
+          h("pre", { className: "code" }, CODE[codeTab]),
+        ),
+      );
+    }
+
+    createRoot(document.getElementById("root")).render(h(App));
+  </script>
+</body>
+</html>

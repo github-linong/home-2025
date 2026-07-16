@@ -1,0 +1,5 @@
+data/learn-audio/
+data/piper-voices/*.onnx
+data/piper-voices/*.onnx.json
+!data/piper-voices/.gitkeep
+.env
