@@ -4,6 +4,7 @@ import { CURATED_DEMO_SLUGS } from "../data/curated-demos";
 import { getDemoHighlights, getHomeDemoPicks } from "./demoHighlights";
 import { blogBaseWeight, demoBaseWeight } from "./contentWeight";
 import { toPlainText } from "./plainText";
+import { excludeNoticePosts } from "./systemNotices.mjs";
 
 export type SortCatalogItem = {
   id: string;
@@ -31,7 +32,7 @@ function toIso(value?: Date | string): string | undefined {
 }
 
 export async function buildBlogSortCatalog(): Promise<SortCatalogItem[]> {
-  const posts = (await getCollection("blog")).sort(
+  const posts = excludeNoticePosts(await getCollection("blog")).sort(
     (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
   );
   return posts.map((post) => {

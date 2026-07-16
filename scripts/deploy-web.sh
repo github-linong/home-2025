@@ -64,3 +64,11 @@ echo "==> Done. Smoke check:"
 curl -sI "https://www.lilnong.top/" | head -5
 curl -sI "https://www.lilnong.top/demos/" | head -5
 curl -sI "https://www.lilnong.top/demos/jsrun/DRYKp.html" | head -5
+
+# Optional: push core + recent URLs to Baidu when token is configured.
+if [[ -n "${BAIDU_PUSH_TOKEN:-}" ]]; then
+  echo "==> Baidu push (BAIDU_PUSH_TOKEN set)..."
+  (cd "$ROOT" && npm run baidu:push:recent) || echo "WARN: baidu push failed (non-fatal)" >&2
+else
+  echo "==> Skip Baidu push (set BAIDU_PUSH_TOKEN to enable)"
+fi

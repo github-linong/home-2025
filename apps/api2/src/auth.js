@@ -12,6 +12,44 @@ if (!databaseUrl) {
   throw new Error("DATABASE_URL (or API2_DATABASE_URL) is required for api2");
 }
 
+/**
+ * Aliyun CN → github.com/login/oauth/access_token is flaky (timeouts / RST).
+ * Retry with a short abort so nginx does not sit on a 60s upstream hang.
+ */
+const nativeFetch = globalThis.fetch.bind(globalThis);
+globalThis.fetch = async (input, init) => {
+  const url =
+    typeof input === "string"
+      ? input
+      : input instanceof URL
+        ? input.href
+        : input.url;
+  if (!url.includes("github.com/login/oauth/access_token")) {
+    return nativeFetch(input, init);
+  }
+
+  let lastError;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 8_000);
+    try {
+      // Prefer a hard 8s ceiling; do not wait on flaky github.com sockets.
+      const res = await nativeFetch(input, { ...init, signal: ctrl.signal });
+      clearTimeout(timer);
+      return res;
+    } catch (err) {
+      clearTimeout(timer);
+      lastError = err;
+      console.error(
+        `[api2] github token exchange attempt ${attempt}/3 failed:`,
+        err?.cause?.code || err?.name || err?.message || err,
+      );
+      if (attempt < 3) await new Promise((r) => setTimeout(r, 400 * attempt));
+    }
+  }
+  throw lastError;
+};
+
 export const pool = new Pool({
   connectionString: databaseUrl,
   // Tunnel to remote PG can flap; keep pool resilient.

@@ -1,0 +1,10 @@
+{
+  "name": "@personal-site/poker-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./pokerEngine.mjs": "./pokerEngine.mjs",
+    "./pokerBetting.mjs": "./pokerBetting.mjs"
+  }
+}

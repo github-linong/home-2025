@@ -3,9 +3,16 @@ import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import SideBar from "../components/SideBar.astro";
+import SystemNotice from "../components/SystemNotice.astro";
 import { ViewTransitions } from "astro:transitions";
+import { getCollection } from "astro:content";
+import createSlug from "../lib/createSlug";
+import { getPublicNoticesFromPosts } from "../lib/systemNotices.mjs";
 
 import { SITE_TITLE, SITE_DESCRIPTION, TRANSITION_API } from "../config";
+
+const systemNotices = getPublicNoticesFromPosts(await getCollection("blog"), createSlug);
+const systemNoticesJson = JSON.stringify(systemNotices).replace(/</g, "\\u003c");
 
 const {
   image,
@@ -14,30 +21,58 @@ const {
   includeSidebar = true,
   sideBarActiveItemID,
   ogType,
+  canonical,
+  jsonLd,
+  publishedTime,
+  modifiedTime,
   /** Main content width — keep blog / demos / search on the same measure. */
   mainClass = "p-6 pt-10 w-full max-w-[100vw] lg:max-w-[960px]",
 } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en" data-theme="lofi">
+<html lang="zh-CN" data-theme="lofi">
   <head>
-    <BaseHead title={title} description={description} image={image} , ogType={ogType} />
+    <BaseHead
+      title={title}
+      description={description}
+      image={image}
+      ogType={ogType}
+      canonical={canonical}
+      jsonLd={jsonLd}
+      publishedTime={publishedTime}
+      modifiedTime={modifiedTime}
+    />
     {TRANSITION_API && <ViewTransitions />}
   </head>
   <body>
+    {
+      systemNotices.length > 0 && (
+        <script
+          id="system-notice-data"
+          type="application/json"
+          set:html={systemNoticesJson}
+        />
+      )
+    }
     <div class="bg-base-100 drawer lg:drawer-open">
       <input id="my-drawer" type="checkbox" class="drawer-toggle" />
       <div class="drawer-content bg-base-100">
         <Header title={SITE_TITLE} />
         <div class="md:flex md:justify-center">
           <main class={mainClass}>
+            {systemNotices.length > 0 && <SystemNotice />}
             <slot />
           </main>
         </div>
         <Footer />
       </div>
-      {includeSidebar && <SideBar sideBarActiveItemID={sideBarActiveItemID} />}
+      {includeSidebar && (
+        <SideBar
+          sideBarActiveItemID={sideBarActiveItemID}
+          hasSystemNotices={systemNotices.length > 0}
+        />
+      )}
     </div>
   </body>
 </html>

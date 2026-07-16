@@ -6,8 +6,9 @@ import { getCollection } from "astro:content";
 import createSlug from "../lib/createSlug";
 import { SITE_AUTHOR, SITE_TAGLINE, SITE_SUBTITLE } from "../config";
 import { getHomeDemoPicks } from "../lib/demoHighlights";
+import { excludeNoticePosts } from "../lib/systemNotices.mjs";
 
-const posts = (await getCollection("blog")).sort(
+const posts = excludeNoticePosts(await getCollection("blog")).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
 const lastPosts = posts.slice(0, 5);
@@ -18,17 +19,17 @@ const homeShow = homePicks.slice(0, 6);
 ---
 
 <BaseLayout sideBarActiveItemID="home">
-  <div class="pb-12 mt-5">
-    <div class="text-5xl font-bold">{SITE_AUTHOR}</div>
-    <div class="text-3xl py-3 font-bold">{SITE_TAGLINE}</div>
+  <header class="pb-12 mt-5">
+    <h1 class="text-5xl font-bold">{SITE_AUTHOR}</h1>
+    <p class="text-3xl py-3 font-bold m-0">{SITE_TAGLINE}</p>
     <div class="py-2">
       <p class="text-lg">{SITE_SUBTITLE}</p>
     </div>
-  </div>
+  </header>
 
   <div class="mb-8">
     <div class="mb-2 flex flex-wrap items-end justify-between gap-3">
-      <div class="text-3xl font-bold">精选项目</div>
+      <h2 class="text-3xl font-bold m-0">精选项目</h2>
       <a href="/demos/" class="btn btn-ghost btn-sm">全部项目 →</a>
     </div>
     <p class="opacity-70 mb-4 text-sm">
@@ -74,7 +75,7 @@ const homeShow = homePicks.slice(0, 6);
 
   <div>
     <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
-      <div class="text-3xl font-bold">最新文章</div>
+      <h2 class="text-3xl font-bold m-0">最新文章</h2>
       <a href="/blog/" class="btn btn-ghost btn-sm">全部文章 →</a>
     </div>
   </div>

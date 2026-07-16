@@ -1,4 +1,15 @@
+# https://www.lilnong.top/robots.txt
 User-agent: *
 Allow: /
+Disallow: /login/
+Disallow: /search/
+# Runnable legacy project bundles — keep reachable for demos, out of search indexes
+Disallow: /demos/project/
+
+User-agent: Baiduspider
+Allow: /
+Disallow: /login/
+Disallow: /search/
+Disallow: /demos/project/
 
 Sitemap: https://www.lilnong.top/sitemap-index.xml

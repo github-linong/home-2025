@@ -1,0 +1,133 @@
+---
+/** Sidebar bell — opens the full notice list. */
+---
+
+<div class="mx-3 mb-2 hidden border-t border-base-content/10 pt-2" data-notice-inbox>
+  <button
+    type="button"
+    class="group flex h-9 w-full items-center justify-between gap-2 rounded-lg px-2.5 text-sm transition-colors hover:bg-base-content/[0.06]"
+    data-notice-open-all
+    aria-label="查看系统公告"
+    title="系统公告"
+  >
+    <span class="flex min-w-0 items-center gap-2">
+      <span class="relative inline-flex shrink-0">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          class="h-[1.125rem] w-[1.125rem] opacity-70 transition-opacity group-hover:opacity-100"
+          aria-hidden="true"
+        >
+          <path
+            d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"
+          />
+        </svg>
+        <span
+          data-notice-unread-badge
+          class="badge badge-error badge-xs absolute -right-2 -top-2 hidden min-h-0 px-1.5 py-0.5"
+        />
+      </span>
+      <span class="truncate opacity-70 transition-opacity group-hover:opacity-100">系统公告</span>
+    </span>
+    <span class="text-xs opacity-40 transition-opacity group-hover:opacity-70">全部 →</span>
+  </button>
+</div>
+
+<dialog data-notice-dialog class="modal">
+  <div class="modal-box max-w-lg">
+    <h3 class="text-lg font-bold">系统公告</h3>
+    <p class="mt-1 text-sm opacity-60">点击标题可查看完整内容</p>
+    <ul data-notice-all-list class="mt-4 max-h-[60vh] space-y-2 overflow-y-auto" />
+    <div class="modal-action">
+      <form method="dialog">
+        <button type="submit" class="btn">关闭</button>
+      </form>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button type="submit" aria-label="关闭">close</button>
+  </form>
+</dialog>
+
+<script>
+  import {
+    getUnreadNotices,
+    markNoticeRead,
+    NOTICE_CHANGE_EVENT,
+    readNoticesFromDom,
+    readSeenSet,
+    renderNoticeListItem,
+  } from "../lib/systemNoticeUi.mjs";
+
+  function bindInbox(root: HTMLElement) {
+    if (root.dataset.bound === "1") return;
+    root.dataset.bound = "1";
+
+    const openBtn = root.querySelector<HTMLButtonElement>("[data-notice-open-all]");
+    const unreadBadge = root.querySelector<HTMLElement>("[data-notice-unread-badge]");
+    const dialog = document.querySelector<HTMLDialogElement>("[data-notice-dialog]");
+    const allList = document.querySelector<HTMLElement>("[data-notice-all-list]");
+
+    if (!openBtn || !dialog || !allList) {
+      root.remove();
+      return;
+    }
+
+    const allListEl = allList;
+    const dialogEl = dialog;
+
+    const notices = readNoticesFromDom();
+    if (!notices.length) {
+      root.remove();
+      return;
+    }
+
+    root.classList.remove("hidden");
+
+    function renderAllList() {
+      const seen = readSeenSet();
+      allListEl.innerHTML = notices.map((notice) => renderNoticeListItem(notice, seen)).join("");
+    }
+
+    function updateBadge() {
+      const unread = getUnreadNotices(notices);
+      if (!unreadBadge) return;
+      if (unread.length > 0) {
+        unreadBadge.textContent = unread.length > 9 ? "9+" : String(unread.length);
+        unreadBadge.classList.remove("hidden");
+      } else {
+        unreadBadge.textContent = "";
+        unreadBadge.classList.add("hidden");
+      }
+    }
+
+    function refresh() {
+      renderAllList();
+      updateBadge();
+    }
+
+    openBtn.addEventListener("click", () => {
+      refresh();
+      dialogEl.showModal();
+    });
+
+    allListEl.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement | null;
+      const link = target?.closest<HTMLElement>("[data-notice-item-id]");
+      const noticeId = link?.dataset.noticeItemId;
+      if (!noticeId) return;
+      markNoticeRead(noticeId);
+    });
+
+    document.addEventListener(NOTICE_CHANGE_EVENT, refresh);
+    refresh();
+  }
+
+  function init() {
+    document.querySelectorAll<HTMLElement>("[data-notice-inbox]").forEach(bindInbox);
+  }
+
+  init();
+  document.addEventListener("astro:page-load", init);
+</script>

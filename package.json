@@ -33,8 +33,15 @@
     "enrich:jsrun": "node scripts/enrich-jsrun-curated.mjs",
     "normalize:jsrun-tags": "node scripts/normalize-jsrun-tags.mjs",
     "deploy:web": "bash scripts/deploy-web.sh",
+    "deploy:poker-realtime": "bash scripts/deploy-poker-realtime.sh",
+    "baidu:push": "node scripts/baidu-push.mjs",
+    "baidu:push:recent": "node scripts/baidu-push.mjs --recent 10",
+    "seo:www-redirect": "bash scripts/apply-www-canonical-redirect.sh",
     "dev:api2": "npm run dev --prefix apps/api2",
     "start:api2": "npm run start --prefix apps/api2",
+    "dev:poker-realtime": "npm run dev --prefix apps/poker-realtime",
+    "start:poker-realtime": "npm run start --prefix apps/poker-realtime",
+    "test:poker-realtime": "npm test --prefix apps/poker-realtime",
     "test:api": "npm test --prefix apps/api"
   },
   "engines": {

@@ -48,6 +48,29 @@ export function settleUncalledBets(totalBets) {
   };
 }
 
+/**
+ * Multiway: refund chips that exceed the second-highest totalBet before showdown.
+ */
+export function settleUncalledBetsMulti(seats, potRef) {
+  const contributors = seats.filter((s) => s.totalBet > 0);
+  if (contributors.length < 2) return [];
+
+  const sorted = [...contributors].sort((a, b) => b.totalBet - a.totalBet);
+  const secondHighest = sorted[1].totalBet;
+  const refunds = [];
+
+  for (const seat of contributors) {
+    const excess = seat.totalBet - secondHighest;
+    if (excess <= 0) continue;
+    seat.stack += excess;
+    seat.totalBet -= excess;
+    if (potRef && typeof potRef.pot === "number") potRef.pot -= excess;
+    refunds.push({ userId: seat.userId ?? seat.id, amount: excess });
+  }
+
+  return refunds;
+}
+
 export function nextSeatIndex(seats, fromIndex, predicate = (_seat, _index) => true) {
   if (!Array.isArray(seats) || seats.length === 0) {
     throw new RangeError("At least one seat is required.");

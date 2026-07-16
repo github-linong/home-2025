@@ -7,7 +7,11 @@ const legacyCount = (await getCollection("demos")).filter((d) =>
 ).length;
 ---
 
-<BaseLayout title="Demo 归档" sideBarActiveItemID="demos">
+<BaseLayout
+  title="Demo 归档 · 历史交互示例"
+  description="历史交互 Demo 归档：按名称、最新或热度浏览，也可跳转统一搜索按标签筛选。"
+  sideBarActiveItemID="demos"
+>
   <div class="not-prose" data-archive-root data-catalog-url="/data/demo-legacy-catalog.json">
     <a href="/demos/" class="link link-hover text-sm">← 项目展示</a>
     <h1 class="text-3xl font-bold mt-2">Demo 归档</h1>

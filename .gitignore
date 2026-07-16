@@ -32,3 +32,11 @@ scripts/data/jsrun/manifest.json
 # api2 secrets
 apps/api2/.env
 apps/api2/data/
+
+# poker-realtime local journals (runtime)
+data/poker-journal/
+apps/poker-realtime/.env
+apps/poker-realtime/node_modules/
+apps/poker-realtime/data/
+!apps/poker-realtime/data/poker-journal/
+!apps/poker-realtime/data/poker-journal/.gitkeep

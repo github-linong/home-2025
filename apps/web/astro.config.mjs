@@ -43,6 +43,15 @@ export default defineConfig({
           target: 'http://127.0.0.1:3002',
           changeOrigin: true,
         },
+        '/ws/poker': {
+          target: 'ws://127.0.0.1:3003',
+          ws: true,
+          changeOrigin: true,
+        },
+        '/api/poker': {
+          target: 'http://127.0.0.1:3003',
+          changeOrigin: true,
+        },
         // Legacy API (api)
         '/api': {
           target: 'http://127.0.0.1:3001',

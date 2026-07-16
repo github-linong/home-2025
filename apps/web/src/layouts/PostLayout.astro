@@ -9,6 +9,13 @@ import ArticleToc from "../components/ArticleToc.astro";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { Image } from "astro:assets";
+import { SITE_AUTHOR } from "../config";
+import { profile } from "../data/profile";
+import {
+  buildArticleJsonLd,
+  buildCanonicalUrl,
+  buildPersonJsonLd,
+} from "../lib/seo.mjs";
 
 export interface Props extends BlogSchema {
   qaData?: QaData | null;
@@ -38,6 +45,29 @@ const displayDate = dayjs(pubDate).format("ll");
 const isAnswer = kind === "answer";
 const showQa = isAnswer && qaData;
 const contentSource = source ?? (sourceUrl ? "segmentfault" : "site");
+
+const siteBase = Astro.site?.href ?? "https://www.lilnong.top/";
+const pageCanonical = buildCanonicalUrl(siteBase, Astro.url);
+const datePublished = new Date(pubDate).toISOString();
+const modifiedCandidate = updatedDate ? new Date(updatedDate) : null;
+const dateModified =
+  modifiedCandidate && !Number.isNaN(modifiedCandidate.valueOf())
+    ? modifiedCandidate.toISOString()
+    : datePublished;
+const articleJsonLd = buildArticleJsonLd({
+  headline: title,
+  description,
+  url: pageCanonical,
+  datePublished,
+  dateModified,
+  image: heroImage ? new URL(heroImage, siteBase).href : undefined,
+  author: buildPersonJsonLd({
+    name: SITE_AUTHOR,
+    url: profile.site,
+    description: profile.tagline,
+  }),
+  isBasedOn: sourceUrl,
+});
 ---
 
 <BaseLayout
@@ -45,6 +75,10 @@ const contentSource = source ?? (sourceUrl ? "segmentfault" : "site");
   description={description}
   image={heroImage}
   ogType="article"
+  canonical={pageCanonical}
+  jsonLd={articleJsonLd}
+  publishedTime={datePublished}
+  modifiedTime={dateModified}
   mainClass="p-6 pt-10 w-full max-w-[100vw] lg:max-w-[1080px]"
 >
   <article class="max-w-none" data-pagefind-body>

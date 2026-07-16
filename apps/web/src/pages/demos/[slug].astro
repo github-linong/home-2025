@@ -6,6 +6,13 @@ import { Image } from "astro:assets";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ViewBeacon from "../../components/ViewBeacon.astro";
 import createSlug from "../../lib/createSlug";
+import { SITE_AUTHOR } from "../../config";
+import { profile } from "../../data/profile";
+import {
+  buildCanonicalUrl,
+  buildCreativeWorkJsonLd,
+  buildPersonJsonLd,
+} from "../../lib/seo.mjs";
 
 export async function getStaticPaths() {
   const entries = await getCollection("demos");
@@ -38,6 +45,28 @@ const typeLabels: Record<string, string> = {
 };
 
 const isLegacy = demo.tags?.includes("legacy");
+
+const siteBase = Astro.site?.href ?? "https://www.lilnong.top/";
+const pageCanonical = buildCanonicalUrl(siteBase, Astro.url);
+const datePublished = new Date(demo.pubDate).toISOString();
+const modifiedCandidate = demo.updatedDate ? new Date(demo.updatedDate) : null;
+const dateModified =
+  modifiedCandidate && !Number.isNaN(modifiedCandidate.valueOf())
+    ? modifiedCandidate.toISOString()
+    : datePublished;
+const demoJsonLd = buildCreativeWorkJsonLd({
+  name: demo.title,
+  description: demo.description,
+  url: pageCanonical,
+  datePublished,
+  dateModified,
+  image: demo.heroImage ? new URL(demo.heroImage, siteBase).href : undefined,
+  author: buildPersonJsonLd({
+    name: SITE_AUTHOR,
+    url: profile.site,
+    description: profile.tagline,
+  }),
+});
 ---
 
 <BaseLayout
@@ -45,6 +74,10 @@ const isLegacy = demo.tags?.includes("legacy");
   description={demo.description}
   image={demo.heroImage}
   sideBarActiveItemID="demos"
+  canonical={pageCanonical}
+  jsonLd={demoJsonLd}
+  publishedTime={datePublished}
+  modifiedTime={dateModified}
 >
   <article class="prose max-w-none" data-pagefind-body>
     <div class="not-prose mb-6">

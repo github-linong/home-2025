@@ -7,7 +7,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     <p class="text-xs tracking-[0.18em] uppercase opacity-45 mb-3">Account</p>
     <h1 class="text-3xl font-bold tracking-tight mb-2">登录</h1>
     <p class="text-sm leading-relaxed opacity-60 mb-8">
-      用 GitHub 登录后，侧栏会显示你的头像与昵称。会话存在浏览器 Cookie 里，静态页刷新后仍会识别。
+      推荐优先用邮箱登录。GitHub 登录依赖服务器访问 GitHub，国内机房偶发超时，失败时请重试或改用邮箱。
     </p>
 
     <div
@@ -18,29 +18,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     </div>
 
     <div class="space-y-4" data-login-panel>
-      <button
-        type="button"
-        class="btn btn-neutral w-full gap-2 h-12 normal-case text-base"
-        data-github-login
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          class="fill-current"
-        >
-          <path
-            fill-rule="evenodd"
-            clip-rule="evenodd"
-            d="M12.026 2c-5.509 0-9.974 4.465-9.974 9.974 0 4.406 2.857 8.145 6.821 9.465.499.09.679-.217.679-.481 0-.237-.008-.865-.011-1.696-2.775.602-3.361-1.338-3.361-1.338-.452-1.152-1.107-1.459-1.107-1.459-.905-.619.069-.605.069-.605 1.002.07 1.527 1.028 1.527 1.028.89 1.524 2.336 1.084 2.902.829.091-.645.351-1.085.635-1.334-2.214-.251-4.542-1.107-4.542-4.93 0-1.087.389-1.979 1.024-2.675-.101-.253-.446-1.268.099-2.64 0 0 .837-.269 2.742 1.021a9.582 9.582 0 0 1 2.496-.336 9.554 9.554 0 0 1 2.496.336c1.906-1.291 2.742-1.021 2.742-1.021.545 1.372.203 2.387.099 2.64.64.696 1.024 1.587 1.024 2.675 0 3.833-2.33 4.675-4.552 4.922.355.308.675.916.675 1.846 0 1.334-.012 2.41-.012 2.737 0 .267.178.577.687.479C19.146 20.115 22 16.379 22 11.974 22 6.465 17.535 2 12.026 2z"
-          ></path>
-        </svg>
-        使用 GitHub 登录
-      </button>
-
-      <details class="group rounded-xl border border-base-content/10 bg-base-200/40 open:bg-base-200/60">
+      <details class="group rounded-xl border border-base-content/10 bg-base-200/40 open:bg-base-200/60" open>
         <summary
           class="cursor-pointer list-none px-4 py-3 text-sm opacity-70 transition-opacity hover:opacity-100 [&::-webkit-details-marker]:hidden flex items-center justify-between"
         >
@@ -86,6 +64,29 @@ import BaseLayout from "../layouts/BaseLayout.astro";
           </div>
         </form>
       </details>
+
+      <button
+        type="button"
+        class="btn btn-neutral w-full gap-2 h-12 normal-case text-base"
+        data-github-login
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          class="fill-current"
+        >
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M12.026 2c-5.509 0-9.974 4.465-9.974 9.974 0 4.406 2.857 8.145 6.821 9.465.499.09.679-.217.679-.481 0-.237-.008-.865-.011-1.696-2.775.602-3.361-1.338-3.361-1.338-.452-1.152-1.107-1.459-1.107-1.459-.905-.619.069-.605.069-.605 1.002.07 1.527 1.028 1.527 1.028.89 1.524 2.336 1.084 2.902.829.091-.645.351-1.085.635-1.334-2.214-.251-4.542-1.107-4.542-4.93 0-1.087.389-1.979 1.024-2.675-.101-.253-.446-1.268.099-2.64 0 0 .837-.269 2.742 1.021a9.582 9.582 0 0 1 2.496-.336 9.554 9.554 0 0 1 2.496.336c1.906-1.291 2.742-1.021 2.742-1.021.545 1.372.203 2.387.099 2.64.64.696 1.024 1.587 1.024 2.675 0 3.833-2.33 4.675-4.552 4.922.355.308.675.916.675 1.846 0 1.334-.012 2.41-.012 2.737 0 .267.178.577.687.479C19.146 20.115 22 16.379 22 11.974 22 6.465 17.535 2 12.026 2z"
+          ></path>
+        </svg>
+        使用 GitHub 登录
+      </button>
+      <p class="text-xs opacity-50 text-center -mt-2">若长时间停在回调页，多半是 GitHub 网络超时，请返回重试。</p>
     </div>
 
     <p class="mt-10 text-sm opacity-60">
@@ -102,40 +103,70 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   const form = document.querySelector<HTMLFormElement>("[data-email-form]");
   const signupBtn = document.querySelector("[data-signup]");
 
+  function safeNextPath(): string {
+    const raw = new URLSearchParams(window.location.search).get("next") || "/";
+    if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
+    return raw;
+  }
+
   function showError(msg: string) {
     if (!errBox) return;
     errBox.textContent = msg;
     errBox.classList.remove("hidden");
   }
 
+  function clearError() {
+    if (!errBox) return;
+    errBox.textContent = "";
+    errBox.classList.add("hidden");
+  }
+
   authClient.getSession().then(({ data }) => {
-    if (data?.user) window.location.replace("/");
+    if (data?.user) window.location.replace(safeNextPath());
   });
 
   githubBtn?.addEventListener("click", async () => {
     const btn = githubBtn as HTMLButtonElement;
+    const original = btn.textContent;
+    clearError();
     btn.disabled = true;
+    btn.setAttribute("aria-busy", "true");
+    btn.textContent = "正在跳转 GitHub…";
     try {
+      // disableRedirect: better-auth client otherwise auto-sets location.href,
+      // and a second assign() cancels the first navigation (broken OAuth).
       const result = await authClient.signIn.social({
         provider: "github",
-        callbackURL: window.location.origin + "/",
+        callbackURL: window.location.origin + safeNextPath(),
+        disableRedirect: true,
       });
       if (result.error) {
         showError(result.error.message || `GitHub 登录失败（${result.error.code || "unknown"}）`);
         btn.disabled = false;
+        btn.removeAttribute("aria-busy");
+        btn.textContent = original || "使用 GitHub 登录";
         return;
       }
       const url = (result.data as { url?: string } | null)?.url;
-      if (url) window.location.assign(url);
-      else btn.disabled = false;
+      if (url) {
+        window.location.assign(url);
+        return;
+      }
+      showError("未拿到 GitHub 授权地址，请稍后重试");
+      btn.disabled = false;
+      btn.removeAttribute("aria-busy");
+      btn.textContent = original || "使用 GitHub 登录";
     } catch (err) {
       showError(err instanceof Error ? err.message : "GitHub 登录请求失败");
       btn.disabled = false;
+      btn.removeAttribute("aria-busy");
+      btn.textContent = original || "使用 GitHub 登录";
     }
   });
 
   async function emailAuth(mode: "signin" | "signup") {
     if (!form) return;
+    clearError();
     const fd = new FormData(form);
     const email = String(fd.get("email") || "");
     const password = String(fd.get("password") || "");
@@ -166,7 +197,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       else showError(msg || "登录失败");
       return;
     }
-    window.location.replace("/");
+    window.location.replace(safeNextPath());
   }
 
   form?.addEventListener("submit", (event) => {

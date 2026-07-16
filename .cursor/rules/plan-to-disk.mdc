@@ -1,0 +1,22 @@
+---
+description: Persist every plan to cursor-plan/ for review
+alwaysApply: true
+---
+
+# Plans must be written to disk
+
+Whenever you create, update, or finalize a plan (Plan Mode output, implementation plans, multi-step task plans, or equivalent planning artifacts), you MUST persist it under this repo's `cursor-plan/` directory so it can be reviewed later.
+
+## Requirements
+
+- Path: `cursor-plan/` at the repository root of `personal-site` (not `/tmp`, not chat-only).
+- Filename: `YYYY-MM-DD-<short-slug>.md` (use today's date and a kebab-case slug from the task).
+- If updating an existing plan for the same task, edit the same file instead of creating duplicates when the intent is clearly a revision.
+- The file must include at least: goal, scope / non-goals, steps, risks or open questions, and acceptance criteria.
+- After writing or updating the plan file, tell the user the relative path (e.g. `cursor-plan/2026-07-16-add-auth.md`).
+- Do not treat a plan as complete until it has been written to `cursor-plan/`.
+
+## Skip
+
+- Trivial one-step edits that never produced a plan artifact.
+- Pure Q&A with no implementation plan.

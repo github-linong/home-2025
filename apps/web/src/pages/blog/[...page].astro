@@ -6,9 +6,10 @@ import HorizontalCard from "../../components/HorizontalCard.astro";
 import ContentSortList from "../../components/ContentSortList.astro";
 import { getCollection } from "astro:content";
 import createSlug from "../../lib/createSlug";
+import { excludeNoticePosts } from "../../lib/systemNotices.mjs";
 
 export async function getStaticPaths({ paginate }) {
-  const posts = await getCollection("blog");
+  const posts = excludeNoticePosts(await getCollection("blog"));
   posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
   return paginate(posts, { pageSize: 10 });
 }
@@ -20,9 +21,13 @@ type Props = {
 const { page } = Astro.props as Props;
 ---
 
-<BaseLayout title="Blog" sideBarActiveItemID="blog">
+<BaseLayout
+  title="博客 · 技术文章与问答"
+  description="linong 的技术博客：前端、工程化、AI 实践，以及 SegmentFault 精选问答归档。"
+  sideBarActiveItemID="blog"
+>
   <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
-    <div class="text-3xl w-full font-bold sm:w-auto">Blog</div>
+    <h1 class="text-3xl w-full font-bold sm:w-auto m-0">博客</h1>
     <a href="/search/?type=blog" class="btn btn-outline btn-sm">搜索文章</a>
   </div>
 
