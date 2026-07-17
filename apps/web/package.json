@@ -18,6 +18,8 @@
     "@astrojs/rss": "^3.0.0",
     "@astrojs/sitemap": "^3.0.1",
     "@astrojs/tailwind": "^5.0.3",
+    "@met4citizen/headaudio": "^0.1.0",
+    "@met4citizen/talkinghead": "^1.7.0",
     "astro": "^4.0.2",
     "better-auth": "^1.6.23",
     "d3-delaunay": "^6.0.4",
@@ -27,6 +29,7 @@
     "leaflet": "^1.9.4",
     "lm-avatar-chat-sdk": "^1.1.4",
     "marked": "^18.0.6",
+    "motion-engine": "https://codeload.github.com/lhupyn/motion-engine/tar.gz/bd780a19e10d1cc5736a77946b04e08d658d5bf8",
     "sharp": "^0.32.6",
     "tailwindcss": "^3.3.5"
   },

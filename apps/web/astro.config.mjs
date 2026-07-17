@@ -15,6 +15,11 @@ export default defineConfig({
     '/demos/search/': '/search/?type=demo',
   },
   vite: {
+    optimizeDeps: {
+      // Keep talkinghead unbundled so its `new URL('./playback-worklet.js',
+      // import.meta.url)` audio worklet resolves in dev.
+      exclude: ['@met4citizen/talkinghead'],
+    },
     server: {
       // Whole-site demos are large static trees; watching them stalls the dev server.
       watch: {

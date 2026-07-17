@@ -25,8 +25,8 @@ export interface Props {
   /** Fetch catalog from this URL (preferred for large lists / paginated pages). */
   catalogUrl?: string;
   pageSize?: number;
-  defaultSort?: "date" | "date-asc" | "hot";
-  sortModes?: Array<"date" | "date-asc" | "hot">;
+  defaultSort?: "date" | "hot";
+  sortModes?: Array<"date" | "hot">;
   catalogKey?: string;
 }
 
@@ -36,13 +36,12 @@ const {
   catalogUrl = "",
   pageSize = 10,
   defaultSort = "date",
-  sortModes = ["date", "date-asc", "hot"],
+  sortModes = ["date", "hot"],
   catalogKey = kind,
 } = Astro.props;
 
-const sortLabels: Record<"date" | "date-asc" | "hot", string> = {
+const sortLabels: Record<"date" | "hot", string> = {
   date: "最新",
-  "date-asc": "最早",
   hot: "热度",
 };
 
@@ -93,7 +92,7 @@ const catalogJson = JSON.stringify(items).replace(/</g, "\\u003c");
 </div>
 
 <script>
-  type SortMode = "date" | "date-asc" | "hot";
+  type SortMode = "date" | "hot";
 
   type Item = {
     id: string;
@@ -121,11 +120,10 @@ const catalogJson = JSON.stringify(items).replace(/</g, "\\u003c");
   }
 
   function compare(a: Item, b: Item, mode: SortMode) {
-    if (mode === "date" || mode === "date-asc") {
+    if (mode === "date") {
       const dateOf = (item: Item) =>
         Date.parse(item.dateAsUpdate ? item.updatedDate || item.pubDate : item.pubDate);
-      const delta = dateOf(b) - dateOf(a);
-      const byDate = mode === "date" ? delta : -delta;
+      const byDate = dateOf(b) - dateOf(a);
       if (byDate !== 0) return byDate;
       const byWeight = (b.baseWeight || 0) - (a.baseWeight || 0);
       if (byWeight !== 0) return byWeight;
@@ -379,7 +377,7 @@ const catalogJson = JSON.stringify(items).replace(/</g, "\\u003c");
     const hasClientSortIntent =
       qScope === catalogKey &&
       qSort != null &&
-      (qSort === "date" || qSort === "date-asc" || qSort === "hot") &&
+      (qSort === "date" || qSort === "hot") &&
       (qSort !== defaultSort || qPage > 1);
 
     if (hasClientSortIntent) {

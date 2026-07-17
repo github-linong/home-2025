@@ -1,5 +1,6 @@
 ---
 title: "AI 应用面试百题精讲（中）：RAG · Agent"
+heroImage: "/heroes/blog/ai-interview-100-part2-rag-agent.webp"
 description: "逐题 Review RAG 与智能体架构：切块、混合检索、ReAct、MCP 与 Human-in-the-Loop，强调可控优于盲目自主。"
 pubDate: "Jul 16 2026"
 badge: "面试笔记"

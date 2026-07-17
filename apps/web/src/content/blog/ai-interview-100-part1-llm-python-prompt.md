@@ -1,5 +1,6 @@
 ---
 title: "AI 应用面试百题精讲（上）：大模型 · Python · Prompt"
+heroImage: "/heroes/blog/ai-interview-100-part1-llm-python-prompt.webp"
 description: "逐题 Review AI 面试百题前半：大模型基础、Python 工程、Java 集成与 Prompt/上下文管理，纠偏常见背诵口径。"
 pubDate: "Jul 16 2026"
 badge: "面试笔记"

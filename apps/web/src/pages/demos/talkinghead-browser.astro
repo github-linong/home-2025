@@ -1,0 +1,881 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="纯浏览器 3D 数字人 Demo · TalkingHead"
+  description="TalkingHead 3D 数字人配合浏览器语音识别与阿里云 CosyVoice 语音合成的 Demo。"
+>
+  <div class="prose mb-4 max-w-none">
+    <h1>纯浏览器 3D 数字人 Demo</h1>
+    <p class="opacity-80">
+      3D 渲染和中文语音识别在浏览器侧完成，回复由阿里云百炼 Qwen 生成，语音播报由
+      CosyVoice 合成，动作由 MotionEngine 在浏览器内执行，不依赖数字人云渲染服务。
+    </p>
+  </div>
+
+  <div role="alert" class="alert mb-4 text-sm">
+    <span>
+      CosyVoice 音频由本站后端安全代理，API Key 不会进入浏览器。HeadAudio 驱动口型，
+      MotionEngine 按台词时间线执行白名单语义动作；语音识别建议使用最新版 Chrome 或 Edge。
+    </span>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-[minmax(0,420px)_1fr]">
+    <section class="overflow-hidden rounded-box border border-base-300 bg-base-200">
+      <div id="avatarStage" class="relative aspect-[3/4] w-full bg-slate-900">
+        <div
+          id="avatarPlaceholder"
+          class="absolute inset-0 z-10 flex items-center justify-center p-6 text-center text-sm text-white/70"
+        >
+          点击「加载数字人」后，约 5 MB 的 3D 模型将在本机浏览器中渲染。
+        </div>
+      </div>
+      <div class="flex items-center justify-between gap-3 border-t border-base-300 p-3">
+        <button id="btnLoad" class="btn btn-primary btn-sm">加载数字人</button>
+        <span id="stateBadge" class="badge badge-outline">未加载</span>
+      </div>
+    </section>
+
+    <section class="flex min-w-0 flex-col gap-3">
+      <div
+        id="chatLog"
+        aria-live="polite"
+        class="min-h-[320px] flex-1 space-y-3 overflow-y-auto rounded-box border border-base-300 bg-base-100 p-3 text-sm lg:max-h-[55vh]"
+      >
+        <div class="opacity-50">加载数字人后，可以输入文字或点击麦克风提问。</div>
+      </div>
+
+      <form id="askForm" class="flex gap-2">
+        <input
+          id="askInput"
+          class="input input-bordered input-sm min-w-0 flex-1"
+          type="text"
+          placeholder="输入问题"
+          autocomplete="off"
+          disabled
+        />
+        <button id="btnMic" type="button" class="btn btn-sm" disabled aria-label="语音输入">
+          麦克风
+        </button>
+        <button id="btnAsk" type="submit" class="btn btn-primary btn-sm" disabled>发送</button>
+        <button id="btnStop" type="button" class="btn btn-sm" disabled>停止</button>
+      </form>
+
+      <p id="supportHint" class="text-xs opacity-60">
+        LLM：Qwen 中文回答与动作编排；动作：MotionEngine；TTS：CosyVoice
+        <code>cosyvoice-v3-flash / longanhuan</code>；口型：HeadAudio 实时音频驱动。
+      </p>
+    </section>
+  </div>
+
+  <p class="mt-4 text-xs opacity-60">
+    引擎：TalkingHead + HeadAudio + MotionEngine（MIT）。HeadAudio 使用声学模型近似识别
+    中文音频口型，不等同于中文音素级时间戳。示例形象由 Ready Player Me 创建，按
+    <a
+      class="link"
+      href="https://creativecommons.org/licenses/by-nc/4.0/"
+      target="_blank"
+      rel="noreferrer">CC BY-NC 4.0</a
+    > 用于非商业演示。
+  </p>
+</BaseLayout>
+
+<script>
+  import { HeadAudio } from "@met4citizen/headaudio/dist/headaudio.min.mjs";
+  import headAudioWorkletUrl from "@met4citizen/headaudio/dist/headworklet.min.mjs?url";
+  import { TalkingHead } from "@met4citizen/talkinghead";
+  import { MotionEngine } from "motion-engine";
+  import motions from "motion-engine/motions";
+
+  type Recognition = {
+    lang: string;
+    interimResults: boolean;
+    continuous: boolean;
+    onresult: ((event: any) => void) | null;
+    onerror: ((event: any) => void) | null;
+    onend: (() => void) | null;
+    start(): void;
+    stop(): void;
+    abort(): void;
+  };
+
+  type RecognitionConstructor = new () => Recognition;
+  type AvatarMotion =
+    | "none"
+    | "wave_right"
+    | "wave_left"
+    | "hand_raise"
+    | "hand_raise_left"
+    | "point"
+    | "thumbs_up"
+    | "thumbs_down"
+    | "ok_sign"
+    | "shrug_both"
+    | "nod_yes"
+    | "shake_no"
+    | "applause"
+    | "thinking_face"
+    | "celebrate"
+    | "bow"
+    | "side_step_left"
+    | "side_step_right"
+    | "turn_around";
+  type AvatarApiResponse = {
+    ok: boolean;
+    message: AvatarMessage;
+  };
+  type AvatarMessage = {
+    type: "avatar_response";
+    version: 1;
+    speech: {
+      text: string;
+      language: "zh-CN";
+    };
+    timeline: AvatarTimelineEvent[];
+  };
+  type AvatarTimelineEvent = {
+    type: "motion";
+    name: AvatarMotion;
+    at: number;
+  };
+  type HeadAudioCompatibleHead = TalkingHead & {
+    audioCtx: AudioContext;
+    audioSpeechGainNode: GainNode;
+    mtAvatar: Record<string, { newvalue: number; needsUpdate: boolean } | undefined>;
+    opt: { update?: (deltaMs: number) => void };
+    armature?: {
+      position: { x: number; y: number; z: number };
+      rotation: { x: number; y: number; z: number };
+    };
+  };
+
+  const LLM_ENDPOINT = "/api/demo/llm-stream";
+  const TTS_ENDPOINT = "/api/demo/tts";
+  const AVATAR_URL = "/models/talkinghead/brunette.glb";
+  const HEAD_AUDIO_MODEL_URL = "/vendor/headaudio/model-en-mixed.bin";
+  const VISEMES = ["aa", "O", "E", "I", "U", "PP", "SS", "CH"];
+
+  // Side steps are custom: MotionEngine animates the body lean while we
+  // translate the armature laterally (TalkingHead templates cannot move it).
+  const SIDE_STEP_MS = 2_800;
+  const SIDE_STEP_DISTANCE = 0.28;
+
+  function createSideStepMotion(direction: 1 | -1) {
+    return {
+      _track: "action" as const,
+      dt: [400, 500, 500, 500, 500, 400],
+      vs: {
+        bodyRotateY: [0.12, 0.18, 0.18, 0.12, 0.05, 0].map((v) => v * direction),
+        bodyRotateZ: [0.05, 0.09, 0.05, 0.09, 0.03, 0].map((v) => v * direction),
+      },
+    };
+  }
+
+  // With TalkingHead's default camera, world +x appears on the viewer's left,
+  // so direction +1 walks toward the viewer's left (verified visually).
+  const SIDE_STEP_MOTIONS = {
+    side_step_left: createSideStepMotion(1),
+    side_step_right: createSideStepMotion(-1),
+  };
+
+  // MotionEngine's built-in turn_around only twists the torso a few degrees,
+  // which reads like a camera pan; a real spin must rotate the armature root.
+  const TURN_AROUND_MS = 2_400;
+
+  const $ = (id: string) => document.getElementById(id)!;
+  const avatarStage = $("avatarStage");
+  const placeholder = $("avatarPlaceholder");
+  const stateBadge = $("stateBadge");
+  const chatLog = $("chatLog");
+  const askForm = $("askForm") as HTMLFormElement;
+  const askInput = $("askInput") as HTMLInputElement;
+  const btnLoad = $("btnLoad") as HTMLButtonElement;
+  const btnMic = $("btnMic") as HTMLButtonElement;
+  const btnAsk = $("btnAsk") as HTMLButtonElement;
+  const btnStop = $("btnStop") as HTMLButtonElement;
+  const supportHint = $("supportHint");
+
+  const speechWindow = window as typeof window & {
+    SpeechRecognition?: RecognitionConstructor;
+    webkitSpeechRecognition?: RecognitionConstructor;
+  };
+  const RecognitionApi =
+    speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
+
+  let head: TalkingHead | null = null;
+  let recognition: Recognition | null = null;
+  let requestController: AbortController | null = null;
+  let ttsController: AbortController | null = null;
+  let headAudio: HeadAudio | null = null;
+  let motionEngine: MotionEngine | null = null;
+  let headAudioReady = false;
+  let headAudioAttempted = false;
+  let mouthTimer: number | null = null;
+  let motionTimers: number[] = [];
+  let streamStarted = false;
+  let disposed = false;
+  let sideStep: { direction: 1 | -1; startedAt: number; baseX: number; baseY: number } | null =
+    null;
+  let spin: { startedAt: number; baseRotationY: number } | null = null;
+  const lifecycleController = new AbortController();
+
+  function renderSupportHint() {
+    const asrHint = RecognitionApi ? "" : "当前浏览器不支持中文语音识别，请使用文字输入；";
+    const lipSyncHint =
+      !headAudioAttempted
+        ? "口型：加载数字人后启用 HeadAudio。"
+        : headAudioReady
+          ? "口型：HeadAudio 实时音频驱动。"
+          : "口型：HeadAudio 不可用，已降级为音频能量近似。";
+    supportHint.textContent =
+      `${asrHint}LLM：Qwen 中文回答与动作编排；动作：MotionEngine；TTS：CosyVoice cosyvoice-v3-flash / longanhuan；${lipSyncHint}`;
+  }
+
+  function setState(text: string) {
+    stateBadge.textContent = text;
+  }
+
+  function appendMessage(kind: "user" | "assistant" | "system", text: string) {
+    if (chatLog.firstElementChild?.classList.contains("opacity-50")) {
+      chatLog.innerHTML = "";
+    }
+    const row = document.createElement("div");
+    row.className =
+      kind === "user" ? "text-right" : kind === "assistant" ? "text-left" : "text-center";
+    const bubble = document.createElement("span");
+    bubble.className =
+      kind === "user"
+        ? "inline-block max-w-[88%] rounded-lg bg-primary px-3 py-2 text-left text-primary-content"
+        : kind === "assistant"
+          ? "inline-block max-w-[88%] rounded-lg bg-base-200 px-3 py-2"
+          : "text-xs opacity-60";
+    bubble.textContent = text;
+    row.appendChild(bubble);
+    chatLog.appendChild(row);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    return bubble;
+  }
+
+  function setReady(ready: boolean) {
+    askInput.disabled = !ready;
+    btnAsk.disabled = !ready;
+    btnMic.disabled = !ready || !RecognitionApi;
+  }
+
+  async function initializeHeadAudio() {
+    if (!head || headAudio || disposed) return;
+    const audioHead = head as HeadAudioCompatibleHead;
+    let detector: HeadAudio | null = null;
+    try {
+      await audioHead.audioCtx.audioWorklet.addModule(headAudioWorkletUrl);
+      detector = new HeadAudio(audioHead.audioCtx, {
+        parameterData: {
+          vadGateActiveDb: -40,
+          vadGateInactiveDb: -55,
+          silMode: 0,
+          speakerMeanHz: 220,
+        },
+      });
+      await detector.loadModel(HEAD_AUDIO_MODEL_URL);
+      audioHead.audioSpeechGainNode.connect(detector);
+      detector.onvalue = (key, value) => {
+        const target = audioHead.mtAvatar[key];
+        if (target) Object.assign(target, { newvalue: value, needsUpdate: true });
+      };
+      detector.onstarted = () => {
+        avatarStage.dataset.headAudioActive = "true";
+        avatarStage.dataset.headAudioDetected = "true";
+      };
+      detector.onended = () => {
+        avatarStage.dataset.headAudioActive = "false";
+      };
+      const previousUpdate = audioHead.opt.update;
+      audioHead.opt.update = (deltaMs) => {
+        previousUpdate?.(deltaMs);
+        detector?.update(deltaMs);
+      };
+      headAudio = detector;
+      headAudioReady = true;
+      avatarStage.dataset.lipsync = "headaudio";
+    } catch (error) {
+      detector?.disconnect();
+      console.warn("[talkinghead] HeadAudio unavailable, using approximate visemes", error);
+      headAudio = null;
+      headAudioReady = false;
+      avatarStage.dataset.lipsync = "approximate";
+    } finally {
+      headAudioAttempted = true;
+      renderSupportHint();
+    }
+  }
+
+  async function loadAvatar() {
+    if (head || disposed) return;
+    btnLoad.disabled = true;
+    setState("加载中…");
+    try {
+      head = new TalkingHead(avatarStage, {
+        lipsyncModules: [],
+        cameraView: "full",
+        cameraRotateEnable: true,
+        cameraZoomEnable: false,
+        modelPixelRatio: Math.min(window.devicePixelRatio, 2),
+        modelFPS: 30,
+      });
+      await head.showAvatar(
+        {
+          url: AVATAR_URL,
+          body: "F",
+          avatarMood: "neutral",
+          ttsLang: "zh-CN",
+          // Supplied Oculus visemes are language-independent; TalkingHead's
+          // built-in word-to-viseme module does not include Chinese.
+          lipsyncLang: "en",
+        },
+        (event) => {
+          if (event.lengthComputable && event.total) {
+            setState(`加载 ${Math.round((event.loaded! / event.total) * 100)}%`);
+          }
+        },
+      );
+      if (disposed) return;
+      motionEngine = new MotionEngine(head, {
+        gestureFadeIn: 350,
+        gestureFadeOut: 350,
+        // Also used when one motion interrupts another; keep it soft so
+        // consecutive timeline motions cross-fade instead of snapping.
+        stopFade: 400,
+      });
+      motionEngine.registerMotions(motions);
+      motionEngine.registerMotions(SIDE_STEP_MOTIONS);
+      const motionHead = head as HeadAudioCompatibleHead;
+      const previousUpdate = motionHead.opt.update;
+      motionHead.opt.update = (deltaMs) => {
+        previousUpdate?.(deltaMs);
+        motionEngine?.update(deltaMs);
+        updateSideStep();
+        updateSpin();
+      };
+      if (import.meta.env.DEV) {
+        // Debug handle for local automation; rAF is throttled in background
+        // tabs, so tests may need to pump head.animate() manually.
+        (window as unknown as { __head?: unknown }).__head = head;
+      }
+      await initializeHeadAudio();
+      if (disposed) return;
+      placeholder.remove();
+      setState("就绪");
+      setReady(true);
+      btnStop.disabled = false;
+      appendMessage("system", "数字人已在浏览器中加载完成");
+      askInput.focus();
+    } catch (error) {
+      console.error("[talkinghead] avatar load failed", error);
+      head?.stop();
+      head = null;
+      btnLoad.disabled = false;
+      setState("加载失败");
+      appendMessage("system", `加载失败：${(error as Error).message}`);
+    }
+  }
+
+  function getArmature() {
+    return (head as HeadAudioCompatibleHead | null)?.armature ?? null;
+  }
+
+  function startSideStep(direction: 1 | -1) {
+    resetSideStep();
+    const armature = getArmature();
+    if (!armature) return;
+    sideStep = {
+      direction,
+      startedAt: performance.now(),
+      baseX: armature.position.x,
+      baseY: armature.position.y,
+    };
+  }
+
+  function resetSideStep() {
+    if (!sideStep) return;
+    const armature = getArmature();
+    if (armature) {
+      armature.position.x = sideStep.baseX;
+      armature.position.y = sideStep.baseY;
+    }
+    sideStep = null;
+    delete avatarStage.dataset.sideStepX;
+  }
+
+  function updateSideStep() {
+    if (!sideStep) return;
+    const armature = getArmature();
+    if (!armature) return;
+    const progress = (performance.now() - sideStep.startedAt) / SIDE_STEP_MS;
+    if (progress >= 1) {
+      resetSideStep();
+      return;
+    }
+    // Walk out and back so the avatar always returns to its spot; the small
+    // vertical bounce reads as two steps each way.
+    const offsetX = sideStep.direction * SIDE_STEP_DISTANCE * Math.sin(Math.PI * progress);
+    armature.position.x = sideStep.baseX + offsetX;
+    armature.position.y =
+      sideStep.baseY + 0.02 * Math.abs(Math.sin(2 * Math.PI * progress));
+    avatarStage.dataset.sideStepX = offsetX.toFixed(2);
+  }
+
+  function startSpin() {
+    resetSpin();
+    const armature = getArmature();
+    if (!armature) return;
+    spin = { startedAt: performance.now(), baseRotationY: armature.rotation.y };
+  }
+
+  function resetSpin() {
+    if (!spin) return;
+    const armature = getArmature();
+    if (armature) armature.rotation.y = spin.baseRotationY;
+    spin = null;
+  }
+
+  function updateSpin() {
+    if (!spin) return;
+    const armature = getArmature();
+    if (!armature) return;
+    const progress = (performance.now() - spin.startedAt) / TURN_AROUND_MS;
+    if (progress >= 1) {
+      resetSpin();
+      return;
+    }
+    // Smoothstep easing: accelerate into the spin and settle softly.
+    const eased = progress * progress * (3 - 2 * progress);
+    armature.rotation.y = spin.baseRotationY + eased * Math.PI * 2;
+  }
+
+  function stopHeadAudio() {
+    if (mouthTimer !== null) {
+      window.clearInterval(mouthTimer);
+      mouthTimer = null;
+    }
+    if (streamStarted) head?.streamInterrupt();
+    stopReplyMotions();
+  }
+
+  function playReplyMotion(motion: AvatarMotion) {
+    if (!head || motion === "none") return;
+    avatarStage.dataset.motion = motion;
+    // Retain the last choice for diagnostics after the short gesture ends.
+    avatarStage.dataset.lastMotion = motion;
+    if (motion === "side_step_left" || motion === "side_step_right") {
+      startSideStep(motion === "side_step_left" ? 1 : -1);
+    }
+    if (motion === "turn_around") {
+      // Spin the armature root ourselves; the built-in torso twist would
+      // fight the root rotation and looks like a camera move instead.
+      startSpin();
+      return;
+    }
+    if (motionEngine?.getMotionNames().includes(motion)) {
+      // MotionEngine interrupts a running motion itself using stopFade,
+      // so avoid the hard stopActiveMotion() here to keep transitions smooth.
+      void motionEngine.play(motion).catch((error) => {
+        console.warn(`[talkinghead] MotionEngine failed to play "${motion}"`, error);
+        playFallbackGesture(motion);
+      });
+      return;
+    }
+    head.stopGesture(250);
+    playFallbackGesture(motion);
+  }
+
+  function playFallbackGesture(motion: AvatarMotion) {
+    if (!head) return;
+    const fallback: Partial<Record<AvatarMotion, [string, boolean]>> = {
+      wave_right: ["handup", true],
+      wave_left: ["handup", false],
+      hand_raise: ["handup", true],
+      hand_raise_left: ["handup", false],
+      point: ["index", true],
+      thumbs_up: ["thumbup", true],
+      thumbs_down: ["thumbdown", true],
+      ok_sign: ["ok", true],
+      shrug_both: ["shrug", false],
+      celebrate: ["handup", false],
+    };
+    const gesture = fallback[motion];
+    if (gesture) head.playGesture(gesture[0], 10, gesture[1], 350);
+  }
+
+  function stopActiveMotion() {
+    motionEngine?.stop();
+    head?.stopGesture(250);
+    resetSideStep();
+    resetSpin();
+    delete avatarStage.dataset.motion;
+  }
+
+  function stopReplyMotions() {
+    for (const timer of motionTimers) window.clearTimeout(timer);
+    motionTimers = [];
+    delete avatarStage.dataset.motionSequence;
+    stopActiveMotion();
+  }
+
+  // Built-in MotionEngine motions run for roughly 2.3-3.3 seconds; anything
+  // scheduled closer than this would interrupt the previous motion mid-way.
+  const MIN_MOTION_GAP_MS = 2_500;
+
+  function scheduleReplyMotions(cues: AvatarTimelineEvent[], durationSeconds: number) {
+    stopReplyMotions();
+    const sequence = cues.filter(
+      (cue) =>
+        cue?.name &&
+        cue.name !== "none" &&
+        Number.isFinite(cue.at) &&
+        cue.at >= 0 &&
+        cue.at <= 0.95,
+    );
+    if (sequence.length === 0) return;
+
+    const kept: Array<{ name: AvatarMotion; delayMs: number }> = [];
+    for (const cue of sequence) {
+      const delayMs = Math.round(cue.at * durationSeconds * 1_000);
+      const previous = kept[kept.length - 1];
+      if (previous && delayMs - previous.delayMs < MIN_MOTION_GAP_MS) continue;
+      kept.push({ name: cue.name, delayMs });
+    }
+
+    avatarStage.dataset.motionSequence = kept.map(({ name }) => name).join(",");
+    for (const cue of kept) {
+      if (cue.delayMs < 80) {
+        playReplyMotion(cue.name);
+        continue;
+      }
+      motionTimers.push(
+        window.setTimeout(() => {
+          if (!disposed) playReplyMotion(cue.name);
+        }, cue.delayMs),
+      );
+    }
+  }
+
+  function createVisemeTimeline(buffer: AudioBuffer) {
+    const stepMs = 130;
+    const samplesPerStep = Math.max(1, Math.round((buffer.sampleRate * stepMs) / 1000));
+    const count = Math.max(1, Math.min(240, Math.ceil(buffer.length / samplesPerStep)));
+    const visemes: string[] = [];
+    const vtimes: number[] = [];
+    const vdurations: number[] = [];
+
+    for (let frame = 0; frame < count; frame += 1) {
+      const start = frame * samplesPerStep;
+      const end = Math.min(buffer.length, start + samplesPerStep);
+      let energy = 0;
+      let sampleCount = 0;
+      for (let index = start; index < end; index += 4) {
+        let sample = 0;
+        for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
+          sample += buffer.getChannelData(channel)[index] / buffer.numberOfChannels;
+        }
+        energy += sample * sample;
+        sampleCount += 1;
+      }
+      const rms = sampleCount ? Math.sqrt(energy / sampleCount) : 0;
+      // Leaving silent frames out lets the previous viseme decay back to a
+      // closed mouth instead of moving continuously through pauses.
+      if (rms < 0.012) continue;
+      const energyBand = Math.min(3, Math.floor(rms * 24));
+      visemes.push(VISEMES[(frame + energyBand) % VISEMES.length]);
+      vtimes.push(frame * stepMs);
+      vdurations.push(stepMs);
+    }
+
+    if (visemes.length === 0) {
+      visemes.push("aa");
+      vtimes.push(0);
+      vdurations.push(Math.min(stepMs, buffer.duration * 1000));
+    }
+    return {
+      visemes,
+      vtimes,
+      vdurations,
+    };
+  }
+
+  function audioBufferToPcm(buffer: AudioBuffer) {
+    const pcm = new Int16Array(buffer.length);
+    for (let index = 0; index < buffer.length; index += 1) {
+      let sample = 0;
+      for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
+        sample += buffer.getChannelData(channel)[index] / buffer.numberOfChannels;
+      }
+      const clamped = Math.max(-1, Math.min(1, sample));
+      pcm[index] = clamped < 0 ? clamped * 0x8000 : clamped * 0x7fff;
+    }
+    return pcm;
+  }
+
+  function pickChineseVoice() {
+    const voices = window.speechSynthesis.getVoices();
+    return (
+      voices.find((voice) => voice.lang.toLowerCase() === "zh-cn") ??
+      voices.find((voice) => voice.lang.toLowerCase().startsWith("zh")) ??
+      null
+    );
+  }
+
+  async function startFallbackMouthAnimation() {
+    if (!head) return;
+    await head.streamStart({
+      lipsyncType: "visemes",
+      waitForAudioChunks: false,
+      sampleRate: 22050,
+      gain: 0,
+    });
+    streamStarted = true;
+    let index = 0;
+    mouthTimer = window.setInterval(() => {
+      head?.streamAudio({
+        audio: null,
+        visemes: [VISEMES[index % VISEMES.length]],
+        vtimes: [0],
+        vdurations: [140],
+      });
+      index += 1;
+    }, 150);
+  }
+
+  function speakWithBrowserFallback(
+    text: string,
+    motions: AvatarTimelineEvent[],
+  ) {
+    if (!("speechSynthesis" in window) || !text.trim()) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "zh-CN";
+    utterance.rate = 1;
+    const voice = pickChineseVoice();
+    if (voice) utterance.voice = voice;
+    utterance.onstart = () => {
+      setState("浏览器播报中");
+      const estimatedDuration = Math.max(2, Math.min(30, text.length * 0.22));
+      scheduleReplyMotions(motions, estimatedDuration);
+      startFallbackMouthAnimation().catch((error) =>
+        console.warn("[talkinghead] approximate lip animation unavailable", error),
+      );
+    };
+    utterance.onend = () => {
+      stopHeadAudio();
+      setState("就绪");
+    };
+    utterance.onerror = () => {
+      stopHeadAudio();
+      setState("就绪");
+    };
+    window.speechSynthesis.speak(utterance);
+  }
+
+  async function speak(text: string, motions: AvatarTimelineEvent[]) {
+    if (!head || !text.trim()) return;
+    ttsController?.abort();
+    const controller = new AbortController();
+    ttsController = controller;
+    setState("CosyVoice 合成中");
+
+    try {
+      const response = await fetch(TTS_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text.slice(0, 800) }),
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.error || `HTTP ${response.status}`);
+      }
+
+      const encodedAudio = await response.arrayBuffer();
+      const AudioContextApi =
+        window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext })
+          .webkitAudioContext;
+      if (!AudioContextApi) throw new Error("audio_context_unavailable");
+      const decoder = new AudioContextApi();
+      const audioBuffer = await decoder.decodeAudioData(encodedAudio.slice(0));
+      await decoder.close();
+      if (disposed || !head) return;
+
+      const pcm = audioBufferToPcm(audioBuffer);
+      const timeline = headAudioReady ? null : createVisemeTimeline(audioBuffer);
+      await head.streamStart(
+        {
+          lipsyncType: "visemes",
+          sampleRate: audioBuffer.sampleRate,
+          gain: 1,
+        },
+        () => {
+          setState("CosyVoice 播报中");
+          scheduleReplyMotions(motions, audioBuffer.duration);
+        },
+        () => {
+          setState("就绪");
+          // Let the last motion finish its fade-out before cleanup; the timer
+          // lives in motionTimers so a new question still hard-stops it.
+          motionTimers.push(window.setTimeout(() => stopReplyMotions(), 1_200));
+        },
+      );
+      streamStarted = true;
+      head.streamAudio({ audio: pcm, ...(timeline ?? {}) });
+      head.streamNotifyEnd();
+    } catch (error) {
+      if ((error as Error).name === "AbortError" || disposed) return;
+      console.warn("[talkinghead] CosyVoice unavailable, using browser TTS", error);
+      supportHint.textContent = "CosyVoice 暂不可用，已自动降级为浏览器 TTS。";
+      speakWithBrowserFallback(text, motions);
+    } finally {
+      if (ttsController === controller) ttsController = null;
+    }
+  }
+
+  async function ask(prompt: string) {
+    const question = prompt.trim();
+    if (!question || !head || disposed) return;
+    requestController?.abort();
+    ttsController?.abort();
+    window.speechSynthesis.cancel();
+    stopHeadAudio();
+    appendMessage("user", question);
+    const answerBubble = appendMessage("assistant", "");
+    askInput.value = "";
+    setState("思考中");
+    btnAsk.disabled = true;
+    requestController = new AbortController();
+
+    try {
+      const response = await fetch(LLM_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: question.slice(0, 1_000) }),
+        signal: requestController.signal,
+      });
+      if (!response.ok) {
+        throw new Error(`回复接口异常（HTTP ${response.status}）`);
+      }
+      const reply = (await response.json()) as AvatarApiResponse;
+      const message = reply.message;
+      if (message?.type !== "avatar_response" || message.version !== 1) {
+        throw new Error("回复消息协议不兼容");
+      }
+      const answer =
+        typeof message.speech?.text === "string" ? message.speech.text.trim() : "";
+      const motionEvents = Array.isArray(message.timeline)
+        ? message.timeline.filter((event) => event?.type === "motion")
+        : [];
+      answerBubble.textContent = answer || "没有收到回复";
+      chatLog.scrollTop = chatLog.scrollHeight;
+      if (!disposed && answer) {
+        void speak(answer, motionEvents);
+      } else {
+        setState("就绪");
+      }
+    } catch (error) {
+      if ((error as Error).name !== "AbortError") {
+        answerBubble.textContent = `请求失败：${(error as Error).message}`;
+        setState("请求失败");
+      }
+    } finally {
+      requestController = null;
+      if (!disposed) btnAsk.disabled = false;
+    }
+  }
+
+  function startRecognition() {
+    if (!RecognitionApi || !head || recognition) return;
+    ttsController?.abort();
+    window.speechSynthesis.cancel();
+    stopHeadAudio();
+    recognition = new RecognitionApi();
+    recognition.lang = "zh-CN";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    recognition.onresult = (event) => {
+      let transcript = "";
+      let finalText = "";
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const text = event.results[index][0].transcript;
+        transcript += text;
+        if (event.results[index].isFinal) finalText += text;
+      }
+      askInput.value = transcript;
+      if (finalText) ask(finalText);
+    };
+    recognition.onerror = (event) => {
+      if (event.error !== "aborted" && event.error !== "no-speech") {
+        appendMessage("system", `语音识别失败：${event.error}`);
+      }
+    };
+    recognition.onend = () => {
+      recognition = null;
+      btnMic.textContent = "麦克风";
+      if (stateBadge.textContent === "聆听中") setState("就绪");
+    };
+    btnMic.textContent = "停止识别";
+    setState("聆听中");
+    recognition.start();
+  }
+
+  function stopCurrentWork() {
+    recognition?.abort();
+    recognition = null;
+    requestController?.abort();
+    requestController = null;
+    ttsController?.abort();
+    ttsController = null;
+    window.speechSynthesis.cancel();
+    stopHeadAudio();
+    btnMic.textContent = "麦克风";
+    if (!disposed && head) {
+      setState("就绪");
+      btnAsk.disabled = false;
+    }
+  }
+
+  function disposePage() {
+    if (disposed) return;
+    disposed = true;
+    lifecycleController.abort();
+    stopCurrentWork();
+    headAudio?.stop();
+    headAudio?.disconnect();
+    headAudio = null;
+    headAudioReady = false;
+    motionEngine?.stop();
+    motionEngine = null;
+    if (streamStarted) head?.streamStop();
+    head?.stop();
+    head = null;
+  }
+
+  renderSupportHint();
+
+  btnLoad.addEventListener("click", loadAvatar);
+  btnMic.addEventListener("click", () => {
+    if (recognition) recognition.stop();
+    else startRecognition();
+  });
+  btnStop.addEventListener("click", stopCurrentWork);
+  askForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    ask(askInput.value);
+  });
+
+  document.addEventListener("astro:before-swap", disposePage, {
+    signal: lifecycleController.signal,
+  });
+  window.addEventListener("pagehide", disposePage, {
+    signal: lifecycleController.signal,
+  });
+  window.addEventListener("beforeunload", disposePage, {
+    signal: lifecycleController.signal,
+  });
+</script>

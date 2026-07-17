@@ -1,5 +1,6 @@
 ---
 title: "AI 应用与智能体面试百题：逐题 Review 精讲索引"
+heroImage: "/heroes/blog/ai-interview-100-index.webp"
 description: "把 AI 应用面试百题拆成上中下三篇：每题附答法与 Review，覆盖大模型、RAG、Agent、MCP 与上线治理。"
 pubDate: "Jul 16 2026"
 badge: "面试笔记"

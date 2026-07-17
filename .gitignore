@@ -40,3 +40,6 @@ apps/poker-realtime/node_modules/
 apps/poker-realtime/data/
 !apps/poker-realtime/data/poker-journal/
 !apps/poker-realtime/data/poker-journal/.gitkeep
+
+# Accidental shell-expanded home directory created inside the repo
+~/

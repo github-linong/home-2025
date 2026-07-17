@@ -1,5 +1,6 @@
 ---
 title: "AI 应用面试百题精讲（下）：工具集成 · 评测部署"
+heroImage: "/heroes/blog/ai-interview-100-part3-tools-eval-deploy.webp"
 description: "逐题 Review 工具权限、多智能体、成本与安全、生产排查与项目讲述结构，补齐上线与面试实战口径。"
 pubDate: "Jul 16 2026"
 badge: "面试笔记"

@@ -6,7 +6,6 @@ function heatScore(baseWeight, views = 0) {
 
 function compareBySortMode(a, b, mode) {
   if (mode === "date") return Date.parse(b.pubDate) - Date.parse(a.pubDate);
-  if (mode === "date-asc") return Date.parse(a.pubDate) - Date.parse(b.pubDate);
   const hot = heatScore(b.baseWeight, b.views) - heatScore(a.baseWeight, a.views);
   if (hot !== 0) return hot;
   return Date.parse(b.pubDate) - Date.parse(a.pubDate);
@@ -22,8 +21,6 @@ items.sort((a, b) => compareBySortMode(a, b, "hot"));
 assert.equal(items[0].views, 100);
 items.sort((a, b) => compareBySortMode(a, b, "date"));
 assert.equal(items[0].pubDate.startsWith("2025"), true);
-items.sort((a, b) => compareBySortMode(a, b, "date-asc"));
-assert.equal(items[0].pubDate.startsWith("2024"), true);
 
 // Cold-start: curated / blog-companion should dominate an obscure legacy demo before views land.
 const COLD = { curated: 180, featuredBadge: 90, blogCompanion: 140, relatedPost: 24 };

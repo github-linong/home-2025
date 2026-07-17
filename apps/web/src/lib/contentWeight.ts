@@ -77,7 +77,7 @@ export function heatScore(baseWeight: number, views = 0): number {
   return baseWeight + views * 4;
 }
 
-export type SortMode = "date" | "date-asc" | "hot";
+export type SortMode = "date" | "hot";
 
 export function compareBySortMode<
   T extends {
@@ -88,10 +88,9 @@ export function compareBySortMode<
     updatedDate?: string;
   },
 >(a: T, b: T, mode: SortMode): number {
-  if (mode === "date" || mode === "date-asc") {
+  if (mode === "date") {
     const dateOf = (item: T) => Date.parse(item.updatedDate || item.pubDate);
-    const delta = dateOf(b) - dateOf(a);
-    const byDate = mode === "date" ? delta : -delta;
+    const byDate = dateOf(b) - dateOf(a);
     if (byDate !== 0) return byDate;
     const byWeight = (b.baseWeight || 0) - (a.baseWeight || 0);
     if (byWeight !== 0) return byWeight;

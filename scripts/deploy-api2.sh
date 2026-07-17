@@ -7,11 +7,11 @@
 #   DEPLOY_HOST=root@60.205.9.135 ./scripts/deploy-api2.sh
 #
 # Optional:
-#   SKIP_ENV=1     do not sync LingMou/Aliyun secrets into the remote .env
+#   SKIP_ENV=1     do not sync LingMou/DashScope secrets into the remote .env
 #   SSH_KEY=~/.ssh/id_ed25519
 #
 # The remote .env (Better Auth prod config) is never overwritten wholesale — this
-# script only upserts the avatar-related keys listed in ENV_KEYS below.
+# script only upserts the demo API keys listed in ENV_KEYS below.
 
 set -euo pipefail
 
@@ -35,6 +35,13 @@ ENV_KEYS=(
   LINGMOU_INSTANCE_ID
   LINGMOU_SDK_LICENSE
   LINGMOU_PLATFORM
+  DASHSCOPE_API_KEY
+  DASHSCOPE_LLM_ENDPOINT
+  DASHSCOPE_LLM_MODEL
+  DASHSCOPE_TTS_ENDPOINT
+  DASHSCOPE_WORKSPACE_ID
+  DASHSCOPE_TTS_MODEL
+  DASHSCOPE_TTS_VOICE
 )
 
 cd "$ROOT"
@@ -56,12 +63,12 @@ rsync -az --delete --human-readable --progress \
   -e "$RSYNC_SSH" \
   "$SRC"/ "$DEPLOY_HOST:$REMOTE_DIR/"
 
-# Upsert avatar env keys into the remote .env without touching other lines.
+# Upsert demo API env keys into the remote .env without touching other lines.
 if [[ "${SKIP_ENV:-0}" != "1" ]]; then
   if [[ ! -f "$LOCAL_ENV" ]]; then
     echo "WARN: $LOCAL_ENV not found; skipping env sync." >&2
   else
-    echo "==> Syncing avatar env keys into remote .env: ${ENV_KEYS[*]}"
+    echo "==> Syncing demo API env keys into remote .env: ${ENV_KEYS[*]}"
     ENV_LINES=""
     for key in "${ENV_KEYS[@]}"; do
       line="$(grep -E "^${key}=" "$LOCAL_ENV" | tail -n1 || true)"

@@ -4,6 +4,7 @@ import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
 import { auth, pool } from "./auth.js";
 import { createLearnRouter } from "./learn/routes.js";
 import { createDemoRouter } from "./demo/stream-routes.js";
+import { createTtsRouter } from "./demo/tts-routes.js";
 import { createAvatarRouter } from "./avatar/routes.js";
 
 process.on("uncaughtException", (err) => {
@@ -24,6 +25,8 @@ const trustedOrigins = (
   .filter(Boolean);
 
 const app = express();
+// nginx is the only public entry point; preserve the visitor IP for per-IP limits.
+app.set("trust proxy", "loopback");
 
 app.use(
   cors({
@@ -66,6 +69,7 @@ app.get("/api/me", async (req, res) => {
 
 app.use("/api/learn", createLearnRouter(pool));
 app.use("/api/demo", createDemoRouter());
+app.use("/api/demo/tts", createTtsRouter());
 app.use("/api/demo/avatar", createAvatarRouter());
 
 app.listen(port, "0.0.0.0", () => {

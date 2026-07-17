@@ -122,7 +122,7 @@ function upsertHeroImage(fm, heroPath) {
 function listMd(dir) {
   return fs
     .readdirSync(dir)
-    .filter((n) => n.endsWith(".md"))
+    .filter((n) => n.endsWith(".md") || n.endsWith(".mdx"))
     .map((n) => path.join(dir, n));
 }
 
@@ -850,7 +850,7 @@ async function processAll() {
   const jobs = [];
   if (!only || only === "blog") {
     for (const file of listMd(blogDir)) {
-      const slug = path.basename(file, ".md");
+      const slug = path.basename(file, path.extname(file));
       const raw = fs.readFileSync(file, "utf8");
       const parts = splitFrontmatter(raw);
       if (!parts) continue;
@@ -873,7 +873,7 @@ async function processAll() {
   }
   if (!only || only === "demo") {
     for (const file of listMd(demosDir)) {
-      const slug = path.basename(file, ".md");
+      const slug = path.basename(file, path.extname(file));
       const raw = fs.readFileSync(file, "utf8");
       const parts = splitFrontmatter(raw);
       if (!parts) continue;

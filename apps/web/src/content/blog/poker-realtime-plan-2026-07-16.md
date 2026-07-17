@@ -1,5 +1,6 @@
 ---
 title: "联机德州扑克实施计划与落地纪要"
+heroImage: "/heroes/blog/poker-realtime-plan-2026-07-16.webp"
 description: "服务端权威 2–9 人桌联机 Hold'em：房间、机器人、多手连续、协议契约、审计落盘与上线决策。"
 pubDate: "Jul 16 2026"
 updatedDate: "Jul 16 2026"
