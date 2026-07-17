@@ -309,8 +309,6 @@
       statusEl.classList.toggle("text-error", isError);
     }
 
-    let currentAudio: HTMLAudioElement | null = null;
-
     /** IPA → representative word, so browser TTS can approximate a symbol. */
     const IPA_FALLBACK_WORD: Record<string, string> = {
       "iː": "sheep", ɪ: "ship", e: "bed", æ: "cat", ə: "about", "ɜː": "bird",
@@ -320,15 +318,50 @@
       tʃ: "chip", dʒ: "job", ŋ: "sing",
     };
 
+    // Single-channel playback: at most one Audio OR speechSynthesis utterance.
+    let currentAudio: HTMLAudioElement | null = null;
+    let playGeneration = 0;
+    let lastPlayAt = 0;
+    const PLAY_DEBOUNCE_MS = 350;
+    let deckLoadGeneration = 0;
+
+    function stopAllSpeech() {
+      try {
+        window.speechSynthesis?.cancel();
+      } catch {
+        /* ignore */
+      }
+      if (currentAudio) {
+        try {
+          currentAudio.pause();
+          currentAudio.removeAttribute("src");
+          currentAudio.load();
+        } catch {
+          /* ignore */
+        }
+        currentAudio = null;
+      }
+    }
+
+    function cancelPlayback() {
+      playGeneration += 1;
+      lastPlayAt = 0;
+      stopAllSpeech();
+    }
+
     /** Speak text with the browser's built-in speech engine (no backend needed). */
-    function speakViaBrowser(text: string, lang = "en-US") {
+    function speakViaBrowser(text: string, lang = "en-US", generation: number) {
       try {
         const synth = window.speechSynthesis;
         if (!synth || !text) return false;
+        if (generation !== playGeneration) return false;
         synth.cancel();
         const u = new SpeechSynthesisUtterance(text);
         u.lang = lang;
         u.rate = 0.9;
+        u.onstart = () => {
+          if (generation !== playGeneration) synth.cancel();
+        };
         synth.speak(u);
         return true;
       } catch {
@@ -339,32 +372,51 @@
     /**
      * Play an audio URL (api2: real human / eSpeak / Piper). If it cannot load
      * or autoplay is blocked, fall back to the browser speech engine.
+     * Rapid re-clicks are debounced; a new play always stops the previous one.
      */
     function playAudioUrl(url: string, fallbackText = "", lang = "en-US") {
+      const now = Date.now();
+      if (now - lastPlayAt < PLAY_DEBOUNCE_MS) return;
+      lastPlayAt = now;
+
+      const generation = ++playGeneration;
+      stopAllSpeech();
+
       let settled = false;
+      const stillCurrent = () => generation === playGeneration;
+
       const fallback = () => {
-        if (settled) return;
+        if (settled || !stillCurrent()) return;
         settled = true;
-        if (fallbackText && speakViaBrowser(fallbackText, lang)) {
+        if (fallbackText && speakViaBrowser(fallbackText, lang, generation)) {
           setStatus("后端音频不可用，已改用浏览器语音朗读。");
-        } else {
+        } else if (stillCurrent()) {
           setStatus("音频播放失败：后端未就绪，且当前浏览器不支持语音合成。", true);
         }
       };
+
       try {
-        if (currentAudio) {
-          currentAudio.pause();
-          currentAudio = null;
-        }
         const audio = new Audio(url);
         currentAudio = audio;
         audio.addEventListener("playing", () => {
+          if (!stillCurrent()) {
+            audio.pause();
+            return;
+          }
           settled = true;
         });
-        audio.addEventListener("error", fallback);
+        audio.addEventListener("error", () => {
+          if (stillCurrent()) fallback();
+        });
         audio.play().then(() => {
+          if (!stillCurrent()) {
+            audio.pause();
+            return;
+          }
           settled = true;
-        }).catch(fallback);
+        }).catch(() => {
+          if (stillCurrent()) fallback();
+        });
       } catch {
         fallback();
       }
@@ -395,12 +447,13 @@
       const en = (card.en || "").trim();
       const zh = (card.zh || "").trim();
       if (/^\/.*\/$/.test(en)) return playIpa(en);
-      if (/^[a-zA-Z][a-zA-Z'\- ]*$/.test(en)) return playWord(en);
       if (/^\/.*\/$/.test(zh)) return playIpa(zh);
+      if (/^[a-zA-Z][a-zA-Z'\- ]*$/.test(en)) return playWord(en);
       playWord(en);
     }
 
     function switchTab(name: string) {
+      cancelPlayback();
       tabs.forEach((tab) => {
         const on = tab.getAttribute("data-learn-tab") === name;
         tab.classList.toggle("tab-active", on);
@@ -425,6 +478,7 @@
     }
 
     function renderCard() {
+      cancelPlayback();
       if (!queue.length) {
         cardSideLabel.textContent = "";
         cardText.textContent = filterUnknown.checked ? "本组已全部标记为「认识」" : "暂无词卡";
@@ -477,14 +531,26 @@
     }
 
     async function loadDeck(slug: string) {
+      const loadGeneration = ++deckLoadGeneration;
+      cancelPlayback();
       currentDeckSlug = slug;
+      cards = [];
+      queue = [];
+      index = 0;
+      cardAudioBtn.disabled = true;
+      renderCard();
+      setStatus("正在加载词卡组…");
+
       const data = await apiJson<{
         deck: Deck;
         cards: Card[];
       }>(`/api/learn/decks/${encodeURIComponent(slug)}/cards`);
+
+      if (loadGeneration !== deckLoadGeneration || slug !== currentDeckSlug) return;
       cards = data.cards;
       index = 0;
       rebuildQueue();
+      cardAudioBtn.disabled = cards.length === 0;
       setStatus(`${data.deck.title} · ${cards.length} 张词卡`);
     }
 
@@ -557,6 +623,7 @@
     }
 
     async function loadPassage(slug: string) {
+      cancelPlayback();
       currentPassageSlug = slug;
       selectedLemma = null;
       selectedWord = null;
@@ -657,6 +724,7 @@
         btn.title = sym.name_zh;
         btn.dataset.symbolId = String(sym.id);
         btn.addEventListener("click", () => {
+          cancelPlayback();
           wrap.querySelectorAll(".ipa-chip").forEach((el) => el.classList.remove("is-active"));
           btn.classList.add("is-active");
           showIpaDetail(sym, group.title);
@@ -761,6 +829,7 @@
     passageBody.addEventListener("click", (event) => {
       const target = event.target as HTMLElement | null;
       if (!target?.classList.contains("learn-token")) return;
+      cancelPlayback();
       passageBody.querySelectorAll(".learn-token.is-active").forEach((el) => {
         el.classList.remove("is-active");
       });

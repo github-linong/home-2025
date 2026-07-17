@@ -1,0 +1,1397 @@
+---
+/**
+ * Card-effect showcase driven by the novel codex JSON data.
+ * Each section demos one visual style with a slice of the same dataset.
+ */
+import {
+  ANIMAL_CHARACTER_PROFILES,
+  HUMAN_CHARACTER_PROFILES,
+  NOVEL_CODEX_SOURCE,
+} from "../../lib/novelCharacters.js";
+
+const flipCards = HUMAN_CHARACTER_PROFILES.slice(0, 6);
+const holoCards = ANIMAL_CHARACTER_PROFILES.slice(0, 6);
+const glassCards = ANIMAL_CHARACTER_PROFILES.slice(6, 12);
+const spotlightCards = HUMAN_CHARACTER_PROFILES.slice(6, 12);
+const rosterRows = [
+  ...HUMAN_CHARACTER_PROFILES.slice(12).map((row) => ({ ...row, kind: "人物" })),
+  ...ANIMAL_CHARACTER_PROFILES.slice(12).map((row) => ({ ...row, kind: "动物" })),
+];
+const tiltCards = [...HUMAN_CHARACTER_PROFILES.slice(12), ...ANIMAL_CHARACTER_PROFILES.slice(12)];
+const beamCards = [...HUMAN_CHARACTER_PROFILES.slice(9, 12), ...ANIMAL_CHARACTER_PROFILES.slice(9, 12)];
+const duotoneCards = HUMAN_CHARACTER_PROFILES.slice(0, 6);
+const ticketCards = HUMAN_CHARACTER_PROFILES.slice(6, 10);
+const stackCards = ANIMAL_CHARACTER_PROFILES.slice(6, 11);
+const accordionCards = ANIMAL_CHARACTER_PROFILES.slice(1, 5);
+const polaroidCards = HUMAN_CHARACTER_PROFILES.slice(9, 15);
+const glitchCards = ANIMAL_CHARACTER_PROFILES.slice(9, 15);
+const stampCards = HUMAN_CHARACTER_PROFILES.slice(3, 9);
+const editorialCards = HUMAN_CHARACTER_PROFILES.slice(0, 6);
+const kenburnsCards = [HUMAN_CHARACTER_PROFILES[0], ANIMAL_CHARACTER_PROFILES[1]];
+const revealCards = ANIMAL_CHARACTER_PROFILES.slice(2, 6);
+const blendCards = HUMAN_CHARACTER_PROFILES.slice(9, 15);
+const textclipCards = [
+  HUMAN_CHARACTER_PROFILES[0],
+  HUMAN_CHARACTER_PROFILES[9],
+  ANIMAL_CHARACTER_PROFILES[1],
+  ANIMAL_CHARACTER_PROFILES[12],
+];
+const cineCards = [
+  ANIMAL_CHARACTER_PROFILES[1],
+  ANIMAL_CHARACTER_PROFILES[10],
+  ANIMAL_CHARACTER_PROFILES[12],
+  ANIMAL_CHARACTER_PROFILES[0],
+];
+const parallaxCards = [HUMAN_CHARACTER_PROFILES[10], HUMAN_CHARACTER_PROFILES[12]];
+const zoomrevCards = HUMAN_CHARACTER_PROFILES.slice(3, 7);
+const letterboxCards = [ANIMAL_CHARACTER_PROFILES[11], ANIMAL_CHARACTER_PROFILES[6]];
+
+const sections = [
+  { id: "flip", title: "翻转卡 Flip Card", note: "悬停或点击翻面：正面立绘 + 身份，背面完整介绍。适合信息分层，图鉴感最强。" },
+  { id: "holo", title: "收藏卡 Holo Card", note: "游戏收藏卡质感：渐变描边 + 悬停光泽扫过 + 轻微抬升。适合突出稀有度与阵营。" },
+  { id: "glass", title: "玻璃遮罩卡 Glass Overlay", note: "整图铺底，毛玻璃信息面板常驻底部、悬停展开介绍。适合以插画为主角的展示。" },
+  { id: "spotlight", title: "聚光灯卡 Spotlight", note: "光标附近浮现径向光晕（纯桌面端效果），暗色主题下更明显。适合科技感列表。" },
+  { id: "roster", title: "档案条 Roster", note: "紧凑横条：小头像 + 单行身份 + 标签。适合成员多、需要快速扫读的场景。" },
+  { id: "tilt", title: "3D 倾斜卡 Tilt", note: "卡片跟随光标做 3D 透视倾斜并伴随高光（桌面端效果），立体感最强，适合重点角色展示。" },
+  { id: "beam", title: "流光描边卡 Border Beam", note: "一束光沿卡片边框持续旋转（纯 CSS @property 动画）。适合强调「进行中 / 高亮」状态。" },
+  { id: "duotone", title: "双色调卡 Duotone", note: "默认黑白灰度，悬停或触摸时恢复彩色并轻微放大。适合回忆、档案或「阵亡名单」类叙事。" },
+  { id: "ticket", title: "票券卡 Ticket", note: "登机牌式布局：左侧存根 + 打孔缺口 + 虚线撕裂线（CSS mask 实现）。适合凭证、邀请函场景。" },
+  { id: "stack", title: "堆叠卡 Card Stack", note: "卡组叠放，点击顶层卡片切到下一张。适合逐个介绍角色的沉浸式浏览。" },
+  { id: "accordion", title: "手风琴卡 Accordion", note: "横向并排压缩，悬停或点击展开为主图，其余自动收窄。适合少量重点角色的全景对比。" },
+  { id: "polaroid", title: "拍立得卡 Polaroid", note: "白框相纸 + 胶带 + 随机偏转角度，悬停摆正放大。适合生活化、回忆向的相册风展示。" },
+  { id: "glitch", title: "故障风卡 Glitch", note: "悬停触发 RGB 通道分离与扫描线抖动，呼应末世科幻氛围。适合异常、危险或电子档案场景。" },
+  { id: "stamp", title: "邮票卡 Stamp", note: "CSS mask 打出锯齿孔边做成纪念邮票。适合成就徽章、纪念收藏类展示。" },
+  { id: "editorial", title: "杂志编辑卡 Editorial", note: "无图大序号纯排版，靠字号、留白和细线分层。适合风格稳重的正文式介绍列表。" },
+  { id: "kenburns", title: "电影横幅卡 Ken Burns", note: "整图作背景 + 持续缓慢推拉镜头 + 左侧暗部渐变压字，电影片头质感。适合页头 Hero 或专题入口。" },
+  { id: "reveal", title: "上滑揭示卡 Slide Reveal", note: "整图铺满，常态只露标题条，悬停或聚焦时信息面板整体上滑盖住图片。适合图为主、按需读文的浏览。" },
+  { id: "blend", title: "色调滤镜卡 Color Blend", note: "在背景图上叠加彩色渐变（mix-blend-mode），悬停还原本色。适合给同组内容统一氛围色。" },
+  { id: "textclip", title: "文字镂空卡 Text Clip", note: "背景图填充进大号文字（background-clip: text），名字本身就是画面。适合海报感的角色首屏。" },
+  { id: "cine", title: "轮播横幅卡 Cinema Slideshow", note: "多张 Ken Burns 横幅交叉淡入自动轮播，每张推拉方向不同；可点圆点切换，悬停暂停。适合首页 Hero 轮换位。" },
+  { id: "parallax", title: "视差横幅卡 Scroll Parallax", note: "滚动页面时背景图以不同速度平移（CSS 滚动驱动动画，新浏览器生效、旧浏览器静态降级）。适合长文中的分隔横幅。" },
+  { id: "zoomrev", title: "推近揭示卡 Zoom Reveal", note: "悬停时镜头缓慢推近、暗角加深、介绍文字上浮，流媒体海报墙的经典交互。适合角色墙 / 作品墙。" },
+  { id: "letterbox", title: "宽银幕字幕卡 Letterbox", note: "21:9 遮幅画框 + 底部居中电影字幕，悬停时黑边收窄、字幕换成台词式介绍。适合金句、场面感展示。" },
+];
+---
+
+<div class="not-prose codex-gallery space-y-10" data-codex-gallery>
+  <section class="space-y-2">
+    <p class="text-sm leading-relaxed m-0 text-base-content/75">
+      数据来自
+      <a href={NOVEL_CODEX_SOURCE.page} class="link link-primary">《{NOVEL_CODEX_SOURCE.title}》设定页</a>
+      的人物与动物图鉴（`src/data/novel-codex.json`，15 位人物 + 15 个进化动物）。
+      下面用同一组数据演示 23 种卡片效果，每种效果取其中一部分角色（部分角色会在不同效果中复用）。
+    </p>
+    <p class="text-xs text-base-content/45 m-0">{NOVEL_CODEX_SOURCE.note}</p>
+    <nav class="flex flex-wrap gap-1.5 pt-1" aria-label="卡片效果目录">
+      {sections.map((s) => <a href={`#${s.id}`} class="badge badge-outline badge-lg">{s.title}</a>)}
+    </nav>
+  </section>
+
+  {/* 1. 翻转卡 */}
+  <section id="flip" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[0].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[0].note}</p>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        flipCards.map((p) => (
+          <button type="button" class="flip-card" aria-label={`翻转查看 ${p.name} 的介绍`}>
+            <div class="flip-inner">
+              <div class="flip-face flip-front rounded-2xl border border-base-300 bg-base-100 overflow-hidden">
+                <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="w-full aspect-square object-cover" />
+                <div class="p-3 text-left">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="font-semibold">{p.name}</span>
+                    <span class="badge badge-outline badge-sm shrink-0">{p.group}</span>
+                  </div>
+                  <p class="text-xs text-base-content/55 m-0 mt-1 truncate">{p.role}</p>
+                </div>
+              </div>
+              <div class="flip-face flip-back rounded-2xl border border-primary/30 bg-base-100 p-4 text-left">
+                <h3 class="font-semibold m-0">
+                  {p.name}
+                  {p.aliases && <span class="ml-1.5 text-xs font-normal text-base-content/45">· {p.aliases}</span>}
+                </h3>
+                <p class="text-xs text-primary/80 m-0 mt-1">{p.role}</p>
+                <p class="text-sm text-base-content/75 m-0 mt-2 leading-relaxed">{p.intro}</p>
+                <div class="flex flex-wrap gap-1.5 mt-3">
+                  {p.tags.map((tag) => <span class="badge badge-ghost badge-sm">{tag}</span>)}
+                </div>
+              </div>
+            </div>
+          </button>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 2. 收藏卡 */}
+  <section id="holo" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[1].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[1].note}</p>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        holoCards.map((p) => (
+          <article class="holo-card rounded-2xl p-[2px]">
+            <div class="rounded-[calc(1rem-1px)] bg-base-100 overflow-hidden h-full flex flex-col">
+              <div class="relative">
+                <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="w-full aspect-square object-cover" />
+                <span class="holo-shine" aria-hidden="true" />
+                <span class="absolute top-2 left-2 badge badge-warning badge-sm font-semibold shadow">{p.group}</span>
+              </div>
+              <div class="p-3 grow flex flex-col">
+                <div class="flex items-baseline justify-between gap-2">
+                  <h3 class="font-semibold m-0">{p.name}</h3>
+                  {p.aliases && <span class="text-xs text-base-content/45 truncate">{p.aliases}</span>}
+                </div>
+                <p class="text-xs text-base-content/55 m-0 mt-1">{p.role}</p>
+                <div class="flex flex-wrap gap-1.5 mt-auto pt-3">
+                  {p.tags.map((tag) => <span class="badge badge-ghost badge-sm">{tag}</span>)}
+                </div>
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 3. 玻璃遮罩卡 */}
+  <section id="glass" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[2].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[2].note}</p>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        glassCards.map((p) => (
+          <article class="glass-card rounded-2xl overflow-hidden border border-base-300" tabindex="0">
+            <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="w-full aspect-square object-cover" />
+            <div class="glass-panel">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="font-semibold m-0 text-white drop-shadow">{p.name}</h3>
+                <span class="badge badge-sm border-white/40 bg-white/15 text-white">{p.group}</span>
+              </div>
+              <p class="glass-more text-xs text-white/80 m-0 mt-1">{p.role}</p>
+              <p class="glass-more text-sm text-white/90 m-0 mt-2 leading-relaxed">{p.intro}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 4. 聚光灯卡 */}
+  <section id="spotlight" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[3].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[3].note}</p>
+    <div class="grid gap-4 sm:grid-cols-2">
+      {
+        spotlightCards.map((p) => (
+          <article class="spot-card rounded-2xl border border-base-300 bg-base-100 p-4 flex gap-3">
+            <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="w-16 h-16 rounded-xl object-cover shrink-0 border border-base-300" />
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-baseline gap-x-2">
+                <h3 class="font-semibold m-0">{p.name}</h3>
+                {p.aliases && <span class="text-xs text-base-content/45">{p.aliases}</span>}
+                <span class="badge badge-outline badge-sm ml-auto">{p.group}</span>
+              </div>
+              <p class="text-xs text-base-content/55 m-0 mt-1">{p.role}</p>
+              <p class="text-sm text-base-content/75 m-0 mt-2 leading-relaxed">{p.intro}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 5. 档案条 */}
+  <section id="roster" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[4].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[4].note}</p>
+    <ul class="m-0 p-0 list-none divide-y divide-base-300 rounded-2xl border border-base-300 bg-base-100 overflow-hidden">
+      {
+        rosterRows.map((p) => (
+          <li class="roster-row flex items-center gap-3 px-3 py-2.5">
+            <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="w-10 h-10 rounded-full object-cover shrink-0 border border-base-300" />
+            <div class="min-w-0 grow">
+              <div class="flex items-baseline gap-2">
+                <span class="font-medium text-sm">{p.name}</span>
+                <span class="text-xs text-base-content/50 truncate">{p.role}</span>
+              </div>
+            </div>
+            <div class="hidden sm:flex flex-wrap gap-1 justify-end max-w-56">
+              {p.tags.slice(0, 2).map((tag) => <span class="badge badge-ghost badge-sm">{tag}</span>)}
+            </div>
+            <span class={`badge badge-sm shrink-0 ${p.kind === "动物" ? "badge-success badge-outline" : "badge-outline"}`}>
+              {p.kind}
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  {/* 6. 3D 倾斜卡 */}
+  <section id="tilt" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[5].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[5].note}</p>
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        tiltCards.map((p) => (
+          <article class="tilt-card rounded-2xl border border-base-300 bg-base-100 overflow-hidden">
+            <div class="relative">
+              <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="w-full aspect-square object-cover" />
+              <span class="tilt-glare" aria-hidden="true" />
+            </div>
+            <div class="p-3">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="font-semibold m-0">{p.name}</h3>
+                <span class="badge badge-outline badge-sm shrink-0">{p.group}</span>
+              </div>
+              <p class="text-xs text-base-content/55 m-0 mt-1 truncate">{p.role}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 7. 流光描边卡 */}
+  <section id="beam" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[6].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[6].note}</p>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        beamCards.map((p) => (
+          <article class="beam-card rounded-2xl bg-base-100 p-4 flex gap-3 items-start">
+            <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="w-14 h-14 rounded-xl object-cover shrink-0 border border-base-300" />
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-baseline gap-x-2">
+                <h3 class="font-semibold m-0">{p.name}</h3>
+                {p.aliases && <span class="text-xs text-base-content/45">{p.aliases}</span>}
+              </div>
+              <p class="text-xs text-base-content/55 m-0 mt-1">{p.role}</p>
+              <div class="flex flex-wrap gap-1.5 mt-2">
+                {p.tags.slice(0, 3).map((tag) => <span class="badge badge-ghost badge-sm">{tag}</span>)}
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 8. 双色调卡 */}
+  <section id="duotone" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[7].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[7].note}</p>
+    <div class="grid gap-4 grid-cols-2 lg:grid-cols-3">
+      {
+        duotoneCards.map((p) => (
+          <article class="duo-card rounded-2xl overflow-hidden relative border border-base-300" tabindex="0">
+            <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="w-full aspect-square object-cover" />
+            <div class="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/75 via-black/35 to-transparent pointer-events-none">
+              <h3 class="font-semibold m-0 text-white drop-shadow">{p.name}</h3>
+              <p class="text-xs text-white/75 m-0 mt-0.5 truncate">{p.role}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 9. 票券卡 */}
+  <section id="ticket" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[8].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[8].note}</p>
+    <div class="grid gap-4 md:grid-cols-2">
+      {
+        ticketCards.map((p) => (
+          <article class="ticket-card bg-base-100 border border-base-300 rounded-xl flex overflow-hidden">
+            <div class="w-28 shrink-0 p-3 flex flex-col items-center gap-2 border-r border-dashed border-base-300 text-center">
+              <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="w-16 h-16 rounded-lg object-cover border border-base-300" />
+              <span class="badge badge-outline badge-sm">{p.group}</span>
+            </div>
+            <div class="p-3 min-w-0 grow">
+              <div class="flex items-baseline justify-between gap-2">
+                <h3 class="font-semibold m-0">
+                  {p.name}
+                  {p.aliases && <span class="ml-1.5 text-xs font-normal text-base-content/45">· {p.aliases}</span>}
+                </h3>
+                <span class="text-[0.65rem] uppercase tracking-widest text-base-content/35 shrink-0">Codex Pass</span>
+              </div>
+              <p class="text-xs text-base-content/55 m-0 mt-1">{p.role}</p>
+              <p class="text-sm text-base-content/75 m-0 mt-2 leading-relaxed line-clamp-2">{p.intro}</p>
+              <div class="flex flex-wrap gap-1.5 mt-2">
+                {p.tags.slice(0, 3).map((tag) => <span class="badge badge-ghost badge-sm">{tag}</span>)}
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 10. 堆叠卡 */}
+  <section id="stack" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[9].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[9].note}</p>
+    <div class="flex flex-col items-center gap-3">
+      <div class="stack-wrap w-64 sm:w-72" role="group" aria-label="点击切换角色卡">
+        {
+          stackCards.map((p, index) => (
+            <article class="stack-card rounded-2xl border border-base-300 bg-base-100 overflow-hidden shadow-lg" data-pos={index}>
+              <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="w-full aspect-square object-cover" />
+              <div class="p-3">
+                <div class="flex items-center justify-between gap-2">
+                  <h3 class="font-semibold m-0">{p.name}</h3>
+                  <span class="badge badge-success badge-outline badge-sm shrink-0">{p.group}</span>
+                </div>
+                <p class="text-xs text-base-content/55 m-0 mt-1 truncate">{p.role}</p>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+      <p class="text-xs text-base-content/45 m-0">点击卡片查看下一位（共 {stackCards.length} 张）</p>
+    </div>
+  </section>
+
+  {/* 11. 手风琴卡 */}
+  <section id="accordion" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[10].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[10].note}</p>
+    <div class="acc-row flex gap-2 h-72 sm:h-96">
+      {
+        accordionCards.map((p, index) => (
+          <article class={`acc-item relative overflow-hidden rounded-2xl border border-base-300 ${index === 0 ? "is-active" : ""}`} tabindex="0">
+            <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover" />
+            <div class="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+              <div class="flex items-center gap-2">
+                <h3 class="font-semibold m-0 text-white whitespace-nowrap drop-shadow">{p.name}</h3>
+                <span class="acc-detail badge badge-sm border-white/40 bg-white/15 text-white shrink-0">{p.group}</span>
+              </div>
+              <p class="acc-detail text-xs text-white/85 m-0 mt-1">{p.role}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 12. 拍立得卡 */}
+  <section id="polaroid" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[11].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[11].note}</p>
+    <div class="grid gap-6 grid-cols-2 md:grid-cols-3 pt-2">
+      {
+        polaroidCards.map((p) => (
+          <article class="pola-card bg-white p-2.5 pb-3 sm:p-3 sm:pb-4 shadow-md rounded-sm">
+            <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="w-full aspect-square object-cover" />
+            <p class="m-0 mt-2 text-center text-sm font-medium text-neutral-800">{p.name}</p>
+            <p class="m-0 mt-0.5 text-center text-xs text-neutral-500 truncate">{p.role}</p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 13. 故障风卡 */}
+  <section id="glitch" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[12].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[12].note}</p>
+    <div class="grid gap-4 grid-cols-2 lg:grid-cols-3">
+      {
+        glitchCards.map((p) => (
+          <article class="glitch-card rounded-xl overflow-hidden border border-base-300 bg-black" style={`--img: url('${p.image}')`} tabindex="0">
+            <div class="relative">
+              <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="w-full aspect-square object-cover" />
+              <span class="glitch-layer glitch-r" aria-hidden="true" />
+              <span class="glitch-layer glitch-c" aria-hidden="true" />
+              <span class="glitch-scan" aria-hidden="true" />
+            </div>
+            <div class="p-3 bg-black">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="font-mono font-semibold m-0 text-emerald-400 text-sm tracking-wide">{p.name}</h3>
+                <span class="font-mono text-[0.6rem] uppercase text-emerald-400/50">rec●</span>
+              </div>
+              <p class="font-mono text-[0.68rem] text-emerald-400/60 m-0 mt-1 truncate">{p.role}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 14. 邮票卡 */}
+  <section id="stamp" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[13].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[13].note}</p>
+    <div class="grid gap-5 grid-cols-2 md:grid-cols-3 rounded-2xl bg-base-300/60 p-4 sm:p-6">
+      {
+        stampCards.map((p) => (
+          <article class="stamp-card bg-base-100">
+            <div class="border border-base-300 p-1.5">
+              <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="w-full aspect-square object-cover" />
+              <div class="flex items-baseline justify-between gap-2 px-1 pt-1.5">
+                <p class="m-0 text-sm font-semibold">{p.name}</p>
+                <p class="m-0 text-[0.65rem] text-base-content/45 uppercase tracking-widest">Codex · 10</p>
+              </div>
+              <p class="m-0 px-1 pb-0.5 text-xs text-base-content/55 truncate">{p.role}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 15. 杂志编辑卡 */}
+  <section id="editorial" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[14].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[14].note}</p>
+    <div class="grid gap-x-8 gap-y-6 md:grid-cols-2">
+      {
+        editorialCards.map((p, index) => (
+          <article class="edi-card border-t border-base-content/20 pt-3">
+            <div class="flex items-start gap-4">
+              <span class="edi-num font-serif text-4xl leading-none text-base-content/20 select-none">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <div class="min-w-0">
+                <h3 class="font-serif text-lg m-0 leading-tight">
+                  {p.name}
+                  {p.aliases && <span class="ml-2 text-xs font-sans font-normal text-base-content/45">{p.aliases}</span>}
+                </h3>
+                <p class="text-xs uppercase tracking-widest text-base-content/45 m-0 mt-1">{p.group} · {p.role}</p>
+                <p class="text-sm text-base-content/75 m-0 mt-2 leading-relaxed">{p.intro}</p>
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 16. 电影横幅卡 */}
+  <section id="kenburns" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[15].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[15].note}</p>
+    <div class="space-y-4">
+      {
+        kenburnsCards.map((p) => (
+          <article class="kb-card relative overflow-hidden rounded-2xl h-56 sm:h-72">
+            <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="kb-img absolute inset-0 w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" aria-hidden="true" />
+            <div class="relative h-full flex flex-col justify-end p-5 sm:p-6 max-w-md">
+              <span class="text-[0.65rem] uppercase tracking-[0.25em] text-white/60">Codex Feature</span>
+              <h3 class="text-white text-2xl font-bold m-0 mt-1 drop-shadow">
+                {p.name}
+                {p.aliases && <span class="ml-2 text-sm font-normal text-white/60">{p.aliases}</span>}
+              </h3>
+              <p class="text-white/80 text-xs m-0 mt-1">{p.role}</p>
+              <p class="text-white/90 text-sm m-0 mt-2 leading-relaxed line-clamp-2 sm:line-clamp-3">{p.intro}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 17. 上滑揭示卡 */}
+  <section id="reveal" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[16].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[16].note}</p>
+    <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      {
+        revealCards.map((p) => (
+          <article class="rev-card relative overflow-hidden rounded-2xl border border-base-300 aspect-[3/4]" tabindex="0">
+            <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover" />
+            <div class="rev-panel absolute inset-0 flex flex-col p-3">
+              <div class="rev-head flex items-center justify-between gap-2">
+                <h3 class="font-semibold m-0 text-white drop-shadow">{p.name}</h3>
+                <span class="badge badge-sm border-white/40 bg-white/15 text-white shrink-0">{p.group}</span>
+              </div>
+              <p class="text-xs text-white/75 m-0 mt-2">{p.role}</p>
+              <p class="text-[0.8rem] text-white/90 m-0 mt-2 leading-relaxed overflow-y-auto">{p.intro}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 18. 色调滤镜卡 */}
+  <section id="blend" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[17].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[17].note}</p>
+    <div class="grid gap-4 grid-cols-2 lg:grid-cols-3">
+      {
+        blendCards.map((p) => (
+          <article class="blend-card relative overflow-hidden rounded-2xl border border-base-300" tabindex="0">
+            <div class="blend-media relative">
+              <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="w-full aspect-square object-cover" />
+            </div>
+            <div class="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/75 to-transparent">
+              <h3 class="font-semibold m-0 text-white drop-shadow">{p.name}</h3>
+              <p class="text-xs text-white/75 m-0 mt-0.5 truncate">{p.role}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 19. 文字镂空卡 */}
+  <section id="textclip" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[18].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[18].note}</p>
+    <div class="grid gap-4 md:grid-cols-2">
+      {
+        textclipCards.map((p) => (
+          <article class="clip-card rounded-2xl border border-base-300 bg-base-100 p-5 sm:p-6">
+            <p class="clip-text m-0 leading-none select-none" style={`--img: url('${p.image}')`}>{p.name}</p>
+            <div class="flex items-baseline gap-2 mt-3">
+              <span class="badge badge-outline badge-sm">{p.group}</span>
+              <p class="text-xs text-base-content/55 m-0 truncate">{p.role}</p>
+            </div>
+            <p class="text-sm text-base-content/75 m-0 mt-2 leading-relaxed line-clamp-2">{p.intro}</p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 20. 轮播横幅卡 */}
+  <section id="cine" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[19].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[19].note}</p>
+    <div class="cine-slides relative h-64 sm:h-96 rounded-2xl overflow-hidden bg-black" data-cine>
+      {
+        cineCards.map((p, index) => (
+          <article class={`cine-slide absolute inset-0 ${index === 0 ? "is-active" : ""}`}>
+            <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="cine-img absolute inset-0 w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" aria-hidden="true" />
+            <div class="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+              <span class="text-[0.65rem] uppercase tracking-[0.25em] text-white/55">
+                {String(index + 1).padStart(2, "0")} / {String(cineCards.length).padStart(2, "0")}
+              </span>
+              <h3 class="text-white text-2xl font-bold m-0 mt-1 drop-shadow">
+                {p.name}
+                {p.aliases && <span class="ml-2 text-sm font-normal text-white/60">{p.aliases}</span>}
+              </h3>
+              <p class="text-white/80 text-sm m-0 mt-1 max-w-lg line-clamp-2">{p.role} · {p.intro}</p>
+            </div>
+          </article>
+        ))
+      }
+      <div class="absolute top-4 right-4 flex gap-1.5">
+        {
+          cineCards.map((p, index) => (
+            <button type="button" class={`cine-dot w-2.5 h-2.5 rounded-full border border-white/70 ${index === 0 ? "is-active" : ""}`} aria-label={`切换到 ${p.name}`} />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  {/* 21. 视差横幅卡 */}
+  <section id="parallax" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[20].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[20].note}</p>
+    <div class="space-y-4">
+      {
+        parallaxCards.map((p) => (
+          <article class="para-card relative overflow-hidden rounded-2xl h-52 sm:h-64">
+            <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="para-img absolute w-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent" aria-hidden="true" />
+            <div class="relative h-full flex flex-col justify-center p-5 sm:p-6 max-w-md">
+              <h3 class="text-white text-xl font-bold m-0 drop-shadow">
+                {p.name}
+                {p.aliases && <span class="ml-2 text-sm font-normal text-white/60">{p.aliases}</span>}
+              </h3>
+              <p class="text-white/80 text-xs m-0 mt-1">{p.role}</p>
+              <p class="text-white/90 text-sm m-0 mt-2 leading-relaxed line-clamp-2">{p.intro}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 22. 推近揭示卡 */}
+  <section id="zoomrev" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[21].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[21].note}</p>
+    <div class="grid gap-4 sm:grid-cols-2">
+      {
+        zoomrevCards.map((p) => (
+          <article class="zoom-card relative overflow-hidden rounded-2xl h-56 sm:h-64" tabindex="0">
+            <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="zoom-img absolute inset-0 w-full h-full object-cover object-top" />
+            <div class="zoom-scrim absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" aria-hidden="true" />
+            <div class="zoom-body absolute inset-x-0 bottom-0 p-4">
+              <div class="flex items-center gap-2">
+                <h3 class="text-white font-bold m-0 drop-shadow">{p.name}</h3>
+                <span class="badge badge-sm border-white/40 bg-white/15 text-white">{p.group}</span>
+              </div>
+              <p class="text-white/75 text-xs m-0 mt-1">{p.role}</p>
+              <p class="zoom-intro text-white/90 text-sm m-0 mt-2 leading-relaxed line-clamp-3">{p.intro}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* 23. 宽银幕字幕卡 */}
+  <section id="letterbox" class="scroll-mt-28 space-y-3">
+    <h2 class="text-xl font-bold m-0">{sections[22].title}</h2>
+    <p class="text-sm text-base-content/60 m-0">{sections[22].note}</p>
+    <div class="space-y-4">
+      {
+        letterboxCards.map((p) => (
+          <article class="letter-card relative overflow-hidden rounded-xl bg-black" tabindex="0">
+            <div class="relative aspect-[21/9] overflow-hidden">
+              <img src={p.image} alt={`${p.name} AI 插画`} width="640" height="640" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover object-[center_30%]" />
+              <span class="letter-bar letter-bar-top" aria-hidden="true" />
+              <span class="letter-bar letter-bar-bottom" aria-hidden="true" />
+              <span class="absolute top-[13%] left-4 text-[0.65rem] uppercase tracking-[0.3em] text-white/60">
+                {p.group}
+              </span>
+              <div class="letter-sub absolute inset-x-0 bottom-[14%] px-6 text-center">
+                <p class="letter-line-1 m-0 text-white text-base sm:text-lg font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]">
+                  {p.name}{p.aliases ? `（${p.aliases}）` : ""} · {p.role}
+                </p>
+                <p class="letter-line-2 m-0 mt-1 text-white/95 text-sm sm:text-base [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]">
+                  「{p.intro.split("。")[0]}。」
+                </p>
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+</div>
+
+<style>
+  /* ---- 1. Flip card ---- */
+  .flip-card {
+    display: block;
+    width: 100%;
+    perspective: 1200px;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+  .flip-inner {
+    position: relative;
+    width: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  .flip-face {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .flip-back {
+    position: absolute;
+    inset: 0;
+    transform: rotateY(180deg);
+    overflow: auto;
+  }
+  .flip-card.is-flipped .flip-inner,
+  .flip-card:focus-visible .flip-inner {
+    transform: rotateY(180deg);
+  }
+  @media (hover: hover) {
+    .flip-card:hover .flip-inner {
+      transform: rotateY(180deg);
+    }
+  }
+
+  /* ---- 2. Holo card ---- */
+  .holo-card {
+    background: linear-gradient(135deg, oklch(75% 0.15 85), oklch(65% 0.2 300), oklch(70% 0.17 200));
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .holo-shine {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%);
+    transform: translateX(-110%);
+    pointer-events: none;
+  }
+  @media (hover: hover) {
+    .holo-card:hover {
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 12px 32px -12px oklch(65% 0.2 300 / 0.55);
+    }
+    .holo-card:hover .holo-shine {
+      transition: transform 0.7s ease;
+      transform: translateX(110%);
+    }
+  }
+
+  /* ---- 3. Glass overlay card ---- */
+  .glass-card {
+    position: relative;
+  }
+  .glass-panel {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 0.75rem 0.875rem 0.875rem;
+    background: rgba(15, 20, 30, 0.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+  }
+  .glass-more {
+    display: none;
+  }
+  .glass-card:hover .glass-more,
+  .glass-card:focus-within .glass-more,
+  .glass-card:focus .glass-more {
+    display: block;
+  }
+
+  /* ---- 4. Spotlight card ---- */
+  .spot-card {
+    position: relative;
+    overflow: hidden;
+    --spot-x: 50%;
+    --spot-y: 50%;
+  }
+  @media (hover: hover) {
+    .spot-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      background: radial-gradient(
+        320px circle at var(--spot-x) var(--spot-y),
+        oklch(70% 0.15 250 / 0.18),
+        transparent 70%
+      );
+      pointer-events: none;
+    }
+    .spot-card:hover::before {
+      opacity: 1;
+    }
+    .spot-card:hover {
+      border-color: oklch(70% 0.15 250 / 0.5);
+    }
+  }
+
+  /* ---- 5. Roster row ---- */
+  .roster-row {
+    transition: background-color 0.15s ease;
+  }
+  .roster-row:hover {
+    background-color: oklch(70% 0.05 250 / 0.08);
+  }
+
+  /* ---- 6. Tilt card ---- */
+  .tilt-card {
+    --tilt-x: 0deg;
+    --tilt-y: 0deg;
+    --glare-x: 50%;
+    --glare-y: 50%;
+    --glare-o: 0;
+    transform: perspective(900px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+    transition: transform 0.15s ease-out;
+    will-change: transform;
+  }
+  .tilt-glare {
+    position: absolute;
+    inset: 0;
+    opacity: var(--glare-o);
+    background: radial-gradient(
+      240px circle at var(--glare-x) var(--glare-y),
+      rgba(255, 255, 255, 0.35),
+      transparent 60%
+    );
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+
+  /* ---- 7. Border beam card ---- */
+  @property --beam-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+  .beam-card {
+    position: relative;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+  }
+  .beam-card::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(
+      from var(--beam-angle),
+      transparent 0deg 280deg,
+      oklch(72% 0.16 250) 320deg,
+      oklch(80% 0.14 320) 340deg,
+      transparent 360deg
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    animation: beam-spin 4s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes beam-spin {
+    to {
+      --beam-angle: 360deg;
+    }
+  }
+
+  /* ---- 8. Duotone card ---- */
+  .duo-card img {
+    filter: grayscale(1) contrast(1.05);
+    transition: filter 0.4s ease, transform 0.4s ease;
+  }
+  .duo-card:hover img,
+  .duo-card:focus img,
+  .duo-card:focus-within img {
+    filter: none;
+    transform: scale(1.04);
+  }
+
+  /* ---- 9. Ticket card ---- */
+  .ticket-card {
+    /* Punch a notch where the stub (w-28 = 7rem) meets the body. */
+    --notch-x: 7rem;
+    -webkit-mask: radial-gradient(circle 8px at var(--notch-x) 0, transparent 7px, #000 8px),
+      radial-gradient(circle 8px at var(--notch-x) 100%, transparent 7px, #000 8px);
+    -webkit-mask-composite: source-in;
+    mask: radial-gradient(circle 8px at var(--notch-x) 0, transparent 7px, #000 8px),
+      radial-gradient(circle 8px at var(--notch-x) 100%, transparent 7px, #000 8px);
+    mask-composite: intersect;
+  }
+
+  /* ---- 10. Card stack ---- */
+  .stack-wrap {
+    position: relative;
+    aspect-ratio: 4 / 5.1;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .stack-card {
+    position: absolute;
+    inset: 0;
+    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.3, 1), opacity 0.35s ease;
+  }
+  .stack-card[data-pos="0"] {
+    z-index: 5;
+  }
+  .stack-card[data-pos="1"] {
+    transform: translateX(7%) scale(0.95) rotate(2.5deg);
+    z-index: 4;
+  }
+  .stack-card[data-pos="2"] {
+    transform: translateX(14%) scale(0.9) rotate(5deg);
+    z-index: 3;
+  }
+  .stack-card[data-pos="3"] {
+    transform: translateX(20%) scale(0.85) rotate(7.5deg);
+    z-index: 2;
+    opacity: 0.85;
+  }
+  .stack-card[data-pos="4"] {
+    transform: translateX(25%) scale(0.8) rotate(10deg);
+    z-index: 1;
+    opacity: 0;
+  }
+
+  /* ---- 11. Accordion card ---- */
+  .acc-item {
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+    transition: flex 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  .acc-item.is-active {
+    flex: 3.2;
+  }
+  @media (hover: hover) {
+    .acc-row:hover .acc-item.is-active:not(:hover) {
+      flex: 1;
+    }
+    .acc-item:hover {
+      flex: 3.2;
+    }
+  }
+  .acc-detail {
+    opacity: 0;
+    transition: opacity 0.3s ease 0.15s;
+  }
+  .acc-item.is-active .acc-detail {
+    opacity: 1;
+  }
+  @media (hover: hover) {
+    .acc-row:hover .acc-item.is-active:not(:hover) .acc-detail {
+      opacity: 0;
+    }
+    .acc-item:hover .acc-detail {
+      opacity: 1;
+    }
+  }
+
+  /* ---- 12. Polaroid card ---- */
+  .pola-card {
+    position: relative;
+    transform: rotate(var(--rot, 0deg));
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .pola-card:nth-child(3n + 1) {
+    --rot: -2.5deg;
+  }
+  .pola-card:nth-child(3n + 2) {
+    --rot: 1.8deg;
+  }
+  .pola-card:nth-child(3n) {
+    --rot: -1deg;
+  }
+  .pola-card::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    width: 72px;
+    height: 22px;
+    transform: translateX(-50%) rotate(-2deg);
+    background: rgba(222, 202, 140, 0.55);
+    box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.08);
+  }
+  .pola-card:hover {
+    transform: rotate(0deg) scale(1.04);
+    box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.35);
+    z-index: 1;
+  }
+
+  /* ---- 13. Glitch card ---- */
+  .glitch-layer,
+  .glitch-scan {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .glitch-layer {
+    background-image: var(--img);
+    background-size: cover;
+    background-position: center;
+    mix-blend-mode: screen;
+  }
+  .glitch-r {
+    /* red channel ghost */
+    filter: sepia(1) saturate(6) hue-rotate(-50deg);
+  }
+  .glitch-c {
+    /* cyan channel ghost */
+    filter: sepia(1) saturate(6) hue-rotate(160deg);
+  }
+  .glitch-scan {
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.25) 0 1px,
+      transparent 1px 3px
+    );
+  }
+  .glitch-card:hover .glitch-scan,
+  .glitch-card:focus .glitch-scan {
+    opacity: 1;
+  }
+  .glitch-card:hover .glitch-r,
+  .glitch-card:focus .glitch-r {
+    opacity: 0.5;
+    animation: glitch-shift-r 0.5s steps(2) infinite;
+  }
+  .glitch-card:hover .glitch-c,
+  .glitch-card:focus .glitch-c {
+    opacity: 0.5;
+    animation: glitch-shift-c 0.5s steps(2) infinite reverse;
+  }
+  @keyframes glitch-shift-r {
+    0% {
+      transform: translate(-4px, 0);
+      clip-path: inset(12% 0 58% 0);
+    }
+    50% {
+      transform: translate(3px, 2px);
+      clip-path: inset(52% 0 8% 0);
+    }
+    100% {
+      transform: translate(-2px, -1px);
+      clip-path: inset(30% 0 35% 0);
+    }
+  }
+  @keyframes glitch-shift-c {
+    0% {
+      transform: translate(4px, 1px);
+      clip-path: inset(55% 0 10% 0);
+    }
+    50% {
+      transform: translate(-3px, -2px);
+      clip-path: inset(8% 0 62% 0);
+    }
+    100% {
+      transform: translate(2px, 2px);
+      clip-path: inset(38% 0 28% 0);
+    }
+  }
+
+  /* ---- 14. Stamp card ---- */
+  .stamp-card {
+    /* Perforated edge: punch a dot grid, then re-fill the content box. */
+    --hole: 5px;
+    padding: calc(var(--hole) * 1.6);
+    -webkit-mask: radial-gradient(circle var(--hole), transparent 98%, #000)
+        round calc(var(--hole) * -1) calc(var(--hole) * -1) / calc(var(--hole) * 4) calc(var(--hole) * 4),
+      linear-gradient(#000 0 0) content-box;
+    mask: radial-gradient(circle var(--hole), transparent 98%, #000)
+        round calc(var(--hole) * -1) calc(var(--hole) * -1) / calc(var(--hole) * 4) calc(var(--hole) * 4),
+      linear-gradient(#000 0 0) content-box;
+  }
+
+  /* ---- 15. Editorial card ---- */
+  .edi-card {
+    transition: border-color 0.25s ease;
+  }
+  .edi-card:hover {
+    border-color: oklch(70% 0.15 250 / 0.7);
+  }
+  .edi-card:hover .edi-num {
+    color: oklch(70% 0.15 250 / 0.55);
+  }
+  .edi-num {
+    transition: color 0.25s ease;
+  }
+
+  /* ---- 16. Ken Burns card ---- */
+  .kb-img {
+    animation: kb-zoom 18s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+  @keyframes kb-zoom {
+    from {
+      transform: scale(1) translate(0, 0);
+    }
+    to {
+      transform: scale(1.15) translate(2%, -2%);
+    }
+  }
+
+  /* ---- 17. Slide reveal card ---- */
+  .rev-panel {
+    /* Keep only the title bar visible; slide the whole panel up on hover. */
+    --peek: 3rem;
+    background: linear-gradient(rgba(10, 14, 20, 0.55), rgba(10, 14, 20, 0.92));
+    transform: translateY(calc(100% - var(--peek)));
+    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  .rev-head {
+    min-height: var(--peek);
+    align-content: center;
+  }
+  .rev-card:hover .rev-panel,
+  .rev-card:focus .rev-panel,
+  .rev-card:focus-within .rev-panel {
+    transform: translateY(0);
+  }
+
+  /* ---- 18. Color blend card ---- */
+  .blend-media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    mix-blend-mode: color;
+    opacity: 1;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  .blend-card:nth-child(3n + 1) .blend-media::after {
+    background: linear-gradient(135deg, oklch(65% 0.19 45), oklch(50% 0.17 320));
+  }
+  .blend-card:nth-child(3n + 2) .blend-media::after {
+    background: linear-gradient(135deg, oklch(62% 0.15 210), oklch(55% 0.16 280));
+  }
+  .blend-card:nth-child(3n) .blend-media::after {
+    background: linear-gradient(135deg, oklch(68% 0.16 140), oklch(58% 0.14 90));
+  }
+  .blend-card:hover .blend-media::after,
+  .blend-card:focus .blend-media::after {
+    opacity: 0;
+  }
+
+  /* ---- 19. Text clip card ---- */
+  .clip-text {
+    background-image: var(--img);
+    background-size: cover;
+    background-position: center 25%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 900;
+    font-size: clamp(3.5rem, 10vw, 5.5rem);
+    letter-spacing: 0.06em;
+    transition: background-position 0.6s ease;
+  }
+  .clip-card:hover .clip-text {
+    background-position: center 45%;
+  }
+
+  /* ---- 20. Cinema slideshow ---- */
+  .cine-slide {
+    opacity: 0;
+    transition: opacity 0.9s ease;
+    pointer-events: none;
+  }
+  .cine-slide.is-active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .cine-slide.is-active .cine-img {
+    animation: kb-zoom 9s ease-in-out infinite alternate;
+  }
+  /* Vary the pan direction per slide so each cut feels different. */
+  .cine-slide:nth-child(2).is-active .cine-img {
+    animation-name: kb-zoom-left;
+  }
+  .cine-slide:nth-child(3).is-active .cine-img {
+    animation-name: kb-zoom-up;
+  }
+  @keyframes kb-zoom-left {
+    from {
+      transform: scale(1.15) translate(2%, 0);
+    }
+    to {
+      transform: scale(1) translate(0, 0);
+    }
+  }
+  @keyframes kb-zoom-up {
+    from {
+      transform: scale(1.05) translate(0, 2%);
+    }
+    to {
+      transform: scale(1.18) translate(-1%, -2%);
+    }
+  }
+  .cine-dot {
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    transition: background-color 0.25s ease, transform 0.25s ease;
+  }
+  .cine-dot.is-active {
+    background: #fff;
+    transform: scale(1.2);
+  }
+
+  /* ---- 21. Scroll parallax ---- */
+  .para-img {
+    height: 145%;
+    top: -22%;
+  }
+  @supports (animation-timeline: view()) {
+    .para-img {
+      animation: para-shift linear both;
+      animation-timeline: view();
+    }
+    @keyframes para-shift {
+      from {
+        transform: translateY(-6%);
+      }
+      to {
+        transform: translateY(6%);
+      }
+    }
+  }
+
+  /* ---- 22. Zoom reveal ---- */
+  .zoom-img {
+    transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  .zoom-scrim {
+    opacity: 0.75;
+    transition: opacity 0.5s ease;
+  }
+  .zoom-body {
+    transform: translateY(calc(100% - 4.5rem));
+    transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  .zoom-intro {
+    opacity: 0;
+    transition: opacity 0.4s ease 0.15s;
+  }
+  .zoom-card:hover .zoom-img,
+  .zoom-card:focus .zoom-img {
+    transform: scale(1.09);
+  }
+  .zoom-card:hover .zoom-scrim,
+  .zoom-card:focus .zoom-scrim {
+    opacity: 1;
+  }
+  .zoom-card:hover .zoom-body,
+  .zoom-card:focus .zoom-body {
+    transform: translateY(0);
+  }
+  .zoom-card:hover .zoom-intro,
+  .zoom-card:focus .zoom-intro {
+    opacity: 1;
+  }
+
+  /* ---- 23. Letterbox ---- */
+  .letter-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 11%;
+    background: #000;
+    transition: height 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
+    z-index: 1;
+  }
+  .letter-bar-top {
+    top: 0;
+  }
+  .letter-bar-bottom {
+    bottom: 0;
+  }
+  .letter-sub {
+    z-index: 2;
+    transition: bottom 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  .letter-line-2 {
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .letter-card:hover .letter-bar,
+  .letter-card:focus .letter-bar {
+    height: 4%;
+  }
+  .letter-card:hover .letter-sub,
+  .letter-card:focus .letter-sub {
+    bottom: 7%;
+  }
+  .letter-card:hover .letter-line-2,
+  .letter-card:focus .letter-line-2 {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .beam-card::before,
+    .kb-img,
+    .cine-slide.is-active .cine-img,
+    .para-img {
+      animation: none;
+    }
+    .rev-panel,
+    .clip-text,
+    .zoom-img,
+    .zoom-body,
+    .letter-bar,
+    .letter-sub {
+      transition: none;
+    }
+    .glitch-card:hover .glitch-r,
+    .glitch-card:hover .glitch-c,
+    .glitch-card:focus .glitch-r,
+    .glitch-card:focus .glitch-c {
+      animation: none;
+    }
+    .flip-inner,
+    .stack-card,
+    .tilt-card,
+    .acc-item,
+    .pola-card,
+    .duo-card img {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const root = document.querySelector("[data-codex-gallery]");
+  if (root) {
+    // Tap-to-flip for touch devices (hover also works on desktop).
+    root.querySelectorAll(".flip-card").forEach((card) => {
+      card.addEventListener("click", () => card.classList.toggle("is-flipped"));
+    });
+
+    // Track pointer for the spotlight gradient.
+    root.querySelectorAll<HTMLElement>(".spot-card").forEach((card) => {
+      card.addEventListener("pointermove", (event: PointerEvent) => {
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty("--spot-x", `${event.clientX - rect.left}px`);
+        card.style.setProperty("--spot-y", `${event.clientY - rect.top}px`);
+      });
+    });
+
+    // 3D tilt follows the pointer; reset on leave.
+    root.querySelectorAll<HTMLElement>(".tilt-card").forEach((card) => {
+      card.addEventListener("pointermove", (event: PointerEvent) => {
+        const rect = card.getBoundingClientRect();
+        const px = (event.clientX - rect.left) / rect.width;
+        const py = (event.clientY - rect.top) / rect.height;
+        card.style.setProperty("--tilt-y", `${(px - 0.5) * 16}deg`);
+        card.style.setProperty("--tilt-x", `${(0.5 - py) * 12}deg`);
+        card.style.setProperty("--glare-x", `${px * 100}%`);
+        card.style.setProperty("--glare-y", `${py * 100}%`);
+        card.style.setProperty("--glare-o", "1");
+      });
+      card.addEventListener("pointerleave", () => {
+        card.style.setProperty("--tilt-x", "0deg");
+        card.style.setProperty("--tilt-y", "0deg");
+        card.style.setProperty("--glare-o", "0");
+      });
+    });
+
+    // Accordion: tap/click marks a panel active (hover also works on desktop).
+    const accItems = Array.from(root.querySelectorAll<HTMLElement>(".acc-item"));
+    accItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        accItems.forEach((other) => other.classList.toggle("is-active", other === item));
+      });
+    });
+
+    // Cinema slideshow: auto-advance with crossfade; dots jump, hover pauses.
+    const cine = root.querySelector<HTMLElement>("[data-cine]");
+    if (cine) {
+      const slides = Array.from(cine.querySelectorAll<HTMLElement>(".cine-slide"));
+      const dots = Array.from(cine.querySelectorAll<HTMLElement>(".cine-dot"));
+      let index = 0;
+      let timer = 0;
+      const show = (next: number) => {
+        index = (next + slides.length) % slides.length;
+        slides.forEach((slide, i) => slide.classList.toggle("is-active", i === index));
+        dots.forEach((dot, i) => dot.classList.toggle("is-active", i === index));
+      };
+      const play = () => {
+        timer = window.setInterval(() => show(index + 1), 4200);
+      };
+      dots.forEach((dot, i) => dot.addEventListener("click", () => show(i)));
+      cine.addEventListener("pointerenter", () => window.clearInterval(timer));
+      cine.addEventListener("pointerleave", play);
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) play();
+    }
+
+    // Card stack: clicking sends the top card to the back.
+    const stack = root.querySelector<HTMLElement>(".stack-wrap");
+    if (stack) {
+      const cards = Array.from(stack.querySelectorAll<HTMLElement>(".stack-card"));
+      stack.addEventListener("click", () => {
+        cards.forEach((card) => {
+          const pos = Number(card.dataset.pos);
+          card.dataset.pos = String((pos + cards.length - 1) % cards.length);
+        });
+      });
+    }
+  }
+</script>

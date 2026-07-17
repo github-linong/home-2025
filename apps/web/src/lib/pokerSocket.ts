@@ -202,6 +202,11 @@ export class PokerSocket {
     }, 1000);
   }
 
+  /** UI can ask for a public+private resync when legalActions are missing. */
+  requestSyncPublic() {
+    this.requestSync();
+  }
+
   private scheduleAutoReconnect() {
     if (this.autoReconnectAttempts >= 5) return;
     const delay = Math.min(1000 * 2 ** this.autoReconnectAttempts, 15_000);
@@ -311,14 +316,20 @@ export class PokerSocket {
   }
 
   action(action: string, extra: Record<string, unknown> = {}) {
-    if (!this.roomId || !this.matchId || !this.handId) return;
+    const nextHandId = (extra.handId as string | undefined) || this.handId;
+    if (!this.roomId || !this.matchId || !nextHandId) return;
+    if (nextHandId) this.handId = nextHandId;
     this.send("game.action", {
       roomId: this.roomId,
       matchId: this.matchId,
-      handId: this.handId,
+      handId: nextHandId,
       ...extra,
       action,
     });
+  }
+
+  getHandId() {
+    return this.handId;
   }
 
   reconnect() {

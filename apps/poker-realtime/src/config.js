@@ -38,6 +38,11 @@ export const config = {
   minPlayers: 2,
   /** Bot auto-action delay (ms). */
   botActionDelayMs: Number(process.env.BOT_ACTION_DELAY_MS ?? 500),
+  /**
+   * Casual practice tables: when a seated player hits 0 chips at hand end,
+   * restore TABLE_START_STACK so the match can continue (no economy).
+   */
+  autoRebuyOnBust: process.env.AUTO_REBUY_ON_BUST !== "false",
   pingIntervalMs: 15_000,
   pongTimeoutMs: 45_000,
   maxMessageBytes: 8_192,

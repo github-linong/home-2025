@@ -429,6 +429,55 @@ describe("acceptance gaps", () => {
     runtime.state = "destroyed";
   });
 
+  it("rebuyBustedSeats restores table start stack", () => {
+    const room = createRoom("o6a", "O");
+    lockSeat(room, "o6a", 0);
+    confirmSeat(room, "o6a", "O", 0);
+    lockSeat(room, "p6a", 1);
+    confirmSeat(room, "p6a", "P", 1);
+    room.seats[0].stack = 0;
+    room.seats[1].stack = 80;
+    const runtime = new MatchRuntime(room, () => {}, () => {});
+    runtime.rebuyBustedSeats();
+    assert.equal(room.seats[0].stack, config.tableStartStack);
+    assert.equal(room.seats[1].stack, 80);
+    runtime.state = "destroyed";
+  });
+
+  it("auto-rebuy keeps match alive after bust and starts next hand", async () => {
+    const room = createRoom("o6", "O");
+    lockSeat(room, "o6", 0);
+    confirmSeat(room, "o6", "O", 0);
+    lockSeat(room, "p6", 1);
+    confirmSeat(room, "p6", "P", 1);
+    room.seats[0].stack = 40;
+    room.seats[1].stack = 40;
+    const prev = config.autoRebuyOnBust;
+    config.autoRebuyOnBust = true;
+    const events = [];
+    const runtime = new MatchRuntime(room, (msg) => events.push(msg), () => {});
+    runtime.startMatch();
+    runtime.handState.seats[0].stack = 0;
+    runtime.handState.seats[1].stack = 80;
+    runtime.handState.finished = true;
+    runtime.handState.pot = 0;
+    runtime.finishHand({
+      type: "handEnd",
+      reason: "showdown",
+      winners: [{ userId: "p6", seatIndex: 1, amount: 80 }],
+    });
+    const handEnded = events.find((e) => e.type === "game.event" && e.eventType === "handEnded");
+    assert.ok(handEnded);
+    assert.equal(handEnded.payload.continues, true);
+    assert.equal(room.seats[0].stack, config.tableStartStack);
+    await new Promise((r) => setTimeout(r, 1600));
+    assert.equal(runtime.state, "active");
+    assert.equal(runtime.handState.finished, false);
+    config.autoRebuyOnBust = prev;
+    runtime.clearLifecycleTimers();
+    runtime.state = "destroyed";
+  });
+
   it("rotates dealer across consecutive hands", async () => {
     const room = createRoom("o4", "O");
     lockSeat(room, "o4", 0);

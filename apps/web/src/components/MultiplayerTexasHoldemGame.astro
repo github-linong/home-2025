@@ -326,10 +326,11 @@
           else status = roomSeat.isBot ? "Bot·未准备" : "未准备";
         } else if (roomSeat.leaveAfterHand) status = "本手后离开";
         else if (waitingNext) status = "下手入局";
-        else if (roomSeat.isBot) status = status === "ready" ? "Bot·准备" : "Bot";
-        if (publicState && seat?.folded) status = "弃牌";
-        else if (publicState && seat?.allIn) status = "All-in";
+        else if (seat?.folded) status = "弃牌";
+        else if (seat?.allIn) status = "All-in";
         else if (isTurn) status = "行动中";
+        else if (roomSeat.isBot) status = "Bot";
+        else status = "在局";
 
         const tags = [
           isMe ? "human-seat" : "",
@@ -386,6 +387,14 @@
       callInfo.textContent = "本手已结束";
     } else if (!publicState) {
       callInfo.textContent = "开局前准备中";
+    } else if (publicState.actorSeatId === mySeatIndex) {
+      if (bounds && bounds.fullCallAmount > 0) {
+        callInfo.textContent = `需跟注 ${bounds.fullCallAmount}`;
+      } else if (humanTurn) {
+        callInfo.textContent = "轮到你行动";
+      } else {
+        callInfo.textContent = "轮到你（同步合法动作中…）";
+      }
     } else if (!humanTurn) {
       callInfo.textContent = "等待其他玩家";
     } else if (bounds && bounds.fullCallAmount > 0) {
@@ -417,12 +426,14 @@
   }
 
   function isTurnForMe() {
-    return (
-      publicState &&
-      !publicState.finished &&
-      publicState.actorSeatId === mySeatIndex &&
-      privateState?.legalActions.length
-    );
+    if (!publicState || publicState.finished) return false;
+    if (publicState.actorSeatId !== mySeatIndex) return false;
+    // Prefer legalActions from private snapshot; if missing, still allow UI to show
+    // it's our turn (and sync will refill actions).
+    if (privateState && privateState.handId === publicState.handId) {
+      return Boolean(privateState.legalActions?.length);
+    }
+    return true;
   }
 
   function showGame() {
@@ -502,16 +513,36 @@
         const ev = msg as { eventType?: string; handId?: string; turnId?: number };
         if (ev.eventType === "handStarted") {
           if (ev.handId) handId = ev.handId;
-          privateState = null;
-          // Public snapshot usually follows; clear finished so UI unsticks immediately.
-          if (publicState) publicState = { ...publicState, finished: false, handId: ev.handId ?? publicState.handId };
+          // Only drop private when it belongs to a different hand. Snapshots may arrive
+          // before or after this event; wiping here caused "行动中" + empty legalActions.
+          if (privateState && ev.handId && privateState.handId !== ev.handId) {
+            privateState = null;
+          }
+          if (publicState?.handId && ev.handId && publicState.handId !== ev.handId) {
+            publicState = { ...publicState, finished: false, handId: ev.handId };
+          } else if (publicState) {
+            publicState = { ...publicState, finished: false };
+          }
           showGame();
           const gameMsg = document.querySelector("#game-message");
           if (gameMsg) gameMsg.textContent = "新一手开始…";
+          render();
         }
         if (ev.eventType === "handEnded") {
+          const payload = (msg as { payload?: { continues?: boolean } }).payload;
+          const continues = payload?.continues !== false;
           const gameMsg = document.querySelector("#game-message");
-          if (gameMsg) gameMsg.textContent = "本手已结束，下一手即将开始…";
+          if (gameMsg) {
+            gameMsg.textContent = continues
+              ? "本手已结束，下一手即将开始…"
+              : "对局结束（有效玩家不足）";
+          }
+          if (publicState) publicState = { ...publicState, finished: true };
+          render();
+        }
+        if (ev.eventType === "matchEnded") {
+          const gameMsg = document.querySelector("#game-message");
+          if (gameMsg) gameMsg.textContent = "对局已结束";
           if (publicState) publicState = { ...publicState, finished: true };
           render();
         }
@@ -629,10 +660,13 @@
   gameRemoveBot.addEventListener("click", () => void onRemoveBot());
 
   function sendAction(action: string, amount?: number) {
-    if (!socket || !handId) return;
+    if (!socket) return;
+    const activeHandId = handId || socket.getHandId();
+    const activeTurnId = turnId || publicState?.turnId || 0;
+    if (!activeHandId) return;
     socket.action(action, {
-      handId,
-      turnId,
+      handId: activeHandId,
+      turnId: activeTurnId,
       clientActionId: createClientActionId(),
       amount,
     });

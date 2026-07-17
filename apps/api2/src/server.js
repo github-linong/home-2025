@@ -4,6 +4,7 @@ import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
 import { auth, pool } from "./auth.js";
 import { createLearnRouter } from "./learn/routes.js";
 import { createDemoRouter } from "./demo/stream-routes.js";
+import { createAvatarRouter } from "./avatar/routes.js";
 
 process.on("uncaughtException", (err) => {
   console.error("[api2] uncaughtException:", err);
@@ -65,6 +66,7 @@ app.get("/api/me", async (req, res) => {
 
 app.use("/api/learn", createLearnRouter(pool));
 app.use("/api/demo", createDemoRouter());
+app.use("/api/demo/avatar", createAvatarRouter());
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`[api2] listening on http://127.0.0.1:${port}`);

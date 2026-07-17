@@ -25,6 +25,7 @@
     "dayjs": "^1.11.9",
     "echarts": "^6.1.0",
     "leaflet": "^1.9.4",
+    "lm-avatar-chat-sdk": "^1.1.4",
     "marked": "^18.0.6",
     "sharp": "^0.32.6",
     "tailwindcss": "^3.3.5"

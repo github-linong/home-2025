@@ -33,6 +33,7 @@
     "enrich:jsrun": "node scripts/enrich-jsrun-curated.mjs",
     "normalize:jsrun-tags": "node scripts/normalize-jsrun-tags.mjs",
     "deploy:web": "bash scripts/deploy-web.sh",
+    "deploy:api2": "bash scripts/deploy-api2.sh",
     "deploy:poker-realtime": "bash scripts/deploy-poker-realtime.sh",
     "baidu:push": "node scripts/baidu-push.mjs",
     "baidu:push:recent": "node scripts/baidu-push.mjs --recent 10",

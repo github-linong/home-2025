@@ -46,6 +46,21 @@ const tabs = DISASTER_TIMELINE_ERA_TABS;
   >
   </div>
 
+  {/* Server-rendered fallback: hidden once the ECharts chart mounts. */}
+  <ol class="timeline-fallback" data-timeline-fallback>
+    {
+      events.map((item) => (
+        <li class="timeline-fallback-item" data-fallback-era={item.era}>
+          <span class="timeline-fallback-stage">{item.stage}</span>
+          <span class="timeline-fallback-body">
+            <strong>{item.event}</strong>
+            <span class="timeline-fallback-impact">{item.impact}</span>
+          </span>
+        </li>
+      ))
+    }
+  </ol>
+
   <p class="px-3 pb-2.5 text-[0.7rem] leading-snug text-base-content/40 m-0">
     改为纵向排布，一次只看一段；悬停节点可看完整影响说明。
   </p>
@@ -72,6 +87,45 @@ const tabs = DISASTER_TIMELINE_ERA_TABS;
     background: color-mix(in oklab, currentColor 12%, transparent);
     color: inherit;
     font-weight: 600;
+  }
+
+  .timeline-fallback {
+    list-style: none;
+    margin: 0;
+    padding: 0.75rem 1rem;
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  [data-chart-ready="true"] .timeline-fallback {
+    display: none;
+  }
+
+  .timeline-fallback-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: baseline;
+    border-left: 2px solid color-mix(in oklab, currentColor 25%, transparent);
+    padding-left: 0.75rem;
+  }
+
+  .timeline-fallback-stage {
+    flex: none;
+    width: 9rem;
+    font-size: 0.72rem;
+    color: color-mix(in oklab, currentColor 55%, transparent);
+  }
+
+  .timeline-fallback-body {
+    display: grid;
+    gap: 0.15rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .timeline-fallback-impact {
+    color: color-mix(in oklab, currentColor 60%, transparent);
+    font-size: 0.74rem;
   }
 </style>
 
@@ -103,6 +157,17 @@ const tabs = DISASTER_TIMELINE_ERA_TABS;
   function filterEvents(all, era) {
     if (era === "all") return all;
     return all.filter((item) => item.era === era);
+  }
+
+  /**
+   * @param {HTMLElement} root
+   * @param {string} era
+   */
+  function syncFallback(root, era) {
+    root.querySelectorAll("[data-fallback-era]").forEach((item) => {
+      if (!(item instanceof HTMLElement)) return;
+      item.hidden = era !== "all" && item.dataset.fallbackEra !== era;
+    });
   }
 
   /**
@@ -234,8 +299,9 @@ const tabs = DISASTER_TIMELINE_ERA_TABS;
 
   /**
    * @param {HTMLElement} root
+   * @param {number} retriesLeft
    */
-  function mount(root) {
+  function mount(root, retriesLeft = 20) {
     const canvas = root.querySelector("[data-disaster-timeline-canvas]");
     if (!(canvas instanceof HTMLElement)) return;
 
@@ -252,16 +318,40 @@ const tabs = DISASTER_TIMELINE_ERA_TABS;
     const events = filterEvents(all, era);
     if (!events.length) return;
 
-    sizeCanvas(canvas, events.length);
+    syncFallback(root, era);
 
-    let chart = chartByRoot.get(root);
-    if (!chart || chart.isDisposed()) {
-      chart = echarts.init(canvas, undefined, { renderer: "canvas" });
-      chartByRoot.set(root, chart);
+    // During view transitions or while hidden the box measures 0 wide;
+    // initializing ECharts then produces an invisible chart, so retry later.
+    if (canvas.clientWidth === 0) {
+      const prev = chartByRoot.get(root);
+      if (prev && !prev.isDisposed()) prev.dispose();
+      chartByRoot.delete(root);
+      delete root.dataset.chartReady;
+      if (retriesLeft > 0) {
+        setTimeout(() => mount(root, retriesLeft - 1), 150);
+      }
+      return;
     }
 
-    chart.setOption(buildOption(events, canvas.clientWidth || 640), true);
-    chart.resize();
+    try {
+      sizeCanvas(canvas, events.length);
+
+      let chart = chartByRoot.get(root);
+      if (!chart || chart.isDisposed()) {
+        chart = echarts.init(canvas, undefined, { renderer: "canvas" });
+        chartByRoot.set(root, chart);
+      }
+
+      chart.setOption(buildOption(events, canvas.clientWidth || 640), true);
+      chart.resize();
+      root.dataset.chartReady = "true";
+    } catch (err) {
+      // Keep the server-rendered fallback list visible if the chart fails.
+      delete root.dataset.chartReady;
+      canvas.style.height = "";
+      console.error("disaster timeline chart failed:", err);
+      return;
+    }
 
     root.dispatchEvent(
       new CustomEvent("timeline-era-change", {

@@ -51,6 +51,10 @@ import {
   QIANG_YI_PROP_ROWS,
   QIANG_YI_SYNTH_ROWS,
 } from "../../lib/qiangYiCatalog.js";
+import {
+  ANIMAL_CHARACTER_PROFILES,
+  HUMAN_CHARACTER_PROFILES,
+} from "../../lib/novelCharacters.js";
 import { RESEARCH_NODES, RESEARCH_OUTPUT_ROWS } from "../../lib/researchNodes.js";
 ---
 
@@ -97,6 +101,99 @@ import { RESEARCH_NODES, RESEARCH_OUTPUT_ROWS } from "../../lib/researchNodes.js
       <p class="text-xs text-base-content/45 m-0">
         据公开百科与简介整理，细节以原文为准。
       </p>
+    </section>
+
+    {/* 人物与动物图鉴 */}
+    <section id="characters" class="scroll-mt-44 lg:scroll-mt-28 space-y-5" data-section="characters">
+      <div>
+        <h2 class="text-xl font-bold m-0 mb-2">人物与动物图鉴</h2>
+        <p class="text-sm text-base-content/60 m-0 leading-relaxed">
+          先认角色，再读势力与时间线。介绍只保留身份、关系和剧情功能；动物按平等协作伙伴书写，不使用宠物式定位。
+          配图为依据书中外貌描写生成的 AI 插画，仅作辅助想象，非官方立绘。
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">主要人物</h3>
+        <div class="grid gap-3 md:grid-cols-2">
+          {
+            HUMAN_CHARACTER_PROFILES.map((person) => (
+              <article class="board-card rounded-xl border border-base-300 bg-base-100">
+                <div class="flex items-start gap-3 mb-2">
+                  <img
+                    src={person.image}
+                    alt={`${person.name} AI 插画`}
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                    decoding="async"
+                    class="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover shrink-0 border border-base-300"
+                  />
+                  <div class="min-w-0 grow">
+                    <div class="flex flex-wrap items-start justify-between gap-2">
+                      <h4 class="font-semibold text-base m-0">
+                        {person.name}
+                        {person.aliases && (
+                          <span class="ml-1.5 text-xs font-normal text-base-content/45">
+                            · {person.aliases}
+                          </span>
+                        )}
+                      </h4>
+                      <span class="badge badge-outline badge-sm shrink-0">{person.group}</span>
+                    </div>
+                    <p class="text-xs text-base-content/50 m-0 mt-1">{person.role}</p>
+                    <div class="flex flex-wrap gap-1.5 mt-2">
+                      {person.tags.map((tag) => <span class="badge badge-ghost badge-sm">{tag}</span>)}
+                    </div>
+                  </div>
+                </div>
+                <p class="text-sm text-base-content/75 m-0 leading-relaxed">{person.intro}</p>
+              </article>
+            ))
+          }
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-base m-0 mb-3">进化动物</h3>
+        <div class="grid gap-3 md:grid-cols-2">
+          {
+            ANIMAL_CHARACTER_PROFILES.map((animal) => (
+              <article class="board-card rounded-xl border border-success/25 bg-success/5">
+                <div class="flex items-start gap-3 mb-2">
+                  <img
+                    src={animal.image}
+                    alt={`${animal.name} AI 插画`}
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                    decoding="async"
+                    class="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover shrink-0 border border-success/25"
+                  />
+                  <div class="min-w-0 grow">
+                    <div class="flex flex-wrap items-start justify-between gap-2">
+                      <h4 class="font-semibold text-base m-0">
+                        {animal.name}
+                        {animal.aliases && (
+                          <span class="ml-1.5 text-xs font-normal text-base-content/45">
+                            · {animal.aliases}
+                          </span>
+                        )}
+                      </h4>
+                      <span class="badge badge-success badge-outline badge-sm shrink-0">{animal.group}</span>
+                    </div>
+                    <p class="text-xs text-base-content/50 m-0 mt-1">{animal.role}</p>
+                    <div class="flex flex-wrap gap-1.5 mt-2">
+                      {animal.tags.map((tag) => <span class="badge badge-ghost badge-sm">{tag}</span>)}
+                    </div>
+                  </div>
+                </div>
+                <p class="text-sm text-base-content/75 m-0 leading-relaxed">{animal.intro}</p>
+              </article>
+            ))
+          }
+        </div>
+      </div>
     </section>
 
     {/* 天灾时间线 */}

@@ -15,6 +15,8 @@ import {
 } from "./hand-engine.js";
 import {
   clearLeaveAfterHandSeats,
+  roomSnapshot,
+  bumpRoomVersion,
 } from "../lobby/lobby-service.js";
 import {
   idempotencyKey,
@@ -180,9 +182,7 @@ export class MatchRuntime {
       matchVersion: state.matchVersion,
     }).catch(() => {});
 
-    this.broadcastPublic();
-    this.broadcastPrivateToAll();
-    this.scheduleActionTimer();
+    // Announce the hand first, then push snapshots (clients must not clear private after snapshots).
     this.onBroadcast({
       type: "game.event",
       eventType: "handStarted",
@@ -190,6 +190,9 @@ export class MatchRuntime {
       handId: this.handId,
       stateVersion: state.matchVersion,
     });
+    this.broadcastPublic();
+    this.broadcastPrivateToAll();
+    this.scheduleActionTimer();
   }
 
   nextDealer(seatIndices) {
@@ -317,16 +320,9 @@ export class MatchRuntime {
     this.syncStacksToRoom();
     clearLeaveAfterHandSeats(this.room);
 
-    this.onBroadcast({
-      type: "game.event",
-      eventType: "handEnded",
-      matchId: this.matchId,
-      handId: this.handId,
-      stateVersion: state.matchVersion,
-      payload: { winners: result.winners, reason: result.reason },
-    });
-
-    this.onHandEnd(this, result);
+    if (config.autoRebuyOnBust) {
+      this.rebuyBustedSeats();
+    }
 
     const activePlayers = this.room.seats.filter(
       (s) =>
@@ -336,9 +332,28 @@ export class MatchRuntime {
         s.status !== "left" &&
         s.status !== "empty",
     );
-    if (activePlayers.length >= 2 && this.state === "active") {
+    const continues = activePlayers.length >= 2 && this.state === "active";
+
+    this.onBroadcast({
+      type: "game.event",
+      eventType: "handEnded",
+      matchId: this.matchId,
+      handId: this.handId,
+      stateVersion: state.matchVersion,
+      payload: {
+        winners: result.winners,
+        reason: result.reason,
+        continues,
+        activeCount: activePlayers.length,
+      },
+    });
+    bumpRoomVersion(this.room);
+    this.onBroadcast(roomSnapshot(this.room));
+
+    this.onHandEnd(this, result);
+
+    if (continues) {
       if (this.nextHandTimer) clearTimeout(this.nextHandTimer);
-      // Keep this timer referenced so the event loop always fires the next hand.
       this.nextHandTimer = setTimeout(() => {
         this.nextHandTimer = null;
         try {
@@ -352,7 +367,24 @@ export class MatchRuntime {
         }
       }, 1500);
     } else {
+      log("info", "match_end_after_hand", {
+        matchId: this.matchId,
+        activeCount: activePlayers.length,
+        reason: result.reason,
+      });
       this.endMatch();
+    }
+  }
+
+  /** Restore starting stack for seated players who busted (practice tables). */
+  rebuyBustedSeats() {
+    for (const seat of this.room.seats) {
+      if (!seat.userId) continue;
+      if (seat.status === "left" || seat.status === "empty") continue;
+      if (seat.leaveAfterHand) continue;
+      if (seat.stack > 0) continue;
+      seat.stack = config.tableStartStack;
+      seat.status = seat.ready ? "ready" : "occupied";
     }
   }
 
@@ -362,7 +394,21 @@ export class MatchRuntime {
     }
     this.state = "grace";
     this.clearActionTimer();
+    if (this.nextHandTimer) {
+      clearTimeout(this.nextHandTimer);
+      this.nextHandTimer = null;
+    }
     this.room.roomState = "postMatchGrace";
+    bumpRoomVersion(this.room);
+    this.onBroadcast({
+      type: "game.event",
+      eventType: "matchEnded",
+      matchId: this.matchId,
+      handId: this.handId,
+      stateVersion: this.handState?.matchVersion ?? 0,
+      payload: { reason: "insufficient_players_or_owner_end" },
+    });
+    this.onBroadcast(roomSnapshot(this.room));
     if (this.onHandEnd) this.onHandEnd(this, { type: "matchEnd" });
     this.graceTimer = setTimeout(() => {
       this.finalize().catch((e) =>

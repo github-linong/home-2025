@@ -1,0 +1,314 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="数字人对话 Demo · 万相数字人"
+  description="阿里云通义万相数字人实时对话 Demo：大模型理解、TTS 发声、数字人口型与动作驱动。"
+>
+  <div class="prose max-w-none mb-4">
+    <h1>数字人对话 Demo</h1>
+    <p class="opacity-80">
+      后端调用 LingMou <code>CreateChatSession</code> 创建会话，前端用
+      <code>lm-avatar-chat-sdk</code> 拉起数字人。需 HTTPS 或
+      <code>localhost</code> 访问（RTC 安全上下文），并允许麦克风权限。
+    </p>
+  </div>
+
+  <div role="alert" class="alert mb-4">
+    <span>
+      数字人默认处于待机状态：开始对话后请先说唤醒词
+      <strong class="mx-1">「小爱同学」</strong>
+      （或在输入框发送）唤醒，之后即可正常语音/文字交流。
+    </span>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-[minmax(0,420px)_1fr]">
+    <div class="rounded-box border border-base-300 bg-base-200 overflow-hidden">
+      <div
+        id="avatarContainer"
+        class="relative w-full aspect-[9/16] max-h-[70vh] bg-black/80 flex items-center justify-center"
+      >
+        <span id="avatarPlaceholder" class="text-base-content/50 text-sm">
+          点击「开始对话」拉起数字人
+        </span>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-3 min-w-0">
+      <div class="flex flex-wrap items-center gap-2">
+        <button id="btnStart" class="btn btn-primary btn-sm">开始对话</button>
+        <button id="btnInterrupt" class="btn btn-sm" disabled>打断</button>
+        <button id="btnExit" class="btn btn-sm" disabled>退出</button>
+        <span class="badge badge-outline" id="stateBadge">未连接</span>
+      </div>
+
+      <div
+        id="chatLog"
+        class="flex-1 min-h-[300px] max-h-[50vh] overflow-y-auto rounded-box border border-base-300 bg-base-100 p-3 space-y-2 text-sm"
+      >
+        <div class="opacity-50">对话记录将显示在这里。</div>
+      </div>
+
+      <form id="askForm" class="flex gap-2">
+        <input
+          id="askInput"
+          type="text"
+          class="input input-bordered input-sm flex-1"
+          placeholder="先说「小爱同学」唤醒，再输入文字提问（也可以直接说话）"
+          disabled
+        />
+        <button type="submit" id="btnAsk" class="btn btn-sm" disabled>发送</button>
+      </form>
+      <p class="text-xs opacity-60" id="hintLine">
+        唤醒词「小爱同学」；语音模式为 tap2talk：数字人回答时点「打断」可停止播报。
+      </p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // The SDK's ESM build breaks when re-bundled by Vite/Rollup (TDZ error inside
+  // its zip asset loader → avatar never renders in production builds).
+  // Load the official UMD build as-is at runtime instead.
+  const SDK_URL = "/vendor/lm-avatar-chat-sdk-1.1.4.umd.js";
+
+  interface LmAvatarChatSdk {
+    createAvatar: (type: string, init: object, assets?: object) => any;
+    TYAvatarType: { cloudAvatar: string; localAvatar: string };
+    TYVoiceChatMode: { tap2talk: string; duplex: string };
+    TYVoiceChatMessageType: { speaking: number; responding: number };
+    IRequestToRespondType: { prompt: string; transcript: string };
+  }
+
+  let sdkPromise: Promise<LmAvatarChatSdk> | null = null;
+  function loadSdk(): Promise<LmAvatarChatSdk> {
+    if (sdkPromise) return sdkPromise;
+    sdkPromise = new Promise((resolve, reject) => {
+      const existing = (window as any).lmAvatarChat;
+      if (existing) return resolve(existing);
+      const s = document.createElement("script");
+      s.src = SDK_URL;
+      s.onload = () => {
+        const sdk = (window as any).lmAvatarChat;
+        sdk ? resolve(sdk) : reject(new Error("SDK 加载后未暴露全局对象"));
+      };
+      s.onerror = () => reject(new Error("SDK 脚本加载失败"));
+      document.head.appendChild(s);
+    });
+    return sdkPromise;
+  }
+
+  const $ = (id: string) => document.getElementById(id)!;
+  const btnStart = $("btnStart") as HTMLButtonElement;
+  const btnInterrupt = $("btnInterrupt") as HTMLButtonElement;
+  const btnExit = $("btnExit") as HTMLButtonElement;
+  const btnAsk = $("btnAsk") as HTMLButtonElement;
+  const askInput = $("askInput") as HTMLInputElement;
+  const askForm = $("askForm") as HTMLFormElement;
+  const stateBadge = $("stateBadge");
+  const chatLog = $("chatLog");
+  const placeholder = $("avatarPlaceholder");
+
+  let avatar: any = null;
+  let sdk: LmAvatarChatSdk | null = null;
+  let currentSessionId: string | null = null;
+  let pageDisposed = false;
+  const lifecycleController = new AbortController();
+
+  /** Postpaid billing runs until the session closes — always tell the server. */
+  function closeSessionOnServer(useBeacon = false) {
+    if (!currentSessionId) return;
+    const payload = JSON.stringify({ sessionId: currentSessionId });
+    currentSessionId = null;
+    if (useBeacon && navigator.sendBeacon) {
+      navigator.sendBeacon(
+        "/api/demo/avatar/session/close",
+        new Blob([payload], { type: "application/json" }),
+      );
+      return;
+    }
+    fetch("/api/demo/avatar/session/close", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+    }).catch(() => {});
+  }
+
+  function setState(text: string) {
+    stateBadge.textContent = text;
+  }
+
+  function appendLog(kind: "user" | "avatar" | "system", text: string) {
+    if (chatLog.firstElementChild?.classList.contains("opacity-50")) {
+      chatLog.innerHTML = "";
+    }
+    const row = document.createElement("div");
+    row.className =
+      kind === "user"
+        ? "text-right"
+        : kind === "avatar"
+          ? "text-left"
+          : "text-center opacity-60 text-xs";
+    const bubble = document.createElement("span");
+    bubble.className =
+      kind === "user"
+        ? "inline-block rounded-lg bg-primary text-primary-content px-2 py-1 max-w-[85%] text-left"
+        : kind === "avatar"
+          ? "inline-block rounded-lg bg-base-200 px-2 py-1 max-w-[85%]"
+          : "";
+    bubble.textContent = text;
+    row.appendChild(bubble);
+    chatLog.appendChild(row);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  /** Streaming replies arrive sentence by sentence; merge them into one bubble per round. */
+  let lastAvatarBubble: HTMLElement | null = null;
+
+  function setControls(running: boolean) {
+    btnStart.disabled = running;
+    btnInterrupt.disabled = !running;
+    btnExit.disabled = !running;
+    btnAsk.disabled = !running;
+    askInput.disabled = !running;
+  }
+
+  async function startChat() {
+    btnStart.disabled = true;
+    setState("创建会话中…");
+    try {
+      sdk = await loadSdk();
+      const resp = await fetch("/api/demo/avatar/session", { method: "POST" });
+      const data = await resp.json();
+      if (!resp.ok || !data.ok) {
+        throw new Error(data.message || `会话创建失败（HTTP ${resp.status}）`);
+      }
+      const { rtcParams, sessionId, avatarAssets, license } = data;
+      if (!rtcParams || !sessionId) {
+        throw new Error("接口未返回 rtcParams / sessionId");
+      }
+      currentSessionId = sessionId;
+      if (pageDisposed) {
+        closeSessionOnServer(true);
+        return;
+      }
+
+      placeholder.textContent = "数字人加载中…";
+      const initParams = {
+        ...rtcParams,
+        sessionId,
+        rootContainer: "#avatarContainer",
+      };
+
+      if (avatarAssets) {
+        avatar = sdk.createAvatar(sdk.TYAvatarType.localAvatar, initParams, {
+          type: avatarAssets.type,
+          url: avatarAssets.url,
+          secret: avatarAssets.secret,
+          license,
+        });
+      } else {
+        avatar = sdk.createAvatar(sdk.TYAvatarType.cloudAvatar, initParams);
+      }
+
+      // Surface SDK internal logs (including every outbound frame) in DevTools.
+      (avatar as { setLogLevel?: (l: string) => void }).setLogLevel?.("debug");
+
+      avatar.onFirstFrameReceived(() => {
+        placeholder.remove();
+        appendLog("system", "数字人已就绪");
+      });
+      avatar.onReadyToSpeech(() => {
+        console.log("[avatar] ready to speech");
+        appendLog("system", "可以开始对话了，先说「小爱同学」唤醒数字人");
+      });
+      avatar.onStateChanged((state: string) => {
+        console.log("[avatar] state:", state);
+        setState(String(state));
+      });
+      avatar.onErrorReceived((err: { code: number; message?: string; terminate: boolean }) => {
+        appendLog("system", `错误 ${err.code}: ${err.message ?? "未知错误"}`);
+        if (err.terminate) stopChat();
+      });
+      avatar.onMessageReceived(
+        (msg: { type: number; text: string; isFinished: boolean }) => {
+          console.log("[avatar] message:", JSON.stringify(msg));
+          if (msg.type === sdk!.TYVoiceChatMessageType.speaking) {
+            lastAvatarBubble = null;
+            appendLog("user", msg.text);
+          } else {
+            if (!lastAvatarBubble) {
+              appendLog("avatar", msg.text);
+              lastAvatarBubble = chatLog.lastElementChild
+                ?.firstElementChild as HTMLElement;
+            } else {
+              lastAvatarBubble.textContent = msg.text;
+            }
+            if (msg.isFinished) lastAvatarBubble = null;
+            chatLog.scrollTop = chatLog.scrollHeight;
+          }
+        },
+      );
+
+      avatar.start({ mode: sdk.TYVoiceChatMode.tap2talk });
+      setControls(true);
+      setState("连接中…");
+    } catch (err) {
+      appendLog("system", `启动失败：${(err as Error).message}`);
+      setState("未连接");
+      btnStart.disabled = false;
+    }
+  }
+
+  function stopChat() {
+    try {
+      avatar?.exit();
+    } catch {
+      /* already closed */
+    }
+    avatar = null;
+    closeSessionOnServer();
+    setControls(false);
+    setState("未连接");
+    appendLog("system", "会话已结束");
+  }
+
+  function disposePage() {
+    if (pageDisposed) return;
+    pageDisposed = true;
+    lifecycleController.abort();
+    try {
+      avatar?.exit();
+    } catch {
+      /* page is going away */
+    }
+    avatar = null;
+    closeSessionOnServer(true);
+  }
+
+  btnStart.addEventListener("click", startChat);
+  btnInterrupt.addEventListener("click", () => avatar?.interrupt());
+  btnExit.addEventListener("click", stopChat);
+  askForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const text = askInput.value.trim();
+    if (!text || !avatar || !sdk) return;
+    avatar.requestToRespond(sdk.IRequestToRespondType.prompt, text);
+    appendLog("user", text);
+    lastAvatarBubble = null;
+    askInput.value = "";
+  });
+
+  // Astro view transitions do not trigger beforeunload. Cover both client-side
+  // navigation and full document exits so microphone capture and billing stop.
+  document.addEventListener("astro:before-swap", disposePage, {
+    signal: lifecycleController.signal,
+  });
+  window.addEventListener("pagehide", disposePage, {
+    signal: lifecycleController.signal,
+  });
+  window.addEventListener("beforeunload", disposePage, {
+    signal: lifecycleController.signal,
+  });
+</script>
