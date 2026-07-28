@@ -6,7 +6,7 @@ type: external
 demoUrl: "/demos/livelihood-dashboard"
 category: "AI"
 badge: "新作"
-tags: ["AI", "数字人", "3D", "数据可视化", "大屏", "TTS"]
+tags: ["AI", "数字人", "3D", "数据可视化", "大屏", "TTS", "语音识别"]
 ---
 
 在民生数据大屏上叠加一个透明背景的 3D 数字人讲解员。
@@ -17,6 +17,7 @@ tags: ["AI", "数字人", "3D", "数据可视化", "大屏", "TTS"]
 - 模型通过版本化 `avatar_response`（v2）消息返回台词与 `focus` 时间线事件
 - 数字人按 focus 事件平滑走到对应面板旁，播放指向手势，面板同步高亮，讲解完自动回位
 - 语音由阿里云 CosyVoice 合成、HeadAudio 实时驱动口型，密钥不进浏览器
+- 支持浏览器中文语音识别（Chrome / Edge）：点「语音提问」开启唤醒聆听，说话后自动回答并讲解
 - focus 目标在后端按请求面板 ID 白名单校验，非法目标自动剔除
 
 [新窗口打开 Demo](/demos/livelihood-dashboard)

@@ -277,6 +277,7 @@ function linePoints(values: number[]) {
             autocomplete="off"
             disabled
           />
+          <button id="btnMic" type="button" disabled title="语音提问（浏览器中文识别）">语音提问</button>
           <button id="btnAsk" type="submit" disabled>提问</button>
         </div>
         <p id="answerText" hidden></p>
@@ -744,6 +745,31 @@ function linePoints(values: number[]) {
         opacity: 0.55;
         cursor: not-allowed;
       }
+      #btnMic {
+        padding: 10px 16px;
+        border: 1px solid rgba(94, 220, 255, 0.55);
+        border-radius: 999px;
+        background: rgba(10, 32, 66, 0.9);
+        color: #bfeaff;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      #btnMic:hover:not(:disabled) {
+        border-color: rgba(94, 220, 255, 0.95);
+        color: #eaf9ff;
+      }
+      #btnMic:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+      #btnMic.is-listening {
+        border-color: rgba(255, 120, 120, 0.85);
+        background: rgba(72, 18, 28, 0.92);
+        color: #ffd0d0;
+        box-shadow: 0 0 0 1px rgba(255, 120, 120, 0.35);
+      }
       #answerText {
         max-height: 64px;
         overflow-y: auto;
@@ -787,6 +813,18 @@ function linePoints(values: number[]) {
         intents?: string[];
         hint?: "index" | "hand_raise";
       };
+      type Recognition = {
+        lang: string;
+        interimResults: boolean;
+        continuous: boolean;
+        onresult: ((event: any) => void) | null;
+        onerror: ((event: any) => void) | null;
+        onend: (() => void) | null;
+        start(): void;
+        stop(): void;
+        abort(): void;
+      };
+      type RecognitionConstructor = new () => Recognition;
 
       const GUIDE_ENDPOINT = "/api/demo/guide";
       const TTS_ENDPOINT = "/api/demo/tts";
@@ -802,6 +840,7 @@ function linePoints(values: number[]) {
       const MOUSE_POINT_MIN_DELTA_PX = 4;
       const LOOK_AT_THROTTLE_MS = 80;
       const LOOK_AT_DURATION_MS = 1800;
+      const VOICE_MIN_CHARS = 2;
       const ARM_AIM_MAX_PITCH = 1.62;
       const ARM_AIM_MAX_YAW = 2.15;
       const ARM_AIM_RELAX = 0.24;
@@ -843,10 +882,18 @@ function linePoints(values: number[]) {
       const askBar = $("askBar") as HTMLFormElement;
       const askInput = $("askInput") as HTMLInputElement;
       const btnAsk = $("btnAsk") as HTMLButtonElement;
+      const btnMic = $("btnMic") as HTMLButtonElement;
       const answerText = $("answerText");
       const screenClock = $("screenClock");
       const panels = JSON.parse($("panelData").textContent || "[]") as GuidePanel[];
       const guideContext = JSON.parse($("guideContextData").textContent || "\"\"") as string;
+
+      const speechWindow = window as Window & {
+        SpeechRecognition?: RecognitionConstructor;
+        webkitSpeechRecognition?: RecognitionConstructor;
+      };
+      const RecognitionApi =
+        speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
 
       let head: TalkingHead | null = null;
       let headAudio: HeadAudio | null = null;
@@ -917,21 +964,146 @@ function linePoints(values: number[]) {
       /** Voice/guide session blocks mouse look-at until speech finishes. */
       let voiceSessionActive = false;
       let voiceSessionId = 0;
+      /** User wants continuous mic listening (voice wake mode). */
+      let voiceWakeWanted = false;
+      let recognition: Recognition | null = null;
+      let recognitionRestartTimer: number | null = null;
       const lifecycleController = new AbortController();
 
       function beginVoiceSession() {
         voiceSessionId += 1;
         voiceSessionActive = true;
+        pauseRecognitionForSpeech();
         return voiceSessionId;
       }
 
       function endVoiceSession(sessionId?: number) {
         if (sessionId != null && sessionId !== voiceSessionId) return;
         voiceSessionActive = false;
+        if (voiceWakeWanted) scheduleRecognitionRestart(420);
       }
 
       function isMouseLookEnabled() {
         return Boolean(head) && !disposed && !voiceSessionActive;
+      }
+
+      function setMicUi(listening: boolean) {
+        btnMic.classList.toggle("is-listening", listening);
+        btnMic.textContent = listening ? "聆听中·点停" : "语音提问";
+        btnMic.setAttribute("aria-pressed", listening ? "true" : "false");
+      }
+
+      function clearRecognitionRestart() {
+        if (recognitionRestartTimer !== null) {
+          window.clearTimeout(recognitionRestartTimer);
+          recognitionRestartTimer = null;
+        }
+      }
+
+      function scheduleRecognitionRestart(delayMs = 280) {
+        clearRecognitionRestart();
+        recognitionRestartTimer = window.setTimeout(() => {
+          recognitionRestartTimer = null;
+          if (!disposed && voiceWakeWanted && !voiceSessionActive && !recognition) {
+            startRecognition();
+          }
+        }, delayMs);
+      }
+
+      function pauseRecognitionForSpeech() {
+        clearRecognitionRestart();
+        if (!recognition) return;
+        try {
+          recognition.onresult = null;
+          recognition.onerror = null;
+          recognition.onend = null;
+          recognition.abort();
+        } catch {
+          // Ignore abort races while the engine is shutting down.
+        }
+        recognition = null;
+        if (voiceWakeWanted) setMicUi(true);
+        else setMicUi(false);
+      }
+
+      function stopVoiceWake() {
+        voiceWakeWanted = false;
+        clearRecognitionRestart();
+        pauseRecognitionForSpeech();
+        setMicUi(false);
+        if (!voiceSessionActive && head && !disposed) {
+          setStatus(RecognitionApi ? "讲解员就绪（空闲时跟随鼠标）" : "讲解员就绪（当前浏览器无语音识别）");
+        }
+      }
+
+      function startRecognition() {
+        if (!RecognitionApi || !head || disposed || voiceSessionActive) return;
+        if (recognition) return;
+        clearRecognitionRestart();
+        recognition = new RecognitionApi();
+        recognition.lang = "zh-CN";
+        recognition.interimResults = true;
+        recognition.continuous = true;
+        recognition.onresult = (event) => {
+          if (voiceSessionActive || disposed) return;
+          let interim = "";
+          let finalText = "";
+          for (let index = event.resultIndex; index < event.results.length; index += 1) {
+            const text = String(event.results[index]?.[0]?.transcript ?? "").trim();
+            if (!text) continue;
+            if (event.results[index].isFinal) finalText += text;
+            else interim += text;
+          }
+          const live = (finalText || interim).trim();
+          if (live) askInput.value = live;
+          const question = finalText.trim();
+          if (question.length < VOICE_MIN_CHARS) return;
+          void ask(question);
+        };
+        recognition.onerror = (event) => {
+          const error = String(event?.error ?? "");
+          if (error === "aborted" || error === "no-speech") return;
+          console.warn("[dashboard] speech recognition error", error);
+          setStatus(`语音识别失败：${error}`);
+          if (error === "not-allowed" || error === "service-not-allowed") {
+            stopVoiceWake();
+          }
+        };
+        recognition.onend = () => {
+          recognition = null;
+          if (disposed || !voiceWakeWanted) {
+            setMicUi(false);
+            return;
+          }
+          if (voiceSessionActive) {
+            setMicUi(true);
+            return;
+          }
+          // Chrome ends continuous sessions after silence; keep wake mode alive.
+          scheduleRecognitionRestart(220);
+        };
+        try {
+          recognition.start();
+          voiceWakeWanted = true;
+          setMicUi(true);
+          setStatus("语音唤醒中，请直接提问…");
+          void ensureAvatarAudioRunning();
+        } catch (error) {
+          recognition = null;
+          console.warn("[dashboard] speech recognition start failed", error);
+          setStatus("无法启动语音识别，请检查麦克风权限");
+          stopVoiceWake();
+        }
+      }
+
+      function toggleVoiceWake() {
+        if (!head || disposed) return;
+        if (!RecognitionApi) {
+          setStatus("当前浏览器不支持中文语音识别，请用文字提问（建议 Chrome / Edge）");
+          return;
+        }
+        if (voiceWakeWanted) stopVoiceWake();
+        else startRecognition();
       }
 
       function isAvatarAutoloadEnabled() {
@@ -1712,8 +1884,16 @@ function linePoints(values: number[]) {
           setAvatarAutoloadEnabled(true);
           askInput.disabled = false;
           btnAsk.disabled = false;
-          askInput.placeholder = "问问大屏上的数据，比如：哪个区就业率最高？";
-          setStatus("讲解员就绪（空闲时跟随鼠标）");
+          btnMic.disabled = !RecognitionApi;
+          if (!RecognitionApi) {
+            btnMic.title = "当前浏览器不支持中文语音识别，请用文字提问";
+          }
+          askInput.placeholder = "问问大屏上的数据，或点「语音提问」说话";
+          setStatus(
+            RecognitionApi
+              ? "讲解员就绪（可语音提问 / 空闲跟随鼠标）"
+              : "讲解员就绪（当前浏览器无语音识别，请用文字）",
+          );
           askInput.focus();
           // Default: look toward screen center briefly so the gaze system is warm.
           const root = screenRoot.getBoundingClientRect();
@@ -1929,6 +2109,7 @@ function linePoints(values: number[]) {
         lifecycleController.abort();
         requestController?.abort();
         ttsController?.abort();
+        stopVoiceWake();
         stopSpeech();
         headAudio?.stop();
         headAudio?.disconnect();
@@ -1983,6 +2164,9 @@ function linePoints(values: number[]) {
       askBar.addEventListener("submit", (event) => {
         event.preventDefault();
         ask(askInput.value);
+      });
+      btnMic.addEventListener("click", () => {
+        toggleVoiceWake();
       });
       document.querySelectorAll<HTMLButtonElement>(".chip").forEach((chip) => {
         chip.addEventListener("click", () => {
