@@ -1730,6 +1730,18 @@ function linePoints(values: number[]) {
 
       // ---- speech ----------------------------------------------------------
 
+      async function ensureAvatarAudioRunning() {
+        const audioCtx = (head as HeadInternals | null)?.audioCtx;
+        if (!audioCtx || audioCtx.state === "closed") return false;
+        if (audioCtx.state === "running") return true;
+        try {
+          await audioCtx.resume();
+        } catch (error) {
+          console.warn("[dashboard] audioCtx.resume failed", error);
+        }
+        return audioCtx.state === "running";
+      }
+
       function stopSpeech() {
         clearFocusTimers();
         if (overlayMoveTimer !== null) {
@@ -1737,7 +1749,17 @@ function linePoints(values: number[]) {
           overlayMoveTimer = null;
         }
         window.speechSynthesis?.cancel();
-        if (streamStarted) head?.streamInterrupt();
+        if (streamStarted && head) {
+          // Drop stale stream callbacks so interrupt cannot flip status mid-ask.
+          const streaming = head as TalkingHead & {
+            onAudioStart?: (() => void) | null;
+            onAudioEnd?: (() => void) | null;
+          };
+          streaming.onAudioStart = null;
+          streaming.onAudioEnd = null;
+          head.streamInterrupt();
+          streamStarted = false;
+        }
         head?.stopGesture(250);
       }
 
@@ -1775,6 +1797,9 @@ function linePoints(values: number[]) {
         ttsController = controller;
         setStatus("语音合成中");
         try {
+          // Resume as early as possible; after await fetch the browser may revoke
+          // autoplay privilege and TalkingHead.streamStart fails silently.
+          await ensureAvatarAudioRunning();
           const response = await fetch(TTS_ENDPOINT, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -1796,6 +1821,9 @@ function linePoints(values: number[]) {
 
           const pcm = audioBufferToPcm(audioBuffer);
           const timeline = headAudioReady ? null : createVisemeTimeline(audioBuffer);
+          if (!(await ensureAvatarAudioRunning())) {
+            throw new Error("audio_context_suspended");
+          }
           await head.streamStart(
             {
               lipsyncType: "visemes",
@@ -1810,11 +1838,16 @@ function linePoints(values: number[]) {
             () => {
               if (sessionId !== voiceSessionId) return;
               setStatus("讲解员就绪");
+              streamStarted = false;
               endVoiceSession(sessionId);
               returnToDockSoon();
             },
           );
           if (sessionId !== voiceSessionId) return;
+          // TalkingHead returns without throwing when resume fails; detect and fall back.
+          if ((head as HeadInternals).audioCtx?.state !== "running") {
+            throw new Error("audio_context_suspended");
+          }
           streamStarted = true;
           head.streamAudio({ audio: pcm, ...(timeline ?? {}) });
           head.streamNotifyEnd();
@@ -1837,6 +1870,8 @@ function linePoints(values: number[]) {
         if (!question || !head || disposed) return;
         requestController?.abort();
         stopSpeech();
+        // Unlock audio while still inside the click/tap user-gesture stack.
+        void ensureAvatarAudioRunning();
         clearFocusHighlights();
         askInput.value = "";
         setFadingVisibility(answerText, true);
