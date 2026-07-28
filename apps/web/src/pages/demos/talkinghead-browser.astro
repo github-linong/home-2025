@@ -28,7 +28,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
           id="avatarPlaceholder"
           class="absolute inset-0 z-10 flex items-center justify-center p-6 text-center text-sm text-white/70"
         >
-          点击「加载数字人」后，约 5 MB 的 3D 模型将在本机浏览器中渲染。
+          点击「加载数字人」后，约 14 MB 的写实 3D 模型将在本机浏览器中渲染。
         </div>
       </div>
       <div class="flex items-center justify-between gap-3 border-t border-base-300 p-3">
@@ -71,22 +71,24 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
   <p class="mt-4 text-xs opacity-60">
     引擎：TalkingHead + HeadAudio + MotionEngine（MIT）。HeadAudio 使用声学模型近似识别
-    中文音频口型，不等同于中文音素级时间戳。示例形象由 Ready Player Me 创建，按
-    <a
-      class="link"
-      href="https://creativecommons.org/licenses/by-nc/4.0/"
-      target="_blank"
-      rel="noreferrer">CC BY-NC 4.0</a
-    > 用于非商业演示。
+    中文音频口型，不等同于中文音素级时间戳。示例形象由
+    <a class="link" href="https://avaturn.me" target="_blank" rel="noreferrer">Avaturn</a>
+    创建（照片级写实管线），仅用于非商业演示。
   </p>
 </BaseLayout>
 
 <script>
-  import { HeadAudio } from "@met4citizen/headaudio/dist/headaudio.min.mjs";
-  import headAudioWorkletUrl from "@met4citizen/headaudio/dist/headworklet.min.mjs?url";
+  import type { HeadAudio } from "@met4citizen/headaudio/dist/headaudio.min.mjs";
   import { TalkingHead } from "@met4citizen/talkinghead";
   import { MotionEngine } from "motion-engine";
   import motions from "motion-engine/motions";
+  import { attachHeadAudio, type HeadInternals } from "../../lib/avatar/headAudio";
+  import {
+    VISEMES,
+    audioBufferToPcm,
+    createVisemeTimeline,
+  } from "../../lib/avatar/speech";
+  import { createAvatarConfig, createHeadOptions } from "../../lib/avatar/visuals";
 
   type Recognition = {
     lang: string;
@@ -139,22 +141,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     name: AvatarMotion;
     at: number;
   };
-  type HeadAudioCompatibleHead = TalkingHead & {
-    audioCtx: AudioContext;
-    audioSpeechGainNode: GainNode;
-    mtAvatar: Record<string, { newvalue: number; needsUpdate: boolean } | undefined>;
-    opt: { update?: (deltaMs: number) => void };
-    armature?: {
-      position: { x: number; y: number; z: number };
-      rotation: { x: number; y: number; z: number };
-    };
-  };
-
   const LLM_ENDPOINT = "/api/demo/llm-stream";
   const TTS_ENDPOINT = "/api/demo/tts";
-  const AVATAR_URL = "/models/talkinghead/brunette.glb";
-  const HEAD_AUDIO_MODEL_URL = "/vendor/headaudio/model-en-mixed.bin";
-  const VISEMES = ["aa", "O", "E", "I", "U", "PP", "SS", "CH"];
 
   // Side steps are custom: MotionEngine animates the body lean while we
   // translate the armature laterally (TalkingHead templates cannot move it).
@@ -265,49 +253,19 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
   async function initializeHeadAudio() {
     if (!head || headAudio || disposed) return;
-    const audioHead = head as HeadAudioCompatibleHead;
-    let detector: HeadAudio | null = null;
-    try {
-      await audioHead.audioCtx.audioWorklet.addModule(headAudioWorkletUrl);
-      detector = new HeadAudio(audioHead.audioCtx, {
-        parameterData: {
-          vadGateActiveDb: -40,
-          vadGateInactiveDb: -55,
-          silMode: 0,
-          speakerMeanHz: 220,
-        },
-      });
-      await detector.loadModel(HEAD_AUDIO_MODEL_URL);
-      audioHead.audioSpeechGainNode.connect(detector);
-      detector.onvalue = (key, value) => {
-        const target = audioHead.mtAvatar[key];
-        if (target) Object.assign(target, { newvalue: value, needsUpdate: true });
-      };
-      detector.onstarted = () => {
+    headAudio = await attachHeadAudio(head, {
+      onstarted: () => {
         avatarStage.dataset.headAudioActive = "true";
         avatarStage.dataset.headAudioDetected = "true";
-      };
-      detector.onended = () => {
+      },
+      onended: () => {
         avatarStage.dataset.headAudioActive = "false";
-      };
-      const previousUpdate = audioHead.opt.update;
-      audioHead.opt.update = (deltaMs) => {
-        previousUpdate?.(deltaMs);
-        detector?.update(deltaMs);
-      };
-      headAudio = detector;
-      headAudioReady = true;
-      avatarStage.dataset.lipsync = "headaudio";
-    } catch (error) {
-      detector?.disconnect();
-      console.warn("[talkinghead] HeadAudio unavailable, using approximate visemes", error);
-      headAudio = null;
-      headAudioReady = false;
-      avatarStage.dataset.lipsync = "approximate";
-    } finally {
-      headAudioAttempted = true;
-      renderSupportHint();
-    }
+      },
+    });
+    headAudioReady = headAudio !== null;
+    avatarStage.dataset.lipsync = headAudioReady ? "headaudio" : "approximate";
+    headAudioAttempted = true;
+    renderSupportHint();
   }
 
   async function loadAvatar() {
@@ -315,24 +273,16 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     btnLoad.disabled = true;
     setState("加载中…");
     try {
-      head = new TalkingHead(avatarStage, {
-        lipsyncModules: [],
-        cameraView: "full",
-        cameraRotateEnable: true,
-        cameraZoomEnable: false,
-        modelPixelRatio: Math.min(window.devicePixelRatio, 2),
-        modelFPS: 30,
-      });
+      head = new TalkingHead(
+        avatarStage,
+        createHeadOptions({
+          cameraView: "full",
+          cameraRotateEnable: true,
+          cameraZoomEnable: false,
+        }),
+      );
       await head.showAvatar(
-        {
-          url: AVATAR_URL,
-          body: "F",
-          avatarMood: "neutral",
-          ttsLang: "zh-CN",
-          // Supplied Oculus visemes are language-independent; TalkingHead's
-          // built-in word-to-viseme module does not include Chinese.
-          lipsyncLang: "en",
-        },
+        createAvatarConfig(),
         (event) => {
           if (event.lengthComputable && event.total) {
             setState(`加载 ${Math.round((event.loaded! / event.total) * 100)}%`);
@@ -349,7 +299,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       });
       motionEngine.registerMotions(motions);
       motionEngine.registerMotions(SIDE_STEP_MOTIONS);
-      const motionHead = head as HeadAudioCompatibleHead;
+      const motionHead = head as HeadInternals;
       const previousUpdate = motionHead.opt.update;
       motionHead.opt.update = (deltaMs) => {
         previousUpdate?.(deltaMs);
@@ -381,7 +331,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   }
 
   function getArmature() {
-    return (head as HeadAudioCompatibleHead | null)?.armature ?? null;
+    return (head as HeadInternals | null)?.armature ?? null;
   }
 
   function startSideStep(direction: 1 | -1) {
@@ -558,62 +508,6 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         }, cue.delayMs),
       );
     }
-  }
-
-  function createVisemeTimeline(buffer: AudioBuffer) {
-    const stepMs = 130;
-    const samplesPerStep = Math.max(1, Math.round((buffer.sampleRate * stepMs) / 1000));
-    const count = Math.max(1, Math.min(240, Math.ceil(buffer.length / samplesPerStep)));
-    const visemes: string[] = [];
-    const vtimes: number[] = [];
-    const vdurations: number[] = [];
-
-    for (let frame = 0; frame < count; frame += 1) {
-      const start = frame * samplesPerStep;
-      const end = Math.min(buffer.length, start + samplesPerStep);
-      let energy = 0;
-      let sampleCount = 0;
-      for (let index = start; index < end; index += 4) {
-        let sample = 0;
-        for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
-          sample += buffer.getChannelData(channel)[index] / buffer.numberOfChannels;
-        }
-        energy += sample * sample;
-        sampleCount += 1;
-      }
-      const rms = sampleCount ? Math.sqrt(energy / sampleCount) : 0;
-      // Leaving silent frames out lets the previous viseme decay back to a
-      // closed mouth instead of moving continuously through pauses.
-      if (rms < 0.012) continue;
-      const energyBand = Math.min(3, Math.floor(rms * 24));
-      visemes.push(VISEMES[(frame + energyBand) % VISEMES.length]);
-      vtimes.push(frame * stepMs);
-      vdurations.push(stepMs);
-    }
-
-    if (visemes.length === 0) {
-      visemes.push("aa");
-      vtimes.push(0);
-      vdurations.push(Math.min(stepMs, buffer.duration * 1000));
-    }
-    return {
-      visemes,
-      vtimes,
-      vdurations,
-    };
-  }
-
-  function audioBufferToPcm(buffer: AudioBuffer) {
-    const pcm = new Int16Array(buffer.length);
-    for (let index = 0; index < buffer.length; index += 1) {
-      let sample = 0;
-      for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
-        sample += buffer.getChannelData(channel)[index] / buffer.numberOfChannels;
-      }
-      const clamped = Math.max(-1, Math.min(1, sample));
-      pcm[index] = clamped < 0 ? clamped * 0x8000 : clamped * 0x7fff;
-    }
-    return pcm;
   }
 
   function pickChineseVoice() {

@@ -159,7 +159,7 @@ export function parseAvatarReply(value, prompt = "") {
   };
 }
 
-function createRateLimiter({ maxRequests = 10, windowMs = 60_000 } = {}) {
+export function createRateLimiter({ maxRequests = 10, windowMs = 60_000 } = {}) {
   const clients = new Map();
   return (key) => {
     if (maxRequests <= 0) return false;

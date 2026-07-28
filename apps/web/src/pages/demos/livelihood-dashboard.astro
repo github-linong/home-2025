@@ -1,0 +1,1978 @@
+---
+// Standalone civic-livelihood dashboard: a transparent 3D avatar walks to the
+// panel the LLM picked and explains the data out loud.
+const PANELS = [
+  {
+    id: "population",
+    title: "人口概况",
+    summary:
+      "常住人口486.2万人，同比增长0.6%；城镇化率71.4%；出生率6.8‰，65岁以上人口占比15.2%。",
+    metrics: [
+      { label: "常住人口", value: "486.2万", note: "同比 +0.6%" },
+      { label: "城镇化率", value: "71.4%", note: "较上年 +0.9pp" },
+      { label: "出生率", value: "6.8‰", note: "65岁以上占比 15.2%" },
+    ],
+  },
+  {
+    id: "employment",
+    title: "就业与收入",
+    summary:
+      "城镇新增就业12.6万人，调查失业率4.9%；分区就业率：城东区97.2%最高，城西区95.1%，江北区94.3%，高新区96.8%，老城区92.6%最低；居民人均可支配收入4.86万元，同比增长5.2%。",
+    bars: [
+      { label: "城东", value: 97.2 },
+      { label: "高新", value: 96.8 },
+      { label: "城西", value: 95.1 },
+      { label: "江北", value: 94.3 },
+      { label: "老城", value: 92.6 },
+    ],
+  },
+  {
+    id: "medical",
+    title: "医疗保障",
+    summary:
+      "基本医保参保率98.6%；每千人医疗床位7.9张；社区医院128家，家庭医生签约率78.4%；门诊次均费用同比下降3.1%。",
+    metrics: [
+      { label: "医保参保率", value: "98.6%", note: "全省第2" },
+      { label: "每千人床位", value: "7.9张", note: "较上年 +0.4" },
+      { label: "社区医院", value: "128家", note: "签约率 78.4%" },
+    ],
+  },
+  {
+    id: "education",
+    title: "教育资源",
+    summary:
+      "幼儿园普惠率92.3%，义务教育师生比1:13.5；今年新建改扩建学校14所，新增学位2.1万个；课后服务覆盖率100%。",
+    progress: [
+      { label: "幼儿园普惠率", value: 92.3 },
+      { label: "课后服务覆盖率", value: 100 },
+      { label: "学位建设完成率", value: 86.5 },
+    ],
+  },
+  {
+    id: "food-price",
+    title: "菜篮子价格指数",
+    summary:
+      "当月菜篮子价格指数102.4，同比上涨1.8%，环比下降0.6%；近12个月最高105.8（2月），最低99.6（6月），整体温和波动。",
+    line: [101.2, 103.4, 105.8, 104.1, 102.0, 100.3, 99.6, 100.8, 101.5, 102.9, 103.2, 102.4],
+  },
+  {
+    id: "elder-care",
+    title: "养老服务",
+    summary:
+      "养老床位4.2万张，每千名老人拥有床位38.5张；社区养老服务中心覆盖率89%；助餐点412个，长护险参保102万人。",
+    progress: [
+      { label: "社区养老中心覆盖率", value: 89 },
+      { label: "床位使用率", value: 76 },
+      { label: "助餐点建设进度", value: 94 },
+    ],
+  },
+];
+
+const MODULE_TABS = ["运行态势", "质量管理", "能耗驾驶舱", "安全与风险", "工艺链路", "产能监控"];
+const LIVE_KPIS = [
+  { label: "产线在线率", value: "98.4%", trend: "+0.7%" },
+  { label: "当日订单达成", value: "126/133", trend: "94.7%" },
+  { label: "设备健康度", value: "92.1", trend: "+1.4" },
+  { label: "异常工单", value: "7", trend: "-3" },
+];
+const OPERATION_TIMELINE = [
+  { time: "09:10", text: "吊装线A完成自动巡检，温控恢复正常" },
+  { time: "10:35", text: "城东厂区新增订单 18 单，产能负载 +4.2%" },
+  { time: "11:20", text: "港机装配段切换夜间节能策略，功耗下降 6.1%" },
+  { time: "13:05", text: "风电设备部件质检一次通过率提升至 99.1%" },
+];
+const RANKING = [
+  { name: "城东园区", score: 97.2, info: "效率领先" },
+  { name: "高新园区", score: 96.8, info: "良率优秀" },
+  { name: "临港园区", score: 95.4, info: "稳定运行" },
+  { name: "江北园区", score: 94.3, info: "持续改善" },
+  { name: "老城园区", score: 92.6, info: "需优化" },
+];
+const MARQUEE_ITEMS = [
+  "今日安全生产 0 事故，重点设备状态全部绿色",
+  "产线切换平均耗时 8.2 分钟，较上周缩短 12%",
+  "民生重点项目交付准时率 98.9%，同比提升 3.4%",
+  "能源侧峰谷调度已执行 16 次，累计节电 2.8 万度",
+];
+
+const clientPanels = PANELS.map(({ id, title, summary }) => ({ id, title, summary }));
+const clientGuideContext = [
+  `模块: ${MODULE_TABS.join(" / ")}`,
+  `实时KPI: ${LIVE_KPIS.map((item) => `${item.label}=${item.value}(${item.trend})`).join("；")}`,
+  `运营播报: ${OPERATION_TIMELINE.map((item) => `${item.time}${item.text}`).join("；")}`,
+  `园区排名: ${RANKING.map((item) => `${item.name}${item.score}%(${item.info})`).join("；")}`,
+  `滚动消息: ${MARQUEE_ITEMS.join("；")}`,
+].join("\n");
+
+const LINE_W = 260;
+const LINE_H = 96;
+function linePoints(values: number[]) {
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || 1;
+  return values
+    .map((value, index) => {
+      const x = (index / (values.length - 1)) * LINE_W;
+      const y = LINE_H - 10 - ((value - min) / span) * (LINE_H - 24);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+}
+---
+
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>民生数据大屏 · 数字人导览 Demo</title>
+  </head>
+  <body>
+    <div id="screen">
+      <header id="screenHeader">
+        <a id="backLink" href="/demos/livelihood-dashboard-guide">← 返回</a>
+        <h1>幸福城市 · 民生数据大屏</h1>
+        <span id="screenClock"></span>
+      </header>
+      <nav id="moduleTabs" aria-label="大屏模块">
+        {
+          MODULE_TABS.map((tab, index) => (
+            <button type="button" class:list={["module-tab", index === 0 && "active"]}>{tab}</button>
+          ))
+        }
+      </nav>
+      <section id="liveKpis" aria-label="实时指标">
+        {
+          LIVE_KPIS.map((kpi) => (
+            <article class="live-kpi">
+              <span class="live-kpi-label">{kpi.label}</span>
+              <strong>{kpi.value}</strong>
+              <em>{kpi.trend}</em>
+            </article>
+          ))
+        }
+      </section>
+
+      <main id="panelGrid">
+        {
+          PANELS.map((panel) => (
+            <section class="panel" data-panel-id={panel.id}>
+              <h2>{panel.title}</h2>
+              {panel.metrics && (
+                <div class="metrics">
+                  {panel.metrics.map((metric) => (
+                    <div class="metric">
+                      <strong>{metric.value}</strong>
+                      <span>{metric.label}</span>
+                      <em>{metric.note}</em>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {panel.bars && (
+                <div class="bars">
+                  {panel.bars.map((bar) => (
+                    <div class="bar-row">
+                      <span class="bar-label">{bar.label}</span>
+                      <div class="bar-track">
+                        <div
+                          class="bar-fill"
+                          style={`width:${(bar.value - 88) * (100 / 12)}%`}
+                        />
+                      </div>
+                      <span class="bar-value">{bar.value}%</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {panel.progress && (
+                <div class="bars">
+                  {panel.progress.map((item) => (
+                    <div class="bar-row">
+                      <span class="bar-label wide">{item.label}</span>
+                      <div class="bar-track">
+                        <div class="bar-fill" style={`width:${item.value}%`} />
+                      </div>
+                      <span class="bar-value">{item.value}%</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {panel.line && (
+                <div class="line-wrap">
+                  <svg
+                    viewBox={`0 0 ${LINE_W} ${LINE_H}`}
+                    preserveAspectRatio="none"
+                    aria-label="近12个月价格指数走势"
+                  >
+                    <polyline class="line-path" points={linePoints(panel.line)} />
+                  </svg>
+                  <div class="line-meta">
+                    <span>当月 102.4</span>
+                    <span>同比 +1.8%</span>
+                    <span>环比 -0.6%</span>
+                  </div>
+                </div>
+              )}
+            </section>
+          ))
+        }
+      </main>
+      <section id="opsGrid">
+        <article class="ops-card" aria-label="运营播报">
+          <h3>运营播报</h3>
+          <ul>
+            {
+              OPERATION_TIMELINE.map((item) => (
+                <li>
+                  <time>{item.time}</time>
+                  <span>{item.text}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </article>
+        <article class="ops-card" aria-label="园区运行排名">
+          <h3>园区运行排名</h3>
+          <ol>
+            {
+              RANKING.map((item, index) => (
+                <li>
+                  <b>{index + 1}</b>
+                  <span>{item.name}</span>
+                  <em>{item.score}%</em>
+                  <small>{item.info}</small>
+                </li>
+              ))
+            }
+          </ol>
+        </article>
+      </section>
+      <section id="marquee" aria-label="滚动播报">
+        <div class="marquee-track">
+          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item) => (
+            <span>{item}</span>
+          ))}
+        </div>
+      </section>
+      <div id="focusDot" aria-hidden="true"></div>
+
+      <div id="avatarOverlay">
+        <div id="avatarStage"></div>
+        <button id="btnStart">启动数字人讲解员</button>
+        <span id="avatarStatus" hidden></span>
+      </div>
+
+      <form id="askBar">
+        <div id="askChips">
+          <button type="button" class="chip">哪个区就业率最高？</button>
+          <button type="button" class="chip">菜篮子价格走势怎么样？</button>
+          <button type="button" class="chip">养老床位够不够？</button>
+        </div>
+        <div id="askRow">
+          <input
+            id="askInput"
+            type="text"
+            placeholder="启动数字人后，问问大屏上的数据…"
+            autocomplete="off"
+            disabled
+          />
+          <button id="btnAsk" type="submit" disabled>提问</button>
+        </div>
+        <p id="answerText" hidden></p>
+      </form>
+    </div>
+
+    <script type="application/json" id="panelData" set:html={JSON.stringify(clientPanels)} />
+    <script
+      type="application/json"
+      id="guideContextData"
+      set:html={JSON.stringify(clientGuideContext)}
+    />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+        background: radial-gradient(120% 120% at 50% 0%, #0c2144 0%, #060d1f 60%, #04070f 100%);
+        color: #d9e6ff;
+        overflow: hidden;
+      }
+      #screen {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        padding: 12px 16px 132px;
+        gap: 8px;
+      }
+      #screenHeader {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      #screenHeader h1 {
+        flex: 1;
+        text-align: center;
+        font-size: 26px;
+        letter-spacing: 6px;
+        background: linear-gradient(180deg, #eaf4ff, #7fb4ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        text-shadow: 0 0 24px rgba(88, 156, 255, 0.35);
+      }
+      #backLink,
+      #screenClock {
+        width: 130px;
+        font-size: 12px;
+        color: #7d9cc9;
+        text-decoration: none;
+      }
+      #screenClock {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      #panelGrid {
+        flex: 1;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 8px;
+        min-height: 0;
+      }
+      #moduleTabs {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+      }
+      .module-tab {
+        border: 1px solid rgba(91, 142, 220, 0.45);
+        border-radius: 999px;
+        background: rgba(14, 34, 66, 0.75);
+        color: #8ab0e2;
+        font-size: 12px;
+        line-height: 30px;
+        cursor: pointer;
+      }
+      .module-tab.active {
+        color: #d8f4ff;
+        border-color: rgba(94, 220, 255, 0.85);
+        box-shadow: 0 0 20px rgba(94, 220, 255, 0.2) inset;
+      }
+      #liveKpis {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
+      .live-kpi {
+        border: 1px solid rgba(72, 120, 199, 0.4);
+        border-radius: 8px;
+        background: linear-gradient(180deg, rgba(18, 44, 86, 0.8), rgba(9, 23, 44, 0.8));
+        padding: 6px 10px;
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        align-items: baseline;
+        column-gap: 8px;
+      }
+      .live-kpi-label {
+        color: #8ab0e2;
+        font-size: 11px;
+      }
+      .live-kpi strong {
+        color: #e7f3ff;
+        font-size: 18px;
+        font-variant-numeric: tabular-nums;
+      }
+      .live-kpi em {
+        color: #5edcff;
+        font-style: normal;
+        font-size: 12px;
+      }
+      .panel {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 14px 16px;
+        border: 1px solid rgba(94, 154, 255, 0.28);
+        border-radius: 10px;
+        background: linear-gradient(160deg, rgba(20, 46, 92, 0.55), rgba(9, 20, 42, 0.72));
+        box-shadow: inset 0 0 24px rgba(56, 116, 226, 0.12);
+        overflow: hidden;
+        transition: border-color 0.4s, box-shadow 0.4s, transform 0.4s;
+      }
+      .panel h2 {
+        font-size: 15px;
+        font-weight: 600;
+        color: #9cc4ff;
+        padding-left: 10px;
+        border-left: 3px solid #3f8cff;
+      }
+      .panel.focused {
+        border-color: rgba(94, 220, 255, 0.9);
+        box-shadow:
+          0 0 0 1px rgba(94, 220, 255, 0.5),
+          0 0 32px rgba(64, 186, 255, 0.35),
+          inset 0 0 32px rgba(64, 186, 255, 0.18);
+        transform: scale(1.015);
+        z-index: 5;
+      }
+      .metrics {
+        flex: 1;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        align-items: center;
+      }
+      .metric {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        text-align: center;
+      }
+      .metric strong {
+        font-size: clamp(18px, 2.1vw, 28px);
+        color: #5edcff;
+        font-variant-numeric: tabular-nums;
+      }
+      .metric span {
+        font-size: 12px;
+        color: #a8bfe6;
+      }
+      .metric em {
+        font-style: normal;
+        font-size: 11px;
+        color: #6d89b8;
+      }
+      .bars {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 10px;
+      }
+      .bar-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+      }
+      .bar-label {
+        width: 34px;
+        color: #a8bfe6;
+      }
+      .bar-label.wide {
+        width: 118px;
+      }
+      .bar-track {
+        flex: 1;
+        height: 8px;
+        border-radius: 4px;
+        background: rgba(63, 105, 175, 0.25);
+        overflow: hidden;
+      }
+      .bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        background: linear-gradient(90deg, #2f7bff, #5edcff);
+      }
+      .bar-value {
+        width: 48px;
+        text-align: right;
+        color: #5edcff;
+        font-variant-numeric: tabular-nums;
+      }
+      .line-wrap {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-height: 0;
+      }
+      .line-wrap svg {
+        flex: 1;
+        width: 100%;
+        min-height: 0;
+      }
+      .line-path {
+        fill: none;
+        stroke: #5edcff;
+        stroke-width: 2;
+        filter: drop-shadow(0 0 6px rgba(94, 220, 255, 0.6));
+      }
+      .line-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #a8bfe6;
+      }
+      #avatarOverlay {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: clamp(180px, 11.5vw, 220px);
+        height: clamp(290px, 20vw, 360px);
+        z-index: 20;
+        pointer-events: none;
+        transition: transform 1.1s cubic-bezier(0.33, 1, 0.68, 1);
+        will-change: transform;
+        opacity: 1;
+      }
+      #focusDot {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(94, 220, 255, 0.95);
+        background: rgba(94, 220, 255, 0.35);
+        box-shadow: 0 0 14px rgba(94, 220, 255, 0.72);
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+        z-index: 22;
+        pointer-events: none;
+        transition: opacity 0.22s ease, transform 0.22s ease;
+      }
+      #focusDot.is-visible {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      #avatarOverlay.is-fading {
+        opacity: 0.12;
+        transition: opacity 0.22s ease;
+      }
+      #avatarOverlay.is-visible {
+        opacity: 1;
+        transition: opacity 0.26s ease;
+      }
+      #avatarStage {
+        width: 100%;
+        height: 100%;
+      }
+      #avatarStage :global(canvas) {
+        background: transparent !important;
+      }
+      #btnStart {
+        position: absolute;
+        left: 50%;
+        bottom: 36px;
+        transform: translateX(-50%);
+        pointer-events: auto;
+        padding: 10px 18px;
+        border: 1px solid rgba(94, 220, 255, 0.6);
+        border-radius: 999px;
+        background: rgba(10, 32, 66, 0.9);
+        color: #bfeaff;
+        font-size: 13px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      #btnStart:hover {
+        background: rgba(24, 62, 118, 0.95);
+      }
+      #btnStart:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+      #avatarStatus {
+        position: absolute;
+        left: 50%;
+        bottom: 8px;
+        transform: translateX(-50%);
+        padding: 2px 10px;
+        border-radius: 999px;
+        background: rgba(6, 16, 34, 0.75);
+        font-size: 11px;
+        color: #8fb6e8;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.28s ease;
+      }
+      #askBar {
+        position: absolute;
+        left: 50%;
+        bottom: 16px;
+        transform: translateX(-50%);
+        width: min(720px, calc(100vw - 260px));
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 30;
+      }
+      #opsGrid {
+        display: grid;
+        grid-template-columns: 1.45fr 1fr;
+        gap: 8px;
+      }
+      .ops-card {
+        border: 1px solid rgba(84, 132, 209, 0.38);
+        border-radius: 10px;
+        padding: 10px 12px;
+        background: linear-gradient(160deg, rgba(16, 39, 75, 0.8), rgba(9, 22, 43, 0.82));
+      }
+      .ops-card h3 {
+        font-size: 13px;
+        color: #9cc4ff;
+        margin-bottom: 8px;
+      }
+      .ops-card ul,
+      .ops-card ol {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .ops-card li {
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
+        gap: 8px;
+        align-items: center;
+        padding: 4px 0;
+        border-bottom: 1px dashed rgba(95, 140, 209, 0.24);
+      }
+      .ops-card li:last-child {
+        border-bottom: none;
+      }
+      .ops-card time,
+      .ops-card b {
+        color: #5edcff;
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+      }
+      .ops-card span {
+        color: #c8defd;
+        font-size: 12px;
+      }
+      .ops-card em {
+        font-style: normal;
+        color: #d9f3ff;
+        font-size: 12px;
+      }
+      .ops-card small {
+        color: #8ba8d3;
+        font-size: 11px;
+      }
+      #marquee {
+        position: absolute;
+        left: 20px;
+        right: 20px;
+        bottom: 100px;
+        height: 24px;
+        border: 1px solid rgba(95, 150, 228, 0.36);
+        border-radius: 999px;
+        background: rgba(8, 22, 44, 0.75);
+        overflow: hidden;
+      }
+      .marquee-track {
+        height: 100%;
+        display: inline-flex;
+        align-items: center;
+        gap: 34px;
+        padding: 0 20px;
+        white-space: nowrap;
+        animation: marqueeMove 28s linear infinite;
+      }
+      .marquee-track span {
+        font-size: 12px;
+        color: #9cc4ff;
+      }
+      @keyframes marqueeMove {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(-50%);
+        }
+      }
+      #askChips {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+      }
+      .chip {
+        padding: 4px 12px;
+        border: 1px solid rgba(94, 154, 255, 0.4);
+        border-radius: 999px;
+        background: rgba(12, 30, 62, 0.7);
+        color: #9cc4ff;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .chip:hover {
+        border-color: rgba(94, 220, 255, 0.8);
+        color: #d9f4ff;
+      }
+      #askRow {
+        display: flex;
+        gap: 8px;
+      }
+      #askInput {
+        flex: 1;
+        padding: 10px 16px;
+        border: 1px solid rgba(94, 154, 255, 0.45);
+        border-radius: 999px;
+        background: rgba(8, 20, 44, 0.85);
+        color: #e6f1ff;
+        font-size: 14px;
+        outline: none;
+      }
+      #askInput:focus {
+        border-color: rgba(94, 220, 255, 0.9);
+      }
+      #askInput:disabled {
+        opacity: 0.55;
+      }
+      #btnAsk {
+        padding: 10px 22px;
+        border: none;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #2f7bff, #38c6ff);
+        color: #04122a;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      #btnAsk:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+      #answerText {
+        max-height: 64px;
+        overflow-y: auto;
+        padding: 8px 14px;
+        border-radius: 10px;
+        background: rgba(8, 20, 44, 0.85);
+        border: 1px solid rgba(94, 154, 255, 0.35);
+        font-size: 13px;
+        line-height: 1.6;
+        color: #cfe3ff;
+        opacity: 0;
+        transition: opacity 0.28s ease;
+      }
+      #avatarStatus.is-visible,
+      #answerText.is-visible {
+        opacity: 1;
+      }
+    </style>
+
+    <script>
+      import type { HeadAudio } from "@met4citizen/headaudio/dist/headaudio.min.mjs";
+      import { TalkingHead } from "@met4citizen/talkinghead";
+      import * as THREE from "three";
+      import { CCDIKSolver } from "three/addons/animation/CCDIKSolver.js";
+      import { attachHeadAudio, type HeadInternals } from "../../lib/avatar/headAudio";
+      import { audioBufferToPcm, createVisemeTimeline } from "../../lib/avatar/speech";
+      import { createAvatarConfig, createHeadOptions } from "../../lib/avatar/visuals";
+
+      type GuidePanel = { id: string; title: string; summary: string; anchors?: string[] };
+      type FocusEvent2 = { type: "focus"; target: string; at: number; anchorId?: string };
+      type GuideMessage = {
+        type: "avatar_response";
+        version: 2;
+        speech: { text: string; language: string };
+        timeline: FocusEvent2[];
+      };
+      type PanelAnchor = {
+        id: string;
+        x: number;
+        y: number;
+        intents?: string[];
+        hint?: "index" | "hand_raise";
+      };
+
+      const GUIDE_ENDPOINT = "/api/demo/guide";
+      const TTS_ENDPOINT = "/api/demo/tts";
+      const OVERLAY_MARGIN = 10;
+      const AVATAR_AUTOLOAD_KEY = "livelihood-dashboard:avatar-autoload:v1";
+      const AVATAR_GESTURE_DELAY_MS = 850;
+      const AVATAR_FADE_MOVE_MS = 220;
+      const AVATAR_PANEL_OVERLAP_RATIO = 0.18;
+      const AVATAR_PANEL_SIDE_GAP = 10;
+      const AVATAR_FOCUS_VERTICAL_OFFSET = 18;
+      const POINTING_ERROR_THRESHOLD_PX = 55;
+      const MOUSE_POINT_COOLDOWN_MS = 0;
+      const MOUSE_POINT_MIN_DELTA_PX = 4;
+      const LOOK_AT_THROTTLE_MS = 80;
+      const LOOK_AT_DURATION_MS = 1800;
+      const ARM_AIM_MAX_PITCH = 1.62;
+      const ARM_AIM_MAX_YAW = 2.15;
+      const ARM_AIM_RELAX = 0.24;
+      const ARM_AIM_HARD_RELAX = 0.44;
+      const PANEL_ANCHORS: Record<string, PanelAnchor[]> = {
+        population: [
+          { id: "population_total", x: 0.16, y: 0.42, intents: ["人口", "常住"] },
+          { id: "population_birth", x: 0.8, y: 0.42, intents: ["出生", "老龄", "65"] },
+        ],
+        employment: [
+          { id: "employment_top_rate", x: 0.84, y: 0.31, intents: ["最高", "就业率", "城东"] },
+          { id: "employment_trend", x: 0.62, y: 0.68, intents: ["收入", "新增就业"] },
+        ],
+        medical: [
+          { id: "medical_coverage", x: 0.17, y: 0.44, intents: ["医保", "参保"] },
+          { id: "medical_beds", x: 0.5, y: 0.44, intents: ["床位"] },
+        ],
+        education: [
+          { id: "education_after_school", x: 0.82, y: 0.56, intents: ["课后", "覆盖率"] },
+          { id: "education_build", x: 0.76, y: 0.74, intents: ["学位", "建设"] },
+        ],
+        "food-price": [
+          { id: "food_price_latest", x: 0.84, y: 0.58, intents: ["走势", "当月", "环比"] },
+          { id: "food_price_peak", x: 0.36, y: 0.34, intents: ["最高", "峰值"] },
+        ],
+        "elder-care": [
+          { id: "elder_coverage", x: 0.81, y: 0.53, intents: ["养老中心", "覆盖"] },
+          { id: "elder_bed_usage", x: 0.78, y: 0.66, intents: ["床位", "使用率"] },
+        ],
+      };
+
+      const $ = (id: string) => document.getElementById(id)!;
+      const screenRoot = $("screen");
+      const overlay = $("avatarOverlay");
+      const avatarStage = $("avatarStage");
+      const focusDot = $("focusDot");
+      const btnStart = $("btnStart") as HTMLButtonElement;
+      const avatarStatus = $("avatarStatus");
+      const askBar = $("askBar") as HTMLFormElement;
+      const askInput = $("askInput") as HTMLInputElement;
+      const btnAsk = $("btnAsk") as HTMLButtonElement;
+      const answerText = $("answerText");
+      const screenClock = $("screenClock");
+      const panels = JSON.parse($("panelData").textContent || "[]") as GuidePanel[];
+      const guideContext = JSON.parse($("guideContextData").textContent || "\"\"") as string;
+
+      let head: TalkingHead | null = null;
+      let headAudio: HeadAudio | null = null;
+      let headAudioReady = false;
+      let requestController: AbortController | null = null;
+      let ttsController: AbortController | null = null;
+      let focusTimers: number[] = [];
+      let overlayMoveTimer: number | null = null;
+      let activeFocusHint = "";
+      let currentAimTarget: { x: number; y: number } | null = null;
+      let lastMouseGestureAt = 0;
+      let lastMouseTarget: { x: number; y: number } | null = null;
+      let handBones: {
+        left: { hand: any | null; index: any | null };
+        right: { hand: any | null; index: any | null };
+      } | null = null;
+      let armBones: {
+        left: {
+          shoulder: any | null;
+          upper: any | null;
+          fore: any | null;
+          hand: any | null;
+          index1: any | null;
+          index2: any | null;
+        };
+        right: {
+          shoulder: any | null;
+          upper: any | null;
+          fore: any | null;
+          hand: any | null;
+          index1: any | null;
+          index2: any | null;
+        };
+      } | null = null;
+      let armBaseRotations: {
+        left: {
+          shoulder: { x: number; y: number; z: number };
+          upper: { x: number; y: number; z: number };
+          fore: { x: number; y: number; z: number };
+          hand: { x: number; y: number; z: number };
+          index1: { x: number; y: number; z: number };
+          index2: { x: number; y: number; z: number };
+        };
+        right: {
+          shoulder: { x: number; y: number; z: number };
+          upper: { x: number; y: number; z: number };
+          fore: { x: number; y: number; z: number };
+          hand: { x: number; y: number; z: number };
+          index1: { x: number; y: number; z: number };
+          index2: { x: number; y: number; z: number };
+        };
+      } | null = null;
+      let ikRuntime: {
+        solver: CCDIKSolver;
+        mesh: THREE.SkinnedMesh;
+        leftTarget: THREE.Bone;
+        rightTarget: THREE.Bone;
+        leftNeutral: THREE.Vector3;
+        rightNeutral: THREE.Vector3;
+      } | null = null;
+      let aimRaf = 0;
+      let currentYaw = 0;
+      let targetYaw = 0;
+      let hasYaw = false;
+      let lastLookAtAt = 0;
+      let streamStarted = false;
+      let disposed = false;
+      /** Voice/guide session blocks mouse look-at until speech finishes. */
+      let voiceSessionActive = false;
+      let voiceSessionId = 0;
+      const lifecycleController = new AbortController();
+
+      function beginVoiceSession() {
+        voiceSessionId += 1;
+        voiceSessionActive = true;
+        return voiceSessionId;
+      }
+
+      function endVoiceSession(sessionId?: number) {
+        if (sessionId != null && sessionId !== voiceSessionId) return;
+        voiceSessionActive = false;
+      }
+
+      function isMouseLookEnabled() {
+        return Boolean(head) && !disposed && !voiceSessionActive;
+      }
+
+      function isAvatarAutoloadEnabled() {
+        try {
+          return window.localStorage.getItem(AVATAR_AUTOLOAD_KEY) === "1";
+        } catch {
+          return false;
+        }
+      }
+
+      function setAvatarAutoloadEnabled(enabled: boolean) {
+        try {
+          if (enabled) window.localStorage.setItem(AVATAR_AUTOLOAD_KEY, "1");
+          else window.localStorage.removeItem(AVATAR_AUTOLOAD_KEY);
+        } catch {
+          // Ignore storage failures (private mode / blocked storage).
+        }
+      }
+
+      setInterval(() => {
+        screenClock.textContent = new Date().toLocaleString("zh-CN", { hour12: false });
+      }, 1000);
+
+      function setFadingVisibility(el: HTMLElement, visible: boolean) {
+        if (visible) {
+          if (el.hidden) el.hidden = false;
+          requestAnimationFrame(() => el.classList.add("is-visible"));
+          return;
+        }
+        el.classList.remove("is-visible");
+        const onEnd = (event: TransitionEvent) => {
+          if (event.propertyName !== "opacity") return;
+          el.hidden = true;
+          el.removeEventListener("transitionend", onEnd);
+        };
+        el.addEventListener("transitionend", onEnd);
+      }
+
+      function setStatus(text: string) {
+        avatarStatus.textContent = text;
+        setFadingVisibility(avatarStatus, Boolean(text));
+      }
+
+      // ---- overlay movement ------------------------------------------------
+
+      function moveOverlayTo(x: number, y: number) {
+        overlay.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+      }
+
+      function dockPosition() {
+        const root = screenRoot.getBoundingClientRect();
+        return {
+          x: Math.round(root.width / 2 - overlay.offsetWidth / 2),
+          y: Math.round(root.height / 2 - overlay.offsetHeight / 2),
+        };
+      }
+
+      function moveToDock({ instant = false } = {}) {
+        const dock = dockPosition();
+        if (instant) {
+          // First placement must not animate from the overlay's default
+          // top-left position.
+          overlay.style.transition = "none";
+          moveOverlayTo(dock.x, dock.y);
+          void overlay.offsetWidth;
+          overlay.style.transition = "";
+          return;
+        }
+        fadeMoveOverlay(dock.x, dock.y);
+      }
+
+      function clampOverlayPosition(x: number, y: number) {
+        const root = screenRoot.getBoundingClientRect();
+        return {
+          x: Math.max(OVERLAY_MARGIN, Math.min(x, root.width - overlay.offsetWidth - OVERLAY_MARGIN)),
+          y: Math.max(OVERLAY_MARGIN, Math.min(y, root.height - overlay.offsetHeight - OVERLAY_MARGIN)),
+        };
+      }
+
+      /** Comfortable stand position beside a focused panel (voice sessions only). */
+      function standBesidePanel(panelRect: DOMRect, anchorPoint: { x: number; y: number }) {
+        const root = screenRoot.getBoundingClientRect();
+        const panelLeft = panelRect.left - root.left;
+        const panelTop = panelRect.top - root.top;
+        const standRight = anchorPoint.x < root.width / 2;
+        const overlapX = overlay.offsetWidth * AVATAR_PANEL_OVERLAP_RATIO;
+        const x = standRight
+          ? panelLeft + panelRect.width - overlapX + AVATAR_PANEL_SIDE_GAP
+          : panelLeft - overlay.offsetWidth + overlapX - AVATAR_PANEL_SIDE_GAP;
+        const y = panelTop + panelRect.height - overlay.offsetHeight + AVATAR_FOCUS_VERTICAL_OFFSET;
+        return { ...clampOverlayPosition(x, y), standRight };
+      }
+
+      function fadeMoveOverlay(x: number, y: number) {
+        if (overlayMoveTimer !== null) {
+          window.clearTimeout(overlayMoveTimer);
+          overlayMoveTimer = null;
+        }
+        overlay.classList.remove("is-visible");
+        overlay.classList.add("is-fading");
+        overlayMoveTimer = window.setTimeout(() => {
+          // Fade out, jump, then fade in — avoids visible sliding across panels.
+          overlay.style.transition = "opacity 0.26s ease";
+          moveOverlayTo(x, y);
+          void overlay.offsetWidth;
+          overlay.classList.remove("is-fading");
+          overlay.classList.add("is-visible");
+          overlay.style.transition = "";
+          overlayMoveTimer = null;
+        }, AVATAR_FADE_MOVE_MS);
+      }
+
+      function clearFocusHighlights() {
+        document
+          .querySelectorAll(".panel.focused")
+          .forEach((panel) => panel.classList.remove("focused"));
+      }
+
+      function setFocusDot(point: { x: number; y: number } | null) {
+        if (!point) {
+          focusDot.classList.remove("is-visible");
+          return;
+        }
+        focusDot.style.left = `${Math.round(point.x)}px`;
+        focusDot.style.top = `${Math.round(point.y)}px`;
+        focusDot.classList.add("is-visible");
+      }
+
+      function pickAnchor(panelId: string) {
+        const anchors = PANEL_ANCHORS[panelId] ?? [];
+        if (anchors.length === 0) return null;
+        const hint = activeFocusHint.toLowerCase();
+        for (const anchor of anchors) {
+          if (anchor.intents?.some((intent) => hint.includes(intent.toLowerCase()))) return anchor;
+        }
+        return anchors[0];
+      }
+
+      function findAnchorById(panelId: string, anchorId?: string) {
+        if (!anchorId) return null;
+        const anchors = PANEL_ANCHORS[panelId] ?? [];
+        return anchors.find((anchor) => anchor.id === anchorId) ?? null;
+      }
+
+      function estimatePointingError(
+        target: { x: number; y: number },
+        mirror: boolean,
+        hint: "index" | "hand_raise",
+      ) {
+        const side: "left" | "right" = mirror ? "left" : "right";
+        const projected = getProjectedPointForSide(side, hint);
+        if (projected) {
+          const dxProjected = target.x - projected.x;
+          const dyProjected = target.y - projected.y;
+          const errorProjected = Math.round(
+            Math.sqrt(dxProjected * dxProjected + dyProjected * dyProjected),
+          );
+          return { errorPx: errorProjected, dx: dxProjected, dy: dyProjected };
+        }
+        const root = screenRoot.getBoundingClientRect();
+        const rect = overlay.getBoundingClientRect();
+        const overlayX = rect.left - root.left;
+        const overlayY = rect.top - root.top;
+        const fingerX = overlayX + rect.width * (mirror ? 0.61 : 0.39);
+        const fingerY = overlayY + rect.height * (hint === "hand_raise" ? 0.2 : 0.32);
+        const dx = target.x - fingerX;
+        const dy = target.y - fingerY;
+        const errorPx = Math.round(Math.sqrt(dx * dx + dy * dy));
+        return { errorPx, dx, dy };
+      }
+
+      function pickBestMirrorForTarget(target: { x: number; y: number }, hint: "index" | "hand_raise") {
+        const leftHand = estimatePointingError(target, true, hint);
+        const rightHand = estimatePointingError(target, false, hint);
+        return leftHand.errorPx <= rightHand.errorPx
+          ? { mirror: true, estimate: leftHand }
+          : { mirror: false, estimate: rightHand };
+      }
+
+      function pickMirrorByTargetSide(target: { x: number; y: number }) {
+        const root = screenRoot.getBoundingClientRect();
+        const rect = overlay.getBoundingClientRect();
+        const centerX = rect.left - root.left + rect.width / 2;
+        return target.x < centerX;
+      }
+
+      function getArmature() {
+        return (head as HeadInternals | null)?.armature ?? null;
+      }
+
+      function getHeadRuntime() {
+        return (head as
+          | (HeadInternals & { camera?: any; renderer?: any; scene?: any; armature?: any })
+          | null) ?? null;
+      }
+
+      function findBoneIndexByPattern(skeleton: THREE.Skeleton, patterns: RegExp[]) {
+        for (let i = 0; i < skeleton.bones.length; i += 1) {
+          const name = String(skeleton.bones[i]?.name ?? "");
+          if (patterns.some((pattern) => pattern.test(name))) return i;
+        }
+        return -1;
+      }
+
+      function findSkinnedMeshForIk() {
+        const runtime = getHeadRuntime();
+        if (!runtime?.scene) return null;
+        let found: THREE.SkinnedMesh | null = null;
+        runtime.scene.traverse((node: THREE.Object3D) => {
+          if (found) return;
+          const maybeMesh = node as THREE.SkinnedMesh;
+          if (!maybeMesh.isSkinnedMesh || !maybeMesh.skeleton) return;
+          const skeleton = maybeMesh.skeleton;
+          const hasLeftHand = findBoneIndexByPattern(skeleton, [/left.?hand$/i, /mixamoriglefthand/i]) >= 0;
+          const hasRightHand = findBoneIndexByPattern(skeleton, [/right.?hand$/i, /mixamorigrighthand/i]) >= 0;
+          if (hasLeftHand && hasRightHand) found = maybeMesh;
+        });
+        return found;
+      }
+
+      function buildIkRuntime() {
+        const runtime = getHeadRuntime();
+        const armature = getArmature();
+        const mesh = findSkinnedMeshForIk();
+        if (!runtime?.camera || !runtime?.renderer || !armature || !mesh?.skeleton) return null;
+        const skeleton = mesh.skeleton;
+
+        const leftShoulder = findBoneIndexByPattern(skeleton, [/left.?shoulder/i, /mixamorigleftshoulder/i]);
+        const leftUpper = findBoneIndexByPattern(skeleton, [/left.?arm$/i, /mixamorigleftarm/i]);
+        const leftFore = findBoneIndexByPattern(skeleton, [/left.?forearm/i, /mixamorigleftforearm/i]);
+        const leftHand = findBoneIndexByPattern(skeleton, [/left.?hand$/i, /mixamoriglefthand/i]);
+        const rightShoulder = findBoneIndexByPattern(skeleton, [/right.?shoulder/i, /mixamorigrightshoulder/i]);
+        const rightUpper = findBoneIndexByPattern(skeleton, [/right.?arm$/i, /mixamorigrightarm/i]);
+        const rightFore = findBoneIndexByPattern(skeleton, [/right.?forearm/i, /mixamorigrightforearm/i]);
+        const rightHand = findBoneIndexByPattern(skeleton, [/right.?hand$/i, /mixamorigrighthand/i]);
+        if (
+          leftShoulder < 0 || leftUpper < 0 || leftFore < 0 || leftHand < 0 ||
+          rightShoulder < 0 || rightUpper < 0 || rightFore < 0 || rightHand < 0
+        ) {
+          return null;
+        }
+
+        const leftHandBone = skeleton.bones[leftHand];
+        const rightHandBone = skeleton.bones[rightHand];
+        const leftTarget = new THREE.Bone();
+        leftTarget.name = "IKTargetLeft";
+        const rightTarget = new THREE.Bone();
+        rightTarget.name = "IKTargetRight";
+
+        const leftWorld = leftHandBone.getWorldPosition(new THREE.Vector3());
+        const rightWorld = rightHandBone.getWorldPosition(new THREE.Vector3());
+        const leftLocal = armature.worldToLocal(leftWorld.clone());
+        const rightLocal = armature.worldToLocal(rightWorld.clone());
+        leftTarget.position.copy(leftLocal);
+        rightTarget.position.copy(rightLocal);
+        armature.add(leftTarget);
+        armature.add(rightTarget);
+
+        skeleton.bones.push(leftTarget);
+        skeleton.bones.push(rightTarget);
+        skeleton.boneInverses.push(new THREE.Matrix4(), new THREE.Matrix4());
+        skeleton.calculateInverses();
+
+        const leftTargetIndex = skeleton.bones.length - 2;
+        const rightTargetIndex = skeleton.bones.length - 1;
+        const iks = [
+          {
+            target: leftTargetIndex,
+            effector: leftHand,
+            links: [
+              {
+                index: leftFore,
+                rotationMin: new THREE.Vector3(-1.4, -0.8, -0.7),
+                rotationMax: new THREE.Vector3(1.3, 0.8, 0.7),
+              },
+              {
+                index: leftUpper,
+                rotationMin: new THREE.Vector3(-1.2, -1.2, -1.2),
+                rotationMax: new THREE.Vector3(1.5, 1.1, 1.2),
+              },
+            ],
+            iteration: 6,
+          },
+          {
+            target: rightTargetIndex,
+            effector: rightHand,
+            links: [
+              {
+                index: rightFore,
+                rotationMin: new THREE.Vector3(-1.4, -0.8, -0.7),
+                rotationMax: new THREE.Vector3(1.3, 0.8, 0.7),
+              },
+              {
+                index: rightUpper,
+                rotationMin: new THREE.Vector3(-1.2, -1.1, -1.2),
+                rotationMax: new THREE.Vector3(1.5, 1.2, 1.2),
+              },
+            ],
+            iteration: 6,
+          },
+        ];
+        return {
+          solver: new CCDIKSolver(mesh, iks),
+          mesh,
+          leftTarget,
+          rightTarget,
+          leftNeutral: leftLocal.clone(),
+          rightNeutral: rightLocal.clone(),
+        };
+      }
+
+      function updateIkAiming() {
+        if (!currentAimTarget || !ikRuntime) return;
+        const rootRect = screenRoot.getBoundingClientRect();
+        const nx = clamp(currentAimTarget.x / Math.max(rootRect.width, 1) - 0.5, -0.5, 0.5) * 2;
+        const ny = clamp(currentAimTarget.y / Math.max(rootRect.height, 1) - 0.5, -0.5, 0.5) * 2;
+        const rect = overlay.getBoundingClientRect();
+        const centerX = rect.left - rootRect.left + rect.width / 2;
+        const dominantRight = currentAimTarget.x >= centerX;
+        // Map screen-space target into armature-local IK target offsets.
+        // For this rig local +Y lifts the hand, so downward cursor uses negative Y offset.
+        const leftRawTarget = ikRuntime.leftNeutral.clone().add(
+          new THREE.Vector3(nx * 0.42, -ny * 0.46, -nx * 0.16 + ny * 0.02),
+        );
+        const rightRawTarget = ikRuntime.rightNeutral.clone().add(
+          new THREE.Vector3(nx * 0.42, -ny * 0.46, nx * 0.16 + ny * 0.02),
+        );
+        const clampToReach = (point: THREE.Vector3, neutral: THREE.Vector3, maxRadius = 0.58) => {
+          const offset = point.clone().sub(neutral);
+          const len = offset.length();
+          if (len > maxRadius) offset.multiplyScalar(maxRadius / Math.max(len, 1e-6));
+          return neutral.clone().add(offset);
+        };
+        const rightTarget = clampToReach(rightRawTarget, ikRuntime.rightNeutral, 0.42);
+        const leftTarget = clampToReach(leftRawTarget, ikRuntime.leftNeutral, 0.42);
+        if (dominantRight) {
+          ikRuntime.rightTarget.position.lerp(rightTarget, 0.46);
+          ikRuntime.leftTarget.position.lerp(ikRuntime.leftNeutral, 0.24);
+        } else {
+          ikRuntime.leftTarget.position.lerp(leftTarget, 0.46);
+          ikRuntime.rightTarget.position.lerp(ikRuntime.rightNeutral, 0.24);
+        }
+        ikRuntime.solver.update();
+      }
+
+      function findNodeByName(root: any, patterns: RegExp[]) {
+        if (!root || typeof root.traverse !== "function") return null;
+        let matched: any | null = null;
+        root.traverse((node: any) => {
+          if (matched) return;
+          const name = String(node?.name ?? "");
+          if (patterns.some((pattern) => pattern.test(name))) matched = node;
+        });
+        return matched;
+      }
+
+      function resolveHandBones() {
+        const runtime = getHeadRuntime();
+        if (!runtime?.armature) return null;
+        const leftHand = findNodeByName(runtime.armature, [/left.?hand/i, /hand_l/i, /mixamoriglefthand/i]);
+        const rightHand = findNodeByName(runtime.armature, [/right.?hand/i, /hand_r/i, /mixamorigrighthand/i]);
+        const leftIndex = findNodeByName(runtime.armature, [
+          /left.?index/i,
+          /left.*hand.*index/i,
+          /index.?l/i,
+          /mixamorigleft.*index/i,
+        ]);
+        const rightIndex = findNodeByName(runtime.armature, [
+          /right.?index/i,
+          /right.*hand.*index/i,
+          /index.?r/i,
+          /mixamorigright.*index/i,
+        ]);
+        handBones = {
+          left: { hand: leftHand, index: leftIndex },
+          right: { hand: rightHand, index: rightIndex },
+        };
+        return handBones;
+      }
+
+      function resolveArmBones() {
+        const runtime = getHeadRuntime();
+        if (!runtime?.armature) return null;
+        const leftShoulder = findNodeByName(runtime.armature, [/left.?shoulder/i, /mixamorigleftshoulder/i]);
+        const rightShoulder = findNodeByName(runtime.armature, [/right.?shoulder/i, /mixamorigrighthoulder/i, /mixamorigrightshoulder/i]);
+        const leftUpper = findNodeByName(runtime.armature, [/left.?arm$/i, /mixamorigleftarm/i]);
+        const rightUpper = findNodeByName(runtime.armature, [/right.?arm$/i, /mixamorigrigtharm/i, /mixamorigrightharm/i]);
+        const leftFore = findNodeByName(runtime.armature, [/left.?forearm/i, /mixamorigleftforearm/i]);
+        const rightFore = findNodeByName(runtime.armature, [/right.?forearm/i, /mixamorigrighthforearm/i, /mixamorigrightforearm/i]);
+        const leftHand = findNodeByName(runtime.armature, [/left.?hand$/i, /mixamoriglefthand/i]);
+        const rightHand = findNodeByName(runtime.armature, [/right.?hand$/i, /mixamorigrighthand/i]);
+        const leftIndex1 = findNodeByName(runtime.armature, [/left.?hand.?index1/i, /mixamorigleft.*index1/i]);
+        const rightIndex1 = findNodeByName(runtime.armature, [/right.?hand.?index1/i, /mixamorigright.*index1/i]);
+        const leftIndex2 = findNodeByName(runtime.armature, [/left.?hand.?index2/i, /mixamorigleft.*index2/i]);
+        const rightIndex2 = findNodeByName(runtime.armature, [/right.?hand.?index2/i, /mixamorigright.*index2/i]);
+        armBones = {
+          left: {
+            shoulder: leftShoulder,
+            upper: leftUpper,
+            fore: leftFore,
+            hand: leftHand,
+            index1: leftIndex1,
+            index2: leftIndex2,
+          },
+          right: {
+            shoulder: rightShoulder,
+            upper: rightUpper,
+            fore: rightFore,
+            hand: rightHand,
+            index1: rightIndex1,
+            index2: rightIndex2,
+          },
+        };
+        const snap = (bone: any) => ({
+          x: Number.isFinite(bone?.rotation?.x) ? bone.rotation.x : 0,
+          y: Number.isFinite(bone?.rotation?.y) ? bone.rotation.y : 0,
+          z: Number.isFinite(bone?.rotation?.z) ? bone.rotation.z : 0,
+        });
+        armBaseRotations = {
+          left: {
+            shoulder: snap(leftShoulder),
+            upper: snap(leftUpper),
+            fore: snap(leftFore),
+            hand: snap(leftHand),
+            index1: snap(leftIndex1),
+            index2: snap(leftIndex2),
+          },
+          right: {
+            shoulder: snap(rightShoulder),
+            upper: snap(rightUpper),
+            fore: snap(rightFore),
+            hand: snap(rightHand),
+            index1: snap(rightIndex1),
+            index2: snap(rightIndex2),
+          },
+        };
+        return armBones;
+      }
+
+      function getProjectedPointForSide(side: "left" | "right", hint: "index" | "hand_raise") {
+        const runtime = getHeadRuntime();
+        if (!runtime?.camera || !runtime?.renderer || !runtime?.armature) return null;
+        const bones = handBones ?? resolveHandBones();
+        const sideBones = bones?.[side];
+        const node =
+          hint === "index" ? sideBones?.index ?? sideBones?.hand : sideBones?.hand ?? sideBones?.index;
+        if (!node || typeof node.getWorldPosition !== "function") return null;
+        const canvas = runtime.renderer.domElement as HTMLCanvasElement | undefined;
+        if (!canvas) return null;
+        const rootRect = screenRoot.getBoundingClientRect();
+        const canvasRect = canvas.getBoundingClientRect();
+        const world = new THREE.Vector3();
+        node.getWorldPosition(world);
+        world.project(runtime.camera);
+        const x = ((world.x + 1) * 0.5) * canvasRect.width + (canvasRect.left - rootRect.left);
+        const y = ((1 - world.y) * 0.5) * canvasRect.height + (canvasRect.top - rootRect.top);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+        return { x, y };
+      }
+
+      function normalizeAngle(angle: number) {
+        let value = angle;
+        while (value > Math.PI) value -= Math.PI * 2;
+        while (value < -Math.PI) value += Math.PI * 2;
+        return value;
+      }
+
+      function clamp(value: number, min: number, max: number) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function lerp(from: number, to: number, alpha: number) {
+        return from + (to - from) * alpha;
+      }
+
+      function updateArmAiming() {
+        if (!head) return;
+        const bones = armBones ?? resolveArmBones();
+        const base = armBaseRotations;
+        if (!bones || !base) return;
+        const target = currentAimTarget;
+        const rect = overlay.getBoundingClientRect();
+        const rootRect = screenRoot.getBoundingClientRect();
+        const centerX = rect.left - rootRect.left + rect.width / 2;
+        const centerY = rect.top - rootRect.top + rect.height * 0.42;
+        const hasTarget = Boolean(target);
+        const dx = hasTarget ? target!.x - centerX : 0;
+        const dy = hasTarget ? target!.y - centerY : 0;
+        const angle = hasTarget ? Math.atan2(dy, dx) : 0;
+        const distance = hasTarget ? Math.sqrt(dx * dx + dy * dy) : 0;
+        const distanceNorm = clamp(distance / Math.max(rect.width, rect.height), 0, 1);
+        const horizontal = Math.cos(angle); // right: +1, left: -1
+        const vertical = -Math.sin(angle); // up: +1, down: -1
+        const dominantSide: "left" | "right" = horizontal >= 0 ? "right" : "left";
+        const dominantWeight = hasTarget ? 1 : 0;
+        const supportWeight = hasTarget ? 0.18 : 0;
+
+        const applySide = (side: "left" | "right", weight: number) => {
+          const sideBones = bones[side];
+          const sideBase = base[side];
+          const sideSign = side === "left" ? -1 : 1;
+          const isDominant = side === dominantSide;
+          const blend = clamp(weight, 0, 1);
+          const armOutward = clamp(horizontal * sideSign, -1, 1);
+          const yaw = clamp(
+            armOutward * ARM_AIM_MAX_YAW * blend * (isDominant ? 1 : 0.45),
+            -ARM_AIM_MAX_YAW,
+            ARM_AIM_MAX_YAW,
+          );
+          const pitch = clamp(
+            vertical * ARM_AIM_MAX_PITCH * blend * (isDominant ? 1 : 0.55),
+            -ARM_AIM_MAX_PITCH,
+            ARM_AIM_MAX_PITCH,
+          );
+          const reach = blend * (0.35 + distanceNorm * 0.75);
+          const relax = isDominant ? ARM_AIM_HARD_RELAX : ARM_AIM_RELAX;
+          if (sideBones.shoulder?.rotation) {
+            sideBones.shoulder.rotation.x = lerp(
+              sideBones.shoulder.rotation.x,
+              sideBase.shoulder.x + pitch * 0.48 + reach * 0.24,
+              relax,
+            );
+            sideBones.shoulder.rotation.y = lerp(
+              sideBones.shoulder.rotation.y,
+              sideBase.shoulder.y + yaw * 0.26,
+              relax,
+            );
+            sideBones.shoulder.rotation.z = lerp(
+              sideBones.shoulder.rotation.z,
+              sideBase.shoulder.z + yaw * 0.5 + sideSign * reach * 0.28,
+              relax,
+            );
+          }
+          if (sideBones.upper?.rotation) {
+            sideBones.upper.rotation.x = lerp(
+              sideBones.upper.rotation.x,
+              sideBase.upper.x + pitch * 1.44 + reach * 0.5,
+              relax,
+            );
+            sideBones.upper.rotation.y = lerp(
+              sideBones.upper.rotation.y,
+              sideBase.upper.y + yaw * 0.42,
+              relax,
+            );
+            sideBones.upper.rotation.z = lerp(
+              sideBones.upper.rotation.z,
+              sideBase.upper.z + yaw * 1.35 + sideSign * reach * 0.46,
+              relax,
+            );
+          }
+          if (sideBones.fore?.rotation) {
+            sideBones.fore.rotation.x = lerp(
+              sideBones.fore.rotation.x,
+              sideBase.fore.x + pitch * 1.35 + reach * 0.72,
+              relax,
+            );
+            sideBones.fore.rotation.y = lerp(
+              sideBones.fore.rotation.y,
+              sideBase.fore.y + yaw * 0.42,
+              relax,
+            );
+            sideBones.fore.rotation.z = lerp(
+              sideBones.fore.rotation.z,
+              sideBase.fore.z + yaw * 1.06 + sideSign * reach * 0.4,
+              relax,
+            );
+          }
+          if (sideBones.hand?.rotation) {
+            sideBones.hand.rotation.x = lerp(
+              sideBones.hand.rotation.x,
+              sideBase.hand.x + pitch * 1.18 + reach * 0.3,
+              relax,
+            );
+            sideBones.hand.rotation.y = lerp(
+              sideBones.hand.rotation.y,
+              sideBase.hand.y + yaw * 0.62,
+              relax,
+            );
+            sideBones.hand.rotation.z = lerp(
+              sideBones.hand.rotation.z,
+              sideBase.hand.z + yaw * 0.78 + sideSign * reach * 0.18,
+              relax,
+            );
+          }
+          if (sideBones.index1?.rotation) {
+            sideBones.index1.rotation.x = lerp(
+              sideBones.index1.rotation.x,
+              sideBase.index1.x + 0.36 + reach * (isDominant ? 0.95 : 0.42),
+              relax,
+            );
+            sideBones.index1.rotation.y = lerp(
+              sideBones.index1.rotation.y,
+              sideBase.index1.y + yaw * 0.22,
+              relax,
+            );
+            sideBones.index1.rotation.z = lerp(
+              sideBones.index1.rotation.z,
+              sideBase.index1.z + yaw * 0.16,
+              relax,
+            );
+          }
+          if (sideBones.index2?.rotation) {
+            sideBones.index2.rotation.x = lerp(
+              sideBones.index2.rotation.x,
+              sideBase.index2.x + 0.24 + reach * (isDominant ? 0.72 : 0.28),
+              relax,
+            );
+            sideBones.index2.rotation.y = lerp(
+              sideBones.index2.rotation.y,
+              sideBase.index2.y + yaw * 0.1,
+              relax,
+            );
+            sideBones.index2.rotation.z = lerp(
+              sideBones.index2.rotation.z,
+              sideBase.index2.z + yaw * 0.08,
+              relax,
+            );
+          }
+        };
+
+        applySide("left", hasTarget ? (dominantSide === "left" ? dominantWeight : supportWeight) : 0);
+        applySide("right", hasTarget ? (dominantSide === "right" ? dominantWeight : supportWeight) : 0);
+      }
+
+      /** Convert screen-root local coords to viewport client coords for TalkingHead.lookAt. */
+      function toClientPoint(target: { x: number; y: number }) {
+        const root = screenRoot.getBoundingClientRect();
+        return { x: root.left + target.x, y: root.top + target.y };
+      }
+
+      function lookAtScreenPoint(target: { x: number; y: number }, force = false) {
+        if (!head || disposed) return;
+        const now = performance.now();
+        if (!force && now - lastLookAtAt < LOOK_AT_THROTTLE_MS) return;
+        lastLookAtAt = now;
+        currentAimTarget = target;
+        const client = toClientPoint(target);
+        try {
+          head.lookAt(client.x, client.y, LOOK_AT_DURATION_MS);
+          overlay.dataset.lookAtX = String(Math.round(client.x));
+          overlay.dataset.lookAtY = String(Math.round(client.y));
+        } catch (error) {
+          console.warn("[dashboard] lookAt failed", error);
+        }
+      }
+
+      function setAimTarget(target: { x: number; y: number }) {
+        lookAtScreenPoint(target);
+      }
+
+      function pointAtTarget(target: { x: number; y: number }, force = false) {
+        if (!head) return;
+        lookAtScreenPoint(target, force);
+        lastMouseGestureAt = performance.now();
+      }
+
+      function focusPanel(target: string, eventAnchorId?: string) {
+        const panel = document.querySelector<HTMLElement>(
+          `.panel[data-panel-id="${target}"]`,
+        );
+        if (!panel) return;
+        clearFocusHighlights();
+        panel.classList.add("focused");
+
+        const root = screenRoot.getBoundingClientRect();
+        const rect = panel.getBoundingClientRect();
+        const panelLeft = rect.left - root.left;
+        const panelTop = rect.top - root.top;
+        const anchor = findAnchorById(target, eventAnchorId) ?? pickAnchor(target);
+        const anchorPoint = anchor
+          ? {
+              x: panelLeft + rect.width * anchor.x,
+              y: panelTop + rect.height * anchor.y,
+            }
+          : {
+              x: panelLeft + rect.width / 2,
+              y: panelTop + rect.height / 2,
+            };
+        const stand = standBesidePanel(rect, anchorPoint);
+        fadeMoveOverlay(stand.x, stand.y);
+        overlay.dataset.focusTarget = target;
+        if (anchor) overlay.dataset.focusAnchor = anchor.id;
+        setFocusDot(anchorPoint);
+
+        // Look after the fade-hop lands so gaze uses the new eye screen position.
+        focusTimers.push(
+          window.setTimeout(() => {
+            if (disposed || !voiceSessionActive) return;
+            lookAtScreenPoint(anchorPoint, true);
+            const gestureHint =
+              anchor?.hint ?? (anchorPoint.y < panelTop + rect.height * 0.4 ? "hand_raise" : "index");
+            const mirror = !stand.standRight;
+            if (gestureHint === "hand_raise") {
+              head?.playGesture("handup", 4, mirror, 420);
+            } else {
+              head?.playGesture("index", 4, mirror, 400);
+            }
+          }, AVATAR_FADE_MOVE_MS + 80),
+        );
+      }
+
+      function scheduleFocusEvents(events: FocusEvent2[], durationSeconds: number) {
+        clearFocusTimers();
+        for (const event of events) {
+          const delayMs = Math.max(0, Math.round(event.at * durationSeconds * 1_000));
+          if (delayMs < 80) {
+            focusPanel(event.target, event.anchorId);
+            continue;
+          }
+          focusTimers.push(
+            window.setTimeout(() => {
+              if (!disposed) focusPanel(event.target, event.anchorId);
+            }, delayMs),
+          );
+        }
+      }
+
+      function clearFocusTimers() {
+        for (const timer of focusTimers) window.clearTimeout(timer);
+        focusTimers = [];
+      }
+
+      function returnToDockSoon() {
+        focusTimers.push(
+          window.setTimeout(() => {
+            clearFocusHighlights();
+            delete overlay.dataset.focusTarget;
+            delete overlay.dataset.focusAnchor;
+            delete overlay.dataset.pointingErrorPx;
+            setFocusDot(null);
+            currentAimTarget = null;
+            moveToDock();
+          }, 2_000),
+        );
+      }
+
+      // ---- avatar loading --------------------------------------------------
+
+      async function initializeHeadAudio() {
+        if (!head || headAudio || disposed) return;
+        headAudio = await attachHeadAudio(head);
+        headAudioReady = headAudio !== null;
+      }
+
+      async function loadAvatar() {
+        if (head || disposed) return;
+        btnStart.disabled = true;
+        btnStart.textContent = "加载中…";
+        try {
+          head = new TalkingHead(
+            avatarStage,
+            createHeadOptions({
+              cameraView: "full",
+              cameraRotateEnable: false,
+              cameraZoomEnable: false,
+              cameraPanEnable: false,
+            }),
+          );
+          await head.showAvatar(
+            createAvatarConfig(),
+            (event) => {
+              if (event.lengthComputable && event.total) {
+                btnStart.textContent = `加载 ${Math.round((event.loaded! / event.total) * 100)}%`;
+              }
+            },
+          );
+          if (disposed) return;
+          if (import.meta.env.DEV) {
+            (window as unknown as { __head?: unknown }).__head = head;
+          }
+          resolveHandBones();
+          resolveArmBones();
+          ikRuntime = null;
+          await initializeHeadAudio();
+          if (disposed) return;
+          btnStart.remove();
+          overlay.dataset.ready = "true";
+          setAvatarAutoloadEnabled(true);
+          askInput.disabled = false;
+          btnAsk.disabled = false;
+          askInput.placeholder = "问问大屏上的数据，比如：哪个区就业率最高？";
+          setStatus("讲解员就绪（空闲时跟随鼠标）");
+          askInput.focus();
+          // Default: look toward screen center briefly so the gaze system is warm.
+          const root = screenRoot.getBoundingClientRect();
+          lookAtScreenPoint({ x: root.width / 2, y: root.height * 0.42 }, true);
+        } catch (error) {
+          console.error("[dashboard] avatar load failed", error);
+          head?.stop();
+          head = null;
+          setAvatarAutoloadEnabled(false);
+          btnStart.disabled = false;
+          btnStart.textContent = "加载失败，点击重试";
+        }
+      }
+
+      // ---- speech ----------------------------------------------------------
+
+      function stopSpeech() {
+        clearFocusTimers();
+        if (overlayMoveTimer !== null) {
+          window.clearTimeout(overlayMoveTimer);
+          overlayMoveTimer = null;
+        }
+        window.speechSynthesis?.cancel();
+        if (streamStarted) head?.streamInterrupt();
+        head?.stopGesture(250);
+      }
+
+      function speakWithBrowserFallback(text: string, events: FocusEvent2[], sessionId: number) {
+        if (!("speechSynthesis" in window) || !text.trim()) {
+          endVoiceSession(sessionId);
+          return;
+        }
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "zh-CN";
+        utterance.onstart = () => {
+          if (sessionId !== voiceSessionId) return;
+          setStatus("浏览器播报中");
+          scheduleFocusEvents(events, Math.max(2, Math.min(30, text.length * 0.22)));
+        };
+        const finish = () => {
+          if (sessionId !== voiceSessionId) return;
+          setStatus("讲解员就绪");
+          endVoiceSession(sessionId);
+          returnToDockSoon();
+        };
+        utterance.onend = finish;
+        utterance.onerror = finish;
+        window.speechSynthesis.speak(utterance);
+      }
+
+      async function speak(text: string, events: FocusEvent2[], sessionId: number) {
+        if (!head || !text.trim()) {
+          endVoiceSession(sessionId);
+          return;
+        }
+        ttsController?.abort();
+        const controller = new AbortController();
+        ttsController = controller;
+        setStatus("语音合成中");
+        try {
+          const response = await fetch(TTS_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: text.slice(0, 800) }),
+            signal: controller.signal,
+          });
+          if (!response.ok) {
+            const body = await response.json().catch(() => null);
+            throw new Error(body?.error || `HTTP ${response.status}`);
+          }
+          const encodedAudio = await response.arrayBuffer();
+          const decoder = new AudioContext();
+          const audioBuffer = await decoder.decodeAudioData(encodedAudio.slice(0));
+          await decoder.close();
+          if (disposed || !head || sessionId !== voiceSessionId) {
+            endVoiceSession(sessionId);
+            return;
+          }
+
+          const pcm = audioBufferToPcm(audioBuffer);
+          const timeline = headAudioReady ? null : createVisemeTimeline(audioBuffer);
+          await head.streamStart(
+            {
+              lipsyncType: "visemes",
+              sampleRate: audioBuffer.sampleRate,
+              gain: 1,
+            },
+            () => {
+              if (sessionId !== voiceSessionId) return;
+              setStatus("讲解中");
+              scheduleFocusEvents(events, audioBuffer.duration);
+            },
+            () => {
+              if (sessionId !== voiceSessionId) return;
+              setStatus("讲解员就绪");
+              endVoiceSession(sessionId);
+              returnToDockSoon();
+            },
+          );
+          if (sessionId !== voiceSessionId) return;
+          streamStarted = true;
+          head.streamAudio({ audio: pcm, ...(timeline ?? {}) });
+          head.streamNotifyEnd();
+        } catch (error) {
+          if ((error as Error).name === "AbortError" || disposed) {
+            endVoiceSession(sessionId);
+            return;
+          }
+          console.warn("[dashboard] CosyVoice unavailable, browser TTS fallback", error);
+          speakWithBrowserFallback(text, events, sessionId);
+        } finally {
+          if (ttsController === controller) ttsController = null;
+        }
+      }
+
+      // ---- ask flow ----------------------------------------------------------
+
+      async function ask(prompt: string) {
+        const question = prompt.trim();
+        if (!question || !head || disposed) return;
+        requestController?.abort();
+        stopSpeech();
+        clearFocusHighlights();
+        askInput.value = "";
+        setFadingVisibility(answerText, true);
+        answerText.textContent = "思考中…";
+        setStatus("思考中");
+        btnAsk.disabled = true;
+        const sessionId = beginVoiceSession();
+        requestController = new AbortController();
+        try {
+          const response = await fetch(GUIDE_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              prompt: question.slice(0, 500),
+              context: guideContext,
+              panels: panels.map((panel) => ({
+                ...panel,
+                anchors: (PANEL_ANCHORS[panel.id] ?? []).map((anchor) => anchor.id),
+              })),
+            }),
+            signal: requestController.signal,
+          });
+          if (!response.ok) throw new Error(`接口异常（HTTP ${response.status}）`);
+          const reply = (await response.json()) as { ok: boolean; message: GuideMessage };
+          const message = reply.message;
+          if (message?.type !== "avatar_response" || message.version !== 2) {
+            throw new Error("回复消息协议不兼容");
+          }
+          const answer = message.speech?.text?.trim() ?? "";
+          activeFocusHint = `${question} ${answer}`.toLowerCase();
+          const events = Array.isArray(message.timeline)
+            ? message.timeline.filter((event) => event?.type === "focus")
+            : [];
+          answerText.textContent = answer || "没有收到回复";
+          if (!disposed && answer && sessionId === voiceSessionId) void speak(answer, events, sessionId);
+          else {
+            setStatus("讲解员就绪");
+            endVoiceSession(sessionId);
+          }
+        } catch (error) {
+          if ((error as Error).name !== "AbortError") {
+            answerText.textContent = `请求失败：${(error as Error).message}`;
+            setStatus("请求失败");
+          }
+          endVoiceSession(sessionId);
+        } finally {
+          requestController = null;
+          if (!disposed) btnAsk.disabled = false;
+        }
+      }
+
+      function disposePage() {
+        if (disposed) return;
+        disposed = true;
+        lifecycleController.abort();
+        requestController?.abort();
+        ttsController?.abort();
+        stopSpeech();
+        headAudio?.stop();
+        headAudio?.disconnect();
+        headAudio = null;
+        if (streamStarted) head?.streamStop();
+        head?.stop();
+        head = null;
+        endVoiceSession();
+        if (ikRuntime) {
+          ikRuntime.leftTarget.parent?.remove(ikRuntime.leftTarget);
+          ikRuntime.rightTarget.parent?.remove(ikRuntime.rightTarget);
+          ikRuntime = null;
+        }
+        handBones = null;
+        armBones = null;
+        armBaseRotations = null;
+        currentAimTarget = null;
+        if (aimRaf) {
+          window.cancelAnimationFrame(aimRaf);
+          aimRaf = 0;
+        }
+      }
+
+      function handleMousePointing(event: MouseEvent) {
+        if (!isMouseLookEnabled()) return;
+        const root = screenRoot.getBoundingClientRect();
+        const target = {
+          x: event.clientX - root.left,
+          y: event.clientY - root.top,
+        };
+        setFocusDot(target);
+        if (lastMouseTarget) {
+          const dx = target.x - lastMouseTarget.x;
+          const dy = target.y - lastMouseTarget.y;
+          if (Math.sqrt(dx * dx + dy * dy) < MOUSE_POINT_MIN_DELTA_PX) return;
+        }
+        lastMouseTarget = target;
+        lookAtScreenPoint(target);
+      }
+
+      moveToDock({ instant: true });
+      window.addEventListener("resize", () => {
+        if (!overlay.dataset.focusTarget) moveToDock({ instant: true });
+      });
+
+      btnStart.addEventListener("click", loadAvatar);
+      if (isAvatarAutoloadEnabled()) {
+        queueMicrotask(() => {
+          if (!disposed) void loadAvatar();
+        });
+      }
+      askBar.addEventListener("submit", (event) => {
+        event.preventDefault();
+        ask(askInput.value);
+      });
+      document.querySelectorAll<HTMLButtonElement>(".chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          if (head) ask(chip.textContent || "");
+          else askInput.value = chip.textContent || "";
+        });
+      });
+      screenRoot.addEventListener("mousemove", handleMousePointing, {
+        signal: lifecycleController.signal,
+      });
+      screenRoot.addEventListener(
+        "mouseleave",
+        () => {
+          if (!overlay.dataset.focusTarget) setFocusDot(null);
+          lastMouseTarget = null;
+        },
+        { signal: lifecycleController.signal },
+      );
+
+      window.addEventListener("pagehide", disposePage, {
+        signal: lifecycleController.signal,
+      });
+      window.addEventListener("beforeunload", disposePage, {
+        signal: lifecycleController.signal,
+      });
+    </script>
+  </body>
+</html>

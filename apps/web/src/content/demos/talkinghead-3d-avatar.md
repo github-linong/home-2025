@@ -12,7 +12,8 @@ tags: ["AI", "数字人", "3D", "WebGL", "语音交互", "TTS"]
 
 基于开源 TalkingHead（MIT）引擎的纯浏览器 3D 数字人 Demo。
 
-- 约 5 MB 的 3D 形象模型在本机浏览器 WebGL 渲染，无云端视频流
+- 约 14 MB 的 Avaturn 照片级写实形象在本机浏览器 WebGL 渲染，无云端视频流
+- 三点光照（暖主光 + 低环境光 + 冷轮廓光）配合 ACES tone mapping 提升真实感
 - 语音识别使用浏览器内置 SpeechRecognition（建议 Chrome / Edge）
 - 语音播报由阿里云 CosyVoice 合成，经本站后端安全代理，密钥不进浏览器
 - HeadAudio 在浏览器内实时分析 CosyVoice 音频并驱动 Oculus viseme，无需中文转录或时间戳

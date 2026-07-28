@@ -4,6 +4,7 @@ import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
 import { auth, pool } from "./auth.js";
 import { createLearnRouter } from "./learn/routes.js";
 import { createDemoRouter } from "./demo/stream-routes.js";
+import { createGuideRouter } from "./demo/guide-routes.js";
 import { createTtsRouter } from "./demo/tts-routes.js";
 import { createAvatarRouter } from "./avatar/routes.js";
 
@@ -69,6 +70,7 @@ app.get("/api/me", async (req, res) => {
 
 app.use("/api/learn", createLearnRouter(pool));
 app.use("/api/demo", createDemoRouter());
+app.use("/api/demo/guide", createGuideRouter());
 app.use("/api/demo/tts", createTtsRouter());
 app.use("/api/demo/avatar", createAvatarRouter());
 

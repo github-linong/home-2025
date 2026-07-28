@@ -8,6 +8,9 @@ declare module "@met4citizen/talkinghead" {
     setMood(mood: string): void;
     playGesture(name: string, duration?: number, mirror?: boolean, transitionMs?: number): void;
     stopGesture(transitionMs?: number): void;
+    /** Look at viewport client coordinates (or camera if x/y are null). */
+    lookAt(x: number | null, y: number | null, t: number): void;
+    lookAtCamera(t: number): void;
     streamStart(
       options?: Record<string, unknown>,
       onAudioStart?: (() => void) | null,
