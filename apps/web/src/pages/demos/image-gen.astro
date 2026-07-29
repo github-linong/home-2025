@@ -1,0 +1,611 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="AI 文生图 · DashScope"
+  description="调用阿里云 DashScope 多种大模型，输入文字描述即可生成图片，支持参考图、风格预设与高级参数。"
+>
+  <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div class="prose max-w-none">
+      <h1 class="!mb-1">AI 文生图</h1>
+      <p class="!mb-0 opacity-80">
+        输入文字描述，调用阿里云 DashScope 大模型生成图片。API Key 仅在服务端使用。
+      </p>
+    </div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-[380px_1fr]">
+    <!-- ========== Left: Controls ========== -->
+    <div class="flex flex-col gap-3">
+
+      <!-- Model selector -->
+      <div class="rounded-box border border-base-300 bg-base-200 p-4">
+        <label class="label py-1" for="modelSelect">
+          <span class="label-text font-semibold">生成模型</span>
+        </label>
+        <select id="modelSelect" class="select select-bordered select-sm w-full"></select>
+        <p id="modelDesc" class="mt-1 text-xs opacity-60"></p>
+
+        <!-- Style presets (wanx-v1 only) -->
+        <div id="styleGroup" class="mt-2 hidden">
+          <label class="label py-1" for="styleSelect">
+            <span class="label-text text-xs">风格预设</span>
+          </label>
+          <select id="styleSelect" class="select select-bordered select-xs w-full">
+            <option value="<auto>">自动</option>
+            <option value="<photography>">摄影</option>
+            <option value="<portrait>">人像</option>
+            <option value="<3d cartoon>">3D 卡通</option>
+            <option value="<anime>">动漫</option>
+            <option value="<oil painting>">油画</option>
+            <option value="<watercolor>">水彩</option>
+            <option value="<sketch>">素描</option>
+            <option value="<chinese painting>">国画</option>
+            <option value="<flat>">扁平插画</option>
+          </select>
+        </div>
+
+        <!-- Reference mode (wanx-v1 only) -->
+        <div id="refModeGroup" class="mt-2 hidden">
+          <label class="label py-1">
+            <span class="label-text text-xs">参考图模式</span>
+          </label>
+          <div class="flex gap-2">
+            <label class="label cursor-pointer gap-1 py-0">
+              <input type="radio" name="refMode" value="repaint" class="radio radio-xs" checked />
+              <span class="label-text text-xs">内容参考</span>
+            </label>
+            <label class="label cursor-pointer gap-1 py-0">
+              <input type="radio" name="refMode" value="refonly" class="radio radio-xs" />
+              <span class="label-text text-xs">风格参考</span>
+            </label>
+          </div>
+          <label class="label py-1" for="refStrength">
+            <span class="label-text text-xs">参考强度 <span id="refStrengthVal" class="opacity-60">0.5</span></span>
+          </label>
+          <input id="refStrength" type="range" min="0" max="1" step="0.1" value="0.5" class="range range-xs" />
+        </div>
+      </div>
+
+      <!-- Prompt -->
+      <div class="rounded-box border border-base-300 bg-base-200 p-4">
+        <label class="label py-1" for="prompt">
+          <span class="label-text font-semibold">描述你想生成的图片</span>
+        </label>
+        <textarea
+          id="prompt"
+          class="textarea textarea-bordered w-full"
+          rows="4"
+          placeholder="例如：一只橘猫戴着宇航员头盔，漂浮在星空中，背景是蓝色地球，写实风格"
+          maxlength="2000"
+        ></textarea>
+
+        <label class="label mt-2 py-1" for="negativePrompt">
+          <span class="label-text text-xs font-semibold">不希望出现的内容（可选）</span>
+        </label>
+        <textarea
+          id="negativePrompt"
+          class="textarea textarea-bordered textarea-sm w-full"
+          rows="2"
+          placeholder="例如：模糊、低质量、文字水印"
+          maxlength="500"
+        ></textarea>
+      </div>
+
+      <!-- Reference images -->
+      <div id="refImageGroup" class="rounded-box border border-base-300 bg-base-200 p-4 hidden">
+        <label class="label py-1">
+          <span class="label-text font-semibold">
+            参考图 <span id="refImageLimit" class="opacity-60 text-xs">(最多 1 张)</span>
+          </span>
+        </label>
+        <div id="refImagePreview" class="flex flex-wrap gap-2 mb-2"></div>
+        <div class="flex gap-2">
+          <input id="refImageInput" type="file" accept="image/*" multiple class="file-input file-input-bordered file-input-xs flex-1" />
+          <button id="btnClearRef" class="btn btn-ghost btn-xs" type="button">清除</button>
+        </div>
+        <p class="mt-1 text-xs opacity-50">💡 支持 Ctrl+V 直接粘贴剪贴板图片</p>
+      </div>
+
+      <!-- Size + Advanced -->
+      <div class="rounded-box border border-base-300 bg-base-200 p-4">
+        <div class="flex flex-wrap items-end gap-3">
+          <div class="form-control">
+            <label class="label py-1" for="sizeSelect">
+              <span class="label-text text-xs">图片尺寸</span>
+            </label>
+            <select id="sizeSelect" class="select select-bordered select-sm w-40"></select>
+          </div>
+          <div class="form-control">
+            <label class="label py-1" for="seedInput">
+              <span class="label-text text-xs">Seed（留空随机）</span>
+            </label>
+            <input id="seedInput" type="number" min="0" placeholder="随机" class="input input-bordered input-sm w-28" />
+          </div>
+        </div>
+
+        <!-- Thinking mode (wan2.7 only) -->
+        <label id="thinkingGroup" class="mt-2 label cursor-pointer gap-2 hidden">
+          <input id="thinkingToggle" type="checkbox" class="checkbox checkbox-xs" />
+          <span class="label-text text-xs">🧠 思考模式（更高质量，更慢）</span>
+        </label>
+
+        <!-- Prompt extend -->
+        <label id="promptExtendGroup" class="mt-2 label cursor-pointer gap-2 hidden">
+          <input id="promptExtendToggle" type="checkbox" class="checkbox checkbox-xs" checked />
+          <span class="label-text text-xs">✨ 智能扩写提示词</span>
+        </label>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-3">
+        <button id="btnGenerate" class="btn btn-primary btn-sm flex-1" type="button">
+          <span id="btnLabel">🎨 生成图片</span>
+          <span id="btnSpinner" class="loading loading-spinner loading-xs hidden"></span>
+        </button>
+        <button id="btnDownload" class="btn btn-ghost btn-sm hidden" type="button" disabled>
+          💾 下载
+        </button>
+      </div>
+
+      <!-- Example prompts -->
+      <div class="rounded-box border border-base-300 bg-base-100 p-3">
+        <p class="mb-2 text-xs font-semibold opacity-60">示例提示词</p>
+        <div class="flex flex-wrap gap-2">
+          <button class="btn btn-outline btn-xs prompt-example" type="button"
+            data-prompt="一只金毛犬坐在草地上，背景是秋天的红叶树，阳光透过树叶，摄影风格，浅景深">
+            🐕 金毛秋景
+          </button>
+          <button class="btn btn-outline btn-xs prompt-example" type="button"
+            data-prompt="赛博朋克风格的未来城市街道，霓虹灯倒映在雨后的水洼中，远处有飞行汽车，电影感构图">
+            🌃 赛博城市
+          </button>
+          <button class="btn btn-outline btn-xs prompt-example" type="button"
+            data-prompt="中国水墨画风格的山水画，层峦叠嶂，云雾缭绕，一叶扁舟泛于湖上，留白大气">
+            🏔️ 水墨山水
+          </button>
+          <button class="btn btn-outline btn-xs prompt-example" type="button"
+            data-prompt="一杯拿铁咖啡的俯拍照片，奶泡上画着精美的树叶拉花，放在大理石桌面上，旁边有一本打开的书">
+            ☕ 咖啡拉花
+          </button>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div id="statusBox" class="hidden rounded-box border border-base-300 p-3 text-sm"></div>
+    </div>
+
+    <!-- ========== Right: Image display ========== -->
+    <div
+      id="imageContainer"
+      class="flex min-h-[500px] items-center justify-center rounded-box border border-base-300 bg-base-200 p-4"
+    >
+      <div id="imagePlaceholder" class="text-center text-sm opacity-50">
+        <p class="text-5xl mb-2">🎨</p>
+        <p>输入描述并点击生成</p>
+      </div>
+      <img
+        id="resultImage"
+        class="hidden max-h-[80vh] rounded-box object-contain shadow-lg"
+        alt="AI 生成的图片"
+      />
+    </div>
+  </div>
+
+  <p class="mt-4 text-xs opacity-50">
+    技术栈：Express + DashScope Image API · 异步任务轮询 · 服务端代理图片字节
+  </p>
+</BaseLayout>
+
+<script>
+  /* ---- DOM refs ---- */
+  const promptEl = document.getElementById("prompt");
+  const negativePromptEl = document.getElementById("negativePrompt");
+  const modelEl = document.getElementById("modelSelect");
+  const modelDesc = document.getElementById("modelDesc");
+  const sizeEl = document.getElementById("sizeSelect");
+  const seedInput = document.getElementById("seedInput");
+  const btnGenerate = document.getElementById("btnGenerate");
+  const btnDownload = document.getElementById("btnDownload");
+  const btnLabel = document.getElementById("btnLabel");
+  const btnSpinner = document.getElementById("btnSpinner");
+  const statusBox = document.getElementById("statusBox");
+  const imagePlaceholder = document.getElementById("imagePlaceholder");
+  const resultImage = document.getElementById("resultImage");
+  const styleGroup = document.getElementById("styleGroup");
+  const styleSelect = document.getElementById("styleSelect");
+  const refModeGroup = document.getElementById("refModeGroup");
+  const refStrengthEl = document.getElementById("refStrength");
+  const refStrengthVal = document.getElementById("refStrengthVal");
+  const refImageGroup = document.getElementById("refImageGroup");
+  const refImagePreview = document.getElementById("refImagePreview");
+  const refImageInput = document.getElementById("refImageInput");
+  const refImageLimit = document.getElementById("refImageLimit");
+  const btnClearRef = document.getElementById("btnClearRef");
+  const thinkingGroup = document.getElementById("thinkingGroup");
+  const thinkingToggle = document.getElementById("thinkingToggle");
+  const promptExtendGroup = document.getElementById("promptExtendGroup");
+  const promptExtendToggle = document.getElementById("promptExtendToggle");
+
+  let currentBlobUrl = null;
+  let generating = false;
+  let refImageDataUrls = []; // data URIs for reference images
+  let modelsData = [];
+
+  /* ---- localStorage persistence ---- */
+  const STORAGE_KEY = "dashscope-image-gen-params";
+
+  function saveState() {
+    try {
+      const state = {
+        model: modelEl.value,
+        size: sizeEl.value,
+        prompt: promptEl.value,
+        negative_prompt: negativePromptEl.value,
+        style: styleSelect.value,
+        ref_mode: document.querySelector('input[name="refMode"]:checked')?.value || "repaint",
+        ref_strength: parseFloat(refStrengthEl.value),
+        thinking_mode: thinkingToggle.checked,
+        prompt_extend: promptExtendToggle.checked,
+        seed: seedInput.value,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch { /* quota exceeded or private mode — ignore */ }
+  }
+
+  function restoreState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      // Model
+      if (s.model && [...modelEl.options].some((o) => o.value === s.model)) {
+        modelEl.value = s.model;
+      }
+      updateModelUI();
+      // Size (must be valid for current model)
+      if (s.size && [...sizeEl.options].some((o) => o.value === s.size)) {
+        sizeEl.value = s.size;
+      }
+      if (s.prompt) promptEl.value = s.prompt;
+      if (s.negative_prompt) negativePromptEl.value = s.negative_prompt;
+      if (s.style) styleSelect.value = s.style;
+      if (s.ref_mode) {
+        const radio = document.querySelector(`input[name="refMode"][value="${s.ref_mode}"]`);
+        if (radio) radio.checked = true;
+      }
+      if (typeof s.ref_strength === "number") {
+        refStrengthEl.value = s.ref_strength;
+        refStrengthVal.textContent = s.ref_strength;
+      }
+      if (typeof s.thinking_mode === "boolean") thinkingToggle.checked = s.thinking_mode;
+      if (typeof s.prompt_extend === "boolean") promptExtendToggle.checked = s.prompt_extend;
+      if (s.seed) seedInput.value = s.seed;
+    } catch { /* corrupted data — ignore */ }
+  }
+
+  // Auto-save on any parameter change
+  for (const el of [promptEl, negativePromptEl, modelEl, sizeEl, seedInput, styleSelect,
+                     refStrengthEl, thinkingToggle, promptExtendToggle]) {
+    el.addEventListener("change", saveState);
+    el.addEventListener("input", saveState);
+  }
+  document.querySelectorAll('input[name="refMode"]').forEach((r) =>
+    r.addEventListener("change", saveState)
+  );
+
+  const MODEL_DESCRIPTIONS = {
+    "wan2.7-image-pro": "最强画质，支持 4K 输出与思考模式",
+    "qwen-image-2.0": "生成+编辑一体，擅长文字渲染与海报",
+    "z-image-turbo": "高性价比，照片级品质，快速生成",
+    "wanx2.1-t2i-turbo": "快速生成，通用风格",
+    "wanx-v1": "经典款，支持 9 种风格预设与参考图",
+  };
+
+  /* ---- Fetch model metadata ---- */
+  async function loadModels() {
+    try {
+      const res = await fetch("/api/demo/image/models");
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.message || "Failed to load models");
+      modelsData = data.models;
+      modelEl.innerHTML = "";
+      for (const m of modelsData) {
+        const opt = document.createElement("option");
+        opt.value = m.id;
+        opt.textContent = `${m.label}${m.default ? "（默认）" : ""}`;
+        if (m.default) opt.selected = true;
+        modelEl.appendChild(opt);
+      }
+      restoreState();
+    } catch (e) {
+      // Fallback: hardcoded options
+      const fallback = [
+        { id: "wan2.7-image-pro", label: "Wan 2.7 Image Pro" },
+        { id: "qwen-image-2.0", label: "Qwen Image 2.0" },
+        { id: "z-image-turbo", label: "Z-Image Turbo" },
+        { id: "wanx2.1-t2i-turbo", label: "Wanx 2.1 Turbo", default: true },
+        { id: "wanx-v1", label: "Wanx V1" },
+      ];
+      for (const m of fallback) {
+        const opt = document.createElement("option");
+        opt.value = m.id;
+        opt.textContent = m.label + (m.default ? "（默认）" : "");
+        if (m.default) opt.selected = true;
+        modelEl.appendChild(opt);
+      }
+      restoreState();
+    }
+  }
+
+  function getCurrentModel() {
+    return modelsData.find((m) => m.id === modelEl.value) || {};
+  }
+
+  /* ---- Update UI based on selected model ---- */
+  function updateModelUI() {
+    const m = getCurrentModel();
+    modelDesc.textContent = MODEL_DESCRIPTIONS[m.id] || "";
+
+    // Sizes
+    const sizes = m.sizes || ["1024*1024"];
+    sizeEl.innerHTML = "";
+    const sizeLabels = {
+      "1024*1024": "1024 × 1024（方）",
+      "720*1280": "720 × 1280（竖）",
+      "1280*720": "1280 × 720（横）",
+      "768*1152": "768 × 1152（竖长）",
+      "1152*768": "1152 × 768（横长）",
+      "2048*2048": "2048 × 2048（2K 方）",
+      "4096*4096": "4096 × 4096（4K 方）",
+    };
+    for (const s of sizes) {
+      const opt = document.createElement("option");
+      opt.value = s;
+      opt.textContent = sizeLabels[s] || s;
+      sizeEl.appendChild(opt);
+    }
+
+    // Style presets (wanx-v1 only)
+    styleGroup.classList.toggle("hidden", !m.styles);
+
+    // Reference images
+    const hasRef = m.maxRefImages > 0;
+    refImageGroup.classList.toggle("hidden", !hasRef);
+    if (hasRef) {
+      refImageLimit.textContent = `（最多 ${m.maxRefImages} 张）`;
+    }
+
+    // Reference mode (wanx-v1 only, when styles exist)
+    refModeGroup.classList.toggle("hidden", !m.styles);
+
+    // Thinking mode (wan2.7 only)
+    thinkingGroup.classList.toggle("hidden", !m.thinking);
+
+    // Prompt extend
+    promptExtendGroup.classList.toggle("hidden", !m.promptExtend);
+  }
+
+  modelEl.addEventListener("change", updateModelUI);
+
+  /* ---- Reference image upload ---- */
+  refImageInput.addEventListener("change", async () => {
+    const m = getCurrentModel();
+    const maxRef = m.maxRefImages || 0;
+    const files = Array.from(refImageInput.files || []).slice(0, maxRef - refImageDataUrls.length);
+
+    for (const file of files) {
+      if (refImageDataUrls.length >= maxRef) break;
+      const dataUrl = await fileToDataUrl(file);
+      refImageDataUrls.push(dataUrl);
+    }
+    renderRefPreview();
+    refImageInput.value = "";
+  });
+
+  btnClearRef.addEventListener("click", () => {
+    refImageDataUrls = [];
+    renderRefPreview();
+  });
+
+  /* ---- Clipboard paste for reference images ---- */
+  document.addEventListener("paste", async (e) => {
+    const m = getCurrentModel();
+    const maxRef = m.maxRefImages || 0;
+    if (maxRef === 0) return; // current model doesn't support ref images
+
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    const imageFiles = [];
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (file) imageFiles.push(file);
+      }
+    }
+    if (imageFiles.length === 0) return;
+
+    e.preventDefault();
+    for (const file of imageFiles) {
+      if (refImageDataUrls.length >= maxRef) break;
+      const dataUrl = await fileToDataUrl(file);
+      refImageDataUrls.push(dataUrl);
+    }
+    renderRefPreview();
+    showStatus(`已粘贴 ${imageFiles.length} 张参考图`, "info");
+    setTimeout(hideStatus, 2000);
+  });
+
+  function renderRefPreview() {
+    refImagePreview.innerHTML = "";
+    refImageDataUrls.forEach((url, i) => {
+      const wrap = document.createElement("div");
+      wrap.className = "relative";
+      const img = document.createElement("img");
+      img.src = url;
+      img.className = "w-16 h-16 rounded object-cover border border-base-300";
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "btn btn-circle btn-xs btn-error absolute -top-1 -right-1";
+      removeBtn.textContent = "×";
+      removeBtn.onclick = () => {
+        refImageDataUrls.splice(i, 1);
+        renderRefPreview();
+      };
+      wrap.appendChild(img);
+      wrap.appendChild(removeBtn);
+      refImagePreview.appendChild(wrap);
+    });
+  }
+
+  function fileToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /* ---- Ref strength slider ---- */
+  refStrengthEl.addEventListener("input", () => {
+    refStrengthVal.textContent = refStrengthEl.value;
+  });
+
+  /* ---- Example prompts ---- */
+  document.querySelectorAll(".prompt-example").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      promptEl.value = btn.dataset.prompt || "";
+      promptEl.focus();
+    });
+  });
+
+  /* ---- Status helpers ---- */
+  function showStatus(message, type = "info") {
+    statusBox.classList.remove("hidden", "border-success", "border-error", "border-warning", "text-success", "text-error", "text-warning");
+    if (type === "error") {
+      statusBox.classList.add("border-error", "text-error");
+    } else if (type === "success") {
+      statusBox.classList.add("border-success", "text-success");
+    } else {
+      statusBox.classList.add("border-warning", "text-warning");
+    }
+    statusBox.textContent = message;
+  }
+  function hideStatus() {
+    statusBox.classList.add("hidden");
+    statusBox.textContent = "";
+  }
+  function setGenerating(value) {
+    generating = value;
+    btnGenerate.disabled = value;
+    btnSpinner.classList.toggle("hidden", !value);
+    btnLabel.textContent = value ? "生成中…" : "🎨 生成图片";
+  }
+
+  /* ---- Generate ---- */
+  btnGenerate.addEventListener("click", async () => {
+    if (generating) return;
+    const prompt = promptEl.value.trim();
+    if (!prompt) {
+      showStatus("请输入图片描述", "error");
+      promptEl.focus();
+      return;
+    }
+
+    hideStatus();
+    setGenerating(true);
+    const modelName = modelEl.options[modelEl.selectedIndex]?.text || modelEl.value;
+    showStatus(`正在使用 ${modelName} 生成，通常需要 10–60 秒…`, "info");
+
+    if (currentBlobUrl) {
+      URL.revokeObjectURL(currentBlobUrl);
+      currentBlobUrl = null;
+    }
+
+    try {
+      const body = {
+        prompt,
+        model: modelEl.value,
+        size: sizeEl.value,
+      };
+
+      const negativePrompt = negativePromptEl.value.trim();
+      if (negativePrompt) body.negative_prompt = negativePrompt;
+
+      const seed = seedInput.value.trim();
+      if (seed) body.seed = parseInt(seed, 10);
+
+      // Model-specific params
+      const m = getCurrentModel();
+      if (m.styles && styleSelect.value) {
+        body.style = styleSelect.value;
+        const refMode = document.querySelector('input[name="refMode"]:checked');
+        if (refMode) body.ref_mode = refMode.value;
+        body.ref_strength = parseFloat(refStrengthEl.value);
+      }
+      if (m.thinking && thinkingToggle.checked) {
+        body.thinking_mode = true;
+      }
+      if (m.promptExtend) {
+        body.prompt_extend = promptExtendToggle.checked;
+      }
+
+      // Reference images (data URIs)
+      if (refImageDataUrls.length > 0) {
+        body.ref_images = [...refImageDataUrls];
+      }
+
+      const response = await fetch("/api/demo/image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      currentBlobUrl = URL.createObjectURL(blob);
+      resultImage.src = currentBlobUrl;
+      resultImage.classList.remove("hidden");
+      imagePlaceholder.classList.add("hidden");
+      btnDownload.classList.remove("hidden");
+      btnDownload.disabled = false;
+
+      showStatus(`${modelName} 生成完成（${(blob.size / 1024).toFixed(0)} KB）`, "success");
+      saveState();
+    } catch (err) {
+      console.error("[image-gen] failed:", err);
+      showStatus(`生成失败：${err.message}`, "error");
+      resultImage.classList.add("hidden");
+      imagePlaceholder.classList.remove("hidden");
+      btnDownload.classList.add("hidden");
+    } finally {
+      setGenerating(false);
+    }
+  });
+
+  /* ---- Download ---- */
+  btnDownload.addEventListener("click", () => {
+    if (!currentBlobUrl) return;
+    const a = document.createElement("a");
+    a.href = currentBlobUrl;
+    a.download = `ai-image-${Date.now()}.png`;
+    a.click();
+  });
+
+  /* ---- Ctrl+Enter shortcut ---- */
+  promptEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      btnGenerate.click();
+    }
+  });
+
+  /* ---- Init ---- */
+  loadModels();
+</script>

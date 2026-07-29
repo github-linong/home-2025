@@ -4,8 +4,10 @@ import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
 import { auth, pool } from "./auth.js";
 import { createLearnRouter } from "./learn/routes.js";
 import { createDemoRouter } from "./demo/stream-routes.js";
+import { createCompareRouter, handleWsUpgrade } from "./demo/compare-routes.js";
 import { createGuideRouter } from "./demo/guide-routes.js";
 import { createTtsRouter } from "./demo/tts-routes.js";
+import { createImageRouter } from "./demo/image-routes.js";
 import { createAvatarRouter } from "./avatar/routes.js";
 
 process.on("uncaughtException", (err) => {
@@ -37,14 +39,19 @@ app.use(
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Source"],
   }),
 );
 
 // IMPORTANT: mount Better Auth before express.json()
 app.all("/api/auth/*", toNodeHandler(auth));
 
-app.use(express.json({ limit: "1mb" }));
+const globalJsonParser = express.json({ limit: "1mb" });
+app.use((req, _res, next) => {
+  // Skip the global JSON parser for routes with their own body limit.
+  if (req.path.startsWith("/api/demo/image")) return next();
+  globalJsonParser(req, _res, next);
+});
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "lilnong-api2", auth: "better-auth" });
@@ -70,10 +77,14 @@ app.get("/api/me", async (req, res) => {
 
 app.use("/api/learn", createLearnRouter(pool));
 app.use("/api/demo", createDemoRouter());
+app.use("/api/demo/compare", createCompareRouter());
 app.use("/api/demo/guide", createGuideRouter());
 app.use("/api/demo/tts", createTtsRouter());
+app.use("/api/demo/image", express.json({ limit: "20mb" }), createImageRouter());
 app.use("/api/demo/avatar", createAvatarRouter());
 
-app.listen(port, "0.0.0.0", () => {
+const server = app.listen(port, "0.0.0.0", () => {
   console.log(`[api2] listening on http://127.0.0.1:${port}`);
 });
+
+server.on("upgrade", handleWsUpgrade);

@@ -4,6 +4,7 @@ import http from "node:http";
 import express from "express";
 import {
   createDemoRouter,
+  normalizeChatMessages,
   parseAvatarReply,
   parseSseDataLine,
   readLlmEnv,
@@ -123,6 +124,88 @@ describe("Qwen stream helpers", () => {
       version: 1,
       speech: { text: "普通文本", language: "zh-CN" },
       timeline: [],
+    });
+  });
+});
+
+describe("normalizeChatMessages", () => {
+  it("accepts messages array and legacy prompt", () => {
+    assert.deepEqual(
+      normalizeChatMessages({
+        messages: [
+          { role: "user", content: " hi " },
+          { role: "assistant", content: "hello" },
+          { role: "tool", content: "ignored-role-becomes-user" },
+        ],
+      }),
+      [
+        { role: "user", content: "hi" },
+        { role: "assistant", content: "hello" },
+        { role: "user", content: "ignored-role-becomes-user" },
+      ],
+    );
+    assert.deepEqual(normalizeChatMessages({ prompt: "单独提问" }), [
+      { role: "user", content: "单独提问" },
+    ]);
+    assert.deepEqual(normalizeChatMessages({ prompt: "" }), []);
+  });
+});
+
+describe("POST /api/demo/chat-stream", () => {
+  it("streams plain-text deltas from DashScope SSE", async () => {
+    const encoder = new TextEncoder();
+    const fetchImpl = async (_url, options) => {
+      const body = JSON.parse(options.body);
+      assert.equal(body.stream, true);
+      assert.equal(body.messages[0].role, "system");
+      assert.equal(body.messages.at(-1).content, "用一句话介绍 ReadableStream");
+      return new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({ choices: [{ delta: { content: "ReadableStream " } }] })}\n\n`,
+              ),
+            );
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({ choices: [{ delta: { content: "可边收边读。" } }] })}\n\ndata: [DONE]\n\n`,
+              ),
+            );
+            controller.close();
+          },
+        }),
+        { status: 200, headers: { "Content-Type": "text/event-stream" } },
+      );
+    };
+
+    await withServer(
+      createDemoRouter({ env: FULL_ENV, fetchImpl }),
+      async (base) => {
+        const url = base.replace(/\/llm-stream$/, "/chat-stream");
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: [{ role: "user", content: "用一句话介绍 ReadableStream" }],
+          }),
+        });
+        assert.equal(response.status, 200);
+        assert.match(response.headers.get("content-type") || "", /text\/plain/);
+        assert.equal(await response.text(), "ReadableStream 可边收边读。");
+      },
+    );
+  });
+
+  it("returns 503 when the API key is missing", async () => {
+    await withServer(createDemoRouter({ env: {} }), async (base) => {
+      const response = await fetch(base.replace(/\/llm-stream$/, "/chat-stream"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: "你好" }),
+      });
+      assert.equal(response.status, 503);
+      assert.equal((await response.json()).error, "llm_not_configured");
     });
   });
 });

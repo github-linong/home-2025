@@ -47,6 +47,7 @@ export default defineConfig({
         '/api/demo': {
           target: 'http://127.0.0.1:3002',
           changeOrigin: true,
+          ws: true,
         },
         '/ws/poker': {
           target: 'ws://127.0.0.1:3003',

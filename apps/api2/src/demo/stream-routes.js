@@ -174,6 +174,77 @@ export function createRateLimiter({ maxRequests = 10, windowMs = 60_000 } = {}) 
   };
 }
 
+const CHAT_SYSTEM_PROMPT =
+  "你是一个简洁、友好的中文助手。用简体中文回答，条理清晰，避免空洞客套。" +
+  "除非用户要求，否则不要输出冗长 Markdown 标题墙。";
+const MAX_CHAT_MESSAGES = 20;
+const MAX_CHAT_MESSAGE_LENGTH = 2_000;
+const MAX_CHAT_PROMPT_LENGTH = 4_000;
+
+/**
+ * Normalize client chat payload into OpenAI-style messages.
+ * Accepts either `{ messages: [...] }` or legacy `{ prompt: "..." }`.
+ */
+export function normalizeChatMessages(body) {
+  if (Array.isArray(body?.messages) && body.messages.length) {
+    const messages = [];
+    for (const item of body.messages.slice(-MAX_CHAT_MESSAGES)) {
+      const role = item?.role === "assistant" || item?.role === "system" ? item.role : "user";
+      const content = typeof item?.content === "string" ? item.content.trim() : "";
+      if (!content || content.length > MAX_CHAT_MESSAGE_LENGTH) continue;
+      messages.push({ role, content });
+    }
+    return messages;
+  }
+
+  const prompt = typeof body?.prompt === "string" ? body.prompt.trim() : "";
+  if (!prompt || prompt.length > MAX_CHAT_PROMPT_LENGTH) return [];
+  return [{ role: "user", content: prompt }];
+}
+
+/**
+ * Yield plain-text token deltas from a DashScope (OpenAI-style) SSE body.
+ */
+export async function* iterateSseTextTokens(upstreamBody) {
+  const reader = upstreamBody.getReader();
+  const decoder = new TextDecoder();
+  let pending = "";
+
+  function* flushLines(text) {
+    pending += text;
+    const lines = pending.split(/\r?\n/);
+    pending = lines.pop() ?? "";
+    for (const line of lines) {
+      const content = parseSseDataLine(line);
+      if (content) yield content;
+    }
+  }
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      yield* flushLines(decoder.decode(value, { stream: true }));
+    }
+    yield* flushLines(decoder.decode() + "\n");
+  } finally {
+    reader.releaseLock?.();
+  }
+}
+
+/**
+ * Pipe DashScope SSE into a plain-text response body (token deltas only).
+ * Keeps the Fetch ReadableStream demo free of SSE framing on the client.
+ */
+export async function pipeSseTextToResponse(upstreamBody, res) {
+  let wrote = 0;
+  for await (const content of iterateSseTextTokens(upstreamBody)) {
+    res.write(content);
+    wrote += content.length;
+  }
+  return wrote;
+}
+
 /**
  * Chinese Qwen streaming proxy for the TalkingHead demo.
  * Mounted at /api/demo
@@ -186,6 +257,96 @@ export function createDemoRouter({
 } = {}) {
   const router = Router();
   const allowRequest = createRateLimiter({ maxRequests, windowMs });
+
+  /**
+   * POST /api/demo/chat-stream
+   * Proxies DashScope chat completions and streams plain-text token deltas.
+   * Used by the Fetch ReadableStream / typewriter React demo.
+   */
+  router.post("/chat-stream", async (req, res) => {
+    const cfg = readLlmEnv(env);
+    if (!cfg.apiKey) {
+      res.status(503).json({
+        ok: false,
+        error: "llm_not_configured",
+        message: "DASHSCOPE_API_KEY is not configured",
+      });
+      return;
+    }
+
+    const messages = normalizeChatMessages(req.body);
+    if (!messages.length) {
+      res.status(400).json({
+        ok: false,
+        error: "invalid_messages",
+        message: "Provide messages[] or a non-empty prompt",
+      });
+      return;
+    }
+
+    const clientKey = `chat:${req.ip || req.socket.remoteAddress || "unknown"}`;
+    if (!allowRequest(clientKey)) {
+      res.set("Retry-After", String(Math.ceil(windowMs / 1000)));
+      res.status(429).json({ ok: false, error: "rate_limited" });
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60_000);
+    const abortOnDisconnect = () => {
+      if (!res.writableEnded) controller.abort();
+    };
+    res.on("close", abortOnDisconnect);
+
+    try {
+      const upstream = await fetchImpl(cfg.endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${cfg.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: cfg.model,
+          messages: [{ role: "system", content: CHAT_SYSTEM_PROMPT }, ...messages],
+          stream: true,
+          temperature: 0.7,
+          max_tokens: 1_024,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!upstream.ok) {
+        const detail = (await upstream.text()).slice(0, 500);
+        throw new Error(`DashScope HTTP ${upstream.status}: ${detail}`);
+      }
+      if (!upstream.body) throw new Error("DashScope returned no response body");
+
+      res.status(200);
+      res.setHeader("Content-Type", "text/plain; charset=utf-8");
+      res.setHeader("Cache-Control", "no-store");
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("X-Accel-Buffering", "no");
+      if (typeof res.flushHeaders === "function") res.flushHeaders();
+
+      await pipeSseTextToResponse(upstream.body, res);
+      if (!res.writableEnded) res.end();
+    } catch (error) {
+      if (error?.name === "AbortError" && res.destroyed) return;
+      console.error("[api2] chat-stream failed:", error);
+      if (res.headersSent) {
+        if (!res.writableEnded) res.end();
+        return;
+      }
+      res.status(502).json({
+        ok: false,
+        error: "llm_request_failed",
+        message: "Chat stream failed",
+      });
+    } finally {
+      clearTimeout(timeout);
+      res.off("close", abortOnDisconnect);
+    }
+  });
 
   router.post("/llm-stream", async (req, res) => {
     const cfg = readLlmEnv(env);

@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>请求方式对比 Demo</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1a202c;
+      --muted: #718096;
+      --accent: #2b6cb0;
+      --accent-light: #ebf8ff;
+      --ok: #2f855a;
+      --ok-light: #f0fff4;
+      --warn: #c05621;
+      --warn-light: #fffaf0;
+      --danger: #c53030;
+      --danger-light: #fff5f5;
+      --chip: #edf2f7;
+      --chip-flash: #bee3f8;
+      --mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+      --sans: "IBM Plex Sans", "Source Han Sans SC", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
+      --radius: 10px;
+      --shadow: 0 1px 3px rgba(0,0,0,.07);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: .7rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      flex-wrap: wrap;
+      box-shadow: 0 1px 0 rgba(0,0,0,.03);
+    }
+    .toolbar h1 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      margin-right: auto;
+    }
+    .toolbar label { font-size: .8rem; color: var(--muted); display: flex; align-items: center; gap: .35rem; }
+    .toolbar select, .toolbar button {
+      font: inherit;
+      font-size: .8rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .35rem .7rem;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--text);
+    }
+    .btn-run-all {
+      background: var(--accent) !important;
+      color: #fff !important;
+      border-color: var(--accent) !important;
+      font-weight: 600;
+    }
+    .btn-reset { color: var(--muted); }
+
+    .matrix-section { padding: 1.1rem 1.2rem .3rem; }
+    .matrix-section h2 {
+      margin: 0 0 .65rem;
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .matrix-wrap { overflow-x: auto; }
+    table.matrix {
+      border-collapse: collapse;
+      font-size: .78rem;
+      min-width: 560px;
+      background: var(--surface);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    table.matrix th, table.matrix td {
+      border: 1px solid var(--border);
+      padding: .35rem .65rem;
+      text-align: center;
+      white-space: nowrap;
+    }
+    table.matrix th { background: #f7fafc; font-weight: 600; }
+    table.matrix td.yes { background: var(--ok-light); color: var(--ok); font-weight: 600; }
+    table.matrix td.no { color: #cbd5e0; }
+    table.matrix td.partial { background: var(--warn-light); color: var(--warn); font-weight: 600; }
+
+    .main { padding: .9rem 1.2rem 2.5rem; }
+    .group { margin-bottom: 1.6rem; }
+    .group-title {
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: .7rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .group-title::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 280px;
+    }
+    .card.is-live { border-color: #90cdf4; box-shadow: 0 0 0 2px rgba(49,130,206,.15); }
+    .card.is-done { border-color: #9ae6b4; }
+    .card.is-error { border-color: #feb2b2; }
+
+    .card-head {
+      padding: .7rem .85rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: .55rem;
+    }
+    .card-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      flex-shrink: 0;
+    }
+    .icon-xhr { background: #fff5eb; }
+    .icon-fetch { background: #ebf4ff; }
+    .icon-sse { background: #f0fff4; }
+    .icon-ws { background: #faf5ff; }
+    .icon-jsonp { background: #fffff0; }
+    .icon-beacon { background: #fff5f5; }
+    .icon-img { background: #e6fffa; }
+    .icon-wt { background: #ebf8ff; }
+    .icon-h2 { background: #faf5ff; }
+    .icon-iframe { background: #fffaf0; }
+
+    .card-meta { flex: 1; min-width: 0; }
+    .card-title {
+      font-weight: 700;
+      font-size: .9rem;
+      margin: 0 0 .15rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    .card-sub {
+      font-size: .7rem;
+      color: var(--muted);
+      font-family: var(--mono);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .status-pill {
+      font-size: .65rem;
+      font-weight: 700;
+      padding: .12rem .4rem;
+      border-radius: 999px;
+      background: #edf2f7;
+      color: var(--muted);
+      letter-spacing: .02em;
+    }
+    .status-pill.loading { background: #feebc8; color: var(--warn); }
+    .status-pill.done { background: #c6f6d5; color: var(--ok); }
+    .status-pill.error { background: #fed7d7; color: var(--danger); }
+
+    .card-run {
+      flex-shrink: 0;
+      font-size: .75rem;
+      padding: .28rem .6rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #f7fafc;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .card-run:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+    .card-run:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* live data area */
+    .card-live {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: #fafbfc;
+    }
+    .live-label {
+      padding: .35rem .85rem 0;
+      font-size: .65rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+    .live-output {
+      flex: 1;
+      padding: .4rem .85rem .55rem;
+      min-height: 88px;
+      max-height: 130px;
+      overflow-y: auto;
+      font-family: var(--mono);
+      font-size: .8rem;
+      line-height: 1.7;
+    }
+    .live-output.idle {
+      color: var(--muted);
+      font-family: var(--sans);
+      font-style: italic;
+      font-size: .8rem;
+    }
+    .live-output.error { color: var(--danger); background: var(--danger-light); }
+
+    /* streaming chips */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .3rem;
+      align-content: flex-start;
+    }
+    .chip {
+      display: inline-block;
+      padding: .12rem .4rem;
+      border-radius: 5px;
+      background: var(--chip);
+      border: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: .75rem;
+      animation: chip-in .28s ease-out;
+    }
+    .chip.fresh {
+      background: var(--chip-flash);
+      border-color: #63b3ed;
+      box-shadow: 0 0 0 2px rgba(49,130,206,.2);
+    }
+    @keyframes chip-in {
+      from { opacity: 0; transform: translateY(4px) scale(.92); }
+      to { opacity: 1; transform: none; }
+    }
+
+    /* once / json payload */
+    .payload-block {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #edf2f7;
+      border-radius: 6px;
+      padding: .5rem .65rem;
+      border: 1px solid var(--border);
+      animation: chip-in .25s ease-out;
+    }
+
+    /* long-poll wait bar */
+    .wait-row {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      margin-bottom: .35rem;
+      font-size: .75rem;
+      color: var(--warn);
+      font-family: var(--sans);
+    }
+    .wait-bar {
+      flex: 1;
+      height: 4px;
+      background: #feebc8;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .wait-bar > span {
+      display: block;
+      height: 100%;
+      width: 30%;
+      background: var(--warn);
+      border-radius: 2px;
+      animation: wait-slide 1.2s ease-in-out infinite;
+    }
+    @keyframes wait-slide {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(350%); }
+    }
+    .lp-item {
+      display: flex;
+      gap: .45rem;
+      align-items: baseline;
+      padding: .2rem 0;
+      border-bottom: 1px dashed #e2e8f0;
+      animation: chip-in .25s ease-out;
+    }
+    .lp-item:last-child { border-bottom: 0; }
+    .lp-seq {
+      font-size: .65rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-light);
+      padding: .05rem .35rem;
+      border-radius: 4px;
+      font-family: var(--mono);
+    }
+
+    /* event timeline */
+    .timeline {
+      border-top: 1px solid var(--border);
+      background: #fff;
+      max-height: 96px;
+      overflow-y: auto;
+      padding: .35rem .75rem .45rem;
+      font-family: var(--mono);
+      font-size: .68rem;
+      color: var(--muted);
+    }
+    .tl-row {
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      gap: .4rem;
+      padding: .12rem 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .tl-row:last-child { border-bottom: 0; }
+    .tl-ms { color: #a0aec0; }
+    .tl-msg { color: var(--text); word-break: break-all; }
+    .tl-msg.ok { color: var(--ok); }
+    .tl-msg.warn { color: var(--warn); }
+    .tl-msg.err { color: var(--danger); }
+    .tl-msg.info { color: var(--accent); }
+
+    .card-foot {
+      padding: .4rem .85rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 1rem;
+      background: #f7fafc;
+      font-size: .72rem;
+      color: var(--muted);
+    }
+    .metric { display: flex; flex-direction: column; gap: 1px; }
+    .metric-label { font-size: .62rem; text-transform: uppercase; letter-spacing: .04em; }
+    .metric-value { font-weight: 700; color: var(--text); font-family: var(--mono); }
+    .metric-value.ok { color: var(--ok); }
+  </style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>请求方式对比 Demo</h1>
+  <label>数据源
+    <select id="sel-source">
+      <option value="mock">Mock（本地）</option>
+      <option value="llm">LLM（DashScope）</option>
+    </select>
+  </label>
+  <label>延迟
+    <select id="sel-delay">
+      <option value="10">10 ms</option>
+      <option value="30">30 ms</option>
+      <option value="80" selected>80 ms</option>
+      <option value="150">150 ms</option>
+    </select>
+  </label>
+  <button class="btn-reset" id="btn-reset">重置全部</button>
+  <button class="btn-run-all" id="btn-run-all">▶ 全部运行</button>
+  <span style="font-size:.72rem;color:var(--muted);margin-left:.25rem">
+    LLM 作用于 once / stream / SSE / JSONP / iframe / WS；长轮询与 Beacon 仍为 mock
+  </span>
+</div>
+
+<section class="matrix-section">
+  <h2>技术 × 场景 矩阵</h2>
+  <div class="matrix-wrap">
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th>技术 \ 场景</th>
+          <th>单次请求</th>
+          <th>流式接收</th>
+          <th>长轮询</th>
+          <th>全双工</th>
+          <th>只发不收</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><th>XHR</th><td class="yes">✓</td><td class="yes">✓ readyState 3</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+        <tr><th>Fetch</th><td class="yes">✓</td><td class="yes">✓ ReadableStream</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+        <tr><th>EventSource</th><td class="no">—</td><td class="yes">✓ 服务器推</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+        <tr><th>iframe</th><td class="no">—</td><td class="yes">✓ Forever Frame</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+        <tr><th>WebSocket</th><td class="no">—</td><td class="partial">✓ 双向</td><td class="no">—</td><td class="yes">✓</td><td class="no">—</td></tr>
+        <tr><th>WebTransport</th><td class="no">—</td><td class="partial">✓ 多流</td><td class="no">—</td><td class="yes">✓ HTTP/3</td><td class="no">—</td></tr>
+        <tr><th>HTTP/2 Push</th><td class="no">—</td><td class="no">已移除</td><td class="no">—</td><td class="no">—</td><td class="partial">曾推资源</td></tr>
+        <tr><th>JSONP</th><td class="yes">✓ &lt;script&gt;</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+        <tr><th>Beacon</th><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">✓ sendBeacon</td></tr>
+        <tr><th>Image</th><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">✓ &lt;img src&gt;</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<main class="main" id="main"></main>
+
+<script type="module">
+const BASE = "/api/demo/compare";
+const WS_BASE = `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api/demo/compare/ws`;
+const LP_ROUNDS = 5;
+
+function getDelay() { return document.getElementById("sel-delay").value; }
+function getSource() { return document.getElementById("sel-source").value; }
+/** Query suffix for transports that cannot set custom headers (SSE / JSONP / iframe / WS). */
+function sourceQuery() {
+  return getSource() === "llm" ? "&source=llm" : "";
+}
+function llmHeaders() {
+  return getSource() === "llm" ? { "X-Source": "llm" } : {};
+}
+function applyLlmHeader(xhr) {
+  if (getSource() === "llm") xhr.setRequestHeader("X-Source", "llm");
+}
+function $(sel, root = document) { return root.querySelector(sel); }
+
+const GROUPS = [
+  {
+    label: "单次请求",
+    cards: [
+      { id: "xhr-once", title: "XHR 单次", sub: "XMLHttpRequest · GET /once", icon: "⚡", iconClass: "icon-xhr", mode: "once", run: runXhrOnce },
+      { id: "fetch-once", title: "Fetch 单次", sub: "fetch() · GET /once", icon: "🌐", iconClass: "icon-fetch", mode: "once", run: runFetchOnce },
+      { id: "jsonp-once", title: "JSONP 单次", sub: "动态 script 注入 · GET /jsonp", icon: "🔗", iconClass: "icon-jsonp", mode: "once", run: runJsonp },
+    ],
+  },
+  {
+    label: "流式接收",
+    cards: [
+      { id: "xhr-stream", title: "XHR 流式", sub: "prelude+换行分帧 · GET /stream?design=1", icon: "⚡", iconClass: "icon-xhr", mode: "stream", run: runXhrStream },
+      { id: "xhr-blob", title: "XHR Blob", sub: "responseType=blob · GET /stream?design=1", icon: "⚡", iconClass: "icon-xhr", mode: "stream", run: runXhrBlob },
+      { id: "fetch-stream", title: "Fetch 流式", sub: "ReadableStream · GET /stream", icon: "🌐", iconClass: "icon-fetch", mode: "stream", run: runFetchStream },
+      { id: "sse", title: "SSE", sub: "EventSource · GET /sse", icon: "📡", iconClass: "icon-sse", mode: "stream", run: runSse },
+      { id: "iframe-stream", title: "iframe 流式", sub: "Forever Frame · GET /iframe-stream", icon: "🪟", iconClass: "icon-iframe", mode: "stream", run: runIframeStream },
+      { id: "h2-push", title: "HTTP/2 Push", sub: "能力探测 · GET /h2-push（已过时）", icon: "📦", iconClass: "icon-h2", mode: "once", run: runHttp2Push },
+    ],
+  },
+  {
+    label: "长轮询",
+    cards: [
+      { id: "xhr-longpoll", title: "XHR 长轮询", sub: "回调循环 · GET /long-poll", icon: "⚡", iconClass: "icon-xhr", mode: "longpoll", run: runXhrLongPoll },
+      { id: "fetch-longpoll", title: "Fetch 长轮询", sub: "async/await 循环 · GET /long-poll", icon: "🌐", iconClass: "icon-fetch", mode: "longpoll", run: runFetchLongPoll },
+    ],
+  },
+  {
+    label: "全双工",
+    cards: [
+      { id: "websocket", title: "WebSocket", sub: "全双工 · WS /ws", icon: "🔌", iconClass: "icon-ws", mode: "stream", run: runWebSocket },
+      { id: "webtransport", title: "WebTransport", sub: "HTTP/3 多流 · 能力探测", icon: "🚀", iconClass: "icon-wt", mode: "once", run: runWebTransport },
+    ],
+  },
+  {
+    label: "只发不收",
+    cards: [
+      { id: "beacon", title: "Beacon", sub: "navigator.sendBeacon · POST /beacon", icon: "📮", iconClass: "icon-beacon", mode: "beacon", run: runBeacon },
+      { id: "img-pixel", title: "Image 像素", sub: "<img src> · GET /pixel", icon: "🖼️", iconClass: "icon-img", mode: "beacon", run: runImgPixel },
+    ],
+  },
+];
+
+const state = {};
+const cleanups = {};
+const tickers = {};
+
+function initState(id) {
+  state[id] = {
+    status: "idle",
+    mode: "once",
+    chunks: 0,
+    bytes: 0,
+    startMs: 0,
+    elapsedMs: 0,
+    events: [],
+    chips: [],
+    lpItems: [],
+    waiting: false,
+    payload: null,
+    error: null,
+  };
+}
+
+GROUPS.forEach((g) => g.cards.forEach((c) => {
+  initState(c.id);
+  state[c.id].mode = c.mode;
+}));
+
+function cardEl(id) { return document.getElementById(`card-${id}`); }
+
+function addEvent(id, msg, kind = "") {
+  const s = state[id];
+  const ms = s.startMs ? Date.now() - s.startMs : 0;
+  s.events.push({ ms, msg, kind });
+  if (s.events.length > 40) s.events.shift();
+  renderTimeline(id);
+}
+
+function renderTimeline(id) {
+  const el = cardEl(id);
+  if (!el) return;
+  const tl = $(".timeline", el);
+  tl.innerHTML = state[id].events.map((e) =>
+    `<div class="tl-row"><span class="tl-ms">+${e.ms}ms</span><span class="tl-msg ${e.kind || ""}">${escapeHtml(e.msg)}</span></div>`
+  ).join("");
+  tl.scrollTop = tl.scrollHeight;
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function renderMetrics(id) {
+  const el = cardEl(id);
+  if (!el) return;
+  const s = state[id];
+  const timeEl = $(".m-time .metric-value", el);
+  timeEl.textContent = s.elapsedMs ? `${s.elapsedMs} ms` : "—";
+  timeEl.className = "metric-value" + (s.elapsedMs ? " ok" : "");
+  $(".m-chunks .metric-value", el).textContent = s.chunks || "—";
+  $(".m-bytes .metric-value", el).textContent = s.bytes ? `${s.bytes} B` : "—";
+}
+
+function renderStatus(id) {
+  const el = cardEl(id);
+  if (!el) return;
+  const s = state[id];
+  const pill = $(".status-pill", el);
+  const btn = $(".card-run", el);
+  const labels = { idle: "空闲", loading: "进行中", done: "完成", error: "失败" };
+  pill.textContent = labels[s.status] || s.status;
+  pill.className = "status-pill " + (s.status === "idle" ? "" : s.status);
+  el.classList.toggle("is-live", s.status === "loading");
+  el.classList.toggle("is-done", s.status === "done");
+  el.classList.toggle("is-error", s.status === "error");
+  btn.disabled = s.status === "loading";
+  btn.textContent = s.status === "loading" ? "运行中…" : "运行";
+}
+
+function renderLive(id) {
+  const el = cardEl(id);
+  if (!el) return;
+  const s = state[id];
+  const out = $(".live-output", el);
+
+  if (s.status === "idle") {
+    out.className = "live-output idle";
+    out.textContent = "点击「运行」开始，这里会实时显示收到的数据…";
+    return;
+  }
+  if (s.status === "error") {
+    out.className = "live-output error";
+    out.textContent = s.error || "未知错误";
+    return;
+  }
+
+  out.className = "live-output";
+
+  if (s.mode === "stream") {
+    out.innerHTML = `<div class="chips">${s.chips.map((c, i) =>
+      `<span class="chip${i === s.chips.length - 1 && s.status === "loading" ? " fresh" : ""}">${escapeHtml(c)}</span>`
+    ).join("")}</div>`;
+  } else if (s.mode === "longpoll") {
+    let html = "";
+    if (s.waiting) {
+      html += `<div class="wait-row"><span>等待服务器响应…</span><div class="wait-bar"><span></span></div></div>`;
+    }
+    html += s.lpItems.map((item) =>
+      `<div class="lp-item"><span class="lp-seq">#${item.seq}</span><span>${escapeHtml(item.text)}</span><span style="color:var(--muted);font-size:.68rem;margin-left:auto">+${item.ms}ms</span></div>`
+    ).join("");
+    if (!s.waiting && !s.lpItems.length && s.status === "loading") {
+      html = `<div class="wait-row"><span>发起第 1 轮请求…</span><div class="wait-bar"><span></span></div></div>`;
+    }
+    out.innerHTML = html || '<span style="color:var(--muted)">—</span>';
+  } else if (s.mode === "once" || s.mode === "beacon") {
+    if (s.payload != null) {
+      out.innerHTML = `<pre class="payload-block">${escapeHtml(typeof s.payload === "string" ? s.payload : JSON.stringify(s.payload, null, 2))}</pre>`;
+    } else if (s.status === "loading") {
+      out.className = "live-output idle";
+      out.textContent = "请求已发出，等待完整响应…";
+    } else {
+      out.textContent = "—";
+    }
+  }
+
+  out.scrollTop = out.scrollHeight;
+}
+
+function renderCard(id) {
+  renderStatus(id);
+  renderLive(id);
+  renderTimeline(id);
+  renderMetrics(id);
+}
+
+function startTicker(id) {
+  stopTicker(id);
+  tickers[id] = setInterval(() => {
+    const s = state[id];
+    if (s.status !== "loading") return;
+    s.elapsedMs = Date.now() - s.startMs;
+    renderMetrics(id);
+  }, 80);
+}
+
+function stopTicker(id) {
+  if (tickers[id]) {
+    clearInterval(tickers[id]);
+    delete tickers[id];
+  }
+}
+
+function startCard(id) {
+  if (cleanups[id]) { cleanups[id](); delete cleanups[id]; }
+  stopTicker(id);
+  const mode = state[id].mode;
+  initState(id);
+  state[id].mode = mode;
+  state[id].status = "loading";
+  state[id].startMs = Date.now();
+  addEvent(id, "请求开始", "info");
+  startTicker(id);
+  renderCard(id);
+}
+
+function pushChip(id, text) {
+  const s = state[id];
+  if (!text) return;
+  s.chips.push(text);
+  s.chunks++;
+  s.bytes += new TextEncoder().encode(text).length;
+  s.elapsedMs = Date.now() - s.startMs;
+  const preview = text.length > 24 ? `${text.slice(0, 24)}…` : text;
+  addEvent(id, `收到增量 #${s.chunks}: 「${preview}」`);
+  renderLive(id);
+  renderMetrics(id);
+}
+
+function setPayload(id, payload) {
+  const s = state[id];
+  const text = typeof payload === "string" ? payload : JSON.stringify(payload);
+  s.payload = payload;
+  s.chunks = 1;
+  s.bytes = new TextEncoder().encode(text).length;
+  s.elapsedMs = Date.now() - s.startMs;
+  addEvent(id, `收到完整响应 (${s.bytes} B)`, "ok");
+  renderLive(id);
+  renderMetrics(id);
+}
+
+function pushLpItem(id, seq, text) {
+  const s = state[id];
+  s.waiting = false;
+  s.lpItems.push({ seq, text, ms: Date.now() - s.startMs });
+  s.chunks++;
+  s.bytes += new TextEncoder().encode(text).length;
+  s.elapsedMs = Date.now() - s.startMs;
+  addEvent(id, `第 ${seq + 1} 轮返回: 「${text}」`, "ok");
+  renderLive(id);
+  renderMetrics(id);
+}
+
+function setWaiting(id, on) {
+  state[id].waiting = on;
+  if (on) addEvent(id, "等待服务器（长轮询挂起）…", "warn");
+  renderLive(id);
+}
+
+function doneCard(id, msg) {
+  const s = state[id];
+  s.status = "done";
+  s.waiting = false;
+  s.elapsedMs = Date.now() - s.startMs;
+  stopTicker(id);
+  addEvent(id, msg || `完成 · ${s.chunks} 块 · ${s.elapsedMs} ms`, "ok");
+  renderCard(id);
+}
+
+function errorCard(id, msg) {
+  const s = state[id];
+  s.status = "error";
+  s.waiting = false;
+  s.error = String(msg);
+  s.elapsedMs = Date.now() - s.startMs;
+  stopTicker(id);
+  addEvent(id, String(msg), "err");
+  renderCard(id);
+}
+
+// ── Runners ───────────────────────────────────────────────────────────────────
+
+function runXhrOnce(id) {
+  startCard(id);
+  const xhr = new XMLHttpRequest();
+  cleanups[id] = () => xhr.abort();
+  xhr.open("GET", `${BASE}/once`);
+  applyLlmHeader(xhr);
+  addEvent(id, `xhr.open + send → GET /once${getSource() === "llm" ? " · X-Source: llm" : ""}`);
+  xhr.onload = () => {
+    try {
+      const data = JSON.parse(xhr.responseText);
+      if (xhr.status >= 400 || data?.ok === false) {
+        errorCard(id, data?.message || data?.error || `HTTP ${xhr.status}`);
+        return;
+      }
+      setPayload(id, data);
+      doneCard(id);
+    } catch (_) {
+      errorCard(id, xhr.responseText || "解析失败");
+    }
+  };
+  xhr.onerror = () => errorCard(id, "网络错误");
+  xhr.onabort = () => doneCard(id, "已中止");
+  xhr.send();
+}
+
+function runFetchOnce(id) {
+  startCard(id);
+  const controller = new AbortController();
+  cleanups[id] = () => controller.abort();
+  addEvent(id, `fetch → GET /once${getSource() === "llm" ? " · X-Source: llm" : ""}`);
+  fetch(`${BASE}/once`, { signal: controller.signal, headers: llmHeaders() })
+    .then(async (r) => {
+      const data = await r.json();
+      if (!r.ok || data?.ok === false) {
+        throw new Error(data?.message || data?.error || `HTTP ${r.status}`);
+      }
+      return data;
+    })
+    .then((data) => {
+      setPayload(id, data);
+      doneCard(id);
+    })
+    .catch((e) => {
+      if (e.name !== "AbortError") errorCard(id, e.message);
+    });
+}
+
+function runJsonp(id) {
+  startCard(id);
+  const cbName = `__jsonp_cb_${id.replace(/-/g, "_")}_${Date.now()}`;
+  const script = document.createElement("script");
+  let settled = false;
+  const cleanup = () => {
+    script.remove();
+    delete window[cbName];
+  };
+  cleanups[id] = cleanup;
+  addEvent(id, `注入动态 script，callback=${cbName}${getSource() === "llm" ? " · source=llm" : ""}`);
+
+  window[cbName] = (data) => {
+    settled = true;
+    cleanup();
+    if (data?.ok === false) {
+      errorCard(id, data?.message || data?.error || "JSONP LLM 失败");
+      return;
+    }
+    setPayload(id, data);
+    doneCard(id, "回调执行完成");
+  };
+  script.onerror = () => {
+    if (!settled) { cleanup(); errorCard(id, "JSONP 脚本加载失败"); }
+  };
+  script.src = `${BASE}/jsonp?callback=${cbName}${sourceQuery()}`;
+  document.head.appendChild(script);
+}
+
+function runXhrStream(id) {
+  startCard(id);
+  const xhr = new XMLHttpRequest();
+  let received = 0;
+  let pending = "";
+  let pollTimer = null;
+  let skippedPrelude = false;
+
+  const stopPoll = () => {
+    if (pollTimer != null) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  };
+
+  // Reasonable progressive-XHR design (not a fake stream):
+  // - responseType default/text (only type that exposes partial body per WHATWG)
+  // - server: one ~2KB prelude + newline-framed words (?design=1)
+  // - client: readyState=3 poll + split on "\n"
+  const pullIncremental = () => {
+    if (xhr.readyState < 3) return;
+    const full = xhr.responseText || "";
+    if (full.length <= received) return;
+    pending += full.slice(received);
+    received = full.length;
+
+    if (!skippedPrelude) {
+      const nl = pending.indexOf("\n");
+      if (nl === -1) return; // still in prelude whitespace
+      pending = pending.slice(nl + 1);
+      skippedPrelude = true;
+      addEvent(id, "已跳过 ~2KB prelude，开始解析换行分帧", "info");
+    }
+
+    const parts = pending.split("\n");
+    pending = parts.pop() ?? "";
+    for (const line of parts) {
+      const word = line.trim();
+      if (word) pushChip(id, word);
+    }
+  };
+
+  cleanups[id] = () => {
+    stopPoll();
+    xhr.abort();
+  };
+
+  xhr.open("GET", `${BASE}/stream?delay=${getDelay()}&design=1`);
+  applyLlmHeader(xhr);
+  addEvent(id, `XHR text 流式设计：prelude + \\n 分帧 · delay=${getDelay()}ms${getSource() === "llm" ? " · LLM" : ""}`);
+
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState === 3) {
+      if (pollTimer == null) {
+        addEvent(id, "LOADING：轮询 responseText", "info");
+        pollTimer = setInterval(pullIncremental, 16);
+      }
+      pullIncremental();
+    }
+    if (xhr.readyState === 4) {
+      stopPoll();
+      pullIncremental();
+      const tail = pending.trim();
+      if (tail) pushChip(id, tail);
+    }
+  };
+  xhr.onprogress = () => pullIncremental();
+  xhr.onload = () => {
+    stopPoll();
+    pullIncremental();
+    if (xhr.status >= 400) {
+      try {
+        const err = JSON.parse(xhr.responseText);
+        errorCard(id, err.message || err.error || `HTTP ${xhr.status}`);
+      } catch (_) {
+        errorCard(id, `HTTP ${xhr.status}`);
+      }
+      return;
+    }
+    doneCard(id);
+  };
+  xhr.onerror = () => {
+    stopPoll();
+    errorCard(id, "网络错误");
+  };
+  xhr.onabort = () => {
+    stopPoll();
+    doneCard(id, "已中止");
+  };
+  xhr.send();
+}
+
+/**
+ * XHR + responseType=blob: progress.loaded may grow, but xhr.response stays
+ * null until DONE — no early body access (unlike default text + readyState 3).
+ */
+function runXhrBlob(id) {
+  startCard(id);
+  const xhr = new XMLHttpRequest();
+  let lastLoggedLoaded = -1;
+  let sawNullWhileLoading = false;
+
+  cleanups[id] = () => xhr.abort();
+
+  xhr.open("GET", `${BASE}/stream?delay=${getDelay()}&design=1`);
+  xhr.responseType = "blob";
+  applyLlmHeader(xhr);
+  addEvent(id, `xhr.responseType=blob · 同 design=1 流 · delay=${getDelay()}ms${getSource() === "llm" ? " · LLM" : ""}`);
+
+  xhr.onprogress = (e) => {
+    const hasResponse = xhr.response != null;
+    if (!hasResponse && xhr.readyState === 3) sawNullWhileLoading = true;
+    // Throttle timeline: log every ~2KB or when response appears
+    if (e.loaded - lastLoggedLoaded >= 2048 || hasResponse) {
+      lastLoggedLoaded = e.loaded;
+      addEvent(
+        id,
+        `progress · loaded=${e.loaded} B · readyState=${xhr.readyState} · ${hasResponse ? `response.size=${xhr.response.size}` : "response=null"}`,
+        hasResponse ? "ok" : "warn",
+      );
+      state[id].bytes = e.loaded;
+      state[id].elapsedMs = Date.now() - state[id].startMs;
+      renderMetrics(id);
+    }
+  };
+
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState === 3) {
+      const hasResponse = xhr.response != null;
+      if (!hasResponse) sawNullWhileLoading = true;
+      addEvent(
+        id,
+        `readyState=3 LOADING · ${hasResponse ? "已有 blob" : "response 仍为 null（无法提前读正文）"}`,
+        hasResponse ? "ok" : "warn",
+      );
+    }
+  };
+
+  xhr.onload = async () => {
+    if (xhr.status >= 400) {
+      try {
+        const err = JSON.parse(await (xhr.response?.text?.() ?? Promise.resolve(xhr.responseText)));
+        errorCard(id, err.message || err.error || `HTTP ${xhr.status}`);
+      } catch (_) {
+        errorCard(id, `HTTP ${xhr.status}`);
+      }
+      return;
+    }
+    const blob = xhr.response;
+    if (!(blob instanceof Blob)) {
+      errorCard(id, "结束时仍无 Blob");
+      return;
+    }
+    addEvent(id, `DONE · 才拿到 Blob · size=${blob.size} · type=${blob.type || "(空)"}`, "ok");
+    if (sawNullWhileLoading) {
+      addEvent(id, "结论：流式过程中 progress.loaded 在涨，但 blob 正文要等结束才可读", "warn");
+    }
+    try {
+      const text = (await blob.text()).replace(/^\s+/, "").trim();
+      const lines = text.split(/\n+/).map((s) => s.trim()).filter(Boolean);
+      for (const part of lines) pushChip(id, part);
+      doneCard(id, `Blob 完整解析 · 过程中无法增量读`);
+    } catch (err) {
+      errorCard(id, err.message || String(err));
+    }
+  };
+
+  xhr.onerror = () => errorCard(id, "网络错误");
+  xhr.onabort = () => doneCard(id, "已中止");
+  xhr.send();
+}
+
+async function runFetchStream(id) {
+  startCard(id);
+  const controller = new AbortController();
+  cleanups[id] = () => controller.abort();
+  addEvent(id, `fetch + getReader → GET /stream?delay=${getDelay()}${getSource() === "llm" ? " · LLM" : ""}`);
+  try {
+    const res = await fetch(`${BASE}/stream?delay=${getDelay()}`, {
+      signal: controller.signal,
+      headers: llmHeaders(),
+    });
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try {
+        const err = await res.json();
+        msg = err.message || err.error || msg;
+      } catch (_) { /* ignore */ }
+      errorCard(id, msg);
+      return;
+    }
+    addEvent(id, `HTTP ${res.status} · 开始读 ReadableStream`, "info");
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      pushChip(id, decoder.decode(value, { stream: true }));
+    }
+    doneCard(id);
+  } catch (e) {
+    if (e.name !== "AbortError") errorCard(id, e.message);
+  }
+}
+
+function runSse(id) {
+  startCard(id);
+  const url = `${BASE}/sse?delay=${getDelay()}${sourceQuery()}`;
+  const es = new EventSource(url);
+  cleanups[id] = () => es.close();
+  addEvent(id, `new EventSource(${url})`);
+  es.onopen = () => addEvent(id, "SSE 连接已打开", "info");
+  es.onmessage = (e) => {
+    if (e.data === "[DONE]") {
+      es.close();
+      doneCard(id, "收到 [DONE]，连接关闭");
+      return;
+    }
+    try {
+      const { word, index } = JSON.parse(e.data);
+      pushChip(id, word);
+      void index;
+    } catch (_) {
+      pushChip(id, e.data);
+    }
+  };
+  es.onerror = () => {
+    es.close();
+    if (state[id].status !== "done") errorCard(id, "SSE 连接出错");
+  };
+}
+
+/**
+ * Forever Frame (Comet): hidden iframe loads a chunked text/html stream.
+ * Each flushed <script> calls parent.callback(word) as the browser parses
+ * incrementally — classic pre-SSE streaming technique.
+ */
+function runIframeStream(id) {
+  startCard(id);
+  const cbName = `__iframe_stream_${id.replace(/-/g, "_")}_${Date.now()}`;
+  let settled = false;
+
+  const iframe = document.createElement("iframe");
+  iframe.style.cssText = "position:absolute;width:0;height:0;border:0;visibility:hidden";
+  iframe.setAttribute("aria-hidden", "true");
+  iframe.title = "forever-frame-stream";
+
+  const cleanup = () => {
+    try { delete window[cbName]; } catch (_) { window[cbName] = undefined; }
+    iframe.remove();
+  };
+  cleanups[id] = cleanup;
+
+  window[cbName] = (word, index, signal) => {
+    if (settled) return;
+    if (signal === "done" || word == null) {
+      settled = true;
+      cleanup();
+      doneCard(id, "iframe 流结束（收到 done）");
+      return;
+    }
+    pushChip(id, String(word));
+    void index;
+  };
+
+  const src = `${BASE}/iframe-stream?delay=${getDelay()}&callback=${encodeURIComponent(cbName)}${sourceQuery()}`;
+  addEvent(id, `创建 hidden iframe · src=/iframe-stream?callback=…${getSource() === "llm" ? " · source=llm" : ""}`);
+  iframe.onload = () => {
+    // May fire when document "completes"; for forever-frame, done comes via callback.
+    addEvent(id, "iframe load 事件（连接可能仍在收尾）", "info");
+  };
+  iframe.onerror = () => {
+    if (!settled) {
+      settled = true;
+      cleanup();
+      errorCard(id, "iframe 加载失败");
+    }
+  };
+  document.body.appendChild(iframe);
+  iframe.src = src;
+}
+
+function runXhrLongPoll(id) {
+  startCard(id);
+  let seq = 0;
+  let stopped = false;
+  let currentXhr = null;
+  cleanups[id] = () => {
+    stopped = true;
+    if (currentXhr) currentXhr.abort();
+  };
+  addEvent(id, `开始长轮询，共 ${LP_ROUNDS} 轮`);
+
+  function poll() {
+    if (stopped) return;
+    setWaiting(id, true);
+    const xhr = new XMLHttpRequest();
+    currentXhr = xhr;
+    xhr.open("GET", `${BASE}/long-poll?seq=${seq}`);
+    addEvent(id, `发起第 ${seq + 1} 轮 GET /long-poll?seq=${seq}`);
+    xhr.onload = () => {
+      if (stopped) return;
+      try {
+        const data = JSON.parse(xhr.responseText);
+        pushLpItem(id, seq, data.text);
+        seq++;
+        if (seq < LP_ROUNDS) poll();
+        else doneCard(id, `${LP_ROUNDS} 轮长轮询完成`);
+      } catch (_) {
+        errorCard(id, xhr.responseText || "解析失败");
+      }
+    };
+    xhr.onerror = () => { if (!stopped) errorCard(id, "网络错误"); };
+    xhr.send();
+  }
+  poll();
+}
+
+async function runFetchLongPoll(id) {
+  startCard(id);
+  const controller = new AbortController();
+  cleanups[id] = () => controller.abort();
+  addEvent(id, `开始长轮询，共 ${LP_ROUNDS} 轮`);
+  try {
+    for (let seq = 0; seq < LP_ROUNDS; seq++) {
+      setWaiting(id, true);
+      addEvent(id, `发起第 ${seq + 1} 轮 GET /long-poll?seq=${seq}`);
+      const res = await fetch(`${BASE}/long-poll?seq=${seq}`, { signal: controller.signal });
+      const data = await res.json();
+      pushLpItem(id, seq, data.text);
+    }
+    doneCard(id, `${LP_ROUNDS} 轮长轮询完成`);
+  } catch (e) {
+    if (e.name !== "AbortError") errorCard(id, e.message);
+  }
+}
+
+function runWebSocket(id) {
+  startCard(id);
+  const url = getSource() === "llm" ? `${WS_BASE}?source=llm` : WS_BASE;
+  const ws = new WebSocket(url);
+  cleanups[id] = () => ws.close();
+  addEvent(id, `new WebSocket(${url})`);
+  ws.onopen = () => {
+    addEvent(id, "握手成功 (101) · 发送 start", "info");
+    ws.send("start");
+  };
+  ws.onmessage = (e) => {
+    if (String(e.data).startsWith("[error]")) {
+      errorCard(id, e.data);
+      ws.close();
+      return;
+    }
+    pushChip(id, e.data);
+  };
+  ws.onclose = () => {
+    if (state[id].status === "loading") doneCard(id, "服务器关闭连接");
+  };
+  ws.onerror = () => errorCard(id, "WebSocket 连接失败");
+}
+
+async function runWebTransport(id) {
+  startCard(id);
+  const hasApi = typeof WebTransport === "function";
+  addEvent(id, `typeof WebTransport === ${hasApi ? "function" : typeof WebTransport}`);
+
+  let caps = null;
+  try {
+    caps = await fetch(`${BASE}/capabilities`).then((r) => r.json());
+    addEvent(id, "已拉取 /capabilities", "info");
+  } catch (e) {
+    addEvent(id, `capabilities 失败: ${e.message}`, "warn");
+  }
+
+  const secure = window.isSecureContext;
+  const wtUrl = `${location.protocol === "https:" ? "https" : "http"}://${location.host}/api/demo/compare/wt`;
+
+  if (!hasApi) {
+    setPayload(id, {
+      ok: false,
+      reason: "当前浏览器无 WebTransport 构造器",
+      secureContext: secure,
+      server: caps?.webTransport ?? null,
+      refs: ["https://developer.mozilla.org/en-US/docs/Web/API/WebTransport_API"],
+    });
+    doneCard(id, "环境不支持 WebTransport API");
+    return;
+  }
+
+  if (!secure || location.protocol !== "https:") {
+    setPayload(id, {
+      ok: false,
+      reason: "WebTransport 需要 HTTPS secure context（本地 http:// 无法建连）",
+      triedUrl: wtUrl,
+      secureContext: secure,
+      server: caps?.webTransport ?? null,
+    });
+    doneCard(id, "缺少 HTTPS — 仅完成能力探测");
+    return;
+  }
+
+  addEvent(id, `尝试 new WebTransport(${wtUrl})…`, "info");
+  let transport;
+  try {
+    transport = new WebTransport(wtUrl);
+    cleanups[id] = () => {
+      try { transport.close(); } catch (_) { /* ignore */ }
+    };
+    await Promise.race([
+      transport.ready,
+      new Promise((_, rej) => setTimeout(() => rej(new Error("ready timeout 3s")), 3000)),
+    ]);
+    addEvent(id, "transport.ready 成功", "ok");
+    setPayload(id, { ok: true, note: "已连接（本 api2 默认不会走到这里）" });
+    doneCard(id, "WebTransport 已就绪");
+  } catch (e) {
+    setPayload(id, {
+      ok: false,
+      reason: e.message || String(e),
+      triedUrl: wtUrl,
+      secureContext: secure,
+      server: caps?.webTransport ?? null,
+      note: "失败符合预期：Express HTTP/1.1 不能终结 HTTP/3 WebTransport",
+      refs: ["https://developer.mozilla.org/en-US/docs/Web/API/WebTransport_API"],
+    });
+    doneCard(id, "连接失败（环境受限，探测完成）");
+  }
+}
+
+async function runHttp2Push(id) {
+  startCard(id);
+  addEvent(id, "探测 HTTP/2 Server Push 可用性…");
+
+  const caps = await fetch(`${BASE}/capabilities`).then((r) => r.json()).catch(() => null);
+  const res = await fetch(`${BASE}/h2-push`);
+  const link = res.headers.get("link");
+  const body = await res.json();
+
+  // Historical: pushed resources could show up in PerformanceResourceTiming.
+  // Modern Chrome/Firefox: push removed — we only see ordinary fetches.
+  const entries = performance.getEntriesByType?.("resource") || [];
+  const pushed = entries.filter((e) => e.deliveryType === "push" || e.initiatorType === "push");
+
+  setPayload(id, {
+    browserPushEntries: pushed.length,
+    linkHeader: link,
+    body,
+    capabilities: caps?.http2Push ?? null,
+    conclusion:
+      pushed.length === 0
+        ? "未观察到 push 资源；主流浏览器已移除 H2 Server Push（Chrome 106+ / Firefox 132+）"
+        : `意外发现 ${pushed.length} 条 push timing（请核对浏览器版本）`,
+  });
+  addEvent(
+    id,
+    pushed.length ? `Performance 中有 ${pushed.length} 条 push` : "无 push timing · Push 已过时",
+    pushed.length ? "ok" : "warn",
+  );
+  doneCard(id, "探测完成（Push ≠ 业务流式推送）");
+}
+
+function runBeacon(id) {
+  startCard(id);
+  const payload = { ts: Date.now(), source: "beacon-demo", note: "页面卸载场景上报" };
+  const raw = JSON.stringify(payload);
+  addEvent(id, `navigator.sendBeacon(POST /beacon, ${raw.length} B)`);
+  const ok = navigator.sendBeacon(`${BASE}/beacon`, new Blob([raw], { type: "application/json" }));
+  if (ok) {
+    setPayload(id, {
+      sendBeacon: true,
+      note: "浏览器已接受排队，无响应体可读",
+      payload,
+    });
+    doneCard(id, "已发送（fire-and-forget）");
+  } else {
+    errorCard(id, "sendBeacon 返回 false（队列已满？）");
+  }
+}
+
+/**
+ * Classic tracking pixel: data goes in the query string; response is a 1×1 GIF.
+ * JS only sees img.onload / onerror — cannot read response body as application data.
+ */
+function runImgPixel(id) {
+  startCard(id);
+  const params = new URLSearchParams({
+    ts: String(Date.now()),
+    event: "demo_ping",
+    source: "img-pixel",
+  });
+  const url = `${BASE}/pixel?${params.toString()}`;
+  addEvent(id, `new Image(); img.src = /pixel?…（数据在 query）`);
+
+  const img = new Image();
+  cleanups[id] = () => {
+    img.onload = null;
+    img.onerror = null;
+    img.src = "";
+  };
+
+  img.onload = () => {
+    setPayload(id, {
+      imgSrc: true,
+      note: "仅知图片加载成功；响应是 1×1 GIF，业务数据在 URL query，JS 读不到响应体业务字段",
+      naturalWidth: img.naturalWidth,
+      naturalHeight: img.naturalHeight,
+      requestUrl: url,
+    });
+    state[id].chunks = 1;
+    state[id].bytes = url.length;
+    doneCard(id, "img.onload（只确认发出并收到像素）");
+  };
+  img.onerror = () => errorCard(id, "img.onerror（请求失败或被拦截）");
+  img.src = url;
+}
+
+// ── Build DOM ─────────────────────────────────────────────────────────────────
+const mainEl = document.getElementById("main");
+
+GROUPS.forEach((group) => {
+  const section = document.createElement("section");
+  section.className = "group";
+
+  const title = document.createElement("div");
+  title.className = "group-title";
+  title.textContent = group.label;
+  section.appendChild(title);
+
+  const grid = document.createElement("div");
+  grid.className = "cards";
+
+  group.cards.forEach((card) => {
+    const el = document.createElement("div");
+    el.className = "card";
+    el.id = `card-${card.id}`;
+    el.innerHTML = `
+      <div class="card-head">
+        <div class="card-icon ${card.iconClass}">${card.icon}</div>
+        <div class="card-meta">
+          <div class="card-title"></div>
+          <div class="card-sub"></div>
+        </div>
+        <button class="card-run" type="button">运行</button>
+      </div>
+      <div class="card-live">
+        <div class="live-label">实时数据</div>
+        <div class="live-output idle">点击「运行」开始，这里会实时显示收到的数据…</div>
+        <div class="timeline"></div>
+      </div>
+      <div class="card-foot">
+        <div class="metric m-time"><span class="metric-label">耗时</span><span class="metric-value">—</span></div>
+        <div class="metric m-chunks"><span class="metric-label">块/事件</span><span class="metric-value">—</span></div>
+        <div class="metric m-bytes"><span class="metric-label">字节</span><span class="metric-value">—</span></div>
+      </div>`;
+    const titleEl = $(".card-title", el);
+    titleEl.append(document.createTextNode(card.title + " "));
+    const pill = document.createElement("span");
+    pill.className = "status-pill";
+    pill.textContent = "空闲";
+    titleEl.appendChild(pill);
+    $(".card-sub", el).textContent = card.sub;
+    const runBtn = $(".card-run", el);
+    if (runBtn) runBtn.addEventListener("click", () => card.run(card.id));
+    grid.appendChild(el);
+  });
+
+  section.appendChild(grid);
+  mainEl.appendChild(section);
+});
+
+document.getElementById("btn-run-all").addEventListener("click", () => {
+  GROUPS.forEach((g) => g.cards.forEach((c) => c.run(c.id)));
+});
+
+document.getElementById("btn-reset").addEventListener("click", () => {
+  GROUPS.forEach((g) => g.cards.forEach((c) => {
+    if (cleanups[c.id]) { cleanups[c.id](); delete cleanups[c.id]; }
+    stopTicker(c.id);
+    const mode = state[c.id].mode;
+    initState(c.id);
+    state[c.id].mode = mode;
+    renderCard(c.id);
+  }));
+});
+</script>
+</body>
+</html>
