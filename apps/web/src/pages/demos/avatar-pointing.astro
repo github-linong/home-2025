@@ -1,0 +1,547 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="3D 人物指向研究 · Pointing Lab"
+  description="研究 TalkingHead 数字人如何指向屏幕上的目标点：lookAt、手势与 ikSolve 对比。"
+>
+  <div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div class="prose max-w-none">
+      <h1 class="!mb-1">3D 人物指向研究</h1>
+      <p class="!mb-0 opacity-80">
+        目标是「介绍这个位置」：先看过去，再用同侧手前伸示意，而不是硬伸到像素点。
+      </p>
+    </div>
+  </div>
+
+  <div class="mb-3 flex flex-wrap items-center gap-2 rounded-box border border-base-300 bg-base-200 p-3">
+    <button id="btnLoad" class="btn btn-primary btn-sm" type="button">加载数字人</button>
+    <span id="stateBadge" class="badge badge-outline">未加载</span>
+    <div class="mx-1 hidden h-6 w-px bg-base-300 sm:block"></div>
+    <span class="text-xs font-semibold opacity-70">模式</span>
+    <div id="modeGroup" class="flex flex-wrap gap-1">
+      <button type="button" class="btn btn-xs" data-mode="look">Look</button>
+      <button type="button" class="btn btn-xs" data-mode="gesture">Gesture</button>
+      <button type="button" class="btn btn-xs btn-active" data-mode="ik">IK</button>
+    </div>
+    <label class="label cursor-pointer gap-2 py-0">
+      <input id="followMouse" type="checkbox" class="checkbox checkbox-xs" checked />
+      <span class="label-text text-xs">跟随鼠标</span>
+    </label>
+    <label class="label cursor-pointer gap-2 py-0">
+      <input id="showDebug" type="checkbox" class="checkbox checkbox-xs" checked />
+      <span class="label-text text-xs">手部投影</span>
+    </label>
+    <button id="btnReset" class="btn btn-xs" type="button" disabled>复位手臂</button>
+    <button id="btnPresetTL" class="btn btn-xs" type="button" disabled>左上</button>
+    <button id="btnPresetTR" class="btn btn-xs" type="button" disabled>右上</button>
+    <button id="btnPresetBL" class="btn btn-xs" type="button" disabled>左下</button>
+    <button id="btnPresetBR" class="btn btn-xs" type="button" disabled>右下</button>
+  </div>
+
+  <section
+    id="stageShell"
+    class="relative overflow-hidden rounded-box border border-base-300 bg-slate-950"
+  >
+    <!-- Full-body frame with generous margins for corner pointing tests. -->
+    <div
+      id="avatarStage"
+      class="relative mx-auto w-full"
+      style="height: min(78vh, 860px);"
+    >
+      <div id="marginGuide" aria-hidden="true"></div>
+      <div
+        id="avatarPlaceholder"
+        class="absolute inset-0 z-10 flex items-center justify-center p-6 text-center text-sm text-white/70"
+      >
+        加载后人物全身居中；请点四个角或边缘空白处测试指向。
+      </div>
+      <div id="targetMark" aria-hidden="true"></div>
+      <div id="tipMark" aria-hidden="true" title="手部投影"></div>
+    </div>
+  </section>
+
+  <div class="mt-3 rounded-box border border-base-300 bg-base-100 p-3 text-xs leading-relaxed">
+    <div class="mb-1 font-semibold">调试</div>
+    <pre id="debugOut" class="whitespace-pre-wrap break-all opacity-80">等待加载…</pre>
+    <p class="mt-2 mb-0 opacity-60">
+      Look = 只看；Gesture = 看 + index/handup；IK = 看 + 讲解式手臂（朝目标方向前伸，不到死角）。
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  #marginGuide {
+    position: absolute;
+    inset: 10% 12%;
+    border: 1px dashed rgba(148, 180, 220, 0.22);
+    border-radius: 12px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  #marginGuide::before {
+    content: "人物大致安全区 · 请点外侧空白测试";
+    position: absolute;
+    left: 50%;
+    top: -0.85rem;
+    transform: translateX(-50%);
+    padding: 0 0.5rem;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: rgba(180, 205, 235, 0.45);
+    background: #020617;
+    white-space: nowrap;
+  }
+  #targetMark,
+  #tipMark {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    margin-left: -9px;
+    margin-top: -9px;
+    border-radius: 999px;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 5;
+    transition: opacity 0.15s ease;
+  }
+  #targetMark {
+    border: 2px solid rgba(94, 220, 255, 0.95);
+    background: rgba(94, 220, 255, 0.25);
+    box-shadow: 0 0 16px rgba(94, 220, 255, 0.55);
+  }
+  #tipMark {
+    width: 12px;
+    height: 12px;
+    margin-left: -6px;
+    margin-top: -6px;
+    border: 2px solid rgba(255, 170, 80, 0.95);
+    background: rgba(255, 170, 80, 0.35);
+  }
+  #targetMark.is-visible,
+  #tipMark.is-visible {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  import { TalkingHead } from "@met4citizen/talkinghead";
+  import * as THREE from "three";
+  import type { HeadInternals } from "../../lib/avatar/headAudio";
+  import { createAvatarConfig, createHeadOptions } from "../../lib/avatar/visuals";
+
+  type PointMode = "look" | "gesture" | "ik";
+  type Point = { x: number; y: number };
+  type HeadRuntime = HeadInternals & {
+    camera?: THREE.Camera;
+    renderer?: { domElement: HTMLCanvasElement };
+    objectLeftArm?: THREE.Object3D;
+    objectRightArm?: THREE.Object3D;
+    objectLeftEye?: THREE.Object3D;
+    objectRightEye?: THREE.Object3D;
+    armature?: THREE.Object3D & {
+      getObjectByName?: (name: string) => THREE.Object3D | undefined;
+      quaternion: THREE.Quaternion;
+    };
+    ikSolve: TalkingHead["ikSolve"];
+    lookAt: TalkingHead["lookAt"];
+    playGesture: TalkingHead["playGesture"];
+    stopGesture: TalkingHead["stopGesture"];
+  };
+
+  const $ = (id: string) => document.getElementById(id)!;
+  const avatarStage = $("avatarStage");
+  const avatarPlaceholder = $("avatarPlaceholder");
+  const targetMark = $("targetMark");
+  const tipMark = $("tipMark");
+  const btnLoad = $("btnLoad") as HTMLButtonElement;
+  const btnReset = $("btnReset") as HTMLButtonElement;
+  const btnPresetTL = $("btnPresetTL") as HTMLButtonElement;
+  const btnPresetTR = $("btnPresetTR") as HTMLButtonElement;
+  const btnPresetBL = $("btnPresetBL") as HTMLButtonElement;
+  const btnPresetBR = $("btnPresetBR") as HTMLButtonElement;
+  const stateBadge = $("stateBadge");
+  const debugOut = $("debugOut");
+  const followMouse = $("followMouse") as HTMLInputElement;
+  const showDebug = $("showDebug") as HTMLInputElement;
+  const modeGroup = $("modeGroup");
+
+  let head: TalkingHead | null = null;
+  let disposed = false;
+  let mode: PointMode = "ik";
+  let target: Point | null = null;
+  let lastIkAt = 0;
+  let lastGestureAt = 0;
+  let lastLookKey = "";
+  let raf = 0;
+
+  const IK_THROTTLE_MS = 80;
+  const GESTURE_COOLDOWN_MS = 900;
+  const LOOK_MS = 650;
+  const IK_BLEND_MS = 280;
+  /** How far along shoulder→screen-ray the hand travels (present, not poke). */
+  const PRESENT_REACH = 0.42;
+  /** Keep presentation hand roughly chest-to-shoulder height band. */
+  const PRESENT_Y_MIN = -0.05;
+  const PRESENT_Y_MAX = 0.55;
+
+  function setState(text: string) {
+    stateBadge.textContent = text;
+  }
+
+  function setDebug(lines: string[]) {
+    debugOut.textContent = lines.join("\n");
+  }
+
+  function getRuntime(): HeadRuntime | null {
+    return (head as HeadRuntime | null) ?? null;
+  }
+
+  function stagePointFromClient(clientX: number, clientY: number): Point {
+    const rect = avatarStage.getBoundingClientRect();
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top,
+    };
+  }
+
+  function setTargetMark(point: Point | null) {
+    if (!point) {
+      targetMark.classList.remove("is-visible");
+      return;
+    }
+    targetMark.style.left = `${Math.round(point.x)}px`;
+    targetMark.style.top = `${Math.round(point.y)}px`;
+    targetMark.classList.add("is-visible");
+  }
+
+  function setTipMark(point: Point | null) {
+    if (!point || !showDebug.checked) {
+      tipMark.classList.remove("is-visible");
+      return;
+    }
+    tipMark.style.left = `${Math.round(point.x)}px`;
+    tipMark.style.top = `${Math.round(point.y)}px`;
+    tipMark.classList.add("is-visible");
+  }
+
+  function projectObjectToStage(object: THREE.Object3D | null | undefined): Point | null {
+    const runtime = getRuntime();
+    if (!runtime?.camera || !object) return null;
+    const canvas = runtime.renderer?.domElement;
+    if (!canvas) return null;
+    const stageRect = avatarStage.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
+    const world = new THREE.Vector3();
+    object.getWorldPosition(world);
+    world.project(runtime.camera);
+    const x = ((world.x + 1) * 0.5) * canvasRect.width + (canvasRect.left - stageRect.left);
+    const y = ((1 - world.y) * 0.5) * canvasRect.height + (canvasRect.top - stageRect.top);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    return { x, y };
+  }
+
+  /** Prefer the arm on the same screen side as the target (avatar faces camera). */
+  function useAnatomicalRightArm(point: Point) {
+    // Facing the camera: RightArm sits on the viewer's left, LeftArm on the right.
+    // Target on the right → LeftArm; target on the left → RightArm (no cross-body).
+    return point.x < avatarStage.clientWidth / 2;
+  }
+
+  /**
+   * World point for a "presenter" arm: toward the screen target, but short of a full reach.
+   * Looks like introducing that spot, not poking the pixel.
+   */
+  function presentWorldTarget(point: Point, anatomicalRight: boolean) {
+    const runtime = getRuntime();
+    if (!runtime?.camera || !runtime.renderer) return null;
+    const canvas = runtime.renderer.domElement;
+    const stageRect = avatarStage.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
+    const clientX = stageRect.left + point.x;
+    const clientY = stageRect.top + point.y;
+    const ndc = new THREE.Vector2(
+      ((clientX - canvasRect.left) / Math.max(canvasRect.width, 1)) * 2 - 1,
+      -((clientY - canvasRect.top) / Math.max(canvasRect.height, 1)) * 2 + 1,
+    );
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(ndc, runtime.camera);
+
+    const shoulder = anatomicalRight ? runtime.objectRightArm : runtime.objectLeftArm;
+    const shoulderPos = new THREE.Vector3();
+    if (shoulder) shoulder.getWorldPosition(shoulderPos);
+    else shoulderPos.set(anatomicalRight ? -0.2 : 0.2, 1.35, 0);
+
+    // Intersect a plane in front of the torso (camera-facing), not deep into the body.
+    const camDir = new THREE.Vector3();
+    runtime.camera.getWorldDirection(camDir);
+    const planePoint = shoulderPos.clone().addScaledVector(camDir, -0.28);
+    const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(camDir.clone().negate(), planePoint);
+    const rayHit = new THREE.Vector3();
+    if (!raycaster.ray.intersectPlane(plane, rayHit)) {
+      rayHit.copy(raycaster.ray.origin).addScaledVector(raycaster.ray.direction, 1.2);
+    }
+
+    // Soft reach: lerp from shoulder toward ray hit (introduce that area).
+    const present = shoulderPos.clone().lerp(rayHit, PRESENT_REACH);
+    // Prefer hand slightly in front of the body so the gesture reads on camera.
+    present.addScaledVector(camDir, -0.12);
+    // Clamp vertical swing so corners don't force a straight-up arm.
+    present.y = THREE.MathUtils.clamp(
+      present.y,
+      shoulderPos.y + PRESENT_Y_MIN,
+      shoulderPos.y + PRESENT_Y_MAX,
+    );
+    // Nudge laterally toward the target side so left/right reads clearly.
+    const sideSign = anatomicalRight ? -1 : 1;
+    present.x += sideSign * 0.06;
+    return present;
+  }
+
+  /** Match TalkingHead built-in handLeft/handRight constraints (stable presenter reach). */
+  function buildArmIk(anatomicalRight: boolean) {
+    if (anatomicalRight) {
+      return {
+        iterations: 20,
+        root: "RightShoulder",
+        effector: "RightHandMiddle1",
+        links: [
+          { link: "RightHand", minx: -0.5, maxx: 0.5, miny: -1, maxy: 1, minz: -0.5, maxz: 0.5, maxAngle: 0.1 },
+          { link: "RightForeArm", minx: -0.5, maxx: 1.5, miny: -1.5, maxy: 1.5, minz: -3, maxz: 0.5, maxAngle: 0.2 },
+          { link: "RightArm", minx: -1.5, maxx: 1.5, miny: 0, maxy: 0, minz: -1, maxz: 3 },
+        ],
+      };
+    }
+    return {
+      iterations: 20,
+      root: "LeftShoulder",
+      effector: "LeftHandMiddle1",
+      links: [
+        { link: "LeftHand", minx: -0.5, maxx: 0.5, miny: -1, maxy: 1, minz: -0.5, maxz: 0.5, maxAngle: 0.1 },
+        { link: "LeftForeArm", minx: -0.5, maxx: 1.5, miny: -1.5, maxy: 1.5, minz: -0.5, maxz: 3, maxAngle: 0.2 },
+        { link: "LeftArm", minx: -1.5, maxx: 1.5, miny: 0, maxy: 0, minz: -1, maxz: 3 },
+      ],
+    };
+  }
+
+  function resetArms() {
+    if (!head) return;
+    const runtime = getRuntime();
+    if (!runtime) return;
+    // Return both arms to template pose via null-target ikSolve.
+    runtime.ikSolve(buildArmIk(true), null, false, 500);
+    runtime.ikSolve(buildArmIk(false), null, false, 500);
+    head.stopGesture(300);
+    lastLookKey = "";
+    head.lookAtCamera(400);
+    setState("已复位");
+  }
+
+  function applyPointing(point: Point, force = false) {
+    if (!head || disposed) return;
+    const runtime = getRuntime();
+    if (!runtime) return;
+
+    target = point;
+    setTargetMark(point);
+
+    const rect = avatarStage.getBoundingClientRect();
+    const clientX = rect.left + point.x;
+    const clientY = rect.top + point.y;
+    // Facing camera: anatomical RightArm sits on the viewer's left.
+    // Prefer same screen side as the target (no cross-body reach).
+    const useRightArm = useAnatomicalRightArm(point);
+    const tipName = useRightArm ? "RightHandIndex1" : "LeftHandIndex1";
+    const tipBone = runtime.armature?.getObjectByName?.(tipName)
+      ?? (useRightArm ? runtime.objectRightArm : runtime.objectLeftArm);
+    const tipProjected = projectObjectToStage(tipBone as THREE.Object3D | undefined);
+    setTipMark(tipProjected);
+
+    let errorPx = -1;
+    if (tipProjected) {
+      const dx = tipProjected.x - point.x;
+      const dy = tipProjected.y - point.y;
+      errorPx = Math.round(Math.sqrt(dx * dx + dy * dy));
+    }
+
+    // Don't restart lookAt every RAF tick — that cancels the turn and freezes the face.
+    const lookKey = `${Math.round(clientX / 4)}:${Math.round(clientY / 4)}`;
+    if (force || lookKey !== lastLookKey) {
+      head.lookAt(clientX, clientY, LOOK_MS);
+      lastLookKey = lookKey;
+    }
+
+    if (mode === "gesture") {
+      const now = performance.now();
+      if (force || now - lastGestureAt > GESTURE_COOLDOWN_MS) {
+        const raise = point.y < rect.height * 0.35;
+        // mirror=true → LeftHand (screen-right when facing camera).
+        const mirror = !useRightArm;
+        // Introduce that spot: open hand for high panels, index for mid/low.
+        if (raise) head.playGesture("handup", 4, mirror, 360);
+        else head.playGesture("index", 4, mirror, 360);
+        lastGestureAt = now;
+      }
+    }
+
+    if (mode === "ik") {
+      const now = performance.now();
+      if (force || now - lastIkAt > IK_THROTTLE_MS) {
+        const world = presentWorldTarget(point, useRightArm);
+        if (world) {
+          runtime.ikSolve(buildArmIk(useRightArm), world, false, IK_BLEND_MS);
+          // Softly park the other arm.
+          runtime.ikSolve(buildArmIk(!useRightArm), null, false, IK_BLEND_MS * 2);
+          lastIkAt = now;
+        }
+      }
+    }
+
+    const screenSide = useRightArm ? "左" : "右";
+    const boneHand = useRightArm ? "RightArm" : "LeftArm";
+    setDebug([
+      `mode: ${mode}`,
+      `intent: 介绍该位置（看过去 + 同侧手前伸）`,
+      `target: (${Math.round(point.x)}, ${Math.round(point.y)})`,
+      `hand: 屏幕${screenSide}侧 · ${boneHand}`,
+      `tip error: ${errorPx < 0 ? "n/a" : `${errorPx}px`}（讲解式不追求像素贴合）`,
+      `follow: ${followMouse.checked ? "on" : "off"}`,
+      mode === "ik"
+        ? `ik: soft present reach=${PRESENT_REACH}`
+        : mode === "gesture"
+          ? "gesture: handup/index toward target"
+          : "look: head/eyes only",
+    ]);
+  }
+
+  function tick() {
+    if (disposed || !head) return;
+    // Refresh IK pose only; applyPointing already throttles lookAt.
+    if (target && mode === "ik") applyPointing(target);
+    raf = window.requestAnimationFrame(tick);
+  }
+
+  function setMode(next: PointMode) {
+    mode = next;
+    modeGroup.querySelectorAll<HTMLButtonElement>("[data-mode]").forEach((btn) => {
+      btn.classList.toggle("btn-active", btn.dataset.mode === next);
+    });
+    if (mode !== "gesture") head?.stopGesture(200);
+    if (mode !== "ik") {
+      // Leave arms alone when leaving IK; user can hit 复位.
+    }
+    if (target) applyPointing(target, true);
+    setState(`模式：${mode}`);
+  }
+
+  function setControlsEnabled(enabled: boolean) {
+    btnReset.disabled = !enabled;
+    btnPresetTL.disabled = !enabled;
+    btnPresetTR.disabled = !enabled;
+    btnPresetBL.disabled = !enabled;
+    btnPresetBR.disabled = !enabled;
+  }
+
+  async function loadAvatar() {
+    if (head || disposed) return;
+    btnLoad.disabled = true;
+    btnLoad.textContent = "加载中…";
+    setState("加载中");
+    try {
+      head = new TalkingHead(
+        avatarStage,
+        createHeadOptions({
+          // Full body centered; extra distance leaves margins for corner tests.
+          cameraView: "full",
+          cameraDistance: 5.5,
+          cameraRotateEnable: false,
+          cameraZoomEnable: false,
+          cameraPanEnable: false,
+        }),
+      );
+      await head.showAvatar(createAvatarConfig(), (event) => {
+        if (event.lengthComputable && event.total) {
+          btnLoad.textContent = `加载 ${Math.round((event.loaded! / event.total) * 100)}%`;
+        }
+      });
+      if (disposed) return;
+      if (import.meta.env.DEV) {
+        (window as unknown as { __head?: unknown }).__head = head;
+      }
+      avatarPlaceholder.remove();
+      btnLoad.textContent = "已加载";
+      setControlsEnabled(true);
+      setState("就绪 · 点四周空白设目标");
+      setDebug([
+        "全身居中，虚线框内为人物大致区域。",
+        "请点虚线外侧或四角预设，测试上下左右指向。",
+      ]);
+      if (!raf) raf = window.requestAnimationFrame(tick);
+      // Seed slightly off-center so pointing is visible immediately.
+      // Keep pointing errors out of the load path so a pose bug never tears down the avatar.
+      try {
+        const rect = avatarStage.getBoundingClientRect();
+        applyPointing({ x: rect.width * 0.78, y: rect.height * 0.28 }, true);
+      } catch (pointError) {
+        console.warn("[pointing] seed pose failed", pointError);
+        setState("就绪 · 指向初始化失败，可点空白重试");
+      }
+    } catch (error) {
+      console.error("[pointing] load failed", error);
+      head?.stop();
+      head = null;
+      btnLoad.disabled = false;
+      btnLoad.textContent = "加载失败，重试";
+      setState("加载失败");
+    }
+  }
+
+  function disposePage() {
+    if (disposed) return;
+    disposed = true;
+    if (raf) window.cancelAnimationFrame(raf);
+    raf = 0;
+    head?.stop();
+    head = null;
+  }
+
+  modeGroup.querySelectorAll<HTMLButtonElement>("[data-mode]").forEach((btn) => {
+    btn.addEventListener("click", () => setMode(btn.dataset.mode as PointMode));
+  });
+
+  avatarStage.addEventListener("pointermove", (event) => {
+    if (!head || !followMouse.checked) return;
+    applyPointing(stagePointFromClient(event.clientX, event.clientY));
+  });
+  avatarStage.addEventListener("pointerdown", (event) => {
+    if (!head) return;
+    applyPointing(stagePointFromClient(event.clientX, event.clientY), true);
+  });
+
+  btnLoad.addEventListener("click", () => void loadAvatar());
+  btnReset.addEventListener("click", resetArms);
+  btnPresetTL.addEventListener("click", () => {
+    const rect = avatarStage.getBoundingClientRect();
+    applyPointing({ x: rect.width * 0.08, y: rect.height * 0.08 }, true);
+  });
+  btnPresetTR.addEventListener("click", () => {
+    const rect = avatarStage.getBoundingClientRect();
+    applyPointing({ x: rect.width * 0.92, y: rect.height * 0.08 }, true);
+  });
+  btnPresetBL.addEventListener("click", () => {
+    const rect = avatarStage.getBoundingClientRect();
+    applyPointing({ x: rect.width * 0.08, y: rect.height * 0.92 }, true);
+  });
+  btnPresetBR.addEventListener("click", () => {
+    const rect = avatarStage.getBoundingClientRect();
+    applyPointing({ x: rect.width * 0.92, y: rect.height * 0.92 }, true);
+  });
+  showDebug.addEventListener("change", () => {
+    if (!showDebug.checked) setTipMark(null);
+    else if (target) applyPointing(target, true);
+  });
+
+  window.addEventListener("pagehide", disposePage);
+  window.addEventListener("beforeunload", disposePage);
+</script>

@@ -11,6 +11,13 @@ declare module "@met4citizen/talkinghead" {
     /** Look at viewport client coordinates (or camera if x/y are null). */
     lookAt(x: number | null, y: number | null, t: number): void;
     lookAtCamera(t: number): void;
+    /** CCD IK; writes solved link quaternions into poseTarget when d is set. */
+    ikSolve(
+      ik: Record<string, unknown>,
+      target?: unknown,
+      relative?: boolean,
+      d?: number | null,
+    ): void;
     streamStart(
       options?: Record<string, unknown>,
       onAudioStart?: (() => void) | null,
