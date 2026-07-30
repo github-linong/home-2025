@@ -5,6 +5,7 @@ import '../styles/global.css';
 import {
 	BAIDU_HM_ID,
 	BAIDU_SITE_VERIFICATION,
+	GOOGLE_SITE_VERIFICATION,
 	GA_MEASUREMENT_ID,
 	SITE_AUTHOR,
 	SITE_DESCRIPTION,
@@ -14,7 +15,9 @@ import AuthCookie from './AuthCookie.astro';
 import { AUTH_COOKIE_NAME } from '../lib/authCookie';
 import { profile } from '../data/profile';
 import {
+	buildBreadcrumbJsonLd,
 	buildCanonicalUrl,
+	buildOrganizationJsonLd,
 	buildPersonJsonLd,
 	buildWebSiteJsonLd,
 	wrapJsonLdGraph,
@@ -57,15 +60,24 @@ const personLd = buildPersonJsonLd({
 	description: profile.tagline,
 	image: new URL(profile.avatar.local, siteBase).href,
 });
+const organizationLd = buildOrganizationJsonLd({
+	name: SITE_TITLE,
+	url: profile.site,
+	logo: new URL(profile.avatar.local, siteBase).href,
+});
 const websiteLd = buildWebSiteJsonLd({
 	name: SITE_TITLE,
 	url: profile.site,
 	description: SITE_DESCRIPTION,
 	author: personLd,
+	publisher: organizationLd,
 });
+const breadcrumbLd = buildBreadcrumbJsonLd(Astro.url.pathname, title, siteBase);
 const graphNodes = [
 	websiteLd,
 	personLd,
+	organizationLd,
+	breadcrumbLd,
 	...(Array.isArray(extraJsonLd) ? extraJsonLd : extraJsonLd ? [extraJsonLd] : []),
 ];
 const jsonLdPayload = wrapJsonLdGraph(graphNodes);
@@ -80,6 +92,9 @@ const jsonLdHtml = JSON.stringify(jsonLdPayload).replace(/</g, '\\u003c');
 <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
 <link rel="canonical" href={canonicalUrl} />
 <meta name="generator" content={Astro.generator} />
+{GOOGLE_SITE_VERIFICATION && (
+	<meta name="google-site-verification" content={GOOGLE_SITE_VERIFICATION} />
+)}
 {BAIDU_SITE_VERIFICATION && (
 	<meta name="baidu-site-verification" content={BAIDU_SITE_VERIFICATION} />
 )}

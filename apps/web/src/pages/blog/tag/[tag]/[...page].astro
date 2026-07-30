@@ -31,7 +31,11 @@ const { page } = Astro.props as Props;
 const params = Astro.params;
 ---
 
-<BaseLayout title={"Blog - " + params.tag} sideBarActiveItemID="blog">
+<BaseLayout
+  title={"Blog - " + params.tag}
+  description={`linong 博客中标签为「${params.tag}」的全部文章与问答，按时间倒序排列。`}
+  sideBarActiveItemID="blog"
+>
   <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
     <div class="text-3xl w-full font-bold sm:w-auto">Blog - {params.tag}</div>
     <a href={`/search/?tag=${encodeURIComponent(params.tag ?? "")}`} class="btn btn-outline btn-sm">

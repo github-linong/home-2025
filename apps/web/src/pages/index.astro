@@ -18,7 +18,10 @@ const homePicks = getHomeDemoPicks(allDemos);
 const homeShow = homePicks.slice(0, 6);
 ---
 
-<BaseLayout sideBarActiveItemID="home">
+<BaseLayout
+  sideBarActiveItemID="home"
+  description="lilnong.top 是前端工程师 linong 的个人站：覆盖前端基础、工程化与 AI 实践的技术博客，数百个可在线运行的前端 Demo，以及数字人、AI 生图与视频实验。"
+>
   <header class="pb-12 mt-5">
     <h1 class="text-5xl font-bold">{SITE_AUTHOR}</h1>
     <p class="text-3xl py-3 font-bold m-0">{SITE_TAGLINE}</p>

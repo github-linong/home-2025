@@ -119,6 +119,7 @@ export function buildPersonJsonLd(opts) {
  * @param {string} opts.url
  * @param {string} opts.description
  * @param {object} [opts.author] Person JSON-LD
+ * @param {object} [opts.publisher] Organization JSON-LD
  */
 export function buildWebSiteJsonLd(opts) {
   return {
@@ -127,7 +128,67 @@ export function buildWebSiteJsonLd(opts) {
     url: opts.url,
     description: opts.description,
     inLanguage: "zh-CN",
-    ...(opts.author ? { publisher: opts.author, author: opts.author } : {}),
+    ...(opts.publisher ? { publisher: opts.publisher } : {}),
+    ...(opts.author ? { author: opts.author } : {}),
+  };
+}
+
+/**
+ * Organization node — used as the publisher across WebSite/Article/CreativeWork
+ * so Google can attach the site to a verifiable entity (E-E-A-T signal).
+ * @param {object} opts
+ * @param {string} opts.name
+ * @param {string} opts.url
+ * @param {string} [opts.logo]
+ * @param {string[]} [opts.sameAs]
+ */
+export function buildOrganizationJsonLd(opts) {
+  const org = {
+    "@type": "Organization",
+    name: opts.name,
+    url: opts.url,
+    inLanguage: "zh-CN",
+  };
+  if (opts.logo) org.logo = opts.logo;
+  if (opts.sameAs && opts.sameAs.length) org.sameAs = opts.sameAs;
+  return org;
+}
+
+/**
+ * BreadcrumbList derived from the current pathname. Covers every page from a
+ * single helper so breadcrumb rich results show site-wide.
+ * @param {string} pathname e.g. /blog/some-slug/
+ * @param {string} title current page title (used for the terminal crumb)
+ * @param {string} siteBase e.g. https://www.lilnong.top
+ */
+export function buildBreadcrumbJsonLd(pathname, title, siteBase) {
+  const base = String(siteBase).replace(/\/$/, "");
+  const segments = String(pathname).split("/").filter(Boolean);
+  const labelMap = {
+    blog: "博客",
+    demos: "项目",
+    about: "关于",
+    "texas-holdem": "德州扑克",
+    "learn-english": "学英语",
+    archive: "归档",
+    search: "搜索",
+  };
+  const crumbs = [{ name: "首页", url: `${base}/` }];
+  let acc = "";
+  segments.forEach((seg, i) => {
+    acc += `/${seg}`;
+    const isLast = i === segments.length - 1;
+    const name = isLast ? title || seg : labelMap[seg] || seg;
+    crumbs.push({ name, url: `${base}${acc}/` });
+  });
+  return {
+    "@type": "BreadcrumbList",
+    itemListElement: crumbs.map((c, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: c.name,
+      item: c.url,
+    })),
   };
 }
 
@@ -140,6 +201,7 @@ export function buildWebSiteJsonLd(opts) {
  * @param {string} [opts.dateModified]
  * @param {string} [opts.image]
  * @param {object} [opts.author]
+ * @param {object} [opts.publisher] Organization JSON-LD
  * @param {string} [opts.isBasedOn] original URL when syndicated / migrated
  */
 export function buildArticleJsonLd(opts) {
@@ -155,6 +217,7 @@ export function buildArticleJsonLd(opts) {
   if (opts.dateModified) article.dateModified = opts.dateModified;
   if (opts.image) article.image = opts.image;
   if (opts.author) article.author = opts.author;
+  if (opts.publisher) article.publisher = opts.publisher;
   if (opts.isBasedOn) article.isBasedOn = opts.isBasedOn;
   return article;
 }
@@ -168,6 +231,7 @@ export function buildArticleJsonLd(opts) {
  * @param {string} [opts.dateModified]
  * @param {string} [opts.image]
  * @param {object} [opts.author]
+ * @param {object} [opts.publisher] Organization JSON-LD
  */
 export function buildCreativeWorkJsonLd(opts) {
   const work = {
@@ -181,6 +245,7 @@ export function buildCreativeWorkJsonLd(opts) {
   if (opts.dateModified) work.dateModified = opts.dateModified;
   if (opts.image) work.image = opts.image;
   if (opts.author) work.author = opts.author;
+  if (opts.publisher) work.publisher = opts.publisher;
   return work;
 }
 

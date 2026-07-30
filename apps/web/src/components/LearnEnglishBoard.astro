@@ -1,520 +1,1005 @@
 ---
 /**
- * English learning board: flashcards + passage reading with word lookup.
- * Content from /api/learn; progress in localStorage.
+ * English learning board: flashcards + IPA chart + passage reading.
+ * Content comes from api2 `/api/learn/*`; progress lives in localStorage.
  */
 ---
 
-<div class="not-prose space-y-6" data-learn-english>
-  <div role="tablist" class="tabs tabs-boxed w-fit flex-wrap">
-    <button type="button" role="tab" class="tab tab-active" data-learn-tab="flashcards">
-      单词闪卡
-    </button>
-    <button type="button" role="tab" class="tab" data-learn-tab="ipa">国际音标</button>
-    <button type="button" role="tab" class="tab" data-learn-tab="reading">阅读查词</button>
+<div class="learn-board not-prose" data-learn-english>
+  <!-- ── Hero ─────────────────────────────────────────────── -->
+  <header class="lb-hero">
+    <div class="lb-hero-copy">
+      <p class="lb-eyebrow"><span class="lb-aa" aria-hidden="true">Aa</span>ENGLISH · POCKET DECK</p>
+      <h1 class="lb-title">学英语 <span class="lb-title-en">Vocabulary Notebook</span></h1>
+      <p class="lb-sub">闪卡 · 国际音标 · 短文查词 — 进度保存在本机浏览器</p>
+    </div>
+    <div class="lb-stats" data-stats hidden>
+      <div class="lb-stat lb-stat-good"><b data-stat-known>0</b><span>已掌握</span></div>
+      <div class="lb-stat lb-stat-warn"><b data-stat-due>0</b><span>待加强</span></div>
+      <div class="lb-stat"><b data-stat-total>0</b><span>本组词卡</span></div>
+    </div>
+  </header>
+
+  <!-- ── Tabs ─────────────────────────────────────────────── -->
+  <nav class="lb-tabs" role="tablist" aria-label="学习模块">
+    <button type="button" role="tab" class="lb-tab is-active" data-learn-tab="flashcards" aria-selected="true">🃏 单词闪卡</button>
+    <button type="button" role="tab" class="lb-tab" data-learn-tab="ipa" aria-selected="false">🔤 国际音标</button>
+    <button type="button" role="tab" class="lb-tab" data-learn-tab="reading" aria-selected="false">📖 阅读查词</button>
+  </nav>
+
+  <p class="lb-status" data-learn-status role="status">正在加载学习内容…</p>
+
+  <!-- Boot error card with retry -->
+  <div class="lb-error" data-learn-error hidden>
+    <p>⚠️ <span data-error-msg>无法连接学习接口。</span></p>
+    <button type="button" class="btn btn-outline btn-sm" data-retry>↻ 重试</button>
   </div>
 
-  <p class="text-sm opacity-70" data-learn-status>加载中…</p>
-
-  <section data-learn-panel="flashcards" class="space-y-4">
-    <div class="flex flex-wrap items-end gap-x-4 gap-y-2">
-      <label class="form-control w-full max-w-xs">
-        <span class="label py-1">
-          <span class="label-text text-sm opacity-70">词卡组</span>
-        </span>
+  <!-- ── Flashcards ───────────────────────────────────────── -->
+  <section data-learn-panel="flashcards" class="lb-panel">
+    <div class="lb-controls">
+      <label class="lb-field">
+        <span>词卡组</span>
         <select class="select select-bordered select-sm" data-deck-select></select>
       </label>
-      <div class="flex flex-wrap items-center gap-3 h-8">
-        <label class="inline-flex items-center gap-2 cursor-pointer select-none">
-          <input type="checkbox" class="checkbox checkbox-sm" data-filter-unknown />
-          <span class="text-sm">只练未掌握</span>
-        </label>
-        <button type="button" class="btn btn-ghost btn-sm h-8 min-h-8 px-3" data-reset-deck>
-          重置本组进度
-        </button>
+      <button type="button" class="btn btn-ghost btn-sm" data-shuffle title="打乱顺序">🔀 打乱</button>
+      <label class="lb-switch">
+        <input type="checkbox" class="toggle toggle-sm" data-filter-unknown />
+        <span>只练未掌握</span>
+      </label>
+      <button type="button" class="btn btn-ghost btn-sm" data-reset-deck>↺ 重置进度</button>
+    </div>
+
+    <div class="lb-progress" data-progress hidden>
+      <div class="lb-progress-meta">
+        <span data-card-count>0 / 0</span>
+        <span>已掌握 <b data-known-count>0</b></span>
       </div>
+      <div class="lb-progress-track"><div class="lb-progress-fill" data-progress-fill></div></div>
     </div>
 
     <div
-      class="min-h-[220px] rounded-lg border border-base-300 bg-base-200/60 p-8 text-center cursor-pointer select-none flex flex-col items-center justify-center gap-3"
+      class="lb-flashcard"
       data-flashcard
       tabindex="0"
       role="button"
-      aria-label="点击翻转闪卡"
+      aria-label="点击或按空格翻转闪卡"
     >
-      <p class="text-xs uppercase tracking-wide opacity-50" data-card-side-label>English</p>
-      <p class="text-3xl font-medium break-words" data-card-text>—</p>
-      <p class="text-sm opacity-60" data-card-hint></p>
-      <p class="text-xs opacity-40" data-card-meta></p>
+      <span class="lb-card-stack lb-card-stack-a" aria-hidden="true"></span>
+      <span class="lb-card-stack lb-card-stack-b" aria-hidden="true"></span>
+      <div class="lb-flash-inner">
+        <div class="lb-face lb-front">
+          <div class="lb-face-head">
+            <span class="lb-face-label">ENGLISH</span>
+            <button type="button" class="lb-audio-btn" data-card-audio title="朗读 (A)" aria-label="朗读">🔊</button>
+          </div>
+          <p class="lb-word" data-card-text>—</p>
+          <p class="lb-hint" data-card-hint></p>
+          <div class="lb-face-foot">
+            <span class="lb-meta" data-card-meta></span>
+            <span class="lb-flip-hint">↻ 点击翻面</span>
+          </div>
+        </div>
+        <div class="lb-face lb-back">
+          <div class="lb-face-head"><span class="lb-face-label lb-face-label-zh">中文</span></div>
+          <p class="lb-word lb-word-zh" data-card-text-back>—</p>
+          <p class="lb-hint" data-card-hint-back></p>
+          <div class="lb-face-foot"><span class="lb-flip-hint">↻ 点击翻回</span></div>
+        </div>
+      </div>
     </div>
 
-    <div class="flex flex-wrap gap-2 justify-center items-center">
-      <button type="button" class="btn btn-outline btn-sm h-8 min-h-8" data-card-prev>上一张</button>
-      <button type="button" class="btn btn-neutral btn-sm h-8 min-h-8" data-card-flip>翻转</button>
-      <button type="button" class="btn btn-outline btn-sm h-8 min-h-8" data-card-next>下一张</button>
-      <button
-        type="button"
-        class="btn btn-outline btn-sm h-8 min-h-8"
-        data-card-audio
-        aria-label="朗读"
-        title="朗读（Piper/eSpeak 合成，真人音优先）"
-      >
-        🔊 朗读
-      </button>
+    <div class="lb-actions" data-card-actions>
+      <button type="button" class="btn btn-outline btn-sm" data-card-prev>← 上一张</button>
+      <button type="button" class="btn btn-neutral btn-sm" data-card-flip>翻转</button>
+      <button type="button" class="btn btn-outline btn-sm" data-card-next>下一张 →</button>
     </div>
-    <div class="flex flex-wrap gap-2 justify-center items-center">
-      <button type="button" class="btn btn-success btn-sm h-8 min-h-8" data-card-know>认识</button>
-      <button type="button" class="btn btn-warning btn-sm h-8 min-h-8" data-card-unknown>不认识</button>
+    <div class="lb-rate" data-card-rate>
+      <button type="button" class="btn btn-outline btn-warning btn-sm" data-card-unknown>😕 不认识 <kbd>K</kbd></button>
+      <button type="button" class="btn btn-success btn-sm" data-card-know>🙂 认识 <kbd>J</kbd></button>
     </div>
+
+    <p class="lb-kbd-hints" aria-hidden="true">
+      <kbd>←</kbd><kbd>→</kbd> 切换 · <kbd>空格</kbd> 翻转 · <kbd>J</kbd> 认识 · <kbd>K</kbd> 不认识 · <kbd>A</kbd> 朗读 · <kbd>S</kbd> 打乱
+    </p>
   </section>
 
-  <section data-learn-panel="ipa" class="hidden space-y-4">
-    <p class="text-sm opacity-70">
-      整理自《英语国际音标课》讲义：点选音标查看口型要点与例词；也可用闪卡组「国际音标速记 / 字母读音」练习。
-    </p>
-    <div class="flex flex-wrap gap-2" data-ipa-group-tabs></div>
-    <div class="grid gap-4 lg:grid-cols-[1fr_280px]">
-      <div class="space-y-3" data-ipa-symbol-grid></div>
-      <aside
-        class="rounded-lg border border-base-300 bg-base-200/50 p-4 space-y-2 sticky top-4 h-fit"
-        data-ipa-detail
-      >
-        <p class="text-sm font-medium">音标详情</p>
-        <div data-ipa-detail-body class="space-y-2 text-sm">
-          <p class="opacity-50">点击左侧音标查看发音要点。</p>
+  <!-- ── IPA ──────────────────────────────────────────────── -->
+  <section data-learn-panel="ipa" class="lb-panel" hidden>
+    <div class="lb-ipa-groups" data-ipa-group-tabs></div>
+    <div class="lb-ipa-grid">
+      <div class="lb-ipa-symbols" data-ipa-symbol-grid></div>
+      <aside class="lb-aside" data-ipa-detail>
+        <p class="lb-aside-title">音标详情</p>
+        <div class="lb-ipa-detail-body" data-ipa-detail-body>
+          <p class="lb-muted">点击音标查看发音要点。</p>
         </div>
       </aside>
     </div>
   </section>
 
-  <section data-learn-panel="reading" class="hidden space-y-4">
-    <label class="form-control w-full max-w-md">
-      <span class="label-text text-sm opacity-70">短文</span>
-      <select class="select select-bordered select-sm" data-passage-select></select>
-    </label>
-
-    <div class="grid gap-4 lg:grid-cols-[1fr_240px]">
-      <article
-        class="rounded-lg border border-base-300 bg-base-100 p-5 leading-8 text-lg"
-        data-passage-body
-      >
-        <p class="opacity-50 text-sm">选择一篇短文开始阅读。</p>
+  <!-- ── Reading ──────────────────────────────────────────── -->
+  <section data-learn-panel="reading" class="lb-panel" hidden>
+    <div class="lb-controls">
+      <label class="lb-field">
+        <span>短文</span>
+        <select class="select select-bordered select-sm" data-passage-select></select>
+      </label>
+    </div>
+    <div class="lb-reading-grid">
+      <article class="lb-passage" data-passage-body>
+        <p class="lb-muted">选择一篇短文开始阅读。</p>
       </article>
-      <aside
-        class="rounded-lg border border-base-300 bg-base-200/50 p-4 space-y-2 sticky top-4 h-fit"
-        data-word-panel
-      >
-        <p class="text-sm font-medium">查词</p>
-        <p class="text-xs opacity-60">点击正文中的单词查看释义。</p>
-        <div data-word-detail class="space-y-1 text-sm">
-          <p class="opacity-50">尚未选择单词</p>
+      <aside class="lb-aside" data-word-panel>
+        <p class="lb-aside-title">查词</p>
+        <p class="lb-muted lb-xs">点击正文中的单词查看释义</p>
+        <div class="lb-word-detail" data-word-detail>
+          <p class="lb-muted">尚未选择单词</p>
         </div>
-        <button type="button" class="btn btn-outline btn-xs mt-2 hidden" data-mark-word>
-          标注此词
-        </button>
-        <div class="divider my-2 text-xs opacity-50">已标注</div>
-        <ul class="text-sm space-y-1 max-h-48 overflow-y-auto" data-annotated-list></ul>
+        <button type="button" class="btn btn-outline btn-xs" data-mark-word hidden>✏️ 标注此词</button>
+        <div class="lb-divider">已标注 <span data-anno-count>0</span></div>
+        <ul class="lb-annotated" data-annotated-list></ul>
       </aside>
     </div>
   </section>
 </div>
 
-<style>
-  [data-passage-body] button.learn-token {
+<style is:global>
+  /* Scoped to `.learn-board` (is:global so JS-generated nodes are styled too). */
+  .learn-board {
+    --lb-serif: Georgia, "Times New Roman", "Songti SC", "SimSun", serif;
+    --lb-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --lb-paper: oklch(var(--b1));
+    --lb-ink: oklch(var(--bc));
+    --lb-rule: oklch(62% 0.09 240 / 0.14);
+    --lb-margin: oklch(60% 0.21 25 / 0.5);
+    --lb-accent: oklch(var(--p));
+    --lb-good: oklch(var(--su));
+    --lb-warn: oklch(var(--wa));
+    display: block;
+  }
+
+  /* ── Hero ── */
+  .learn-board .lb-hero {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    padding: 1.4rem 1.5rem 1.3rem;
+    margin-bottom: 1.1rem;
+    border: 1px solid oklch(var(--b3));
+    border-radius: 14px;
+    background:
+      radial-gradient(oklch(var(--bc) / 0.05) 1px, transparent 1px) 0 0 / 16px 16px,
+      oklch(var(--b2) / 0.45);
+    overflow: hidden;
+    animation: lb-rise 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  }
+  .learn-board .lb-hero::after {
+    content: "Aa";
+    position: absolute;
+    right: 1.2rem;
+    bottom: -1.6rem;
+    font-family: var(--lb-serif);
+    font-style: italic;
+    font-size: 6.5rem;
+    line-height: 1;
+    color: oklch(var(--bc) / 0.05);
+    pointer-events: none;
+    user-select: none;
+  }
+  .learn-board .lb-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: oklch(var(--bc) / 0.55);
+  }
+  .learn-board .lb-aa {
+    display: inline-grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 5px;
+    background: var(--lb-margin);
+    color: oklch(98% 0.01 25);
+    font-family: var(--lb-serif);
+    font-style: italic;
+    font-size: 0.85rem;
+    letter-spacing: 0;
+  }
+  .learn-board .lb-title {
+    margin: 0;
+    font-size: clamp(1.7rem, 4vw, 2.3rem);
+    font-weight: 800;
+    line-height: 1.15;
+    color: var(--lb-ink);
+  }
+  .learn-board .lb-title-en {
+    display: inline-block;
+    margin-left: 0.4rem;
+    font-family: var(--lb-serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 0.62em;
+    color: oklch(var(--bc) / 0.45);
+    transform: translateY(-0.15em);
+  }
+  .learn-board .lb-sub {
+    margin: 0.3rem 0 0;
+    font-size: 0.85rem;
+    color: oklch(var(--bc) / 0.6);
+  }
+  .learn-board .lb-stats {
+    display: flex;
+    gap: 0.6rem;
+    position: relative;
+    z-index: 1;
+  }
+  .learn-board .lb-stat {
+    min-width: 4.6rem;
+    padding: 0.5rem 0.8rem;
+    border: 1px solid oklch(var(--b3));
+    border-radius: 10px;
+    background: var(--lb-paper);
+    text-align: center;
+    box-shadow: 0 1px 3px oklch(0% 0 0 / 0.05);
+  }
+  .learn-board .lb-stat b {
+    display: block;
+    font-family: var(--lb-serif);
+    font-size: 1.45rem;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    color: var(--lb-ink);
+  }
+  .learn-board .lb-stat span {
+    font-size: 0.68rem;
+    color: oklch(var(--bc) / 0.55);
+  }
+  .learn-board .lb-stat-good b { color: var(--lb-good); }
+  .learn-board .lb-stat-warn b { color: var(--lb-warn); }
+
+  /* ── Tabs ── */
+  .learn-board .lb-tabs {
+    display: inline-flex;
+    gap: 2px;
+    padding: 4px;
+    border-radius: 12px;
+    background: oklch(var(--b2));
+    margin-bottom: 0.75rem;
+  }
+  .learn-board .lb-tab {
+    border: 0;
+    background: transparent;
+    padding: 0.42rem 1rem;
+    border-radius: 9px;
+    font-size: 0.9rem;
+    color: oklch(var(--bc) / 0.65);
+    cursor: pointer;
+    transition: background 0.25s, color 0.25s, transform 0.15s;
+  }
+  .learn-board .lb-tab:hover { color: var(--lb-ink); }
+  .learn-board .lb-tab.is-active {
+    background: var(--lb-paper);
+    color: var(--lb-accent);
+    font-weight: 600;
+    box-shadow: 0 1px 5px oklch(0% 0 0 / 0.1);
+  }
+
+  /* `hidden` must win over the `display` rules below (Tailwind/DaisyUI reset
+     drops the UA `[hidden]{display:none}`, so declare it explicitly). */
+  .learn-board [hidden] { display: none !important; }
+
+  /* ── Status / error ── */
+  .learn-board .lb-status {
+    margin: 0 0 0.9rem;
+    font-size: 0.85rem;
+    color: oklch(var(--bc) / 0.6);
+    transition: color 0.3s;
+  }
+  .learn-board .lb-status.is-error { color: oklch(var(--er)); }
+  .learn-board .lb-error {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1rem;
+    border: 1px solid oklch(var(--er) / 0.4);
+    border-radius: 10px;
+    background: oklch(var(--er) / 0.08);
+  }
+  .learn-board .lb-error p { margin: 0; font-size: 0.9rem; color: oklch(var(--er)); }
+
+  .learn-board .lb-panel { animation: lb-rise 0.4s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+
+  /* ── Controls ── */
+  .learn-board .lb-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin-bottom: 0.9rem;
+  }
+  .learn-board .lb-field {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: oklch(var(--bc) / 0.7);
+  }
+  .learn-board .lb-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* ── Progress ── */
+  .learn-board .lb-progress { margin-bottom: 1rem; }
+  .learn-board .lb-progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: oklch(var(--bc) / 0.6);
+    margin-bottom: 0.3rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .learn-board .lb-progress-meta b { color: var(--lb-good); }
+  .learn-board .lb-progress-track {
+    height: 6px;
+    border-radius: 999px;
+    background: oklch(var(--b3));
+    overflow: hidden;
+  }
+  .learn-board .lb-progress-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--lb-accent), var(--lb-good));
+    transition: width 0.45s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+
+  /* ── Flashcard (index-card) ── */
+  .learn-board .lb-flashcard {
+    position: relative;
+    display: block;
+    margin: 0 auto 1.1rem;
+    max-width: 560px;
+    perspective: 1200px;
+    cursor: pointer;
+    outline: none;
+  }
+  .learn-board .lb-flashcard:focus-visible .lb-flash-inner {
+    box-shadow: 0 0 0 3px oklch(var(--p) / 0.5);
+  }
+  .learn-board .lb-card-stack {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    border: 1px solid oklch(var(--b3));
+    background: oklch(var(--b2) / 0.8);
+    transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  .learn-board .lb-card-stack-a { transform: rotate(2.2deg) translate(7px, 7px); }
+  .learn-board .lb-card-stack-b { transform: rotate(-1.6deg) translate(-6px, 9px); }
+  .learn-board .lb-flashcard:hover .lb-card-stack-a { transform: rotate(3.2deg) translate(10px, 9px); }
+  .learn-board .lb-flashcard:hover .lb-card-stack-b { transform: rotate(-2.4deg) translate(-9px, 12px); }
+
+  .learn-board .lb-flash-inner {
+    position: relative;
+    z-index: 1;
+    min-height: 280px;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  .learn-board .lb-flashcard.is-flipped .lb-flash-inner { transform: rotateY(180deg); }
+
+  .learn-board .lb-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 1.2rem 1.4rem 1rem 3.1rem;
+    border: 1px solid oklch(var(--b3));
+    border-radius: 12px;
+    background:
+      linear-gradient(90deg, transparent 0 2.35rem, var(--lb-margin) 2.35rem calc(2.35rem + 2px), transparent calc(2.35rem + 2px)),
+      repeating-linear-gradient(180deg, transparent 0 1.9rem, var(--lb-rule) 1.9rem calc(1.9rem + 1px)),
+      var(--lb-paper);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    box-shadow: 0 8px 24px -10px oklch(0% 0 0 / 0.18);
+  }
+  .learn-board .lb-front { position: relative; min-height: 280px; } /* front defines height */
+  .learn-board .lb-back { transform: rotateY(180deg); }
+
+  /* rating flash feedback on the card edge */
+  .learn-board .lb-face::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .learn-board .lb-flashcard.flash-good .lb-face::after { box-shadow: inset 0 0 0 3px var(--lb-good); opacity: 1; }
+  .learn-board .lb-flashcard.flash-warn .lb-face::after { box-shadow: inset 0 0 0 3px var(--lb-warn); opacity: 1; }
+
+  .learn-board .lb-face-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.6rem;
+  }
+  .learn-board .lb-face-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: oklch(var(--bc) / 0.45);
+  }
+  .learn-board .lb-face-label-zh { color: var(--lb-warn); }
+  .learn-board .lb-audio-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid oklch(var(--b3));
+    border-radius: 50%;
+    background: oklch(var(--b2) / 0.6);
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: transform 0.15s, background 0.2s;
+  }
+  .learn-board .lb-audio-btn:hover { transform: scale(1.08); background: oklch(var(--b2)); }
+  .learn-board .lb-audio-btn:active { transform: scale(0.94); }
+
+  .learn-board .lb-word {
+    margin: auto 0;
+    font-family: var(--lb-serif);
+    font-weight: 700;
+    font-size: clamp(2.1rem, 7vw, 3.2rem);
+    line-height: 1.15;
+    word-break: break-word;
+    color: var(--lb-ink);
+  }
+  .learn-board .lb-word-zh {
+    font-family: inherit;
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+  }
+  .learn-board .lb-hint {
+    margin: 0.5rem 0 0;
+    font-size: 0.85rem;
+    color: oklch(var(--bc) / 0.6);
+    min-height: 1.2em;
+  }
+  .learn-board .lb-hint::before { content: ""; }
+  .learn-board .lb-face-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.7rem;
+  }
+  .learn-board .lb-meta {
+    font-size: 0.72rem;
+    color: oklch(var(--bc) / 0.5);
+    font-variant-numeric: tabular-nums;
+  }
+  .learn-board .lb-flip-hint {
+    font-size: 0.7rem;
+    color: oklch(var(--bc) / 0.4);
+  }
+
+  /* loading shimmer over the front face */
+  .learn-board .lb-flashcard.is-loading .lb-word,
+  .learn-board .lb-flashcard.is-loading .lb-hint,
+  .learn-board .lb-flashcard.is-loading .lb-meta {
+    color: transparent;
+    border-radius: 6px;
+    background: linear-gradient(100deg, oklch(var(--b3) / 0.5) 40%, oklch(var(--b2)) 50%, oklch(var(--b3) / 0.5) 60%);
+    background-size: 200% 100%;
+    animation: lb-shimmer 1.2s linear infinite;
+  }
+  .learn-board .lb-flashcard.is-loading { pointer-events: none; }
+
+  /* ── Actions / rate ── */
+  .learn-board .lb-actions,
+  .learn-board .lb-rate {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.7rem;
+  }
+  .learn-board .lb-rate .btn kbd {
+    margin-left: 0.35rem;
+    padding: 0.05rem 0.35rem;
+    border-radius: 4px;
+    background: oklch(0% 0 0 / 0.12);
+    font-family: var(--lb-mono);
+    font-size: 0.7rem;
+  }
+  .learn-board .lb-kbd-hints {
+    text-align: center;
+    font-size: 0.72rem;
+    color: oklch(var(--bc) / 0.45);
+  }
+  .learn-board .lb-kbd-hints kbd {
+    padding: 0.05rem 0.35rem;
+    border: 1px solid oklch(var(--b3));
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    background: oklch(var(--b2) / 0.6);
+    font-family: var(--lb-mono);
+    font-size: 0.7rem;
+    margin: 0 0.1rem;
+  }
+
+  /* ── IPA ── */
+  .learn-board .lb-ipa-groups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.9rem;
+  }
+  .learn-board .lb-ipa-group {
+    border: 1px solid oklch(var(--b3));
+    background: transparent;
+    color: oklch(var(--bc) / 0.7);
+    border-radius: 999px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .learn-board .lb-ipa-group:hover { border-color: oklch(var(--bc) / 0.3); color: var(--lb-ink); }
+  .learn-board .lb-ipa-group.is-active {
+    background: var(--lb-accent);
+    border-color: var(--lb-accent);
+    color: oklch(var(--pc, 98% 0 0));
+    font-weight: 600;
+  }
+  .learn-board .lb-ipa-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 1024px) {
+    .learn-board .lb-ipa-grid { grid-template-columns: 1fr 280px; }
+  }
+  .learn-board .lb-ipa-desc {
+    margin: 0 0 0.8rem;
+    font-size: 0.85rem;
+    color: oklch(var(--bc) / 0.6);
+  }
+  .learn-board .lb-ipa-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .learn-board .lb-ipa-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 3.4rem;
+    justify-content: center;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid oklch(var(--b3));
+    border-radius: 10px;
+    background: var(--lb-paper);
+    font-family: var(--lb-mono);
+    font-size: 1rem;
+    color: var(--lb-ink);
+    cursor: pointer;
+    transition: transform 0.18s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  }
+  .learn-board .lb-ipa-chip:hover {
+    transform: translateY(-2px);
+    border-color: oklch(var(--bc) / 0.3);
+    box-shadow: 0 4px 10px -4px oklch(0% 0 0 / 0.2);
+  }
+  .learn-board .lb-ipa-chip.is-active {
+    border-color: var(--lb-accent);
+    background: oklch(var(--p) / 0.1);
+    box-shadow: 0 0 0 2px oklch(var(--p) / 0.25);
+  }
+  .learn-board .lb-voiced-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: oklch(var(--bc) / 0.25);
+  }
+  .learn-board .lb-voiced-dot.is-voiced { background: var(--lb-good); }
+
+  .learn-board .lb-aside {
+    padding: 1rem 1.1rem;
+    border: 1px solid oklch(var(--b3));
+    border-radius: 12px;
+    background: oklch(var(--b2) / 0.5);
+    align-self: start;
+  }
+  @media (min-width: 1024px) {
+    .learn-board .lb-aside { position: sticky; top: 1rem; }
+  }
+  .learn-board .lb-aside-title {
+    margin: 0 0 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: oklch(var(--bc) / 0.6);
+  }
+  .learn-board .lb-ipa-symbol-big {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--lb-serif);
+    font-size: 2.2rem;
+    color: var(--lb-ink);
+    margin: 0 0 0.4rem;
+  }
+  .learn-board .lb-ipa-name { margin: 0.2rem 0; font-weight: 600; color: var(--lb-ink); }
+  .learn-board .lb-ipa-tip { margin: 0.4rem 0; font-size: 0.85rem; color: oklch(var(--bc) / 0.7); }
+  .learn-board .lb-ipa-examples { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+
+  .learn-board .lb-muted { color: oklch(var(--bc) / 0.5); font-size: 0.85rem; }
+  .learn-board .lb-xs { font-size: 0.75rem; }
+
+  /* ── Reading ── */
+  .learn-board .lb-reading-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 1024px) {
+    .learn-board .lb-reading-grid { grid-template-columns: 1fr 240px; }
+  }
+  .learn-board .lb-passage {
+    padding: 1.3rem 1.5rem;
+    border: 1px solid oklch(var(--b3));
+    border-radius: 12px;
+    background: var(--lb-paper);
+    font-family: var(--lb-serif);
+    font-size: 1.08rem;
+    line-height: 2.1;
+    color: var(--lb-ink);
+  }
+  .learn-board .lb-passage .lb-muted { font-family: inherit; }
+
+  .learn-board button.lb-token {
     display: inline;
-    padding: 0 0.05em;
+    padding: 0 0.06em;
     margin: 0;
     border: none;
     background: transparent;
-    border-radius: 0.15em;
+    border-radius: 0.2em;
     cursor: pointer;
     font: inherit;
     line-height: inherit;
     color: inherit;
+    transition: background 0.15s;
   }
-  [data-passage-body] button.learn-token:hover,
-  [data-passage-body] button.learn-token.is-active {
-    background: oklch(var(--p) / 0.18);
-  }
-  [data-passage-body] button.learn-token.is-annotated {
+  .learn-board button.lb-token:hover { background: oklch(var(--p) / 0.15); }
+  .learn-board button.lb-token.is-active { background: oklch(var(--p) / 0.2); }
+  .learn-board button.lb-token.is-annotated {
     background: oklch(var(--su) / 0.22);
     text-decoration: underline;
     text-underline-offset: 3px;
   }
-  [data-passage-body] button.learn-token.is-known-gloss {
+  .learn-board button.lb-token.is-known-gloss {
     border-bottom: 1px dotted oklch(var(--bc) / 0.35);
   }
-  button.ipa-chip {
-    min-width: 3rem;
+
+  .learn-board .lb-word-detail { min-height: 3rem; }
+  .learn-board .lb-word-lemma {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin: 0 0 0.2rem;
+    font-family: var(--lb-serif);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--lb-ink);
   }
-  button.ipa-chip.is-active {
-    outline: 2px solid oklch(var(--bc));
-    outline-offset: 1px;
+  .learn-board .lb-word-phonetic {
+    font-family: var(--lb-mono);
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: oklch(var(--bc) / 0.55);
+  }
+  .learn-board .lb-word-def { margin: 0.2rem 0; font-size: 0.9rem; color: var(--lb-ink); }
+  .learn-board .lb-word-example {
+    margin: 0.4rem 0;
+    font-size: 0.82rem;
+    font-style: italic;
+    color: oklch(var(--bc) / 0.6);
+    font-family: var(--lb-serif);
+  }
+  .learn-board .lb-divider {
+    margin: 0.8rem 0 0.5rem;
+    font-size: 0.72rem;
+    color: oklch(var(--bc) / 0.45);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .learn-board .lb-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: oklch(var(--b3));
+  }
+  .learn-board .lb-annotated {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 12rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .learn-board .lb-annotated li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: 8px;
+    background: oklch(var(--b1) / 0.7);
+    font-size: 0.82rem;
+  }
+  .learn-board .lb-anno-word {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+    color: var(--lb-ink);
+    text-align: left;
+    padding: 0;
+  }
+  .learn-board .lb-anno-word:hover { color: var(--lb-accent); }
+  .learn-board .lb-anno-word b { font-family: var(--lb-serif); }
+  .learn-board .lb-anno-zh { color: oklch(var(--bc) / 0.6); }
+  .learn-board .lb-anno-remove {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: oklch(var(--bc) / 0.4);
+    font-size: 0.9rem;
+    line-height: 1;
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    transition: color 0.2s, background 0.2s;
+  }
+  .learn-board .lb-anno-remove:hover { color: oklch(var(--er)); background: oklch(var(--er) / 0.12); }
+
+  /* ── Motion ── */
+  @keyframes lb-rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes lb-shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .learn-board .lb-flash-inner,
+    .learn-board .lb-card-stack,
+    .learn-board .lb-tab,
+    .learn-board .lb-ipa-chip,
+    .learn-board .lb-audio-btn,
+    .learn-board .lb-progress-fill {
+      transition: none !important;
+    }
+    .learn-board .lb-hero,
+    .learn-board .lb-panel {
+      animation: none !important;
+    }
+    .learn-board .lb-flashcard.is-loading .lb-word,
+    .learn-board .lb-flashcard.is-loading .lb-hint,
+    .learn-board .lb-flashcard.is-loading .lb-meta {
+      animation: none !important;
+    }
+  }
+  /* Hide keyboard hints on touch-only devices */
+  @media (hover: none) {
+    .learn-board .lb-kbd-hints { display: none; }
   }
 </style>
 
 <script>
-  type Card = {
-    id: number;
-    en: string;
-    zh: string;
-    hint: string | null;
-    sort_order: number;
-  };
-
-  type Deck = {
-    id: number;
-    slug: string;
-    title: string;
-    description: string;
-    card_count?: number;
-  };
-
-  type PassageMeta = {
-    id: number;
-    slug: string;
-    title: string;
-    level: string | null;
-  };
-
-  type Word = {
-    id: number;
-    lemma: string;
-    phonetic: string | null;
-    zh: string;
-    pos: string | null;
-    example: string | null;
-  };
-
-  type IpaSymbol = {
-    id: number;
-    group_id: number;
-    symbol: string;
-    name_zh: string;
-    tip: string | null;
-    examples: string | null;
-    voiced: boolean | null;
-    sort_order: number;
-  };
-
-  type IpaGroup = {
-    id: number;
-    slug: string;
-    title: string;
-    description: string;
-    sort_order: number;
-    symbols: IpaSymbol[];
-  };
-
-  const STORAGE_CARDS = "learn-english:card-progress:v1";
-  const STORAGE_ANNOTATIONS = "learn-english:annotations:v1";
-
-  function loadJson<T>(key: string, fallback: T): T {
-    try {
-      const raw = localStorage.getItem(key);
-      if (!raw) return fallback;
-      return JSON.parse(raw) as T;
-    } catch {
-      return fallback;
-    }
-  }
-
-  function saveJson(key: string, value: unknown) {
-    localStorage.setItem(key, JSON.stringify(value));
-  }
-
-  function normalizeLemma(raw: string) {
-    return String(raw || "")
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z'-]/g, "");
-  }
-
-  function tokenizePassage(body: string): Array<{ type: "word" | "sep"; value: string }> {
-    const parts = body.split(/([A-Za-z][A-Za-z']*)/g);
-    return parts
-      .filter((p) => p.length > 0)
-      .map((value) =>
-        /^[A-Za-z][A-Za-z']*$/.test(value)
-          ? { type: "word" as const, value }
-          : { type: "sep" as const, value },
-      );
-  }
-
-  async function apiJson<T>(path: string): Promise<T> {
-    const res = await fetch(path, { credentials: "same-origin" });
-    const text = await res.text();
-    let data: T & { ok?: boolean; error?: string };
-    try {
-      data = JSON.parse(text) as T & { ok?: boolean; error?: string };
-    } catch {
-      throw new Error(text.trim() ? `invalid_json (${res.status})` : `empty_response (${res.status})`);
-    }
-    if (!res.ok || data.ok === false) {
-      throw new Error(data.error || `HTTP ${res.status}`);
-    }
-    return data;
-  }
+  import { learnApi } from "../lib/learn/api";
+  import { createAudioEngine } from "../lib/learn/audio";
+  import {
+    loadProgress,
+    saveProgress,
+    loadAnnotations,
+    saveAnnotations,
+    progressKey,
+  } from "../lib/learn/storage";
+  import { normalizeLemma, tokenizePassage, escapeHtml } from "../lib/learn/text";
+  import type { Card, IpaGroup, IpaSymbol, Word } from "../lib/learn/types";
 
   function initLearnEnglish(root: HTMLElement) {
-    const statusEl = root.querySelector("[data-learn-status]") as HTMLElement;
-    const tabs = root.querySelectorAll("[data-learn-tab]");
-    const panels = root.querySelectorAll("[data-learn-panel]");
+    // ── Elements ──
+    const $ = <T extends Element>(sel: string) => root.querySelector(sel) as T | null;
+    const statusEl = $<HTMLElement>("[data-learn-status]")!;
+    const errorEl = $<HTMLElement>("[data-learn-error]")!;
+    const errorMsg = $<HTMLElement>("[data-error-msg]")!;
+    const retryBtn = $<HTMLButtonElement>("[data-retry]")!;
+    const statsEl = $<HTMLElement>("[data-stats]")!;
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-learn-tab]"));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>("[data-learn-panel]"));
 
-    const deckSelect = root.querySelector("[data-deck-select]") as HTMLSelectElement;
-    const filterUnknown = root.querySelector("[data-filter-unknown]") as HTMLInputElement;
-    const resetDeckBtn = root.querySelector("[data-reset-deck]") as HTMLButtonElement;
-    const flashcard = root.querySelector("[data-flashcard]") as HTMLElement;
-    const cardSideLabel = root.querySelector("[data-card-side-label]") as HTMLElement;
-    const cardText = root.querySelector("[data-card-text]") as HTMLElement;
-    const cardHint = root.querySelector("[data-card-hint]") as HTMLElement;
-    const cardMeta = root.querySelector("[data-card-meta]") as HTMLElement;
+    const deckSelect = $<HTMLSelectElement>("[data-deck-select]")!;
+    const shuffleBtn = $<HTMLButtonElement>("[data-shuffle]")!;
+    const filterUnknown = $<HTMLInputElement>("[data-filter-unknown]")!;
+    const resetDeckBtn = $<HTMLButtonElement>("[data-reset-deck]")!;
+    const progressEl = $<HTMLElement>("[data-progress]")!;
+    const cardCountEl = $<HTMLElement>("[data-card-count]")!;
+    const knownCountEl = $<HTMLElement>("[data-known-count]")!;
+    const progressFill = $<HTMLElement>("[data-progress-fill]")!;
+    const flashcard = $<HTMLElement>("[data-flashcard]")!;
+    const cardText = $<HTMLElement>("[data-card-text]")!;
+    const cardTextBack = $<HTMLElement>("[data-card-text-back]")!;
+    const cardHint = $<HTMLElement>("[data-card-hint]")!;
+    const cardHintBack = $<HTMLElement>("[data-card-hint-back]")!;
+    const cardMeta = $<HTMLElement>("[data-card-meta]")!;
+    const cardAudioBtn = $<HTMLButtonElement>("[data-card-audio]")!;
+    const cardActions = $<HTMLElement>("[data-card-actions]")!;
+    const cardRate = $<HTMLElement>("[data-card-rate]")!;
 
-    const passageSelect = root.querySelector("[data-passage-select]") as HTMLSelectElement;
-    const passageBody = root.querySelector("[data-passage-body]") as HTMLElement;
-    const wordDetail = root.querySelector("[data-word-detail]") as HTMLElement;
-    const markWordBtn = root.querySelector("[data-mark-word]") as HTMLButtonElement;
-    const annotatedList = root.querySelector("[data-annotated-list]") as HTMLElement;
+    const ipaGroupTabs = $<HTMLElement>("[data-ipa-group-tabs]")!;
+    const ipaSymbolGrid = $<HTMLElement>("[data-ipa-symbol-grid]")!;
+    const ipaDetailBody = $<HTMLElement>("[data-ipa-detail-body]")!;
 
-    const cardAudioBtn = root.querySelector("[data-card-audio]") as HTMLButtonElement;
+    const passageSelect = $<HTMLSelectElement>("[data-passage-select]")!;
+    const passageBody = $<HTMLElement>("[data-passage-body]")!;
+    const wordDetail = $<HTMLElement>("[data-word-detail]")!;
+    const markWordBtn = $<HTMLButtonElement>("[data-mark-word]")!;
+    const annoCount = $<HTMLElement>("[data-anno-count]")!;
+    const annotatedList = $<HTMLElement>("[data-annotated-list]")!;
 
-    const ipaGroupTabs = root.querySelector("[data-ipa-group-tabs]") as HTMLElement;
-    const ipaSymbolGrid = root.querySelector("[data-ipa-symbol-grid]") as HTMLElement;
-    const ipaDetailBody = root.querySelector("[data-ipa-detail-body]") as HTMLElement;
+    // ── State ──
+    let ipaGroups: IpaGroup[] = [];
 
-    let decks: Deck[] = [];
     let cards: Card[] = [];
     let queue: Card[] = [];
     let index = 0;
-    let showingEn = true;
     let currentDeckSlug = "";
+    let deckLoadGeneration = 0;
 
-    let passages: PassageMeta[] = [];
     let wordByLemma = new Map<string, Word>();
     let currentPassageSlug = "";
     let selectedLemma: string | null = null;
-    let selectedWord: Word | null = null;
 
-    let ipaGroups: IpaGroup[] = [];
-    let activeIpaGroupSlug = "";
+    let activePanel = "flashcards";
 
-    type CardProgress = Record<string, "know" | "unknown">;
-    type AnnotationMap = Record<string, string[]>;
-
-    const cardProgress = (): CardProgress => loadJson(STORAGE_CARDS, {} as CardProgress);
-    const annotations = (): AnnotationMap => loadJson(STORAGE_ANNOTATIONS, {} as AnnotationMap);
+    const audio = createAudioEngine(setStatus);
 
     function setStatus(msg: string, isError = false) {
       statusEl.textContent = msg;
-      statusEl.classList.toggle("text-error", isError);
+      statusEl.classList.toggle("is-error", isError);
     }
 
-    /** IPA → representative word, so browser TTS can approximate a symbol. */
-    const IPA_FALLBACK_WORD: Record<string, string> = {
-      "iː": "sheep", ɪ: "ship", e: "bed", æ: "cat", ə: "about", "ɜː": "bird",
-      ʌ: "cup", ʊ: "book", "uː": "food", ɒ: "hot", "ɔː": "law", "ɑː": "car",
-      eɪ: "day", aɪ: "my", ɔɪ: "boy", əʊ: "go", aʊ: "now", ɪə: "ear",
-      eə: "air", ʊə: "tour", θ: "think", ð: "this", ʃ: "ship", ʒ: "measure",
-      tʃ: "chip", dʒ: "job", ŋ: "sing",
-    };
-
-    // Single-channel playback: at most one Audio OR speechSynthesis utterance.
-    let currentAudio: HTMLAudioElement | null = null;
-    let playGeneration = 0;
-    let lastPlayAt = 0;
-    const PLAY_DEBOUNCE_MS = 350;
-    let deckLoadGeneration = 0;
-
-    function stopAllSpeech() {
-      try {
-        window.speechSynthesis?.cancel();
-      } catch {
-        /* ignore */
-      }
-      if (currentAudio) {
-        try {
-          currentAudio.pause();
-          currentAudio.removeAttribute("src");
-          currentAudio.load();
-        } catch {
-          /* ignore */
-        }
-        currentAudio = null;
-      }
+    function showError(msg: string) {
+      errorMsg.textContent = msg;
+      errorEl.hidden = false;
+      panels.forEach((p) => (p.hidden = true));
+    }
+    function hideError() {
+      errorEl.hidden = true;
     }
 
-    function cancelPlayback() {
-      playGeneration += 1;
-      lastPlayAt = 0;
-      stopAllSpeech();
-    }
-
-    /** Speak text with the browser's built-in speech engine (no backend needed). */
-    function speakViaBrowser(text: string, lang = "en-US", generation: number) {
-      try {
-        const synth = window.speechSynthesis;
-        if (!synth || !text) return false;
-        if (generation !== playGeneration) return false;
-        synth.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = lang;
-        u.rate = 0.9;
-        u.onstart = () => {
-          if (generation !== playGeneration) synth.cancel();
-        };
-        synth.speak(u);
-        return true;
-      } catch {
-        return false;
-      }
-    }
-
-    /**
-     * Play an audio URL (api2: real human / eSpeak / Piper). If it cannot load
-     * or autoplay is blocked, fall back to the browser speech engine.
-     * Rapid re-clicks are debounced; a new play always stops the previous one.
-     */
-    function playAudioUrl(url: string, fallbackText = "", lang = "en-US") {
-      const now = Date.now();
-      if (now - lastPlayAt < PLAY_DEBOUNCE_MS) return;
-      lastPlayAt = now;
-
-      const generation = ++playGeneration;
-      stopAllSpeech();
-
-      let settled = false;
-      const stillCurrent = () => generation === playGeneration;
-
-      const fallback = () => {
-        if (settled || !stillCurrent()) return;
-        settled = true;
-        if (fallbackText && speakViaBrowser(fallbackText, lang, generation)) {
-          setStatus("后端音频不可用，已改用浏览器语音朗读。");
-        } else if (stillCurrent()) {
-          setStatus("音频播放失败：后端未就绪，且当前浏览器不支持语音合成。", true);
-        }
-      };
-
-      try {
-        const audio = new Audio(url);
-        currentAudio = audio;
-        audio.addEventListener("playing", () => {
-          if (!stillCurrent()) {
-            audio.pause();
-            return;
-          }
-          settled = true;
-        });
-        audio.addEventListener("error", () => {
-          if (stillCurrent()) fallback();
-        });
-        audio.play().then(() => {
-          if (!stillCurrent()) {
-            audio.pause();
-            return;
-          }
-          settled = true;
-        }).catch(() => {
-          if (stillCurrent()) fallback();
-        });
-      } catch {
-        fallback();
-      }
-    }
-
-    /** Play an IPA symbol: api2 eSpeak first, else a representative word via browser. */
-    function playIpa(symbol: string) {
-      const clean = String(symbol || "").replace(/[/[\]]/g, "").trim();
-      if (!clean) return;
-      playAudioUrl(
-        `/api/learn/audio/ipa?s=${encodeURIComponent(clean)}`,
-        IPA_FALLBACK_WORD[clean] || "",
-      );
-    }
-
-    /** Play a word: human recording / server TTS first, else browser speech. */
-    function playWord(word: string) {
-      const clean = String(word || "")
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z'\- ]/g, "");
-      if (!clean) return;
-      playAudioUrl(`/api/learn/audio/word?q=${encodeURIComponent(clean)}`, clean);
-    }
-
-    /** Choose the best audio for a flashcard based on its content. */
-    function playCard(card: Card) {
-      const en = (card.en || "").trim();
-      const zh = (card.zh || "").trim();
-      if (/^\/.*\/$/.test(en)) return playIpa(en);
-      if (/^\/.*\/$/.test(zh)) return playIpa(zh);
-      if (/^[a-zA-Z][a-zA-Z'\- ]*$/.test(en)) return playWord(en);
-      playWord(en);
-    }
-
+    // ── Tabs ──
     function switchTab(name: string) {
-      cancelPlayback();
-      tabs.forEach((tab) => {
-        const on = tab.getAttribute("data-learn-tab") === name;
-        tab.classList.toggle("tab-active", on);
+      activePanel = name;
+      audio.cancel();
+      tabs.forEach((t) => {
+        const on = t.dataset.learnTab === name;
+        t.classList.toggle("is-active", on);
+        t.setAttribute("aria-selected", String(on));
       });
-      panels.forEach((panel) => {
-        const on = panel.getAttribute("data-learn-panel") === name;
-        panel.classList.toggle("hidden", !on);
+      panels.forEach((p) => {
+        p.hidden = p.dataset.learnPanel !== name;
       });
     }
 
-    function progressKey(cardId: number) {
-      return `${currentDeckSlug}:${cardId}`;
+    // ── Flashcards ──
+    const key = (id: number) => progressKey(currentDeckSlug, id);
+
+    function knownCount(): number {
+      const prog = loadProgress();
+      return cards.filter((c) => prog[key(c.id)] === "know").length;
     }
 
     function rebuildQueue() {
-      const prog = cardProgress();
+      const prog = loadProgress();
       queue = filterUnknown.checked
-        ? cards.filter((c) => prog[progressKey(c.id)] !== "know")
+        ? cards.filter((c) => prog[key(c.id)] !== "know")
         : [...cards];
       if (index >= queue.length) index = Math.max(0, queue.length - 1);
       renderCard();
     }
 
     function renderCard() {
-      cancelPlayback();
-      if (!queue.length) {
-        cardSideLabel.textContent = "";
-        cardText.textContent = filterUnknown.checked ? "本组已全部标记为「认识」" : "暂无词卡";
-        cardHint.textContent = "";
+      audio.cancel();
+      flashcard.classList.remove("is-flipped");
+      const empty = queue.length === 0;
+      cardActions.style.visibility = empty ? "hidden" : "";
+      cardRate.style.visibility = empty ? "hidden" : "";
+
+      if (empty) {
+        progressEl.hidden = true;
+        cardText.textContent = filterUnknown.checked ? "本组已全部掌握 🎉" : "暂无词卡";
+        cardTextBack.textContent = "—";
+        cardHint.textContent = filterUnknown.checked ? "可以取消「只练未掌握」或重置进度" : "";
+        cardHintBack.textContent = "";
         cardMeta.textContent = "";
+        updateStats();
         return;
       }
+
       const card = queue[index];
-      const prog = cardProgress()[progressKey(card.id)];
-      showingEn = true;
-      cardSideLabel.textContent = "English";
+      const prog = loadProgress()[key(card.id)];
+      progressEl.hidden = false;
       cardText.textContent = card.en;
-      cardHint.textContent = card.hint ? `提示：${card.hint}` : "";
+      cardTextBack.textContent = card.zh;
+      cardHint.textContent = card.hint ? `提示:${card.hint}` : "";
+      cardHintBack.textContent = card.hint ? `提示:${card.hint}` : "";
       cardMeta.textContent = `${index + 1} / ${queue.length}${
         prog ? ` · ${prog === "know" ? "已掌握" : "待加强"}` : ""
       }`;
+      cardCountEl.textContent = `${index + 1} / ${queue.length}`;
+      knownCountEl.textContent = String(knownCount());
+      progressFill.style.width = `${((index + 1) / queue.length) * 100}%`;
+      updateStats();
+    }
+
+    function updateStats() {
+      statsEl.hidden = cards.length === 0;
+      const known = knownCount();
+      (root.querySelector("[data-stat-known]") as HTMLElement).textContent = String(known);
+      (root.querySelector("[data-stat-due]") as HTMLElement).textContent = String(cards.length - known);
+      (root.querySelector("[data-stat-total]") as HTMLElement).textContent = String(cards.length);
     }
 
     function flipCard() {
       if (!queue.length) return;
-      const card = queue[index];
-      showingEn = !showingEn;
-      cardSideLabel.textContent = showingEn ? "English" : "中文";
-      cardText.textContent = showingEn ? card.en : card.zh;
-      cardHint.textContent = showingEn && card.hint ? `提示：${card.hint}` : "";
+      flashcard.classList.toggle("is-flipped");
+    }
+
+    function go(delta: number) {
+      if (!queue.length) return;
+      index = (index + delta + queue.length) % queue.length;
+      renderCard();
     }
 
     function markCard(state: "know" | "unknown") {
       if (!queue.length) return;
       const card = queue[index];
-      const prog = cardProgress();
-      prog[progressKey(card.id)] = state;
-      saveJson(STORAGE_CARDS, prog);
+      const prog = loadProgress();
+      prog[key(card.id)] = state;
+      saveProgress(prog);
+
+      // Quick color flash on the card, then move on.
+      flashcard.classList.add(state === "know" ? "flash-good" : "flash-warn");
+      window.setTimeout(() => {
+        flashcard.classList.remove("flash-good", "flash-warn");
+      }, 320);
 
       if (filterUnknown.checked && state === "know") {
-        // Card drops out; keep index so the next card slides into place.
         rebuildQueue();
       } else if (index < queue.length - 1) {
         index += 1;
@@ -522,85 +1007,117 @@
       } else {
         renderCard();
       }
+      setStatus(state === "know" ? `已标记「认识」:${card.en}` : `已标记「不认识」:${card.en}`);
+    }
 
-      setStatus(
-        state === "know"
-          ? `已标记「认识」：${card.en}`
-          : `已标记「不认识」：${card.en}`,
-      );
+    function shuffleQueue() {
+      for (let i = queue.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [queue[i], queue[j]] = [queue[j], queue[i]];
+      }
+      index = 0;
+      renderCard();
+      setStatus("已打乱顺序");
     }
 
     async function loadDeck(slug: string) {
-      const loadGeneration = ++deckLoadGeneration;
-      cancelPlayback();
+      const generation = ++deckLoadGeneration;
+      audio.cancel();
       currentDeckSlug = slug;
       cards = [];
       queue = [];
       index = 0;
-      cardAudioBtn.disabled = true;
+      flashcard.classList.add("is-loading");
       renderCard();
       setStatus("正在加载词卡组…");
 
-      const data = await apiJson<{
-        deck: Deck;
-        cards: Card[];
-      }>(`/api/learn/decks/${encodeURIComponent(slug)}/cards`);
+      const data = await learnApi.deckCards(slug);
+      if (generation !== deckLoadGeneration || slug !== currentDeckSlug) return;
 
-      if (loadGeneration !== deckLoadGeneration || slug !== currentDeckSlug) return;
       cards = data.cards;
       index = 0;
+      flashcard.classList.remove("is-loading");
       rebuildQueue();
-      cardAudioBtn.disabled = cards.length === 0;
       setStatus(`${data.deck.title} · ${cards.length} 张词卡`);
     }
 
-    function renderAnnotatedList() {
-      const list = annotations()[currentPassageSlug] || [];
-      annotatedList.innerHTML = "";
-      if (!list.length) {
-        const li = document.createElement("li");
-        li.className = "opacity-50";
-        li.textContent = "暂无标注";
-        annotatedList.appendChild(li);
-        return;
+    // ── IPA ──
+    function renderIpaTabs() {
+      ipaGroupTabs.innerHTML = "";
+      for (const group of ipaGroups) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "lb-ipa-group";
+        btn.textContent = group.title;
+        btn.dataset.ipaGroup = group.slug;
+        btn.addEventListener("click", () => renderIpaGroup(group.slug));
+        ipaGroupTabs.appendChild(btn);
       }
-      for (const lemma of list) {
-        const word = wordByLemma.get(lemma);
-        const li = document.createElement("li");
-        li.innerHTML = word
-          ? `<button type="button" class="link link-hover" data-anno-lemma="${lemma}"><strong>${lemma}</strong> — ${word.zh}</button>`
-          : `<strong>${lemma}</strong>`;
-        annotatedList.appendChild(li);
-      }
+      if (ipaGroups[0]) renderIpaGroup(ipaGroups[0].slug);
     }
 
-    function audioButton(word: string, label = "🔊 朗读") {
-      return `<button type="button" class="btn btn-outline btn-xs mt-1" data-play-word="${escapeHtml(word)}">${label}</button>`;
-    }
-
-    function showWordDetail(word: Word | null, lemma: string) {
-      selectedLemma = lemma;
-      selectedWord = word;
-      markWordBtn.classList.toggle("hidden", !lemma);
-      if (!word) {
-        wordDetail.innerHTML = `
-          <p class="flex items-center gap-2"><strong>${escapeHtml(lemma)}</strong>${audioButton(lemma)}</p>
-          <p class="opacity-60">词库中暂无释义（仍可朗读）</p>
-        `;
+    function renderIpaGroup(slug: string) {
+      const group = ipaGroups.find((g) => g.slug === slug);
+      ipaGroupTabs.querySelectorAll(".lb-ipa-group").forEach((b) => {
+        b.classList.toggle("is-active", (b as HTMLElement).dataset.ipaGroup === slug);
+      });
+      ipaSymbolGrid.innerHTML = "";
+      if (!group) {
+        ipaSymbolGrid.innerHTML = `<p class="lb-muted">暂无音标分组</p>`;
         return;
       }
-      wordDetail.innerHTML = `
-        <p class="text-base font-medium flex items-center gap-2">
-          <span>${escapeHtml(word.lemma)}${word.phonetic ? ` <span class="opacity-60 font-normal">${escapeHtml(word.phonetic)}</span>` : ""}</span>
-          ${audioButton(word.lemma)}
+      if (group.description) {
+        const p = document.createElement("p");
+        p.className = "lb-ipa-desc";
+        p.textContent = group.description;
+        ipaSymbolGrid.appendChild(p);
+      }
+      const wrap = document.createElement("div");
+      wrap.className = "lb-ipa-chips";
+      for (const sym of group.symbols) {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "lb-ipa-chip";
+        chip.title = sym.name_zh;
+        chip.innerHTML = `<span>/${escapeHtml(sym.symbol)}/</span><span class="lb-voiced-dot${sym.voiced ? " is-voiced" : ""}" title="${sym.voiced ? "浊音" : "清音"}"></span>`;
+        chip.addEventListener("click", () => {
+          audio.cancel();
+          wrap.querySelectorAll(".lb-ipa-chip").forEach((el) => el.classList.remove("is-active"));
+          chip.classList.add("is-active");
+          showIpaDetail(sym, group.title);
+          setStatus(`${group.title} · /${sym.symbol}/`);
+        });
+        wrap.appendChild(chip);
+      }
+      ipaSymbolGrid.appendChild(wrap);
+    }
+
+    function showIpaDetail(sym: IpaSymbol, groupTitle: string) {
+      const voicedLabel = sym.voiced === true ? "浊音" : sym.voiced === false ? "清音" : "";
+      const examples = (sym.examples || "")
+        .split(/[,，、]/)
+        .map((w) => w.trim())
+        .filter(Boolean)
+        .map(
+          (w) =>
+            `<button type="button" class="btn btn-ghost btn-xs" data-play-word="${escapeHtml(w)}">${escapeHtml(w)} 🔊</button>`,
+        )
+        .join(" ");
+      ipaDetailBody.innerHTML = `
+        <p class="lb-ipa-symbol-big">
+          <span>/${escapeHtml(sym.symbol)}/</span>
+          <button type="button" class="btn btn-outline btn-xs" data-play-ipa="${escapeHtml(sym.symbol)}">🔊 发音</button>
         </p>
-        <p>${word.pos ? `<span class="badge badge-ghost badge-sm mr-1">${escapeHtml(word.pos)}</span>` : ""}${escapeHtml(word.zh)}</p>
-        ${word.example ? `<p class="opacity-70 italic">“${escapeHtml(word.example)}”</p>` : ""}
+        <p class="lb-ipa-name">${escapeHtml(sym.name_zh)}</p>
+        <p class="lb-muted lb-xs">${escapeHtml(groupTitle)}${voicedLabel ? ` · ${voicedLabel}` : ""}</p>
+        ${sym.tip ? `<p class="lb-ipa-tip">${escapeHtml(sym.tip)}</p>` : ""}
+        ${examples ? `<p class="lb-muted lb-xs">例词(点击朗读):</p><div class="lb-ipa-examples">${examples}</div>` : ""}
       `;
     }
 
+    // ── Reading ──
     function renderPassage(body: string) {
-      const annotated = new Set(annotations()[currentPassageSlug] || []);
+      const annotated = new Set(loadAnnotations()[currentPassageSlug] || []);
       passageBody.innerHTML = "";
       const frag = document.createDocumentFragment();
       for (const token of tokenizePassage(body)) {
@@ -610,7 +1127,7 @@
         }
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "learn-token";
+        btn.className = "lb-token";
         btn.textContent = token.value;
         const lemma = normalizeLemma(token.value);
         btn.dataset.lemma = lemma;
@@ -622,23 +1139,80 @@
       renderAnnotatedList();
     }
 
+    function renderAnnotatedList() {
+      const list = loadAnnotations()[currentPassageSlug] || [];
+      annoCount.textContent = String(list.length);
+      annotatedList.innerHTML = "";
+      if (!list.length) {
+        const li = document.createElement("li");
+        li.className = "lb-muted";
+        li.textContent = "暂无标注";
+        annotatedList.appendChild(li);
+        return;
+      }
+      for (const lemma of list) {
+        const word = wordByLemma.get(lemma);
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "lb-anno-word";
+        btn.dataset.annoLemma = lemma;
+        btn.innerHTML = `<b>${escapeHtml(lemma)}</b> <span class="lb-anno-zh">${word ? escapeHtml(word.zh) : ""}</span>`;
+        const rm = document.createElement("button");
+        rm.type = "button";
+        rm.className = "lb-anno-remove";
+        rm.dataset.removeLemma = lemma;
+        rm.title = "移除标注";
+        rm.textContent = "✕";
+        li.append(btn, rm);
+        annotatedList.appendChild(li);
+      }
+    }
+
     async function loadPassage(slug: string) {
-      cancelPlayback();
+      audio.cancel();
       currentPassageSlug = slug;
       selectedLemma = null;
-      selectedWord = null;
-      markWordBtn.classList.add("hidden");
-      wordDetail.innerHTML = `<p class="opacity-50">尚未选择单词</p>`;
+      markWordBtn.hidden = true;
+      wordDetail.innerHTML = `<p class="lb-muted">尚未选择单词</p>`;
+      passageBody.innerHTML = `<p class="lb-muted">正在加载短文…</p>`;
 
-      const data = await apiJson<{
-        passage: PassageMeta & { body: string };
-        words: Word[];
-      }>(`/api/learn/passages/${encodeURIComponent(slug)}`);
-
+      const data = await learnApi.passage(slug);
       wordByLemma = new Map(data.words.map((w) => [w.lemma, w]));
       renderPassage(data.passage.body);
       const level = data.passage.level ? ` · ${data.passage.level}` : "";
       setStatus(`${data.passage.title}${level}`);
+    }
+
+    function audioButton(word: string) {
+      return `<button type="button" class="lb-audio-btn" data-play-word="${escapeHtml(word)}" title="朗读" aria-label="朗读 ${escapeHtml(word)}">🔊</button>`;
+    }
+
+    function isAnnotated(lemma: string): boolean {
+      return (loadAnnotations()[currentPassageSlug] || []).includes(lemma);
+    }
+
+    function showWordDetail(word: Word | null, lemma: string) {
+      selectedLemma = lemma;
+      const annotated = isAnnotated(lemma);
+      markWordBtn.hidden = !lemma;
+      markWordBtn.textContent = annotated ? "✕ 取消标注" : "✏️ 标注此词";
+      if (!word) {
+        wordDetail.innerHTML = `
+          <p class="lb-word-lemma">${escapeHtml(lemma)} ${audioButton(lemma)}</p>
+          <p class="lb-muted">词库中暂无释义(仍可朗读)</p>
+        `;
+        return;
+      }
+      wordDetail.innerHTML = `
+        <p class="lb-word-lemma">
+          ${escapeHtml(word.lemma)}
+          ${word.phonetic ? `<span class="lb-word-phonetic">${escapeHtml(word.phonetic)}</span>` : ""}
+          ${audioButton(word.lemma)}
+        </p>
+        <p class="lb-word-def">${word.pos ? `<span class="badge badge-ghost badge-sm mr-1">${escapeHtml(word.pos)}</span>` : ""}${escapeHtml(word.zh)}</p>
+        ${word.example ? `<p class="lb-word-example">"${escapeHtml(word.example)}"</p>` : ""}
+      `;
     }
 
     async function lookupWord(lemma: string) {
@@ -648,136 +1222,118 @@
         return;
       }
       try {
-        const data = await apiJson<{ word: Word }>(
-          `/api/learn/words?q=${encodeURIComponent(lemma)}`,
-        );
-        wordByLemma.set(data.word.lemma, data.word);
-        showWordDetail(data.word, lemma);
+        const word = await learnApi.word(lemma);
+        wordByLemma.set(word.lemma, word);
+        showWordDetail(word, lemma);
       } catch {
         showWordDetail(null, lemma);
       }
     }
 
-    function showIpaDetail(symbol: IpaSymbol, groupTitle: string) {
-      const voicedLabel =
-        symbol.voiced === true ? "浊音" : symbol.voiced === false ? "清音" : null;
-      const exampleChips = (symbol.examples || "")
-        .split(/[,，、]/)
-        .map((w) => w.trim())
-        .filter(Boolean)
-        .map(
-          (w) =>
-            `<button type="button" class="btn btn-ghost btn-xs" data-play-word="${escapeHtml(w)}">${escapeHtml(w)} 🔊</button>`,
-        )
-        .join(" ");
-      ipaDetailBody.innerHTML = `
-        <p class="text-3xl font-medium tracking-wide flex items-center gap-2">
-          <span>/${escapeHtml(symbol.symbol)}/</span>
-          <button type="button" class="btn btn-outline btn-xs" data-play-ipa="${escapeHtml(symbol.symbol)}">🔊 发音</button>
-        </p>
-        <p class="font-medium">${escapeHtml(symbol.name_zh)}</p>
-        <p class="opacity-60 text-xs">${escapeHtml(groupTitle)}${
-          voicedLabel ? ` · ${voicedLabel}` : ""
-        }</p>
-        ${symbol.tip ? `<p>${escapeHtml(symbol.tip)}</p>` : ""}
-        ${
-          exampleChips
-            ? `<div class="space-y-1"><p class="opacity-50 text-xs">例词（点击朗读）：</p><div class="flex flex-wrap gap-1">${exampleChips}</div></div>`
-            : ""
-        }
-      `;
-    }
-
-    function escapeHtml(s: string) {
-      return String(s)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;");
-    }
-
-    function renderIpaGroup(slug: string) {
-      activeIpaGroupSlug = slug;
-      const group = ipaGroups.find((g) => g.slug === slug);
-      ipaGroupTabs.querySelectorAll("button").forEach((btn) => {
-        btn.classList.toggle("btn-neutral", btn.getAttribute("data-ipa-group") === slug);
-        btn.classList.toggle("btn-ghost", btn.getAttribute("data-ipa-group") !== slug);
+    function toggleAnnotation() {
+      if (!selectedLemma || !currentPassageSlug) return;
+      const map = loadAnnotations();
+      const set = new Set(map[currentPassageSlug] || []);
+      if (set.has(selectedLemma)) set.delete(selectedLemma);
+      else set.add(selectedLemma);
+      map[currentPassageSlug] = [...set];
+      saveAnnotations(map);
+      passageBody.querySelectorAll<HTMLElement>(".lb-token").forEach((el) => {
+        if (el.dataset.lemma === selectedLemma) el.classList.toggle("is-annotated", set.has(selectedLemma!));
       });
-      ipaSymbolGrid.innerHTML = "";
-      if (!group) {
-        ipaSymbolGrid.innerHTML = `<p class="opacity-50 text-sm">暂无音标分组</p>`;
-        return;
-      }
-      if (group.description) {
-        const desc = document.createElement("p");
-        desc.className = "text-sm opacity-70";
-        desc.textContent = group.description;
-        ipaSymbolGrid.appendChild(desc);
-      }
-      const wrap = document.createElement("div");
-      wrap.className = "flex flex-wrap gap-2";
-      for (const sym of group.symbols) {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "btn btn-outline btn-sm ipa-chip h-10 min-h-10";
-        btn.textContent = `/${sym.symbol}/`;
-        btn.title = sym.name_zh;
-        btn.dataset.symbolId = String(sym.id);
-        btn.addEventListener("click", () => {
-          cancelPlayback();
-          wrap.querySelectorAll(".ipa-chip").forEach((el) => el.classList.remove("is-active"));
-          btn.classList.add("is-active");
-          showIpaDetail(sym, group.title);
-          setStatus(`${group.title} · /${sym.symbol}/`);
-        });
-        wrap.appendChild(btn);
-      }
-      ipaSymbolGrid.appendChild(wrap);
+      renderAnnotatedList();
+      markWordBtn.textContent = set.has(selectedLemma) ? "✕ 取消标注" : "✏️ 标注此词";
+      setStatus(set.has(selectedLemma) ? `已标注:${selectedLemma}` : `已取消标注:${selectedLemma}`);
     }
 
-    function renderIpaTabs() {
-      ipaGroupTabs.innerHTML = "";
-      for (const group of ipaGroups) {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "btn btn-ghost btn-sm h-8 min-h-8";
-        btn.textContent = group.title;
-        btn.setAttribute("data-ipa-group", group.slug);
-        btn.addEventListener("click", () => renderIpaGroup(group.slug));
-        ipaGroupTabs.appendChild(btn);
-      }
-      const first = ipaGroups[0];
-      if (first) renderIpaGroup(first.slug);
-    }
-
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        const name = tab.getAttribute("data-learn-tab") || "flashcards";
-        switchTab(name);
+    function removeAnnotation(lemma: string) {
+      const map = loadAnnotations();
+      map[currentPassageSlug] = (map[currentPassageSlug] || []).filter((l) => l !== lemma);
+      saveAnnotations(map);
+      passageBody.querySelectorAll<HTMLElement>(".lb-token").forEach((el) => {
+        if (el.dataset.lemma === lemma) el.classList.remove("is-annotated");
       });
-    });
+      renderAnnotatedList();
+      if (selectedLemma === lemma) markWordBtn.textContent = "✏️ 标注此词";
+      setStatus(`已移除标注:${lemma}`);
+    }
+
+    // ── Keyboard shortcuts (flashcards) ──
+    function onKeydown(e: KeyboardEvent) {
+      if (!root.isConnected || activePanel !== "flashcards") return;
+      const t = e.target as HTMLElement;
+      if (t.closest("input, select, textarea") || t.isContentEditable) return;
+      if (t === flashcard && (e.key === " " || e.key === "Enter")) return; // handled by card's own listener
+      if (t.closest("button") && (e.key === " " || e.key === "Enter")) return; // let native button activation handle it
+
+      switch (e.key) {
+        case "ArrowLeft":
+          e.preventDefault();
+          go(-1);
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          go(1);
+          break;
+        case " ":
+        case "Enter":
+          e.preventDefault();
+          flipCard();
+          break;
+        case "j":
+        case "J":
+        case "1":
+          markCard("know");
+          break;
+        case "k":
+        case "K":
+        case "2":
+          markCard("unknown");
+          break;
+        case "a":
+        case "A":
+          if (queue.length) audio.playCard(queue[index]);
+          break;
+        case "s":
+        case "S":
+          shuffleQueue();
+          break;
+      }
+    }
+    document.addEventListener("keydown", onKeydown);
+
+    // ── Delegated audio buttons in detail panels ──
+    function handleDetailPlay(event: Event) {
+      const el = (event.target as HTMLElement).closest("[data-play-word],[data-play-ipa]") as HTMLElement | null;
+      if (!el) return;
+      const word = el.getAttribute("data-play-word");
+      const ipa = el.getAttribute("data-play-ipa");
+      if (word) audio.playWord(word);
+      else if (ipa) audio.playIpa(ipa);
+    }
+    wordDetail.addEventListener("click", handleDetailPlay);
+    ipaDetailBody.addEventListener("click", handleDetailPlay);
+
+    // ── Wire events ──
+    tabs.forEach((tab) => tab.addEventListener("click", () => switchTab(tab.dataset.learnTab || "flashcards")));
+    retryBtn.addEventListener("click", () => void boot());
 
     deckSelect.addEventListener("change", () => {
-      void loadDeck(deckSelect.value).catch((err) =>
-        setStatus(`加载词卡失败：${err.message}`, true),
-      );
+      void loadDeck(deckSelect.value).catch((err) => setStatus(`加载词卡失败:${err.message}`, true));
     });
-
     filterUnknown.addEventListener("change", () => {
       index = 0;
       rebuildQueue();
     });
-
     resetDeckBtn.addEventListener("click", () => {
-      const prog = cardProgress();
-      for (const card of cards) {
-        delete prog[progressKey(card.id)];
-      }
-      saveJson(STORAGE_CARDS, prog);
+      const prog = loadProgress();
+      for (const c of cards) delete prog[key(c.id)];
+      saveProgress(prog);
       index = 0;
       rebuildQueue();
       setStatus("已重置本组进度");
     });
+    shuffleBtn.addEventListener("click", shuffleQueue);
 
     flashcard.addEventListener("click", flipCard);
     flashcard.addEventListener("keydown", (e) => {
@@ -786,126 +1342,81 @@
         flipCard();
       }
     });
-    root.querySelector("[data-card-flip]")?.addEventListener("click", flipCard);
-    root.querySelector("[data-card-prev]")?.addEventListener("click", () => {
-      if (!queue.length) return;
-      index = (index - 1 + queue.length) % queue.length;
-      renderCard();
+    cardAudioBtn.addEventListener("click", (e) => {
+      e.stopPropagation(); // don't flip the card
+      if (queue.length) audio.playCard(queue[index]);
     });
-    root.querySelector("[data-card-next]")?.addEventListener("click", () => {
-      if (!queue.length) return;
-      index = (index + 1) % queue.length;
-      renderCard();
-    });
-    root.querySelector("[data-card-know]")?.addEventListener("click", () => markCard("know"));
-    root.querySelector("[data-card-unknown]")?.addEventListener("click", () =>
-      markCard("unknown"),
-    );
-    cardAudioBtn?.addEventListener("click", () => {
-      if (!queue.length) return;
-      playCard(queue[index]);
-    });
-
-    // Delegated play buttons in the word/IPA detail panels.
-    function handleDetailPlay(event: Event) {
-      const el = (event.target as HTMLElement).closest(
-        "[data-play-word],[data-play-ipa]",
-      ) as HTMLElement | null;
-      if (!el) return;
-      const word = el.getAttribute("data-play-word");
-      const ipa = el.getAttribute("data-play-ipa");
-      if (word) playWord(word);
-      else if (ipa) playIpa(ipa);
-    }
-    wordDetail.addEventListener("click", handleDetailPlay);
-    ipaDetailBody.addEventListener("click", handleDetailPlay);
+    root.querySelector("[data-card-flip]")!.addEventListener("click", flipCard);
+    root.querySelector("[data-card-prev]")!.addEventListener("click", () => go(-1));
+    root.querySelector("[data-card-next]")!.addEventListener("click", () => go(1));
+    root.querySelector("[data-card-know]")!.addEventListener("click", () => markCard("know"));
+    root.querySelector("[data-card-unknown]")!.addEventListener("click", () => markCard("unknown"));
 
     passageSelect.addEventListener("change", () => {
-      void loadPassage(passageSelect.value).catch((err) =>
-        setStatus(`加载短文失败：${err.message}`, true),
-      );
+      void loadPassage(passageSelect.value).catch((err) => setStatus(`加载短文失败:${err.message}`, true));
     });
-
     passageBody.addEventListener("click", (event) => {
       const target = event.target as HTMLElement | null;
-      if (!target?.classList.contains("learn-token")) return;
-      cancelPlayback();
-      passageBody.querySelectorAll(".learn-token.is-active").forEach((el) => {
-        el.classList.remove("is-active");
-      });
+      if (!target?.classList.contains("lb-token")) return;
+      audio.cancel();
+      passageBody.querySelectorAll(".lb-token.is-active").forEach((el) => el.classList.remove("is-active"));
       target.classList.add("is-active");
-      const lemma = target.dataset.lemma || normalizeLemma(target.textContent || "");
-      void lookupWord(lemma);
+      void lookupWord(target.dataset.lemma || normalizeLemma(target.textContent || ""));
     });
-
-    markWordBtn.addEventListener("click", () => {
-      if (!selectedLemma || !currentPassageSlug) return;
-      const map = annotations();
-      const list = new Set(map[currentPassageSlug] || []);
-      list.add(selectedLemma);
-      map[currentPassageSlug] = [...list];
-      saveJson(STORAGE_ANNOTATIONS, map);
-      passageBody.querySelectorAll(".learn-token").forEach((el) => {
-        const btn = el as HTMLElement;
-        if (btn.dataset.lemma === selectedLemma) btn.classList.add("is-annotated");
-      });
-      renderAnnotatedList();
-      setStatus(`已标注：${selectedLemma}`);
-    });
-
+    markWordBtn.addEventListener("click", toggleAnnotation);
     annotatedList.addEventListener("click", (event) => {
-      const target = (event.target as HTMLElement).closest(
-        "[data-anno-lemma]",
-      ) as HTMLElement | null;
-      if (!target) return;
-      const lemma = target.getAttribute("data-anno-lemma") || "";
-      void lookupWord(lemma);
+      const el = (event.target as HTMLElement).closest("[data-anno-lemma],[data-remove-lemma]") as HTMLElement | null;
+      if (!el) return;
+      if (el.dataset.removeLemma) {
+        removeAnnotation(el.dataset.removeLemma);
+      } else if (el.dataset.annoLemma) {
+        void lookupWord(el.dataset.annoLemma);
+      }
     });
 
+    // ── Boot ──
     async function boot() {
+      hideError();
+      setStatus("正在加载学习内容…");
       try {
-        const [deckData, passageData, ipaData] = await Promise.all([
-          apiJson<{ decks: Deck[] }>("/api/learn/decks"),
-          apiJson<{ passages: PassageMeta[] }>("/api/learn/passages"),
-          apiJson<{ groups: IpaGroup[] }>("/api/learn/ipa"),
+        const [decks, passages, groupList] = await Promise.all([
+          learnApi.decks(),
+          learnApi.passages(),
+          learnApi.ipaGroups(),
         ]);
-        decks = deckData.decks;
-        passages = passageData.passages;
-        ipaGroups = ipaData.groups || [];
+        ipaGroups = groupList;
 
-        deckSelect.innerHTML = decks
-          .map(
-            (d) =>
-              `<option value="${d.slug}">${d.title} (${d.card_count ?? "?"})</option>`,
-          )
-          .join("");
-        passageSelect.innerHTML = passages
-          .map(
-            (p) =>
-              `<option value="${p.slug}">${p.title}${p.level ? ` · ${p.level}` : ""}</option>`,
-          )
-          .join("");
+        deckSelect.innerHTML = "";
+        for (const d of decks) {
+          const opt = document.createElement("option");
+          opt.value = d.slug;
+          opt.textContent = `${d.title} (${d.card_count ?? "?"})`;
+          deckSelect.appendChild(opt);
+        }
+        passageSelect.innerHTML = "";
+        for (const p of passages) {
+          const opt = document.createElement("option");
+          opt.value = p.slug;
+          opt.textContent = `${p.title}${p.level ? ` · ${p.level}` : ""}`;
+          passageSelect.appendChild(opt);
+        }
 
         renderIpaTabs();
 
         if (!decks.length && !passages.length && !ipaGroups.length) {
-          setStatus("暂无学习内容，请先运行 api2 的 learn:migrate", true);
+          showError("暂无学习内容,请先运行 api2 的 learn:migrate。");
+          setStatus("暂无学习内容", true);
           return;
         }
         if (decks[0]) await loadDeck(decks[0].slug);
-        if (passages[0]) {
-          await loadPassage(passages[0].slug);
-        }
+        if (passages[0]) await loadPassage(passages[0].slug);
         switchTab("flashcards");
         root.dataset.ready = "1";
       } catch (err) {
-        root.dataset.bound = "0";
         root.dataset.ready = "0";
         const message = err instanceof Error ? err.message : String(err);
-        setStatus(
-          `无法连接学习接口（${message}）。请确认 api2 已启动且已执行 learn:migrate。`,
-          true,
-        );
+        showError(`无法连接学习接口(${message})。请确认 api2 已启动且已执行 learn:migrate。`);
+        setStatus("加载失败", true);
       }
     }
 
@@ -914,8 +1425,13 @@
 
   function bootAll() {
     document.querySelectorAll<HTMLElement>("[data-learn-english]").forEach((root) => {
-      // Allow re-init after failed boot or Astro view transitions reuse the node.
-      if (root.dataset.bound === "1" && root.dataset.ready === "1") return;
+      // Guard on `bound` only: once a root has started initializing, never
+      // re-init it. Astro fires `astro:page-load` on the first load too (via
+      // <ViewTransitions>), so a `ready`-based guard would double-bind every
+      // listener and make each action fire twice (e.g. annotation toggles
+      // itself off, Space flips back). A failed boot is retried via the
+      // [data-retry] button, which calls boot() on the existing closure.
+      if (root.dataset.bound === "1") return;
       root.dataset.bound = "1";
       root.dataset.ready = "0";
       initLearnEnglish(root);

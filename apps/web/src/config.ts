@@ -5,10 +5,17 @@ export const SITE_TAGLINE = '前端开发 · AI 实践 · 技术探索';
 export const SITE_SUBTITLE = '用代码和 AI 构建有趣的东西';
 export const BAIDU_HM_ID = '0b53b11d3930be87062f66b4b8ce2822';
 /**
- * Baidu Search Resource Platform HTML meta verification code.
- * Fill after verifying the site at https://ziyuan.baidu.com/ (meta method).
- * File verification: place the downloaded baidu_verify_*.html under apps/web/public/.
+ * Search-engine site-verification meta tags.
+ * Fill AFTER verifying the property in each console (meta-tag method):
+ *   - Google Search Console: https://search.google.com/search-console
+ *   - Baidu 搜索资源平台: https://ziyuan.baidu.com/
+ * Until these are set, sitemaps cannot be submitted and indexing requests
+ * cannot be made — the single biggest cause of "site:lilnong.top" returning
+ * almost nothing.
+ * File verification alternative: drop the downloaded google***.html /
+ * baidu_verify_*.html into apps/web/public/.
  */
+export const GOOGLE_SITE_VERIFICATION = '';
 export const BAIDU_SITE_VERIFICATION = '';
 export const GA_MEASUREMENT_ID = 'G-SZZNDW21W6';
 export const GENERATE_SLUG_FROM_TITLE = false;

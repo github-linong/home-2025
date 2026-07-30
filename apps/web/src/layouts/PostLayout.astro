@@ -1,5 +1,6 @@
 ---
 import { type BlogSchema } from "../content/config";
+import { getCollection } from "astro:content";
 import BaseLayout from "./BaseLayout.astro";
 import QADisplay from "../components/QADisplay.astro";
 import type { QaData } from "../components/QADisplay.astro";
@@ -9,11 +10,13 @@ import ArticleToc from "../components/ArticleToc.astro";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { Image } from "astro:assets";
-import { SITE_AUTHOR } from "../config";
+import { SITE_AUTHOR, SITE_TITLE } from "../config";
 import { profile } from "../data/profile";
+import createSlug from "../lib/createSlug";
 import {
   buildArticleJsonLd,
   buildCanonicalUrl,
+  buildOrganizationJsonLd,
   buildPersonJsonLd,
 } from "../lib/seo.mjs";
 
@@ -46,6 +49,30 @@ const isAnswer = kind === "answer";
 const showQa = isAnswer && qaData;
 const contentSource = source ?? (sourceUrl ? "segmentfault" : "site");
 
+// Tag-based internal links ("相关文章"). Builds link equity and keeps readers
+// on-site — the blog previously had no related-articles UI at all.
+const currentTags = tags ?? [];
+const relatedPosts = currentTags.length
+  ? (await getCollection("blog"))
+      .filter(
+        (p) =>
+          createSlug(p.data.title, p.slug) !== slug &&
+          !p.slug.startsWith("notice-") &&
+          (p.data.tags ?? []).some((t) => currentTags.includes(t)),
+      )
+      .map((p) => ({
+        post: p,
+        score: (p.data.tags ?? []).filter((t) => currentTags.includes(t)).length,
+      }))
+      .sort(
+        (a, b) =>
+          b.score - a.score ||
+          b.post.data.pubDate.valueOf() - a.post.data.pubDate.valueOf(),
+      )
+      .slice(0, 5)
+      .map((x) => x.post)
+  : [];
+
 const siteBase = Astro.site?.href ?? "https://www.lilnong.top/";
 const pageCanonical = buildCanonicalUrl(siteBase, Astro.url);
 const datePublished = new Date(pubDate).toISOString();
@@ -65,6 +92,11 @@ const articleJsonLd = buildArticleJsonLd({
     name: SITE_AUTHOR,
     url: profile.site,
     description: profile.tagline,
+  }),
+  publisher: buildOrganizationJsonLd({
+    name: SITE_TITLE,
+    url: profile.site,
+    logo: new URL(profile.avatar.local, siteBase).href,
   }),
   isBasedOn: sourceUrl,
 });
@@ -168,6 +200,26 @@ const articleJsonLd = buildArticleJsonLd({
       </>
     )}
   </article>
+
+  {
+    relatedPosts.length > 0 && (
+      <section class="not-prose mb-10 mt-8 border-t border-base-300/60 pt-6">
+        <h2 class="text-lg font-semibold mb-3">相关文章</h2>
+        <ul class="space-y-2">
+          {relatedPosts.map((p) => (
+            <li class="flex items-baseline gap-2">
+              <a class="link link-hover" href={`/blog/${createSlug(p.data.title, p.slug)}/`}>
+                {p.data.title}
+              </a>
+              {p.data.badge && (
+                <span class="badge badge-outline badge-sm shrink-0">{p.data.badge}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
 
   <BlogAnalytics slug={slug} kind={kind} source={contentSource} answerId={answerId} />
   <ViewBeacon type="blog" slug={slug} />

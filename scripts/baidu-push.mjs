@@ -55,12 +55,16 @@ function collectRecentBlogUrls(limit) {
   const ranked = [];
   for (const file of files) {
     const full = join(blogDir, file);
-    const meta = parseSimpleFrontmatter(readFileSync(full, "utf8"));
-    const slug = file.replace(/\.mdx?$/, "");
+    const raw = readFileSync(full, "utf8");
+    const meta = parseSimpleFrontmatter(raw);
+    const fileSlug = file.replace(/\.mdx?$/, "");
+    // Astro `slug` frontmatter overrides the URL slug when present.
+    const slugMatch = raw.match(/^slug:\s*["']?(.+?)["']?\s*$/m);
+    const slug = slugMatch ? slugMatch[1].trim() : fileSlug;
     if (!meta.pubDate || !slug || slug.startsWith("notice-")) continue;
     const pubDate = new Date(/** @type {string} */ (meta.pubDate));
     if (Number.isNaN(pubDate.valueOf())) continue;
-    const isOriginal = !meta.sourceUrl && !slug.startsWith("sf-");
+    const isOriginal = !meta.sourceUrl && !fileSlug.startsWith("sf-");
     ranked.push({ pubDate, slug, isOriginal });
   }
   ranked.sort((a, b) => {

@@ -6,11 +6,12 @@ import { Image } from "astro:assets";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ViewBeacon from "../../components/ViewBeacon.astro";
 import createSlug from "../../lib/createSlug";
-import { SITE_AUTHOR } from "../../config";
+import { SITE_AUTHOR, SITE_TITLE } from "../../config";
 import { profile } from "../../data/profile";
 import {
   buildCanonicalUrl,
   buildCreativeWorkJsonLd,
+  buildOrganizationJsonLd,
   buildPersonJsonLd,
 } from "../../lib/seo.mjs";
 
@@ -65,6 +66,11 @@ const demoJsonLd = buildCreativeWorkJsonLd({
     name: SITE_AUTHOR,
     url: profile.site,
     description: profile.tagline,
+  }),
+  publisher: buildOrganizationJsonLd({
+    name: SITE_TITLE,
+    url: profile.site,
+    logo: new URL(profile.avatar.local, siteBase).href,
   }),
 });
 ---
