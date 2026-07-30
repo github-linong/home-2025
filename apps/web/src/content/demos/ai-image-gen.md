@@ -1,5 +1,6 @@
 ---
 title: "AI 文生图 · DashScope 多模型"
+heroImage: "/heroes/demo/ai-image-gen.webp"
 description: "调用阿里云 DashScope 多种大模型生成图片，支持参考图、风格预设、思考模式与高级参数。"
 pubDate: "2026-07-29"
 type: external

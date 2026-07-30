@@ -1,0 +1,1103 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="AI 视频生成 · DashScope"
+  description="调用阿里云 DashScope 多种视频大模型，输入文字描述或参考图片即可生成视频。"
+>
+  <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div class="prose max-w-none">
+      <h1 class="!mb-1">AI 视频生成</h1>
+      <p class="!mb-0 opacity-80">
+        输入文字描述或上传参考图，调用阿里云 DashScope 视频模型生成短视频。API Key 仅在服务端使用。
+      </p>
+    </div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-[380px_1fr]">
+    <!-- ========== Left: Controls ========== -->
+    <div class="flex flex-col gap-3">
+
+      <!-- Model selector -->
+      <div class="rounded-box border border-base-300 bg-base-200 p-4">
+        <label class="label py-1" for="modelSelect">
+          <span class="label-text font-semibold">视频模型</span>
+          <span id="modelCount" class="label-text-alt text-xs opacity-50"></span>
+        </label>
+        <select id="modelSelect" class="select select-bordered select-sm w-full"></select>
+        <div class="mt-2 flex items-start gap-2">
+          <span id="modelType" class="badge badge-xs badge-outline mt-0.5 shrink-0"></span>
+          <p id="modelDesc" class="text-xs text-base-content/70 leading-relaxed"></p>
+        </div>
+      </div>
+
+      <!-- Prompt -->
+      <div class="rounded-box border border-base-300 bg-base-200 p-4">
+        <label class="label py-1" for="prompt">
+          <span class="label-text font-semibold">描述你想生成的视频</span>
+        </label>
+        <textarea
+          id="prompt"
+          class="textarea textarea-bordered w-full"
+          rows="4"
+          placeholder="例如：一只橘猫戴着墨镜在沙滩上跳舞，阳光灿烂，海浪拍打"
+          maxlength="2000"
+        ></textarea>
+
+        <label class="label mt-2 py-1" for="negativePrompt">
+          <span class="label-text text-xs font-semibold">不希望出现的内容（可选）</span>
+        </label>
+        <textarea
+          id="negativePrompt"
+          class="textarea textarea-bordered textarea-sm w-full"
+          rows="2"
+          placeholder="例如：模糊、抖动、变形"
+          maxlength="500"
+        ></textarea>
+      </div>
+
+      <!-- Reference image (i2v / videoedit / r2v) -->
+      <div id="refImageGroup" class="rounded-box border border-base-300 bg-base-200 p-4 hidden">
+        <label class="label py-1">
+          <span id="refImageLabel" class="label-text font-semibold">参考图（首帧）</span>
+        </label>
+        <div id="refImagePreview" class="flex flex-wrap gap-2 mb-2"></div>
+        <div class="flex gap-2">
+          <input id="refImageInput" type="file" accept="image/*" class="file-input file-input-bordered file-input-xs flex-1" />
+          <button id="btnClearRef" class="btn btn-ghost btn-xs" type="button">清除</button>
+        </div>
+        <p class="mt-1 text-xs opacity-50">💡 Ctrl+V 粘贴 · 最小 300×300px · ≤20MB</p>
+      </div>
+
+      <!-- Video upload (videoedit only) -->
+      <div id="videoInputGroup" class="rounded-box border border-base-300 bg-base-200 p-4 hidden">
+        <label class="label py-1">
+          <span class="label-text font-semibold">待编辑视频</span>
+        </label>
+        <div id="videoPreview" class="mb-2"></div>
+        <div class="flex gap-2">
+          <input id="videoInput" type="file" accept="video/mp4,video/quicktime" class="file-input file-input-bordered file-input-xs flex-1" />
+          <button id="btnClearVideo" class="btn btn-ghost btn-xs" type="button">清除</button>
+        </div>
+        <p class="mt-1 text-xs opacity-50">📹 mp4/mov，2-10 秒，≤100MB</p>
+      </div>
+
+      <!-- Last frame (wan2.7-i2v only) -->
+      <div id="lastFrameGroup" class="rounded-box border border-base-300 bg-base-200 p-4 hidden">
+        <label class="label py-1">
+          <span class="label-text font-semibold">尾帧参考图（可选）</span>
+        </label>
+        <div id="lastFramePreview" class="flex flex-wrap gap-2 mb-2"></div>
+        <div class="flex gap-2">
+          <input id="lastFrameInput" type="file" accept="image/*" class="file-input file-input-bordered file-input-xs flex-1" />
+          <button id="btnClearLastFrame" class="btn btn-ghost btn-xs" type="button">清除</button>
+        </div>
+      </div>
+
+      <!-- Driving audio (wan2.7-i2v only) -->
+      <div id="drivingAudioGroup" class="rounded-box border border-base-300 bg-base-200 p-4 hidden">
+        <label class="label py-1">
+          <span class="label-text font-semibold">驱动音频（可选）</span>
+        </label>
+        <div id="drivingAudioPreview" class="mb-2"></div>
+        <div class="flex gap-2">
+          <input id="drivingAudioInput" type="file" accept="audio/*" class="file-input file-input-bordered file-input-xs flex-1" />
+          <button id="btnClearDrivingAudio" class="btn btn-ghost btn-xs" type="button">清除</button>
+        </div>
+        <p class="mt-1 text-xs opacity-50">🎵 用于口型同步或节奏匹配</p>
+      </div>
+
+      <!-- External audio track (wan2.7-t2v only) -->
+      <div id="audioUrlGroup" class="rounded-box border border-base-300 bg-base-200 p-4 hidden">
+        <label class="label py-1">
+          <span class="label-text font-semibold">外部音轨（可选）</span>
+        </label>
+        <div id="audioUrlPreview" class="mb-2"></div>
+        <div class="flex gap-2">
+          <input id="audioUrlInput" type="file" accept="audio/mpeg,audio/wav" class="file-input file-input-bordered file-input-xs flex-1" />
+          <button id="btnClearAudioUrl" class="btn btn-ghost btn-xs" type="button">清除</button>
+        </div>
+        <p class="mt-1 text-xs opacity-50">🎶 mp3/wav，2-30 秒，≤15MB，超长部分会裁剪</p>
+      </div>
+
+      <!-- Reference video (wan2.7-r2v only) -->
+      <div id="refVideoGroup" class="rounded-box border border-base-300 bg-base-200 p-4 hidden">
+        <label class="label py-1">
+          <span class="label-text font-semibold">参考视频（可选）</span>
+        </label>
+        <div id="refVideoPreview" class="mb-2"></div>
+        <div class="flex gap-2">
+          <input id="refVideoInput" type="file" accept="video/mp4,video/quicktime" class="file-input file-input-bordered file-input-xs flex-1" />
+          <button id="btnClearRefVideo" class="btn btn-ghost btn-xs" type="button">清除</button>
+        </div>
+        <p class="mt-1 text-xs opacity-50">📹 引导运动动态，提供默认音频</p>
+      </div>
+
+      <!-- Reference voice (wan2.7-r2v only) -->
+      <div id="refVoiceGroup" class="rounded-box border border-base-300 bg-base-200 p-4 hidden">
+        <label class="label py-1">
+          <span class="label-text font-semibold">参考配音（可选）</span>
+        </label>
+        <div id="refVoicePreview" class="mb-2"></div>
+        <div class="flex gap-2">
+          <input id="refVoiceInput" type="file" accept="audio/mpeg,audio/wav" class="file-input file-input-bordered file-input-xs flex-1" />
+          <button id="btnClearRefVoice" class="btn btn-ghost btn-xs" type="button">清除</button>
+        </div>
+        <p class="mt-1 text-xs opacity-50">🎙️ wav/mp3，1-10 秒，≤15MB，克隆音色</p>
+      </div>
+
+      <!-- Size / Resolution + Duration -->
+      <div class="rounded-box border border-base-300 bg-base-200 p-4">
+        <!-- Size mode (legacy models) -->
+        <div id="sizeGroup" class="form-control">
+          <label class="label py-1" for="sizeSelect">
+            <span class="label-text text-xs">视频尺寸</span>
+          </label>
+          <select id="sizeSelect" class="select select-bordered select-sm w-full"></select>
+        </div>
+
+        <!-- Resolution + Ratio mode (wan2.7 models) -->
+        <div id="resolutionGroup" class="hidden">
+          <div class="flex gap-3">
+            <div class="form-control flex-1">
+              <label class="label py-1" for="resolutionSelect">
+                <span class="label-text text-xs">分辨率</span>
+              </label>
+              <select id="resolutionSelect" class="select select-bordered select-sm w-full"></select>
+            </div>
+            <div class="form-control flex-1">
+              <label class="label py-1" for="ratioSelect">
+                <span class="label-text text-xs">宽高比</span>
+              </label>
+              <select id="ratioSelect" class="select select-bordered select-sm w-full"></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Duration -->
+        <div id="durationGroup" class="mt-2">
+          <label class="label py-1" for="durationSlider">
+            <span class="label-text text-xs">时长 <span id="durationVal" class="font-bold">2</span>s</span>
+          </label>
+          <input id="durationSlider" type="range" min="2" max="15" value="2" step="1" class="range range-xs" />
+        </div>
+
+        <!-- Advanced options (collapsible) -->
+        <details class="mt-3" id="advancedOptions">
+          <summary class="cursor-pointer text-xs font-medium opacity-60 hover:opacity-100 select-none py-1">
+            ⚙️ 高级选项
+          </summary>
+          <div class="mt-2 flex flex-col gap-2 pl-1">
+            <!-- Seed -->
+            <div class="form-control">
+              <label class="label py-1" for="seedInput">
+                <span class="label-text text-xs">Seed（留空随机）</span>
+              </label>
+              <input id="seedInput" type="number" min="0" placeholder="随机" class="input input-bordered input-sm w-full" />
+            </div>
+
+            <!-- Prompt extend -->
+            <label id="promptExtendGroup" class="label cursor-pointer gap-2 justify-start">
+              <input id="promptExtendToggle" type="checkbox" class="checkbox checkbox-xs" checked />
+              <span class="label-text text-xs">✨ 智能扩写提示词</span>
+            </label>
+
+            <!-- Watermark toggle -->
+            <label id="watermarkGroup" class="label cursor-pointer gap-2 justify-start hidden">
+              <input id="watermarkToggle" type="checkbox" class="checkbox checkbox-xs" />
+              <span class="label-text text-xs">🏷️ AI 生成水印</span>
+            </label>
+
+            <!-- Audio setting (videoedit only) -->
+            <div id="audioSettingGroup" class="form-control hidden">
+              <label class="label py-1" for="audioSettingSelect">
+                <span class="label-text text-xs">音频设置</span>
+              </label>
+              <select id="audioSettingSelect" class="select select-bordered select-sm w-full">
+                <option value="auto">自动音频</option>
+                <option value="origin">保留原音</option>
+              </select>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-3">
+        <button id="btnGenerate" class="btn btn-primary btn-sm flex-1" type="button">
+          <span id="btnLabel">🎬 生成视频</span>
+          <span id="btnSpinner" class="loading loading-spinner loading-xs hidden"></span>
+        </button>
+        <button id="btnDownload" class="btn btn-ghost btn-sm hidden" type="button" disabled>
+          💾 下载
+        </button>
+      </div>
+
+      <!-- Example prompts -->
+      <div class="rounded-box border border-base-300 bg-base-100 p-3">
+        <p class="mb-2 text-xs font-semibold opacity-60">示例提示词</p>
+        <div class="flex flex-wrap gap-2">
+          <button class="btn btn-outline btn-xs prompt-example" type="button"
+            data-prompt="一只金毛犬在海边奔跑，浪花飞溅，阳光明媚，慢动作">
+            🐕 金毛海边
+          </button>
+          <button class="btn btn-outline btn-xs prompt-example" type="button"
+            data-prompt="赛博朋克风格的未来城市夜景，霓虹灯闪烁，飞行汽车穿梭，电影感运镜">
+            🌃 赛博夜景
+          </button>
+          <button class="btn btn-outline btn-xs prompt-example" type="button"
+            data-prompt="樱花树下的日式庭院，花瓣随风飘落，溪水潺潺，宁静祥和">
+            🌸 樱花庭院
+          </button>
+          <button class="btn btn-outline btn-xs prompt-example" type="button"
+            data-prompt="宇航员在月球表面行走，背景是蓝色地球，尘土飞扬，纪录片风格">
+            🚀 月球漫步
+          </button>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div id="statusBox" class="hidden rounded-box border border-base-300 p-3 text-sm"></div>
+    </div>
+
+    <!-- ========== Right: Video display ========== -->
+    <div
+      id="videoContainer"
+      class="flex min-h-[500px] flex-col items-center justify-center rounded-box border border-base-300 bg-base-200 p-4"
+    >
+      <div id="videoPlaceholder" class="text-center text-sm opacity-50">
+        <p class="text-5xl mb-2">🎬</p>
+        <p>输入描述并点击生成</p>
+      </div>
+      <!-- Progress indicator -->
+      <div id="progressArea" class="hidden flex flex-col items-center gap-4 text-center">
+        <div class="relative">
+          <span class="loading loading-ring loading-lg"></span>
+        </div>
+        <div class="flex flex-col gap-1">
+          <p id="progressModel" class="text-sm font-medium"></p>
+          <p id="progressText" class="text-xs opacity-60">提交中…</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <p id="progressTimer" class="text-lg font-mono tabular-nums opacity-80">00:00</p>
+        </div>
+        <button id="btnCancelGen" class="btn btn-ghost btn-xs opacity-50 hover:opacity-100" type="button">
+          隐藏进度（后台继续生成）
+        </button>
+      </div>
+      <!-- Video player -->
+      <video
+        id="resultVideo"
+        class="hidden max-h-[80vh] rounded-box shadow-lg"
+        controls
+        playsinline
+      ></video>
+    </div>
+  </div>
+
+  <p class="mt-4 text-xs opacity-50">
+    技术栈：Express + DashScope Video API · 异步任务轮询 · 服务端代理视频字节
+  </p>
+</BaseLayout>
+
+<script>
+  /* ---- DOM refs ---- */
+  const promptEl = document.getElementById("prompt");
+  const negativePromptEl = document.getElementById("negativePrompt");
+  const modelEl = document.getElementById("modelSelect");
+  const modelDesc = document.getElementById("modelDesc");
+  const modelType = document.getElementById("modelType");
+  const modelCount = document.getElementById("modelCount");
+  const sizeGroup = document.getElementById("sizeGroup");
+  const sizeEl = document.getElementById("sizeSelect");
+  const resolutionGroup = document.getElementById("resolutionGroup");
+  const resolutionEl = document.getElementById("resolutionSelect");
+  const ratioEl = document.getElementById("ratioSelect");
+  const durationGroup = document.getElementById("durationGroup");
+  const durationSlider = document.getElementById("durationSlider");
+  const durationVal = document.getElementById("durationVal");
+  const seedInput = document.getElementById("seedInput");
+  const promptExtendToggle = document.getElementById("promptExtendToggle");
+  const btnGenerate = document.getElementById("btnGenerate");
+  const btnDownload = document.getElementById("btnDownload");
+  const btnLabel = document.getElementById("btnLabel");
+  const btnSpinner = document.getElementById("btnSpinner");
+  const statusBox = document.getElementById("statusBox");
+  const videoPlaceholder = document.getElementById("videoPlaceholder");
+  const progressArea = document.getElementById("progressArea");
+  const progressModel = document.getElementById("progressModel");
+  const progressText = document.getElementById("progressText");
+  const progressTimer = document.getElementById("progressTimer");
+  const btnCancelGen = document.getElementById("btnCancelGen");
+  const resultVideo = document.getElementById("resultVideo");
+  const refImageGroup = document.getElementById("refImageGroup");
+  const refImageLabel = document.getElementById("refImageLabel");
+  const refImagePreview = document.getElementById("refImagePreview");
+  const refImageInput = document.getElementById("refImageInput");
+  const btnClearRef = document.getElementById("btnClearRef");
+  const videoInputGroup = document.getElementById("videoInputGroup");
+  const videoPreview = document.getElementById("videoPreview");
+  const videoInput = document.getElementById("videoInput");
+  const btnClearVideo = document.getElementById("btnClearVideo");
+  const lastFrameGroup = document.getElementById("lastFrameGroup");
+  const lastFramePreview = document.getElementById("lastFramePreview");
+  const lastFrameInput = document.getElementById("lastFrameInput");
+  const btnClearLastFrame = document.getElementById("btnClearLastFrame");
+  const drivingAudioGroup = document.getElementById("drivingAudioGroup");
+  const drivingAudioPreview = document.getElementById("drivingAudioPreview");
+  const drivingAudioInput = document.getElementById("drivingAudioInput");
+  const btnClearDrivingAudio = document.getElementById("btnClearDrivingAudio");
+  const audioUrlGroup = document.getElementById("audioUrlGroup");
+  const audioUrlPreview = document.getElementById("audioUrlPreview");
+  const audioUrlInput = document.getElementById("audioUrlInput");
+  const btnClearAudioUrl = document.getElementById("btnClearAudioUrl");
+  const refVideoGroup = document.getElementById("refVideoGroup");
+  const refVideoPreview = document.getElementById("refVideoPreview");
+  const refVideoInput = document.getElementById("refVideoInput");
+  const btnClearRefVideo = document.getElementById("btnClearRefVideo");
+  const refVoiceGroup = document.getElementById("refVoiceGroup");
+  const refVoicePreview = document.getElementById("refVoicePreview");
+  const refVoiceInput = document.getElementById("refVoiceInput");
+  const btnClearRefVoice = document.getElementById("btnClearRefVoice");
+  const promptExtendGroup = document.getElementById("promptExtendGroup");
+  const watermarkGroup = document.getElementById("watermarkGroup");
+  const watermarkToggle = document.getElementById("watermarkToggle");
+  const audioSettingGroup = document.getElementById("audioSettingGroup");
+  const audioSettingSelect = document.getElementById("audioSettingSelect");
+
+  let currentBlobUrl = null;
+  let generating = false;
+  let refImageDataUrl = null;
+  let refImageDataUrls = [];   // for videoedit multi-image
+  let videoDataUrl = null;
+  let lastFrameDataUrl = null;
+  let drivingAudioDataUrl = null;
+  let audioUrlDataUrl = null;
+  let refVideoDataUrl = null;
+  let refVoiceDataUrl = null;
+  let modelsData = [];
+  let timerInterval = null;
+
+  const MODEL_DESCRIPTIONS = {
+    "happyhorse-1.1-t2v": "🐴 动态、质感、音频全面升级，支持 9 种宽高比",
+    "wan2.7-t2v": "✨ 最强画质 1080P，2-15 秒可调，自带音频",
+    "wan2.6-t2v": "高质量 1080P，2-15 秒可调，自带音频",
+    "wanx2.1-t2v-turbo": "⚡ 快速生成 720P，固定 5 秒",
+    "wanx2.1-t2v-plus": "通用质量 720P，固定 5 秒",
+    "wan2.7-i2v": "🎬 情绪动作升级，运镜丝滑，支持尾帧和驱动音频",
+    "wan2.6-i2v": "图生视频 1080P，2-15 秒可调，自带音频",
+    "wanx2.1-i2v-plus": "图生视频 720P，固定 5 秒",
+    "wan2.7-videoedit": "✂️ 指令编辑与创意复刻，支持参考图",
+    "wan2.7-t2v-2026-06-12": "📅 wan2.7-t2v 固定版本快照",
+    "happyhorse-1.1-i2v": "🐴 HappyHorse 图生视频，首帧驱动",
+    "happyhorse-1.1-r2v": "🐴 参考生视频，1-9 张角色参考图",
+    "wan2.7-r2v-2026-06-12": "🎭 参考生视频，支持参考图/视频/首帧/配音",
+  };
+
+  /* ---- localStorage persistence ---- */
+  const STORAGE_KEY = "dashscope-video-gen-params";
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        model: modelEl.value,
+        size: sizeEl.value,
+        resolution: resolutionEl.value,
+        ratio: ratioEl.value,
+        duration: durationSlider.value,
+        prompt: promptEl.value,
+        negative_prompt: negativePromptEl.value,
+        seed: seedInput.value,
+        prompt_extend: promptExtendToggle.checked,
+        watermark: watermarkToggle.checked,
+        audio_setting: audioSettingSelect.value,
+      }));
+    } catch {}
+  }
+
+  function restoreState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (s.model && [...modelEl.options].some((o) => o.value === s.model)) modelEl.value = s.model;
+      updateModelUI();
+      if (s.size && [...sizeEl.options].some((o) => o.value === s.size)) sizeEl.value = s.size;
+      if (s.resolution && [...resolutionEl.options].some((o) => o.value === s.resolution)) resolutionEl.value = s.resolution;
+      if (s.ratio && [...ratioEl.options].some((o) => o.value === s.ratio)) ratioEl.value = s.ratio;
+      if (s.duration) { durationSlider.value = s.duration; durationVal.textContent = s.duration; }
+      if (s.prompt) promptEl.value = s.prompt;
+      if (s.negative_prompt) negativePromptEl.value = s.negative_prompt;
+      if (s.seed) seedInput.value = s.seed;
+      if (typeof s.prompt_extend === "boolean") promptExtendToggle.checked = s.prompt_extend;
+      if (typeof s.watermark === "boolean") watermarkToggle.checked = s.watermark;
+      if (s.audio_setting) audioSettingSelect.value = s.audio_setting;
+    } catch {}
+  }
+
+  for (const el of [promptEl, negativePromptEl, modelEl, sizeEl, resolutionEl, ratioEl,
+                     durationSlider, seedInput, promptExtendToggle, watermarkToggle, audioSettingSelect]) {
+    el.addEventListener("change", saveState);
+    el.addEventListener("input", saveState);
+  }
+
+  /* ---- Model loading ---- */
+  async function loadModels() {
+    try {
+      const res = await fetch("/api/demo/video/models");
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.message);
+      modelsData = data.models;
+    } catch {
+      modelsData = [
+        { id: "happyhorse-1.1-t2v", label: "HappyHorse 1.1", type: "t2v", paramStyle: "resolution", resolutions: ["480P","720P","1080P"], ratios: ["16:9","9:16","1:1","4:3","3:4","4:5","5:4","9:21","21:9"], minDuration: 3, maxDuration: 15, watermark: true },
+        { id: "wan2.7-t2v", label: "Wan 2.7 T2V", type: "t2v", paramStyle: "resolution", resolutions: ["480P","720P","1080P"], ratios: ["16:9","9:16","1:1","4:3","3:4"], minDuration: 2, maxDuration: 15, watermark: true, promptExtend: true, supportsAudioUrl: true },
+        { id: "wan2.6-t2v", label: "Wan 2.6 T2V", type: "t2v", paramStyle: "size" },
+        { id: "wanx2.1-t2v-turbo", label: "Wanx 2.1 Turbo", type: "t2v", paramStyle: "size", default: true },
+        { id: "wanx2.1-t2v-plus", label: "Wanx 2.1 Plus", type: "t2v", paramStyle: "size" },
+        { id: "wan2.7-i2v", label: "Wan 2.7 I2V", type: "i2v", paramStyle: "resolution", resolutions: ["720P","1080P"], mediaStyle: "media", watermark: true, promptExtend: true, supportsLastFrame: true, supportsDrivingAudio: true },
+        { id: "wan2.6-i2v", label: "Wan 2.6 I2V", type: "i2v", paramStyle: "size" },
+        { id: "wanx2.1-i2v-plus", label: "Wanx 2.1 I2V", type: "i2v", paramStyle: "size" },
+        { id: "wan2.7-videoedit", label: "Wan 2.7 VideoEdit", type: "videoedit", paramStyle: "resolution", resolutions: ["720P","1080P"], ratios: ["16:9","9:16","1:1","4:3","3:4"], minDuration: 2, maxDuration: 10, audioSetting: true, watermark: true, promptExtend: true, maxRefImages: 4, requiresVideo: true },
+        { id: "wan2.7-t2v-2026-06-12", label: "Wan 2.7 T2V (0612)", type: "t2v", paramStyle: "resolution", resolutions: ["480P","720P","1080P"], ratios: ["16:9","9:16","1:1","4:3","3:4"], minDuration: 2, maxDuration: 15, watermark: true, promptExtend: true, supportsAudioUrl: true },
+        { id: "happyhorse-1.1-i2v", label: "HappyHorse 1.1 I2V", type: "i2v", paramStyle: "resolution", resolutions: ["480P","720P","1080P"], minDuration: 3, maxDuration: 15, mediaStyle: "media", watermark: true },
+        { id: "happyhorse-1.1-r2v", label: "HappyHorse 1.1 R2V", type: "r2v", paramStyle: "resolution", resolutions: ["480P","720P","1080P"], ratios: ["16:9","9:16","1:1","4:3","3:4","4:5","5:4","9:21","21:9"], minDuration: 3, maxDuration: 15, watermark: true, maxRefImages: 9 },
+        { id: "wan2.7-r2v-2026-06-12", label: "Wan 2.7 R2V (0612)", type: "r2v", paramStyle: "resolution", resolutions: ["720P","1080P"], ratios: ["16:9","9:16","1:1","4:3","3:4"], minDuration: 2, maxDuration: 15, watermark: true, promptExtend: true, maxRefImages: 5, supportsFirstFrame: true, supportsRefVideo: true, supportsRefVoice: true },
+      ];
+    }
+    modelEl.innerHTML = "";
+    // Group models by type
+    const typeGroups = {
+      t2v: { label: "🎬 文生视频", models: [] },
+      i2v: { label: "📷 图生视频", models: [] },
+      r2v: { label: "🎭 参考生视频", models: [] },
+      videoedit: { label: "✂️ 视频编辑", models: [] },
+    };
+    for (const m of modelsData) {
+      const group = typeGroups[m.type] || typeGroups.t2v;
+      group.models.push(m);
+    }
+    // Render optgroups
+    for (const [, group] of Object.entries(typeGroups)) {
+      if (!group.models.length) continue;
+      const optgroup = document.createElement("optgroup");
+      optgroup.label = group.label;
+      for (const m of group.models) {
+        const opt = document.createElement("option");
+        opt.value = m.id;
+        const desc = MODEL_DESCRIPTIONS[m.id] || "";
+        const shortDesc = desc.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "").replace(/^[\s·—\-]+/, "").trim();
+        const defaultTag = m.default ? "（默认）" : "";
+        opt.textContent = shortDesc ? `${m.label}${defaultTag} — ${shortDesc}` : `${m.label}${defaultTag}`;
+        if (m.default) opt.selected = true;
+        optgroup.appendChild(opt);
+      }
+      modelEl.appendChild(optgroup);
+    }
+    modelCount.textContent = `${modelsData.length} 个模型`;
+    restoreState();
+  }
+
+  function getCurrentModel() {
+    return modelsData.find((m) => m.id === modelEl.value) || {};
+  }
+
+  function updateModelUI() {
+    const m = getCurrentModel();
+    modelDesc.textContent = MODEL_DESCRIPTIONS[m.id] || "";
+
+    // Model type badge
+    const typeLabels = { i2v: "图生视频", videoedit: "视频编辑", t2v: "文生视频", r2v: "参考生视频" };
+    const typeColors = { i2v: "badge-secondary", videoedit: "badge-warning", t2v: "badge-primary", r2v: "badge-accent" };
+    modelType.textContent = typeLabels[m.type] || "文生视频";
+    modelType.className = `badge badge-xs ${typeColors[m.type] || "badge-primary"}`;
+
+    // Show/hide reference image (i2v first_frame, videoedit reference_image, r2v reference_image)
+    const showRefImage = m.type === "i2v" || m.type === "videoedit" || m.type === "r2v";
+    const isMultiImage = m.type === "videoedit" || m.type === "r2v";
+    refImageGroup.classList.toggle("hidden", !showRefImage);
+    if (showRefImage) {
+      if (m.type === "videoedit") {
+        refImageLabel.textContent = `参考图（1-${m.maxRefImages || 4} 张）`;
+        refImageInput.multiple = true;
+      } else if (m.type === "r2v") {
+        refImageLabel.textContent = `角色参考图（1-${m.maxRefImages || 5} 张）`;
+        refImageInput.multiple = true;
+      } else {
+        refImageLabel.textContent = m.supportsFirstFrame ? "首帧参考图（可选）" : "参考图（首帧）";
+        refImageInput.multiple = false;
+      }
+      // Clean up stale data when switching between single/multi image modes
+      if (isMultiImage && refImageDataUrl) { refImageDataUrl = null; }
+      if (!isMultiImage && refImageDataUrls.length) { refImageDataUrls = []; }
+      renderRefPreview();
+    }
+
+    // Show/hide video upload (videoedit only)
+    videoInputGroup.classList.toggle("hidden", !m.requiresVideo);
+
+    // Show/hide last frame / driving audio (wan2.7-i2v)
+    lastFrameGroup.classList.toggle("hidden", !m.supportsLastFrame);
+    drivingAudioGroup.classList.toggle("hidden", !m.supportsDrivingAudio);
+
+    // Show/hide external audio URL (wan2.7-t2v)
+    audioUrlGroup.classList.toggle("hidden", !m.supportsAudioUrl);
+
+    // Show/hide reference video (wan2.7-r2v)
+    refVideoGroup.classList.toggle("hidden", !m.supportsRefVideo);
+
+    // Show/hide reference voice (wan2.7-r2v)
+    refVoiceGroup.classList.toggle("hidden", !m.supportsRefVoice);
+
+    // Show/hide prompt extend
+    promptExtendGroup.classList.toggle("hidden", !m.promptExtend && m.type !== "videoedit");
+
+    // Show/hide watermark
+    watermarkGroup.classList.toggle("hidden", !m.watermark);
+    if (m.watermarkDefault) watermarkToggle.checked = true;
+
+    // Show/hide audio setting
+    audioSettingGroup.classList.toggle("hidden", !m.audioSetting);
+
+    // Size vs resolution mode
+    const isResolution = m.paramStyle === "resolution";
+    sizeGroup.classList.toggle("hidden", isResolution);
+    resolutionGroup.classList.toggle("hidden", !isResolution);
+
+    if (!isResolution) {
+      sizeEl.innerHTML = "";
+      const sizeLabels = { "1280*720": "1280×720（横）", "720*1280": "720×1280（竖）", "960*960": "960×960（方）" };
+      for (const s of (m.sizes || ["1280*720"])) {
+        const opt = document.createElement("option");
+        opt.value = s;
+        opt.textContent = sizeLabels[s] || s;
+        sizeEl.appendChild(opt);
+      }
+    } else {
+      resolutionEl.innerHTML = "";
+      for (const r of (m.resolutions || ["720P"])) {
+        const opt = document.createElement("option");
+        opt.value = r;
+        opt.textContent = r;
+        resolutionEl.appendChild(opt);
+      }
+      ratioEl.innerHTML = "";
+      const ratioLabels = {
+        "16:9": "16:9 横屏", "9:16": "9:16 竖屏", "1:1": "1:1 方形",
+        "4:3": "4:3", "3:4": "3:4", "4:5": "4:5", "5:4": "5:4",
+        "9:21": "9:21", "21:9": "21:9",
+      };
+      for (const r of (m.ratios || ["16:9"])) {
+        const opt = document.createElement("option");
+        opt.value = r;
+        opt.textContent = ratioLabels[r] || r;
+        ratioEl.appendChild(opt);
+      }
+    }
+
+    // Duration slider
+    const minDur = m.minDuration || 5;
+    const maxDur = m.maxDuration || 5;
+    durationSlider.min = minDur;
+    durationSlider.max = maxDur;
+    if (parseInt(durationSlider.value) < minDur) durationSlider.value = minDur;
+    if (parseInt(durationSlider.value) > maxDur) durationSlider.value = maxDur;
+    durationVal.textContent = durationSlider.value;
+    durationGroup.classList.toggle("hidden", minDur === maxDur);
+  }
+
+  modelEl.addEventListener("change", updateModelUI);
+  durationSlider.addEventListener("input", () => { durationVal.textContent = durationSlider.value; });
+
+  /* ---- Reference image (single for i2v, multi for videoedit/r2v) ---- */
+  refImageInput.addEventListener("change", async () => {
+    const m = getCurrentModel();
+    const files = refImageInput.files;
+    if (!files?.length) return;
+
+    if (m.type === "videoedit" || m.type === "r2v") {
+      // Multi-image mode: add to array (respect maxRefImages)
+      const max = m.maxRefImages || (m.type === "r2v" ? 5 : 4);
+      for (const file of files) {
+        if (refImageDataUrls.length >= max) break;
+        const dataUrl = await fileToDataUrl(file);
+        // Validate image dimensions
+        const validation = await validateImageDimensions(dataUrl);
+        if (!validation.valid) {
+          alert(`图片 "${file.name}" 不符合要求：${validation.error}`);
+          continue;
+        }
+        refImageDataUrls.push(dataUrl);
+      }
+    } else {
+      // Single-image mode (i2v)
+      const dataUrl = await fileToDataUrl(files[0]);
+      const validation = await validateImageDimensions(dataUrl);
+      if (!validation.valid) {
+        alert(validation.error);
+        refImageInput.value = "";
+        return;
+      }
+      refImageDataUrl = dataUrl;
+    }
+    renderRefPreview();
+    refImageInput.value = "";
+  });
+
+  btnClearRef.addEventListener("click", () => {
+    refImageDataUrl = null;
+    refImageDataUrls = [];
+    renderRefPreview();
+  });
+
+  document.addEventListener("paste", async (e) => {
+    const m = getCurrentModel();
+    if (m.type !== "i2v" && m.type !== "videoedit" && m.type !== "r2v") return;
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (file) {
+          e.preventDefault();
+          const dataUrl = await fileToDataUrl(file);
+          const validation = await validateImageDimensions(dataUrl);
+          if (!validation.valid) {
+            alert(`粘贴的图片不符合要求：${validation.error}`);
+            break;
+          }
+          if (m.type === "videoedit" || m.type === "r2v") {
+            const max = m.maxRefImages || (m.type === "r2v" ? 5 : 4);
+            if (refImageDataUrls.length < max) {
+              refImageDataUrls.push(dataUrl);
+            }
+          } else {
+            refImageDataUrl = dataUrl;
+          }
+          renderRefPreview();
+          break;
+        }
+      }
+    }
+  });
+
+  function renderRefPreview() {
+    refImagePreview.innerHTML = "";
+    const m = getCurrentModel();
+
+    if (m.type === "videoedit" && refImageDataUrls.length > 0) {
+      // Multi-image preview
+      refImageDataUrls.forEach((url, index) => {
+        const wrap = document.createElement("div");
+        wrap.className = "relative";
+        const img = document.createElement("img");
+        img.src = url;
+        img.className = "w-20 h-20 rounded object-cover border border-base-300";
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "btn btn-circle btn-xs btn-error absolute -top-1 -right-1";
+        removeBtn.textContent = "×";
+        removeBtn.onclick = () => { refImageDataUrls.splice(index, 1); renderRefPreview(); };
+        wrap.appendChild(img);
+        wrap.appendChild(removeBtn);
+        refImagePreview.appendChild(wrap);
+      });
+    } else if (refImageDataUrl) {
+      // Single-image preview
+      const wrap = document.createElement("div");
+      wrap.className = "relative";
+      const img = document.createElement("img");
+      img.src = refImageDataUrl;
+      img.className = "w-20 h-20 rounded object-cover border border-base-300";
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "btn btn-circle btn-xs btn-error absolute -top-1 -right-1";
+      removeBtn.textContent = "×";
+      removeBtn.onclick = () => { refImageDataUrl = null; renderRefPreview(); };
+      wrap.appendChild(img);
+      wrap.appendChild(removeBtn);
+      refImagePreview.appendChild(wrap);
+    }
+  }
+
+  /* ---- Video upload (videoedit) ---- */
+  videoInput.addEventListener("change", async () => {
+    const file = videoInput.files?.[0];
+    if (!file) return;
+    if (file.size > 100 * 1024 * 1024) {
+      alert("视频文件不能超过 100MB");
+      videoInput.value = "";
+      return;
+    }
+    videoDataUrl = await fileToDataUrl(file);
+    renderVideoPreview();
+    videoInput.value = "";
+  });
+
+  btnClearVideo.addEventListener("click", () => {
+    videoDataUrl = null;
+    renderVideoPreview();
+  });
+
+  function renderVideoPreview() {
+    videoPreview.innerHTML = "";
+    if (!videoDataUrl) return;
+    const video = document.createElement("video");
+    video.src = videoDataUrl;
+    video.className = "w-40 h-24 rounded object-cover border border-base-300";
+    video.controls = true;
+    video.muted = true;
+    videoPreview.appendChild(video);
+  }
+
+  /* ---- Last frame upload (wan2.7-i2v) ---- */
+  lastFrameInput.addEventListener("change", async () => {
+    const file = lastFrameInput.files?.[0];
+    if (!file) return;
+    lastFrameDataUrl = await fileToDataUrl(file);
+    renderLastFramePreview();
+    lastFrameInput.value = "";
+  });
+
+  btnClearLastFrame.addEventListener("click", () => {
+    lastFrameDataUrl = null;
+    renderLastFramePreview();
+  });
+
+  function renderLastFramePreview() {
+    lastFramePreview.innerHTML = "";
+    if (!lastFrameDataUrl) return;
+    const wrap = document.createElement("div");
+    wrap.className = "relative inline-block";
+    const img = document.createElement("img");
+    img.src = lastFrameDataUrl;
+    img.className = "w-20 h-20 rounded object-cover border border-base-300";
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "btn btn-circle btn-xs btn-error absolute -top-1 -right-1";
+    removeBtn.textContent = "×";
+    removeBtn.onclick = () => { lastFrameDataUrl = null; renderLastFramePreview(); };
+    wrap.appendChild(img);
+    wrap.appendChild(removeBtn);
+    lastFramePreview.appendChild(wrap);
+  }
+
+  /* ---- Driving audio upload (wan2.7-i2v) ---- */
+  drivingAudioInput.addEventListener("change", async () => {
+    const file = drivingAudioInput.files?.[0];
+    if (!file) return;
+    drivingAudioDataUrl = await fileToDataUrl(file);
+    renderDrivingAudioPreview();
+    drivingAudioInput.value = "";
+  });
+
+  btnClearDrivingAudio.addEventListener("click", () => {
+    drivingAudioDataUrl = null;
+    renderDrivingAudioPreview();
+  });
+
+  function renderDrivingAudioPreview() {
+    drivingAudioPreview.innerHTML = "";
+    if (!drivingAudioDataUrl) return;
+    const audio = document.createElement("audio");
+    audio.src = drivingAudioDataUrl;
+    audio.className = "w-full";
+    audio.controls = true;
+    drivingAudioPreview.appendChild(audio);
+  }
+
+  /* ---- External audio URL (wan2.7-t2v) ---- */
+  audioUrlInput.addEventListener("change", async () => {
+    const file = audioUrlInput.files?.[0];
+    if (!file) return;
+    if (file.size > 15 * 1024 * 1024) {
+      alert("音频文件不能超过 15MB");
+      audioUrlInput.value = "";
+      return;
+    }
+    audioUrlDataUrl = await fileToDataUrl(file);
+    renderAudioUrlPreview();
+    audioUrlInput.value = "";
+  });
+
+  btnClearAudioUrl.addEventListener("click", () => {
+    audioUrlDataUrl = null;
+    renderAudioUrlPreview();
+  });
+
+  function renderAudioUrlPreview() {
+    audioUrlPreview.innerHTML = "";
+    if (!audioUrlDataUrl) return;
+    const audio = document.createElement("audio");
+    audio.src = audioUrlDataUrl;
+    audio.className = "w-full";
+    audio.controls = true;
+    audioUrlPreview.appendChild(audio);
+  }
+
+  /* ---- Reference video (wan2.7-r2v) ---- */
+  refVideoInput.addEventListener("change", async () => {
+    const file = refVideoInput.files?.[0];
+    if (!file) return;
+    if (file.size > 100 * 1024 * 1024) {
+      alert("参考视频不能超过 100MB");
+      refVideoInput.value = "";
+      return;
+    }
+    refVideoDataUrl = await fileToDataUrl(file);
+    renderRefVideoPreview();
+    refVideoInput.value = "";
+  });
+
+  btnClearRefVideo.addEventListener("click", () => {
+    refVideoDataUrl = null;
+    renderRefVideoPreview();
+  });
+
+  function renderRefVideoPreview() {
+    refVideoPreview.innerHTML = "";
+    if (!refVideoDataUrl) return;
+    const video = document.createElement("video");
+    video.src = refVideoDataUrl;
+    video.className = "w-40 h-24 rounded object-cover border border-base-300";
+    video.controls = true;
+    video.muted = true;
+    refVideoPreview.appendChild(video);
+  }
+
+  /* ---- Reference voice (wan2.7-r2v) ---- */
+  refVoiceInput.addEventListener("change", async () => {
+    const file = refVoiceInput.files?.[0];
+    if (!file) return;
+    if (file.size > 15 * 1024 * 1024) {
+      alert("参考配音不能超过 15MB");
+      refVoiceInput.value = "";
+      return;
+    }
+    refVoiceDataUrl = await fileToDataUrl(file);
+    renderRefVoicePreview();
+    refVoiceInput.value = "";
+  });
+
+  btnClearRefVoice.addEventListener("click", () => {
+    refVoiceDataUrl = null;
+    renderRefVoicePreview();
+  });
+
+  function renderRefVoicePreview() {
+    refVoicePreview.innerHTML = "";
+    if (!refVoiceDataUrl) return;
+    const audio = document.createElement("audio");
+    audio.src = refVoiceDataUrl;
+    audio.className = "w-full";
+    audio.controls = true;
+    refVoicePreview.appendChild(audio);
+  }
+
+  function fileToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /**
+   * Validate image dimensions and return { width, height, valid, error }
+   */
+  function validateImageDimensions(dataUrl, minWidth = 300, minHeight = 300, maxAspectRatio = 2.5) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const { width, height } = img;
+        const aspectRatio = Math.max(width / height, height / width);
+        if (width < minWidth || height < minHeight) {
+          resolve({ width, height, valid: false, error: `图片尺寸 ${width}×${height}，要求最小 ${minWidth}×${minHeight}` });
+        } else if (aspectRatio > maxAspectRatio) {
+          resolve({ width, height, valid: false, error: `图片宽高比超出范围（最大 1:${maxAspectRatio}）` });
+        } else {
+          resolve({ width, height, valid: true });
+        }
+      };
+      img.onerror = () => resolve({ valid: false, error: "无法读取图片尺寸" });
+      img.src = dataUrl;
+    });
+  }
+
+  /* ---- Example prompts ---- */
+  document.querySelectorAll(".prompt-example").forEach((btn) => {
+    btn.addEventListener("click", () => { promptEl.value = btn.dataset.prompt || ""; promptEl.focus(); });
+  });
+
+  /* ---- Status helpers ---- */
+  function showStatus(msg, type = "info") {
+    statusBox.classList.remove("hidden", "border-success", "border-error", "border-warning", "text-success", "text-error", "text-warning");
+    statusBox.classList.add(type === "error" ? "border-error" : type === "success" ? "border-success" : "border-warning");
+    statusBox.classList.add(type === "error" ? "text-error" : type === "success" ? "text-success" : "text-warning");
+    statusBox.textContent = msg;
+  }
+  function hideStatus() { statusBox.classList.add("hidden"); }
+
+  function setGenerating(value) {
+    generating = value;
+    btnGenerate.disabled = value;
+    btnSpinner.classList.toggle("hidden", !value);
+    btnLabel.textContent = value ? "生成中…" : "🎬 生成视频";
+  }
+
+  /* ---- Timer ---- */
+  function startTimer() {
+    const start = Date.now();
+    timerInterval = setInterval(() => {
+      const sec = Math.floor((Date.now() - start) / 1000);
+      progressTimer.textContent = `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
+    }, 1000);
+  }
+  function stopTimer() {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  }
+
+  /* ---- Cancel (hide progress, let API finish in background) ---- */
+  btnCancelGen.addEventListener("click", () => {
+    progressArea.classList.add("hidden");
+    stopTimer();
+    setGenerating(false);
+  });
+
+  /* ---- Generate ---- */
+  btnGenerate.addEventListener("click", async () => {
+    if (generating) return;
+    const prompt = promptEl.value.trim();
+    if (!prompt) { showStatus("请输入视频描述", "error"); promptEl.focus(); return; }
+
+    const m = getCurrentModel();
+    if (m.type === "i2v" && !refImageDataUrl) { showStatus("图生视频模式需要上传首帧参考图", "error"); return; }
+    if (m.type === "videoedit" && !videoDataUrl) { showStatus("视频编辑模式需要上传待编辑视频", "error"); return; }
+    if (m.type === "r2v" && !refImageDataUrls.length && !refVideoDataUrl) { showStatus("参考生视频需要至少一张参考图或一个参考视频", "error"); return; }
+
+    hideStatus();
+    setGenerating(true);
+
+    // Show progress
+    videoPlaceholder.classList.add("hidden");
+    resultVideo.classList.add("hidden");
+    progressArea.classList.remove("hidden");
+    progressModel.textContent = m.label;
+    progressText.textContent = "正在生成，通常需要 1-5 分钟…";
+    progressTimer.textContent = "00:00";
+    startTimer();
+
+    if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+
+    try {
+      const body = {
+        prompt,
+        model: modelEl.value,
+      };
+
+      // Prompt extend (only for models that support it)
+      if (m.promptExtend || m.type === "videoedit") {
+        body.prompt_extend = promptExtendToggle.checked;
+      }
+
+      // Size params
+      if (m.paramStyle === "resolution") {
+        body.resolution = resolutionEl.value;
+        if (m.ratios) body.ratio = ratioEl.value;
+      } else if (m.sizes) {
+        body.size = sizeEl.value;
+      }
+
+      // Duration
+      const dur = parseInt(durationSlider.value, 10);
+      if (dur >= (m.minDuration || 5) && dur <= (m.maxDuration || 5)) body.duration = dur;
+
+      const neg = negativePromptEl.value.trim();
+      if (neg) body.negative_prompt = neg;
+
+      const seed = seedInput.value.trim();
+      if (seed) body.seed = parseInt(seed, 10);
+
+      // Image URL for i2v models (first_frame) or r2v models (first_frame optional)
+      if ((m.type === "i2v" || m.supportsFirstFrame) && refImageDataUrl) body.img_url = refImageDataUrl;
+
+      // Last frame URL (wan2.7-i2v)
+      if (m.supportsLastFrame && lastFrameDataUrl) body.last_frame_url = lastFrameDataUrl;
+
+      // Driving audio URL (wan2.7-i2v)
+      if (m.supportsDrivingAudio && drivingAudioDataUrl) body.driving_audio_url = drivingAudioDataUrl;
+
+      // External audio URL (wan2.7-t2v)
+      if (m.supportsAudioUrl && audioUrlDataUrl) body.audio_url = audioUrlDataUrl;
+
+      // Video URL for videoedit
+      if (m.requiresVideo && videoDataUrl) body.video_url = videoDataUrl;
+
+      // Reference video URL (wan2.7-r2v)
+      if (m.supportsRefVideo && refVideoDataUrl) body.ref_video_url = refVideoDataUrl;
+
+      // Reference voice URL (wan2.7-r2v)
+      if (m.supportsRefVoice && refVoiceDataUrl) body.ref_voice_url = refVoiceDataUrl;
+
+      // Reference images for videoedit or r2v (multi-image)
+      if ((m.type === "videoedit" || m.type === "r2v") && refImageDataUrls.length) body.ref_images = refImageDataUrls;
+
+      // Watermark
+      if (m.watermark) body.watermark = watermarkToggle.checked;
+
+      // Audio setting (videoedit)
+      if (m.audioSetting) body.audio_setting = audioSettingSelect.value;
+
+      const response = await fetch("/api/demo/video", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      currentBlobUrl = URL.createObjectURL(blob);
+
+      // Show video
+      resultVideo.src = currentBlobUrl;
+      resultVideo.classList.remove("hidden");
+      progressArea.classList.add("hidden");
+      btnDownload.classList.remove("hidden");
+      btnDownload.disabled = false;
+
+      const totalSec = (parseInt(response.headers.get("X-Gen-Total-Ms") || "0") / 1000).toFixed(1);
+      const videoMB = response.headers.get("X-Gen-Video-MB") || "?";
+      showStatus(`${m.label} 生成完成！${totalSec}s · ${videoMB}MB`, "success");
+      saveState();
+    } catch (err) {
+      console.error("[video-gen] failed:", err);
+      showStatus(`生成失败：${err.message}`, "error");
+      progressArea.classList.add("hidden");
+      videoPlaceholder.classList.remove("hidden");
+      btnDownload.classList.add("hidden");
+    } finally {
+      stopTimer();
+      setGenerating(false);
+    }
+  });
+
+  /* ---- Download ---- */
+  btnDownload.addEventListener("click", () => {
+    if (!currentBlobUrl) return;
+    const a = document.createElement("a");
+    a.href = currentBlobUrl;
+    a.download = `ai-video-${Date.now()}.mp4`;
+    a.click();
+  });
+
+  /* ---- Ctrl+Enter shortcut ---- */
+  promptEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); btnGenerate.click(); }
+  });
+
+  /* ---- Init ---- */
+  loadModels();
+</script>

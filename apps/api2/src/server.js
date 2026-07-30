@@ -8,6 +8,7 @@ import { createCompareRouter, handleWsUpgrade } from "./demo/compare-routes.js";
 import { createGuideRouter } from "./demo/guide-routes.js";
 import { createTtsRouter } from "./demo/tts-routes.js";
 import { createImageRouter } from "./demo/image-routes.js";
+import { createVideoRouter } from "./demo/video-routes.js";
 import { createAvatarRouter } from "./avatar/routes.js";
 
 process.on("uncaughtException", (err) => {
@@ -49,7 +50,7 @@ app.all("/api/auth/*", toNodeHandler(auth));
 const globalJsonParser = express.json({ limit: "1mb" });
 app.use((req, _res, next) => {
   // Skip the global JSON parser for routes with their own body limit.
-  if (req.path.startsWith("/api/demo/image")) return next();
+  if (req.path.startsWith("/api/demo/image") || req.path.startsWith("/api/demo/video")) return next();
   globalJsonParser(req, _res, next);
 });
 
@@ -81,6 +82,7 @@ app.use("/api/demo/compare", createCompareRouter());
 app.use("/api/demo/guide", createGuideRouter());
 app.use("/api/demo/tts", createTtsRouter());
 app.use("/api/demo/image", express.json({ limit: "20mb" }), createImageRouter());
+app.use("/api/demo/video", express.json({ limit: "20mb" }), createVideoRouter());
 app.use("/api/demo/avatar", createAvatarRouter());
 
 const server = app.listen(port, "0.0.0.0", () => {

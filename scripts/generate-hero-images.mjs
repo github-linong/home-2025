@@ -11,6 +11,7 @@
  *   node scripts/generate-hero-images.mjs --write --only=blog
  *   node scripts/generate-hero-images.mjs --write --only=demo --limit=20
  *   node scripts/generate-hero-images.mjs --write --concurrency=4
+ *   node scripts/generate-hero-images.mjs --write --force --only=demo --screenshots --origin=http://127.0.0.1:4321
  */
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -46,6 +47,14 @@ const slugFilter = slugFilterArg
     )
   : null;
 const wantScreenshots = process.argv.includes("--screenshots");
+const liveOrigin = (
+  process.argv.find((a) => a.startsWith("--origin="))?.slice("--origin=".length) || ""
+).replace(/\/+$/, "");
+const waitMsArg = process.argv.find((a) => a.startsWith("--wait-ms="))?.slice("--wait-ms=".length);
+const shotWaitMs = Math.max(
+  80,
+  Number(waitMsArg || (liveOrigin ? 3500 : 80)) || (liveOrigin ? 3500 : 80),
+);
 const concurrency = Math.max(
   1,
   Number(process.argv.find((a) => a.startsWith("--concurrency="))?.slice(14) || 4),
@@ -768,6 +777,15 @@ async function isInterestingScreenshot(pngBuf) {
   return true;
 }
 
+function canScreenshotDemo(job) {
+  if (!wantScreenshots || job.collection !== "demo") return false;
+  const demoUrl = job.demoUrl || "";
+  if (!demoUrl || /^https?:\/\//i.test(demoUrl)) return false;
+  // Live Astro/dev origin can render route pages; otherwise only public static files.
+  if (liveOrigin) return true;
+  return Boolean(resolveDemoPublicPath(demoUrl));
+}
+
 async function renderDemoScreenshot(page, origin, demoUrl, outPath, ctx) {
   const url = `${origin}${demoUrl.startsWith("/") ? demoUrl : `/${demoUrl}`}`;
   await page.setViewport({
@@ -779,13 +797,16 @@ async function renderDemoScreenshot(page, origin, demoUrl, outPath, ctx) {
   });
 
   // Do not close the page on timeout — that wedges Chromium CDP. Outer caller relaunches.
-  const hardLimitMs = 6000;
+  const hardLimitMs = Math.max(6000, shotWaitMs + 8000);
   let timer;
   try {
     await Promise.race([
       (async () => {
         try {
-          await page.goto(url, { waitUntil: "domcontentloaded", timeout: 3000 });
+          await page.goto(url, {
+            waitUntil: liveOrigin ? "networkidle2" : "domcontentloaded",
+            timeout: liveOrigin ? 12000 : 3000,
+          });
         } catch {
           throw new Error("goto failed");
         }
@@ -793,11 +814,26 @@ async function renderDemoScreenshot(page, origin, demoUrl, outPath, ctx) {
           .addStyleTag({
             content: `
               #__vconsole, .vc-switch, .vc-mask, .vc-panel { display:none !important; }
+              [data-system-notice-bar-wrap], [data-notice-inbox], [data-notice-dialog] { display:none !important; }
               body { overflow:hidden !important; }
             `,
           })
           .catch(() => {});
-        await new Promise((r) => setTimeout(r, 80));
+        // Wait for canvas/WebGL demos to paint when shooting a live origin.
+        if (liveOrigin) {
+          await page
+            .waitForFunction(
+              () => {
+                const canvas = document.querySelector("canvas");
+                if (canvas && canvas.width > 8 && canvas.height > 8) return true;
+                const main = document.querySelector("main, .demo-root, #app");
+                return Boolean(main && main.getBoundingClientRect().height > 120);
+              },
+              { timeout: Math.min(shotWaitMs, 8000) },
+            )
+            .catch(() => {});
+        }
+        await new Promise((r) => setTimeout(r, shotWaitMs));
         const shot = await page.screenshot({ type: "png", captureBeyondViewport: false });
         if (!(await isInterestingScreenshot(shot))) {
           throw new Error("screenshot too blank/uniform");
@@ -904,13 +940,11 @@ async function processAll() {
   const sliced = offset > 0 ? jobs.slice(offset) : jobs;
   const selected = limit > 0 ? sliced.slice(0, limit) : sliced;
   console.log(
-    `jobs=${selected.length} offset=${offset} concurrency=${concurrency} screenshots=${wantScreenshots} slugFilter=${slugFilter ? slugFilter.size : 0}`,
+    `jobs=${selected.length} offset=${offset} concurrency=${concurrency} screenshots=${wantScreenshots} origin=${liveOrigin || "(static-public)"} waitMs=${shotWaitMs} slugFilter=${slugFilter ? slugFilter.size : 0}`,
   );
 
   if (!write) {
-    const demoShot = selected.filter(
-      (j) => j.collection === "demo" && resolveDemoPublicPath(j.demoUrl),
-    ).length;
+    const demoShot = selected.filter((j) => canScreenshotDemo(j)).length;
     const illus = selected.length - demoShot;
     console.log(`would screenshot demos≈${demoShot}, illustrate≈${illus}`);
     return;
@@ -940,16 +974,17 @@ async function processAll() {
   }
 
   async function freshPage() {
+    const navTimeout = liveOrigin ? 20000 : 5000;
     try {
       const page = await browser.newPage();
-      page.setDefaultTimeout(5000);
-      page.setDefaultNavigationTimeout(5000);
+      page.setDefaultTimeout(navTimeout);
+      page.setDefaultNavigationTimeout(navTimeout);
       return page;
     } catch {
       await relaunchBrowser();
       const page = await browser.newPage();
-      page.setDefaultTimeout(5000);
-      page.setDefaultNavigationTimeout(5000);
+      page.setDefaultTimeout(navTimeout);
+      page.setDefaultNavigationTimeout(navTimeout);
       return page;
     }
   }
@@ -964,17 +999,16 @@ async function processAll() {
 
       try {
         if (force || !fs.existsSync(absPath)) {
-          const canShot =
-            wantScreenshots &&
-            job.collection === "demo" &&
-            resolveDemoPublicPath(job.demoUrl);
+          const canShot = canScreenshotDemo(job);
           let made = false;
           if (canShot) {
             try {
-              await renderDemoScreenshot(page, staticServer.origin, job.demoUrl, absPath, job);
+              const shotOrigin = liveOrigin || staticServer.origin;
+              await renderDemoScreenshot(page, shotOrigin, job.demoUrl, absPath, job);
               shotOk++;
               made = true;
-            } catch {
+            } catch (err) {
+              console.error(`\nshot-fail ${job.slug}:`, err.message || err);
               // CDP timeouts leave Chromium unhealthy — full relaunch before fallback.
               await page.close().catch(() => {});
               await relaunchBrowser();

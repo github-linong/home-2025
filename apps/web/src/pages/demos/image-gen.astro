@@ -123,6 +123,17 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
             </label>
             <input id="seedInput" type="number" min="0" placeholder="随机" class="input input-bordered input-sm w-28" />
           </div>
+          <div class="form-control">
+            <label class="label py-1" for="countSelect">
+              <span class="label-text text-xs">生成数量</span>
+            </label>
+            <select id="countSelect" class="select select-bordered select-sm w-20">
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </div>
         </div>
 
         <!-- Thinking mode (wan2.7 only) -->
@@ -179,17 +190,13 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     <!-- ========== Right: Image display ========== -->
     <div
       id="imageContainer"
-      class="flex min-h-[500px] items-center justify-center rounded-box border border-base-300 bg-base-200 p-4"
+      class="flex min-h-[500px] flex-col items-center justify-center rounded-box border border-base-300 bg-base-200 p-4"
     >
       <div id="imagePlaceholder" class="text-center text-sm opacity-50">
         <p class="text-5xl mb-2">🎨</p>
         <p>输入描述并点击生成</p>
       </div>
-      <img
-        id="resultImage"
-        class="hidden max-h-[80vh] rounded-box object-contain shadow-lg"
-        alt="AI 生成的图片"
-      />
+      <div id="imageGrid" class="hidden w-full grid gap-3"></div>
     </div>
   </div>
 
@@ -206,13 +213,14 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   const modelDesc = document.getElementById("modelDesc");
   const sizeEl = document.getElementById("sizeSelect");
   const seedInput = document.getElementById("seedInput");
+  const countEl = document.getElementById("countSelect");
   const btnGenerate = document.getElementById("btnGenerate");
   const btnDownload = document.getElementById("btnDownload");
   const btnLabel = document.getElementById("btnLabel");
   const btnSpinner = document.getElementById("btnSpinner");
   const statusBox = document.getElementById("statusBox");
   const imagePlaceholder = document.getElementById("imagePlaceholder");
-  const resultImage = document.getElementById("resultImage");
+  const imageGrid = document.getElementById("imageGrid");
   const styleGroup = document.getElementById("styleGroup");
   const styleSelect = document.getElementById("styleSelect");
   const refModeGroup = document.getElementById("refModeGroup");
@@ -228,7 +236,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   const promptExtendGroup = document.getElementById("promptExtendGroup");
   const promptExtendToggle = document.getElementById("promptExtendToggle");
 
-  let currentBlobUrl = null;
+  let currentBlobUrls = []; // array of blob URLs for generated images
   let generating = false;
   let refImageDataUrls = []; // data URIs for reference images
   let modelsData = [];
@@ -249,6 +257,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         thinking_mode: thinkingToggle.checked,
         prompt_extend: promptExtendToggle.checked,
         seed: seedInput.value,
+        count: countEl.value,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch { /* quota exceeded or private mode — ignore */ }
@@ -282,11 +291,14 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       if (typeof s.thinking_mode === "boolean") thinkingToggle.checked = s.thinking_mode;
       if (typeof s.prompt_extend === "boolean") promptExtendToggle.checked = s.prompt_extend;
       if (s.seed) seedInput.value = s.seed;
+      if (s.count && [...countEl.options].some((o) => o.value === s.count)) {
+        countEl.value = s.count;
+      }
     } catch { /* corrupted data — ignore */ }
   }
 
   // Auto-save on any parameter change
-  for (const el of [promptEl, negativePromptEl, modelEl, sizeEl, seedInput, styleSelect,
+  for (const el of [promptEl, negativePromptEl, modelEl, sizeEl, seedInput, countEl, styleSelect,
                      refStrengthEl, thinkingToggle, promptExtendToggle]) {
     el.addEventListener("change", saveState);
     el.addEventListener("input", saveState);
@@ -294,6 +306,50 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   document.querySelectorAll('input[name="refMode"]').forEach((r) =>
     r.addEventListener("change", saveState)
   );
+
+  /* ---- IndexedDB persistence for reference images (base64) ---- */
+  const DB_NAME = "dashscope-image-gen";
+  const DB_STORE = "refImages";
+  const DB_KEY = "current";
+
+  function openRefImageDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore(DB_STORE);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function saveRefImagesToDB() {
+    try {
+      const db = await openRefImageDB();
+      const tx = db.transaction(DB_STORE, "readwrite");
+      tx.objectStore(DB_STORE).put([...refImageDataUrls], DB_KEY);
+    } catch { /* IDB unavailable — ignore */ }
+  }
+
+  async function loadRefImagesFromDB() {
+    try {
+      const db = await openRefImageDB();
+      const tx = db.transaction(DB_STORE, "readonly");
+      const req = tx.objectStore(DB_STORE).get(DB_KEY);
+      return new Promise((resolve) => {
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
+      });
+    } catch {
+      return [];
+    }
+  }
+
+  async function clearRefImagesDB() {
+    try {
+      const db = await openRefImageDB();
+      const tx = db.transaction(DB_STORE, "readwrite");
+      tx.objectStore(DB_STORE).delete(DB_KEY);
+    } catch { /* ignore */ }
+  }
 
   const MODEL_DESCRIPTIONS = {
     "wan2.7-image-pro": "最强画质，支持 4K 输出与思考模式",
@@ -319,6 +375,13 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         modelEl.appendChild(opt);
       }
       restoreState();
+      const savedRefs = await loadRefImagesFromDB();
+      if (savedRefs.length > 0) {
+        const m = getCurrentModel();
+        const maxRef = m.maxRefImages || 0;
+        refImageDataUrls = savedRefs.slice(0, maxRef);
+        renderRefPreview();
+      }
     } catch (e) {
       // Fallback: hardcoded options
       const fallback = [
@@ -336,6 +399,13 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         modelEl.appendChild(opt);
       }
       restoreState();
+      const savedRefs = await loadRefImagesFromDB();
+      if (savedRefs.length > 0) {
+        const m = getCurrentModel();
+        const maxRef = m.maxRefImages || 0;
+        refImageDataUrls = savedRefs.slice(0, maxRef);
+        renderRefPreview();
+      }
     }
   }
 
@@ -401,12 +471,14 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       refImageDataUrls.push(dataUrl);
     }
     renderRefPreview();
+    saveRefImagesToDB();
     refImageInput.value = "";
   });
 
   btnClearRef.addEventListener("click", () => {
     refImageDataUrls = [];
     renderRefPreview();
+    clearRefImagesDB();
   });
 
   /* ---- Clipboard paste for reference images ---- */
@@ -434,6 +506,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       refImageDataUrls.push(dataUrl);
     }
     renderRefPreview();
+    saveRefImagesToDB();
     showStatus(`已粘贴 ${imageFiles.length} 张参考图`, "info");
     setTimeout(hideStatus, 2000);
   });
@@ -452,6 +525,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       removeBtn.onclick = () => {
         refImageDataUrls.splice(i, 1);
         renderRefPreview();
+        saveRefImagesToDB();
       };
       wrap.appendChild(img);
       wrap.appendChild(removeBtn);
@@ -517,71 +591,137 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     hideStatus();
     setGenerating(true);
     const modelName = modelEl.options[modelEl.selectedIndex]?.text || modelEl.value;
-    showStatus(`正在使用 ${modelName} 生成，通常需要 10–60 秒…`, "info");
+    const count = parseInt(countEl.value, 10) || 1;
 
-    if (currentBlobUrl) {
-      URL.revokeObjectURL(currentBlobUrl);
-      currentBlobUrl = null;
+    // Clean up previous blob URLs
+    for (const url of currentBlobUrls) URL.revokeObjectURL(url);
+    currentBlobUrls = [];
+
+    // Set up grid
+    imageGrid.innerHTML = "";
+    imageGrid.style.gridTemplateColumns = count > 1 ? "repeat(2, 1fr)" : "1fr";
+    imageGrid.classList.remove("hidden");
+    imagePlaceholder.classList.add("hidden");
+
+    // Create placeholder slots
+    const slots = [];
+    for (let i = 0; i < count; i++) {
+      const slot = document.createElement("div");
+      slot.className = "relative flex items-center justify-center rounded-box border border-base-300 bg-base-300 overflow-hidden";
+      slot.style.minHeight = count > 1 ? "200px" : "400px";
+      slot.innerHTML = `<span class="loading loading-spinner loading-md"></span>`;
+      imageGrid.appendChild(slot);
+      slots.push(slot);
     }
 
+    showStatus(`正在使用 ${modelName} 并发生成 ${count} 张图片…`, "info");
+
+    // Build shared request body
+    const body = {
+      prompt,
+      model: modelEl.value,
+      size: sizeEl.value,
+    };
+    const negativePrompt = negativePromptEl.value.trim();
+    if (negativePrompt) body.negative_prompt = negativePrompt;
+    const seed = seedInput.value.trim();
+    if (seed) body.seed = parseInt(seed, 10);
+    const m = getCurrentModel();
+    if (m.styles && styleSelect.value) {
+      body.style = styleSelect.value;
+      const refMode = document.querySelector('input[name="refMode"]:checked');
+      if (refMode) body.ref_mode = refMode.value;
+      body.ref_strength = parseFloat(refStrengthEl.value);
+    }
+    if (m.thinking && thinkingToggle.checked) body.thinking_mode = true;
+    if (m.promptExtend) body.prompt_extend = promptExtendToggle.checked;
+    if (refImageDataUrls.length > 0) body.ref_images = [...refImageDataUrls];
+
+    // Fire requests with stagger to avoid hitting DashScope rate limit
+    const STAGGER_MS = 2000;
+    let completed = 0;
+    let failed = 0;
+    const tasks = Array.from({ length: count }, async (_, i) => {
+      // Stagger each request so they don't all hit DashScope simultaneously
+      if (i > 0) await new Promise((r) => setTimeout(r, i * STAGGER_MS));
+      try {
+        const response = await fetch("/api/demo/image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err.message || `HTTP ${response.status}`);
+        }
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        currentBlobUrls.push(blobUrl);
+
+        // Read timing headers
+        const totalMs = response.headers.get("X-Gen-Total-Ms") || "?";
+        const downloadKB = response.headers.get("X-Gen-Image-KB") || "?";
+
+        // Replace loading spinner with image
+        const img = document.createElement("img");
+        img.src = blobUrl;
+        img.alt = `生成图片 ${i + 1}`;
+        img.className = "w-full h-full object-contain rounded-box cursor-pointer";
+        img.onclick = () => window.open(blobUrl, "_blank");
+        slots[i].innerHTML = "";
+        slots[i].appendChild(img);
+
+        // Add timing badge
+        const badge = document.createElement("span");
+        badge.className = "absolute bottom-1 left-1 badge badge-sm badge-neutral opacity-80";
+        badge.textContent = `${totalMs}ms · ${downloadKB}KB`;
+        slots[i].appendChild(badge);
+
+        // Add download button
+        const dlBtn = document.createElement("button");
+        dlBtn.className = "btn btn-circle btn-xs btn-ghost absolute top-1 right-1 bg-base-100/70";
+        dlBtn.textContent = "💾";
+        dlBtn.onclick = () => {
+          const a = document.createElement("a");
+          a.href = blobUrl;
+          a.download = `ai-image-${Date.now()}-${i + 1}.png`;
+          a.click();
+        };
+        slots[i].appendChild(dlBtn);
+
+        completed++;
+      } catch (err) {
+        failed++;
+        slots[i].innerHTML = `<p class="text-xs text-error p-2 text-center">❌ ${err.message}</p>`;
+      }
+      const done = completed + failed;
+      btnLabel.textContent = `生成中 ${done}/${count}…`;
+    });
+
     try {
-      const body = {
-        prompt,
-        model: modelEl.value,
-        size: sizeEl.value,
-      };
-
-      const negativePrompt = negativePromptEl.value.trim();
-      if (negativePrompt) body.negative_prompt = negativePrompt;
-
-      const seed = seedInput.value.trim();
-      if (seed) body.seed = parseInt(seed, 10);
-
-      // Model-specific params
-      const m = getCurrentModel();
-      if (m.styles && styleSelect.value) {
-        body.style = styleSelect.value;
-        const refMode = document.querySelector('input[name="refMode"]:checked');
-        if (refMode) body.ref_mode = refMode.value;
-        body.ref_strength = parseFloat(refStrengthEl.value);
+      await Promise.all(tasks);
+      if (failed === 0) {
+        const totalKB = currentBlobUrls.length > 0
+          ? `（共 ${(currentBlobUrls.reduce((s, u) => s, 0) || 0) > 0 ? "" : ""}${completed} 张）`
+          : "";
+        showStatus(`${modelName} 全部完成！${completed} 张图片已生成`, "success");
+        btnDownload.classList.remove("hidden");
+        btnDownload.disabled = false;
+      } else if (completed > 0) {
+        showStatus(`${completed} 张成功，${failed} 张失败`, "warning");
+        btnDownload.classList.remove("hidden");
+        btnDownload.disabled = false;
+      } else {
+        showStatus(`生成失败`, "error");
+        imageGrid.classList.add("hidden");
+        imagePlaceholder.classList.remove("hidden");
+        btnDownload.classList.add("hidden");
       }
-      if (m.thinking && thinkingToggle.checked) {
-        body.thinking_mode = true;
-      }
-      if (m.promptExtend) {
-        body.prompt_extend = promptExtendToggle.checked;
-      }
-
-      // Reference images (data URIs)
-      if (refImageDataUrls.length > 0) {
-        body.ref_images = [...refImageDataUrls];
-      }
-
-      const response = await fetch("/api/demo/image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.message || `HTTP ${response.status}`);
-      }
-
-      const blob = await response.blob();
-      currentBlobUrl = URL.createObjectURL(blob);
-      resultImage.src = currentBlobUrl;
-      resultImage.classList.remove("hidden");
-      imagePlaceholder.classList.add("hidden");
-      btnDownload.classList.remove("hidden");
-      btnDownload.disabled = false;
-
-      showStatus(`${modelName} 生成完成（${(blob.size / 1024).toFixed(0)} KB）`, "success");
       saveState();
     } catch (err) {
       console.error("[image-gen] failed:", err);
       showStatus(`生成失败：${err.message}`, "error");
-      resultImage.classList.add("hidden");
+      imageGrid.classList.add("hidden");
       imagePlaceholder.classList.remove("hidden");
       btnDownload.classList.add("hidden");
     } finally {
@@ -589,13 +729,14 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     }
   });
 
-  /* ---- Download ---- */
+  /* ---- Download all ---- */
   btnDownload.addEventListener("click", () => {
-    if (!currentBlobUrl) return;
-    const a = document.createElement("a");
-    a.href = currentBlobUrl;
-    a.download = `ai-image-${Date.now()}.png`;
-    a.click();
+    currentBlobUrls.forEach((url, i) => {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ai-image-${Date.now()}-${i + 1}.png`;
+      a.click();
+    });
   });
 
   /* ---- Ctrl+Enter shortcut ---- */

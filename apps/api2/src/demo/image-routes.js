@@ -4,7 +4,7 @@ const TASK_ENDPOINT = "https://dashscope.aliyuncs.com/api/v1/tasks";
 const MAX_PROMPT_LENGTH = 2000;
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024; // 15 MB
 const POLL_INTERVAL_MS = 3_000;
-const MAX_POLL_MS = 180_000; // 3 minutes
+const MAX_POLL_MS = 300_000; // 5 minutes
 
 /* ------------------------------------------------------------------ */
 /*  Model registry — each model declares its endpoint + capabilities  */
@@ -94,7 +94,7 @@ export function normalizeImageUrl(value) {
 /*  Helpers                                                           */
 /* ------------------------------------------------------------------ */
 
-function createRateLimiter({ maxRequests = 5, windowMs = 60_000 } = {}) {
+function createRateLimiter({ maxRequests = 15, windowMs = 60_000 } = {}) {
   const clients = new Map();
   return (key) => {
     if (maxRequests <= 0) return false;
@@ -136,22 +136,21 @@ async function pollTask(taskId, { fetchImpl, apiKey, workspaceId }) {
   throw new Error(`Task ${taskId} timed out after ${MAX_POLL_MS / 1000}s`);
 }
 
-/** Extract image URL from async task output (V1/V2/GenEdit). */
-function extractAsyncImageUrl(output) {
+/** Extract image URL from any DashScope image output format. */
+function extractImageUrl(output) {
+  // V1/V2 text2image format: output.results[].url
   const results = output?.results;
-  if (!Array.isArray(results)) return null;
-  for (const item of results) {
-    if (typeof item?.url === "string") return item.url;
+  if (Array.isArray(results)) {
+    for (const item of results) {
+      if (typeof item?.url === "string") return item.url;
+    }
   }
-  return null;
-}
-
-/** Extract image URL from sync multimodal response. */
-function extractSyncImageUrl(output) {
+  // Multimodal / GenEdit format: output.choices[].message.content[].image
   const content = output?.choices?.[0]?.message?.content;
-  if (!Array.isArray(content)) return null;
-  for (const item of content) {
-    if (typeof item?.image === "string") return item.image;
+  if (Array.isArray(content)) {
+    for (const item of content) {
+      if (typeof item?.image === "string") return item.image;
+    }
   }
   return null;
 }
@@ -179,34 +178,34 @@ function buildText2ImageBody(model, prompt, params) {
 }
 
 function buildGenEditBody(model, prompt, params) {
+  // The image-generation endpoint uses the multimodal messages format.
+  // Reference images go in input.reference_images, NOT mixed into content.
   const body = {
     model,
-    input: { prompt },
+    input: {
+      messages: [{ role: "user", content: [{ text: prompt }] }],
+    },
     parameters: { size: params.size },
   };
-  if (params.negativePrompt) body.input.negative_prompt = params.negativePrompt;
+  if (params.refImages?.length) body.input.reference_images = params.refImages;
+  if (params.negativePrompt) body.parameters.negative_prompt = params.negativePrompt;
   if (params.seed != null) body.parameters.seed = params.seed;
   if (params.n) body.parameters.n = params.n;
   if (params.thinking) body.parameters.thinking_mode = true;
-  if (params.refImages?.length) body.input.reference_images = params.refImages;
   return body;
 }
 
 function buildMultimodalBody(model, prompt, params) {
-  const textContent = [{ text: prompt }];
-  // Reference images go into message content as image_url items
-  if (params.refImages?.length) {
-    for (const url of params.refImages) {
-      textContent.push({ image_url: { url } });
-    }
-  }
+  // For the multimodal-generation endpoint, reference images go in
+  // input.image_urls (separate from the text prompt in content).
   const body = {
     model,
     input: {
-      messages: [{ role: "user", content: textContent }],
+      messages: [{ role: "user", content: [{ text: prompt }] }],
     },
     parameters: { size: params.size },
   };
+  if (params.refImages?.length) body.input.image_urls = params.refImages;
   if (params.negativePrompt) body.parameters.negative_prompt = params.negativePrompt;
   if (params.seed != null) body.parameters.seed = params.seed;
   if (params.promptExtend != null) body.parameters.prompt_extend = params.promptExtend;
@@ -225,7 +224,7 @@ function buildMultimodalBody(model, prompt, params) {
 export function createImageRouter({
   env = process.env,
   fetchImpl = globalThis.fetch,
-  maxRequests = 5,
+  maxRequests = 15,
   windowMs = 60_000,
 } = {}) {
   const router = Router();
@@ -327,6 +326,10 @@ export function createImageRouter({
       return;
     }
 
+    const t0 = Date.now();
+    const tag = `[img:${clientKey}]`;
+    console.log(`${tag} ▶ model=${modelId} size=${size} prompt="${prompt.slice(0, 60)}${prompt.length > 60 ? "…" : ""}" refs=${refImages.length}`);
+
     try {
       /* ---- build request body ---- */
       const params = {
@@ -358,9 +361,10 @@ export function createImageRouter({
       };
       if (cfg.workspaceId) headers["X-DashScope-WorkSpace"] = cfg.workspaceId;
 
-      const timeoutMs = modelCfg.async ? 30_000 : 180_000; // sync needs more time
+      const timeoutMs = modelCfg.async ? 60_000 : 180_000; // sync needs more time
       if (modelCfg.async) headers["X-DashScope-Async"] = "enable";
 
+      const tSubmit = Date.now();
       const submitResponse = await fetchImpl(modelCfg.endpoint, {
         method: "POST",
         headers,
@@ -374,6 +378,7 @@ export function createImageRouter({
       }
 
       const submitPayload = await submitResponse.json();
+      console.log(`${tag} ✓ submitted in ${Date.now() - tSubmit}ms`);
 
       /* ---- resolve image URL ---- */
       let imageUrl = null;
@@ -382,17 +387,22 @@ export function createImageRouter({
         const taskId = submitPayload?.output?.task_id;
         const taskStatus = submitPayload?.output?.task_status;
         if (taskId && taskStatus !== "SUCCEEDED") {
+          console.log(`${tag} ⏳ polling task ${taskId} (${taskStatus})`);
+          const tPoll = Date.now();
           const result = await pollTask(taskId, {
             fetchImpl,
             apiKey: cfg.apiKey,
             workspaceId: cfg.workspaceId,
+            tag,
           });
-          imageUrl = extractAsyncImageUrl(result?.output);
+          console.log(`${tag} ✓ task done in ${Date.now() - tPoll}ms`);
+          imageUrl = extractImageUrl(result?.output);
         } else {
-          imageUrl = extractAsyncImageUrl(submitPayload?.output);
+          imageUrl = extractImageUrl(submitPayload?.output);
         }
       } else {
-        imageUrl = extractSyncImageUrl(submitPayload?.output);
+        console.log(`${tag} ✓ sync response in ${Date.now() - tSubmit}ms`);
+        imageUrl = extractImageUrl(submitPayload?.output);
       }
 
       const normalizedUrl = normalizeImageUrl(imageUrl || "");
@@ -401,9 +411,10 @@ export function createImageRouter({
       }
 
       /* ---- proxy image bytes ---- */
+      const tDownload = Date.now();
       const imageResponse = await fetchImpl(normalizedUrl, {
         redirect: "error",
-        signal: AbortSignal.timeout(30_000),
+        signal: AbortSignal.timeout(60_000),
       });
       if (!imageResponse.ok) {
         throw new Error(`Image download HTTP ${imageResponse.status}`);
@@ -419,11 +430,19 @@ export function createImageRouter({
         throw new Error("Generated image has an invalid size");
       }
 
+      const totalMs = Date.now() - t0;
+      console.log(`${tag} ✓ downloaded ${(image.length / 1024).toFixed(0)}KB in ${Date.now() - tDownload}ms | total ${totalMs}ms`);
+
       res.set({
         "Content-Type": "image/png",
         "Content-Length": String(image.length),
         "Cache-Control": "no-store",
         "X-Content-Type-Options": "nosniff",
+        "X-Gen-Model": modelId,
+        "X-Gen-Total-Ms": String(totalMs),
+        "X-Gen-Submit-Ms": String(Date.now() - tSubmit),
+        "X-Gen-Download-Ms": String(Date.now() - tDownload),
+        "X-Gen-Image-KB": String(Math.round(image.length / 1024)),
       });
       res.send(image);
     } catch (error) {

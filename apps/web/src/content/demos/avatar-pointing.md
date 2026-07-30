@@ -1,5 +1,6 @@
 ---
 title: "3D 人物指向研究 · Pointing Lab"
+heroImage: "/heroes/demo/avatar-pointing.webp"
 description: "独立实验室：对比 lookAt、指向手势与 TalkingHead ikSolve，研究数字人如何指向屏幕上的目标点。"
 pubDate: "2026-07-28"
 type: external

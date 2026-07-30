@@ -1,5 +1,6 @@
 ---
 title: "民生数据大屏 · 3D 数字人导览"
+heroImage: "/heroes/demo/livelihood-dashboard-guide.webp"
 description: "透明背景 3D 数字人叠加在民生数据大屏上，Qwen 基于页面面板数据回答提问，数字人走到对应面板旁指向讲解并高亮面板。"
 pubDate: "2026-07-17"
 type: external
