@@ -247,12 +247,24 @@ const { initialRoomCode = "" } = Astro.props;
   // motion is smooth instead of teleporting one grid cell at a time.
   let renders = new Map<string, { x: number; y: number; facing: Dir }>();
   let localTarget: { x: number; y: number; facing: Dir } | null = null;
+  // Currently-held movement directions (stack; last pressed wins). Lets us
+  // glide continuously while a key is held instead of discrete step-and-wait.
+  let heldDirs: Dir[] = [];
 
-  const STEP_MS = 100; // time to glide across one cell
+  const STEP_MS = 90; // time to glide across one cell (~11 cells/sec)
   const SPEED = 1 / (STEP_MS / 1000); // cells per second (~10)
 
   const VIEW = 33; // cells visible across the canvas (odd → player centered)
-  const SIZE = canvas.width;
+  // Crisp rendering on high-DPI screens: back the canvas with device pixels but
+  // keep all drawing math in CSS pixels via ctx.scale(dpr, dpr).
+  const CSS_SIZE = canvas.width; // 660 from the HTML attribute
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.round(CSS_SIZE * dpr);
+  canvas.height = Math.round(CSS_SIZE * dpr);
+  canvas.style.width = `${CSS_SIZE}px`;
+  canvas.style.height = `${CSS_SIZE}px`;
+  ctx.scale(dpr, dpr);
+  const SIZE = CSS_SIZE;
   const cell = SIZE / VIEW;
 
   function setConn(on: boolean, text?: string) {
@@ -338,9 +350,12 @@ const { initialRoomCode = "" } = Astro.props;
   // ---- canvas rendering ----
   function camTopLeft() {
     const me = youId ? renders.get(youId) : undefined;
-    const cx = me ? me.x : Math.floor(world.w / 2);
-    const cy = me ? me.y : Math.floor(world.h / 2);
-    return { camX: cx - Math.floor(VIEW / 2), camY: cy - Math.floor(VIEW / 2) };
+    const cx = me ? me.x : world.w / 2;
+    const cy = me ? me.y : world.h / 2;
+    // Float camera (no integer floor) so the world scrolls smoothly as the
+    // eased player glides — an integer camera would jump a whole cell every
+    // half-step, which reads as a stutter.
+    return { camX: cx - VIEW / 2, camY: cy - VIEW / 2 };
   }
 
   let lastT = 0;
@@ -371,34 +386,56 @@ const { initialRoomCode = "" } = Astro.props;
     const dtSec = lastT && ts ? Math.min(0.05, (ts - lastT) / 1000) : 0;
     lastT = ts ?? 0;
     stepRenders(dtSec);
+    pumpHeld();
 
     ctx.clearRect(0, 0, SIZE, SIZE);
     const { camX, camY } = camTopLeft();
+    const sx0 = Math.floor(camX);
+    const sy0 = Math.floor(camY);
 
-    // grid + world border
+    // World playfield fill + boundary (drawn in world space so they scroll
+    // smoothly into view; the blue edge makes the map limits legible).
+    const bx = (0 - camX) * cell;
+    const by = (0 - camY) * cell;
+    const bw = world.w * cell;
+    const bh = world.h * cell;
+    ctx.fillStyle = "#eef1f6";
+    ctx.fillRect(bx, by, bw, bh);
+
     ctx.lineWidth = 1;
-    for (let ix = 0; ix <= VIEW; ix += 1) {
-      const wx = camX + ix;
+    for (let ix = 0; ix <= VIEW + 1; ix += 1) {
+      const wx = sx0 + ix;
       const inWorld = wx >= 0 && wx < world.w;
-      ctx.strokeStyle = !inWorld ? "rgba(0,0,0,0.06)" : ix % 5 === 0 ? "rgba(0,0,0,0.12)" : "rgba(0,0,0,0.06)";
-      const sx = ix * cell;
+      ctx.strokeStyle = !inWorld
+        ? "rgba(0,0,0,0.04)"
+        : wx % 5 === 0
+          ? "rgba(0,0,0,0.14)"
+          : "rgba(0,0,0,0.05)";
+      const sx = (wx - camX) * cell;
       ctx.beginPath();
       ctx.moveTo(sx, 0);
       ctx.lineTo(sx, SIZE);
       ctx.stroke();
     }
-    for (let iy = 0; iy <= VIEW; iy += 1) {
-      const wy = camY + iy;
+    for (let iy = 0; iy <= VIEW + 1; iy += 1) {
+      const wy = sy0 + iy;
       const inWorld = wy >= 0 && wy < world.h;
-      ctx.strokeStyle = !inWorld ? "rgba(0,0,0,0.06)" : iy % 5 === 0 ? "rgba(0,0,0,0.12)" : "rgba(0,0,0,0.06)";
-      const sy = iy * cell;
+      ctx.strokeStyle = !inWorld
+        ? "rgba(0,0,0,0.04)"
+        : wy % 5 === 0
+          ? "rgba(0,0,0,0.14)"
+          : "rgba(0,0,0,0.05)";
+      const sy = (wy - camY) * cell;
       ctx.beginPath();
       ctx.moveTo(0, sy);
       ctx.lineTo(SIZE, sy);
       ctx.stroke();
     }
+    ctx.strokeStyle = "rgba(43,108,255,0.55)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(bx, by, bw, bh);
 
-    // players — drawn at their eased render position (smooth glide)
+    // Players — drawn at their eased render position (smooth glide).
     for (const [uid, t] of targets) {
       const r = renders.get(uid) ?? t;
       const p = playersById.get(uid);
@@ -406,19 +443,30 @@ const { initialRoomCode = "" } = Astro.props;
       const sy = (r.y - camY + 0.5) * cell;
       if (sx < -cell || sy < -cell || sx > SIZE + cell || sy > SIZE + cell) continue;
       const rad = cell * 0.34;
-      ctx.globalAlpha = p && p.status === "disconnected" ? 0.4 : 1;
-      ctx.fillStyle = p ? p.color : "#888";
+      const color = p ? p.color : "#888";
+      const offline = !!p && p.status === "disconnected";
+
+      // soft glow body
+      ctx.save();
+      ctx.globalAlpha = offline ? 0.4 : 1;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = offline ? 0 : 10;
+      ctx.fillStyle = color;
       ctx.beginPath();
       ctx.arc(sx, sy, rad, 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
+
       // facing notch
       const d = DIR_VEC[r.facing] ?? DIR_VEC.down;
-      ctx.strokeStyle = "rgba(255,255,255,0.9)";
+      ctx.strokeStyle = "rgba(255,255,255,0.95)";
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(sx, sy);
       ctx.lineTo(sx + d.x * rad, sy + d.y * rad);
       ctx.stroke();
+
+      // local-player ring
       if (uid === youId) {
         ctx.strokeStyle = "#2b6cff";
         ctx.lineWidth = 2.5;
@@ -426,14 +474,25 @@ const { initialRoomCode = "" } = Astro.props;
         ctx.arc(sx, sy, rad + 3, 0, Math.PI * 2);
         ctx.stroke();
       }
-      // name
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = "#333";
+
+      // name pill
+      const label = p ? p.displayName : uid;
       ctx.font = "11px system-ui, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(p ? p.displayName : uid, sx, sy - rad - 4);
+      ctx.textBaseline = "middle";
+      const tw = ctx.measureText(label).width;
+      const pw = tw + 10;
+      const ph = 15;
+      const px = sx - pw / 2;
+      const py = sy - rad - 18;
+      ctx.fillStyle = "rgba(255,255,255,0.9)";
+      roundRect(ctx, px, py, pw, ph, 7);
+      ctx.fill();
+      ctx.fillStyle = "#222";
+      ctx.fillText(label, sx, py + ph / 2 + 0.5);
     }
     ctx.globalAlpha = 1;
+    ctx.textBaseline = "alphabetic";
 
     // coords HUD (grid coords, tracked on the optimistic target)
     if (localTarget) {
@@ -465,6 +524,22 @@ const { initialRoomCode = "" } = Astro.props;
     right: { x: 1, y: 0 },
   };
 
+  // Rounded-rect path helper (uses native roundRect when available).
+  function roundRect(c: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+    if (typeof (c as unknown as { roundRect?: unknown }).roundRect === "function") {
+      c.beginPath();
+      (c as unknown as { roundRect: (x: number, y: number, w: number, h: number, r: number) => void }).roundRect(x, y, w, h, r);
+      return;
+    }
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+  }
+
   // ---- input ----
   const KEY_DIR: Record<string, Dir> = {
     ArrowUp: "up",
@@ -481,24 +556,45 @@ const { initialRoomCode = "" } = Astro.props;
     D: "right",
   };
 
-  function tryMove(dir: Dir) {
-    if (!roomId || !connected || !youId) return;
-    const v = DIR_VEC[dir];
-    const r = renders.get(youId) ?? localTarget;
-    const baseX = r ? Math.round(r.x) : 0;
-    const baseY = r ? Math.round(r.y) : 0;
-    // Rate-limit: don't queue another step until the previous one has mostly
-    // rendered. This keeps motion smooth (the eased render tracks tightly
-    // behind input) instead of the target racing far ahead.
-    if (localTarget && r) {
+  // Advance the local player one grid cell in `dir`. We only command the next
+  // step once the eased render has *essentially* arrived at the current target
+  // (ahead ≤ 0.12 cells), so holding a key produces seamless, gap-free gliding
+  // instead of the old step→freeze→step cadence.
+  function step(dir: Dir) {
+    if (!roomId || !connected || !youId || !localTarget) return;
+    const r = renders.get(youId);
+    if (r) {
       const ahead = Math.abs(localTarget.x - r.x) + Math.abs(localTarget.y - r.y);
-      if (ahead > 0.6) return;
+      if (ahead > 0.12) return;
     }
-    const nx = Math.max(0, Math.min(world.w - 1, baseX + v.x));
-    const ny = Math.max(0, Math.min(world.h - 1, baseY + v.y));
-    if (nx === baseX && ny === baseY) return; // at a wall → no-op
+    const v = DIR_VEC[dir];
+    const nx = Math.max(0, Math.min(world.w - 1, localTarget.x + v.x));
+    const ny = Math.max(0, Math.min(world.h - 1, localTarget.y + v.y));
+    if (nx === localTarget.x && ny === localTarget.y) return; // wall → no-op
     localTarget = { x: nx, y: ny, facing: dir };
+    // Optimistic: drive the render target immediately. The server snapshot that
+    // follows agrees (divergence ≤ 1) and never snaps us backward — that
+    // backward snap was the original source of the jitter.
+    targets.set(youId, { ...localTarget });
     socket.move(dir);
+  }
+
+  // Pump continuous motion from currently-held keys (called each animation
+  // frame). `activeDir` is the most-recently pressed direction.
+  function activeDir(): Dir | null {
+    return heldDirs.length ? heldDirs[heldDirs.length - 1] : null;
+  }
+  function pumpHeld() {
+    const d = activeDir();
+    if (d) step(d);
+  }
+
+  function pressDir(dir: Dir) {
+    if (!heldDirs.includes(dir)) heldDirs.push(dir);
+    step(dir); // immediate first response when the key goes down
+  }
+  function releaseDir(dir: Dir) {
+    heldDirs = heldDirs.filter((d) => d !== dir);
   }
 
   window.addEventListener(
@@ -508,10 +604,53 @@ const { initialRoomCode = "" } = Astro.props;
       const dir = KEY_DIR[e.key];
       if (dir) {
         e.preventDefault();
-        tryMove(dir);
+        if (!e.repeat) pressDir(dir);
       }
     },
     { passive: false },
+  );
+  window.addEventListener("keyup", (e) => {
+    const dir = KEY_DIR[e.key];
+    if (dir) releaseDir(dir);
+  });
+  // Drop held keys if the tab loses focus, so movement doesn't "stick".
+  window.addEventListener("blur", () => {
+    heldDirs = [];
+  });
+
+  // Touch: drag on the canvas to move (dominant-axis single step, re-anchored
+  // as you keep dragging so you can wander continuously on a phone/tablet).
+  let touchAnchor: { x: number; y: number } | null = null;
+  const TOUCH_STEP = 16;
+  canvas.addEventListener(
+    "touchstart",
+    (e) => {
+      const t = e.touches[0];
+      touchAnchor = { x: t.clientX, y: t.clientY };
+    },
+    { passive: true },
+  );
+  canvas.addEventListener(
+    "touchmove",
+    (e) => {
+      if (!touchAnchor) return;
+      const t = e.touches[0];
+      const dx = t.clientX - touchAnchor.x;
+      const dy = t.clientY - touchAnchor.y;
+      if (Math.abs(dx) < TOUCH_STEP && Math.abs(dy) < TOUCH_STEP) return;
+      e.preventDefault();
+      if (Math.abs(dx) > Math.abs(dy)) step(dx > 0 ? "right" : "left");
+      else step(dy > 0 ? "down" : "up");
+      touchAnchor = { x: t.clientX, y: t.clientY }; // re-anchor for continuous drag
+    },
+    { passive: false },
+  );
+  canvas.addEventListener(
+    "touchend",
+    () => {
+      touchAnchor = null;
+    },
+    { passive: true },
   );
 
   // ---- socket wiring ----

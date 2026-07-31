@@ -1,4 +1,4 @@
-import { ChatClient, type Identity, type ChatMessage, type ServerMessage } from "./chatClient";
+import { ChatClient, type Identity, type ChatMessage, type ServerMessage, PUBLIC_GROUP } from "./chatClient";
 
 type Channel = string;
 
@@ -10,10 +10,11 @@ type Channel = string;
 class ChatWidget {
   private root!: HTMLElement;
   private client = new ChatClient();
-  private activeChannel: Channel = "public";
+  private activeChannel: Channel = PUBLIC_GROUP;
   private messages = new Map<Channel, ChatMessage[]>();
   private peerNames = new Map<string, string>();
   private publicPresence: Identity[] = [];
+  private presenceKey = "";
   private contextGroup: string | null = null;
 
   // DOM refs
@@ -54,8 +55,6 @@ class ChatWidget {
     this.launcher.addEventListener("click", () => this.toggle());
     (this.root.querySelector(".ln-close") as HTMLElement).addEventListener("click", () => this.toggle(false));
     (this.root.querySelector(".ln-add-group") as HTMLElement).addEventListener("click", () => this.promptGroup());
-    (this.root.querySelector(".ln-add-dm") as HTMLElement).addEventListener("click", () => this.pickDm());
-    this.root.querySelector(".ln-ch-public")?.addEventListener("click", () => this.switchChannel("public"));
     (this.root.querySelector(".ln-composer") as HTMLFormElement).addEventListener("submit", (e) => {
       e.preventDefault();
       this.submit();
@@ -102,6 +101,10 @@ class ChatWidget {
       ? `游客: ${you.name} (点击改名)`
       : `${you.name} · 已登录`;
     this.meChip.title = you.isGuest ? "点击设置游客昵称" : "已登录用户";
+    // Group creation is for logged-in users only. The "+ 群组" button is hidden
+    // for guests (game-room groups still join programmatically via setContext).
+    const gb = this.root.querySelector(".ln-add-group") as HTMLElement | null;
+    if (gb) gb.style.display = you.isGuest ? "none" : "";
   }
 
   private onMessage(m: ServerMessage) {
@@ -111,8 +114,8 @@ class ChatWidget {
         this.client.channels = m.channels as any;
         this.renderMe();
         this.renderChannelList();
-        this.loadInto("public", (m.publicHistory as ChatMessage[]) || []);
-        if (this.activeChannel === "public") this.renderMessages();
+        this.loadInto(PUBLIC_GROUP, (m.publicHistory as ChatMessage[]) || []);
+        if (this.activeChannel === PUBLIC_GROUP) this.renderMessages();
         break;
       case "chat.message": {
         const msg = m as unknown as ChatMessage;
@@ -143,9 +146,17 @@ class ChatWidget {
         this.renderMe();
         break;
       case "chat.presence":
-        if (m.channel === "public") {
-          this.publicPresence = (m.users as Identity[]) || [];
+        if (m.channel === PUBLIC_GROUP) {
+          const users = (m.users as Identity[]) || [];
+          // Only rebuild the sidebar when the *online set* actually changes.
+          // Re-rendering on every tick would detach the very node a user is
+          // mid-click (the DM row they're about to open), breaking interaction.
+          const key = users.map((u) => u.userId).sort().join("|");
+          if (key === this.presenceKey) break;
+          this.presenceKey = key;
+          this.publicPresence = users;
           this.publicPresence.forEach((u) => this.rememberPeer(u));
+          this.renderChannelList();
         }
         break;
       case "chat.error":
@@ -190,40 +201,74 @@ class ChatWidget {
 
   private renderChannelList() {
     this.chList = [];
-    const publicEl = this.root.querySelector(".ln-ch-public") as HTMLElement;
-    publicEl.classList.toggle("active", this.activeChannel === "public");
-    this.chList.push(publicEl);
 
     this.groupsEl.innerHTML = "";
     for (const g of this.client.channels.groups) {
+      const isPublic = g === PUBLIC_GROUP;
       const el = document.createElement("div");
       el.className = "ch" + (g === this.activeChannel ? " active" : "");
       el.dataset.ch = g;
       const label = document.createElement("span");
       label.className = "ch-label-text";
-      label.textContent = "👥 " + g.replace(/^group:/, "");
+      // The public group reads as a pinned "公共聊天" inside the 群组 list —
+      // it is a reserved group, not a separate channel kind.
+      label.textContent = isPublic ? "💬 公聊" : "👥 " + g.replace(/^group:/, "");
       el.appendChild(label);
-      const x = this.makeLeaveBtn();
-      x.addEventListener("click", (e) => { e.stopPropagation(); this.removeChannel(g); });
-      el.appendChild(x);
+      // The public group can't be left; only regular groups show the ✕.
+      if (!isPublic) {
+        const x = this.makeLeaveBtn();
+        x.addEventListener("click", (e) => { e.stopPropagation(); this.removeChannel(g); });
+        el.appendChild(x);
+      }
       el.addEventListener("click", () => this.switchChannel(g));
       this.groupsEl.appendChild(el);
       this.chList.push(el);
     }
 
+    this.renderDmList();
+  }
+
+  /**
+   * Render the 私聊 section. Online users (from the public group's presence)
+   * are shown directly and clickable to start/open a DM — no "add" step. Active
+   * DM threads are merged in (deduped by peer); threads whose peer is offline
+   * are still listed so they aren't lost.
+   */
+  private renderDmList() {
     this.dmsEl.innerHTML = "";
+    const me = this.client.you?.userId;
+    const byPeer = new Map<string, { name: string; online: boolean; dm?: string }>();
+    for (const u of this.publicPresence) {
+      if (u.userId === me) continue;
+      byPeer.set(u.userId, { name: u.name || u.userId, online: true });
+    }
     for (const d of this.client.channels.dms) {
+      const ids = d.replace(/^dm:/, "").split(":");
+      const peer = ids.find((x) => x !== me) || ids[0];
+      const cur = byPeer.get(peer);
+      if (cur) cur.dm = d;
+      else byPeer.set(peer, { name: this.peerNames.get(peer) || peer, online: false, dm: d });
+    }
+    for (const [peer, info] of byPeer) {
+      const ch = info.dm;
+      const isActive = ch != null && ch === this.activeChannel;
       const el = document.createElement("div");
-      el.className = "ch" + (d === this.activeChannel ? " active" : "");
-      el.dataset.ch = d;
+      el.className = "ch" + (isActive ? " active" : "");
+      if (ch) el.dataset.ch = ch;
+      el.dataset.peer = peer;
       const label = document.createElement("span");
       label.className = "ch-label-text";
-      label.textContent = "🔒 " + this.dmLabel(d);
+      label.textContent = (ch ? "🔒 " : "👤 ") + info.name + (info.online ? "" : " (离线)");
       el.appendChild(label);
-      const x = this.makeLeaveBtn();
-      x.addEventListener("click", (e) => { e.stopPropagation(); this.removeChannel(d); });
-      el.appendChild(x);
-      el.addEventListener("click", () => this.switchChannel(d));
+      if (ch) {
+        const x = this.makeLeaveBtn();
+        x.addEventListener("click", (e) => { e.stopPropagation(); this.removeChannel(ch); });
+        el.appendChild(x);
+      }
+      el.addEventListener("click", () => {
+        if (ch) this.switchChannel(ch);
+        else this.startDm({ userId: peer, name: info.name });
+      });
       this.dmsEl.appendChild(el);
       this.chList.push(el);
     }
@@ -247,13 +292,18 @@ class ChatWidget {
   /** Leave a group (server-side) or just hide a DM thread (client-side). */
   private removeChannel(ch: Channel) {
     const wasActive = this.activeChannel === ch;
+    // The public group is reserved and can't be left.
+    if (ch === PUBLIC_GROUP) {
+      this.renderChannelList();
+      return;
+    }
     if (ch.startsWith("group:")) {
       this.client.leaveGroup(ch);
       this.client.channels.groups = this.client.channels.groups.filter((x) => x !== ch);
     } else if (ch.startsWith("dm:")) {
       this.client.channels.dms = this.client.channels.dms.filter((x) => x !== ch);
     }
-    if (wasActive) this.switchChannel("public");
+    if (wasActive) this.switchChannel(PUBLIC_GROUP);
     else this.renderChannelList();
   }
 
@@ -295,6 +345,12 @@ class ChatWidget {
 
   // ---- group / dm flows ----
   private promptGroup() {
+    // Only logged-in users may create a group. Guests see no button, but guard
+    // here too in case the handler is ever reached via another path.
+    if (this.client.you?.isGuest) {
+      this.flash("请先登录后再创建群组");
+      return;
+    }
     const id = window.prompt("输入群组 ID（例如 room-abc123）", this.contextGroup ? this.contextGroup.replace(/^group:/, "") : "");
     if (!id || !id.trim()) return;
     const ch = "group:" + id.trim().replace(/^group:/, "").slice(0, 64);
@@ -303,30 +359,13 @@ class ChatWidget {
     this.switchChannel(ch);
   }
 
-  private pickDm() {
-    if (this.publicPresence.length === 0) {
-      this.flash("暂时没有在线用户列表");
-      return;
-    }
-    const me = this.client.you?.userId;
-    const options = this.publicPresence
-      .filter((u) => u.userId !== me)
-      .map((u, i) => `${i + 1}. ${u.name} (${u.userId})`)
-      .join("\n");
-    const pick = window.prompt(`选择私聊对象（输入序号）:\n${options}`, "1");
-    if (!pick) return;
-    const idx = Number(pick) - 1;
-    const u = this.publicPresence.filter((x) => x.userId !== me)[idx];
-    if (!u) return;
-    this.startDm(u);
-  }
-
   private startDm(peer: Identity) {
     this.rememberPeer(peer);
     const me = this.client.you?.userId || "";
     const ch = "dm:" + [me, peer.userId].sort().join(":");
     if (!this.client.channels.dms.includes(ch)) this.client.channels.dms.push(ch);
     this.renderChannelList();
+    this.client.joinDm(ch); // notify server so the peer sees the thread immediately
     this.switchChannel(ch);
   }
 
@@ -355,7 +394,9 @@ class ChatWidget {
     this.banner.setAttribute("hidden", "");
     this.banner.textContent = "";
     this.client.channels.groups = this.client.channels.groups.filter((x) => x !== g);
-    this.renderChannelList();
+    // Don't leave the user stranded on a channel they just left.
+    if (this.activeChannel === g) this.switchChannel(PUBLIC_GROUP);
+    else this.renderChannelList();
   }
 
   private flash(text: string) {
@@ -381,14 +422,12 @@ const TEMPLATE = `
     <div class="ln-flash" hidden></div>
     <div class="ln-chat-body">
       <div class="ln-channels">
-        <div class="ch ln-ch-public active">💬 公聊</div>
         <div class="ch-label">群组</div>
         <div class="ln-groups"></div>
         <div class="ch-label">私聊</div>
         <div class="ln-dms"></div>
         <div class="ch-actions">
           <button class="ln-add-group">+ 群组</button>
-          <button class="ln-add-dm">+ 私聊</button>
         </div>
       </div>
       <div class="ln-main">

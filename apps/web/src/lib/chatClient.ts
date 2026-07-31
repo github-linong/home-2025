@@ -5,6 +5,9 @@ export type Identity = {
   isGuest: boolean;
 };
 
+/** The reserved, openly-joinable public group. Mirrors the server's registry. */
+export const PUBLIC_GROUP = "group:public";
+
 export type ChatMessage = {
   id: string;
   channel: string;
@@ -31,8 +34,7 @@ export class ChatClient {
   private ws: WebSocket | null = null;
   connected = false;
   you: Identity | null = null;
-  channels: { public: true; groups: string[]; dms: string[] } = {
-    public: true,
+  channels: { groups: string[]; dms: string[] } = {
     groups: [],
     dms: [],
   };
@@ -117,6 +119,11 @@ export class ChatClient {
       this.ws.onmessage = (ev) => {
         try {
           const msg = JSON.parse(String(ev.data)) as ServerMessage;
+          // Server-driven liveness: answer pings so idle connections aren't killed.
+          if (msg.type === "chat.ping") {
+            this.send("chat.pong");
+            return;
+          }
           if (msg.type === "chat.welcome") {
             if (!settled) {
               settled = true;
@@ -174,6 +181,10 @@ export class ChatClient {
     this.send("chat.message", { channel, text, clientMsgId });
   }
   joinGroup(channel: string) {
+    this.send("chat.join", { channel });
+  }
+  /** Open a DM thread: tells the server so the peer's UI surfaces the channel. */
+  joinDm(channel: string) {
     this.send("chat.join", { channel });
   }
   leaveGroup(channel: string) {

@@ -80,7 +80,7 @@ test("public messages broadcast to all connected clients", async () => {
   a.send("chat.message", { channel: "public", text: "hello world", clientMsgId: "c1" });
   const got = await b.waitFor((m) => m.type === "chat.message" && m.text === "hello world");
   assert.equal(got.author.userId, "alice");
-  assert.equal(got.channel, "public");
+  assert.equal(got.channel, "group:public");
 
   await sleep(50);
   const ack = a.received.find((m) => m.type === "chat.ack" && m.clientMsgId === "c1");

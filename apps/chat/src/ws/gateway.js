@@ -12,6 +12,7 @@ import {
 } from "../auth/session.js";
 import { checkRateLimit } from "../rate-limit/limiter.js";
 import * as registry from "../chat/registry.js";
+import { PUBLIC_GROUP, normalizeChannel } from "../chat/registry.js";
 import * as store from "../store.js";
 import { log } from "../logging/logger.js";
 
@@ -122,12 +123,13 @@ export function createGateway(server) {
     safeSend(ws, {
       type: "chat.welcome",
       you: identity,
-      channels: { public: true, groups: channels.groups, dms: channels.dms },
-      publicHistory: store.getHistory("public", 50),
+      channels: { groups: channels.groups, dms: channels.dms },
+      publicHistory: store.getHistory(PUBLIC_GROUP, 50),
       serverTime: Date.now(),
     });
 
     ws.on("message", (raw) => {
+      lastPing = Date.now(); // any inbound traffic (incl. client ping/pong) keeps the socket alive
       let msg;
       try {
         msg = JSON.parse(String(raw));
@@ -182,11 +184,32 @@ async function handle(connId, ws, msg, ip, getIdentity) {
       safeSend(ws, {
         type: "chat.joined",
         channel: ch,
-        channels: { public: true, groups: after.groups, dms: after.dms },
+        channels: { groups: after.groups, dms: after.dms },
         history: store.getHistory(ch, 50),
       });
+    } else if (typeof ch === "string" && DM_CHANNEL_RE.test(ch)) {
+      // Opening a DM notifies the peer immediately (so their UI shows the
+      // thread even before any message is sent), and confirms membership to self.
+      const parts = ch.slice(3).split(":");
+      let peerId;
+      if (parts[0] === identity.userId) peerId = parts[1];
+      else if (parts[1] === identity.userId) peerId = parts[0];
+      else {
+        safeSend(ws, { type: "chat.error", code: "INVALID_PEER", message: "私聊对象无效" });
+        return;
+      }
+      const resolved = `dm:${[parts[0], parts[1]].sort().join(":")}`;
+      registry.rememberDm(identity.userId, resolved);
+      registry.touchDmForUser(peerId, resolved); // tell the recipient's live clients
+      const after = registry.connChannels(connId);
+      safeSend(ws, {
+        type: "chat.joined",
+        channel: resolved,
+        channels: { groups: after.groups, dms: after.dms },
+        history: store.getHistory(resolved, 50),
+      });
     } else {
-      safeSend(ws, { type: "chat.error", code: "INVALID_CHANNEL", message: "仅支持 group:<id> 形式的群组" });
+      safeSend(ws, { type: "chat.error", code: "INVALID_CHANNEL", message: "仅支持 group:<id> 或 dm:<a>:<b> 形式" });
     }
     return;
   }
@@ -199,7 +222,7 @@ async function handle(connId, ws, msg, ip, getIdentity) {
       safeSend(ws, {
         type: "chat.left",
         channel: ch,
-        channels: { public: true, groups: after.groups, dms: after.dms },
+        channels: { groups: after.groups, dms: after.dms },
       });
     }
     return;
@@ -208,12 +231,13 @@ async function handle(connId, ws, msg, ip, getIdentity) {
   if (type === "chat.history") {
     const ch = msg.channel;
     if (typeof ch !== "string") return;
-    if (ch !== "public" && !registry.isMember(connId, ch)) {
+    const norm = normalizeChannel(ch);
+    if (norm !== PUBLIC_GROUP && !registry.isMember(connId, norm)) {
       safeSend(ws, { type: "chat.error", code: "FORBIDDEN", message: "无权查看该频道历史" });
       return;
     }
     const limit = Number(msg.limit) || 50;
-    safeSend(ws, { type: "chat.history", channel: ch, messages: store.getHistory(ch, Math.min(limit, 200)) });
+    safeSend(ws, { type: "chat.history", channel: norm, messages: store.getHistory(norm, Math.min(limit, 200)) });
     return;
   }
 
@@ -229,9 +253,9 @@ async function handle(connId, ws, msg, ip, getIdentity) {
       return;
     }
 
-    let resolved = "public";
-    if (channel === "public") {
-      resolved = "public";
+    let resolved = PUBLIC_GROUP;
+    if (channel === "public" || channel === PUBLIC_GROUP) {
+      resolved = PUBLIC_GROUP;
     } else if (channel.startsWith("group:")) {
       if (!GROUP_RE.test(channel)) {
         safeSend(ws, { type: "chat.error", code: "INVALID_CHANNEL", message: "群组频道格式错误" });

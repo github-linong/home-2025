@@ -2,7 +2,12 @@
  * Connection + channel + presence registry for the chat service.
  *
  * Channel kinds:
- *  - "public"            : everyone is implicitly a member; broadcast to all.
+ *  - "group:public"      : a RESERVED, openly-joinable group that every
+ *                          connection is auto-joined to on connect. It behaves
+ *                          exactly like a normal group (membership, presence,
+ *                          history) — there is no bespoke "public" code path.
+ *                          The legacy string "public" is aliased to it via
+ *                          `normalizeChannel` for back-compat.
  *  - "group:<id>"        : explicit join/leave; messages to joined members only.
  *  - "dm:<a>:<b>"        : canonical 1:1 channel; delivered to BOTH participants'
  *                          connections (resolved via userConns), regardless of
@@ -21,6 +26,17 @@ const userDms = new Map(); // userId -> Set<dmChannel> (remembered for welcome/h
 
 const presenceTimers = new Map(); // channel -> timeout
 
+/**
+ * Public chat is modeled as an openly-joinable group rather than a separate
+ * channel kind. Every connection is auto-joined to it on connect, so it behaves
+ * like a normal group (membership, presence, history) — no bespoke "public"
+ * code path. The legacy channel id "public" is aliased to this for back-compat.
+ */
+export const PUBLIC_GROUP = "group:public";
+export function normalizeChannel(channel) {
+  return channel === "public" ? PUBLIC_GROUP : channel;
+}
+
 function send(ws, obj) {
   try {
     if (ws.readyState === 1) ws.send(JSON.stringify(obj));
@@ -38,7 +54,9 @@ export function registerConn(connId, ws, identity, ip) {
   }
   set.add(connId);
   userIdentities.set(identity.userId, identity);
-  schedulePresence("public");
+  // Everyone is implicitly a member of the public group on connect — it lives
+  // in the 群组 list like any other group, no special-casing elsewhere.
+  joinGroup(connId, PUBLIC_GROUP);
 }
 
 export function removeConn(connId) {
@@ -60,7 +78,7 @@ export function removeConn(connId) {
       if (g.size === 0) groupMembers.delete(ch);
     }
   }
-  schedulePresence("public");
+  schedulePresence(PUBLIC_GROUP);
 }
 
 export function updateIdentity(connId, identity) {
@@ -121,17 +139,14 @@ export function touchDmForUser(userId, channel) {
     send(c.ws, {
       type: "chat.joined",
       channel,
-      channels: { public: true, groups: ch.groups, dms: ch.dms },
+      channels: { groups: ch.groups, dms: ch.dms },
       history: [],
     });
   }
 }
 
 export function sendToChannel(channel, payload, excludeConnId = null) {
-  if (channel === "public") {
-    for (const [id, c] of conns) if (id !== excludeConnId) send(c.ws, payload);
-    return;
-  }
+  channel = normalizeChannel(channel);
   if (channel.startsWith("group:")) {
     const g = groupMembers.get(channel);
     if (!g) return;
@@ -169,9 +184,7 @@ function distinctIdentities(connIdSet) {
 }
 
 export function presenceFor(channel) {
-  if (channel === "public") {
-    return [...userIdentities.values()];
-  }
+  channel = normalizeChannel(channel);
   if (channel.startsWith("group:")) {
     return distinctIdentities(groupMembers.get(channel) ?? new Set());
   }
@@ -183,7 +196,7 @@ export function presenceFor(channel) {
 }
 
 export function channelMemberCount(channel) {
-  if (channel === "public") return conns.size;
+  channel = normalizeChannel(channel);
   if (channel.startsWith("group:")) return groupMembers.get(channel)?.size ?? 0;
   if (channel.startsWith("dm:")) {
     const ids = channel.slice(3).split(":");
@@ -216,7 +229,14 @@ export function getConn(connId) {
 export function connChannels(connId) {
   const c = conns.get(connId);
   if (!c) return { groups: [], dms: [] };
-  return { groups: [...c.groupChannels], dms: [...(userDms.get(c.identity.userId) ?? [])] };
+  const groups = [...c.groupChannels];
+  // Pin the public group to the top of the list so it always reads first.
+  const pi = groups.indexOf(PUBLIC_GROUP);
+  if (pi > 0) {
+    groups.splice(pi, 1);
+    groups.unshift(PUBLIC_GROUP);
+  }
+  return { groups, dms: [...(userDms.get(c.identity.userId) ?? [])] };
 }
 
 export function connIdentity(connId) {
@@ -226,7 +246,7 @@ export function connIdentity(connId) {
 export function isMember(connId, channel) {
   const c = conns.get(connId);
   if (!c) return false;
-  if (channel === "public") return true;
+  channel = normalizeChannel(channel);
   if (channel.startsWith("group:")) return c.groupChannels.has(channel);
   if (channel.startsWith("dm:")) {
     const ids = channel.slice(3).split(":");

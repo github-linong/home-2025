@@ -3,6 +3,7 @@ import { config } from "./config.js";
 import { createGateway } from "./ws/gateway.js";
 import * as store from "./store.js";
 import { log } from "./logging/logger.js";
+import { normalizeChannel, PUBLIC_GROUP } from "./chat/registry.js";
 
 const startTime = Date.now();
 
@@ -24,8 +25,9 @@ export function createApp() {
 
     // Recent history over REST (handy for initial load / SEO / non-WS clients).
     if (url.pathname === "/api/chat/history") {
-      const channel = url.searchParams.get("channel") || "public";
+      const reqChannel = url.searchParams.get("channel") || "public";
       const limit = Number(url.searchParams.get("limit") || 50);
+      const channel = normalizeChannel(reqChannel);
       if (!CHANNEL_RE.test(channel)) {
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ ok: false, error: "INVALID_CHANNEL" }));

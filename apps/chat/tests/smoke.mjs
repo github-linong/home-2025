@@ -87,7 +87,7 @@ async function main() {
     a.send("chat.message", { channel: "public", text: "hello world", clientMsgId: "c1" });
     const got = await b.waitFor((m) => m.type === "chat.message" && m.text === "hello world");
     check(got.author.userId === "alice", "author is alice");
-    check(got.channel === "public", "channel is public");
+    check(got.channel === "group:public", "channel is group:public");
     const ack = a.received.find((m) => m.type === "chat.ack" && m.clientMsgId === "c1");
     check(!!ack, "sender got ack");
     a.ws.close();

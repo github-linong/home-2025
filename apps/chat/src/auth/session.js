@@ -1,5 +1,4 @@
 import { config } from "../config.js";
-import { randomBytes } from "node:crypto";
 
 /**
  * Per-connection session cache. For chat, auth is *optional*: a verified
@@ -60,8 +59,13 @@ export async function verifyWithApi2(cookieHeader, opts = {}) {
     const fromCookie = parseCookie(cookieHeader, "chat_dev_uid");
     const devUserId =
       (fromQuery && /^[\w-]{2,64}$/.test(fromQuery) && fromQuery) ||
-      (fromCookie && /^[\w-]{2,64}$/.test(fromCookie) && fromCookie) ||
-      `dev_${randomBytes(4).toString("hex")}`;
+      (fromCookie && /^[\w-]{2,64}$/.test(fromCookie) && fromCookie);
+    // Explicit dev identity (?devUserId= or chat_dev_uid cookie) => logged-in Dev
+    // user, so logged-in-only features can be exercised locally. With no dev id
+    // supplied, behave like a NORMAL anonymous guest — the default local dev
+    // experience should match the real unauthenticated user (a temporary user),
+    // not a fake "已登录".
+    if (!devUserId) return null;
     return {
       userId: devUserId,
       user: {
