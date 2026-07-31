@@ -228,6 +228,8 @@
   }
 
   function clearLocalRoomUi() {
+    (window as any).LN_CHAT_CONTEXT = null;
+    (window as any).__lnChat?.clearContext();
     gamePanel.classList.add("hidden");
     lobbyPanel.classList.remove("hidden");
     roomInfo.classList.add("hidden");
@@ -472,6 +474,9 @@
     if (room.roomCode) {
       displayRoomCode.textContent = `${room.roomCode}${acting}`;
       gameRoomCode.textContent = `${room.roomCode}${acting}`;
+      // Bind the chat widget to this room's group channel (group:<roomCode>).
+      (window as any).LN_CHAT_CONTEXT = "group:" + room.roomCode;
+      (window as any).__lnChat?.setContext("group:" + room.roomCode);
     }
     syncOwnerControls();
   }

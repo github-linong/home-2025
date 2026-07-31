@@ -1,0 +1,90 @@
+---
+// Global chat widget. Rendered once in BaseLayout and persisted across Astro
+// page transitions via `transition:persist`, so the WS connection survives nav.
+---
+
+<div id="ln-chat-root" transition:persist="ln-chat"></div>
+
+<style is:global>
+  #ln-chat-root {
+    --ln-p: #570df8;
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 60;
+    font-size: 14px;
+  }
+  .ln-chat-launcher {
+    width: 3.25rem; height: 3.25rem; border-radius: 9999px; border: none;
+    cursor: pointer; font-size: 1.4rem; background: var(--ln-p); color: #fff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  }
+  .ln-chat-panel {
+    position: absolute; right: 0; bottom: 4rem;
+    width: min(92vw, 380px); height: min(78vh, 620px);
+    display: flex; flex-direction: column;
+    background: #ffffff; color: #1f2937;
+    border: 1px solid #e5e7eb; border-radius: 0.75rem;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25); overflow: hidden;
+  }
+  .ln-chat-header {
+    display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem;
+    background: var(--ln-p); color: #fff;
+  }
+  .ln-dot { width: 0.6rem; height: 0.6rem; border-radius: 9999px; background: #f87171; }
+  .ln-dot.online { background: #4ade80; }
+  .ln-title { font-weight: 700; }
+  .ln-ctx-banner { font-size: 0.72rem; background: rgba(255,255,255,0.2); padding: 0.1rem 0.4rem; border-radius: 0.25rem; }
+  .ln-spacer { flex: 1; }
+  .ln-me { font-size: 0.72rem; cursor: default; opacity: 0.95; }
+  .ln-me[title]:hover { text-decoration: underline; cursor: pointer; }
+  .ln-close { background: transparent; border: none; color: #fff; cursor: pointer; font-size: 1rem; }
+  .ln-flash { background: #fde68a; color: #78350f; font-size: 0.75rem; padding: 0.25rem 0.75rem; text-align: center; }
+  .ln-chat-body { flex: 1; display: flex; min-height: 0; }
+  .ln-channels {
+    width: 8.5rem; flex-shrink: 0; border-right: 1px solid #e5e7eb;
+    padding: 0.4rem; overflow-y: auto; background: #f8fafc;
+  }
+  .ln-channels .ch { padding: 0.3rem 0.4rem; border-radius: 0.4rem; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
+  .ln-channels .ch .ch-label-text { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  .ln-channels .ch-x { font-size: 0.7rem; opacity: 0.55; padding: 0 0.15rem; border-radius: 0.25rem; }
+  .ln-channels .ch-x:hover { opacity: 1; background: rgba(127, 127, 127, 0.25); }
+  .ln-channels .ch:hover { background: var(--ln-p); color: #fff; }
+  .ln-channels .ch.active { background: var(--ln-p); color: #fff; }
+  .ln-channels .ch.unread { font-weight: 700; }
+  .ln-channels .ch-label { font-size: 0.7rem; opacity: 0.6; margin: 0.5rem 0 0.2rem; }
+  .ln-channels .ch-actions { margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  .ln-channels .ch-actions button { font-size: 0.72rem; border: 1px solid #e5e7eb; border-radius: 0.4rem; padding: 0.2rem; cursor: pointer; background: #fff; }
+  .ln-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .ln-messages { flex: 1; overflow-y: auto; padding: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem; background: #ffffff; }
+  .ln-composer { display: flex; gap: 0.4rem; padding: 0.5rem; border-top: 1px solid #e5e7eb; background: #ffffff; }
+  .ln-input { flex: 1; border: 1px solid #e5e7eb; border-radius: 0.4rem; padding: 0.4rem 0.6rem; background: #fff; color: #1f2937; }
+  .ln-send { border: none; border-radius: 0.4rem; padding: 0.4rem 0.8rem; background: var(--ln-p); color: #fff; cursor: pointer; }
+  .chat { max-width: 100%; }
+  .chat-bubble {
+    max-width: 85%; white-space: pre-wrap; word-break: break-word;
+    background: #f1f5f9; color: #1f2937; padding: 0.4rem 0.7rem; border-radius: 0.75rem;
+  }
+  .chat-bubble-primary { background: var(--ln-p); color: #fff; }
+  .chat-header { font-size: 0.7rem; opacity: 0.7; margin-bottom: 0.1rem; }
+
+  @media (prefers-color-scheme: dark) {
+    .ln-chat-panel { background: #1f2937; color: #f3f4f6; border-color: #374151; }
+    .ln-channels { background: #111827; border-right-color: #374151; }
+    .ln-channels .ch-actions button { background: #1f2937; border-color: #374151; color: #f3f4f6; }
+    .ln-messages, .ln-composer { background: #1f2937; }
+    .ln-input { background: #111827; border-color: #374151; color: #f3f4f6; }
+    .chat-bubble { background: #374151; color: #f3f4f6; }
+  }
+</style>
+
+<script>
+  import { ChatWidget } from "../lib/chatWidget";
+  ChatWidget.mount();
+  // Re-bind context after Astro page transitions (the root is persisted, but
+  // other pages may set a new game-room context on load).
+  document.addEventListener("astro:page-load", () => {
+    const existing = (window as any).LN_CHAT_CONTEXT;
+    if (existing && (window as any).__lnChat) (window as any).__lnChat.setContext(existing);
+  });
+</script>

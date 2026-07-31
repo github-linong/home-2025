@@ -4,6 +4,7 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import SideBar from "../components/SideBar.astro";
 import SystemNotice from "../components/SystemNotice.astro";
+import ChatWidget from "../components/ChatWidget.astro";
 import { ViewTransitions } from "astro:transitions";
 import { getCollection } from "astro:content";
 import createSlug from "../lib/createSlug";
@@ -74,5 +75,6 @@ const {
         />
       )}
     </div>
+    <ChatWidget />
   </body>
 </html>

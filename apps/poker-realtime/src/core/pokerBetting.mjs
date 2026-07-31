@@ -1,52 +1,7 @@
-const PLAYERS = ["player", "ai"];
-
-export function otherPlayer(player) {
-  if (!PLAYERS.includes(player)) throw new RangeError("Unknown player.");
-  return player === "player" ? "ai" : "player";
-}
-
-export function blindPositions(dealer) {
-  return {
-    smallBlind: dealer,
-    bigBlind: otherPlayer(dealer),
-  };
-}
-
-export function firstToAct(dealer, street) {
-  return street === "preflop" ? dealer : otherPlayer(dealer);
-}
-
-export function getRaiseBounds({
-  player,
-  stacks,
-  streetBets,
-  currentBet,
-  lastRaise,
-}) {
-  const callAmount = Math.max(0, currentBet - streetBets[player]);
-  const maximum = streetBets[player] + stacks[player];
-  const minimum = currentBet === 0 ? lastRaise : currentBet + lastRaise;
-
-  return {
-    callAmount: Math.min(callAmount, stacks[player]),
-    fullCallAmount: callAmount,
-    minimum,
-    maximum,
-    canRaise: maximum > currentBet,
-    canFullRaise: maximum >= minimum,
-  };
-}
-
-export function settleUncalledBets(totalBets) {
-  const matched = Math.min(totalBets.player, totalBets.ai);
-  return {
-    contestedPot: matched * 2,
-    refunds: {
-      player: totalBets.player - matched,
-      ai: totalBets.ai - matched,
-    },
-  };
-}
+// Server-authoritative betting helpers used by match/hand-engine.js.
+// Single-player / heads-up-only helpers (otherPlayer, blindPositions, firstToAct,
+// the two-player getRaiseBounds, settleUncalledBets) were removed; hand-engine
+// implements all multiway logic directly.
 
 /**
  * Multiway: refund chips that exceed the second-highest totalBet before showdown.

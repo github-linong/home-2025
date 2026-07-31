@@ -19,8 +19,16 @@ if (!databaseUrl) {
 
 const schemaSql = readFileSync(join(__dirname, "schema.sql"), "utf8");
 const schemaIpaSql = readFileSync(join(__dirname, "schema-ipa.sql"), "utf8");
-const seed = JSON.parse(readFileSync(join(__dirname, "seed.json"), "utf8"));
+const seedBase = JSON.parse(readFileSync(join(__dirname, "seed.json"), "utf8"));
+const seedTech = JSON.parse(readFileSync(join(__dirname, "seed-tech.json"), "utf8"));
 const seedIpa = JSON.parse(readFileSync(join(__dirname, "seed-ipa.json"), "utf8"));
+
+/** Later files win on duplicate word lemmas; decks/passages are keyed by slug. */
+const seed = {
+  decks: [...seedBase.decks, ...seedTech.decks],
+  words: [...seedBase.words, ...seedTech.words],
+  passages: [...seedBase.passages, ...seedTech.passages],
+};
 
 const client = new pg.Client({ connectionString: databaseUrl });
 await client.connect();

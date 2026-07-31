@@ -1,8 +1,18 @@
 ---
 /**
- * English learning board: flashcards + IPA chart + passage reading.
- * Content comes from api2 `/api/learn/*`; progress lives in localStorage.
+ * English learning board: daily words + flashcards + IPA chart + passage reading.
+ *
+ * The 每日 5 词 panel is rendered server-side from static data so it works (and
+ * indexes) even when api2 is down; the other three panels need `/api/learn/*`.
+ * Progress lives in localStorage.
  */
+import { DAILY_WORDS, SCENE_LABEL } from "../data/daily-words";
+import { pickDailyWords, cycleInfo, localDayKey } from "../lib/learn/daily";
+
+const dayKey = localDayKey();
+const dailyWords = pickDailyWords(dayKey);
+const { day, totalDays } = cycleInfo(dayKey);
+const poolSize = DAILY_WORDS.length;
 ---
 
 <div class="learn-board not-prose" data-learn-english>
@@ -11,7 +21,7 @@
     <div class="lb-hero-copy">
       <p class="lb-eyebrow"><span class="lb-aa" aria-hidden="true">Aa</span>ENGLISH · POCKET DECK</p>
       <h1 class="lb-title">学英语 <span class="lb-title-en">Vocabulary Notebook</span></h1>
-      <p class="lb-sub">闪卡 · 国际音标 · 短文查词 — 进度保存在本机浏览器</p>
+      <p class="lb-sub">每日 5 词 · 闪卡 · 国际音标 · 短文查词 — 进度保存在本机浏览器</p>
     </div>
     <div class="lb-stats" data-stats hidden>
       <div class="lb-stat lb-stat-good"><b data-stat-known>0</b><span>已掌握</span></div>
@@ -22,12 +32,13 @@
 
   <!-- ── Tabs ─────────────────────────────────────────────── -->
   <nav class="lb-tabs" role="tablist" aria-label="学习模块">
-    <button type="button" role="tab" class="lb-tab is-active" data-learn-tab="flashcards" aria-selected="true">🃏 单词闪卡</button>
+    <button type="button" role="tab" class="lb-tab is-active" data-learn-tab="daily" aria-selected="true">☕ 每日 5 词</button>
+    <button type="button" role="tab" class="lb-tab" data-learn-tab="flashcards" aria-selected="false">🃏 单词闪卡</button>
     <button type="button" role="tab" class="lb-tab" data-learn-tab="ipa" aria-selected="false">🔤 国际音标</button>
     <button type="button" role="tab" class="lb-tab" data-learn-tab="reading" aria-selected="false">📖 阅读查词</button>
   </nav>
 
-  <p class="lb-status" data-learn-status role="status">正在加载学习内容…</p>
+  <p class="lb-status" data-learn-status role="status">今日 5 词 · 第 {day} / {totalDays} 天</p>
 
   <!-- Boot error card with retry -->
   <div class="lb-error" data-learn-error hidden>
@@ -35,8 +46,60 @@
     <button type="button" class="btn btn-outline btn-sm" data-retry>↻ 重试</button>
   </div>
 
+  <!-- ── Daily words (static, server-rendered) ────────────── -->
+  <section data-learn-panel="daily" class="lb-panel" data-summary={`今日 5 词 · 第 ${day} / ${totalDays} 天`}>
+    <div class="lb-daily-head">
+      <div>
+        <p class="lb-daily-date">
+          <time datetime={dayKey}>{dayKey}</time>
+          <span class="lb-daily-cycle">第 {day} / {totalDays} 天 · 词库 {poolSize} 词</span>
+        </p>
+        <p class="lb-daily-tagline">今日精选：生活与职场高频词，读音、例句、记忆提示一次看完。</p>
+      </div>
+      <button type="button" class="btn btn-outline btn-sm" data-daily-read-all>🔊 全部朗读</button>
+    </div>
+
+    <ol class="lb-daily-list">
+      {dailyWords.map((w, i) => (
+        <li class="lb-daily-item" data-daily-word={w.en}>
+          <div class="lb-daily-index" aria-hidden="true">{i + 1}</div>
+          <div class="lb-daily-body">
+            <p class="lb-daily-term">
+              <strong>{w.en}</strong>
+              <span class="lb-daily-phonetic">{w.phonetic}</span>
+              <button
+                type="button"
+                class="lb-audio-btn"
+                data-play-word={w.en}
+                title="朗读"
+                aria-label={`朗读 ${w.en}`}
+              >🔊</button>
+              <span class={`lb-scene lb-scene-${w.scene}`}>{SCENE_LABEL[w.scene]}</span>
+            </p>
+            <p class="lb-daily-def"><span class="lb-daily-pos">{w.pos}</span>{w.zh}</p>
+            <blockquote class="lb-daily-example">
+              <p class="lb-daily-en">{w.example}</p>
+              <p class="lb-daily-zh">{w.exampleZh}</p>
+            </blockquote>
+            <p class="lb-daily-tip"><span aria-hidden="true">💡</span> {w.tip}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+
+    <aside class="lb-daily-advice">
+      <p class="lb-aside-title">今日学习建议</p>
+      <ul>
+        <li><b>3-5-7 法则</b>：今天 3 遍、明天 5 遍、后天 7 遍，间隔重复记得更牢。</li>
+        <li><b>造句练习</b>：用每个词造一句跟你自己生活相关的句子，比背例句有效。</li>
+        <li><b>分场景用</b>：职场向适合邮件与周报，生活向适合口语，通用向两边都能用。</li>
+      </ul>
+      <p class="lb-daily-footnote">明天同一时间自动换一组 ☕️</p>
+    </aside>
+  </section>
+
   <!-- ── Flashcards ───────────────────────────────────────── -->
-  <section data-learn-panel="flashcards" class="lb-panel">
+  <section data-learn-panel="flashcards" class="lb-panel" hidden>
     <div class="lb-controls">
       <label class="lb-field">
         <span>词卡组</span>
@@ -291,6 +354,183 @@
     color: var(--lb-accent);
     font-weight: 600;
     box-shadow: 0 1px 5px oklch(0% 0 0 / 0.1);
+  }
+
+  /* ── Daily words ── */
+  .learn-board .lb-daily-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .learn-board .lb-daily-date {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin: 0;
+    font-family: var(--lb-mono);
+    font-size: 0.95rem;
+    color: var(--lb-ink);
+  }
+  .learn-board .lb-daily-cycle {
+    font-family: inherit;
+    font-size: 0.72rem;
+    color: oklch(var(--bc) / 0.5);
+  }
+  .learn-board .lb-daily-tagline {
+    margin: 0.3rem 0 0;
+    font-size: 0.85rem;
+    color: oklch(var(--bc) / 0.6);
+  }
+
+  .learn-board .lb-daily-list {
+    list-style: none;
+    margin: 0 0 1.2rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    counter-reset: daily;
+  }
+  .learn-board .lb-daily-item {
+    display: grid;
+    grid-template-columns: 2.6rem 1fr;
+    gap: 0 0.9rem;
+    padding: 1rem 1.2rem 1rem 0.9rem;
+    border: 1px solid oklch(var(--b3));
+    border-left: 3px solid var(--lb-margin);
+    border-radius: 12px;
+    background: var(--lb-paper);
+    transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.2s;
+  }
+  .learn-board .lb-daily-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -12px oklch(0% 0 0 / 0.28);
+  }
+  .learn-board .lb-daily-index {
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 50%;
+    background: oklch(var(--b2));
+    font-family: var(--lb-serif);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: oklch(var(--bc) / 0.65);
+  }
+  .learn-board .lb-daily-body { min-width: 0; }
+  .learn-board .lb-daily-term {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.3rem;
+  }
+  .learn-board .lb-daily-term strong {
+    font-family: var(--lb-serif);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--lb-ink);
+  }
+  .learn-board .lb-daily-phonetic {
+    font-family: var(--lb-mono);
+    font-size: 0.82rem;
+    color: oklch(var(--bc) / 0.55);
+  }
+  .learn-board .lb-scene {
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+  }
+  .learn-board .lb-scene-workplace {
+    background: oklch(var(--p) / 0.12);
+    border-color: oklch(var(--p) / 0.3);
+    color: oklch(var(--p));
+  }
+  .learn-board .lb-scene-life {
+    background: oklch(var(--su) / 0.14);
+    border-color: oklch(var(--su) / 0.32);
+    color: oklch(var(--su));
+  }
+  .learn-board .lb-scene-general {
+    background: oklch(var(--bc) / 0.07);
+    border-color: oklch(var(--bc) / 0.18);
+    color: oklch(var(--bc) / 0.65);
+  }
+  .learn-board .lb-daily-def {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+    color: var(--lb-ink);
+  }
+  .learn-board .lb-daily-pos {
+    margin-right: 0.4rem;
+    font-family: var(--lb-mono);
+    font-size: 0.75rem;
+    color: oklch(var(--bc) / 0.5);
+  }
+  .learn-board .lb-daily-example {
+    margin: 0 0 0.5rem;
+    padding: 0.5rem 0 0.5rem 0.8rem;
+    border-left: 2px solid oklch(var(--b3));
+  }
+  .learn-board .lb-daily-example p { margin: 0; }
+  .learn-board .lb-daily-en {
+    font-family: var(--lb-serif);
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--lb-ink);
+  }
+  .learn-board .lb-daily-zh {
+    margin-top: 0.15rem !important;
+    font-size: 0.82rem;
+    color: oklch(var(--bc) / 0.6);
+  }
+  .learn-board .lb-daily-tip {
+    margin: 0;
+    padding: 0.5rem 0.7rem;
+    border-radius: 8px;
+    background: oklch(var(--wa) / 0.09);
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: oklch(var(--bc) / 0.78);
+  }
+
+  .learn-board .lb-daily-advice {
+    padding: 1rem 1.2rem;
+    border: 1px dashed oklch(var(--b3));
+    border-radius: 12px;
+    background: oklch(var(--b2) / 0.4);
+  }
+  .learn-board .lb-daily-advice ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    color: oklch(var(--bc) / 0.72);
+  }
+  .learn-board .lb-daily-advice b { color: var(--lb-ink); }
+  .learn-board .lb-daily-footnote {
+    margin: 0.7rem 0 0;
+    font-size: 0.78rem;
+    color: oklch(var(--bc) / 0.45);
+  }
+
+  @media (max-width: 640px) {
+    .learn-board .lb-daily-item {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      padding: 0.9rem 1rem;
+    }
+    .learn-board .lb-daily-index { width: 1.8rem; height: 1.8rem; font-size: 0.9rem; }
   }
 
   /* `hidden` must win over the `display` rules below (Tailwind/DaisyUI reset
@@ -841,6 +1081,8 @@
     const statsEl = $<HTMLElement>("[data-stats]")!;
     const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-learn-tab]"));
     const panels = Array.from(root.querySelectorAll<HTMLElement>("[data-learn-panel]"));
+    const dailyPanel = $<HTMLElement>('[data-learn-panel="daily"]');
+    const dailyReadAllBtn = $<HTMLButtonElement>("[data-daily-read-all]");
 
     const deckSelect = $<HTMLSelectElement>("[data-deck-select]")!;
     const shuffleBtn = $<HTMLButtonElement>("[data-shuffle]")!;
@@ -882,27 +1124,46 @@
 
     let wordByLemma = new Map<string, Word>();
     let currentPassageSlug = "";
+    let currentPassageTitle = "";
     let selectedLemma: string | null = null;
 
-    let activePanel = "flashcards";
+    let activePanel = "daily";
 
     const audio = createAudioEngine(setStatus);
 
-    function setStatus(msg: string, isError = false) {
+    /**
+     * Write the status line. `panel` scopes a message to one tab so background
+     * loads (boot warms every panel) don't overwrite what the user is reading.
+     */
+    function setStatus(msg: string, isError = false, panel?: string) {
+      if (panel && panel !== activePanel) return;
       statusEl.textContent = msg;
       statusEl.classList.toggle("is-error", isError);
     }
 
+    /** The daily panel is static, so it stays usable when the API is down. */
     function showError(msg: string) {
       errorMsg.textContent = msg;
       errorEl.hidden = false;
-      panels.forEach((p) => (p.hidden = true));
+      switchTab("daily");
+      tabs.forEach((t) => {
+        if (t.dataset.learnTab !== "daily") t.disabled = true;
+      });
     }
     function hideError() {
       errorEl.hidden = true;
+      tabs.forEach((t) => (t.disabled = false));
     }
 
     // ── Tabs ──
+    /** Status line shown when a panel becomes active, so it never looks stale. */
+    function panelStatus(name: string) {
+      if (name === "daily") return dailyPanel?.dataset.summary || "今日 5 词";
+      if (name === "flashcards") return cards.length ? `${cards.length} 张词卡` : "正在加载词卡组…";
+      if (name === "reading") return currentPassageTitle || "选择一篇短文开始阅读";
+      return "点击音标查看发音要点";
+    }
+
     function switchTab(name: string) {
       activePanel = name;
       audio.cancel();
@@ -914,6 +1175,7 @@
       panels.forEach((p) => {
         p.hidden = p.dataset.learnPanel !== name;
       });
+      setStatus(panelStatus(name));
     }
 
     // ── Flashcards ──
@@ -1029,7 +1291,7 @@
       index = 0;
       flashcard.classList.add("is-loading");
       renderCard();
-      setStatus("正在加载词卡组…");
+      setStatus("正在加载词卡组…", false, "flashcards");
 
       const data = await learnApi.deckCards(slug);
       if (generation !== deckLoadGeneration || slug !== currentDeckSlug) return;
@@ -1038,7 +1300,7 @@
       index = 0;
       flashcard.classList.remove("is-loading");
       rebuildQueue();
-      setStatus(`${data.deck.title} · ${cards.length} 张词卡`);
+      setStatus(`${data.deck.title} · ${cards.length} 张词卡`, false, "flashcards");
     }
 
     // ── IPA ──
@@ -1181,7 +1443,8 @@
       wordByLemma = new Map(data.words.map((w) => [w.lemma, w]));
       renderPassage(data.passage.body);
       const level = data.passage.level ? ` · ${data.passage.level}` : "";
-      setStatus(`${data.passage.title}${level}`);
+      currentPassageTitle = `${data.passage.title}${level}`;
+      setStatus(currentPassageTitle, false, "reading");
     }
 
     function audioButton(word: string) {
@@ -1313,9 +1576,32 @@
     }
     wordDetail.addEventListener("click", handleDetailPlay);
     ipaDetailBody.addEventListener("click", handleDetailPlay);
+    dailyPanel?.addEventListener("click", handleDetailPlay);
+
+    // Read the five daily words in sequence, pausing between them.
+    let dailyReadTimer = 0;
+    dailyReadAllBtn?.addEventListener("click", () => {
+      window.clearTimeout(dailyReadTimer);
+      audio.cancel();
+      const words = Array.from(
+        dailyPanel?.querySelectorAll<HTMLElement>("[data-daily-word]") ?? [],
+      ).map((el) => el.dataset.dailyWord || "");
+      let i = 0;
+      const next = () => {
+        if (i >= words.length) {
+          setStatus("今日 5 词已朗读完毕");
+          return;
+        }
+        const w = words[i++];
+        setStatus(`朗读中:${w}(${i}/${words.length})`);
+        audio.playWord(w);
+        dailyReadTimer = window.setTimeout(next, 1600);
+      };
+      next();
+    });
 
     // ── Wire events ──
-    tabs.forEach((tab) => tab.addEventListener("click", () => switchTab(tab.dataset.learnTab || "flashcards")));
+    tabs.forEach((tab) => tab.addEventListener("click", () => switchTab(tab.dataset.learnTab || "daily")));
     retryBtn.addEventListener("click", () => void boot());
 
     deckSelect.addEventListener("change", () => {
@@ -1377,7 +1663,8 @@
     // ── Boot ──
     async function boot() {
       hideError();
-      setStatus("正在加载学习内容…");
+      // Daily words are already on screen; only the API-backed panels are loading.
+      if (activePanel !== "daily") setStatus("正在加载学习内容…");
       try {
         const [decks, passages, groupList] = await Promise.all([
           learnApi.decks(),
@@ -1405,18 +1692,15 @@
 
         if (!decks.length && !passages.length && !ipaGroups.length) {
           showError("暂无学习内容,请先运行 api2 的 learn:migrate。");
-          setStatus("暂无学习内容", true);
           return;
         }
         if (decks[0]) await loadDeck(decks[0].slug);
         if (passages[0]) await loadPassage(passages[0].slug);
-        switchTab("flashcards");
         root.dataset.ready = "1";
       } catch (err) {
         root.dataset.ready = "0";
         const message = err instanceof Error ? err.message : String(err);
         showError(`无法连接学习接口(${message})。请确认 api2 已启动且已执行 learn:migrate。`);
-        setStatus("加载失败", true);
       }
     }
 

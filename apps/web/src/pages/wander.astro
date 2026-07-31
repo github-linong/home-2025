@@ -1,0 +1,13 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import WanderGame from "../components/WanderGame.astro";
+
+const roomCode = Astro.url.searchParams.get("room") ?? "";
+---
+
+<BaseLayout
+  title="漫游 · 联机"
+  description="创建或加入房间，在网格地图里游荡，实时看到其他玩家；服务端权威同步坐标，支持房间码分享与地图扩张。"
+>
+  <WanderGame initialRoomCode={roomCode} />
+</BaseLayout>

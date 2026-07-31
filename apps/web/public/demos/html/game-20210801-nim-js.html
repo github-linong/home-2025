@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <title>上传前预览文件 - www.lilnong.top</title> -->
+	<!-- <meta keywords="preview video, metadata,preview audio,preview image"> -->
+	<!-- <meta description="上传前预览文件，可以预览音视频，可以预览图片，可以预览文本"> -->
+	<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="/static/js/public_header.js"></script>
+	<script type="text/javascript" src="/static/js/falseReport.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.4.8/vue-router.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vuex/3.5.1/vuex.min.js"></script>
+	<script src="https://cdn.bootcss.com/lodash.js/4.17.15/lodash.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/normalize-8.0.0.css">
+	<script type="text/javascript">new VConsole()</script>
+	<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css">
+	<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>	
+</head>
+<body>
+	<style>
+		*{font-family: monospace}
+		.list{display: flex;align-items: center;}
+		.cir{width: 60px;height: 60px;border-radius: 60px;background: #333}
+		.add{display: flex;align-items: center;justify-content: center;background-color: #ccc;}
+	</style>
+	<div id="app">
+		<ul>
+			<li>一次只能从一堆石子中拿去，不能同时从两堆或三堆中拿</li>
+			<li>每次最少拿1个，最多可以把该堆拿光</li>
+			<li>双方轮流</li>
+			<li>谁拿走了桌面上最后一个石子，谁就输了</li>
+		</ul>
+
+		<div v-for="item1 in list" class="list">
+			{{item1.surplus}}-{{surplus2String(item1.surplus)}}:
+			<div v-for="item2 in item1.surplus" @click="item1.surplus--" class="cir"></div>
+			<div @click="item1.surplus++" class="cir add">+</div>
+		</div>
+		<el-button>完成</el-button>
+		<el-button>取消</el-button>
+		<div>各个位数合计：{{resultList}}</div>
+		<div>必胜：{{result}}</div>
+		<div>异或结果：{{result2}}：{{result3}}</div>
+		<div>最高位：{{result4}}</div>
+		<div>应该从第{{result5 + 1}}行，拿{{result6}}个</div>
+	</div>
+	<script>
+		var data = function data(){
+				return {
+					list: [
+						{total: 3, surplus: 3, }, 
+						{total: 6, surplus: 6, }, 
+						{total: 5, surplus: 5, },
+					],
+					// 操作记录
+					query: [
+						/*
+						{
+							user: 1, // 那个用户
+							listIndex: 0, // 操作的是那个列
+							listLength: 2, // 操作了几个
+							state: 1 // 1操作中 2操作结束
+						}
+						*/
+					],
+					user: 1,//1用户 2电脑
+				}
+			}
+	</script>
+	<script>
+		var computed = {
+				resultList(){
+					var list = this.list.map(v=>this.surplus2String(v.surplus));
+					console.log(list);
+					return list.reduce((s,n)=>{
+						for(var i = 0; i < n.length; i++) s[i] += +n[i]
+						return s;
+					}, [0,0,0,0,0,0,0,0])
+					// return list
+				},
+				result(){
+					return this.resultList.every(v=>v%2==0)
+				},
+				result2(){
+					return this.list.reduce((s,n)=>s^n.surplus,0)
+				},
+				result3(){
+					return this.surplus2String(this.result2)
+				},
+				result4(){
+					var num = parseInt(this.result3,2);
+					if(num == 0) return 0;
+					return Math.pow(2, num.toString(2).length - 1)
+				},
+				result5(){
+					return this.list.findIndex(v=>(v.surplus & this.result4) == this.result4);
+				},
+				result6(){
+					// return 5-(5^7)
+					return this.list[this.result5].surplus - (this.list[this.result5].surplus ^ this.result2);
+				}
+			}
+	</script>
+	<script>
+		new Vue({
+			el: '#app',
+			data: data,
+			computed: computed,
+			methods: {
+				surplus2String(surplus){
+					return (surplus || 0).toString(2).padStart(8,0)
+				}
+			}
+		})
+	</script>
+	<img title="微信公众号-前端linong" alt="微信公众号-前端linong" src="https://www.lilnong.top/static/img/wx-linong.jpg" style="width: 800px;max-width: 100vw;display:block;margin:0 auto;">
+	<script>
+		!(function(c,b,d,a){c[a]||(c[a]={});c[a].config={pid:"bthzxo624i@b8098d5c30312f3",imgUrl:"https://arms-retcode.aliyuncs.com/r.png?"};
+		with(b)with(body)with(insertBefore(createElement("script"),firstChild))setAttribute("crossorigin","",src=d)
+		})(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
+	</script>
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?0b53b11d3930be87062f66b4b8ce2822";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<script type="text/javascript" src="/static/js/public_footer.js"></script>
+	<script type="text/javascript" src="//www.lilnong.top/static/js/public_hm.js"></script>
+</body>
+</html>

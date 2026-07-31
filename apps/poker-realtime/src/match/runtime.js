@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { config } from "../config.js";
 import { generateId } from "../core/ids.js";
 import { ErrorCodes, makeError } from "../protocol/errors.js";
@@ -58,6 +59,7 @@ export class MatchRuntime {
     this.destroyTimer = null;
     this.nextHandTimer = null;
     this.handIds = [];
+    this.handSettlementHashes = [];
     this.participants = [];
     /** @type {Map<string, number>} userId -> shortened timeout ms until next successful action */
     this.reconnectTimeoutByUser = new Map();
@@ -306,6 +308,7 @@ export class MatchRuntime {
   finishHand(result) {
     const state = this.handState;
     const settlement = buildSettlement(state, this.deckSeed);
+    this.handSettlementHashes.push(settlement.contentHash);
     writeSettlement(this.room.roomId, this.matchId, this.handId, settlement).catch(
       () => {},
     );
@@ -426,7 +429,9 @@ export class MatchRuntime {
       try {
         await writeFinalizeOk(this.room.roomId, this.matchId, {
           handIds: this.handIds,
-          contentHash: this.handIds.join(","),
+          contentHash: createHash("sha256")
+            .update(this.handSettlementHashes.slice().sort().join("|"))
+            .digest("hex"),
         });
         break;
       } catch (err) {

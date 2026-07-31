@@ -43,3 +43,9 @@ apps/poker-realtime/data/
 
 # Accidental shell-expanded home directory created inside the repo
 ~/
+
+# chat / wander realtime services
+apps/chat/.env
+apps/chat/node_modules/
+apps/wander/.env
+apps/wander/node_modules/
