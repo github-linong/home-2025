@@ -240,8 +240,22 @@ async function handle(connId, ws, msg, ip, getIdentity) {
       registry.joinGroup(connId, channel); // auto-join on first post
       resolved = channel;
     } else if (channel.startsWith("dm:")) {
-      const peerId = channel.slice(3);
-      if (!PEER_RE.test(peerId)) {
+      // The frontend sends the canonical 2-id form `dm:<a>:<b>` (sorted). Accept
+      // both that and the bare `dm:<peer>` form for robustness.
+      const parts = channel.slice(3).split(":");
+      let peerId;
+      if (parts.length === 2 && PEER_RE.test(parts[0]) && PEER_RE.test(parts[1])) {
+        if (parts[0] === identity.userId) peerId = parts[1];
+        else if (parts[1] === identity.userId) peerId = parts[0];
+        else {
+          safeSend(ws, { type: "chat.error", code: "INVALID_PEER", message: "私聊对象无效" });
+          return;
+        }
+        resolved = `dm:${[parts[0], parts[1]].sort().join(":")}`;
+      } else if (parts.length === 1 && PEER_RE.test(parts[0])) {
+        peerId = parts[0];
+        resolved = canonicalDm(identity.userId, peerId);
+      } else {
         safeSend(ws, { type: "chat.error", code: "INVALID_PEER", message: "私聊对象无效" });
         return;
       }
@@ -249,7 +263,6 @@ async function handle(connId, ws, msg, ip, getIdentity) {
         safeSend(ws, { type: "chat.error", code: "SELF_DM", message: "不能和自己私聊" });
         return;
       }
-      resolved = canonicalDm(identity.userId, peerId);
       registry.rememberDm(identity.userId, resolved);
       // Notify the recipient so their UI surfaces the DM thread (not just the
       // sender's). Without this the peer gets the message in memory but has no
