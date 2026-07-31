@@ -49,3 +49,20 @@ apps/chat/.env
 apps/chat/node_modules/
 apps/wander/.env
 apps/wander/node_modules/
+
+# Local AI / IDE tooling (keep committed Cursor project rules)
+.claude/
+.cloudstudio
+.workbuddy/
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
+
+# Local scratch / research artifacts (not part of the shipped site)
+PRODUCT.md
+PROJECT-PROBLEMS-REPORT.md
+overview.md
+data-analysis-viz-knowledge-graph.html
+artifacts/
+docs/
+frontend/
