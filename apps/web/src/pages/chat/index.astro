@@ -1,0 +1,20 @@
+---
+// Standalone full-screen chat page at /chat.
+// Uses BaseHead for Tailwind/DaisyUI/SEO but NOT BaseLayout — the chat page
+// needs a full-viewport layout without the site header/sidebar/footer.
+import BaseHead from "../../components/BaseHead.astro";
+import ChatPage from "../../components/chat/ChatPage.astro";
+
+const title = "聊天 - lilnong.top";
+const description = "lilnong.top 在线聊天室 — 公聊、群组、私聊";
+---
+
+<!doctype html>
+<html lang="zh-CN" data-theme="lofi">
+  <head>
+    <BaseHead title={title} description={description} ogType="website" />
+  </head>
+  <body class="h-screen overflow-hidden">
+    <ChatPage />
+  </body>
+</html>

@@ -1,0 +1,16 @@
+---
+// Chat header bar: channel name, online count, connection status indicator.
+---
+
+<header id="chat-header" class="flex items-center gap-3 px-4 py-2 bg-primary text-primary-content shrink-0">
+  <button id="sidebar-toggle" class="btn btn-ghost btn-sm btn-square lg:hidden" aria-label="切换侧边栏">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
+  <span id="chat-status-dot" class="w-2.5 h-2.5 rounded-full bg-error shrink-0" title="连接状态"></span>
+  <h1 id="chat-channel-name" class="font-bold text-base truncate">💬 公聊</h1>
+  <span class="flex-1"></span>
+  <span id="chat-online-count" class="text-xs opacity-80">在线: 0</span>
+  <span id="chat-me-chip" class="text-xs opacity-90 cursor-pointer hover:underline truncate max-w-[140px]" title=""></span>
+</header>

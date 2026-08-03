@@ -1,0 +1,17 @@
+[Unit]
+Description=lilnong.top Wander Realtime (WebSocket)
+After=network.target lilnong-api2.service
+Wants=lilnong-api2.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/lilnong-wander
+EnvironmentFile=/opt/lilnong-wander/.env
+ExecStart=/usr/local/bin/node /opt/lilnong-wander/src/server.js
+Restart=on-failure
+RestartSec=3
+Environment=NODE_OPTIONS=--max-old-space-size=256
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

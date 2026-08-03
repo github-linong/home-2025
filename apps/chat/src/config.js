@@ -34,4 +34,10 @@ export const config = {
   },
   internalAdminToken: process.env.INTERNAL_ADMIN_TOKEN ?? "dev-admin-token",
   presenceDebounceMs: Number(process.env.CHAT_PRESENCE_DEBOUNCE_MS ?? 400),
+  groupMaxMembers: Number(process.env.GROUP_MAX_MEMBERS ?? 50),
+  groupInviteCodeLength: Number(process.env.GROUP_INVITE_CODE_LENGTH ?? 6),
+  groupMetaTtlMs: Number(process.env.GROUP_META_TTL_MS ?? 7 * 24 * 60 * 60 * 1000),
+  // Contacts system
+  maxContacts: Number(process.env.MAX_CONTACTS ?? 100),
+  contactAutoPruneDays: Number(process.env.CONTACT_AUTO_PRUNE_DAYS ?? 30),
 };

@@ -180,3 +180,63 @@ test("empty / oversized messages are rejected", async () => {
   a.ws.close();
   server.close();
 });
+
+test("chat.createGroup creates a group and returns invite code", async () => {
+  const server = await startServer();
+  const port = server.address().port;
+  const a = openClient(port, "alice");
+  await a.ready;
+
+  a.send("chat.createGroup", { name: "测试群组" });
+  const created = await a.waitFor((m) => m.type === "chat.groupCreated");
+  assert.ok(created.groupId, "should return a groupId");
+  assert.ok(created.inviteCode, "should return an inviteCode");
+  assert.equal(created.inviteCode.length, config.groupInviteCodeLength);
+  // Creator should already be a member (channels include the new group)
+  assert.ok(created.channels.groups.includes(created.groupId), "creator should be in the group");
+
+  // Validate invite code via REST
+  const res = await fetch(`http://127.0.0.1:${port}/api/chat/group/invite/${created.inviteCode}`);
+  const body = await res.json();
+  assert.equal(body.ok, true);
+  assert.equal(body.groupId, created.groupId);
+  assert.equal(body.name, "测试群组");
+
+  a.ws.close();
+  await sleep(50);
+  server.close();
+});
+
+test("chat.joinByInvite joins a group via invite code", async () => {
+  const server = await startServer();
+  const port = server.address().port;
+  const a = openClient(port, "alice");
+  const b = openClient(port, "bob");
+  await Promise.all([a.ready, b.ready]);
+
+  // Alice creates a group
+  a.send("chat.createGroup", { name: "邀请测试" });
+  const created = await a.waitFor((m) => m.type === "chat.groupCreated");
+  const { groupId, inviteCode } = created;
+
+  // Bob joins via invite code
+  b.send("chat.joinByInvite", { inviteCode });
+  const joined = await b.waitFor((m) => m.type === "chat.joined" && m.channel === groupId);
+  assert.ok(joined, "bob should receive chat.joined for the group");
+  assert.ok(joined.channels.groups.includes(groupId), "bob's channels should include the group");
+
+  // Alice sends a message; Bob should receive it
+  a.send("chat.message", { channel: groupId, text: "welcome bob" });
+  const msg = await b.waitFor((m) => m.type === "chat.message" && m.text === "welcome bob");
+  assert.equal(msg.channel, groupId);
+
+  // Invalid invite code returns error
+  b.send("chat.joinByInvite", { inviteCode: "ZZZZZZ" });
+  const err = await b.waitFor((m) => m.type === "chat.error" && m.code === "INVALID_INVITE");
+  assert.ok(err, "invalid invite code should return error");
+
+  a.ws.close();
+  b.ws.close();
+  await sleep(50);
+  server.close();
+});

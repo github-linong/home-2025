@@ -107,22 +107,39 @@ export function createGateway(server) {
     ws._pingTimer.unref?.();
 
     // Authenticate immediately on connect (dev auth via query/cookie, or api2).
-    authenticate(ws, { ip, devUserId, cookie }).catch(() => {});
+    // The AUTH_REQUIRED path is handled inside authenticate() itself so a dead
+    // api2 never leaves the socket hanging; this outer catch only guards
+    // unexpected post-auth throws.
+    authenticate(ws, { ip, devUserId, cookie }).catch(() => {
+      try {
+        if (ws.readyState === ws.OPEN) ws.close(4500, "auth_error");
+      } catch {
+        /* ignore */
+      }
+    });
   });
 
   return wss;
 }
 
 async function authenticate(ws, ctx) {
-  const verified = await verifyWithApi2(ctx.cookie, { devUserId: ctx.devUserId });
+  let verified;
+  try {
+    verified = await verifyWithApi2(ctx.cookie, { devUserId: ctx.devUserId });
+  } catch {
+    // api2 unreachable or threw. Fail closed with a clear, non-hanging error
+    // instead of leaving the socket open with no session.ready.
+    try {
+      ws.send(JSON.stringify(errorMsg("AUTH_REQUIRED", "身份验证服务暂不可用，请稍后重试")));
+      ws.close(4401, "auth_required");
+    } catch {
+      /* ignore */
+    }
+    return;
+  }
   if (!verified) {
     try {
-      ws.send(
-        JSON.stringify({
-          type: "game.error",
-          error: { code: "AUTH_REQUIRED", message: "请先登录", retryable: false },
-        }),
-      );
+      ws.send(JSON.stringify(errorMsg("AUTH_REQUIRED", "请先登录")));
       ws.close(4401, "auth_required");
     } catch {
       /* ignore */

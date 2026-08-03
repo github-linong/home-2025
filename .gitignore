@@ -62,7 +62,9 @@ apps/wander/node_modules/
 PRODUCT.md
 PROJECT-PROBLEMS-REPORT.md
 overview.md
+overview-*.md
 data-analysis-viz-knowledge-graph.html
 artifacts/
 docs/
 frontend/
+.qoder/

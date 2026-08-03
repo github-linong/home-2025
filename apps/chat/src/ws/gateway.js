@@ -13,8 +13,10 @@ import {
 import { checkRateLimit } from "../rate-limit/limiter.js";
 import * as registry from "../chat/registry.js";
 import { PUBLIC_GROUP, normalizeChannel } from "../chat/registry.js";
+import { isValidInviteCode } from "../chat/invite.js";
 import * as store from "../store.js";
 import { log } from "../logging/logger.js";
+import * as contacts from "../chat/contacts.js";
 
 function clientIp(req) {
   const xf = req.headers["x-forwarded-for"];
@@ -128,6 +130,9 @@ export function createGateway(server) {
       serverTime: Date.now(),
     });
 
+    // Push initial contacts list (empty for brand-new users)
+    safeSend(ws, { type: "chat.contacts", contacts: contacts.getContacts(identity.userId) });
+
     ws.on("message", (raw) => {
       lastPing = Date.now(); // any inbound traffic (incl. client ping/pong) keeps the socket alive
       let msg;
@@ -145,6 +150,10 @@ export function createGateway(server) {
       clearInterval(pingChecker);
       clearInterval(revalChecker);
       registry.removeConn(connId);
+      // When the user's last connection closes, auto-prune stale contacts.
+      if (!registry.isUserOnline(identity.userId)) {
+        contacts.onDisconnect(identity.userId);
+      }
       deleteSession(connId);
       log("info", "ws_closed", { userId: identity.userId, connId });
     });
@@ -179,6 +188,14 @@ async function handle(connId, ws, msg, ip, getIdentity) {
   if (type === "chat.join") {
     const ch = msg.channel;
     if (typeof ch === "string" && GROUP_RE.test(ch)) {
+      // Enforce groupMaxMembers for non-public groups
+      if (ch !== PUBLIC_GROUP && ch !== "group:public") {
+        const count = registry.channelMemberCount(registry.normalizeChannel(ch));
+        if (count >= config.groupMaxMembers) {
+          safeSend(ws, { type: "chat.error", code: "GROUP_FULL", message: "群组已满" });
+          return;
+        }
+      }
       registry.joinGroup(connId, ch);
       const after = registry.connChannels(connId);
       safeSend(ws, {
@@ -325,6 +342,138 @@ async function handle(connId, ws, msg, ip, getIdentity) {
       channel: resolved,
     });
     incrementActionCount(connId);
+
+    // --- Contact system: record interactions on message send ---
+    if (resolved.startsWith("dm:")) {
+      // DM: both participants become contacts.
+      const dmIds = resolved.slice(3).split(":");
+      const peerId = dmIds[0] === identity.userId ? dmIds[1] : dmIds[0];
+      const newForSelf = contacts.recordInteraction(identity.userId, peerId);
+      const newForPeer = contacts.recordInteraction(peerId, identity.userId);
+      if (newForSelf) {
+        const entry = contacts.getContactEntry(identity.userId, peerId);
+        if (entry) registry.sendToUser(identity.userId, { type: "chat.contactAdded", contact: entry });
+      }
+      if (newForPeer) {
+        const entry = contacts.getContactEntry(peerId, identity.userId);
+        if (entry) registry.sendToUser(peerId, { type: "chat.contactAdded", contact: entry });
+      }
+    } else if (resolved.startsWith("group:") && resolved !== PUBLIC_GROUP) {
+      // Named group: record interaction between sender and each other member.
+      const memberIds = registry
+        .presenceFor(resolved)
+        .map((i) => i.userId)
+        .filter((uid) => uid !== identity.userId);
+      for (const memberId of memberIds) {
+        const newForSelf = contacts.recordInteraction(identity.userId, memberId);
+        const newForMember = contacts.recordInteraction(memberId, identity.userId);
+        if (newForSelf) {
+          const entry = contacts.getContactEntry(identity.userId, memberId);
+          if (entry) registry.sendToUser(identity.userId, { type: "chat.contactAdded", contact: entry });
+        }
+        if (newForMember) {
+          const entry = contacts.getContactEntry(memberId, identity.userId);
+          if (entry) registry.sendToUser(memberId, { type: "chat.contactAdded", contact: entry });
+        }
+      }
+    }
+    return;
+  }
+
+  if (type === "chat.createGroup") {
+    if (identity.isGuest) {
+      safeSend(ws, { type: "chat.error", code: "AUTH_REQUIRED", message: "仅登录用户可创建群组" });
+      return;
+    }
+    const name = typeof msg.name === "string" ? sanitizeName(msg.name) : null;
+    try {
+      const { groupId, inviteCode } = registry.createGroup(null, identity.userId, { name: name ?? undefined });
+      // Auto-join the creator to the new group
+      registry.joinGroup(connId, groupId);
+      const after = registry.connChannels(connId);
+      safeSend(ws, {
+        type: "chat.groupCreated",
+        groupId,
+        inviteCode,
+        channels: { groups: after.groups, dms: after.dms },
+      });
+      log("info", "group_created", { groupId, inviteCode, ownerId: identity.userId });
+    } catch (err) {
+      safeSend(ws, { type: "chat.error", code: err.message ?? "CREATE_FAILED", message: "创建群组失败" });
+    }
+    return;
+  }
+
+  if (type === "chat.joinByInvite") {
+    const code = typeof msg.inviteCode === "string" ? msg.inviteCode.trim().toUpperCase() : "";
+    if (!isValidInviteCode(code)) {
+      safeSend(ws, { type: "chat.error", code: "INVALID_INVITE", message: "邀请码格式无效" });
+      return;
+    }
+    try {
+      const channel = registry.joinGroupByInvite(connId, code);
+      const after = registry.connChannels(connId);
+      safeSend(ws, {
+        type: "chat.joined",
+        channel,
+        channels: { groups: after.groups, dms: after.dms },
+        history: store.getHistory(channel, 50),
+        inviteCode: code,
+      });
+      log("info", "group_join_by_invite", { channel, userId: identity.userId, inviteCode: code });
+    } catch (err) {
+      const code_ = err.message ?? "INVALID_INVITE";
+      const messages = {
+        INVALID_INVITE: "邀请码无效或已过期",
+        GROUP_FULL: "群组已满",
+      };
+      safeSend(ws, { type: "chat.error", code: code_, message: messages[code_] ?? "加入失败" });
+    }
+    return;
+  }
+
+  if (type === "chat.pinContact") {
+    const targetUserId = typeof msg.userId === "string" ? msg.userId.trim() : "";
+    if (!PEER_RE.test(targetUserId)) {
+      safeSend(ws, { type: "chat.error", code: "INVALID_PEER", message: "联系人用户ID无效" });
+      return;
+    }
+    if (msg.pin === true) {
+      contacts.pinContact(identity.userId, targetUserId);
+    } else {
+      contacts.unpinContact(identity.userId, targetUserId);
+    }
+    safeSend(ws, { type: "chat.contacts", contacts: contacts.getContacts(identity.userId) });
+    return;
+  }
+
+  if (type === "chat.hideContact") {
+    const targetUserId = typeof msg.userId === "string" ? msg.userId.trim() : "";
+    if (!PEER_RE.test(targetUserId)) {
+      safeSend(ws, { type: "chat.error", code: "INVALID_PEER", message: "联系人用户ID无效" });
+      return;
+    }
+    if (msg.hide === true) {
+      contacts.hideContact(identity.userId, targetUserId);
+    } else {
+      contacts.unhideContact(identity.userId, targetUserId);
+    }
+    safeSend(ws, { type: "chat.contacts", contacts: contacts.getContacts(identity.userId) });
+    return;
+  }
+
+  // Typing indicator: relay to other members of the channel (never echo to
+  // sender). The client throttles sends to ~2s; we add no extra persistence.
+  if (type === "chat.typing") {
+    const ch = typeof msg.channel === "string" ? normalizeChannel(msg.channel) : "";
+    if ((!ch.startsWith("group:") && !ch.startsWith("dm:")) || !registry.isMember(connId, ch)) {
+      return; // ignore invalid channel or non-members
+    }
+    registry.sendToChannel(ch, {
+      type: "chat.typing",
+      channel: ch,
+      user: { userId: identity.userId, name: identity.name },
+    }, connId);
     return;
   }
 

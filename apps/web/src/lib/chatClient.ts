@@ -190,6 +190,12 @@ export class ChatClient {
   leaveGroup(channel: string) {
     this.send("chat.leave", { channel });
   }
+  joinByInvite(inviteCode: string) {
+    this.send("chat.joinByInvite", { inviteCode });
+  }
+  createGroup(name?: string) {
+    this.send("chat.createGroup", name ? { name } : {});
+  }
   requestHistory(channel: string, limit = 50) {
     this.send("chat.history", { channel, limit });
   }
@@ -199,6 +205,10 @@ export class ChatClient {
       localStorage.setItem("ln_chat_guest_name", name);
     } catch {}
     this.send("chat.setGuestName", { name });
+  }
+  /** Broadcast a typing indicator for the given channel (throttled by caller). */
+  sendTyping(channel: string) {
+    this.send("chat.typing", { channel });
   }
 
   close() {

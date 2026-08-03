@@ -152,13 +152,15 @@ export class WanderSocket {
     if (msg.type === "room.snapshot" && typeof msg.stateVersion === "number") {
       if (msg.stateVersion > this.localStateVersion) this.localStateVersion = msg.stateVersion;
     }
-    if (msg.type === "room.create.ok" || msg.type === "room.join.ok") {
+    if (msg.type === "room.create.ok" || msg.type === "room.join.ok" || msg.type === "session.reconnect.ok") {
       this.roomId = msg.roomId;
       this.reconnectToken = msg.reconnectToken;
-    }
-    if (msg.type === "session.reconnect.ok") {
-      this.roomId = msg.roomId;
-      this.reconnectToken = msg.reconnectToken;
+      // Seed the version watermark from the authoritative snapshot these
+      // messages carry, so a stale `room.snapshot` (lower version) that
+      // arrives right after can't clobber our freshly-joined state.
+      if (typeof msg.stateVersion === "number" && msg.stateVersion > this.localStateVersion) {
+        this.localStateVersion = msg.stateVersion;
+      }
     }
     if (msg.type === "room.leave.ok") {
       this.roomId = null;

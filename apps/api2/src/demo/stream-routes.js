@@ -177,6 +177,19 @@ export function createRateLimiter({ maxRequests = 10, windowMs = 60_000 } = {}) 
 const CHAT_SYSTEM_PROMPT =
   "你是一个简洁、友好的中文助手。用简体中文回答，条理清晰，避免空洞客套。" +
   "除非用户要求，否则不要输出冗长 Markdown 标题墙。";
+
+/**
+ * System prompt for the site-wide chat page AI assistant (小助手).
+ * Tailored to lilnong.top: a frontend-dev focused personal site.
+ */
+const AI_CHAT_SYSTEM_PROMPT =
+  "你是 lilnong.top 站点内置的 AI 小助手「小助手」，由站长 linong 打造。" +
+  "你擅长前端开发、Web 技术、JavaScript/TypeScript、Node.js、以及本站内容相关的问题。" +
+  "请用简体中文、自然口语化的方式回答，条理清晰；除非用户要求，不要输出冗长 Markdown 标题墙。" +
+  "不知道就说不知道，不要编造。";
+const AI_CHAT_MOCK_REPLY =
+  "（离线演示模式）你好，我是 lilnong.top 的 AI 小助手。当前服务端未配置 DashScope API Key，" +
+  "所以这是一条本地模拟回复。配置 DASHSCOPE_API_KEY 后，我就能用通义千问实时回答你的问题啦～";
 const MAX_CHAT_MESSAGES = 20;
 const MAX_CHAT_MESSAGE_LENGTH = 2_000;
 const MAX_CHAT_PROMPT_LENGTH = 4_000;
@@ -429,6 +442,116 @@ export function createDemoRouter({
         ok: false,
         error: "llm_request_failed",
         message: "Qwen completion failed",
+      });
+    } finally {
+      clearTimeout(timeout);
+      res.off("close", abortOnDisconnect);
+    }
+  });
+
+  /**
+   * POST /api/demo/chat-ai
+   * Streaming AI assistant for the site-wide chat page (/chat).
+   * Reuses the DashScope plumbing. When DASHSCOPE_API_KEY is absent and we are
+   * NOT in production, streams a local mock reply so the UI works offline / in tests.
+   */
+  router.post("/chat-ai", async (req, res) => {
+    const messages = normalizeChatMessages(req.body);
+    if (!messages.length) {
+      res.status(400).json({
+        ok: false,
+        error: "invalid_messages",
+        message: "Provide messages[] or a non-empty prompt",
+      });
+      return;
+    }
+
+    const clientKey = `chat-ai:${req.ip || req.socket.remoteAddress || "unknown"}`;
+    if (!allowRequest(clientKey)) {
+      res.set("Retry-After", String(Math.ceil(windowMs / 1000)));
+      res.status(429).json({ ok: false, error: "rate_limited" });
+      return;
+    }
+
+    const cfg = readLlmEnv(env);
+    const inProduction = env.NODE_ENV === "production" || env.MODE === "生产";
+
+    // Offline / dev fallback: no API key and not production.
+    if (!cfg.apiKey && !inProduction) {
+      res.status(200);
+      res.setHeader("Content-Type", "text/plain; charset=utf-8");
+      res.setHeader("Cache-Control", "no-store");
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("X-Accel-Buffering", "no");
+      if (typeof res.flushHeaders === "function") res.flushHeaders();
+      // Stream the mock reply token-by-token to exercise the same UI path.
+      for (const ch of AI_CHAT_MOCK_REPLY) {
+        res.write(ch);
+        await new Promise((r) => setTimeout(r, 12));
+      }
+      if (!res.writableEnded) res.end();
+      return;
+    }
+
+    if (!cfg.apiKey) {
+      res.status(503).json({
+        ok: false,
+        error: "llm_not_configured",
+        message: "DASHSCOPE_API_KEY is not configured",
+      });
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60_000);
+    const abortOnDisconnect = () => {
+      if (!res.writableEnded) controller.abort();
+    };
+    res.on("close", abortOnDisconnect);
+
+    try {
+      const upstream = await fetchImpl(cfg.endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${cfg.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: cfg.model,
+          messages: [{ role: "system", content: AI_CHAT_SYSTEM_PROMPT }, ...messages],
+          stream: true,
+          temperature: 0.7,
+          max_tokens: 1_024,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!upstream.ok) {
+        const detail = (await upstream.text()).slice(0, 500);
+        throw new Error(`DashScope HTTP ${upstream.status}: ${detail}`);
+      }
+      if (!upstream.body) throw new Error("DashScope returned no response body");
+
+      res.status(200);
+      res.setHeader("Content-Type", "text/plain; charset=utf-8");
+      res.setHeader("Cache-Control", "no-store");
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("X-Accel-Buffering", "no");
+      if (typeof res.flushHeaders === "function") res.flushHeaders();
+
+      await pipeSseTextToResponse(upstream.body, res);
+      if (!res.writableEnded) res.end();
+    } catch (error) {
+      if (error?.name === "AbortError" && res.destroyed) return;
+      console.error("[api2] chat-ai failed:", error);
+      if (res.headersSent) {
+        if (!res.writableEnded) res.end();
+        return;
+      }
+      res.status(502).json({
+        ok: false,
+        error: "llm_request_failed",
+        message: "AI chat stream failed",
       });
     } finally {
       clearTimeout(timeout);

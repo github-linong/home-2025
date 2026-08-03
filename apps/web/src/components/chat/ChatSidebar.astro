@@ -1,0 +1,48 @@
+---
+// Chat sidebar: channel list, online users, DM threads, create-group action.
+// The controller script (in ChatPage.astro) populates the dynamic lists via DOM.
+---
+
+<aside
+  id="chat-sidebar"
+  class="
+    fixed inset-y-0 left-0 z-40 w-72 bg-base-200 border-r border-base-300
+    flex flex-col shrink-0 overflow-hidden
+    translate-x-full lg:translate-x-0 lg:static lg:z-auto
+    transition-transform duration-200 ease-in-out
+  "
+>
+  {/* ── Channels section ── */}
+  <div class="px-3 pt-3 pb-1">
+    <span class="text-xs font-semibold opacity-60 uppercase tracking-wider">频道</span>
+  </div>
+  <nav id="chat-group-list" class="flex flex-col gap-0.5 px-2 overflow-y-auto"></nav>
+
+  {/* ── Recent contacts section ── */}
+  <div class="px-3 pt-4 pb-1">
+    <span class="text-xs font-semibold opacity-60 uppercase tracking-wider">最近联系</span>
+  </div>
+  <div id="chat-contacts-list" class="flex flex-col gap-0.5 px-2 overflow-y-auto max-h-48"></div>
+
+  {/* ── Online users section ── */}
+  <div class="px-3 pt-4 pb-1">
+    <span class="text-xs font-semibold opacity-60 uppercase tracking-wider">在线用户</span>
+  </div>
+  <div id="chat-online-users" class="flex flex-col gap-0.5 px-2 overflow-y-auto flex-1 min-h-0"></div>
+
+  {/* ── DM threads section ── */}
+  <div class="px-3 pt-3 pb-1">
+    <span class="text-xs font-semibold opacity-60 uppercase tracking-wider">私聊</span>
+  </div>
+  <div id="chat-dm-list" class="flex flex-col gap-0.5 px-2 overflow-y-auto max-h-40"></div>
+
+  {/* ── Actions ── */}
+  <div class="p-3 mt-auto border-t border-base-300 shrink-0">
+    <button id="chat-create-group" class="btn btn-sm btn-outline btn-primary w-full">
+      + 创建群组
+    </button>
+  </div>
+</aside>
+
+{/* Overlay for mobile sidebar */}
+<div id="chat-sidebar-overlay" class="fixed inset-0 z-30 bg-black/40 hidden lg:hidden" aria-hidden="true"></div>

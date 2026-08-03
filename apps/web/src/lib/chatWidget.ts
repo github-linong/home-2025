@@ -1,6 +1,13 @@
 import { ChatClient, type Identity, type ChatMessage, type ServerMessage, PUBLIC_GROUP } from "./chatClient";
+import { streamAiChat, type AiChatMessage } from "./aiChatClient";
 
 type Channel = string;
+
+/** Virtual, client-only channel for the AI assistant (not a real WS channel). */
+const AI_CHANNEL = "ai:assistant";
+const AI_USER: Identity = { userId: "ai:assistant", name: "小助手", isGuest: false };
+const AI_THREAD_KEY = "ln_chat_ai_thread";
+const AI_THREAD_MAX = 40;
 
 /**
  * Chat widget controller. Builds the DOM (once, persisted across Astro page
@@ -16,6 +23,8 @@ class ChatWidget {
   private publicPresence: Identity[] = [];
   private presenceKey = "";
   private contextGroup: string | null = null;
+  /** True while an AI response is streaming (input locked). */
+  private isStreaming = false;
 
   // DOM refs
   private launcher!: HTMLElement;
@@ -27,6 +36,7 @@ class ChatWidget {
   private dmsEl!: HTMLElement;
   private messagesEl!: HTMLElement;
   private input!: HTMLInputElement;
+  private typingEl!: HTMLElement;
   private chList: HTMLElement[] = [];
 
   static mount() {
@@ -51,6 +61,7 @@ class ChatWidget {
     this.dmsEl = this.root.querySelector(".ln-dms") as HTMLElement;
     this.messagesEl = this.root.querySelector(".ln-messages") as HTMLElement;
     this.input = this.root.querySelector(".ln-input") as HTMLInputElement;
+    this.typingEl = this.root.querySelector(".ln-typing") as HTMLElement;
 
     this.launcher.addEventListener("click", () => this.toggle());
     (this.root.querySelector(".ln-close") as HTMLElement).addEventListener("click", () => this.toggle(false));
@@ -68,6 +79,7 @@ class ChatWidget {
       }
     });
 
+    this.loadAiThread();
     this.client.onMessage((m) => this.onMessage(m));
     this.client.onClose(() => this.updateStatus(false));
     this.client.connect().then(() => this.updateStatus(true)).catch(() => this.updateStatus(false));
@@ -193,16 +205,44 @@ class ChatWidget {
   // ---- channel switching ----
   switchChannel(ch: Channel) {
     this.activeChannel = ch;
+    this.updateTitle();
     this.renderChannelList();
-    if (!this.messages.has(ch)) this.client.requestHistory(ch, 50);
+    if (ch !== AI_CHANNEL && !this.messages.has(ch)) this.client.requestHistory(ch, 50);
     this.renderMessages();
     this.scrollToBottom();
+  }
+
+  /** Update the panel header title to reflect the active channel. */
+  private updateTitle() {
+    const ch = this.activeChannel;
+    const el = this.root.querySelector(".ln-title") as HTMLElement | null;
+    if (!el) return;
+    if (ch === PUBLIC_GROUP) el.textContent = "聊天 · 公聊";
+    else if (ch === AI_CHANNEL) el.textContent = "聊天 · 🤖 小助手";
+    else if (ch.startsWith("group:")) el.textContent = "聊天 · " + ch.replace(/^group:/, "");
+    else if (ch.startsWith("dm:")) {
+      const ids = ch.replace(/^dm:/, "").split(":");
+      const me = this.client.you?.userId;
+      const peer = ids.find((x) => x !== me) || ids[0];
+      el.textContent = "聊天 · " + (this.peerNames.get(peer) || peer);
+    } else el.textContent = "聊天";
   }
 
   private renderChannelList() {
     this.chList = [];
 
     this.groupsEl.innerHTML = "";
+    // AI assistant virtual channel (client-only, not a WS channel).
+    const aiEl = document.createElement("div");
+    aiEl.className = "ch" + (AI_CHANNEL === this.activeChannel ? " active" : "");
+    aiEl.dataset.ch = AI_CHANNEL;
+    const aiLabel = document.createElement("span");
+    aiLabel.className = "ch-label-text";
+    aiLabel.textContent = "🤖 小助手";
+    aiEl.appendChild(aiLabel);
+    aiEl.addEventListener("click", () => this.switchChannel(AI_CHANNEL));
+    this.groupsEl.appendChild(aiEl);
+    this.chList.push(aiEl);
     for (const g of this.client.channels.groups) {
       const isPublic = g === PUBLIC_GROUP;
       const el = document.createElement("div");
@@ -292,8 +332,8 @@ class ChatWidget {
   /** Leave a group (server-side) or just hide a DM thread (client-side). */
   private removeChannel(ch: Channel) {
     const wasActive = this.activeChannel === ch;
-    // The public group is reserved and can't be left.
-    if (ch === PUBLIC_GROUP) {
+    // The public group and the AI assistant are reserved; they can't be left.
+    if (ch === PUBLIC_GROUP || ch === AI_CHANNEL) {
       this.renderChannelList();
       return;
     }
@@ -313,18 +353,21 @@ class ChatWidget {
     this.messagesEl.innerHTML = "";
     for (const msg of arr) {
       const mine = msg.author.userId === me;
+      const isAi = msg.author.userId === AI_USER.userId;
       const row = document.createElement("div");
       row.className = "chat " + (mine ? "chat-end" : "chat-start");
       const header = document.createElement("div");
       header.className = "chat-header";
       const name = document.createElement("span");
-      name.textContent = msg.author.name || msg.author.userId;
+      name.textContent = isAi ? "🤖 " + (msg.author.name || "小助手") : (msg.author.name || msg.author.userId);
       const time = document.createElement("time");
       time.textContent = new Date(msg.ts).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
       header.append(name, document.createTextNode(" "), time);
       const bubble = document.createElement("div");
-      bubble.className = "chat-bubble" + (mine ? " chat-bubble-primary" : "");
-      bubble.textContent = msg.text; // textContent => no HTML injection
+      bubble.className = "chat-bubble" + (mine ? " chat-bubble-primary" : isAi ? " chat-bubble-accent" : "");
+      bubble.style.whiteSpace = "pre-wrap"; // preserve AI newlines
+      // Show a soft ellipsis while the AI placeholder has not streamed yet.
+      bubble.textContent = msg.text || (isAi && this.isStreaming ? "…" : msg.text); // textContent => no HTML injection
       row.append(header, bubble);
       this.messagesEl.appendChild(row);
     }
@@ -338,9 +381,100 @@ class ChatWidget {
   private submit() {
     const text = this.input.value.trim();
     if (!text) return;
+    if (this.activeChannel === AI_CHANNEL) {
+      this.sendToAi(text);
+      this.input.value = "";
+      return;
+    }
     const id = (crypto.randomUUID && crypto.randomUUID()) || String(Math.random());
     this.client.sendMessage(this.activeChannel, text, id);
     this.input.value = "";
+  }
+
+  // ── AI assistant (local, client-only channel) ─────────────────────────
+  private async sendToAi(text: string) {
+    if (this.isStreaming) return;
+    const me = this.client.you;
+    const author: Identity = me ? { ...me } : { userId: "guest", name: "我", isGuest: true };
+    const userMsg: ChatMessage = {
+      id: (crypto.randomUUID && crypto.randomUUID()) || String(Math.random()),
+      channel: AI_CHANNEL,
+      author,
+      text,
+      ts: Date.now(),
+    };
+    this.appendMessage(userMsg);
+    this.renderMessages();
+    this.scrollToBottom();
+
+    const aiMsg: ChatMessage = {
+      id: (crypto.randomUUID && crypto.randomUUID()) || String(Math.random()),
+      channel: AI_CHANNEL,
+      author: { ...AI_USER },
+      text: "",
+      ts: Date.now(),
+    };
+    this.appendMessage(aiMsg);
+    this.renderMessages();
+
+    const history = this.messages.get(AI_CHANNEL) || [];
+    const payload: AiChatMessage[] = history
+      .filter((x) => x.id !== aiMsg.id && x.text.trim().length > 0)
+      .map((x) => ({
+        role: x.author.userId === AI_USER.userId ? "assistant" : "user",
+        content: x.text,
+      }));
+
+    this.isStreaming = true;
+    this.setAiTyping(true);
+    this.input.disabled = true;
+    try {
+      await streamAiChat(payload, {
+        onToken: (delta) => {
+          aiMsg.text += delta;
+          this.renderMessages();
+          this.scrollToBottom();
+        },
+      });
+    } catch (err: any) {
+      aiMsg.text = aiMsg.text || `⚠️ ${err?.message || "AI 回复失败"}`;
+      this.renderMessages();
+    } finally {
+      this.isStreaming = false;
+      this.setAiTyping(false);
+      this.input.disabled = false;
+      this.input.focus();
+      this.saveAiThread();
+    }
+  }
+
+  /** Show/hide the "小助手 正在输入…" indicator during streaming. */
+  private setAiTyping(on: boolean) {
+    if (!this.typingEl) return;
+    if (on) {
+      this.typingEl.removeAttribute("hidden");
+      this.typingEl.textContent = "小助手 正在输入…";
+    } else {
+      this.typingEl.setAttribute("hidden", "");
+      this.typingEl.textContent = "";
+    }
+  }
+
+  private saveAiThread() {
+    try {
+      const arr = (this.messages.get(AI_CHANNEL) || []).slice(-AI_THREAD_MAX);
+      localStorage.setItem(AI_THREAD_KEY, JSON.stringify(arr));
+    } catch { /* ignore quota / private mode */ }
+  }
+
+  private loadAiThread() {
+    try {
+      const raw = localStorage.getItem(AI_THREAD_KEY);
+      if (raw) {
+        const arr = JSON.parse(raw) as ChatMessage[];
+        if (Array.isArray(arr)) this.messages.set(AI_CHANNEL, arr);
+      }
+    } catch { /* ignore corrupt storage */ }
   }
 
   // ---- group / dm flows ----
@@ -432,6 +566,7 @@ const TEMPLATE = `
       </div>
       <div class="ln-main">
         <div class="ln-messages"></div>
+        <div class="ln-typing" hidden></div>
         <form class="ln-composer">
           <input class="ln-input" placeholder="说点什么… (Enter 发送)" autocomplete="off" />
           <button type="submit" class="ln-send">发送</button>

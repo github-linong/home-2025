@@ -21,12 +21,16 @@
   }
   .ln-chat-panel {
     position: absolute; right: 0; bottom: 4rem;
-    width: min(92vw, 380px); height: min(78vh, 620px);
+    width: min(92vw, 460px); height: min(78vh, 620px);
     display: flex; flex-direction: column;
     background: #ffffff; color: #1f2937;
     border: 1px solid #e5e7eb; border-radius: 0.75rem;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25); overflow: hidden;
   }
+  /* The `hidden` attribute's UA style (display:none) is overridden by the
+     `.ln-chat-panel { display:flex }` rule above due to higher specificity.
+     Re-assert it so the close button actually collapses the panel. */
+  .ln-chat-panel[hidden] { display: none; }
   .ln-chat-header {
     display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem;
     background: var(--ln-p); color: #fff;
@@ -40,6 +44,7 @@
   .ln-me[title]:hover { text-decoration: underline; cursor: pointer; }
   .ln-close { background: transparent; border: none; color: #fff; cursor: pointer; font-size: 1rem; }
   .ln-flash { background: #fde68a; color: #78350f; font-size: 0.75rem; padding: 0.25rem 0.75rem; text-align: center; }
+  .ln-typing { font-size: 0.72rem; color: #6b7280; padding: 0.15rem 0.6rem; background: #f8fafc; }
   .ln-chat-body { flex: 1; display: flex; min-height: 0; }
   .ln-channels {
     width: 8.5rem; flex-shrink: 0; border-right: 1px solid #e5e7eb;
@@ -66,6 +71,7 @@
     background: #f1f5f9; color: #1f2937; padding: 0.4rem 0.7rem; border-radius: 0.75rem;
   }
   .chat-bubble-primary { background: var(--ln-p); color: #fff; }
+  .chat-bubble-accent { background: #0ea5e9; color: #fff; }
   .chat-header { font-size: 0.7rem; opacity: 0.7; margin-bottom: 0.1rem; }
 
   @media (prefers-color-scheme: dark) {
@@ -75,6 +81,8 @@
     .ln-messages, .ln-composer { background: #1f2937; }
     .ln-input { background: #111827; border-color: #374151; color: #f3f4f6; }
     .chat-bubble { background: #374151; color: #f3f4f6; }
+    .chat-bubble-accent { background: #0284c7; color: #fff; }
+    .ln-typing { background: #111827; color: #9ca3af; }
   }
 </style>
 

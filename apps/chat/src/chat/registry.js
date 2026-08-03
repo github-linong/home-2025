@@ -14,6 +14,8 @@
  *                          whether the recipient has "opened" the channel.
  */
 import { config } from "../config.js";
+import { generateInviteCode, isValidInviteCode } from "./invite.js";
+import { randomBytes } from "node:crypto";
 
 /**
  * @type {Map<string, { ws: any, identity: object, ip: string, groupChannels: Set<string> }>}
@@ -23,6 +25,14 @@ const userConns = new Map(); // userId -> Set<connId>
 const userIdentities = new Map(); // userId -> identity (latest wins)
 const groupMembers = new Map(); // groupChannel -> Set<connId>
 const userDms = new Map(); // userId -> Set<dmChannel> (remembered for welcome/history)
+
+/**
+ * Group metadata (invite code, owner, etc.).
+ * @type {Map<string, { groupId: string, ownerId: string, name: string, inviteCode: string, createdAt: number, settings: object }>}
+ */
+const groupMeta = new Map();
+/** inviteCode -> groupId (reverse index for fast lookup) */
+const inviteCodeIndex = new Map();
 
 const presenceTimers = new Map(); // channel -> timeout
 
@@ -226,6 +236,25 @@ export function getConn(connId) {
   return conns.get(connId);
 }
 
+/**
+ * Check whether a user currently has at least one live connection.
+ * @param {string} userId
+ * @returns {boolean}
+ */
+export function isUserOnline(userId) {
+  const set = userConns.get(userId);
+  return !!set && set.size > 0;
+}
+
+/**
+ * Get the latest known identity for a user (may be stale if offline).
+ * @param {string} userId
+ * @returns {object|null}
+ */
+export function getUserIdentity(userId) {
+  return userIdentities.get(userId) ?? null;
+}
+
 export function connChannels(connId) {
   const c = conns.get(connId);
   if (!c) return { groups: [], dms: [] };
@@ -253,4 +282,111 @@ export function isMember(connId, channel) {
     return ids.includes(c.identity.userId) || (userDms.get(c.identity.userId)?.has(channel) ?? false);
   }
   return false;
+}
+
+// ---------------------------------------------------------------------------
+// Group invite system
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate a unique group ID in the form `group:<8-hex-chars>`.
+ */
+function generateGroupId() {
+  return `group:${randomBytes(4).toString("hex")}`;
+}
+
+/**
+ * Prune expired group metadata to prevent unbounded memory growth.
+ * Removes groups whose createdAt is older than `config.groupMetaTtlMs`,
+ * and synchronously cleans up the inviteCodeIndex.
+ */
+export function pruneGroupMeta() {
+  const now = Date.now();
+  const ttl = config.groupMetaTtlMs;
+  for (const [groupId, meta] of groupMeta) {
+    if (now - meta.createdAt > ttl) {
+      inviteCodeIndex.delete(meta.inviteCode);
+      groupMeta.delete(groupId);
+    }
+  }
+}
+
+/**
+ * Create a new group with an invite code.
+ * @param {string|null} groupId  Optional explicit ID; auto-generated if null.
+ * @param {string} ownerId       Creator's userId.
+ * @param {{ name?: string }} options
+ * @returns {{ groupId: string, inviteCode: string }}
+ */
+export function createGroup(groupId, ownerId, options = {}) {
+  if (!groupId) groupId = generateGroupId();
+  // Ensure unique
+  if (groupMeta.has(groupId)) throw new Error("GROUP_EXISTS");
+
+  // Generate unique invite code (collision retry)
+  let code = generateInviteCode(config.groupInviteCodeLength);
+  for (let i = 0; i < 5; i += 1) {
+    if (!inviteCodeIndex.has(code)) break;
+    code = generateInviteCode(config.groupInviteCodeLength);
+  }
+  if (inviteCodeIndex.has(code)) throw new Error("INVITE_CODE_COLLISION");
+
+  const meta = {
+    groupId,
+    ownerId,
+    name: options.name ?? groupId,
+    inviteCode: code,
+    createdAt: Date.now(),
+    settings: {},
+  };
+  groupMeta.set(groupId, meta);
+  inviteCodeIndex.set(code, groupId);
+
+  // Opportunistically prune expired entries to bound memory growth.
+  pruneGroupMeta();
+
+  return { groupId, inviteCode: code };
+}
+
+/**
+ * Look up a group by its invite code.
+ * @param {string} code
+ * @returns {{ groupId: string, ownerId: string, name: string, inviteCode: string, createdAt: number, settings: object } | null}
+ */
+export function getGroupByInviteCode(code) {
+  if (typeof code !== "string") return null;
+  const groupId = inviteCodeIndex.get(code.toUpperCase());
+  if (!groupId) return null;
+  return groupMeta.get(groupId) ?? null;
+}
+
+/**
+ * Get group metadata by groupId.
+ * @param {string} groupId
+ * @returns {object | null}
+ */
+export function getGroupMeta(groupId) {
+  return groupMeta.get(groupId) ?? null;
+}
+
+/**
+ * Join a group via invite code.
+ * Returns the channel string on success or throws with an error code.
+ * @param {string} connId
+ * @param {string} inviteCode
+ * @returns {string} the group channel joined
+ */
+export function joinGroupByInvite(connId, inviteCode) {
+  if (!isValidInviteCode(inviteCode)) throw new Error("INVALID_INVITE");
+  const meta = getGroupByInviteCode(inviteCode);
+  if (!meta) throw new Error("INVALID_INVITE");
+
+  // Check member limit
+  const members = groupMembers.get(meta.groupId);
+  if (members && members.size >= config.groupMaxMembers) {
+    throw new Error("GROUP_FULL");
+  }
+
+  joinGroup(connId, meta.groupId);
+  return meta.groupId;
 }

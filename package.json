@@ -35,6 +35,8 @@
     "deploy:web": "bash scripts/deploy-web.sh",
     "deploy:api2": "bash scripts/deploy-api2.sh",
     "deploy:poker-realtime": "bash scripts/deploy-poker-realtime.sh",
+    "deploy:chat": "bash scripts/deploy-chat.sh",
+    "deploy:wander": "bash scripts/deploy-wander.sh",
     "baidu:push": "node scripts/baidu-push.mjs",
     "baidu:push:recent": "node scripts/baidu-push.mjs --recent 10",
     "seo:www-redirect": "bash scripts/apply-www-canonical-redirect.sh",
@@ -43,7 +45,12 @@
     "dev:poker-realtime": "npm run dev --prefix apps/poker-realtime",
     "start:poker-realtime": "npm run start --prefix apps/poker-realtime",
     "test:poker-realtime": "npm test --prefix apps/poker-realtime",
-    "test:api": "npm test --prefix apps/api"
+    "test:api": "npm test --prefix apps/api",
+    "dev:chat": "npm run dev --prefix apps/chat",
+    "dev:wander": "npm run dev --prefix apps/wander",
+    "dev": ". .nvm-dev.sh && concurrently -n web,api,api2,poker,chat,wander -c blue,yellow,magenta,green,cyan,red \"npm:dev:web\" \"npm:dev:api\" \"npm:dev:api2\" \"npm:dev:poker-realtime\" \"npm:dev:chat\" \"npm:dev:wander\"",
+    "dev:lite": ". .nvm-dev.sh && concurrently -n web,api2 -c blue,magenta \"npm:dev:web\" \"npm:dev:api2\"",
+    "dev:tmux": "zsh scripts/dev.sh"
   },
   "engines": {
     "node": ">=22.0.0"
@@ -52,5 +59,8 @@
     "puppeteer": "^24.8.2",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.4"
   }
 }

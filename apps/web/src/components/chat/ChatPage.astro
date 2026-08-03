@@ -1,0 +1,837 @@
+---
+// Full-page chat controller. Composes ChatHeader, ChatSidebar, ChatMain and
+// owns a single ChatClient instance that drives all WebSocket communication.
+import ChatHeader from "./ChatHeader.astro";
+import ChatSidebar from "./ChatSidebar.astro";
+import ChatMain from "./ChatMain.astro";
+---
+
+<div id="chat-page" class="flex flex-col h-screen overflow-hidden">
+  <ChatHeader />
+  <div class="flex flex-1 min-h-0 relative">
+    <ChatSidebar />
+    <ChatMain />
+  </div>
+  {/* Toast container for invite / group-created notifications */}
+  <div id="chat-toast-container" class="toast toast-top toast-end z-50"></div>
+  {/* Modal for group-created invite info */}
+  <div id="chat-invite-modal" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">🎉 群组创建成功</h3>
+      <p class="py-2 text-sm opacity-70">分享邀请链接给朋友，一起加入聊天吧！</p>
+      <div class="flex flex-col gap-2 py-2">
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-mono font-bold" id="chat-invite-code-display"></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <input id="chat-invite-link-input" type="text" readonly class="input input-bordered input-sm flex-1 text-xs" />
+          <button id="chat-invite-copy-btn" class="btn btn-sm btn-primary">复制链接</button>
+        </div>
+      </div>
+      <div class="modal-action">
+        <button id="chat-invite-modal-close" class="btn btn-sm">关闭</button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  </div>
+</div>
+
+<script>
+import { ChatClient, PUBLIC_GROUP, type Identity, type ChatMessage, type ServerMessage } from "../../lib/chatClient";
+import { streamAiChat, type AiChatMessage } from "../../lib/aiChatClient";
+
+type Channel = string;
+
+/** Virtual, client-only channel for the AI assistant (not a real WS channel). */
+const AI_CHANNEL = "ai:assistant";
+const AI_USER: Identity = { userId: "ai:assistant", name: "小助手", isGuest: false };
+const AI_THREAD_KEY = "ln_chat_ai_thread";
+const AI_THREAD_MAX = 40;
+
+
+/** Generate a fun random guest nickname like "快乐的小猫" */
+function randomGuestName(): string {
+  const adjectives = ["快乐的", "神秘的", "优雅的", "可爱的", "机智的", "勇敢的", "慵懒的", "调皮的", "温柔的", "酷炫的"];
+  const nouns = ["小猫", "熊猫", "狐狸", "企鹅", "海豚", "猫头鹰", "小鹿", "兔子", "松鼠", "考拉"];
+  const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const noun = nouns[Math.floor(Math.random() * nouns.length)];
+  return adj + noun;
+}
+
+/** Build a full invite URL from an invite code. */
+function inviteLink(code: string): string {
+  return `${location.origin}/chat?invite=${encodeURIComponent(code)}`;
+}
+
+/** Backend invite-code alphabet (excludes 0,1,I,O to avoid ambiguity). */
+const INVITE_RE = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{4,10}$/;
+
+/** Parse invite code from current URL, if any. */
+function parseInviteFromUrl(): string | null {
+  try {
+    const params = new URLSearchParams(location.search);
+    const code = params.get("invite");
+    return code && INVITE_RE.test(code.toUpperCase()) ? code.toUpperCase() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Remove invite param from URL without reload. */
+function clearInviteFromUrl() {
+  try {
+    const url = new URL(location.href);
+    url.searchParams.delete("invite");
+    const clean = url.search ? `${url.pathname}${url.search}` : url.pathname;
+    history.replaceState(null, "", clean);
+  } catch { /* ignore */ }
+}
+
+class ChatPageController {
+  private client = new ChatClient();
+  private activeChannel: Channel = PUBLIC_GROUP;
+  private messages = new Map<Channel, ChatMessage[]>();
+  private peerNames = new Map<string, string>();
+  private publicPresence: Identity[] = [];
+  private presenceKey = "";
+  /** Recent contacts pushed by the server (keyed by peer userId). */
+  private contacts = new Map<string, any>();
+  /** Typing indicator state: peer userId -> { name, timer }. */
+  private typingUsers = new Map<string, { name: string; timer: number }>();
+  private typingSendAt = 0;
+  private pendingInvite: string | null = null;
+  /** True while we are waiting for chat.joined in response to a joinByInvite. */
+  private awaitingInviteJoin = false;
+  /** Track group invite codes returned by the server (groupId -> inviteCode). */
+  private groupInviteCodes = new Map<string, string>();
+  /** True while an AI response is streaming (input locked). */
+  private isStreaming = false;
+
+  // DOM refs
+  private statusDot!: HTMLElement;
+  private channelNameEl!: HTMLElement;
+  private onlineCountEl!: HTMLElement;
+  private meChip!: HTMLElement;
+  private groupListEl!: HTMLElement;
+  private contactsEl!: HTMLElement;
+  private onlineUsersEl!: HTMLElement;
+  private dmListEl!: HTMLElement;
+  private messagesEl!: HTMLElement;
+  private input!: HTMLInputElement;
+  private flashEl!: HTMLElement;
+  private typingEl!: HTMLElement;
+  private sidebar!: HTMLElement;
+  private overlay!: HTMLElement;
+
+  constructor() {
+    this.bindRefs();
+    this.bindEvents();
+    // Restore the local AI conversation from a previous visit.
+    this.loadAiThread();
+    // Detect invite code from URL before connecting.
+    this.pendingInvite = parseInviteFromUrl();
+    // Auto-generate a fun guest name if none set (used server-side for guests).
+    if (!this.client.getGuestName()) {
+      this.client.setGuestName(randomGuestName());
+    }
+    this.client.onMessage((m) => this.onServerMessage(m));
+    this.client.onClose(() => this.setStatus(false));
+    this.client.connect()
+      .then(() => this.setStatus(true))
+      .catch(() => this.setStatus(false));
+  }
+
+  // ── DOM binding ────────────────────────────────────────────────────────
+  private bindRefs() {
+    this.statusDot = document.getElementById("chat-status-dot")!;
+    this.channelNameEl = document.getElementById("chat-channel-name")!;
+    this.onlineCountEl = document.getElementById("chat-online-count")!;
+    this.meChip = document.getElementById("chat-me-chip")!;
+    this.groupListEl = document.getElementById("chat-group-list")!;
+    this.contactsEl = document.getElementById("chat-contacts-list")!;
+    this.onlineUsersEl = document.getElementById("chat-online-users")!;
+    this.dmListEl = document.getElementById("chat-dm-list")!;
+    this.messagesEl = document.getElementById("chat-messages")!;
+    this.input = document.getElementById("chat-input") as HTMLInputElement;
+    this.flashEl = document.getElementById("chat-flash")!;
+    this.typingEl = document.getElementById("chat-typing")!;
+    this.sidebar = document.getElementById("chat-sidebar")!;
+    this.overlay = document.getElementById("chat-sidebar-overlay")!;
+  }
+
+  private bindEvents() {
+    // Composer
+    const composer = document.getElementById("chat-composer") as HTMLFormElement;
+    composer.addEventListener("submit", (e) => { e.preventDefault(); this.submit(); });
+    this.input.addEventListener("input", () => this.maybeSendTyping());
+
+    // Sidebar toggle (mobile)
+    document.getElementById("sidebar-toggle")?.addEventListener("click", () => this.toggleSidebar());
+    this.overlay.addEventListener("click", () => this.toggleSidebar(false));
+
+    // Create group
+    document.getElementById("chat-create-group")?.addEventListener("click", () => this.promptGroup());
+
+    // Invite modal close
+    document.getElementById("chat-invite-modal-close")?.addEventListener("click", () => {
+      (document.getElementById("chat-invite-modal") as HTMLDialogElement)?.close();
+    });
+    document.getElementById("chat-invite-copy-btn")?.addEventListener("click", () => {
+      const input = document.getElementById("chat-invite-link-input") as HTMLInputElement;
+      if (input?.value) this.copyToClipboard(input.value).then(() => this.showToast("✅ 邀请链接已复制", "success"));
+    });
+
+    // Guest rename
+    this.meChip.addEventListener("click", () => {
+      if (this.client.you?.isGuest) {
+        const name = window.prompt("设置你的游客昵称", this.client.getGuestName() || "");
+        if (name?.trim()) this.client.setGuestName(name.trim().slice(0, 24));
+      }
+    });
+  }
+
+  // ── Sidebar toggle (mobile) ───────────────────────────────────────────
+  private toggleSidebar(force?: boolean) {
+    const open = force ?? this.sidebar.classList.contains("translate-x-full");
+    this.sidebar.classList.toggle("translate-x-full", !open);
+    this.overlay.classList.toggle("hidden", !open);
+  }
+
+  // ── Status ────────────────────────────────────────────────────────────
+  private setStatus(ok: boolean) {
+    this.statusDot.classList.toggle("bg-success", ok);
+    this.statusDot.classList.toggle("bg-error", !ok);
+    if (ok && this.client.you) this.renderMe();
+  }
+
+  private renderMe() {
+    const you = this.client.you;
+    if (!you) return;
+    this.meChip.textContent = you.isGuest
+      ? `游客: ${you.name} ✏️`
+      : `${you.name} · 已登录`;
+    this.meChip.title = you.isGuest ? "点击设置游客昵称" : "已登录用户";
+    // Hide create-group for guests
+    const btn = document.getElementById("chat-create-group");
+    if (btn) btn.style.display = you.isGuest ? "none" : "";
+  }
+
+  // ── Server messages ───────────────────────────────────────────────────
+  private onServerMessage(m: ServerMessage) {
+    switch (m.type) {
+      case "chat.welcome":
+        this.client.you = m.you as Identity;
+        this.client.channels = m.channels as { groups: string[]; dms: string[] };
+        this.renderMe();
+        this.renderChannelList();
+        this.loadInto(PUBLIC_GROUP, (m.publicHistory as ChatMessage[]) || []);
+        if (this.activeChannel === PUBLIC_GROUP) this.renderMessages();
+        // Auto-join via invite code after connection established.
+        if (this.pendingInvite) {
+          const code = this.pendingInvite;
+          this.pendingInvite = null; // consume once
+          this.awaitingInviteJoin = true;
+          this.client.joinByInvite(code);
+        }
+        break;
+
+      case "chat.message": {
+        const msg = m as unknown as ChatMessage;
+        this.rememberPeer(msg.author);
+        this.appendMessage(msg);
+        // The author is no longer typing once their message lands.
+        if (this.typingUsers.delete(msg.author.userId)) this.renderTyping();
+        if (msg.channel === this.activeChannel) this.renderMessages();
+        break;
+      }
+
+      case "chat.history": {
+        const ch = m.channel as string;
+        this.loadInto(ch, (m.messages as ChatMessage[]) || []);
+        if (ch === this.activeChannel) this.renderMessages();
+        break;
+      }
+
+      case "chat.joined": {
+        this.client.channels = m.channels as { groups: string[]; dms: string[] };
+        const ch = m.channel as string;
+        const inviteCode = m.inviteCode as string | undefined;
+        if (ch && inviteCode) {
+          this.groupInviteCodes.set(ch, inviteCode);
+        }
+        this.renderChannelList();
+        this.loadInto(m.channel as string, (m.history as ChatMessage[]) || []);
+        // If this join was triggered by an invite link, switch to the group and clean URL.
+        if (this.awaitingInviteJoin && (m.channel as string).startsWith("group:")) {
+          this.awaitingInviteJoin = false;
+          clearInviteFromUrl();
+          this.switchChannel(m.channel as string);
+          this.showToast("🎉 已成功加入群组", "success");
+        }
+        if (m.channel === this.activeChannel) this.renderMessages();
+        break;
+      }
+
+      case "chat.groupCreated": {
+        this.client.channels = m.channels as { groups: string[]; dms: string[] };
+        const groupId = m.groupId as string;
+        const inviteCode = m.inviteCode as string;
+        if (groupId && inviteCode) this.groupInviteCodes.set(groupId, inviteCode);
+        this.renderChannelList();
+        if (groupId) this.switchChannel(groupId);
+        this.showInviteModal(inviteCode);
+        break;
+      }
+
+      case "chat.left":
+        this.client.channels = m.channels as { groups: string[]; dms: string[] };
+        this.renderChannelList();
+        break;
+
+      case "chat.identity":
+        this.client.you = m.you as Identity;
+        this.renderMe();
+        break;
+
+      case "chat.contacts": {
+        const list = (m.contacts as any[]) || [];
+        this.contacts.clear();
+        for (const c of list) this.contacts.set(c.userId, c);
+        this.renderContacts();
+        break;
+      }
+
+      case "chat.contactAdded": {
+        const c = m.contact as any;
+        if (c?.userId) {
+          this.contacts.set(c.userId, c);
+          this.renderContacts();
+        }
+        break;
+      }
+
+      case "chat.typing":
+        this.onTyping(m.channel as string, (m.user as Identity) || ({} as Identity));
+        break;
+
+      case "chat.presence":
+        if (m.channel === PUBLIC_GROUP) {
+          const users = (m.users as Identity[]) || [];
+          const key = users.map((u) => u.userId).sort().join("|");
+          if (key === this.presenceKey) break;
+          this.presenceKey = key;
+          this.publicPresence = users;
+          this.publicPresence.forEach((u) => this.rememberPeer(u));
+          this.renderOnlineUsers();
+          this.renderDmList();
+          this.onlineCountEl.textContent = `在线: ${users.length}`;
+        }
+        break;
+
+      case "chat.error": {
+        const errCode = m.code as string;
+        const errMsg = m.message as string;
+        if (errCode === "RATE_LIMITED") {
+          this.flash(errMsg || "发送过于频繁");
+        } else if (errCode === "INVALID_INVITE") {
+          this.awaitingInviteJoin = false;
+          this.showToast("❌ " + (errMsg || "邀请码无效或已过期"), "error");
+          clearInviteFromUrl();
+        } else if (errCode === "GROUP_FULL") {
+          this.awaitingInviteJoin = false;
+          this.showToast("❌ " + (errMsg || "群组已满"), "error");
+        } else if (errCode === "AUTH_REQUIRED") {
+          this.flash(errMsg || "请先登录");
+        } else if (errMsg) {
+          this.flash(errMsg);
+        }
+        break;
+      }
+    }
+  }
+
+  // ── Data helpers ──────────────────────────────────────────────────────
+  private rememberPeer(u: Identity) {
+    if (u?.userId) this.peerNames.set(u.userId, u.name || u.userId);
+  }
+
+  private loadInto(ch: Channel, msgs: ChatMessage[]) {
+    this.messages.set(ch, msgs.slice());
+  }
+
+  private appendMessage(msg: ChatMessage) {
+    const arr = this.messages.get(msg.channel) || [];
+    if (!arr.some((x) => x.id === msg.id || (msg.clientMsgId && x.clientMsgId === msg.clientMsgId))) {
+      arr.push(msg);
+      if (arr.length > 300) arr.shift();
+    }
+    this.messages.set(msg.channel, arr);
+  }
+
+  // ── Channel switching ─────────────────────────────────────────────────
+  switchChannel(ch: Channel) {
+    this.activeChannel = ch;
+    // Reset typing indicator when leaving a channel.
+    for (const { timer } of this.typingUsers.values()) clearTimeout(timer);
+    this.typingUsers.clear();
+    this.renderTyping();
+    this.renderChannelList();
+    if (ch !== AI_CHANNEL && !this.messages.has(ch)) this.client.requestHistory(ch, 50);
+    this.updateHeaderChannelName();
+    this.renderMessages();
+    // Close sidebar on mobile after selection
+    if (window.innerWidth < 1024) this.toggleSidebar(false);
+  }
+
+  private updateHeaderChannelName() {
+    const ch = this.activeChannel;
+    if (ch === PUBLIC_GROUP) {
+      this.channelNameEl.textContent = "💬 公聊";
+    } else if (ch === AI_CHANNEL) {
+      this.channelNameEl.textContent = "🤖 小助手";
+    } else if (ch.startsWith("group:")) {
+      this.channelNameEl.textContent = "👥 " + ch.replace(/^group:/, "");
+    } else if (ch.startsWith("dm:")) {
+      const ids = ch.replace(/^dm:/, "").split(":");
+      const me = this.client.you?.userId;
+      const peer = ids.find((x) => x !== me) || ids[0];
+      this.channelNameEl.textContent = "🔒 " + (this.peerNames.get(peer) || peer);
+    }
+  }
+
+  // ── Render: channel list ──────────────────────────────────────────────
+  private renderChannelList() {
+    this.groupListEl.innerHTML = "";
+    // AI assistant entry (fixed, client-only channel).
+    const aiBtn = document.createElement("button");
+    aiBtn.className = "btn btn-sm btn-ghost justify-start gap-2 w-full" +
+      (AI_CHANNEL === this.activeChannel ? " btn-active" : "");
+    aiBtn.dataset.ch = AI_CHANNEL;
+    const aiLabel = document.createElement("span");
+    aiLabel.className = "truncate";
+    aiLabel.textContent = "🤖 小助手";
+    aiBtn.appendChild(aiLabel);
+    aiBtn.addEventListener("click", () => this.switchChannel(AI_CHANNEL));
+    this.groupListEl.appendChild(aiBtn);
+
+    for (const g of this.client.channels.groups) {
+      const isPublic = g === PUBLIC_GROUP;
+      const btn = document.createElement("button");
+      btn.className = "btn btn-sm btn-ghost justify-start gap-2 w-full" +
+        (g === this.activeChannel ? " btn-active" : "");
+      btn.dataset.ch = g;
+      const label = document.createElement("span");
+      label.className = "truncate";
+      label.textContent = isPublic ? "💬 公聊" : "👥 " + g.replace(/^group:/, "");
+      btn.appendChild(label);
+
+      if (!isPublic) {
+        // Invite copy button
+        const inviteBtn = document.createElement("span");
+        inviteBtn.className = "ml-auto opacity-50 hover:opacity-100 text-xs cursor-pointer";
+        inviteBtn.textContent = "🔗";
+        inviteBtn.title = "复制邀请链接";
+        inviteBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const code = this.groupInviteCodes.get(g);
+          if (code) {
+            this.copyToClipboard(inviteLink(code)).then(() => this.showToast("✅ 邀请链接已复制", "success"));
+          } else {
+            this.showToast("⚠️ 邀请码未加载", "warning");
+          }
+        });
+        btn.appendChild(inviteBtn);
+        // Leave button
+        const x = document.createElement("span");
+        x.className = "opacity-50 hover:opacity-100 text-xs cursor-pointer";
+        x.textContent = "✕";
+        x.title = "离开群组";
+        x.addEventListener("click", (e) => { e.stopPropagation(); this.removeChannel(g); });
+        btn.appendChild(x);
+      }
+      btn.addEventListener("click", () => this.switchChannel(g));
+      this.groupListEl.appendChild(btn);
+    }
+    this.renderDmList();
+  }
+
+  // ── Render: recent contacts ──────────────────────────────────────────
+  private renderContacts() {
+    this.contactsEl.innerHTML = "";
+    if (this.contacts.size === 0) {
+      const empty = document.createElement("div");
+      empty.className = "px-2 py-1 text-xs opacity-50";
+      empty.textContent = "暂无最近联系人";
+      this.contactsEl.appendChild(empty);
+      return;
+    }
+    const me = this.client.you?.userId;
+    for (const c of this.contacts.values()) {
+      if (c.userId === me) continue;
+      const row = document.createElement("button");
+      row.className = "btn btn-sm btn-ghost justify-start gap-2 w-full";
+      row.dataset.peer = c.userId;
+
+      const dot = document.createElement("span");
+      dot.className = "w-2 h-2 rounded-full shrink-0 " + (c.isOnline ? "bg-success" : "bg-base-300");
+
+      const name = document.createElement("span");
+      name.className = "truncate flex-1 text-left";
+      name.textContent = c.name || c.userId;
+
+      row.append(dot, name);
+
+      if (c.isPinned) {
+        const pin = document.createElement("span");
+        pin.className = "text-xs opacity-60";
+        pin.textContent = "📌";
+        row.appendChild(pin);
+      } else {
+        const t = document.createElement("span");
+        t.className = "text-[10px] opacity-50 shrink-0";
+        t.textContent = this.relativeTime(c.lastInteraction || 0);
+        row.appendChild(t);
+      }
+
+      row.addEventListener("click", () =>
+        this.startDm({ userId: c.userId, name: c.name || c.userId, image: c.image, isGuest: c.isGuest }),
+      );
+      this.contactsEl.appendChild(row);
+    }
+  }
+
+  /** Compact relative-time label for `lastInteraction` timestamps. */
+  private relativeTime(ts: number): string {
+    if (!ts) return "";
+    const diff = Date.now() - ts;
+    const m = 60_000, h = 3_600_000, d = 86_400_000;
+    if (diff < m) return "刚刚";
+    if (diff < h) return `${Math.floor(diff / m)}分前`;
+    if (diff < d) return `${Math.floor(diff / h)}时前`;
+    if (diff < 7 * d) return `${Math.floor(diff / d)}天前`;
+    return new Date(ts).toLocaleDateString("zh-CN");
+  }
+
+  // ── Render: online users ──────────────────────────────────────────────
+  private renderOnlineUsers() {
+    this.onlineUsersEl.innerHTML = "";
+    const me = this.client.you?.userId;
+    for (const u of this.publicPresence) {
+      if (u.userId === me) continue;
+      const row = document.createElement("div");
+      row.className = "flex items-center gap-2 px-2 py-1 rounded-lg text-sm cursor-pointer hover:bg-base-300 transition-colors";
+      row.dataset.peer = u.userId;
+
+      const dot = document.createElement("span");
+      dot.className = "w-2 h-2 rounded-full bg-success shrink-0";
+
+      const name = document.createElement("span");
+      name.className = "truncate";
+      name.textContent = u.name || u.userId;
+
+      row.appendChild(dot);
+      row.appendChild(name);
+      row.addEventListener("click", () => this.startDm({ userId: u.userId, name: u.name || u.userId, image: u.image, isGuest: u.isGuest }));
+      this.onlineUsersEl.appendChild(row);
+    }
+  }
+
+  // ── Render: DM list ──────────────────────────────────────────────────
+  private renderDmList() {
+    this.dmListEl.innerHTML = "";
+    const me = this.client.you?.userId;
+    const byPeer = new Map<string, { name: string; online: boolean; dm?: string }>();
+    for (const u of this.publicPresence) {
+      if (u.userId === me) continue;
+      byPeer.set(u.userId, { name: u.name || u.userId, online: true });
+    }
+    for (const d of this.client.channels.dms) {
+      const ids = d.replace(/^dm:/, "").split(":");
+      const peer = ids.find((x) => x !== me) || ids[0];
+      const cur = byPeer.get(peer);
+      if (cur) cur.dm = d;
+      else byPeer.set(peer, { name: this.peerNames.get(peer) || peer, online: false, dm: d });
+    }
+    for (const [peer, info] of byPeer) {
+      const ch = info.dm;
+      const isActive = ch != null && ch === this.activeChannel;
+      const btn = document.createElement("button");
+      btn.className = "btn btn-sm btn-ghost justify-start gap-2 w-full" + (isActive ? " btn-active" : "");
+      if (ch) btn.dataset.ch = ch;
+      btn.dataset.peer = peer;
+
+      const label = document.createElement("span");
+      label.className = "truncate";
+      label.textContent = (ch ? "🔒 " : "👤 ") + info.name + (info.online ? "" : " (离线)");
+      btn.appendChild(label);
+
+      if (ch) {
+        const x = document.createElement("span");
+        x.className = "ml-auto opacity-50 hover:opacity-100 text-xs";
+        x.textContent = "✕";
+        x.addEventListener("click", (e) => { e.stopPropagation(); this.removeChannel(ch); });
+        btn.appendChild(x);
+      }
+
+      btn.addEventListener("click", () => {
+        if (ch) this.switchChannel(ch);
+        else this.startDm({ userId: peer, name: info.name, image: null, isGuest: true });
+      });
+      this.dmListEl.appendChild(btn);
+    }
+  }
+
+  // ── Render: messages ──────────────────────────────────────────────────
+  private renderMessages() {
+    const arr = this.messages.get(this.activeChannel) || [];
+    const me = this.client.you?.userId;
+    this.messagesEl.innerHTML = "";
+    for (const msg of arr) {
+      const mine = msg.author.userId === me;
+      const isAi = msg.author.userId === AI_USER.userId;
+      const wrapper = document.createElement("div");
+      wrapper.className = "chat " + (mine ? "chat-end" : "chat-start");
+
+      const header = document.createElement("div");
+      header.className = "chat-header flex items-center gap-1.5 text-xs opacity-60 mb-0.5";
+
+      const nameSpan = document.createElement("span");
+      nameSpan.textContent = isAi ? "🤖 " + (msg.author.name || "小助手") : (msg.author.name || msg.author.userId);
+
+      const timeEl = document.createElement("time");
+      timeEl.className = "opacity-70";
+      timeEl.textContent = new Date(msg.ts).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+
+      header.append(nameSpan, timeEl);
+
+      const bubble = document.createElement("div");
+      bubble.className = "chat-bubble" + (mine ? " chat-bubble-primary" : isAi ? " chat-bubble-accent" : "");
+      bubble.style.whiteSpace = "pre-wrap"; // preserve AI newlines
+      bubble.textContent = msg.text; // textContent => XSS-safe
+
+      wrapper.append(header, bubble);
+      this.messagesEl.appendChild(wrapper);
+    }
+    this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
+  }
+
+  // ── Actions ───────────────────────────────────────────────────────────
+  private submit() {
+    const text = this.input.value.trim();
+    if (!text) return;
+    if (this.activeChannel === AI_CHANNEL) {
+      this.sendToAi(text);
+      this.input.value = "";
+      return;
+    }
+    const clientMsgId = crypto.randomUUID?.() || String(Math.random());
+    this.client.sendMessage(this.activeChannel, text, clientMsgId);
+    this.input.value = "";
+  }
+
+  // ── AI assistant (local, client-only channel) ─────────────────────────
+  private async sendToAi(text: string) {
+    if (this.isStreaming) return;
+    const me = this.client.you;
+    const author: Identity = me ? { ...me } : { userId: "guest", name: "我", isGuest: true };
+    const userMsg: ChatMessage = {
+      id: crypto.randomUUID?.() || String(Math.random()),
+      channel: AI_CHANNEL,
+      author,
+      text,
+      ts: Date.now(),
+    };
+    this.appendMessage(userMsg);
+    this.renderMessages();
+    this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
+
+    // Placeholder AI message that we fill token-by-token.
+    const aiMsg: ChatMessage = {
+      id: crypto.randomUUID?.() || String(Math.random()),
+      channel: AI_CHANNEL,
+      author: { ...AI_USER },
+      text: "",
+      ts: Date.now(),
+    };
+    this.appendMessage(aiMsg);
+    this.renderMessages();
+
+    // Build the prompt from the existing thread (exclude the empty placeholder).
+    const history = this.messages.get(AI_CHANNEL) || [];
+    const payload: AiChatMessage[] = history
+      .filter((x) => x.id !== aiMsg.id && x.text.trim().length > 0)
+      .map((x) => ({
+        role: x.author.userId === AI_USER.userId ? "assistant" : "user",
+        content: x.text,
+      }));
+
+    this.isStreaming = true;
+    this.setAiTyping(true);
+    this.input.disabled = true;
+    try {
+      await streamAiChat(payload, {
+        onToken: (delta) => {
+          aiMsg.text += delta;
+          this.renderMessages();
+          this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
+        },
+      });
+    } catch (err: any) {
+      aiMsg.text = aiMsg.text || `⚠️ ${err?.message || "AI 回复失败"}`;
+      this.renderMessages();
+    } finally {
+      this.isStreaming = false;
+      this.setAiTyping(false);
+      this.input.disabled = false;
+      this.input.focus();
+      this.saveAiThread();
+    }
+  }
+
+  /** Show/hide the "小助手 正在输入…" indicator during streaming. */
+  private setAiTyping(on: boolean) {
+    if (on) {
+      this.typingEl.classList.remove("hidden");
+      this.typingEl.textContent = "小助手 正在输入…";
+    } else if (this.typingUsers.size === 0) {
+      this.typingEl.classList.add("hidden");
+      this.typingEl.textContent = "";
+    }
+  }
+
+  private saveAiThread() {
+    try {
+      const arr = (this.messages.get(AI_CHANNEL) || []).slice(-AI_THREAD_MAX);
+      localStorage.setItem(AI_THREAD_KEY, JSON.stringify(arr));
+    } catch { /* ignore quota / private mode */ }
+  }
+
+  private loadAiThread() {
+    try {
+      const raw = localStorage.getItem(AI_THREAD_KEY);
+      if (raw) {
+        const arr = JSON.parse(raw) as ChatMessage[];
+        if (Array.isArray(arr)) this.messages.set(AI_CHANNEL, arr);
+      }
+    } catch { /* ignore corrupt storage */ }
+  }
+
+  /** Throttle typing broadcasts to ~2s while the user is actively typing. */
+  private maybeSendTyping() {
+    if (this.activeChannel === AI_CHANNEL) return; // AI channel has no server
+    const now = Date.now();
+    if (now - this.typingSendAt < 2000) return;
+    this.typingSendAt = now;
+    this.client.sendTyping(this.activeChannel);
+  }
+
+  /** Show a transient "X 正在输入…" indicator for the active channel. */
+  private onTyping(channel: string, user: Identity) {
+    if (user.userId === this.client.you?.userId) return;
+    if (channel !== this.activeChannel) return;
+    const existing = this.typingUsers.get(user.userId);
+    if (existing) clearTimeout(existing.timer);
+    this.typingUsers.set(user.userId, {
+      name: user.name || user.userId,
+      timer: window.setTimeout(() => {
+        this.typingUsers.delete(user.userId);
+        this.renderTyping();
+      }, 3000),
+    });
+    this.renderTyping();
+  }
+
+  private renderTyping() {
+    if (!this.typingEl) return;
+    const names = [...this.typingUsers.values()].map((t) => t.name);
+    if (names.length === 0) {
+      this.typingEl.classList.add("hidden");
+      this.typingEl.textContent = "";
+      return;
+    }
+    this.typingEl.classList.remove("hidden");
+    this.typingEl.textContent = names.length === 1 ? `${names[0]} 正在输入…` : `${names.length} 人正在输入…`;
+  }
+
+  private promptGroup() {
+    if (this.client.you?.isGuest) {
+      this.flash("请先登录后再创建群组");
+      return;
+    }
+    const name = window.prompt("输入群组名称（例如 我的小组）", "");
+    if (!name?.trim()) return;
+    this.client.createGroup(name.trim().slice(0, 24));
+  }
+
+  private startDm(peer: Identity) {
+    this.rememberPeer(peer);
+    const me = this.client.you?.userId || "";
+    const ch = "dm:" + [me, peer.userId].sort().join(":");
+    if (!this.client.channels.dms.includes(ch)) this.client.channels.dms.push(ch);
+    this.renderDmList();
+    this.client.joinDm(ch);
+    this.switchChannel(ch);
+  }
+
+  private removeChannel(ch: Channel) {
+    if (ch === PUBLIC_GROUP || ch === AI_CHANNEL) return;
+    const wasActive = this.activeChannel === ch;
+    if (ch.startsWith("group:")) {
+      this.client.leaveGroup(ch);
+      this.client.channels.groups = this.client.channels.groups.filter((x) => x !== ch);
+    } else if (ch.startsWith("dm:")) {
+      this.client.channels.dms = this.client.channels.dms.filter((x) => x !== ch);
+    }
+    if (wasActive) this.switchChannel(PUBLIC_GROUP);
+    else this.renderChannelList();
+  }
+
+  private flash(text: string) {
+    this.flashEl.textContent = text;
+    this.flashEl.classList.remove("hidden");
+    setTimeout(() => this.flashEl.classList.add("hidden"), 2200);
+  }
+
+  // ── Toast notifications ──────────────────────────────────────────────
+  private showToast(text: string, kind: "success" | "error" | "warning" = "success") {
+    const container = document.getElementById("chat-toast-container");
+    if (!container) return;
+    const alert = document.createElement("div");
+    const cls = kind === "success" ? "alert-success" : kind === "error" ? "alert-error" : "alert-warning";
+    alert.className = `alert ${cls} text-sm shadow-lg`;
+    alert.textContent = text;
+    container.appendChild(alert);
+    setTimeout(() => { alert.remove(); }, 3000);
+  }
+
+  // ── Clipboard helper ─────────────────────────────────────────────────
+  private async copyToClipboard(text: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // Fallback for non-HTTPS or older browsers
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+    }
+  }
+
+  // ── Invite modal (after group creation) ───────────────────────────────
+  private showInviteModal(inviteCode: string) {
+    const codeEl = document.getElementById("chat-invite-code-display");
+    const linkInput = document.getElementById("chat-invite-link-input") as HTMLInputElement;
+    if (codeEl) codeEl.textContent = `邀请码: ${inviteCode}`;
+    if (linkInput) linkInput.value = inviteLink(inviteCode);
+    const modal = document.getElementById("chat-invite-modal") as HTMLDialogElement;
+    if (modal) modal.showModal();
+  }
+}
+
+// Mount on DOM ready
+new ChatPageController();
+</script>
