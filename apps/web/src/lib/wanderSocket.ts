@@ -1,21 +1,8 @@
 import type { ServerMessage, Dir, ClientEnvelope } from "./wanderProtocol";
 import { createRequestId } from "./wanderProtocol";
+import { getUserId, getDisplayName, getOrCreateDevUserId } from "./identity";
 
-const DEV_UID_KEY = "wander_dev_uid";
-
-export function getOrCreateDevUserId(): string {
-  try {
-    let id = localStorage.getItem(DEV_UID_KEY);
-    if (!id) {
-      id = `dev_${crypto.randomUUID().slice(0, 8)}`;
-      localStorage.setItem(DEV_UID_KEY, id);
-      document.cookie = `wander_dev_uid=${encodeURIComponent(id)}; path=/; max-age=31536000`;
-    }
-    return id;
-  } catch {
-    return `dev_${Math.random().toString(36).slice(2, 10)}`;
-  }
-}
+export { getOrCreateDevUserId };
 
 type MessageHandler = (msg: ServerMessage) => void;
 
@@ -42,9 +29,9 @@ export class WanderSocket {
     try {
       // Honor an explicit ?devUserId= (so two browser tabs / the documented
       // multi-player test get distinct identities); otherwise fall back to the
-      // stable per-browser id stored in localStorage.
+      // shared stable per-browser id (chat/wander/poker all use the same one).
       const fromUrl = new URLSearchParams(location.search).get("devUserId");
-      const id = fromUrl || localStorage.getItem(DEV_UID_KEY);
+      const id = fromUrl || getUserId();
       if (id) u.searchParams.set("devUserId", id);
     } catch {
       /* ignore */
@@ -176,11 +163,11 @@ export class WanderSocket {
   }
 
   createRoom(displayName?: string) {
-    this.send("room.create", displayName ? { displayName } : {});
+    this.send("room.create", { displayName: displayName ?? getDisplayName() });
   }
 
   joinRoom(roomCode: string, displayName?: string) {
-    this.send("room.join", { roomCode, ...(displayName ? { displayName } : {}) });
+    this.send("room.join", { roomCode, displayName: displayName ?? getDisplayName() });
   }
 
   /** Join the designated public room (default landing for /wander). */

@@ -356,6 +356,17 @@ const { initialRoomCode = "" } = Astro.props;
   // motion is smooth instead of teleporting one grid cell at a time.
   let renders = new Map<string, { x: number; y: number; facing: Dir }>();
   let localTarget: { x: number; y: number; facing: Dir } | null = null;
+  // The real authoritative server cell for the local player, recorded every
+  // room.snapshot. Separated from localTarget (the client's optimistic 1-cell
+  // buffer) so the prediction buffer and the reconcile-on-desync logic are two
+  // distinct concerns — conflating them was the root cause of the "run
+  // backward after release" glitch.
+  let serverCell: { x: number; y: number; facing: Dir } | null = null;
+  // How many cells localTarget may lead the server before we stop buffering
+  // further input. Bounds divergence so applySnapshot's reconcile only ever
+  // fires on a GENUINE desync (rejected move / reconnect / >2-cell lag), never
+  // during ordinary 1-cell prediction — which is what caused teleport-backs.
+  const PREDICT_BUFFER = 2;
   // Currently-held cardinal keys (up/down/left/right). Tracked per-axis rather
   // than as a stack so two keys combine into a diagonal (8-dir) glide.
   let heldCards = new Set<"up" | "down" | "left" | "right">();
@@ -661,19 +672,25 @@ const { initialRoomCode = "" } = Astro.props;
     for (const uid of [...renders.keys()]) if (!targets.has(uid)) renders.delete(uid);
     for (const [uid, t] of targets) if (!renders.has(uid)) renders.set(uid, { x: t.x, y: t.y, facing: t.facing });
 
-    // Local player: trust optimistic input; only reconcile to the server on a
-    // real (>1 cell) divergence (e.g. server rejected a move / reconnected).
+    // Local player: record the authoritative server cell every snapshot, then
+    // only reconcile to it on a GENUINE desync (buffer exceeded PREDICT_BUFFER).
     if (youId && localTarget) {
       const s = targets.get(youId);
       if (s) {
+        // s is the server-derived cell (targets is rebuilt from the snapshot
+        // above, before we re-point youId at localTarget below).
+        serverCell = { x: s.x, y: s.y, facing: s.facing };
         const div = Math.abs(s.x - localTarget.x) + Math.abs(s.y - localTarget.y);
-        if (div > 1) {
+        if (div > PREDICT_BUFFER) {
+          // Genuine desync (server rejected a move / we reconnected / lag
+          // exceeded the buffer). The server is authoritative: snap BOTH the
+          // optimistic target and the render to the server cell. Because the
+          // render is moved WITH the target, stepLocal() can never ease the
+          // render backward — this is a rare, clean hard-snap, not a smooth
+          // rewind. Under normal latency div stays ≤ 1, so this never fires
+          // during ordinary walking (the old div > 1 threshold wrongly fired
+          // on the 1-cell prediction buffer, causing the backward-run glitch).
           localTarget = { x: s.x, y: s.y, facing: s.facing };
-          // Server is authoritative on a real (>1) desync (rejected move /
-          // reconnect). Snap the RENDER to the server position too — otherwise
-          // stepLocal() would ease the render BACKWARD toward localTarget and
-          // the player would appear to "run backward" after releasing keys
-          // (classic at walls, where the client had buffered ahead).
           const rm = renders.get(youId);
           if (rm) renders.set(youId, { x: s.x, y: s.y, facing: s.facing });
           trails.delete(youId);
@@ -740,10 +757,17 @@ const { initialRoomCode = "" } = Astro.props;
     const me = youId ? renders.get(youId) : undefined;
     const cx = me ? me.x : world.w / 2;
     const cy = me ? me.y : world.h / 2;
-    // Float camera (no integer floor) so the world scrolls smoothly as the
-    // eased player glides — an integer camera would jump a whole cell every
-    // half-step, which reads as a stutter.
-    return { camX: cx - VIEW / 2, camY: cy - VIEW / 2 };
+    // Clamp the camera so it never pans into the surrounding void: when the
+    // world is larger than the view, keep the full viewport inside the map;
+    // when the world is smaller, center it. Without this, reaching the left/top
+    // edge pushed half the screen into void and made the game feel "stuck".
+    const camX = world.w >= VIEW
+      ? Math.min(Math.max(0, world.w - VIEW), Math.max(0, cx - VIEW / 2))
+      : (world.w - VIEW) / 2;
+    const camY = world.h >= VIEW
+      ? Math.min(Math.max(0, world.h - VIEW), Math.max(0, cy - VIEW / 2))
+      : (world.h - VIEW) / 2;
+    return { camX, camY };
   }
 
   let lastT = 0;
@@ -1111,6 +1135,14 @@ const { initialRoomCode = "" } = Astro.props;
       const ahead = Math.hypot(localTarget.x - r.x, localTarget.y - r.y);
       if (ahead > 0.12) return;
     }
+    // Prediction-buffer cap: never let localTarget lead the server by more than
+    // PREDICT_BUFFER cells. This bounds divergence so applySnapshot's reconcile
+    // only ever fires on a genuine desync, never during normal latency — which
+    // is what produced the teleport/backward-jump glitches before.
+    if (serverCell) {
+      const lead = Math.abs(localTarget.x - serverCell.x) + Math.abs(localTarget.y - serverCell.y);
+      if (lead >= PREDICT_BUFFER) return;
+    }
     const d = DIR_DELTA[dir];
     const nx = Math.max(0, Math.min(world.w - 1, localTarget.x + d.x));
     const ny = Math.max(0, Math.min(world.h - 1, localTarget.y + d.y));
@@ -1223,6 +1255,7 @@ const { initialRoomCode = "" } = Astro.props;
           players: msg.players,
         });
         localTarget = { x: msg.player.x, y: msg.player.y, facing: msg.player.facing };
+        serverCell = { x: msg.player.x, y: msg.player.y, facing: msg.player.facing };
         renders.set(youId, { x: msg.player.x, y: msg.player.y, facing: msg.player.facing });
         targets.set(youId, { ...localTarget });
         setEnterBusy(false);
@@ -1242,6 +1275,7 @@ const { initialRoomCode = "" } = Astro.props;
           players: msg.players,
         });
         localTarget = { x: msg.player.x, y: msg.player.y, facing: msg.player.facing };
+        serverCell = { x: msg.player.x, y: msg.player.y, facing: msg.player.facing };
         renders.set(youId, { x: msg.player.x, y: msg.player.y, facing: msg.player.facing });
         targets.set(youId, { ...localTarget });
         setEnterBusy(false);
@@ -1253,6 +1287,7 @@ const { initialRoomCode = "" } = Astro.props;
         youId = null;
         playersById = new Map();
         localTarget = null;
+        serverCell = null;
         const pending = pendingAfterLeave;
         pendingAfterLeave = null;
         if (pending) {

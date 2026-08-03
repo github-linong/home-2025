@@ -1,3 +1,5 @@
+import { getUserId, getDisplayName, setDisplayName } from "./identity";
+
 export type Identity = {
   userId: string;
   name: string;
@@ -54,24 +56,14 @@ export class ChatClient {
   }
 
   private loadGuestId(): string {
-    try {
-      let id = localStorage.getItem("ln_chat_guest_id");
-      if (!id) {
-        id = "g" + crypto.randomUUID().slice(0, 8);
-        localStorage.setItem("ln_chat_guest_id", id);
-      }
-      return id;
-    } catch {
-      return "g" + Math.random().toString(36).slice(2, 10);
-    }
+    // Shared stable userId (chat/wander/poker all use the same one).
+    return getUserId();
   }
 
   private loadGuestName(): string {
-    try {
-      return localStorage.getItem("ln_chat_guest_name") || "";
-    } catch {
-      return "";
-    }
+    // Shared persistent display name; migrates the legacy chat guest name and
+    // falls back to a friendly generated one, so chat & wander show the same.
+    return getDisplayName();
   }
 
   getGuestId() {
@@ -202,9 +194,9 @@ export class ChatClient {
   setGuestName(name: string) {
     this.guestName = name;
     if (this.you && this.you.isGuest) this.you.name = name;
-    try {
-      localStorage.setItem("ln_chat_guest_name", name);
-    } catch {}
+    // Persist to the shared display-name store so the new name also shows up in
+    // wander/poker for this browser.
+    setDisplayName(name);
     this.send("chat.setGuestName", { name });
   }
   /** Broadcast a typing indicator for the given channel (throttled by caller). */

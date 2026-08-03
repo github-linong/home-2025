@@ -67,11 +67,15 @@ export function createGateway(server) {
     let devUserId = null;
     let guestId = randomUUID().slice(0, 8);
     let guestName = null;
+    let providedGuest = false;
     try {
       const url = new URL(req.url ?? "/", "http://localhost");
       devUserId = url.searchParams.get("devUserId");
       const qGuest = url.searchParams.get("guestId");
-      if (qGuest && PEER_RE.test(qGuest)) guestId = qGuest;
+      if (qGuest && PEER_RE.test(qGuest)) {
+        guestId = qGuest;
+        providedGuest = true;
+      }
       guestName = sanitizeName(url.searchParams.get("guestName"));
     } catch {
       /* ignore */
@@ -88,7 +92,15 @@ export function createGateway(server) {
         isGuest: false,
       };
     } else {
-      identity = { userId: `guest_${guestId}`, name: guestName ?? "游客", image: null, isGuest: true };
+      // Client-supplied ids are used verbatim so chat shares one stable
+      // identity with wander/poker (e.g. "u_abc1234"); only server-generated
+      // ids keep the legacy "guest_" namespace for pre-unification clients.
+      identity = {
+        userId: providedGuest ? guestId : `guest_${guestId}`,
+        name: guestName ?? "游客",
+        image: null,
+        isGuest: true,
+      };
     }
 
     const connId = randomUUID();

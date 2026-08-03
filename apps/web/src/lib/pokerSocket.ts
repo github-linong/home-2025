@@ -1,23 +1,10 @@
 import type { ServerMessage } from "./pokerProtocol";
 import { createRequestId } from "./pokerProtocol";
+import { getUserId, getOrCreateDevUserId } from "./identity";
+
+export { getOrCreateDevUserId };
 
 type MessageHandler = (msg: ServerMessage) => void;
-
-const DEV_UID_KEY = "poker_dev_uid";
-
-export function getOrCreateDevUserId(): string {
-  try {
-    let id = localStorage.getItem(DEV_UID_KEY);
-    if (!id) {
-      id = `dev_${crypto.randomUUID().slice(0, 8)}`;
-      localStorage.setItem(DEV_UID_KEY, id);
-      document.cookie = `poker_dev_uid=${encodeURIComponent(id)}; path=/; max-age=31536000`;
-    }
-    return id;
-  } catch {
-    return `dev_${Math.random().toString(36).slice(2, 10)}`;
-  }
-}
 
 export class PokerSocket {
   private ws: WebSocket | null = null;
@@ -45,7 +32,7 @@ export class PokerSocket {
     const u = new URL(this.urlBase, location.href);
     // Optional client tag for logs; production auth still requires session cookie.
     try {
-      const id = localStorage.getItem(DEV_UID_KEY);
+      const id = getUserId();
       if (id) u.searchParams.set("devUserId", id);
     } catch {
       /* ignore */
