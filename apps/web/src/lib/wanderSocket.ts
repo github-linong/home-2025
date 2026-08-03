@@ -157,8 +157,12 @@ export class WanderSocket {
   }
 
   send(type: string, payload: Record<string, unknown> = {}) {
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      if (type === "player.move") console.log("[wander] send-DROPPED", JSON.stringify({ dir: payload.dir, readyState: this.ws ? this.ws.readyState : "no-ws" }));
+      return;
+    }
     const env: ClientEnvelope = { type, requestId: createRequestId(), payload };
+    if (type === "player.move") console.log("[wander] send-ok", JSON.stringify({ dir: payload.dir }));
     this.ws.send(JSON.stringify(env));
   }
 

@@ -371,6 +371,27 @@ const { initialRoomCode = "" } = Astro.props;
   // than as a stack so two keys combine into a diagonal (8-dir) glide.
   let heldCards = new Set<"up" | "down" | "left" | "right">();
 
+  // ===== DEBUG LOGGING =====
+  // Toggle with: window.__wanderLog = false  (console spam off, buffer stays)
+  // Dump ring buffer: window.__wanderEvents
+  type _Evt = { t: number; tag: string; [k: string]: unknown };
+  const __evtBuf: _Evt[] = [];
+  (window as any).__wanderEvents = __evtBuf;
+  (window as any).__wanderLog = false; // prod-safe: enable via window.__wanderLog = true
+  function _dbg(tag: string, data?: Record<string, unknown>) {
+    const rec: _Evt = { t: Math.round(performance.now()), tag, ...(data ?? {}) };
+    __evtBuf.push(rec);
+    if (__evtBuf.length > 800) __evtBuf.shift();
+    if ((window as any).__wanderLog) console.log("[wander]", tag, data ? JSON.stringify(data) : "");
+  }
+  let __lastBlockLog = 0;
+  function _dbgBlock(tag: string, data: Record<string, unknown>) {
+    const now = performance.now();
+    __evtBuf.push({ t: Math.round(now), tag, ...data });
+    if (__evtBuf.length > 800) __evtBuf.shift();
+    if (now - __lastBlockLog > 350) { __lastBlockLog = now; if ((window as any).__wanderLog) console.log("[wander]", tag, JSON.stringify(data)); }
+  }
+
   const STEP_MS = 90; // time to glide across one cell (~11 cells/sec)
   const SPEED = 1 / (STEP_MS / 1000); // cells per second (~10)
 
@@ -695,6 +716,10 @@ const { initialRoomCode = "" } = Astro.props;
           if (rm) renders.set(youId, { x: s.x, y: s.y, facing: s.facing });
           trails.delete(youId);
           lastFxPos.delete(youId);
+          _dbg("snap-reconcile", { sx: s.x, sy: s.y, div, localTarget: { x: localTarget.x, y: localTarget.y } });
+        } else {
+          const rm0 = renders.get(youId);
+          _dbg("snap", { sx: s.x, sy: s.y, div: +div.toFixed(2), render: rm0 ? { x: +rm0.x.toFixed(2), y: +rm0.y.toFixed(2) } : null });
         }
         targets.set(youId, { ...localTarget }); // render follows optimistic target
       }
@@ -834,17 +859,19 @@ const { initialRoomCode = "" } = Astro.props;
     // the authoritative localTarget — if we didn't, the render would freeze
     // behind the target after a key release, the step() ahead-gate would stay
     // wedged (> 0.12), and ALL further movement would be blocked.
+    // Home the render DIRECTLY toward localTarget (both axes), never along the
+    // constrained 8-dir vector. If we only moved along DIR_VEC[dir], a prior
+    // diagonal step leaves localTarget perpendicular-offset from the render;
+    // the held cardinal motion can't close that gap, so `ahead` stays > 0.12
+    // and the step() ahead-gate wedges forever → the player FREEZES while the
+    // key is held (observed as repeated step-block-ahead with no step-queue).
+    // Direct homing closes any offset, so the gate always reopens.
     let ux = 0, uy = 0, hasDir = false;
-    if (dir) {
-      const v = DIR_VEC[dir];
-      ux = v.x; uy = v.y; hasDir = true;
-    } else {
-      const dx = localTarget.x - me.x;
-      const dy = localTarget.y - me.y;
-      const dist = Math.hypot(dx, dy);
-      if (dist > 1e-4) {
-        ux = dx / dist; uy = dy / dist; hasDir = true;
-      }
+    const dx = localTarget.x - me.x;
+    const dy = localTarget.y - me.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist > 1e-4) {
+      ux = dx / dist; uy = dy / dist; hasDir = true;
     }
 
     if (!hasDir || move <= 0) {
@@ -1129,30 +1156,30 @@ const { initialRoomCode = "" } = Astro.props;
   // (ahead ≤ 0.12 cells), so holding a key produces seamless, gap-free gliding
   // instead of the old step→freeze→step cadence.
   function step(dir: Dir) {
-    if (!roomId || !connected || !youId || !localTarget) return;
-    const r = renders.get(youId);
-    if (r) {
-      const ahead = Math.hypot(localTarget.x - r.x, localTarget.y - r.y);
-      if (ahead > 0.12) return;
+    if (!roomId || !connected || !youId || !localTarget) {
+      _dbg("step-skip", { dir, roomId: !!roomId, connected, youId: !!youId, lt: !!localTarget });
+      return;
     }
+    const r = renders.get(youId);
+    const ahead = r ? Math.hypot(localTarget.x - r.x, localTarget.y - r.y) : 0;
+    if (ahead > 0.12) { _dbgBlock("step-block-ahead", { dir, ahead: +ahead.toFixed(3) }); return; }
     // Prediction-buffer cap: never let localTarget lead the server by more than
     // PREDICT_BUFFER cells. This bounds divergence so applySnapshot's reconcile
     // only ever fires on a genuine desync, never during normal latency — which
     // is what produced the teleport/backward-jump glitches before.
-    if (serverCell) {
-      const lead = Math.abs(localTarget.x - serverCell.x) + Math.abs(localTarget.y - serverCell.y);
-      if (lead >= PREDICT_BUFFER) return;
-    }
+    const lead = serverCell ? Math.abs(localTarget.x - serverCell.x) + Math.abs(localTarget.y - serverCell.y) : 0;
+    if (serverCell && lead >= PREDICT_BUFFER) { _dbgBlock("step-block-lead", { dir, ahead: +ahead.toFixed(3), lead }); return; }
     const d = DIR_DELTA[dir];
     const nx = Math.max(0, Math.min(world.w - 1, localTarget.x + d.x));
     const ny = Math.max(0, Math.min(world.h - 1, localTarget.y + d.y));
-    if (nx === localTarget.x && ny === localTarget.y) return; // wall → no-op
+    if (nx === localTarget.x && ny === localTarget.y) { _dbg("step-wall", { dir, x: localTarget.x, y: localTarget.y }); return; } // wall → no-op
     localTarget = { x: nx, y: ny, facing: dir };
     // Optimistic: drive the render target immediately. The server snapshot that
     // follows agrees (divergence ≤ 1) and never snaps us backward — that
     // backward snap was the original source of the jitter.
     targets.set(youId, { ...localTarget });
     socket.move(dir);
+    _dbg("step-queue", { dir, nx, ny, ahead: +ahead.toFixed(3), lead });
   }
 
   // Pump continuous motion from currently-held keys (called each animation
@@ -1178,14 +1205,14 @@ const { initialRoomCode = "" } = Astro.props;
       const card = KEY_CARD[e.key];
       if (card) {
         e.preventDefault();
-        if (!e.repeat) pressCard(card);
+        if (!e.repeat) { pressCard(card); _dbg("keydown", { key: e.key, card, held: [...heldCards] }); }
       }
     },
     { passive: false },
   );
   window.addEventListener("keyup", (e) => {
     const card = KEY_CARD[e.key];
-    if (card) releaseCard(card);
+    if (card) { releaseCard(card); _dbg("keyup", { key: e.key, held: [...heldCards] }); }
   });
   // Drop held keys if the tab loses focus, so movement doesn't "stick".
   window.addEventListener("blur", () => {
@@ -1321,6 +1348,7 @@ const { initialRoomCode = "" } = Astro.props;
       }
     });
     socket.onClose(() => {
+      _dbg("ws-close", { connected: socket.connected });
       setConn(false, "连接断开");
       setEnterBusy(false);
     });
