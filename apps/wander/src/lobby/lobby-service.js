@@ -103,7 +103,24 @@ export function createRoom(ownerId, ownerName, preferredCode = null) {
 }
 
 export function joinRoom(room, userId, displayName) {
-  if (room.players.has(userId)) return makeError(ErrorCodes.NOT_IN_ROOM, "已经在房间中");
+  const existing = room.players.get(userId);
+  if (existing) {
+    // Same user (re)joining — e.g. a page refresh within the disconnect-grace
+    // window, or a stale player object left behind by an unclean disconnect.
+    // Re-activate them in place so they instantly return to the room at their
+    // last position/color instead of being rejected with "已经在房间中".
+    existing.status = "active";
+    if (existing.disconnectTimer) {
+      clearTimeout(existing.disconnectTimer);
+      existing.disconnectTimer = null;
+    }
+    existing.disconnectedAt = null;
+    if (displayName) existing.displayName = displayName;
+    existing.reconnectToken = generateReconnectToken();
+    existing.reconnectTokenExpires = Date.now() + config.reconnectTokenTtlMs;
+    bumpRoomVersion(room);
+    return { ok: true };
+  }
   if (room.players.size >= config.maxPlayersPerRoom) return makeError(ErrorCodes.ROOM_FULL);
   room.players.set(userId, makePlayer(room, userId, displayName));
   bumpRoomVersion(room);

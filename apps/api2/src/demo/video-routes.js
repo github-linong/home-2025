@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { resolveMediaFields, validateVideoMedia } from "./dashscope-upload.js";
 
 const VIDEO_ENDPOINT =
   "https://dashscope.aliyuncs.com/api/v1/services/aigc/video-generation/video-synthesis";
@@ -196,6 +197,45 @@ function createRateLimiter({ maxRequests = 5, windowMs = 60_000 } = {}) {
     current.count += 1;
     return current.count <= maxRequests;
   };
+}
+
+function requestHadMedia(params) {
+  return !!(
+    params.imgUrl ||
+    params.lastFrameUrl ||
+    params.drivingAudioUrl ||
+    params.audioUrl ||
+    params.videoUrl ||
+    params.refVideoUrl ||
+    params.refVoiceUrl ||
+    (params.refImages?.length ?? 0) > 0
+  );
+}
+
+/** Map DashScope failures to user-facing messages (keep raw detail separate). */
+export function formatVideoError(error, { hadMedia, modelId } = {}) {
+  const detail = error?.message || "Video generation failed";
+  if (/InternalError\.Algo/i.test(detail) && /NoneType/i.test(detail)) {
+    if (hadMedia) {
+      return {
+        message:
+          "媒体文件格式不被模型接受。请确认已上传首帧图/参考视频，或换用公网 URL。",
+        detail,
+      };
+    }
+    if (modelId === "wanx2.1-t2v-plus") {
+      return {
+        message:
+          "DashScope 服务端处理失败（wanx2.1-t2v-plus 偶发）。建议改用「Wanx 2.1 Turbo」或「Wan 2.7 T2V」后重试。",
+        detail,
+      };
+    }
+    return {
+      message: "DashScope 服务端处理失败，请稍后重试或更换模型。",
+      detail,
+    };
+  }
+  return { message: detail, detail: undefined };
 }
 
 function normalizeVideoUrl(value) {
@@ -469,6 +509,20 @@ export function createVideoRouter({
         ? req.body.audio_setting
         : null;
 
+    /* ---- validate required media ---- */
+    const mediaError = validateVideoMedia(modelCfg, {
+      imgUrl,
+      videoUrl: inputVideoUrl,
+      refImages,
+      refVideoUrl,
+      lastFrameUrl,
+      drivingAudioUrl,
+    });
+    if (mediaError) {
+      res.status(400).json({ ok: false, error: "invalid_media", message: mediaError });
+      return;
+    }
+
     /* ---- rate limit ---- */
     const clientKey = req.ip || req.socket.remoteAddress || "unknown";
     if (!allowRequest(clientKey)) {
@@ -480,9 +534,42 @@ export function createVideoRouter({
     const t0 = Date.now();
     const tag = `[vid:${clientKey}]`;
     const mediaFlags = [imgUrl ? "+img" : "", lastFrameUrl ? "+last" : "", drivingAudioUrl ? "+drvAudio" : "", audioUrl ? "+audio" : "", inputVideoUrl ? "+vid" : "", refVideoUrl ? "+refVid" : "", refVoiceUrl ? "+voice" : "", refImages.length ? `+ref${refImages.length}` : ""].filter(Boolean).join(" ");
+    const hadMedia = requestHadMedia({
+      imgUrl,
+      lastFrameUrl,
+      drivingAudioUrl,
+      audioUrl,
+      videoUrl: inputVideoUrl,
+      refVideoUrl,
+      refVoiceUrl,
+      refImages,
+    });
     console.log(`${tag} ▶ model=${modelId} ${modelCfg.paramStyle === "resolution" ? `${resolution}/${ratio}` : size} dur=${duration || "default"}s prompt="${prompt.slice(0, 60)}${prompt.length > 60 ? "…" : ""}"${mediaFlags ? ` ${mediaFlags}` : ""}`);
 
     try {
+      /* ---- resolve data: video/audio → oss:// (DashScope requirement) ---- */
+      const resolved = await resolveMediaFields(
+        {
+          imgUrl,
+          lastFrameUrl,
+          drivingAudioUrl,
+          audioUrl,
+          videoUrl: inputVideoUrl,
+          refVideoUrl,
+          refVoiceUrl,
+          refImages,
+        },
+        { apiKey: cfg.apiKey, modelId, fetchImpl },
+      );
+      imgUrl = resolved.fields.imgUrl;
+      lastFrameUrl = resolved.fields.lastFrameUrl;
+      drivingAudioUrl = resolved.fields.drivingAudioUrl;
+      audioUrl = resolved.fields.audioUrl;
+      inputVideoUrl = resolved.fields.videoUrl;
+      refVideoUrl = resolved.fields.refVideoUrl;
+      refVoiceUrl = resolved.fields.refVoiceUrl;
+      refImages = resolved.fields.refImages ?? [];
+
       /* ---- build & submit ---- */
       const body = buildVideoBody(modelId, modelCfg, prompt, {
         size,
@@ -510,6 +597,7 @@ export function createVideoRouter({
         "X-DashScope-Async": "enable",
       };
       if (cfg.workspaceId) headers["X-DashScope-WorkSpace"] = cfg.workspaceId;
+      if (resolved.usedOss) headers["X-DashScope-OssResourceResolve"] = "enable";
 
       const tSubmit = Date.now();
       const submitResponse = await fetchImpl(VIDEO_ENDPOINT, {
@@ -598,10 +686,12 @@ export function createVideoRouter({
       res.send(video);
     } catch (error) {
       console.error(`${tag} ✗ failed:`, error.message);
+      const formatted = formatVideoError(error, { hadMedia, modelId });
       res.status(502).json({
         ok: false,
         error: "video_request_failed",
-        message: error.message || "Video generation failed",
+        message: formatted.message,
+        ...(formatted.detail ? { detail: formatted.detail } : {}),
       });
     }
   });

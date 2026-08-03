@@ -2,6 +2,7 @@ import { WebSocketServer } from "ws";
 import { config } from "../config.js";
 import {
   verifyWithApi2,
+  guestIdentity,
   setSession,
   deleteSession,
   shouldRevalidate,
@@ -106,10 +107,11 @@ export function createGateway(server) {
     }, config.pingIntervalMs);
     ws._pingTimer.unref?.();
 
-    // Authenticate immediately on connect (dev auth via query/cookie, or api2).
-    // The AUTH_REQUIRED path is handled inside authenticate() itself so a dead
-    // api2 never leaves the socket hanging; this outer catch only guards
-    // unexpected post-auth throws.
+    // Authenticate immediately on connect. Wander is a public game: a real
+    // login (api2 cookie) or a dev identity (DEV_SKIP_AUTH) is used when
+    // present, but an unauthenticated visitor becomes an anonymous guest and
+    // can play immediately — login is never forced. This outer catch only
+    // guards unexpected post-auth throws (the auth flow itself never hangs).
     authenticate(ws, { ip, devUserId, cookie }).catch(() => {
       try {
         if (ws.readyState === ws.OPEN) ws.close(4500, "auth_error");
@@ -123,40 +125,37 @@ export function createGateway(server) {
 }
 
 async function authenticate(ws, ctx) {
+  // Wander is a public game. Resolve identity in priority order:
+  //   1. real login (api2 session cookie)  → logged-in identity
+  //   2. dev identity (DEV_SKIP_AUTH + ?devUserId=/cookie) → Dev identity
+  //   3. anonymous → guest identity (always allowed to play)
+  // A dead/unreachable api2 is treated as "no login" and still yields a guest,
+  // so the game stays playable even when the auth service is down.
   let verified;
   try {
     verified = await verifyWithApi2(ctx.cookie, { devUserId: ctx.devUserId });
   } catch {
-    // api2 unreachable or threw. Fail closed with a clear, non-hanging error
-    // instead of leaving the socket open with no session.ready.
-    try {
-      ws.send(JSON.stringify(errorMsg("AUTH_REQUIRED", "身份验证服务暂不可用，请稍后重试")));
-      ws.close(4401, "auth_required");
-    } catch {
-      /* ignore */
-    }
-    return;
+    verified = null; // api2 unreachable → anonymous guest, not a hard failure
   }
-  if (!verified) {
-    try {
-      ws.send(JSON.stringify(errorMsg("AUTH_REQUIRED", "请先登录")));
-      ws.close(4401, "auth_required");
-    } catch {
-      /* ignore */
-    }
-    return;
-  }
+  const identity = verified ?? guestIdentity();
+  const isGuest = !verified;
 
-  const connId = registry.registerConnection(ws, verified.userId, ctx.cookie ?? "");
+  const connId = registry.registerConnection(ws, identity.userId, ctx.cookie ?? "");
   ws._connId = connId;
   ws._authed = true;
-  setSession(connId, { userId: verified.userId, user: verified.user, cookie: ctx.cookie });
+  setSession(connId, {
+    userId: identity.userId,
+    user: identity.user,
+    cookie: ctx.cookie,
+    isGuest,
+  });
 
   ws.send(
     JSON.stringify({
       type: "session.ready",
-      userId: verified.userId,
-      user: verified.user,
+      userId: identity.userId,
+      user: identity.user,
+      isGuest,
       publicRoomCode: config.publicRoomCode,
     }),
   );

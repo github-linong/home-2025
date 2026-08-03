@@ -8,6 +8,7 @@ import {
   leaveRoom,
   roomSnapshot,
   validateReconnect,
+  markDisconnected,
   getRoomByCode,
   sweepIdleEmptyRooms,
 } from "../src/lobby/lobby-service.js";
@@ -27,13 +28,31 @@ test("createRoom honors a preferred (public) code", () => {
   assert.equal(getRoomByCode("PUBLIC"), room);
 });
 
-test("joinRoom adds a second player; duplicate join is rejected", () => {
+test("joinRoom re-activates a grace-disconnected player instead of rejecting", () => {
   const room = createRoom("u1", "Alice");
+  joinRoom(room, "u2", "Bob");
+  // Simulate an unclean disconnect (no room.leave) → player enters grace window.
+  markDisconnected(room, "u2");
+  assert.equal(room.players.get("u2").status, "disconnected");
+  // Same user reconnects (e.g. page refresh) → should rejoin seamlessly.
   const r = joinRoom(room, "u2", "Bob");
   assert.ok(r.ok);
-  assert.equal(room.players.size, 2);
-  const dup = joinRoom(room, "u2", "Bob");
-  assert.equal(dup.code, "NOT_IN_ROOM");
+  assert.equal(room.players.get("u2").status, "active");
+  assert.equal(room.players.size, 2); // not duplicated into two players
+});
+
+test("joinRoom keeps the player's last position on rejoin", () => {
+  const room = createRoom("u1", "Alice");
+  joinRoom(room, "u2", "Bob");
+  const before = room.players.get("u2");
+  before.x = 10;
+  before.y = 20;
+  markDisconnected(room, "u2");
+  const r = joinRoom(room, "u2", "Bob");
+  assert.ok(r.ok);
+  const after = room.players.get("u2");
+  assert.equal(after.x, 10);
+  assert.equal(after.y, 20);
 });
 
 test("movePlayer steps one cell, clamps to the wall, and updates facing", () => {
@@ -48,6 +67,25 @@ test("movePlayer steps one cell, clamps to the wall, and updates facing", () => 
   assert.ok(right.ok);
   assert.equal(p.x, 1);
   assert.equal(p.facing, "right");
+});
+
+test("movePlayer supports 8-directional diagonal steps", () => {
+  const room = createRoom("u1", "Alice");
+  const p = room.players.get("u1");
+  p.x = 5;
+  p.y = 5;
+  const d = movePlayer(room, "u1", "up-left");
+  assert.ok(d.ok);
+  assert.equal(p.x, 4, "x steps -1 on a diagonal");
+  assert.equal(p.y, 4, "y steps -1 on a diagonal");
+  assert.equal(p.facing, "up-left");
+  // A diagonal into the left wall slides up (free axis) instead of stalling.
+  p.x = 0;
+  p.y = 5;
+  const slide = movePlayer(room, "u1", "up-left");
+  assert.ok(slide.ok);
+  assert.equal(p.x, 0, "x clamped at the left wall");
+  assert.equal(p.y, 4, "y still moves up");
 });
 
 test("movePlayer rejects an invalid direction", () => {
@@ -110,6 +148,7 @@ test("sweepIdleEmptyRooms destroys rooms with no active players", () => {
 test("world helpers: clampToWorld + isDir", () => {
   assert.deepEqual(clampToWorld(-3, 5000, { w: 1000, h: 1000 }), { x: 0, y: 999 });
   assert.equal(isDir("up"), true);
+  assert.equal(isDir("up-left"), true);
   assert.equal(isDir("northeast"), false);
   const p = { x: 5, y: 5, facing: "down" };
   const res = stepPlayer(p, "left", { w: 1000, h: 1000 });

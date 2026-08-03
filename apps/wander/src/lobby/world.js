@@ -23,6 +23,13 @@ export const DIRS = {
   down: { dx: 0, dy: 1 },
   left: { dx: -1, dy: 0 },
   right: { dx: 1, dy: 0 },
+  // Diagonals — added so the grid supports smooth 8-directional movement.
+  // dx/dy are still unit steps; clampToWorld keeps each axis in bounds, so a
+  // diagonal into a wall slides along the free axis instead of stalling.
+  "up-left": { dx: -1, dy: -1 },
+  "up-right": { dx: 1, dy: -1 },
+  "down-left": { dx: -1, dy: 1 },
+  "down-right": { dx: 1, dy: 1 },
 };
 
 export function isDir(d) {

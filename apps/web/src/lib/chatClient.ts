@@ -1,7 +1,7 @@
 export type Identity = {
   userId: string;
   name: string;
-  image: string | null;
+  image?: string | null;
   isGuest: boolean;
 };
 
@@ -201,6 +201,7 @@ export class ChatClient {
   }
   setGuestName(name: string) {
     this.guestName = name;
+    if (this.you && this.you.isGuest) this.you.name = name;
     try {
       localStorage.setItem("ln_chat_guest_name", name);
     } catch {}

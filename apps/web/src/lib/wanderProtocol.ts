@@ -1,6 +1,8 @@
 // Shared client/server protocol types for the Wander game.
 
-export type Dir = "up" | "down" | "left" | "right";
+export type Dir =
+  | "up" | "down" | "left" | "right"
+  | "up-left" | "up-right" | "down-left" | "down-right";
 
 export interface PlayerView {
   userId: string;

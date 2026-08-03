@@ -1054,8 +1054,20 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       });
 
       if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.message || `HTTP ${response.status}`);
+        const ct = response.headers.get("content-type") || "";
+        let message = `HTTP ${response.status}`;
+        if (ct.includes("application/json")) {
+          const err = await response.json().catch(() => ({}));
+          message = err.message || err.error || message;
+        } else {
+          const text = await response.text().catch(() => "");
+          if (response.status === 504 || response.status === 502 || response.status === 503) {
+            message = "网关超时或服务暂不可用，视频生成可能需要数分钟，请稍后重试";
+          } else if (text && !text.includes("<!DOCTYPE")) {
+            message = text.slice(0, 200);
+          }
+        }
+        throw new Error(message);
       }
 
       const blob = await response.blob();

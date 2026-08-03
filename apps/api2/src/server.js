@@ -49,8 +49,8 @@ app.all("/api/auth/*", toNodeHandler(auth));
 
 const globalJsonParser = express.json({ limit: "1mb" });
 app.use((req, _res, next) => {
-  // Skip the global JSON parser for routes with their own body limit.
-  if (req.path.startsWith("/api/demo/image") || req.path.startsWith("/api/demo/video")) return next();
+  // Demo routes carry their own JSON limit (base64 refs, long chat context).
+  if (req.path.startsWith("/api/demo/")) return next();
   globalJsonParser(req, _res, next);
 });
 
@@ -77,12 +77,12 @@ app.get("/api/me", async (req, res) => {
 });
 
 app.use("/api/learn", createLearnRouter(pool));
-app.use("/api/demo", createDemoRouter());
+app.use("/api/demo", express.json({ limit: "30mb" }), createDemoRouter());
 app.use("/api/demo/compare", createCompareRouter());
 app.use("/api/demo/guide", createGuideRouter());
 app.use("/api/demo/tts", createTtsRouter());
-app.use("/api/demo/image", express.json({ limit: "20mb" }), createImageRouter());
-app.use("/api/demo/video", express.json({ limit: "20mb" }), createVideoRouter());
+app.use("/api/demo/image", express.json({ limit: "30mb" }), createImageRouter());
+app.use("/api/demo/video", express.json({ limit: "30mb" }), createVideoRouter());
 app.use("/api/demo/avatar", createAvatarRouter());
 
 const server = app.listen(port, "0.0.0.0", () => {

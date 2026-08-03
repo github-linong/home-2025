@@ -38,6 +38,15 @@ class ChatWidget {
   private input!: HTMLInputElement;
   private typingEl!: HTMLElement;
   private chList: HTMLElement[] = [];
+  /** Per-channel unread counts (excluding the channel currently being viewed). */
+  private unread = new Map<Channel, number>();
+  private badgeEl!: HTMLElement;
+  private toastEl!: HTMLElement;
+  private toastTimer: number | null = null;
+  private renameOverlay!: HTMLElement;
+  private renameInput!: HTMLInputElement;
+  private renameSave!: HTMLButtonElement;
+  private renameCancel!: HTMLButtonElement;
 
   static mount() {
     if ((window as any).__lnChat) return (window as any).__lnChat as ChatWidget;
@@ -62,6 +71,19 @@ class ChatWidget {
     this.messagesEl = this.root.querySelector(".ln-messages") as HTMLElement;
     this.input = this.root.querySelector(".ln-input") as HTMLInputElement;
     this.typingEl = this.root.querySelector(".ln-typing") as HTMLElement;
+    this.badgeEl = this.root.querySelector(".ln-badge") as HTMLElement;
+    this.toastEl = this.root.querySelector(".ln-toast") as HTMLElement;
+    this.renameOverlay = this.root.querySelector(".ln-rename-overlay") as HTMLElement;
+    this.renameInput = this.root.querySelector(".ln-rename-input") as HTMLInputElement;
+    this.renameSave = this.root.querySelector(".ln-rename-save") as HTMLButtonElement;
+    this.renameCancel = this.root.querySelector(".ln-rename-cancel") as HTMLButtonElement;
+    this.toastEl.addEventListener("click", () => {
+      const ch = this.toastEl.dataset.ch;
+      this.toastEl.setAttribute("hidden", "");
+      if (this.toastTimer) clearTimeout(this.toastTimer);
+      this.toggle(true);
+      if (ch) this.switchChannel(ch);
+    });
 
     this.launcher.addEventListener("click", () => this.toggle());
     (this.root.querySelector(".ln-close") as HTMLElement).addEventListener("click", () => this.toggle(false));
@@ -71,12 +93,18 @@ class ChatWidget {
       this.submit();
     });
 
-    // guest rename
+    // guest rename — inline modal instead of the native prompt()
     this.meChip.addEventListener("click", () => {
-      if (this.client.you && this.client.you.isGuest) {
-        const name = window.prompt("设置你的游客昵称", this.client.getGuestName() || "");
-        if (name && name.trim()) this.client.setGuestName(name.trim().slice(0, 24));
-      }
+      if (this.client.you && this.client.you.isGuest) this.openRename();
+    });
+    this.renameSave.addEventListener("click", () => this.saveRename());
+    this.renameCancel.addEventListener("click", () => this.closeRename());
+    this.renameOverlay.addEventListener("click", (e) => {
+      if (e.target === this.renameOverlay) this.closeRename();
+    });
+    this.renameInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); this.saveRename(); }
+      else if (e.key === "Escape") { e.preventDefault(); this.closeRename(); }
     });
 
     this.loadAiThread();
@@ -93,6 +121,11 @@ class ChatWidget {
     const show = force ?? this.panel.hasAttribute("hidden");
     if (show) {
       this.panel.removeAttribute("hidden");
+      // Opening the panel: the active channel is now being viewed, so clear its
+      // unread state (badge + list highlight) and dismiss any preview toast.
+      this.clearUnread(this.activeChannel);
+      this.toastEl.setAttribute("hidden", "");
+      if (this.toastTimer) clearTimeout(this.toastTimer);
       this.input.focus();
       this.scrollToBottom();
     } else {
@@ -124,6 +157,12 @@ class ChatWidget {
       case "chat.welcome":
         this.client.you = m.you as Identity;
         this.client.channels = m.channels as any;
+        // The floating widget never prompts for a name on first connect, so the
+        // server assigns one. Persist it now so reloads keep the same nickname
+        // instead of getting a fresh random one each time.
+        if (this.client.you.isGuest && !this.client.getGuestName() && this.client.you.name) {
+          this.client.setGuestName(this.client.you.name);
+        }
         this.renderMe();
         this.renderChannelList();
         this.loadInto(PUBLIC_GROUP, (m.publicHistory as ChatMessage[]) || []);
@@ -133,8 +172,15 @@ class ChatWidget {
         const msg = m as unknown as ChatMessage;
         this.rememberPeer(msg.author);
         this.appendMessage(msg);
-        if (msg.channel === this.activeChannel) this.renderMessages();
-        else this.bumpUnread(msg.channel);
+        const panelOpen = !this.panel.hasAttribute("hidden");
+        if (panelOpen && msg.channel === this.activeChannel) {
+          this.renderMessages();
+        } else {
+          this.bumpUnread(msg.channel);
+          // When the panel is collapsed, surface a transient preview bubble so a
+          // new message is never missed.
+          if (!panelOpen) this.showToast(msg);
+        }
         break;
       }
       case "chat.history": {
@@ -198,14 +244,50 @@ class ChatWidget {
   }
 
   private bumpUnread(ch: Channel) {
+    this.unread.set(ch, (this.unread.get(ch) || 0) + 1);
     const el = this.chList.find((e) => e.dataset.ch === ch);
     if (el) el.classList.add("unread");
+    this.updateBadge();
+  }
+
+  /** Recompute the launcher badge from per-channel unread counts. */
+  private updateBadge() {
+    let total = 0;
+    for (const n of this.unread.values()) total += n;
+    if (total <= 0) {
+      this.badgeEl.setAttribute("hidden", "");
+      return;
+    }
+    this.badgeEl.removeAttribute("hidden");
+    this.badgeEl.textContent = total > 99 ? "99+" : String(total);
+  }
+
+  /** Clear a channel's unread state (called when it becomes the active view). */
+  private clearUnread(ch: Channel) {
+    if (!this.unread.has(ch)) return;
+    this.unread.delete(ch);
+    const el = this.chList.find((e) => e.dataset.ch === ch);
+    if (el) el.classList.remove("unread");
+    this.updateBadge();
+  }
+
+  /** Show a transient preview bubble above the launcher for a new message. */
+  private showToast(msg: ChatMessage) {
+    if (!this.toastEl) return;
+    const name = msg.author.name || msg.author.userId;
+    const text = msg.text.length > 42 ? msg.text.slice(0, 42) + "…" : msg.text;
+    this.toastEl.textContent = `🔔 ${name}: ${text}`;
+    this.toastEl.dataset.ch = msg.channel;
+    this.toastEl.removeAttribute("hidden");
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toastTimer = window.setTimeout(() => this.toastEl.setAttribute("hidden", ""), 4500);
   }
 
   // ---- channel switching ----
   switchChannel(ch: Channel) {
     this.activeChannel = ch;
     this.updateTitle();
+    this.clearUnread(ch);
     this.renderChannelList();
     if (ch !== AI_CHANNEL && !this.messages.has(ch)) this.client.requestHistory(ch, 50);
     this.renderMessages();
@@ -307,7 +389,7 @@ class ChatWidget {
       }
       el.addEventListener("click", () => {
         if (ch) this.switchChannel(ch);
-        else this.startDm({ userId: peer, name: info.name });
+        else this.startDm({ userId: peer, name: info.name, isGuest: false });
       });
       this.dmsEl.appendChild(el);
       this.chList.push(el);
@@ -334,9 +416,11 @@ class ChatWidget {
     const wasActive = this.activeChannel === ch;
     // The public group and the AI assistant are reserved; they can't be left.
     if (ch === PUBLIC_GROUP || ch === AI_CHANNEL) {
+      this.clearUnread(ch);
       this.renderChannelList();
       return;
     }
+    this.clearUnread(ch);
     if (ch.startsWith("group:")) {
       this.client.leaveGroup(ch);
       this.client.channels.groups = this.client.channels.groups.filter((x) => x !== ch);
@@ -477,6 +561,34 @@ class ChatWidget {
     } catch { /* ignore corrupt storage */ }
   }
 
+  // ---- inline rename modal (replaces window.prompt) ----
+  private openRename() {
+    // Prefill from the live displayed name (you.name), not the localStorage
+    // guestName — the floating widget never writes guestName, so falling back
+    // to it would open the box blank even though a name is already shown.
+    const cur = this.client.you?.name || this.client.getGuestName() || "";
+    this.renameInput.value = cur;
+    this.renameOverlay.removeAttribute("hidden");
+    // Defer focus until the overlay is painted so the caret lands correctly.
+    requestAnimationFrame(() => {
+      this.renameInput.focus();
+      this.renameInput.select();
+    });
+  }
+
+  private saveRename() {
+    const name = this.renameInput.value.trim();
+    if (name) {
+      this.client.setGuestName(name.slice(0, 24));
+      this.renderMe();
+    }
+    this.closeRename();
+  }
+
+  private closeRename() {
+    this.renameOverlay.setAttribute("hidden", "");
+  }
+
   // ---- group / dm flows ----
   private promptGroup() {
     // Only logged-in users may create a group. Guests see no button, but guard
@@ -543,7 +655,8 @@ class ChatWidget {
 }
 
 const TEMPLATE = `
-  <button class="ln-chat-launcher" title="聊天" aria-label="打开聊天">💬</button>
+  <button class="ln-chat-launcher" title="聊天" aria-label="打开聊天">💬<span class="ln-badge" hidden>0</span></button>
+  <div class="ln-toast" hidden></div>
   <div class="ln-chat-panel" hidden>
     <div class="ln-chat-header">
       <span class="ln-dot offline" title="连接状态"></span>
@@ -571,6 +684,17 @@ const TEMPLATE = `
           <input class="ln-input" placeholder="说点什么… (Enter 发送)" autocomplete="off" />
           <button type="submit" class="ln-send">发送</button>
         </form>
+      </div>
+    </div>
+    <div class="ln-rename-overlay" hidden>
+      <div class="ln-rename-modal" role="dialog" aria-modal="true" aria-labelledby="ln-rename-title">
+        <div class="ln-rename-title" id="ln-rename-title">设置游客昵称</div>
+        <input class="ln-rename-input" maxlength="24" placeholder="输入昵称…" autocomplete="off" />
+        <div class="ln-rename-hint">回车保存 · Esc 取消</div>
+        <div class="ln-rename-actions">
+          <button class="ln-rename-cancel" type="button">取消</button>
+          <button class="ln-rename-save" type="button">保存</button>
+        </div>
       </div>
     </div>
   </div>

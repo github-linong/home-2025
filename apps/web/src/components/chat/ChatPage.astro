@@ -34,6 +34,19 @@ import ChatMain from "./ChatMain.astro";
     </div>
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
   </div>
+  {/* Modal for guest rename (replaces window.prompt) */}
+  <dialog id="chat-rename-modal" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">设置游客昵称</h3>
+      <input id="chat-rename-input" type="text" maxlength="24" placeholder="输入昵称…" class="input input-bordered w-full mt-3" autocomplete="off" />
+      <p class="text-xs opacity-60 mt-2">回车保存 · Esc 取消</p>
+      <div class="modal-action">
+        <button id="chat-rename-cancel" class="btn btn-sm">取消</button>
+        <button id="chat-rename-save" class="btn btn-sm btn-primary">保存</button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  </dialog>
 </div>
 
 <script>
@@ -112,6 +125,8 @@ class ChatPageController {
   private channelNameEl!: HTMLElement;
   private onlineCountEl!: HTMLElement;
   private meChip!: HTMLElement;
+  private renameModal: HTMLDialogElement | null = null;
+  private renameInput: HTMLInputElement | null = null;
   private groupListEl!: HTMLElement;
   private contactsEl!: HTMLElement;
   private onlineUsersEl!: HTMLElement;
@@ -181,13 +196,36 @@ class ChatPageController {
       if (input?.value) this.copyToClipboard(input.value).then(() => this.showToast("✅ 邀请链接已复制", "success"));
     });
 
-    // Guest rename
+    // Guest rename — inline DaisyUI modal instead of the native prompt()
+    this.renameModal = document.getElementById("chat-rename-modal") as HTMLDialogElement | null;
+    this.renameInput = document.getElementById("chat-rename-input") as HTMLInputElement | null;
     this.meChip.addEventListener("click", () => {
-      if (this.client.you?.isGuest) {
-        const name = window.prompt("设置你的游客昵称", this.client.getGuestName() || "");
-        if (name?.trim()) this.client.setGuestName(name.trim().slice(0, 24));
-      }
+      if (this.client.you?.isGuest) this.openRename();
     });
+    document.getElementById("chat-rename-save")?.addEventListener("click", () => this.saveRename());
+    document.getElementById("chat-rename-cancel")?.addEventListener("click", () => this.renameModal?.close());
+    this.renameInput?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); this.saveRename(); }
+    });
+  }
+
+  // ── Guest rename (inline modal, replaces window.prompt) ────────────────
+  private openRename() {
+    if (!this.renameModal || !this.renameInput) return;
+    // Prefill from the live displayed name (you.name) — authoritative and
+    // always reflects what's shown on the chip, even if guestName is empty.
+    this.renameInput.value = this.client.you?.name || this.client.getGuestName() || "";
+    this.renameModal.showModal();
+    requestAnimationFrame(() => { this.renameInput?.focus(); this.renameInput?.select(); });
+  }
+
+  private saveRename() {
+    const name = this.renameInput?.value.trim() || "";
+    if (name) {
+      this.client.setGuestName(name.slice(0, 24));
+      this.renderMe();
+    }
+    this.renameModal?.close();
   }
 
   // ── Sidebar toggle (mobile) ───────────────────────────────────────────

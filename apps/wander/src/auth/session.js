@@ -79,9 +79,25 @@ export async function verifyWithApi2(cookieHeader, opts = {}) {
   return { userId: data.user.id, user: data.user };
 }
 
+/**
+ * Anonymous guest identity. Wander is a public game, so visitors without a
+ * real login (and anyone connecting while api2 is unreachable) play as a
+ * guest instead of being rejected. Guests are never re-validated against
+ * api2 and never expire.
+ */
+export function guestIdentity() {
+  const id = `guest_${randomBytes(4).toString("hex")}`;
+  return {
+    userId: id,
+    user: { id, name: `游客${id.slice(-4)}`, isGuest: true },
+    isGuest: true,
+  };
+}
+
 export function shouldRevalidate(connId) {
   const s = sessionsByConnId.get(connId);
   if (!s) return true;
+  if (s.isGuest) return false; // guests never expire or re-check
   if (Date.now() - s.verifiedAt > config.sessionCacheTtlMs) return true;
   if (s.actionCountSinceVerify >= config.sessionRecheckEveryActions) return true;
   return false;
@@ -89,12 +105,18 @@ export function shouldRevalidate(connId) {
 
 /**
  * Revalidate without changing identity. In DEV_SKIP_AUTH we keep the existing
- * userId so local play survives reconnects.
+ * userId so local play survives reconnects. Guests (no api2 session) are kept
+ * as-is without ever hitting api2.
  */
 export async function revalidateSession(connId, cookieHeader) {
   const existing = sessionsByConnId.get(connId);
   if (config.devSkipAuth) {
     if (!existing) return null;
+    existing.verifiedAt = Date.now();
+    existing.actionCountSinceVerify = 0;
+    return { userId: existing.userId, user: existing.user };
+  }
+  if (existing?.isGuest) {
     existing.verifiedAt = Date.now();
     existing.actionCountSinceVerify = 0;
     return { userId: existing.userId, user: existing.user };

@@ -17,16 +17,25 @@ const { initialRoomCode = "" } = Astro.props;
     </header>
 
     <section class="lobby" id="lobby">
-      <div class="lobby-row">
-        <button id="btn-public" class="btn primary">进入公共房间</button>
+      <div class="lobby-cards">
+        <div class="lobby-card public">
+          <span class="lc-tag">公共</span>
+          <h3 class="lc-title">公共房间</h3>
+          <p class="lc-desc">和所有在线玩家一起在网格地图上漫游，实时看到彼此。</p>
+          <button id="btn-public" class="btn primary lc-btn">进入公共房间</button>
+        </div>
+        <div class="lobby-card private">
+          <span class="lc-tag">私人</span>
+          <h3 class="lc-title">私人房间</h3>
+          <p class="lc-desc">创建专属房间，把房间码发给好友一起玩。</p>
+          <button id="btn-create" class="btn lc-btn">创建私人房间</button>
+          <div class="lc-join">
+            <input id="input-code" class="code-input" placeholder="输入房间码" maxlength="6" value={initialRoomCode} />
+            <button id="btn-join" class="btn">加入</button>
+          </div>
+        </div>
       </div>
-      <div class="lobby-row">
-        <button id="btn-create" class="btn">创建私人房间</button>
-        <span class="or">或</span>
-        <input id="input-code" class="code-input" placeholder="房间码" maxlength="6" value={initialRoomCode} />
-        <button id="btn-join" class="btn">加入</button>
-      </div>
-      <p class="hint" id="lobby-hint">方向键 / WASD 移动。公共房间默认进入，所有人可见彼此；私人房间用房间码邀请好友。</p>
+      <p class="hint" id="lobby-hint">方向键 / WASD 移动（同时按两个方向键可斜向移动）。公共房间所有人可见；私人房间用房间码邀请好友。</p>
     </section>
 
     <section class="room hidden" id="room">
@@ -39,16 +48,10 @@ const { initialRoomCode = "" } = Astro.props;
           <span class="badge owner hidden" id="room-owner">房主</span>
         </div>
         <div class="room-actions">
+          <button id="btn-new-private" class="btn small">新建私人房</button>
           <button id="btn-share" class="btn small">复制邀请链接</button>
-          <button id="btn-resize" class="btn small hidden">扩张地图</button>
           <button id="btn-leave" class="btn small ghost">离开</button>
         </div>
-      </div>
-      <div class="resize-row hidden" id="resize-row">
-        <input id="resize-w" class="num-input" type="number" min="1" value="1000" />
-        <span>×</span>
-        <input id="resize-h" class="num-input" type="number" min="1" value="1000" />
-        <button id="btn-resize-apply" class="btn small">应用</button>
       </div>
     </section>
 
@@ -56,7 +59,25 @@ const { initialRoomCode = "" } = Astro.props;
       <div class="canvas-wrap">
         <canvas id="board" width="660" height="660"></canvas>
         <div class="conn" id="conn"><span class="dot"></span><span id="conn-text">未连接</span></div>
-        <div class="coords" id="coords">x — · y —</div>
+        <div class="hud" id="coords">
+          <div class="hud-top">
+            <span class="hud-title">坐标</span>
+            <span class="hud-grid" id="c-grid">— , —</span>
+          </div>
+          <div class="hud-bars">
+            <div class="hud-bar">
+              <span class="hud-axis">X</span>
+              <div class="hud-track"><i class="hud-fill" id="c-fill-x"></i></div>
+              <span class="hud-val" id="c-val-x">—</span>
+            </div>
+            <div class="hud-bar">
+              <span class="hud-axis">Y</span>
+              <div class="hud-track"><i class="hud-fill" id="c-fill-y"></i></div>
+              <span class="hud-val" id="c-val-y">—</span>
+            </div>
+          </div>
+          <div class="hud-world" id="c-world">地图 0 × 0</div>
+        </div>
       </div>
       <aside class="players" id="players">
         <h2>玩家</h2>
@@ -90,9 +111,37 @@ const { initialRoomCode = "" } = Astro.props;
   header span { display: block; margin-top: 0.6rem; opacity: 0.68; }
 
   .lobby { margin-bottom: 1rem; }
-  .lobby-row { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
-  .or { color: #6b7280; font-size: 0.85rem; font-weight: 500; }
-  .hint { margin: 0.6rem 0 0; color: #6b7280; font-size: 0.85rem; }
+  .lobby-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 560px) { .lobby-cards { grid-template-columns: 1fr; } }
+  .lobby-card {
+    border: 1px solid #e5e7eb;
+    border-top: 3px solid #2b6cff;
+    border-radius: 14px;
+    padding: 1.1rem 1.15rem;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .lobby-card.public { border-top-color: #2b6cff; }
+  .lobby-card.private { border-top-color: #f59e0b; }
+  .lc-tag {
+    align-self: flex-start;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+  }
+  .lobby-card.public .lc-tag { color: #2b6cff; background: rgba(43,108,255,0.1); }
+  .lobby-card.private .lc-tag { color: #b9770a; background: rgba(245,158,11,0.14); }
+  .lc-title { margin: 0; font-size: 1.15rem; font-weight: 700; }
+  .lc-desc { margin: 0; color: #6b7280; font-size: 0.88rem; line-height: 1.45; flex: 1; }
+  .lc-btn { margin-top: 0.25rem; }
+  .lc-join { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.35rem; }
+  .hint { margin: 0.9rem 0 0; color: #6b7280; font-size: 0.85rem; }
   .hint.error { color: #c0392b; }
 
   .btn {
@@ -180,16 +229,16 @@ const { initialRoomCode = "" } = Astro.props;
   .badge.public { background: #f0fdf4; color: #15803d; border-color: rgba(34,197,94,0.15); }
   .muted { color: #6b7280; font-size: 0.85rem; }
   .room-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-  .resize-row { display: flex; gap: 0.6rem; align-items: center; margin-top: 0.7rem; }
 
   .stage { display: flex; gap: 1rem; align-items: flex-start; flex-wrap: wrap; }
   .canvas-wrap {
     position: relative;
-    background: #f7f8fa;
-    border: 1px solid #e3e3e3;
+    background: #05070f;
+    border: 1px solid rgba(120,200,255,0.22);
     border-radius: 12px;
     overflow: hidden;
     line-height: 0;
+    box-shadow: 0 0 0 1px rgba(120,200,255,0.05), 0 10px 34px rgba(0,0,0,0.35);
   }
   canvas { display: block; width: 660px; max-width: 100%; height: auto; touch-action: none; }
   .conn {
@@ -201,12 +250,27 @@ const { initialRoomCode = "" } = Astro.props;
   }
   .conn .dot { width: 8px; height: 8px; border-radius: 50%; background: #c0392b; }
   .conn.online .dot { background: #27ae60; }
-  .coords {
+  .hud {
     position: absolute; bottom: 8px; left: 8px;
-    background: rgba(255,255,255,0.85);
-    padding: 0.2rem 0.5rem; border-radius: 6px;
-    font-size: 0.75rem; font-family: ui-monospace, monospace; color: #444;
+    background: rgba(255,255,255,0.92);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 10px;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.75rem; color: #444;
+    width: 172px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    backdrop-filter: blur(2px);
   }
+  .hud-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0.45rem; }
+  .hud-title { font-size: 0.72rem; font-weight: 600; color: #222; letter-spacing: 0.03em; }
+  .hud-grid { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; font-weight: 600; color: #2b6cff; }
+  .hud-bars { display: flex; flex-direction: column; gap: 0.38rem; margin-bottom: 0.5rem; }
+  .hud-bar { display: flex; align-items: center; gap: 0.5rem; }
+  .hud-axis { width: 12px; text-align: center; font-size: 0.7rem; font-weight: 600; color: #666; }
+  .hud-track { flex: 1; height: 6px; background: #eceff3; border-radius: 999px; overflow: hidden; }
+  .hud-fill { display: block; height: 100%; width: 0%; background: linear-gradient(90deg,#2b6cff,#5b8dff); border-radius: 999px; transition: width 0.12s linear; }
+  .hud-val { width: 32px; text-align: right; font-family: ui-monospace, monospace; font-size: 0.72rem; color: #555; }
+  .hud-world { font-size: 0.7rem; color: #8a8f98; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 0.38rem; }
 
   .players {
     flex: 1 1 200px;
@@ -253,15 +317,16 @@ const { initialRoomCode = "" } = Astro.props;
   const elCount = document.getElementById("room-count")!;
   const elOwner = document.getElementById("room-owner")!;
   const btnShare = document.getElementById("btn-share") as HTMLButtonElement;
-  const btnResize = document.getElementById("btn-resize") as HTMLButtonElement;
-  const btnResizeApply = document.getElementById("btn-resize-apply") as HTMLButtonElement;
   const btnLeave = document.getElementById("btn-leave") as HTMLButtonElement;
-  const resizeRow = document.getElementById("resize-row")!;
-  const resizeW = document.getElementById("resize-w") as HTMLInputElement;
-  const resizeH = document.getElementById("resize-h") as HTMLInputElement;
+  const btnNewPrivate = document.getElementById("btn-new-private") as HTMLButtonElement;
   const elConn = document.getElementById("conn")!;
   const elConnText = document.getElementById("conn-text")!;
-  const elCoords = document.getElementById("coords")!;
+  const cGrid = document.getElementById("c-grid")!;
+  const cValX = document.getElementById("c-val-x")!;
+  const cValY = document.getElementById("c-val-y")!;
+  const cFillX = document.getElementById("c-fill-x") as HTMLElement;
+  const cFillY = document.getElementById("c-fill-y") as HTMLElement;
+  const cWorld = document.getElementById("c-world")!;
   const elPlayerList = document.getElementById("player-list")!;
 
   // ---- client state ----
@@ -275,6 +340,13 @@ const { initialRoomCode = "" } = Astro.props;
   let world: WorldSize = { w: 1000, h: 1000 };
   let stateVersion = 0;
   let playersById = new Map<string, PlayerView>();
+  // When the user switches rooms (e.g. opens a private room while already in the
+  // public one), we leave the current room first, then run this pending action
+  // once the server confirms the leave — so a single click does the switch.
+  let pendingAfterLeave: (() => void) | null = null;
+  // Set when boot() auto-joined a private room from the URL, so a failed join
+  // (e.g. room expired) can fall back to the public room instead of stranding.
+  let autoJoinTarget = "";
   // Authoritative integer cell per player (from snapshots). The local player's
   // target is advanced optimistically on keypress; we only reconcile to the
   // server when it diverges by >1 cell (a real desync / rejected move), never
@@ -284,9 +356,9 @@ const { initialRoomCode = "" } = Astro.props;
   // motion is smooth instead of teleporting one grid cell at a time.
   let renders = new Map<string, { x: number; y: number; facing: Dir }>();
   let localTarget: { x: number; y: number; facing: Dir } | null = null;
-  // Currently-held movement directions (stack; last pressed wins). Lets us
-  // glide continuously while a key is held instead of discrete step-and-wait.
-  let heldDirs: Dir[] = [];
+  // Currently-held cardinal keys (up/down/left/right). Tracked per-axis rather
+  // than as a stack so two keys combine into a diagonal (8-dir) glide.
+  let heldCards = new Set<"up" | "down" | "left" | "right">();
 
   const STEP_MS = 90; // time to glide across one cell (~11 cells/sec)
   const SPEED = 1 / (STEP_MS / 1000); // cells per second (~10)
@@ -304,10 +376,265 @@ const { initialRoomCode = "" } = Astro.props;
   const SIZE = CSS_SIZE;
   const cell = SIZE / VIEW;
 
+  // --- Movement feel: acceleration + speed-aware camera zoom ---
+  // The local player no longer glides at a constant velocity. Instead it
+  // accelerates from rest using a cubic-bezier velocity envelope and
+  // decelerates smoothly when the key is released. The faster the player moves,
+  // the more the camera zooms out (wider field of view), like a speed lens.
+  const MAX_SPEED_CELLS = SPEED * 1.15; // cruise cells/sec (a touch livelier than before)
+  // Distance-based deceleration for release: v = sqrt(2·a·d) eases the render
+  // to a stop exactly at localTarget. a is sized so cruise→0 spans ~1 cell,
+  // keeping a smooth handoff from the held cruise speed (no abrupt drop).
+  const DECEL_ACCEL = (MAX_SPEED_CELLS * MAX_SPEED_CELLS) / 2;
+  const ACCEL_TIME = 0.22; // seconds to ramp 0 → cruise (ease-in)
+  const DECEL_TIME = 0.16; // seconds to coast back to rest (ease-out)
+  const ZOOM_DEPTH = 0.16; // zoom out up to 16% at full speed (wider view)
+  const ZOOM_SMOOTH = 7; // how fast zoom tracks speed
+
+  // --- Space scene: dark cosmic backdrop + parallax starfield ---
+  // Replaces the plain light grid with a deep-space gradient and stars that
+  // drift at different depths (parallax) and twinkle, so moving reads as
+  // travelling through a starfield rather than sliding over graph paper.
+  const SPACE_INNER = "#101a3a";                 // nebula glow near the focus
+  const SPACE_OUTER = "#05070f";                 // deep edge of space
+  const ARENA_TINT = "rgba(16,26,58,0.42)";      // playfield floor over stars
+  const GRID_MINOR = "rgba(150,180,255,0.06)";  // subtle grid line
+  const GRID_MAJOR = "rgba(150,180,255,0.16)";  // every 5th grid line
+  const BORDER_GLOW = "rgba(120,200,255,0.85)"; // glowing arena edge
+
+  // Cubic-bezier easing solver (CSS-style): returns y for a given x in [0,1]
+  // by finding the parametric t via Newton-Raphson. We use it to shape the
+  // velocity envelope so acceleration feels natural rather than linear.
+  function makeCubicBezier(x1: number, y1: number, x2: number, y2: number) {
+    const cx = 3 * x1;
+    const bx = 3 * (x2 - x1) - cx;
+    const ax = 1 - cx - bx;
+    const cy = 3 * y1;
+    const by = 3 * (y2 - y1) - cy;
+    const ay = 1 - cy - by;
+    const sampleX = (t: number) => ((ax * t + bx) * t + cx) * t;
+    const sampleY = (t: number) => ((ay * t + by) * t + cy) * t;
+    const dX = (t: number) => (3 * ax * t + 2 * bx) * t + cx;
+    function solveT(x: number) {
+      let t = x;
+      for (let i = 0; i < 8; i++) {
+        const xv = sampleX(t) - x;
+        if (Math.abs(xv) < 1e-4) break;
+        const d = dX(t);
+        if (Math.abs(d) < 1e-6) break;
+        t -= xv / d;
+      }
+      return Math.max(0, Math.min(1, t));
+    }
+    return (x: number) => sampleY(solveT(x));
+  }
+  // ease-in-out: gentle acceleration from rest, smooth settle at cruise.
+  const easeAccel = makeCubicBezier(0.42, 0.0, 0.58, 1.0);
+
+  let accelRamp = 0; // 0 = at rest, 1 = full cruise
+  let localVelX = 0; // actual velocity (cells/sec) for zoom + debug
+  let localVelY = 0;
+  let currentZoom = 1;
+
+  // ---- movement FX: comet trail + dust particles ----
+  // Purely cosmetic. `trails` keeps a short, fading history of each player's
+  // eased render position so we can draw a comet tail; `particles` is a small
+  // global pool of sparks emitted while a player glides. Both live in world
+  // (cell) space and are drawn under the player bodies.
+  interface TrailPoint { x: number; y: number; age: number }
+  interface Particle { x: number; y: number; vx: number; vy: number; life: number; maxLife: number; size: number; color: string }
+  const TRAIL_MAX_AGE = 0.6;   // seconds a trail point stays visible
+  const TRAIL_MAX_PTS = 16;    // cap points retained per player
+  const PARTICLE_CAP = 500;
+  const PARTICLE_PER_CELL = 3; // emission density while gliding
+  const trails = new Map<string, TrailPoint[]>();
+  const lastFxPos = new Map<string, { x: number; y: number }>();
+  const particles: Particle[] = [];
+
+  function clearFx() {
+    trails.clear();
+    lastFxPos.clear();
+    particles.length = 0;
+  }
+
+  // Sample trails + emit particles for every player that actually moved this
+  // frame, then advance the existing particle pool. Emission scales with
+  // distance travelled so faster motion = denser sparks, naturally.
+  function updateFx(dtSec: number) {
+    for (const [uid, t] of targets) {
+      const r = renders.get(uid) ?? t;
+      const p = playersById.get(uid);
+      const color = p ? p.color : "#888";
+      const prev = lastFxPos.get(uid);
+      const moved = prev ? Math.hypot(r.x - prev.x, r.y - prev.y) : 0;
+      lastFxPos.set(uid, { x: r.x, y: r.y });
+
+      let tr = trails.get(uid) ?? [];
+      if (moved > 0.02) {
+        tr.push({ x: r.x, y: r.y, age: 0 });
+        if (tr.length > TRAIL_MAX_PTS) tr.shift();
+      }
+      for (const pt of tr) pt.age += dtSec;
+      tr = tr.filter((pt) => pt.age < TRAIL_MAX_AGE);
+      trails.set(uid, tr);
+
+      if (moved > 0.01 && particles.length < PARTICLE_CAP) {
+        const want = moved * PARTICLE_PER_CELL;
+        const n = Math.min(4, Math.floor(want) + (Math.random() < want % 1 ? 1 : 0));
+        const dirx = moved > 0 ? (r.x - (prev?.x ?? r.x)) / moved : 0;
+        const diry = moved > 0 ? (r.y - (prev?.y ?? r.y)) / moved : 0;
+        const ml = 0.45 + Math.random() * 0.45;
+        for (let i = 0; i < n; i++) {
+          const spread = (Math.random() - 0.5) * 0.5;
+          particles.push({
+            x: r.x - dirx * 0.3 + spread,
+            y: r.y - diry * 0.3 + spread * 0.5,
+            vx: -dirx * (0.4 + Math.random() * 0.8) + (Math.random() - 0.5) * 0.6,
+            vy: -diry * (0.4 + Math.random() * 0.8) + (Math.random() - 0.5) * 0.6,
+            life: ml,
+            maxLife: ml,
+            size: 0.05 + Math.random() * 0.06,
+            color,
+          });
+        }
+      }
+    }
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const pt = particles[i];
+      pt.x += pt.vx * dtSec;
+      pt.y += pt.vy * dtSec;
+      pt.vx *= 0.9;
+      pt.vy *= 0.9;
+      pt.life -= dtSec;
+      if (pt.life <= 0) particles.splice(i, 1);
+    }
+  }
+
+  // Draw trails (comet tails) and particles in world space, beneath players.
+  function drawFx(camX: number, camY: number) {
+    for (const pt of particles) {
+      const a = Math.max(0, pt.life / pt.maxLife);
+      const sx = (pt.x - camX + 0.5) * cell;
+      const sy = (pt.y - camY + 0.5) * cell;
+      ctx.globalAlpha = a * 0.8;
+      ctx.fillStyle = pt.color;
+      ctx.beginPath();
+      ctx.arc(sx, sy, pt.size * cell, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    ctx.lineCap = "round";
+    for (const [uid, tr] of trails) {
+      if (tr.length < 2) continue;
+      const p = playersById.get(uid);
+      if (p && p.status === "disconnected") continue;
+      const color = p ? p.color : "#888";
+      ctx.strokeStyle = color;
+      for (let i = 1; i < tr.length; i++) {
+        const a = tr[i];
+        const b = tr[i - 1];
+        const frac = Math.max(0, 1 - a.age / TRAIL_MAX_AGE);
+        ctx.globalAlpha = frac * 0.5;
+        ctx.lineWidth = cell * 0.3 * frac;
+        ctx.beginPath();
+        ctx.moveTo((a.x - camX + 0.5) * cell, (a.y - camY + 0.5) * cell);
+        ctx.lineTo((b.x - camX + 0.5) * cell, (b.y - camY + 0.5) * cell);
+        ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ---- starfield ----
+  // Deterministic PRNG so star positions are stable across frames (only their
+  // brightness twinkles), avoiding a flickering sky.
+  function mulberry32(seed: number) {
+    return () => {
+      seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  interface Star { x: number; y: number; r: number; tw: number; ph: number }
+  function genStars(count: number, rMax: number): Star[] {
+    const rng = mulberry32(Math.round(count * 99991 + rMax * 1000));
+    const out: Star[] = [];
+    for (let i = 0; i < count; i++) {
+      out.push({
+        x: rng() * STAR_TILE,
+        y: rng() * STAR_TILE,
+        r: 0.4 + rng() * rMax,
+        tw: 0.5 + rng() * 2.5,
+        ph: rng() * Math.PI * 2,
+      });
+    }
+    return out;
+  }
+  const STAR_TILE = 240; // px tile the star pattern repeats within
+  const starLayers: { stars: Star[]; factor: number; alpha: number }[] = [
+    { factor: 0.25, alpha: 0.5, stars: genStars(7, 0.8) }, // far: small, dim, slow
+    { factor: 0.5, alpha: 0.85, stars: genStars(6, 1.1) }, // mid
+    { factor: 0.85, alpha: 1.0, stars: genStars(4, 1.6) }, // near: bigger, brighter
+  ];
+
+  // Draw one parallax star layer across the canvas. Stars tile every STAR_TILE
+  // px (infinite field). `camPx` is the camera offset in CSS px for this
+  // depth; `ts` drives the twinkle so brightness shimmers over time.
+  function drawStarLayer(camPxX: number, camPxY: number, layer: { stars: Star[]; alpha: number }, ts: number) {
+    const offX = ((camPxX % STAR_TILE) + STAR_TILE) % STAR_TILE;
+    const offY = ((camPxY % STAR_TILE) + STAR_TILE) % STAR_TILE;
+    const cols = Math.ceil(SIZE / STAR_TILE) + 2;
+    const rows = Math.ceil(SIZE / STAR_TILE) + 2;
+    for (let gx = -1; gx < cols; gx++) {
+      for (let gy = -1; gy < rows; gy++) {
+        const baseX = gx * STAR_TILE - offX;
+        const baseY = gy * STAR_TILE - offY;
+        for (const s of layer.stars) {
+          const x = baseX + s.x;
+          const y = baseY + s.y;
+          if (x < -2 || x > SIZE + 2 || y < -2 || y > SIZE + 2) continue;
+          const tw = 0.55 + 0.45 * Math.sin(ts * 0.001 * s.tw + s.ph);
+          ctx.globalAlpha = layer.alpha * tw;
+          ctx.fillStyle = "#dfe7ff";
+          ctx.beginPath();
+          ctx.arc(x, y, s.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
   function setConn(on: boolean, text?: string) {
     connected = on;
     elConn.classList.toggle("online", on);
     elConnText.textContent = text ?? (on ? "已连接" : "未连接");
+  }
+
+  // Position HUD: current grid coords, X/Y bars showing relative position
+  // within the map, and the map size. Gives an at-a-glance sense of both
+  // "where am I" and "how big is the map".
+  function updateHud() {
+    cWorld.textContent = `地图 ${world.w} × ${world.h}`;
+    if (localTarget) {
+      cGrid.textContent = `${localTarget.x} , ${localTarget.y}`;
+      cValX.textContent = String(localTarget.x);
+      cValY.textContent = String(localTarget.y);
+      const denomX = Math.max(1, world.w - 1);
+      const denomY = Math.max(1, world.h - 1);
+      const pctX = Math.max(0, Math.min(100, Math.round((localTarget.x / denomX) * 100)));
+      const pctY = Math.max(0, Math.min(100, Math.round((localTarget.y / denomY) * 100)));
+      cFillX.style.width = pctX + "%";
+      cFillY.style.width = pctY + "%";
+    } else {
+      cGrid.textContent = `— , —`;
+      cValX.textContent = "—";
+      cValY.textContent = "—";
+      cFillX.style.width = "0%";
+      cFillY.style.width = "0%";
+    }
   }
 
   function showRoom() {
@@ -317,8 +644,6 @@ const { initialRoomCode = "" } = Astro.props;
   function showLobby() {
     elLobby.classList.remove("hidden");
     elRoom.classList.add("hidden");
-    resizeRow.classList.add("hidden");
-    btnResize.classList.add("hidden");
   }
 
   function applySnapshot(snap: RoomSnapshot) {
@@ -342,21 +667,47 @@ const { initialRoomCode = "" } = Astro.props;
       const s = targets.get(youId);
       if (s) {
         const div = Math.abs(s.x - localTarget.x) + Math.abs(s.y - localTarget.y);
-        if (div > 1) localTarget = { x: s.x, y: s.y, facing: s.facing };
+        if (div > 1) {
+          localTarget = { x: s.x, y: s.y, facing: s.facing };
+          // Server is authoritative on a real (>1) desync (rejected move /
+          // reconnect). Snap the RENDER to the server position too — otherwise
+          // stepLocal() would ease the render BACKWARD toward localTarget and
+          // the player would appear to "run backward" after releasing keys
+          // (classic at walls, where the client had buffered ahead).
+          const rm = renders.get(youId);
+          if (rm) renders.set(youId, { x: s.x, y: s.y, facing: s.facing });
+          trails.delete(youId);
+          lastFxPos.delete(youId);
+        }
         targets.set(youId, { ...localTarget }); // render follows optimistic target
       }
     }
 
     elCode.textContent = snap.roomCode;
     elWorld.textContent = `地图 ${snap.world.w}×${snap.world.h}`;
+    updateHud();
     const online = snap.players.filter((p) => p.status === "active").length;
     elCount.textContent = `${online} 人在线`;
     const amOwner = youId != null && snap.ownerId === youId;
     elOwner.classList.toggle("hidden", !amOwner);
-    btnResize.classList.toggle("hidden", !amOwner);
     elPublic.classList.toggle("hidden", !(publicRoomCode && snap.roomCode === publicRoomCode));
 
     renderPlayerList(snap.players);
+    reflectRoomInUrl();
+  }
+
+  // Keep the address bar in sync with the room so the URL is shareable and
+  // survives a refresh: private rooms expose ?room=CODE, public room / lobby
+  // get a clean /wander. Uses replaceState to avoid piling up history entries.
+  function reflectRoomInUrl() {
+    if (!roomCode) {
+      if (location.search) history.replaceState(null, "", location.pathname);
+      return;
+    }
+    const isPublic = publicRoomCode && roomCode === publicRoomCode;
+    const target = isPublic ? location.pathname : `${location.pathname}?room=${roomCode}`;
+    const cur = location.pathname + location.search;
+    if (cur !== target) history.replaceState(null, "", target);
   }
 
   function renderPlayerList(players: PlayerView[]) {
@@ -398,6 +749,7 @@ const { initialRoomCode = "" } = Astro.props;
   let lastT = 0;
   function stepRenders(dtSec: number) {
     for (const [uid, t] of targets) {
+      if (uid === youId) continue; // local player is driven by stepLocal()
       let r = renders.get(uid);
       if (!r) {
         renders.set(uid, { x: t.x, y: t.y, facing: t.facing });
@@ -419,58 +771,183 @@ const { initialRoomCode = "" } = Astro.props;
     }
   }
 
+  // Local player: accelerate from rest and decelerate on release. Velocity is
+  // shaped by the bezier envelope so the start/stop feel smooth, not instant.
+  // The render position is clamped to the server-authorized cell (localTarget)
+  // so we never visually overshoot what the server has confirmed.
+  function stepLocal(dtSec: number) {
+    if (!youId) return;
+    const me = renders.get(youId);
+    if (!me || !localTarget) {
+      localVelX = 0;
+      localVelY = 0;
+      return;
+    }
+    const dir = combineDir();
+    if (dir) {
+      accelRamp = Math.min(1, accelRamp + dtSec / ACCEL_TIME);
+    } else {
+      accelRamp = Math.max(0, accelRamp - dtSec / DECEL_TIME);
+    }
+    const speed = MAX_SPEED_CELLS * easeAccel(accelRamp);
+    // Holding: accelerate via the bezier envelope. Idle: ease out to a stop at
+    // localTarget using a distance-based deceleration (v = sqrt(2·a·d)). Always
+    // > 0 while short of target, so the step() ahead-gate can never wedge, and
+    // the stop is a smooth ramp instead of a full-speed lunge + hard cut.
+    let move: number;
+    if (dir) {
+      move = speed * dtSec;
+    } else {
+      const dx = localTarget.x - me.x;
+      const dy = localTarget.y - me.y;
+      const dist = Math.hypot(dx, dy);
+      const v = Math.min(MAX_SPEED_CELLS, Math.sqrt(2 * DECEL_ACCEL * Math.max(0, dist)));
+      move = v * dtSec;
+    }
+
+    // Unit velocity direction. While a key is held we follow the 8-dir vector
+    // (diagonal speed == cardinal). When idle we STILL ease the render toward
+    // the authoritative localTarget — if we didn't, the render would freeze
+    // behind the target after a key release, the step() ahead-gate would stay
+    // wedged (> 0.12), and ALL further movement would be blocked.
+    let ux = 0, uy = 0, hasDir = false;
+    if (dir) {
+      const v = DIR_VEC[dir];
+      ux = v.x; uy = v.y; hasDir = true;
+    } else {
+      const dx = localTarget.x - me.x;
+      const dy = localTarget.y - me.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist > 1e-4) {
+        ux = dx / dist; uy = dy / dist; hasDir = true;
+      }
+    }
+
+    if (!hasDir || move <= 0) {
+      // At rest: snap exactly onto the target so we never drift, and zero velocity.
+      if (!hasDir) { me.x = localTarget.x; me.y = localTarget.y; }
+      localVelX = 0;
+      localVelY = 0;
+      return;
+    }
+
+    const ox = me.x, oy = me.y;
+    let nx = ox + ux * move;
+    let ny = oy + uy * move;
+    // Never overshoot the authoritative target on either axis.
+    if (localTarget.x >= ox) nx = Math.min(nx, localTarget.x);
+    else nx = Math.max(nx, localTarget.x);
+    if (localTarget.y >= oy) ny = Math.min(ny, localTarget.y);
+    else ny = Math.max(ny, localTarget.y);
+    // Snap when essentially arrived (kills float drift and the wedge).
+    if (Math.abs(nx - localTarget.x) < 1e-3) nx = localTarget.x;
+    if (Math.abs(ny - localTarget.y) < 1e-3) ny = localTarget.y;
+
+    localVelX = dtSec > 0 ? (nx - ox) / dtSec : 0;
+    localVelY = dtSec > 0 ? (ny - oy) / dtSec : 0;
+    me.x = nx;
+    me.y = ny;
+    // Hard clamp to world bounds so the rendered position never drifts off-map.
+    // Without this, left/top edges let me.x/y go negative (the relative-to-target
+    // clamp above picks the wrong branch when localTarget is 0), which causes
+    // the camera to pan into void and the "lookahead gate" in step() to
+    // permanently block all movement input.
+    me.x = Math.max(0, Math.min(world.w - 1, me.x));
+    me.y = Math.max(0, Math.min(world.h - 1, me.y));
+    if (dir) me.facing = dir;
+  }
+
   function draw(ts?: number) {
     const dtSec = lastT && ts ? Math.min(0.05, (ts - lastT) / 1000) : 0;
     lastT = ts ?? 0;
-    stepRenders(dtSec);
     pumpHeld();
+    stepLocal(dtSec);
+    stepRenders(dtSec);
+    updateFx(dtSec);
 
+    // Velocity → camera zoom: the faster you move, the more the world scales
+    // out (wider field of view), like a speed-aware lens. Smoothed so it never
+    // snaps between states.
+    const spd = Math.hypot(localVelX, localVelY);
+    const spdNorm = Math.min(1, spd / MAX_SPEED_CELLS);
+    const targetZoom = 1 - spdNorm * ZOOM_DEPTH;
+    currentZoom += (targetZoom - currentZoom) * Math.min(1, dtSec * ZOOM_SMOOTH);
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, SIZE, SIZE);
-    const { camX, camY } = camTopLeft();
+
+    const cam = camTopLeft();
+
+    // Deep-space gradient backdrop (screen space, no parallax).
+    const g = ctx.createRadialGradient(SIZE / 2, SIZE * 0.42, SIZE * 0.1, SIZE / 2, SIZE / 2, SIZE * 0.75);
+    g.addColorStop(0, SPACE_INNER);
+    g.addColorStop(1, SPACE_OUTER);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, SIZE, SIZE);
+
+    // Parallax starfield — far layers drift slowly, near layers track the
+    // camera more closely, giving depth as you move. Twinkle via timestamp.
+    const camPxX = cam.camX * cell;
+    const camPxY = cam.camY * cell;
+    const tMs = ts ?? 0;
+    for (const layer of starLayers) {
+      drawStarLayer(camPxX * layer.factor, camPxY * layer.factor, layer, tMs);
+    }
+
+    // Zoom about the screen center (where the camera keeps the player), so the
+    // player stays put while the world breathes in/out with speed.
+    ctx.translate(SIZE / 2, SIZE / 2);
+    ctx.scale(currentZoom, currentZoom);
+    ctx.translate(-SIZE / 2, -SIZE / 2);
+
+    const { camX, camY } = cam;
     const sx0 = Math.floor(camX);
     const sy0 = Math.floor(camY);
+    const visCells = Math.ceil(VIEW / currentZoom) + 3;
 
-    // World playfield fill + boundary (drawn in world space so they scroll
-    // smoothly into view; the blue edge makes the map limits legible).
+    // Playfield floor: translucent tint over the map so the gridded arena
+    // reads distinctly from the surrounding void (stars still show through).
     const bx = (0 - camX) * cell;
     const by = (0 - camY) * cell;
     const bw = world.w * cell;
     const bh = world.h * cell;
-    ctx.fillStyle = "#eef1f6";
+    ctx.fillStyle = ARENA_TINT;
     ctx.fillRect(bx, by, bw, bh);
 
+    // Grid lines (light, subtle — suited to the dark theme).
     ctx.lineWidth = 1;
-    for (let ix = 0; ix <= VIEW + 1; ix += 1) {
+    for (let ix = -2; ix <= visCells; ix += 1) {
       const wx = sx0 + ix;
       const inWorld = wx >= 0 && wx < world.w;
-      ctx.strokeStyle = !inWorld
-        ? "rgba(0,0,0,0.04)"
-        : wx % 5 === 0
-          ? "rgba(0,0,0,0.14)"
-          : "rgba(0,0,0,0.05)";
+      ctx.strokeStyle = inWorld ? (wx % 5 === 0 ? GRID_MAJOR : GRID_MINOR) : "rgba(120,150,220,0.03)";
       const sx = (wx - camX) * cell;
       ctx.beginPath();
       ctx.moveTo(sx, 0);
       ctx.lineTo(sx, SIZE);
       ctx.stroke();
     }
-    for (let iy = 0; iy <= VIEW + 1; iy += 1) {
+    for (let iy = -2; iy <= visCells; iy += 1) {
       const wy = sy0 + iy;
       const inWorld = wy >= 0 && wy < world.h;
-      ctx.strokeStyle = !inWorld
-        ? "rgba(0,0,0,0.04)"
-        : wy % 5 === 0
-          ? "rgba(0,0,0,0.14)"
-          : "rgba(0,0,0,0.05)";
+      ctx.strokeStyle = inWorld ? (wy % 5 === 0 ? GRID_MAJOR : GRID_MINOR) : "rgba(120,150,220,0.03)";
       const sy = (wy - camY) * cell;
       ctx.beginPath();
       ctx.moveTo(0, sy);
       ctx.lineTo(SIZE, sy);
       ctx.stroke();
     }
-    ctx.strokeStyle = "rgba(43,108,255,0.55)";
+
+    // Glowing arena boundary.
+    ctx.save();
+    ctx.shadowColor = BORDER_GLOW;
+    ctx.shadowBlur = 12;
+    ctx.strokeStyle = BORDER_GLOW;
     ctx.lineWidth = 2;
     ctx.strokeRect(bx, by, bw, bh);
+    ctx.restore();
+
+    // Movement FX (trail + particles), drawn beneath the player bodies.
+    drawFx(camX, camY);
 
     // Players — drawn at their eased render position (smooth glide).
     for (const [uid, t] of targets) {
@@ -531,12 +1008,8 @@ const { initialRoomCode = "" } = Astro.props;
     ctx.globalAlpha = 1;
     ctx.textBaseline = "alphabetic";
 
-    // coords HUD (grid coords, tracked on the optimistic target)
-    if (localTarget) {
-      elCoords.textContent = `x ${localTarget.x} · y ${localTarget.y} · 地图 ${world.w}×${world.h}`;
-    } else {
-      elCoords.textContent = `x — · y —`;
-    }
+    // coords HUD (grid coords + relative position within the map)
+    updateHud();
 
     // debug hook for acceptance tests (harmless in prod)
     if (youId) {
@@ -547,19 +1020,60 @@ const { initialRoomCode = "" } = Astro.props;
         renderY: me ? me.y : null,
         targetX: localTarget ? localTarget.x : null,
         targetY: localTarget ? localTarget.y : null,
+        facing: localTarget ? localTarget.facing : null,
+        serverX: youId != null ? (playersById.get(youId)?.x ?? null) : null,
+        serverY: youId != null ? (playersById.get(youId)?.y ?? null) : null,
+        accelRamp: Math.round(accelRamp * 1000) / 1000,
+        velX: Math.round(localVelX * 100) / 100,
+        velY: Math.round(localVelY * 100) / 100,
+        worldW: world.w,
+        worldH: world.h,
+        speed: Math.round(spdNorm * 100) / 100,
+        zoom: Math.round(currentZoom * 1000) / 1000,
         online: playersById.size,
+        fxParticles: particles.length,
+        fxTrailPts: [...trails.values()].reduce((a, t) => a + t.length, 0),
       };
     }
 
     requestAnimationFrame(draw);
   }
 
+  const SQ = Math.SQRT1_2; // 1/√2 — keeps diagonal velocity at full speed
+  // Unit vectors for velocity (normalized, so diagonal speed == cardinal speed).
   const DIR_VEC: Record<Dir, { x: number; y: number }> = {
     up: { x: 0, y: -1 },
     down: { x: 0, y: 1 },
     left: { x: -1, y: 0 },
     right: { x: 1, y: 0 },
+    "up-left": { x: -SQ, y: -SQ },
+    "up-right": { x: SQ, y: -SQ },
+    "down-left": { x: -SQ, y: SQ },
+    "down-right": { x: SQ, y: SQ },
   };
+  // Integer cell deltas used to advance the server-authoritative grid target.
+  const DIR_DELTA: Record<Dir, { x: number; y: number }> = {
+    up: { x: 0, y: -1 },
+    down: { x: 0, y: 1 },
+    left: { x: -1, y: 0 },
+    right: { x: 1, y: 0 },
+    "up-left": { x: -1, y: -1 },
+    "up-right": { x: 1, y: -1 },
+    "down-left": { x: -1, y: 1 },
+    "down-right": { x: 1, y: 1 },
+  };
+  // Reverse lookup: held-axis pair → combined 8-directional name.
+  const DIR_BY_DELTA: Record<string, Dir> = {
+    "0,-1": "up", "0,1": "down", "-1,0": "left", "1,0": "right",
+    "-1,-1": "up-left", "1,-1": "up-right", "-1,1": "down-left", "1,1": "down-right",
+  };
+  // Combine currently-held cardinal keys into a single 8-dir intent.
+  function combineDir(): Dir | null {
+    const ix = (heldCards.has("right") ? 1 : 0) - (heldCards.has("left") ? 1 : 0);
+    const iy = (heldCards.has("down") ? 1 : 0) - (heldCards.has("up") ? 1 : 0);
+    if (ix === 0 && iy === 0) return null;
+    return DIR_BY_DELTA[`${ix},${iy}`] ?? null;
+  }
 
   // Rounded-rect path helper (uses native roundRect when available).
   function roundRect(c: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
@@ -578,19 +1092,12 @@ const { initialRoomCode = "" } = Astro.props;
   }
 
   // ---- input ----
-  const KEY_DIR: Record<string, Dir> = {
-    ArrowUp: "up",
-    ArrowDown: "down",
-    ArrowLeft: "left",
-    ArrowRight: "right",
-    w: "up",
-    s: "down",
-    a: "left",
-    d: "right",
-    W: "up",
-    S: "down",
-    A: "left",
-    D: "right",
+  // Each key maps to a single cardinal axis; holding two combines into a
+  // diagonal via combineDir() (see DIR_BY_DELTA).
+  const KEY_CARD: Record<string, "up" | "down" | "left" | "right"> = {
+    ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right",
+    w: "up", s: "down", a: "left", d: "right",
+    W: "up", S: "down", A: "left", D: "right",
   };
 
   // Advance the local player one grid cell in `dir`. We only command the next
@@ -601,12 +1108,12 @@ const { initialRoomCode = "" } = Astro.props;
     if (!roomId || !connected || !youId || !localTarget) return;
     const r = renders.get(youId);
     if (r) {
-      const ahead = Math.abs(localTarget.x - r.x) + Math.abs(localTarget.y - r.y);
+      const ahead = Math.hypot(localTarget.x - r.x, localTarget.y - r.y);
       if (ahead > 0.12) return;
     }
-    const v = DIR_VEC[dir];
-    const nx = Math.max(0, Math.min(world.w - 1, localTarget.x + v.x));
-    const ny = Math.max(0, Math.min(world.h - 1, localTarget.y + v.y));
+    const d = DIR_DELTA[dir];
+    const nx = Math.max(0, Math.min(world.w - 1, localTarget.x + d.x));
+    const ny = Math.max(0, Math.min(world.h - 1, localTarget.y + d.y));
     if (nx === localTarget.x && ny === localTarget.y) return; // wall → no-op
     localTarget = { x: nx, y: ny, facing: dir };
     // Optimistic: drive the render target immediately. The server snapshot that
@@ -617,42 +1124,40 @@ const { initialRoomCode = "" } = Astro.props;
   }
 
   // Pump continuous motion from currently-held keys (called each animation
-  // frame). `activeDir` is the most-recently pressed direction.
-  function activeDir(): Dir | null {
-    return heldDirs.length ? heldDirs[heldDirs.length - 1] : null;
-  }
+  // frame). combineDir() reduces the held cardinal keys to one 8-dir intent.
   function pumpHeld() {
-    const d = activeDir();
+    const d = combineDir();
     if (d) step(d);
   }
 
-  function pressDir(dir: Dir) {
-    if (!heldDirs.includes(dir)) heldDirs.push(dir);
-    step(dir); // immediate first response when the key goes down
+  function pressCard(card: "up" | "down" | "left" | "right") {
+    heldCards.add(card);
+    const d = combineDir();
+    if (d) step(d); // immediate first response when the key goes down
   }
-  function releaseDir(dir: Dir) {
-    heldDirs = heldDirs.filter((d) => d !== dir);
+  function releaseCard(card: "up" | "down" | "left" | "right") {
+    heldCards.delete(card);
   }
 
   window.addEventListener(
     "keydown",
     (e) => {
       if (document.activeElement === inputCode) return;
-      const dir = KEY_DIR[e.key];
-      if (dir) {
+      const card = KEY_CARD[e.key];
+      if (card) {
         e.preventDefault();
-        if (!e.repeat) pressDir(dir);
+        if (!e.repeat) pressCard(card);
       }
     },
     { passive: false },
   );
   window.addEventListener("keyup", (e) => {
-    const dir = KEY_DIR[e.key];
-    if (dir) releaseDir(dir);
+    const card = KEY_CARD[e.key];
+    if (card) releaseCard(card);
   });
   // Drop held keys if the tab loses focus, so movement doesn't "stick".
   window.addEventListener("blur", () => {
-    heldDirs = [];
+    heldCards.clear();
   });
 
   // Touch: drag on the canvas to move (dominant-axis single step, re-anchored
@@ -706,6 +1211,7 @@ const { initialRoomCode = "" } = Astro.props;
       if (msg.type === "room.snapshot") applySnapshot(msg);
       else if (msg.type === "room.create.ok") {
         youId = msg.you;
+        clearFx();
         applySnapshot({
           type: "room.snapshot",
           protocolVersion: 1,
@@ -719,9 +1225,12 @@ const { initialRoomCode = "" } = Astro.props;
         localTarget = { x: msg.player.x, y: msg.player.y, facing: msg.player.facing };
         renders.set(youId, { x: msg.player.x, y: msg.player.y, facing: msg.player.facing });
         targets.set(youId, { ...localTarget });
+        setEnterBusy(false);
         showRoom();
+        autoJoinTarget = "";
       } else if (msg.type === "room.join.ok") {
         youId = msg.you;
+        clearFx();
         applySnapshot({
           type: "room.snapshot",
           protocolVersion: 1,
@@ -735,35 +1244,60 @@ const { initialRoomCode = "" } = Astro.props;
         localTarget = { x: msg.player.x, y: msg.player.y, facing: msg.player.facing };
         renders.set(youId, { x: msg.player.x, y: msg.player.y, facing: msg.player.facing });
         targets.set(youId, { ...localTarget });
+        setEnterBusy(false);
         showRoom();
+        autoJoinTarget = "";
       } else if (msg.type === "room.leave.ok") {
+        clearFx();
         roomId = null;
         youId = null;
         playersById = new Map();
         localTarget = null;
-        showLobby();
+        const pending = pendingAfterLeave;
+        pendingAfterLeave = null;
+        if (pending) {
+          pending();
+        } else {
+          roomCode = "";
+          reflectRoomInUrl();
+          showLobby();
+        }
       } else if (msg.type === "world.resized") {
         world = msg.world;
         stateVersion = msg.stateVersion;
         elWorld.textContent = `地图 ${msg.world.w}×${msg.world.h}`;
+        updateHud();
       } else if (msg.type === "game.error") {
+        setEnterBusy(false);
         if (msg.error.code === "AUTH_REQUIRED") {
           setConn(false, "请先登录");
+        } else if (autoJoinTarget && !roomId && msg.error.code === "ROOM_NOT_FOUND") {
+          // The room from the invite link no longer exists — fall back to public.
+          autoJoinTarget = "";
+          flashHint("房间不存在或已过期，已为你进入公共房间");
+          socket.joinPublicRoom();
         } else {
-          flashHint(msg.error.message);
+          const t = friendlyError(msg.error);
+          if (t) flashHint(t);
         }
       } else if (msg.type === "session.kicked") {
         setConn(false, "已被断开：" + msg.reason);
         showLobby();
       }
     });
-    socket.onClose(() => setConn(false, "连接断开"));
+    socket.onClose(() => {
+      setConn(false, "连接断开");
+      setEnterBusy(false);
+    });
 
-    // Default landing: if no ?room=CODE is given, drop straight into the
-    // public room so strangers immediately see each other. Otherwise join the
-    // shared private room from the URL.
-    const auto = (root.dataset.roomCode || "").trim().toUpperCase();
+    // Default landing: if ?room=CODE is present in the URL, drop straight into
+    // that shared private room (e.g. from an invite link). Otherwise join the
+    // public room so strangers immediately see each other. We read the code
+    // from location.search on the client because the dev/SSR layer does not
+    // reliably forward the query param into the component prop.
+    const auto = (new URLSearchParams(location.search).get("room") || "").trim().toUpperCase();
     if (auto) {
+      autoJoinTarget = auto;
       inputCode.value = auto;
       socket.joinRoom(auto);
     } else {
@@ -785,21 +1319,71 @@ const { initialRoomCode = "" } = Astro.props;
     }, 2500);
   }
 
+  // ---- room entry helpers ----
+  // Friendly Chinese copy for backend error codes that arrive without a
+  // human-readable message (ROOM_FULL / NOT_IN_ROOM default to the raw code).
+  function friendlyError(err: { code?: string; message?: string }): string {
+    switch (err?.code) {
+      case "ROOM_NOT_FOUND":
+        return "房间不存在或已过期";
+      case "ROOM_FULL":
+        return "房间已满，换个房间或稍后再试";
+      case "NOT_IN_ROOM":
+        return "";
+      default:
+        return err?.message || "操作失败，请重试";
+    }
+  }
+
+  // Disable the entry buttons and show a transient "working" label so a click
+  // on 进入/创建/加入 always gives feedback (cleared on ok / error / close).
+  function setEnterBusy(busy: boolean) {
+    for (const b of [btnPublic, btnCreate, btnJoin, btnNewPrivate]) {
+      if (b) b.disabled = busy;
+    }
+    if (busy) {
+      btnPublic.textContent = "进入中…";
+      btnCreate.textContent = "创建中…";
+      btnNewPrivate.textContent = "创建中…";
+    } else {
+      btnPublic.textContent = "进入公共房间";
+      btnCreate.textContent = "创建私人房间";
+      btnNewPrivate.textContent = "新建私人房";
+    }
+  }
+
+  // Enter a room, switching away from the current one if needed. When already
+  // in a room we leave first and run `action` once the leave is confirmed.
+  function switchRoom(action: () => void) {
+    if (!connected) return;
+    setEnterBusy(true);
+    if (roomId) {
+      pendingAfterLeave = action;
+      socket.leaveRoom();
+    } else {
+      action();
+    }
+  }
+  function enterPublic() {
+    switchRoom(() => socket.joinPublicRoom());
+  }
+  function enterCreate() {
+    switchRoom(() => socket.createRoom());
+  }
+  function enterJoin(rawCode: string) {
+    const code = rawCode.trim().toUpperCase();
+    if (!code) {
+      flashHint("请输入房间码");
+      return;
+    }
+    switchRoom(() => socket.joinRoom(code));
+  }
+
   // ---- buttons ----
-  btnPublic.addEventListener("click", () => {
-    if (!connected) return;
-    socket.joinPublicRoom();
-  });
-  btnCreate.addEventListener("click", () => {
-    if (!connected) return;
-    socket.createRoom();
-  });
-  btnJoin.addEventListener("click", () => {
-    if (!connected) return;
-    const code = inputCode.value.trim().toUpperCase();
-    if (!code) return;
-    socket.joinRoom(code);
-  });
+  btnPublic.addEventListener("click", () => enterPublic());
+  btnCreate.addEventListener("click", () => enterCreate());
+  btnNewPrivate.addEventListener("click", () => enterCreate());
+  btnJoin.addEventListener("click", () => enterJoin(inputCode.value));
   inputCode.addEventListener("keydown", (e) => {
     if (e.key === "Enter") btnJoin.click();
   });
@@ -813,18 +1397,6 @@ const { initialRoomCode = "" } = Astro.props;
       prompt("复制此链接分享给朋友：", url);
     }
   });
-  btnResize.addEventListener("click", () => {
-    resizeW.value = String(world.w);
-    resizeH.value = String(world.h);
-    resizeRow.classList.toggle("hidden");
-  });
-  btnResizeApply.addEventListener("click", () => {
-    const w = Math.max(1, Math.min(Number(resizeW.value) || world.w, 1_000_000));
-    const h = Math.max(1, Math.min(Number(resizeH.value) || world.h, 1_000_000));
-    socket.resizeWorld(w, h);
-    resizeRow.classList.add("hidden");
-  });
-
   requestAnimationFrame(draw);
   boot();
 </script>
