@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>腾讯地图 · 能力测试台</title>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://*.qq.com https://*.gtimg.com https://*.lbs.net.cn https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https: https://*.qq.com https://*.gtimg.com https://*.lbs.net.cn https://apis.map.qq.com; connect-src 'self' blob: https: wss: ws:; worker-src 'self' blob: data:; frame-src 'self' https:;" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://*.qq.com https://*.gtimg.com https://*.lbs.net.cn https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https: https://*.qq.com https://*.gtimg.com https://*.lbs.net.cn https://apis.map.qq.com; connect-src 'self' blob: https: wss: ws: http://localhost:3002; worker-src 'self' blob: data:; frame-src 'self' https:;" />
   <style>
     :root {
       --bg: #070b16;
@@ -326,11 +326,21 @@
       function wgs84ToGcj02(lat, lng) {
         if (outOfChina(lat, lng)) return [lat, lng];
         var dLat = transformLat(lng - 105.0, lat - 35.0), dLng = transformLng(lng - 105.0, lat - 35.0);
+        var radLat = lat / 180.0 * PI, magic = Math.sin(radLat);
+        magic = 1 - ee * magic * magic;
+        var sqrtMagic = Math.sqrt(magic);
+        dLat = (dLat * 180.0) / ((a * (1 - ee)) / sqrtMagic * PI);
+        dLng = (dLng * 180.0) / (a / sqrtMagic * PI);
         return [lat + dLat, lng + dLng];
       }
       function gcj02ToWgs84(lat, lng) {
         if (outOfChina(lat, lng)) return [lat, lng];
         var dLat = transformLat(lng - 105.0, lat - 35.0), dLng = transformLng(lng - 105.0, lat - 35.0);
+        var radLat = lat / 180.0 * PI, magic = Math.sin(radLat);
+        magic = 1 - ee * magic * magic;
+        var sqrtMagic = Math.sqrt(magic);
+        dLat = (dLat * 180.0) / ((a * (1 - ee)) / sqrtMagic * PI);
+        dLng = (dLng * 180.0) / (a / sqrtMagic * PI);
         return [lat - dLat, lng - dLng];
       }
       function gcj02ToBd09(lat, lng) {
@@ -1744,6 +1754,7 @@
               navigator.geolocation.getCurrentPosition(function (pos) {
                 var lat = pos.coords.latitude, lng = pos.coords.longitude;
                 var g = convert(lat, lng, "WGS84", "GCJ02");
+                if (!(g[0] >= -90 && g[0] <= 90 && g[1] >= -180 && g[1] <= 180)) { g = [lat, lng]; msg("坐标转换结果越界，已回退原始 GPS 坐标。"); }
                 capMap.setCenter(new TMap.LatLng(g[0], g[1])); capMap.setZoom(15);
                 if (marker) try { marker.setMap(null); } catch (e) {}
                 marker = new TMap.MultiMarker({ map: capMap, geometries: [{ id: "me", position: new TMap.LatLng(g[0], g[1]) }] });
@@ -1790,8 +1801,12 @@
                 info = new TMap.InfoWindow({ map: capMap, content: "", position: geos[0].position });
                 mk.on("click", function (e) {
                   var g = e.geometry;
-                  info.setPosition(g.position);
-                  info.setContent('<div style="padding:6px 10px">' + esc(g.properties.title) + '<br><span style="color:#9bb0d6">' + g.position.lat().toFixed(5) + "," + g.position.lng().toFixed(5) + "</span></div>");
+                  var gp = g.position;
+                  var plat = (typeof gp.lat === "function") ? gp.lat() : gp.lat;
+                  var plng = (typeof gp.lng === "function") ? gp.lng() : gp.lng;
+                  var pos = new TMap.LatLng(plat, plng);
+                  info.setPosition(pos);
+                  info.setContent('<div style="padding:6px 10px">' + esc((g.properties && g.properties.title) || "") + '<br><span style="color:#9bb0d6">' + plat.toFixed(5) + "," + plng.toFixed(5) + "</span></div>");
                   info.open();
                 });
               } catch (e) { msg("标记已渲染（信息窗不可用：" + (e.message || e) + "）"); }
