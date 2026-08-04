@@ -1,0 +1,406 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Chrome 内置 AI LanguageDetector 测试"
+  description="基于 Chrome Built-In AI LanguageDetector API 的客户端语言检测 Demo，支持模型下载进度、置信度排序与多语言示例。"
+  sideBarActiveItemID="demos"
+>
+  <div class="prose mb-6 max-w-none">
+    <h1>Chrome 内置 AI LanguageDetector 测试</h1>
+    <p class="opacity-80">
+      纯浏览器端语言检测：调用 Chrome Built-In AI 的 <code>LanguageDetector</code> API，无需联网调用远端模型。
+      支持模型可用性探测、下载进度监听、置信度排序，以及限定候选语言。
+    </p>
+  </div>
+
+  <!-- 状态 -->
+  <div class="card mb-5 border border-base-300 bg-base-100 shadow-sm">
+    <div class="card-body p-5">
+      <h2 class="card-title text-base">
+        运行状态
+        <span class="badge badge-sm badge-primary">status</span>
+      </h2>
+      <div class="flex flex-wrap gap-2" id="status-pills">
+        <span class="badge badge-outline gap-1" id="pill-browser">
+          <span class="h-2 w-2 rounded-full bg-base-content/40"></span>浏览器支持
+        </span>
+        <span class="badge badge-outline gap-1" id="pill-availability">
+          <span class="h-2 w-2 rounded-full bg-base-content/40"></span>模型可用性
+        </span>
+        <span class="badge badge-outline gap-1" id="pill-model">
+          <span class="h-2 w-2 rounded-full bg-base-content/40"></span>检测器实例
+        </span>
+      </div>
+      <div class="hidden" id="download-progress">
+        <div class="mt-4"><progress class="progress progress-primary w-full" value="0" max="100"></progress></div>
+        <p class="mt-1 text-xs opacity-70" id="progress-text">0%</p>
+      </div>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button id="btn-init" class="btn btn-primary btn-sm">初始化 / 下载模型</button>
+        <button id="btn-destroy" class="btn btn-outline btn-sm" disabled>销毁实例</button>
+      </div>
+      <p class="mt-2 text-sm opacity-70" id="init-hint"></p>
+    </div>
+  </div>
+
+  <!-- 输入 -->
+  <div class="card mb-5 border border-base-300 bg-base-100 shadow-sm">
+    <div class="card-body p-5">
+      <h2 class="card-title text-base">
+        输入文本
+        <span class="badge badge-sm badge-primary">detect</span>
+      </h2>
+      <textarea
+        id="input"
+        class="textarea textarea-bordered w-full min-h-[120px]"
+        placeholder="在此粘贴任意语言的文本，例如：こんにちは、世界。 / Bonjour le monde ! / 你好，世界。"
+      ></textarea>
+      <div class="mt-3 flex flex-wrap gap-2" id="samples"></div>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <button id="btn-detect" class="btn btn-primary btn-sm" disabled>检测语言</button>
+        <button id="btn-clear" class="btn btn-outline btn-sm">清空</button>
+      </div>
+      <div class="collapse collapse-arrow mt-4 border border-base-300 rounded-lg">
+        <input type="checkbox" />
+        <div class="collapse-title text-sm font-semibold text-primary">高级：限定候选语言（expectedInputLanguages）</div>
+        <div class="collapse-content">
+          <p class="mb-2 text-sm opacity-70">勾选后只在这几个语言里排序置信度，可显著改变结果分布。</p>
+          <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4" id="langs-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结果 -->
+  <div class="card mb-5 border border-base-300 bg-base-100 shadow-sm">
+    <div class="card-body p-5">
+      <h2 class="card-title text-base">
+        检测结果
+        <span class="badge badge-sm badge-primary">results</span>
+      </h2>
+      <div id="results">
+        <p class="text-sm opacity-60">还没有检测。输入文本后点击「检测语言」。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 日志 -->
+  <div class="card mb-8 border border-base-300 bg-base-100 shadow-sm">
+    <div class="card-body p-5">
+      <h2 class="card-title text-base">
+        运行日志
+        <span class="badge badge-sm badge-primary">log</span>
+      </h2>
+      <div
+        id="log"
+        class="rounded-box max-h-60 overflow-auto bg-slate-900 p-4 text-xs text-slate-300"
+        style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap;"
+      ></div>
+    </div>
+  </div>
+
+  <div class="text-center text-xs opacity-60">
+    本页调用的 API 仅在 Chromium 内核浏览器（Chrome/Edge，需对应版本与支持）中可用。
+    需要反馈模型效果？<a
+      href="https://issues.chromium.org/issues/new?component=1583316"
+      target="_blank"
+      rel="noopener"
+      class="link link-primary">提交 Chromium Issue</a>
+  </div>
+</BaseLayout>
+
+<script>
+  // Chrome Built-In AI LanguageDetector Demo
+  (() => {
+    const $ = (id: string) => document.getElementById(id)!;
+    const pillBrowser = $("pill-browser");
+    const pillAvail = $("pill-availability");
+    const pillModel = $("pill-model");
+    const progressWrap = $("download-progress");
+    const progressBar = progressWrap.querySelector("progress") as HTMLProgressElement;
+    const progressText = $("progress-text");
+    const btnInit = $("btn-init") as HTMLButtonElement;
+    const btnDestroy = $("btn-destroy") as HTMLButtonElement;
+    const btnDetect = $("btn-detect") as HTMLButtonElement;
+    const btnClear = $("btn-clear") as HTMLButtonElement;
+    const input = $("input") as HTMLTextAreaElement;
+    const samples = $("samples");
+    const results = $("results");
+    const logEl = $("log");
+    const langsGrid = $("langs-grid");
+    const initHint = $("init-hint");
+
+    let detector: any = null;
+    let supportedLangs: string[] = [];
+
+    // Chrome 某些版本没有 LanguageDetector.supportedLanguages()，用常用语言兜底
+    const FALLBACK_LANGS = [
+      "en", "zh", "ja", "ko", "es", "fr", "de", "ru", "it", "pt",
+      "ar", "th", "nl", "pl", "tr", "vi", "id", "hi", "sv", "cs",
+    ];
+
+    function log(msg: string, kind: "" | "err" | "ok" = "") {
+      const time = new Date().toLocaleTimeString("zh-CN", { hour12: false });
+      const full = `[${time}] ${msg}`;
+      if (kind === "err") console.error(full);
+      else if (kind === "ok") console.log("%c" + full, "color: #22c55e");
+      else console.log(full);
+      const line = document.createElement("div");
+      const cls = kind === "err" ? "text-red-300" : kind === "ok" ? "text-green-300" : "";
+      const span = document.createElement("span");
+      span.className = `opacity-50`;
+      span.textContent = `[${time}] `;
+      const body = document.createElement("span");
+      body.className = cls;
+      body.textContent = msg;
+      line.appendChild(span);
+      line.appendChild(body);
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function setPill(el: HTMLElement, state: "ok" | "warn" | "err" | "busy" | "", text: string) {
+      const dot = el.querySelector("span")!;
+      el.className = "badge badge-outline gap-1";
+      dot.className = "h-2 w-2 rounded-full";
+      if (state === "ok") {
+        el.classList.add("badge-success");
+        dot.classList.add("bg-green-600");
+      } else if (state === "warn") {
+        el.classList.add("badge-warning");
+        dot.classList.add("bg-yellow-600");
+      } else if (state === "err") {
+        el.classList.add("badge-error");
+        dot.classList.add("bg-red-600");
+      } else if (state === "busy") {
+        el.classList.add("badge-info");
+        dot.classList.add("bg-blue-500", "animate-pulse");
+      } else {
+        dot.classList.add("bg-base-content/40");
+      }
+      el.lastChild!.textContent = text;
+    }
+
+    const dn = new Intl.DisplayNames(["zh-CN"], { type: "language" });
+    function langName(tag: string) {
+      try { return dn.of(tag) || tag; } catch { return tag; }
+    }
+
+    const supported = ("LanguageDetector" in self) &&
+      typeof (self as any).LanguageDetector?.availability === "function";
+
+    async function initStatus() {
+      if (!supported) {
+        setPill(pillBrowser, "err", "不支持");
+        log("当前浏览器不支持 LanguageDetector。请使用开启了内置 AI 的 Chrome/Edge。", "err");
+        log("提示：可在 chrome://flags 搜索 Built-in AI 相关实验项并重启。");
+        btnInit.disabled = true;
+        initHint.textContent = "请使用支持 Chrome Built-In AI 的浏览器。";
+        return;
+      }
+      setPill(pillBrowser, "ok", "支持 ✓");
+      log("检测到 window.LanguageDetector，浏览器支持。", "ok");
+
+      try {
+        const LanguageDetector = (self as any).LanguageDetector;
+        const avail = await LanguageDetector.availability();
+        log("availability() => " + avail);
+        const map: Record<string, ["ok" | "warn" | "err" | "busy", string]> = {
+          available: ["ok", "可用（已就绪）"],
+          downloadable: ["warn", "可下载"],
+          downloading: ["busy", "下载中…"],
+          unavailable: ["err", "不可用"],
+        };
+        const [state, text] = map[avail] || ["warn", avail];
+        setPill(pillAvail, state, text);
+        if (avail === "downloadable") {
+          initHint.textContent = "模型尚未下载到本地，点击「初始化 / 下载模型」会触发下载（需联网一次）。";
+        } else if (avail === "available") {
+          initHint.textContent = "模型已就绪，可直接初始化。";
+        } else if (avail === "unavailable") {
+          initHint.textContent = "当前设备/语言组合不可用，可能无法运行。";
+          btnInit.disabled = true;
+        }
+      } catch (e: any) {
+        log("availability() 失败：" + e.message, "err");
+        setPill(pillAvail, "err", "探测失败");
+      }
+
+      try {
+        supportedLangs = await (self as any).LanguageDetector.supportedLanguages();
+        log("支持的语言数量：" + supportedLangs.length, "ok");
+      } catch (e: any) {
+        log("supportedLanguages() 不可用，改用内置常用语言列表。", "err");
+        supportedLangs = FALLBACK_LANGS;
+      }
+      buildLangGrid();
+    }
+
+    function buildLangGrid() {
+      langsGrid.innerHTML = "";
+      supportedLangs.slice(0, 60).forEach((tag) => {
+        const label = document.createElement("label");
+        label.className = "flex items-center gap-1.5 text-xs";
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.value = tag;
+        cb.className = "checkbox checkbox-xs checkbox-primary";
+        label.appendChild(cb);
+        label.appendChild(document.createTextNode(langName(tag) + " (" + tag + ")"));
+        langsGrid.appendChild(label);
+      });
+    }
+
+    async function initModel() {
+      if (!supported) return;
+      btnInit.disabled = true;
+      setPill(pillModel, "busy", "初始化中…");
+      progressWrap.classList.remove("hidden");
+      progressBar.value = 0;
+      progressText.textContent = "0%";
+
+      const expected = [...langsGrid.querySelectorAll<HTMLInputElement>("input:checked")].map((c) => c.value);
+
+      try {
+        const LanguageDetector = (self as any).LanguageDetector;
+        log("LanguageDetector.create({ expectedInputLanguages: " +
+          (expected.length ? JSON.stringify(expected) : "[]") + " }) …");
+        detector = await LanguageDetector.create({
+          expectedInputLanguages: expected.length ? expected : undefined,
+          monitor(m: any) {
+            m.addEventListener("downloadprogress", (e: any) => {
+              const pct = e.total ? Math.round((e.loaded / e.total) * 100) : 0;
+              progressBar.value = pct;
+              progressText.textContent = `${pct}%  (${e.loaded}/${e.total})`;
+              log(`下载进度：${pct}%  (${e.loaded}/${e.total})`);
+            });
+          },
+        });
+        progressBar.value = 100;
+        progressText.textContent = "100%";
+        setPill(pillModel, "ok", "就绪 ✓");
+        log("检测器实例创建成功。", "ok");
+        btnDetect.disabled = false;
+        btnDestroy.disabled = false;
+        initHint.textContent = "实例已就绪，可以开始检测。";
+      } catch (e: any) {
+        setPill(pillModel, "err", "初始化失败");
+        log("create() 失败：" + e.message, "err");
+        btnInit.disabled = false;
+      }
+    }
+
+    async function destroyModel() {
+      if (!detector) return;
+      try { await detector.destroy(); log("detector.destroy() 完成。", "ok"); }
+      catch (e: any) { log("destroy() 失败：" + e.message, "err"); }
+      detector = null;
+      setPill(pillModel, "", "检测器实例");
+      btnDetect.disabled = true;
+      btnDestroy.disabled = true;
+      progressWrap.classList.add("hidden");
+    }
+
+    async function detect() {
+      const text = input.value.trim();
+      if (!text) { log("输入为空，跳过。", "err"); return; }
+      if (!detector) { log("请先初始化模型。", "err"); return; }
+
+      btnDetect.disabled = true;
+      try {
+        log('detect("' + text.slice(0, 30) + (text.length > 30 ? "…" : "") + '") …');
+        const t0 = performance.now();
+        const res = await detector.detect(text);
+        const dt = (performance.now() - t0).toFixed(1);
+        console.log("[LanguageDetector] raw result:", res);
+        if (res?.[0]) {
+          console.log("[LanguageDetector] first result keys:", Object.keys(res[0]));
+          console.log("[LanguageDetector] first result JSON:", JSON.stringify(res[0]));
+        }
+        log(`返回 ${res.length} 条结果，耗时 ${dt}ms`, "ok");
+        renderResults(res);
+      } catch (e: any) {
+        log("detect() 失败：" + e.message, "err");
+      } finally {
+        btnDetect.disabled = false;
+      }
+    }
+
+    function renderResults(res: Array<{ language?: string; detectedLanguage?: string; confidence: number }>) {
+      if (!res || !res.length) {
+        results.innerHTML = '<p class="text-sm opacity-60">未返回任何结果。</p>';
+        return;
+      }
+      results.innerHTML = "";
+      res.forEach((r, idx) => {
+        const lang = r.detectedLanguage ?? r.language ?? "unknown";
+        const pct = Math.round((r.confidence || 0) * 100);
+        console.log(`[LanguageDetector] result[${idx}] raw=`, r, "resolved lang=", lang, "confidence=", r.confidence);
+        const item = document.createElement("div");
+        item.className = "py-2.5 border-b border-base-300 last:border-b-0";
+        item.innerHTML =
+          '<div class="flex items-baseline justify-between">' +
+            '<div class="font-semibold">' + escapeHtml(langName(lang)) +
+              '<span class="ml-2 text-xs opacity-60">' + escapeHtml(lang) + '</span></div>' +
+            '<div class="text-sm tabular-nums opacity-70">' + pct + '%</div>' +
+          '</div>' +
+          '<div class="mt-1.5 h-1.5 w-full rounded-full bg-base-200 overflow-hidden">' +
+            '<div class="h-full rounded-full bg-success" style="width:' + pct + '%"></div>' +
+          '</div>';
+        results.appendChild(item);
+      });
+    }
+
+    function escapeHtml(s: string) {
+      return String(s).replace(/[&<>"]/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
+    }
+
+    const sampleTexts = [
+      { label: "中文", text: "今天天气真好，我们出去走走吧。" },
+      { label: "English", text: "The quick brown fox jumps over the lazy dog." },
+      { label: "日本語", text: "こんにちは、世界。元気ですか？" },
+      { label: "Español", text: "Hola, buenos días. ¿Cómo estás hoy?" },
+      { label: "Français", text: "Bonjour le monde, comment allez-vous ?" },
+      { label: "Deutsch", text: "Guten Tag! Wie geht es Ihnen?" },
+      { label: "한국어", text: "안녕하세요, 반갑습니다." },
+      { label: "Русский", text: "Привет, как дела сегодня?" },
+      { label: "Italiano", text: "Buongiorno a tutti, come state?" },
+      { label: "Português", text: "Olá, tudo bem com você hoje?" },
+      { label: "العربية", text: "مرحبا بكم في هذا المثال." },
+      { label: "ไทย", text: "สวัสดีครับ ยินดีที่ได้รู้จัก" },
+    ];
+    sampleTexts.forEach((s) => {
+      const chip = document.createElement("button");
+      chip.className = "badge badge-outline cursor-pointer hover:badge-primary";
+      chip.textContent = s.label;
+      chip.onclick = () => { input.value = s.text; log("填入示例：" + s.label); };
+      samples.appendChild(chip);
+    });
+
+    btnInit.onclick = initModel;
+    btnDestroy.onclick = destroyModel;
+    btnDetect.onclick = detect;
+    btnClear.onclick = () => {
+      input.value = "";
+      results.innerHTML = '<p class="text-sm opacity-60">还没有检测。输入文本后点击「检测语言」。</p>';
+    };
+    input.addEventListener("keydown", (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") detect();
+    });
+
+    function dispose() {
+      if (detector) {
+        detector.destroy().catch(() => {});
+        detector = null;
+      }
+    }
+    document.addEventListener("astro:before-swap", dispose, { once: true });
+    window.addEventListener("pagehide", dispose, { once: true });
+
+    initStatus();
+    log("页面加载完成，开始探测环境…");
+  })();
+</script>

@@ -10,6 +10,7 @@ import { createTtsRouter } from "./demo/tts-routes.js";
 import { createImageRouter } from "./demo/image-routes.js";
 import { createVideoRouter } from "./demo/video-routes.js";
 import { createAvatarRouter } from "./avatar/routes.js";
+import { createTencentProxyRouter } from "./demo/tencent-proxy-routes.js";
 
 process.on("uncaughtException", (err) => {
   console.error("[api2] uncaughtException:", err);
@@ -84,6 +85,15 @@ app.use("/api/demo/tts", createTtsRouter());
 app.use("/api/demo/image", express.json({ limit: "30mb" }), createImageRouter());
 app.use("/api/demo/video", express.json({ limit: "30mb" }), createVideoRouter());
 app.use("/api/demo/avatar", createAvatarRouter());
+// Harness 依赖 monorepo 的 packages/quality-gates，该包未随 api2 单独部署到生产机。
+// 用动态 import + try/catch 包裹，缺失依赖时优雅降级，避免拖垮整个 api2 进程。
+try {
+  const { createHarnessRouter } = await import("./demo/harness-routes.js");
+  app.use("/api/demo", express.json({ limit: "30mb" }), createHarnessRouter());
+} catch (err) {
+  console.warn("[api2] harness router disabled (missing packages/quality-gates?):", err && err.message);
+}
+app.use("/api/demo/tencent-proxy", createTencentProxyRouter());
 
 const server = app.listen(port, "0.0.0.0", () => {
   console.log(`[api2] listening on http://127.0.0.1:${port}`);

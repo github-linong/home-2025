@@ -27,6 +27,7 @@ tags: ["地图", "腾讯地图", "geolocation", "实验"]
 
 - 腾讯地图 GL：`TMap.Map` / `TMap.MultiMarker` / `TMap.service.ReverseGeocoder`。
 - 浏览器定位：`navigator.geolocation.getCurrentPosition`，带超时与高精度参数。
+- **坐标纠偏（准确性关键）**：浏览器返回 WGS-84，腾讯地图用 GCJ-02，直接喂会偏约 500–700m。GPS 定位先经 `wgs84ToGcj02()` 转换再标注；点图选点已是 GCJ-02，不转换。
 - 移动优先：全屏布局、44px 触摸目标、毛玻璃面板、`prefers-reduced-motion` 降级。
 
 ## 如何测试验证

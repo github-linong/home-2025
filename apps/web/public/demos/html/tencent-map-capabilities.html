@@ -1,0 +1,1568 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>腾讯地图 · 能力测试台</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://*.qq.com https://*.gtimg.com https://*.lbs.net.cn https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https: https://*.qq.com https://*.gtimg.com https://*.lbs.net.cn https://apis.map.qq.com; connect-src 'self' blob: https: wss: ws:; worker-src 'self' blob: data:; frame-src 'self' https:;" />
+  <style>
+    :root {
+      --bg: #070b16;
+      --bg2: #0c1326;
+      --panel: rgba(18, 26, 48, 0.72);
+      --panel-solid: #111a30;
+      --border: rgba(120, 170, 230, 0.18);
+      --text: #e8eefc;
+      --muted: #8da3c7;
+      --accent: #4ea1ff;
+      --accent2: #7c5cff;
+      --ok: #36d399;
+      --warn: #fbbd23;
+      --err: #f87272;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+      --r: 16px;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 12% -8%, rgba(78, 161, 255, 0.16), transparent 60%),
+        radial-gradient(1000px 520px at 92% 4%, rgba(124, 92, 255, 0.14), transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      background-attachment: fixed;
+      min-height: 100%;
+      padding: 18px clamp(14px, 4vw, 40px) 40px;
+    }
+    a { color: var(--accent); }
+
+    /* 顶栏 */
+    .topbar {
+      display: flex; align-items: center; gap: 12px;
+      max-width: 1120px; margin: 0 auto 18px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand .dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 16px rgba(78, 161, 255, 0.7);
+    }
+    .brand h1 { font-size: clamp(20px, 3.4vw, 28px); margin: 0; letter-spacing: 0.5px; font-weight: 700; }
+    .spacer { flex: 1; }
+    .btn {
+      font: inherit; cursor: pointer; border-radius: 12px; border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04); color: var(--text);
+      padding: 9px 14px; min-height: 44px; transition: transform 0.12s ease, background 0.2s ease, border-color 0.2s ease;
+    }
+    .btn:hover { background: rgba(255, 255, 255, 0.09); }
+    .btn:active { transform: translateY(1px); }
+    .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .btn-icon { background: rgba(255, 255, 255, 0.05); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-color: transparent; color: #fff; font-weight: 600;
+    }
+    .btn-primary:hover { filter: brightness(1.08); }
+
+    .wrap { max-width: 1120px; margin: 0 auto; }
+
+    /* 能力卡片网格 */
+    .grid {
+      display: grid; gap: 14px;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+    .cap-card {
+      text-align: left; width: 100%;
+      background: var(--panel); border: 1px solid var(--border); border-radius: var(--r);
+      padding: 16px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      box-shadow: var(--shadow); cursor: pointer; color: var(--text);
+      transition: border-color 0.2s ease, transform 0.12s ease;
+    }
+    .cap-card:hover { border-color: rgba(78, 161, 255, 0.5); transform: translateY(-2px); }
+    .cap-card.active { border-color: var(--accent); }
+    .cap-card .name { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .cap-card .tag {
+      font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; letter-spacing: 0.3px;
+    }
+    .tag.ok { background: rgba(54, 211, 153, 0.16); color: var(--ok); }
+    .tag.proxy { background: rgba(251, 189, 35, 0.16); color: var(--warn); }
+    .cap-card .desc { color: var(--muted); font-size: 13px; margin: 6px 0 12px; min-height: 34px; }
+    .quota { font-size: 12px; color: var(--muted); }
+    .quota .bar { height: 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); margin: 6px 0 4px; overflow: hidden; }
+    .quota .bar > i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+    .quota .meta { display: flex; justify-content: space-between; }
+    .used { color: var(--ok); }
+
+    /* 测试面板 */
+    .panel {
+      margin-top: 16px; background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 18px; box-shadow: var(--shadow);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    }
+    .panel h2 { margin: 0 0 4px; font-size: 18px; }
+    .panel .sub { color: var(--muted); font-size: 13px; margin-bottom: 14px; }
+    .form { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 13px; color: var(--muted); }
+    .field input, .field select {
+      font: inherit; color: var(--text); background: rgba(8, 12, 24, 0.6);
+      border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; min-height: 44px;
+    }
+    .field input:focus, .field select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+    .res {
+      margin-top: 16px; background: rgba(4, 8, 18, 0.7); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px; overflow: auto; max-height: 420px;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;
+      white-space: pre-wrap; word-break: break-all;
+    }
+    .res.empty { color: var(--muted); }
+    .res .k { color: var(--accent); }
+    .res .ok { color: var(--ok); }
+    .res .err { color: var(--err); }
+    .res .warn { color: var(--warn); }
+    .res img { max-width: 100%; border-radius: 10px; border: 1px solid var(--border); display: block; }
+    .res .url { color: var(--accent2); word-break: break-all; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.6; }
+
+    /* Key 抽屉 */
+    .sheet-mask {
+      position: fixed; inset: 0; background: rgba(2, 5, 12, 0.6); z-index: 50;
+      opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+    }
+    .sheet-mask.show { opacity: 1; pointer-events: auto; }
+    .sheet {
+      position: fixed; left: 50%; bottom: 0; transform: translate(-50%, 100%);
+      width: min(520px, 94vw); background: var(--panel-solid); border: 1px solid var(--border);
+      border-radius: 18px 18px 0 0; padding: 22px; z-index: 51; box-shadow: var(--shadow);
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .sheet.show { transform: translate(-50%, 0); }
+    .sheet h3 { margin: 0 0 6px; }
+    .sheet p { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+    .sheet input {
+      width: 100%; font: inherit; color: var(--text); background: rgba(8, 12, 24, 0.6);
+      border: 1px solid var(--border); border-radius: 10px; padding: 12px; min-height: 44px;
+      margin-bottom: 12px;
+    }
+
+    /* 测试 Modal */
+    .test-mask {
+      position: fixed; inset: 0; background: rgba(2, 5, 12, 0.62); z-index: 70;
+      opacity: 0; pointer-events: none; transition: opacity 0.22s ease;
+      backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+    }
+    .test-mask.show { opacity: 1; pointer-events: auto; }
+    .test-modal {
+      position: fixed; left: 50%; top: 50%; transform: translate(-50%, -46%) scale(0.98);
+      width: min(560px, 94vw); max-height: 88vh; display: flex; flex-direction: column;
+      background: var(--panel-solid); border: 1px solid var(--border);
+      border-radius: 18px; z-index: 71; box-shadow: 0 24px 80px rgba(0,0,0,0.55);
+      opacity: 0; pointer-events: none; transition: opacity 0.22s ease, transform 0.26s cubic-bezier(0.2,0.8,0.2,1);
+    }
+    .test-modal.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+    .test-modal .tm-head {
+      flex: none; display: flex; align-items: flex-start; gap: 12px;
+      padding: 20px 22px 12px; border-bottom: 1px solid var(--border);
+    }
+    .test-modal .tm-head h2 { margin: 0; font-size: 18px; }
+    .test-modal .tm-head .sub { color: var(--muted); font-size: 12.5px; margin-top: 5px; line-height: 1.5; }
+    .test-modal .tm-close {
+      margin-left: auto; flex: none; width: 44px; height: 44px; border-radius: 10px;
+      border: 1px solid var(--border); background: rgba(8,12,24,0.5); color: var(--text);
+      font-size: 20px; line-height: 1; cursor: pointer;
+    }
+    .test-modal .tm-close:hover { border-color: var(--accent); }
+    .test-modal .tm-body { flex: 1 1 auto; padding: 18px 22px; overflow: auto; }
+    .test-modal .tm-foot { flex: none; padding: 14px 22px 20px; border-top: 1px solid var(--border); }
+    .test-modal .form { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    .test-modal .res { max-height: 320px; }
+
+    .toast {
+      position: fixed; left: 50%; top: 18px; transform: translate(-50%, -12px);
+      background: rgba(8, 14, 30, 0.92); border: 1px solid var(--border);
+      color: var(--text); padding: 10px 16px; border-radius: 999px; font-size: 13px;
+      z-index: 60; opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    .foot { max-width: 1120px; margin: 26px auto 0; color: var(--muted); font-size: 13px; text-align: center; }
+    .foot code { background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 6px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+    /* 隐藏的 GL 地图容器（仅供 TMap.service 使用，不参与展示） */
+    #bgmap { position: fixed; left: -9999px; top: 0; width: 100px; height: 100px; opacity: 0; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="dot" aria-hidden="true"></span>
+      <h1>地图能力测试</h1>
+    </div>
+    <div class="spacer"></div>
+    <button id="keyBtn" class="btn btn-icon" aria-label="设置腾讯地图 Key" title="设置腾讯地图 Key">⚙</button>
+  </header>
+
+  <div class="wrap">
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="foot">
+    腾讯地图共 <code>86</code> 项能力，此处展示常用的 <code>85</code> 项 WebService / JS 能力。
+    <span class="used">绿色</span> 为浏览器可直连测试；<span style="color:var(--warn)">黄色</span> 为 WebService REST，浏览器直连受 CORS 限制，需经你自己的服务端代理转发（页面会给出完整请求 URL）。
+  </div>
+
+  <div id="bgmap" aria-hidden="true"></div>
+
+  <!-- Key 设置抽屉 -->
+  <div id="sheetMask" class="sheet-mask" aria-hidden="true"></div>
+  <section id="sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <h3 id="sheetTitle">设置腾讯地图 Key</h3>
+    <p>默认已内置一个 Key（仅前端 JS API 用途，靠域名白名单保护）。如需替换，填入你自己的 Key，仅存浏览器 localStorage，不上传。</p>
+    <input id="keyInput" type="text" placeholder="输入腾讯地图 Key" spellcheck="false" autocomplete="off" />
+    <div class="actions">
+      <button id="keySave" class="btn btn-primary">保存</button>
+      <button id="keyReset" class="btn">恢复默认</button>
+      <button id="keyClose" class="btn">取消</button>
+    </div>
+  </section>
+
+  <!-- 能力测试 Modal -->
+  <div id="testMask" class="test-mask" aria-hidden="true"></div>
+  <section id="testModal" class="test-modal" role="dialog" aria-modal="true" aria-labelledby="tmTitle" aria-hidden="true">
+    <div class="tm-head">
+      <div>
+        <h2 id="tmTitle">能力测试</h2>
+        <div class="sub" id="tmSub"></div>
+      </div>
+      <button class="tm-close" id="tmClose" aria-label="关闭测试">×</button>
+    </div>
+    <div class="tm-body" id="tmBody"></div>
+    <div class="tm-foot" id="tmFoot"></div>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var DEFAULT_KEY = "XNGBZ-MF3HD-EJP4Z-P2D7W-72HCK-ETBJ3";
+      var LS_KEY = "tx_map_key_cap";
+      function getKey() {
+        try { var v = localStorage.getItem(LS_KEY); if (v) return v; } catch (e) {}
+        return DEFAULT_KEY;
+      }
+      function setKey(v) { try { localStorage.setItem(LS_KEY, v); } catch (e) {} }
+      function clearKey() { try { localStorage.removeItem(LS_KEY); } catch (e) {} }
+
+      var $ = function (s) { return document.querySelector(s); };
+      function esc(s) { return String(s).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); }
+
+      var toastTimer = null;
+      function toast(msg) {
+        var t = $("#toast"); t.textContent = msg; t.classList.add("show");
+        clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2200);
+      }
+
+      // ---------- 坐标转换（纯算法，浏览器直连） ----------
+      var PI = Math.PI, a = 6378245.0, ee = 0.00669342162296594323;
+      function outOfChina(lat, lng) {
+        return !(lng > 73.66 && lng < 135.05 && lat > 3.86 && lat < 53.55);
+      }
+      function transformLat(lng, lat) {
+        var r = -100 + 2 * lng + 3 * lat + 0.2 * lat * lat + 0.1 * lng * lat + 0.2 * Math.sqrt(Math.abs(lng));
+        r += (20 * Math.sin(6 * lng * PI) + 20 * Math.sin(2 * lng * PI)) * 2 / 3;
+        r += (20 * Math.sin(lat * PI) + 40 * Math.sin(lat / 3 * PI)) * 2 / 3;
+        r += (160 * Math.sin(lat / 12 * PI) + 320 * Math.sin(lat * PI / 30)) * 2 / 3;
+        return r;
+      }
+      function transformLng(lng, lat) {
+        var r = 300 + lng + 2 * lat + 0.1 * lng * lng + 0.1 * lng * lat + 0.1 * Math.sqrt(Math.abs(lng));
+        r += (20 * Math.sin(6 * lng * PI) + 20 * Math.sin(2 * lng * PI)) * 2 / 3;
+        r += (20 * Math.sin(lng * PI) + 40 * Math.sin(lng / 3 * PI)) * 2 / 3;
+        r += (150 * Math.sin(lng / 12 * PI) + 300 * Math.sin(lng / 30 * PI)) * 2 / 3;
+        return r;
+      }
+      function wgs84ToGcj02(lat, lng) {
+        if (outOfChina(lat, lng)) return [lat, lng];
+        var dLat = transformLat(lng - 105.0, lat - 35.0), dLng = transformLng(lng - 105.0, lat - 35.0);
+        return [lat + dLat, lng + dLng];
+      }
+      function gcj02ToWgs84(lat, lng) {
+        if (outOfChina(lat, lng)) return [lat, lng];
+        var dLat = transformLat(lng - 105.0, lat - 35.0), dLng = transformLng(lng - 105.0, lat - 35.0);
+        return [lat - dLat, lng - dLng];
+      }
+      function gcj02ToBd09(lat, lng) {
+        var x = lng, y = lat, z = Math.sqrt(x * x + y * y) + 0.00002 * Math.sin(y * PI);
+        var th = Math.atan2(y, x) + 0.000003 * Math.cos(x * PI);
+        return [z * Math.sin(th) + 0.006, z * Math.cos(th) + 0.0065];
+      }
+      function bd09ToGcj02(lat, lng) {
+        var x = lng - 0.0065, y = lat - 0.006, z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * PI);
+        var th = Math.atan2(y, x) - 0.000003 * Math.cos(x * PI);
+        return [z * Math.sin(th), z * Math.cos(th)];
+      }
+      function convert(lat, lng, from, to) {
+        var p = [lat, lng];
+        if (from === "WGS84") { if (to === "GCJ02") p = wgs84ToGcj02(lat, lng); else if (to === "BD09") p = gcj02ToBd09(wgs84ToGcj02(lat, lng)[0], wgs84ToGcj02(lat, lng)[1]); }
+        else if (from === "GCJ02") { if (to === "WGS84") p = gcj02ToWgs84(lat, lng); else if (to === "BD09") p = gcj02ToBd09(lat, lng); }
+        else if (from === "BD09") { if (to === "GCJ02") p = bd09ToGcj02(lat, lng); else if (to === "WGS84") p = gcj02ToWgs84(bd09ToGcj02(lat, lng)[0], bd09ToGcj02(lat, lng)[1]); }
+        return p;
+      }
+
+      // ---------- 地图服务（逆地址解析 / 地点搜索，客户端可用） ----------
+      var revGeocoder = null, searchService = null, svcReady = false;
+      function loadMapServices(key) {
+        if (window.TMap && window.TMap.service) { initServices(); return; }
+        var s = document.createElement("script");
+        s.src = "https://map.qq.com/api/gljs?v=1.exp&key=" + encodeURIComponent(key) + "&libraries=service&callback=__txCapInit";
+        window.__txCapInit = function () {
+          try {
+            new TMap.Map("bgmap", { center: new TMap.LatLng(39.9088, 116.3975), zoom: 12 });
+            initServices();
+          } catch (e) { console.warn("map services init failed", e); }
+        };
+        document.head.appendChild(s);
+      }
+      function initServices() {
+        try { revGeocoder = new TMap.service.ReverseGeocoder({}); } catch (e) { revGeocoder = null; }
+        try { searchService = new TMap.service.Search({ pageSize: 10, pageIndex: 1 }); } catch (e) { searchService = null; }
+        svcReady = !!(revGeocoder && searchService);
+      }
+
+      // ---------- WebService REST 请求工具 ----------
+      function wsUrl(path, params, key) {
+        var u = "https://apis.map.qq.com" + path + "?key=" + encodeURIComponent(key);
+        Object.keys(params || {}).forEach(function (k) {
+          if (params[k] !== "" && params[k] != null) u += "&" + k + "=" + encodeURIComponent(params[k]);
+        });
+        return u;
+      }
+      function callWS(url) {
+        return fetch(url).then(function (r) {
+          return r.text().then(function (txt) {
+            var j = null; try { j = JSON.parse(txt); } catch (e) { j = txt; }
+            return { ok: r.ok, status: r.status, data: j, url: url };
+          });
+        }).catch(function (e) {
+          return { ok: false, network: true, error: e && e.message ? e.message : String(e), url: url };
+        });
+      }
+
+      // 经本地 api2 代理转发（Key 在服务端，规避 CORS）
+      // 开发态（localhost/127.0.0.1，页面由 Astro :4321 提供）直连 api2 :3002；
+      // 生产态（www.lilnong.top 等）用相对路径，由 nginx 反代到 api2。
+      var PROXY_BASE = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+        ? "http://localhost:3002/api/demo/tencent-proxy"
+        : "/api/demo/tencent-proxy";
+      function callProxy(path, params, box, options) {
+        options = options || {};
+        var method = options.method || "GET";
+        var u = PROXY_BASE + "?path=" + encodeURIComponent(path);
+        Object.keys(params || {}).forEach(function (k) {
+          if (params[k] !== "" && params[k] != null) u += "&" + k + "=" + encodeURIComponent(params[k]);
+        });
+        var fopt = { method: method };
+        if (method === "POST" && options.body) {
+          fopt.headers = { "Content-Type": "application/json" };
+          fopt.body = JSON.stringify(options.body);
+        }
+        fetch(u, fopt).then(function (r) {
+          return r.text().then(function (txt) {
+            var j = null; try { j = JSON.parse(txt); } catch (e) { j = txt; }
+            return { ok: r.ok, status: r.status, data: j, url: u };
+          });
+        }).then(function (res) {
+          renderWS(res, box);
+        }).catch(function (e) {
+          var direct = wsUrl(path, params, getKey());
+          box.innerHTML =
+            '<div class="warn">本地代理 ' + esc(PROXY_BASE) + ' 未启动或不可达，已回退直连预览（POST 会被 CORS 拦截）。</div>' +
+            '<div class="hint">请求 URL：<span class="url">' + esc(direct) + '</span></div>';
+        });
+      }
+
+      function renderWS(res, box) {
+        if (res.network) {
+          box.innerHTML =
+            '<div class="err">⚠ 浏览器直连被拦截（' + esc(res.error || "network error") + '）</div>' +
+            '<div class="warn" style="margin-top:8px">apis.map.qq.com 未返回 CORS 头，浏览器无法直接 fetch。生产环境请经你自己的服务端代理转发（Key 也建议放服务端避免泄露）。</div>' +
+            '<div class="hint">请求 URL：<span class="url">' + esc(res.url) + '</span></div>';
+          return;
+        }
+        if (!res.ok) {
+          var extra = (res.data && typeof res.data === "object")
+            ? '<div class="hint">返回：' + esc(JSON.stringify(res.data)) + '</div>'
+            : "";
+          box.innerHTML = '<div class="err">HTTP ' + res.status + '</div>' + extra +
+            '<div class="hint">请求 URL：<span class="url">' + esc(res.url) + '</span></div>';
+          return;
+        }
+        box.textContent = JSON.stringify(res.data, null, 2);
+      }
+
+      // ---------- 能力定义 ----------
+      var COORD_OPTS = '<option value="WGS84">WGS84 (GPS)</option><option value="GCJ02">GCJ02 (国测局)</option><option value="BD09">BD09 (百度)</option>';
+      var CAPS = [
+        {
+          id: "coord", name: "坐标转换", quota: 6000, mode: "ok",
+          desc: "WGS84 / GCJ02 / BD09 三种坐标互转，纯前端算法，无需联网。",
+          fields: [
+            { n: "lng", l: "经度 lng", v: "116.3975", t: "number" },
+            { n: "lat", l: "纬度 lat", v: "39.9088", t: "number" },
+            { n: "from", l: "源坐标", v: "WGS84", t: "select", html: COORD_OPTS },
+            { n: "to", l: "目标坐标", v: "GCJ02", t: "select", html: COORD_OPTS }
+          ],
+          test: function (f, key, box) {
+            var lat = parseFloat(f.lat), lng = parseFloat(f.lng);
+            if (isNaN(lat) || isNaN(lng)) { box.innerHTML = '<div class="err">经纬度无效</div>'; return; }
+            var p = convert(lat, lng, f.from, f.to);
+            box.innerHTML = '<div class="ok">✓ 转换成功（' + esc(f.from) + ' → ' + esc(f.to) + '）</div>' +
+              '<div style="margin-top:8px">lat = <b>' + p[0].toFixed(6) + '</b></div>' +
+              '<div>lng = <b>' + p[1].toFixed(6) + '</b></div>' +
+              '<div class="hint">注：中国境外坐标不做偏移，原样返回。</div>';
+          }
+        },
+        {
+          id: "district-list", name: "行政区划列表", quota: 6000, mode: "proxy",
+          desc: "获取全国各级行政区划列表（WebService REST）。",
+          fields: [],
+          test: function (f, key, box) {
+            callProxy("/ws/district/v1/list", {}, box);
+          }
+        },
+        {
+          id: "district-children", name: "行政区划子级查询", quota: 6000, mode: "proxy",
+          desc: "按父级 ID 查询下一级行政区划（默认 100000 全国）。",
+          fields: [{ n: "id", l: "父级 ID", v: "100000", t: "text" }],
+          test: function (f, key, box) {
+            callProxy("/ws/district/v1/getchildren", { id: f.id }, box);
+          }
+        },
+        {
+          id: "reverse", name: "逆地址解析", quota: 6000, mode: "ok",
+          desc: "经纬度 → 中文地址（TMap.service，浏览器直连可用）。",
+          fields: [
+            { n: "lat", l: "纬度 lat", v: "39.9088", t: "number" },
+            { n: "lng", l: "经度 lng", v: "116.3975", t: "number" }
+          ],
+          test: function (f, key, box) {
+            if (!svcReady || !revGeocoder) { box.innerHTML = '<div class="warn">地图服务加载中或加载失败，请稍候重试。</div>'; return; }
+            var lat = parseFloat(f.lat), lng = parseFloat(f.lng);
+            revGeocoder.getLocation({ location: new TMap.LatLng(lat, lng) }).then(function (res) {
+              box.textContent = JSON.stringify(res, null, 2);
+            }).catch(function (e) {
+              box.innerHTML = '<div class="err">逆地址解析失败：' + esc(e && e.message ? e.message : e) + '</div>';
+            });
+          }
+        },
+        {
+          id: "ip", name: "IP 定位", quota: 6000, mode: "proxy",
+          desc: "根据 IP 返回经纬度与城市（WebService REST，留空用当前 IP）。",
+          fields: [{ n: "ip", l: "IP（可选）", v: "", t: "text", ph: "留空=当前 IP" }],
+          test: function (f, key, box) {
+            callProxy("/ws/location/v1/ip", { ip: f.ip || "" }, box);
+          }
+        },
+        {
+          id: "search", name: "地点搜索", quota: 200, mode: "ok",
+          desc: "按关键词搜索周边 POI（TMap.service，浏览器直连可用）。",
+          fields: [
+            { n: "keyword", l: "关键词", v: "酒店", t: "text" },
+            { n: "lat", l: "中心纬度", v: "39.9088", t: "number" },
+            { n: "lng", l: "中心经度", v: "116.3975", t: "number" },
+            { n: "radius", l: "半径(米)", v: "1000", t: "number" }
+          ],
+          test: function (f, key, box) {
+            if (!svcReady || !searchService) { box.innerHTML = '<div class="warn">地图服务加载中或加载失败，请稍候重试。</div>'; return; }
+            var lat = parseFloat(f.lat), lng = parseFloat(f.lng), radius = parseInt(f.radius, 10) || 1000;
+            searchService.searchNearby({
+              keyword: f.keyword,
+              center: new TMap.LatLng(lat, lng),
+              radius: radius
+            }).then(function (res) {
+              box.textContent = JSON.stringify(res, null, 2);
+            }).catch(function (e) {
+              box.innerHTML = '<div class="err">地点搜索失败：' + esc(e && e.message ? e.message : e) + '</div>';
+            });
+          }
+        },
+        {
+          id: "suggestion", name: "关键词输入提示", quota: 6000, mode: "proxy",
+          desc: "输入联想（WebService REST）。",
+          fields: [
+            { n: "keyword", l: "关键词", v: "美食", t: "text" },
+            { n: "region", l: "城市/区域", v: "北京", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/place/v1/suggestion", { keyword: f.keyword, region: f.region }, box);
+          }
+        },
+        {
+          id: "static", name: "静态地图", quota: 6000, mode: "ok",
+          desc: "生成一张地图图片（img 标签，浏览器直连可用）。",
+          fields: [
+            { n: "lat", l: "纬度 lat", v: "39.9088", t: "number" },
+            { n: "lng", l: "经度 lng", v: "116.3975", t: "number" },
+            { n: "zoom", l: "缩放", v: "12", t: "number" },
+            { n: "size", l: "尺寸 W*H", v: "400*300", t: "text" },
+            { n: "maptype", l: "地图类型", v: "roadmap", t: "select", html: '<option value="roadmap">roadmap</option><option value="satellite">satellite</option>' }
+          ],
+          test: function (f, key, box) {
+            var lat = parseFloat(f.lat), lng = parseFloat(f.lng), zoom = parseInt(f.zoom, 10) || 12;
+            var url = wsUrl("/staticmap/v2/image", {
+              center: lat + "," + lng, zoom: zoom, size: f.size, scale: 2,
+              maptype: f.maptype, markers: "color:red|" + lat + "," + lng
+            }, key);
+            box.innerHTML = '<div class="hint">请求 URL：<span class="url">' + esc(url) + '</span></div>' +
+              '<img src="' + esc(url) + '" alt="静态地图" onerror="this.style.display=\'none\';this.insertAdjacentHTML(\'afterend\',\'<div class=&quot;err&quot;>图片加载失败：可能 Key 未开通静态地图或域名未加白名单</div>\')" />';
+          }
+        },
+        {
+          id: "district-search", name: "行政区划搜索", quota: 6000, mode: "proxy",
+          desc: "按名称搜索行政区划（WebService REST）。",
+          fields: [{ n: "keyword", l: "名称关键词", v: "朝阳区", t: "text" }],
+          test: function (f, key, box) {
+            callProxy("/ws/district/v1/search", { keyword: f.keyword }, box);
+          }
+        },
+        {
+          id: "driving", name: "驾车路线规划", quota: 6000, mode: "proxy",
+          desc: "起点 → 终点驾车路线（WebService REST）。",
+          fields: [
+            { n: "fromLat", l: "起点纬度", v: "39.9088", t: "number" },
+            { n: "fromLng", l: "起点经度", v: "116.3975", t: "number" },
+            { n: "toLat", l: "终点纬度", v: "39.9835", t: "number" },
+            { n: "toLng", l: "终点经度", v: "116.4915", t: "number" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/direction/v1/driving/", {
+              from: f.fromLat + "," + f.fromLng, to: f.toLat + "," + f.toLng
+            }, box);
+          }
+        },
+        {
+          id: "walking", name: "步行路线规划", quota: 6000, mode: "proxy",
+          desc: "起点 → 终点步行路线（WebService REST）。",
+          fields: [
+            { n: "fromLat", l: "起点纬度", v: "39.9088", t: "number" },
+            { n: "fromLng", l: "起点经度", v: "116.3975", t: "number" },
+            { n: "toLat", l: "终点纬度", v: "39.9835", t: "number" },
+            { n: "toLng", l: "终点经度", v: "116.4915", t: "number" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/direction/v1/walking", {
+              from: f.fromLat + "," + f.fromLng, to: f.toLat + "," + f.toLng
+            }, box);
+          }
+        },
+        {
+          id: "transit", name: "公交路线规划", quota: 6000, mode: "proxy",
+          desc: "起点 → 终点公交/地铁换乘方案（WebService REST，需填城市）。",
+          fields: [
+            { n: "fromLat", l: "起点纬度", v: "39.9088", t: "number" },
+            { n: "fromLng", l: "起点经度", v: "116.3975", t: "number" },
+            { n: "toLat", l: "终点纬度", v: "39.9835", t: "number" },
+            { n: "toLng", l: "终点经度", v: "116.4915", t: "number" },
+            { n: "city", l: "城市", v: "北京", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/direction/v1/transit", {
+              from: f.fromLat + "," + f.fromLng, to: f.toLat + "," + f.toLng, city: f.city
+            }, box);
+          }
+        },
+        {
+          id: "link", name: "绑路服务", quota: 0, mode: "proxy",
+          desc: "将一批经纬度点吸附到最近道路（轨迹纠偏前置，WebService REST）。",
+          fields: [
+            { n: "points", l: "坐标点(lat,lng;…)", v: "39.9088,116.3975;39.9100,116.4000;39.9150,116.4050", t: "text" },
+            { n: "mode", l: "出行方式", v: "driving", t: "select", html: '<option value="driving">driving</option><option value="walking">walking</option><option value="riding">riding</option>' }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/track/v1/link", { location: f.points, mode: f.mode }, box);
+          }
+        },
+        {
+          id: "geocoder", name: "地址解析", quota: 6000, mode: "proxy",
+          desc: "中文地址 → 经纬度坐标（WebService REST，与逆地址解析相反）。",
+          fields: [{ n: "address", l: "地址", v: "北京市海淀区中关村", t: "text" }],
+          test: function (f, key, box) {
+            callProxy("/ws/geocoder/v1", { address: f.address }, box);
+          }
+        },
+        {
+          id: "walk-dist", name: "步行距离计算", quota: 0, mode: "proxy",
+          desc: "计算两点间步行距离与时长（WebService REST）。",
+          fields: [
+            { n: "fromLat", l: "起点纬度", v: "39.9088", t: "number" },
+            { n: "fromLng", l: "起点经度", v: "116.3975", t: "number" },
+            { n: "toLat", l: "终点纬度", v: "39.9835", t: "number" },
+            { n: "toLng", l: "终点经度", v: "116.4915", t: "number" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/distance/v1/walking", {
+              from: f.fromLat + "," + f.fromLng, to: f.toLat + "," + f.toLng
+            }, box);
+          }
+        },
+        {
+          id: "drive-dist", name: "驾车距离计算", quota: 0, mode: "proxy",
+          desc: "计算两点间驾车距离与时长（WebService REST）。",
+          fields: [
+            { n: "fromLat", l: "起点纬度", v: "39.9088", t: "number" },
+            { n: "fromLng", l: "起点经度", v: "116.3975", t: "number" },
+            { n: "toLat", l: "终点纬度", v: "39.9835", t: "number" },
+            { n: "toLng", l: "终点经度", v: "116.4915", t: "number" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/distance/v1/driving", {
+              from: f.fromLat + "," + f.fromLng, to: f.toLat + "," + f.toLng
+            }, box);
+          }
+        },
+        {
+          id: "poi-detail", name: "POI 详情", quota: 200, mode: "proxy",
+          desc: "根据 POI ID 查询地点详情（WebService REST，ID 来自地点搜索结果）。",
+          fields: [{ n: "poiId", l: "POI ID", v: "1055775050072080428", t: "text", ph: "地点搜索返回的 id" }],
+          test: function (f, key, box) {
+            callProxy("/ws/place/v1/detail", { id: f.poiId }, box);
+          }
+        },
+        {
+          id: "drive-matrix", name: "驾车距离矩阵", quota: 6000, mode: "proxy",
+          desc: "批量计算多个起终点间的驾车距离/时长（WebService REST，坐标用 ; 分隔）。",
+          fields: [
+            { n: "from", l: "起点(可多个, ;分隔)", v: "39.9088,116.3975;39.9835,116.4915", t: "text" },
+            { n: "to", l: "终点(可多个, ;分隔)", v: "39.9150,116.4040;39.9000,116.4000", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/distance/v1/matrix", { from: f.from, to: f.to, mode: "driving" }, box);
+          }
+        },
+        {
+          id: "bicycling", name: "骑行路线规划", quota: 6000, mode: "proxy",
+          desc: "起点 → 终点自行车骑行路线（WebService REST）。",
+          fields: [
+            { n: "fromLat", l: "起点纬度", v: "39.9088", t: "number" },
+            { n: "fromLng", l: "起点经度", v: "116.3975", t: "number" },
+            { n: "toLat", l: "终点纬度", v: "39.9835", t: "number" },
+            { n: "toLng", l: "终点经度", v: "116.4915", t: "number" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/direction/v1/bicycling", {
+              from: f.fromLat + "," + f.fromLng, to: f.toLat + "," + f.toLng
+            }, box);
+          }
+        },
+        {
+          id: "track", name: "轨迹服务:track查询", quota: 0, mode: "proxy",
+          desc: "查询某实体(entity)在时间段内的轨迹点（WebService REST，需已开通轨迹服务并填 service_id/entity_id）。",
+          fields: [
+            { n: "serviceId", l: "service_id", v: "", t: "text", ph: "轨迹服务 ID" },
+            { n: "entityId", l: "entity_id", v: "", t: "text", ph: "实体 ID" },
+            { n: "start", l: "起始时间(Unix秒)", v: "", t: "text", ph: "如 1690000000" },
+            { n: "end", l: "结束时间(Unix秒)", v: "", t: "text", ph: "如 1690086400" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/track/v1/gettrack", {
+              service_id: f.serviceId, entity_id: f.entityId,
+              start_time: f.start, end_time: f.end
+            }, box);
+          }
+        },
+        {
+          id: "lc-set-access", name: "地点云:设置数据访问权限", quota: 0, mode: "proxy",
+          desc: "为某表的某个 Key 设置读取/写入权限（POST，地点云）。路径与字段格式以官网为准，需地点云服务已开通。",
+          fields: [
+            { n: "tableId", l: "table_id", v: "", t: "text", ph: "数据表 ID" },
+            { n: "targetKey", l: "授权 Key", v: "", t: "text", ph: "被授权的 Key" },
+            { n: "read", l: "读取权限(0/1)", v: "1", t: "number" },
+            { n: "write", l: "写入权限(0/1)", v: "0", t: "number" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/place_cloud/table/access_right", {}, box, {
+              method: "POST",
+              body: { table_id: f.tableId, key: f.targetKey, access: { read: parseInt(f.read, 10) || 0, write: parseInt(f.write, 10) || 0 } }
+            });
+          }
+        },
+        {
+          id: "lc-get-access", name: "地点云:获取数据访问权限", quota: 0, mode: "proxy",
+          desc: "查询某表的 Key 权限配置（GET，地点云）。",
+          fields: [{ n: "tableId", l: "table_id", v: "", t: "text", ph: "数据表 ID" }],
+          test: function (f, key, box) {
+            callProxy("/place_cloud/table/access_right", { table_id: f.tableId }, box);
+          }
+        },
+        {
+          id: "lc-table-create", name: "地点云:云存储-创建表", quota: 0, mode: "proxy",
+          desc: "新建一张地点云数据表（POST，地点云）。",
+          fields: [
+            { n: "name", l: "表名", v: "测试表", t: "text" },
+            { n: "unique", l: "ud_id唯一约束(0/1)", v: "0", t: "number" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/place_cloud/table/create", {}, box, {
+              method: "POST", body: { name: f.name, unique_ud_id: parseInt(f.unique, 10) || 0 }
+            });
+          }
+        },
+        {
+          id: "lc-table-delete", name: "地点云:云存储-删除表", quota: 0, mode: "proxy",
+          desc: "删除指定 table_id 的地点云表（POST，地点云）。",
+          fields: [{ n: "tableId", l: "table_id", v: "", t: "text", ph: "数据表 ID" }],
+          test: function (f, key, box) {
+            callProxy("/place_cloud/table/delete", {}, box, { method: "POST", body: { table_id: f.tableId } });
+          }
+        },
+        {
+          id: "lc-table-update", name: "地点云:云存储-修改表名", quota: 0, mode: "proxy",
+          desc: "修改地点云表的名称（POST，地点云）。",
+          fields: [
+            { n: "tableId", l: "table_id", v: "", t: "text", ph: "数据表 ID" },
+            { n: "name", l: "新表名", v: "新表名", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/place_cloud/table/update", {}, box, { method: "POST", body: { table_id: f.tableId, name: f.name } });
+          }
+        },
+        {
+          id: "lc-table-list", name: "地点云:表查询", quota: 10000, mode: "proxy",
+          desc: "列出当前 Key 下的所有地点云表结构（GET，地点云）。",
+          fields: [],
+          test: function (f, key, box) {
+            callProxy("/place_cloud/table/list", {}, box);
+          }
+        },
+        {
+          id: "lc-col-add", name: "地点云:云存储-添加字段", quota: 0, mode: "proxy",
+          desc: "为指定表新增一个自定义字段（POST，地点云）。",
+          fields: [
+            { n: "tableId", l: "table_id", v: "", t: "text", ph: "数据表 ID" },
+            { n: "field", l: "字段名(英文)", v: "price", t: "text" },
+            { n: "type", l: "字段类型", v: "number", t: "select", html: '<option value="number">number</option><option value="string">string</option>' },
+            { n: "isIndex", l: "可筛选/搜索(0/1)", v: "1", t: "number" },
+            { n: "comment", l: "字段注释", v: "价格", t: "text" }
+          ],
+          test: function (f, key, box) {
+            var col = {}; col[f.field] = { type: f.type, default: f.type === "number" ? 0 : "", is_index: parseInt(f.isIndex, 10) || 0, comment: f.comment };
+            callProxy("/place_cloud/table/column/create", {}, box, { method: "POST", body: { table_id: f.tableId, column: col } });
+          }
+        },
+        {
+          id: "lc-col-update", name: "地点云:云存储-修改字段", quota: 0, mode: "proxy",
+          desc: "修改指定表的自定义字段（POST，地点云）。",
+          fields: [
+            { n: "tableId", l: "table_id", v: "", t: "text", ph: "数据表 ID" },
+            { n: "field", l: "字段名", v: "price", t: "text" },
+            { n: "type", l: "字段类型", v: "number", t: "select", html: '<option value="number">number</option><option value="string">string</option>' },
+            { n: "isIndex", l: "可筛选/搜索(0/1)", v: "1", t: "number" },
+            { n: "comment", l: "字段注释", v: "价格", t: "text" }
+          ],
+          test: function (f, key, box) {
+            var col = {}; col[f.field] = { type: f.type, default: f.type === "number" ? 0 : "", is_index: parseInt(f.isIndex, 10) || 0, comment: f.comment };
+            callProxy("/place_cloud/table/column/update", {}, box, { method: "POST", body: { table_id: f.tableId, column: col } });
+          }
+        },
+        {
+          id: "lc-col-delete", name: "地点云:云存储-删除字段", quota: 0, mode: "proxy",
+          desc: "删除指定表的自定义字段（POST，地点云）。",
+          fields: [
+            { n: "tableId", l: "table_id", v: "", t: "text", ph: "数据表 ID" },
+            { n: "field", l: "字段名", v: "price", t: "text" }
+          ],
+          test: function (f, key, box) {
+            var col = {}; col[f.field] = {};
+            callProxy("/place_cloud/table/column/delete", {}, box, { method: "POST", body: { table_id: f.tableId, column: col } });
+          }
+        },
+        {
+          id: "lc-data-create", name: "地点云:创建数据", quota: 10000, mode: "proxy",
+          desc: "向指定表写入一条地点数据（POST，地点云）。",
+          fields: [
+            { n: "tableId", l: "table_id", v: "", t: "text", ph: "数据表 ID" },
+            { n: "udId", l: "ud_id(自定义ID)", v: "1", t: "text" },
+            { n: "title", l: "标题", v: "测试门店", t: "text" },
+            { n: "lat", l: "纬度 lat", v: "39.9088", t: "number" },
+            { n: "lng", l: "经度 lng", v: "116.3975", t: "number" }
+          ],
+          test: function (f, key, box) {
+            var data = { ud_id: f.udId, title: f.title, location: { lat: parseFloat(f.lat), lng: parseFloat(f.lng) }, x: {} };
+            callProxy("/place_cloud/data/create", {}, box, { method: "POST", body: { table_id: f.tableId, data: [data] } });
+          }
+        },
+        {
+          id: "track-object", name: "轨迹服务:object查询", quota: 0, mode: "proxy",
+          desc: "查询轨迹服务中的自定义对象（如地理围栏等）。路径/字段为 best-effort，以腾讯官网轨迹云文档为准；需已开通轨迹服务并填 service_id。",
+          fields: [
+            { n: "serviceId", l: "service_id", v: "", t: "text", ph: "轨迹服务 ID" },
+            { n: "objectName", l: "对象名", v: "", t: "text", ph: "如 fence_01" },
+            { n: "entityId", l: "entity_id(可选)", v: "", t: "text", ph: "实体 ID" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/track/v1/object", {
+              service_id: f.serviceId, object_name: f.objectName, entity_id: f.entityId
+            }, box);
+          }
+        },
+        {
+          id: "track-distance", name: "轨迹服务:track里程计算", quota: 0, mode: "proxy",
+          desc: "计算某实体在时间段内的纠偏后轨迹里程（WebService REST，需开通轨迹服务）。",
+          fields: [
+            { n: "serviceId", l: "service_id", v: "", t: "text", ph: "轨迹服务 ID" },
+            { n: "entityId", l: "entity_id", v: "", t: "text", ph: "实体 ID" },
+            { n: "start", l: "起始时间(Unix秒)", v: "", t: "text", ph: "如 1690000000" },
+            { n: "end", l: "结束时间(Unix秒)", v: "", t: "text", ph: "如 1690086400" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/track/v1/getdistance", {
+              service_id: f.serviceId, entity_id: f.entityId,
+              start_time: f.start, end_time: f.end, mode: "driving"
+            }, box);
+          }
+        },
+        {
+          id: "indoor-suggestion", name: "室内关键词输入提示", quota: 0, mode: "proxy",
+          desc: "基于室内地图的关键词搜索建议（WebService REST /ws/indoor/v1/suggestion）。需开通室内图权限。",
+          fields: [
+            { n: "keyword", l: "关键词", v: "电梯", t: "text" },
+            { n: "buildingId", l: "building_id(建筑ID)", v: "", t: "text", ph: "室内建筑 ID" },
+            { n: "floor", l: "floor(楼层)", v: "", t: "text", ph: "如 F1" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/indoor/v1/suggestion", {
+              keyword: f.keyword, building_id: f.buildingId, floor: f.floor
+            }, box);
+          }
+        },
+        {
+          id: "indoor-search", name: "室内搜索", quota: 0, mode: "proxy",
+          desc: "在指定室内建筑内按关键词搜索 POI（WebService REST /ws/indoor/v1/search）。需开通室内图权限。",
+          fields: [
+            { n: "keyword", l: "关键词", v: "咖啡", t: "text" },
+            { n: "buildingId", l: "building_id(建筑ID)", v: "", t: "text", ph: "室内建筑 ID" },
+            { n: "floor", l: "floor(楼层)", v: "", t: "text", ph: "如 F2" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/indoor/v1/search", {
+              keyword: f.keyword, building_id: f.buildingId, floor: f.floor
+            }, box);
+          }
+        },
+        {
+          id: "bike-matrix", name: "骑行距离矩阵", quota: 6000, mode: "proxy",
+          desc: "批量计算多个起终点间的骑行距离/时长（WebService REST，mode=bicycling，坐标用 ; 分隔）。",
+          fields: [
+            { n: "from", l: "起点(可多个, ;分隔)", v: "39.9088,116.3975;39.9835,116.4915", t: "text" },
+            { n: "to", l: "终点(可多个, ;分隔)", v: "39.9150,116.4040;39.9000,116.4000", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/distance/v1/matrix", { from: f.from, to: f.to, mode: "bicycling" }, box);
+          }
+        },
+        {
+          id: "search-along", name: "沿途搜索", quota: 0, mode: "proxy",
+          desc: "沿一条路线 polyline 搜索沿途 POI（WebService REST /ws/place/v1/search，boundary=along(...)）。需先有路线 polyline。",
+          fields: [
+            { n: "polyline", l: "路线polyline(分号分隔坐标)", v: "39.9088,116.3975;39.9835,116.4915", t: "text" },
+            { n: "keyword", l: "关键词", v: "加油站", t: "text" },
+            { n: "distance", l: "搜索半径(米)", v: "1000", t: "number" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/place/v1/search", {
+              keyword: f.keyword,
+              boundary: "along(" + f.polyline + "," + (parseInt(f.distance, 10) || 1000) + ")"
+            }, box);
+          }
+        },
+        {
+          id: "explore", name: "周边推荐（explore）", quota: 200, mode: "proxy",
+          desc: "按中心点推荐周边优质地点（WebService REST /ws/place/v1/explore）。",
+          fields: [
+            { n: "location", l: "中心点(纬度,经度)", v: "39.9088,116.3975", t: "text" },
+            { n: "radius", l: "半径(米)", v: "1000", t: "number" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/place/v1/explore", {
+              location: f.location, radius: parseInt(f.radius, 10) || 1000
+            }, box);
+          }
+        },
+        {
+          id: "truck", name: "货车路线规划", quota: 0, mode: "proxy",
+          desc: "考虑车型/尺寸/重量/轴数等限制的货车路线规划（WebService REST /ws/direction/v1/trucking）。",
+          fields: [
+            { n: "fromLat", l: "起点纬度", v: "39.9042", t: "number" },
+            { n: "fromLng", l: "起点经度", v: "116.4074", t: "number" },
+            { n: "toLat", l: "终点纬度", v: "39.9841", t: "number" },
+            { n: "toLng", l: "终点经度", v: "116.3075", t: "number" },
+            { n: "size", l: "车型(1微型/2轻型/3中型/4重型)", v: "2", t: "number" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/direction/v1/trucking", {
+              from: f.fromLat + "," + f.fromLng, to: f.toLat + "," + f.toLng,
+              size: parseInt(f.size, 10) || 2
+            }, box);
+          }
+        },
+        {
+          id: "walk-matrix", name: "步行距离矩阵", quota: 6000, mode: "proxy",
+          desc: "批量计算多个起终点间的步行距离/时长（WebService REST，mode=walking，坐标用 ; 分隔）。",
+          fields: [
+            { n: "from", l: "起点(可多个, ;分隔)", v: "39.9088,116.3975;39.9835,116.4915", t: "text" },
+            { n: "to", l: "终点(可多个, ;分隔)", v: "39.9150,116.4040;39.9000,116.4000", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/distance/v1/matrix", { from: f.from, to: f.to, mode: "walking" }, box);
+          }
+        },
+        {
+          id: "lc-data-update", name: "地点云:修改数据", quota: 10000, mode: "proxy",
+          desc: "修改指定表内一条数据（POST，地点云）。",
+          fields: [
+            { n: "tableId", l: "table_id", v: "", t: "text", ph: "数据表 ID" },
+            { n: "udId", l: "ud_id(要改的记录)", v: "", t: "text", ph: "记录自定义 ID" },
+            { n: "title", l: "标题", v: "测试门店", t: "text" },
+            { n: "lat", l: "纬度 lat", v: "39.9088", t: "number" },
+            { n: "lng", l: "经度 lng", v: "116.3975", t: "number" }
+          ],
+          test: function (f, key, box) {
+            var data = { ud_id: f.udId, title: f.title, location: { lat: parseFloat(f.lat), lng: parseFloat(f.lng) }, x: {} };
+            callProxy("/place_cloud/data/update", {}, box, { method: "POST", body: { table_id: f.tableId, data: [data] } });
+          }
+        },
+        {
+          id: "lc-data-delete", name: "地点云:删除数据", quota: 10000, mode: "proxy",
+          desc: "按 ud_id 删除指定表内一条数据（POST，地点云）。",
+          fields: [
+            { n: "tableId", l: "table_id", v: "", t: "text", ph: "数据表 ID" },
+            { n: "udId", l: "ud_id(要删的记录)", v: "", t: "text", ph: "记录自定义 ID" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/place_cloud/data/delete", {}, box, { method: "POST", body: { table_id: f.tableId, ud_id: f.udId } });
+          }
+        },
+        {
+          id: "lc-data-list", name: "地点云:数据列表", quota: 10000, mode: "proxy",
+          desc: "分页列出指定表内的数据（GET，地点云）。",
+          fields: [
+            { n: "tableId", l: "table_id", v: "", t: "text", ph: "数据表 ID" },
+            { n: "pageIndex", l: "page_index", v: "1", t: "number" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/place_cloud/data/list", { table_id: f.tableId, page_index: parseInt(f.pageIndex, 10) || 1 }, box);
+          }
+        },
+        {
+          id: "lc-search-nearby", name: "地点云:周边搜索", quota: 10000, mode: "proxy",
+          desc: "在指定表内按圆形范围(center+radius)搜索数据（GET，地点云 /place_cloud/search/nearby）。",
+          fields: [
+            { n: "tableId", l: "table_id", v: "", t: "text", ph: "数据表 ID" },
+            { n: "keyword", l: "关键词", v: "门店", t: "text" },
+            { n: "center", l: "中心点(纬度,经度)", v: "39.9088,116.3975", t: "text" },
+            { n: "radius", l: "半径(米)", v: "1000", t: "number" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/place_cloud/search/nearby", {
+              table_id: f.tableId, keyword: f.keyword, center: f.center, radius: parseInt(f.radius, 10) || 1000
+            }, box);
+          }
+        },
+        {
+          id: "lc-search-region", name: "地点云:城市/区域搜索", quota: 10000, mode: "proxy",
+          desc: "在指定表内按城市/区域搜索数据（GET，地点云 /place_cloud/search/region）。",
+          fields: [
+            { n: "tableId", l: "table_id", v: "", t: "text", ph: "数据表 ID" },
+            { n: "keyword", l: "关键词", v: "门店", t: "text" },
+            { n: "city", l: "城市名", v: "北京", t: "text" },
+            { n: "autoExtend", l: "自动扩大范围(0/1)", v: "1", t: "number" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/place_cloud/search/region", {
+              table_id: f.tableId, keyword: f.keyword, city: f.city, auto_extend: parseInt(f.autoExtend, 10) || 1
+            }, box);
+          }
+        },
+        {
+          id: "lc-search-rectangle", name: "地点云:矩形范围搜索", quota: 10000, mode: "proxy",
+          desc: "在指定表内按矩形范围(西南-东北)搜索数据（GET，地点云 /place_cloud/search/rectangle）。",
+          fields: [
+            { n: "tableId", l: "table_id", v: "", t: "text", ph: "数据表 ID" },
+            { n: "keyword", l: "关键词", v: "门店", t: "text" },
+            { n: "rect", l: "矩形(西南lat,lng;东北lat,lng)", v: "39.9072,116.3689;39.9149,116.3793", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/place_cloud/search/rectangle", { table_id: f.tableId, keyword: f.keyword, rectangle: f.rect }, box);
+          }
+        },
+        {
+          id: "lc-search-contain", name: "地点云:围栏搜索", quota: 10000, mode: "proxy",
+          desc: "判断坐标落在哪个多边形围栏内 / 围栏匹配（GET，地点云 /place_cloud/search/contain）。",
+          fields: [
+            { n: "tableId", l: "table_id", v: "", t: "text", ph: "数据表 ID" },
+            { n: "location", l: "坐标(纬度,经度)", v: "39.9088,116.3975", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/place_cloud/search/contain", { table_id: f.tableId, location: f.location }, box);
+          }
+        },
+        {
+          id: "poi-assoc", name: "POI 关联:POI 关联", quota: 0, mode: "proxy",
+          desc: "将自有 POI（按名称/地址/经纬度）关联到腾讯地图 POI，获取腾讯 POI ID（GET /ws/poi_association/v1，高级付费服务，需商务开通）。",
+          fields: [
+            { n: "title", l: "名称 title", v: "黄河壶口瀑布", t: "text" },
+            { n: "address", l: "地址 address", v: "陕西省延安市宜川县壶口乡", t: "text" },
+            { n: "location", l: "坐标(纬度,经度)", v: "36.147412,110.443325", t: "text" },
+            { n: "region", l: "城市 region", v: "延安市", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/poi_association/v1", {
+              title: f.title, address: f.address, location: f.location, region: f.region
+            }, box);
+          }
+        },
+        {
+          id: "indoor-walking", name: "室内外一体化步行路线规划", quota: 0, mode: "proxy",
+          desc: "室内外一体化步行路线（WebService 端点与步行路线一致 /ws/direction/v1/walking；室内段需配合室内图与小程序/JS 插件能力）。",
+          fields: [
+            { n: "fromLat", l: "起点纬度", v: "39.9088", t: "number" },
+            { n: "fromLng", l: "起点经度", v: "116.3975", t: "number" },
+            { n: "toLat", l: "终点纬度", v: "39.9835", t: "number" },
+            { n: "toLng", l: "终点经度", v: "116.4915", t: "number" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/direction/v1/walking", {
+              from: f.fromLat + "," + f.fromLng, to: f.toLat + "," + f.toLng
+            }, box);
+          }
+        },
+        {
+          id: "indoor-explore", name: "室内选点", quota: 0, mode: "proxy",
+          desc: "根据室内地图选点获取该区域楼层与相关室内 POI（GET /ws/indoor/v1/explore，需开通室内图权限）。",
+          fields: [
+            { n: "buildingId", l: "building_id(建筑ID)", v: "", t: "text", ph: "室内建筑 ID" },
+            { n: "floor", l: "floor(楼层)", v: "", t: "text", ph: "如 F1" },
+            { n: "location", l: "坐标(纬度,经度)", v: "39.9088,116.3975", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/indoor/v1/explore", {
+              building_id: f.buildingId, floor: f.floor, location: f.location
+            }, box);
+          }
+        },
+        {
+          id: "ebicycling", name: "骑行（电动车）路线规划", quota: 6000, mode: "proxy",
+          desc: "电动自行车骑行路线（GET /ws/direction/v1/ebicycling/，与自行车 bicycling 不同，会考虑电动车限行/禁行）。",
+          fields: [
+            { n: "from", l: "起点(纬度,经度)", v: "39.915285,116.403857", t: "text" },
+            { n: "to", l: "终点(纬度,经度)", v: "39.915285,116.803857", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/direction/v1/ebicycling/", { from: f.from, to: f.to }, box);
+          }
+        },
+        {
+          id: "smart-geocoder", name: "智能地址解析", quota: 0, mode: "proxy",
+          desc: "高级版地址解析：用 smart_address 参数从快递单/聊天记录等文本抽取地址+联系人（GET /ws/geocoder/v1/?smart_address=，需企业认证开通）。",
+          fields: [
+            { n: "smart_address", l: "smart_address(原始地址文本)", v: "北京市海淀区彩和坊路海淀西大街74号 张三 13800138000", t: "text" },
+            { n: "region", l: "region(城市,可选)", v: "", t: "text", ph: "如 北京" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/geocoder/v1/", { smart_address: f.smart_address, region: f.region }, box);
+          }
+        },
+        {
+          id: "here", name: "周边推荐（here）", quota: 200, mode: "proxy",
+          desc: "以地标+主要道路+近距离POI描述当前位置，侧重到家/出行场景推荐（GET /ws/place/v1/here）。",
+          fields: [
+            { n: "location", l: "坐标(纬度,经度)", v: "39.9088,116.3975", t: "text" },
+            { n: "radius", l: "radius(米,可选)", v: "500", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/place/v1/here", { location: f.location, radius: f.radius }, box);
+          }
+        },
+        {
+          id: "truck-matrix", name: "货车距离矩阵", quota: 0, mode: "proxy",
+          desc: "货车批量算路距离/耗时矩阵（GET /ws/distance/v1/matrix?mode=trucking，考虑限高/限重/限行）。",
+          fields: [
+            { n: "from", l: "起点(纬度,经度)", v: "23.599179,114.103876", t: "text" },
+            { n: "to", l: "终点(分号分隔)", v: "24.300917,113.380958;23.392198,113.590841", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/distance/v1/matrix", { from: f.from, to: f.to, mode: "trucking" }, box);
+          }
+        },
+        {
+          id: "dl-publish", name: "数据图层:图层发布", quota: 10000, mode: "proxy",
+          desc: "将数据表更新发布到线上数据图层（GET /data_layer/v1/publish?layerid=，发布间隔需>20s）。",
+          fields: [
+            { n: "layerid", l: "layerid(图层ID)", v: "", t: "text", ph: "如 39f04f1388e1" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/data_layer/v1/publish", { layerid: f.layerid }, box);
+          }
+        },
+        {
+          id: "dl-list", name: "数据图层:图层列表", quota: 10000, mode: "proxy",
+          desc: "查询 Key 绑定的所有数据图层信息（GET /data_layer/v1/list）。",
+          fields: [
+            { n: "page_index", l: "page_index(可选)", v: "1", t: "text" },
+            { n: "page_size", l: "page_size(可选)", v: "10", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/data_layer/v1/list", { page_index: f.page_index, page_size: f.page_size }, box);
+          }
+        },
+        {
+          id: "mydata-table-list", name: "我的数据:数据表列表", quota: 10000, mode: "proxy",
+          desc: "⚠️ best-effort：数据图层的数据源“我的数据”表列表（GET /data_layer/v1/table/list）。路径以官方文档为准，若返回 404 请告知我校正。",
+          fields: [
+            { n: "page_index", l: "page_index(可选)", v: "1", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/data_layer/v1/table/list", { page_index: f.page_index }, box);
+          }
+        },
+        {
+          id: "mydata-table-create", name: "我的数据:创建数据", quota: 10000, mode: "proxy",
+          desc: "⚠️ best-effort：向“我的数据”表写入一条数据（POST /data_layer/v1/table/create）。路径以官方文档为准。",
+          fields: [
+            { n: "table_id", l: "table_id(表ID)", v: "", t: "text", ph: "我的数据表 ID" },
+            { n: "ud_id", l: "ud_id(数据唯一ID)", v: "1", t: "text" },
+            { n: "title", l: "title(名称)", v: "示例点", t: "text" },
+            { n: "lat", l: "纬度 lat", v: "39.9", t: "text" },
+            { n: "lng", l: "经度 lng", v: "116.4", t: "text" }
+          ],
+          test: function (f, key, box) {
+            var data = { ud_id: f.ud_id, title: f.title, location: { lat: parseFloat(f.lat), lng: parseFloat(f.lng) }, x: {} };
+            callProxy("/data_layer/v1/table/create", {}, box, { method: "POST", body: { table_id: f.table_id, data: [data] } });
+          }
+        },
+        {
+          id: "network-loc", name: "智能硬件定位", quota: 0, mode: "proxy",
+          desc: "网络定位/后台定位：根据 wifi/基站/蓝牙/GPS 信息定位（POST /ws/location/v1/network，JSON body，需设备唯一ID）。",
+          fields: [
+            { n: "device_id", l: "device_id(设备唯一ID)", v: "869896021034807", t: "text" },
+            { n: "mac", l: "wifi mac(示例)", v: "78a106a5b166", t: "text" },
+            { n: "rssi", l: "wifi rssi(dbm)", v: "-81", t: "text" }
+          ],
+          test: function (f, key, box) {
+            var body = { device_id: f.device_id, wifiinfo: [ { mac: f.mac, rssi: parseInt(f.rssi, 10) } ] };
+            callProxy("/ws/location/v1/network", {}, box, { method: "POST", body: body });
+          }
+        },
+        {
+          id: "track-create", name: "轨迹云:创建终端", quota: 10000, mode: "proxy",
+          desc: "在轨迹服务下创建终端(entity)（POST /tracks/entity/create，需已开通轨迹服务并填 service_id）。",
+          fields: [
+            { n: "service_id", l: "service_id(轨迹服务ID)", v: "", t: "text", ph: "如 123456" },
+            { n: "entity_id", l: "entity_id(终端ID)", v: "device_001", t: "text" },
+            { n: "entity_name", l: "entity_name(终端名称)", v: "测试车辆", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/tracks/entity/create", {}, box, { method: "POST", body: { service_id: f.service_id, entity_id: f.entity_id, entity_name: f.entity_name } });
+          }
+        },
+        {
+          id: "track-delete", name: "轨迹云:删除终端", quota: 10000, mode: "proxy",
+          desc: "删除轨迹服务下的终端(entity)（POST /tracks/entity/delete，需 service_id 与已存在的 entity_id）。",
+          fields: [
+            { n: "service_id", l: "service_id(轨迹服务ID)", v: "", t: "text", ph: "如 123456" },
+            { n: "entity_id", l: "entity_id(终端ID)", v: "", t: "text", ph: "需已存在" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/tracks/entity/delete", {}, box, { method: "POST", body: { service_id: f.service_id, entity_id: f.entity_id } });
+          }
+        },
+        {
+          id: "track-update", name: "轨迹云:修改终端", quota: 10000, mode: "proxy",
+          desc: "修改终端信息（POST /tracks/entity/update，可改 entity_name/entity_desc/entity_fields）。",
+          fields: [
+            { n: "service_id", l: "service_id(轨迹服务ID)", v: "", t: "text", ph: "如 123456" },
+            { n: "entity_id", l: "entity_id(终端ID)", v: "", t: "text", ph: "需已存在" },
+            { n: "entity_name", l: "entity_name(新名称)", v: "测试车辆改", t: "text" },
+            { n: "entity_desc", l: "entity_desc(描述)", v: "", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/tracks/entity/update", {}, box, { method: "POST", body: { service_id: f.service_id, entity_id: f.entity_id, entity_name: f.entity_name, entity_desc: f.entity_desc } });
+          }
+        },
+        {
+          id: "track-list", name: "轨迹云:终端列表", quota: 10000, mode: "proxy",
+          desc: "分页查询轨迹服务下的终端列表（POST /tracks/entity/list，需 service_id）。",
+          fields: [
+            { n: "service_id", l: "service_id(轨迹服务ID)", v: "", t: "text", ph: "如 123456" },
+            { n: "page_index", l: "page_index(页码)", v: "1", t: "text" },
+            { n: "page_size", l: "page_size(每页)", v: "10", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/tracks/entity/list", {}, box, { method: "POST", body: { service_id: f.service_id, page_index: f.page_index, page_size: f.page_size } });
+          }
+        },
+        {
+          id: "entity-field-create", name: "轨迹云:创建终端自定义字段", quota: 10000, mode: "proxy",
+          desc: "为终端创建自定义字段（POST /tracks/entity_field/create，field_key 同 service 下唯一、最多 10 个；field_type: 1=Int64 2=double 3=string）。",
+          fields: [
+            { n: "service_id", l: "service_id(轨迹服务ID)", v: "", t: "text", ph: "如 123456" },
+            { n: "field_key", l: "field_key(字段名)", v: "city", t: "text" },
+            { n: "field_name", l: "field_name(显示名)", v: "城市", t: "text" },
+            { n: "field_type", l: "field_type(1/2/3)", v: "3", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/tracks/entity_field/create", {}, box, { method: "POST", body: { service_id: f.service_id, field_key: f.field_key, field_name: f.field_name, field_type: Number(f.field_type) } });
+          }
+        },
+        {
+          id: "entity-field-delete", name: "轨迹云:删除终端自定义字段", quota: 10000, mode: "proxy",
+          desc: "删除终端自定义字段（POST /tracks/entity_field/delete，需 field_key）。",
+          fields: [
+            { n: "service_id", l: "service_id(轨迹服务ID)", v: "", t: "text", ph: "如 123456" },
+            { n: "field_key", l: "field_key(字段名)", v: "city", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/tracks/entity_field/delete", {}, box, { method: "POST", body: { service_id: f.service_id, field_key: f.field_key } });
+          }
+        },
+        {
+          id: "entity-field-update", name: "轨迹云:修改终端自定义字段", quota: 10000, mode: "proxy",
+          desc: "修改终端自定义字段（POST /tracks/entity_field/update，可改 field_name）。",
+          fields: [
+            { n: "service_id", l: "service_id(轨迹服务ID)", v: "", t: "text", ph: "如 123456" },
+            { n: "field_key", l: "field_key(字段名)", v: "city", t: "text" },
+            { n: "field_name", l: "field_name(新显示名)", v: "城市2", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/tracks/entity_field/update", {}, box, { method: "POST", body: { service_id: f.service_id, field_key: f.field_key, field_name: f.field_name } });
+          }
+        },
+        {
+          id: "entity-field-list", name: "轨迹云:查询终端自定义字段", quota: 10000, mode: "proxy",
+          desc: "查询终端自定义字段列表（POST /tracks/entity_field/list，需 service_id）。",
+          fields: [
+            { n: "service_id", l: "service_id(轨迹服务ID)", v: "", t: "text", ph: "如 123456" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/tracks/entity_field/list", {}, box, { method: "POST", body: { service_id: f.service_id } });
+          }
+        },
+        {
+          id: "trace-field-create", name: "轨迹云:创建轨迹自定义字段", quota: 10000, mode: "proxy",
+          desc: "为轨迹创建自定义字段（POST /tracks/trace_field/create，field_key 同 service 下唯一、最多 10 个；field_type: 1=Int64 2=double 3=string）。",
+          fields: [
+            { n: "service_id", l: "service_id(轨迹服务ID)", v: "", t: "text", ph: "如 123456" },
+            { n: "field_key", l: "field_key(字段名)", v: "distance", t: "text" },
+            { n: "field_name", l: "field_name(显示名)", v: "里程", t: "text" },
+            { n: "field_type", l: "field_type(1/2/3)", v: "2", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/tracks/trace_field/create", {}, box, { method: "POST", body: { service_id: f.service_id, field_key: f.field_key, field_name: f.field_name, field_type: Number(f.field_type) } });
+          }
+        },
+        {
+          id: "trace-field-update", name: "轨迹云:修改轨迹自定义字段", quota: 10000, mode: "proxy",
+          desc: "修改轨迹自定义字段（POST /tracks/trace_field/update，可改 field_name）。",
+          fields: [
+            { n: "service_id", l: "service_id(轨迹服务ID)", v: "", t: "text", ph: "如 123456" },
+            { n: "field_key", l: "field_key(字段名)", v: "distance", t: "text" },
+            { n: "field_name", l: "field_name(新显示名)", v: "里程2", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/tracks/trace_field/update", {}, box, { method: "POST", body: { service_id: f.service_id, field_key: f.field_key, field_name: f.field_name } });
+          }
+        },
+        {
+          id: "trace-field-delete", name: "轨迹云:删除轨迹自定义字段", quota: 10000, mode: "proxy",
+          desc: "删除轨迹自定义字段（POST /tracks/trace_field/delete，需 field_key）。",
+          fields: [
+            { n: "service_id", l: "service_id(轨迹服务ID)", v: "", t: "text", ph: "如 123456" },
+            { n: "field_key", l: "field_key(字段名)", v: "distance", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/tracks/trace_field/delete", {}, box, { method: "POST", body: { service_id: f.service_id, field_key: f.field_key } });
+          }
+        },
+        {
+          id: "trace-field-list", name: "轨迹云:查询轨迹自定义字段", quota: 10000, mode: "proxy",
+          desc: "查询轨迹自定义字段列表（POST /tracks/trace_field/list，需 service_id）。",
+          fields: [
+            { n: "service_id", l: "service_id(轨迹服务ID)", v: "", t: "text", ph: "如 123456" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/tracks/trace_field/list", {}, box, { method: "POST", body: { service_id: f.service_id } });
+          }
+        },
+        {
+          id: "track-upload", name: "轨迹云:轨迹上传", quota: 10000, mode: "proxy",
+          desc: "上报轨迹点（POST /tracks/trace/upload，body 含 entity_traces 点数组；坐标需 GCJ-02）。",
+          fields: [
+            { n: "service_id", l: "service_id(轨迹服务ID)", v: "", t: "text", ph: "如 123456" },
+            { n: "entity_id", l: "entity_id(终端ID)", v: "device_001", t: "text" },
+            { n: "lat", l: "lat(纬度)", v: "39.9841", t: "text" },
+            { n: "lng", l: "lng(经度)", v: "116.3075", t: "text" },
+            { n: "loctime", l: "loctime(Unix秒)", v: "1690086400", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/tracks/trace/upload", {}, box, { method: "POST", body: {
+              service_id: f.service_id, entity_id: f.entity_id,
+              entity_traces: [{ lat: parseFloat(f.lat), lng: parseFloat(f.lng), loctime: Number(f.loctime) }]
+            } });
+          }
+        },
+        {
+          id: "track-search", name: "轨迹云:轨迹查询/优化", quota: 10000, mode: "proxy",
+          desc: "查询并优化某终端时段内轨迹（GET /tracks/trace/search，支持 optimize/denoising/snaptoroads 等优化参数）。",
+          fields: [
+            { n: "service_id", l: "service_id(轨迹服务ID)", v: "", t: "text", ph: "如 123456" },
+            { n: "entity_id", l: "entity_id(终端ID)", v: "device_001", t: "text" },
+            { n: "start_time", l: "start_time(Unix秒)", v: "1690000000", t: "text" },
+            { n: "end_time", l: "end_time(Unix秒)", v: "1690086400", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/tracks/trace/search", { service_id: f.service_id, entity_id: f.entity_id, start_time: f.start_time, end_time: f.end_time, optimize: 1, denoising: 1, snaptoroads: 1 }, box);
+          }
+        },
+        {
+          id: "entity-last-loc", name: "轨迹云:终端最新位置查询", quota: 10000, mode: "proxy",
+          desc: "查询指定终端最新活跃位置（GET /tracks/entity/get_last_location，需 service_id + entity_id）。",
+          fields: [
+            { n: "service_id", l: "service_id(轨迹服务ID)", v: "", t: "text", ph: "如 123456" },
+            { n: "entity_id", l: "entity_id(终端ID)", v: "device_001", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/tracks/entity/get_last_location", { service_id: f.service_id, entity_id: f.entity_id }, box);
+          }
+        },
+        {
+          id: "entity-search", name: "轨迹云:终端搜索", quota: 10000, mode: "proxy",
+          desc: "按范围/自定义字段搜索终端（GET /tracks/entity/search；boundary 支持 nearby(center,radius)/region/rectangle）。",
+          fields: [
+            { n: "service_id", l: "service_id(轨迹服务ID)", v: "", t: "text", ph: "如 123456" },
+            { n: "center", l: "center(周边搜索中心点 纬度,经度)", v: "39.9841,116.3075", t: "text" },
+            { n: "radius", l: "radius(半径米)", v: "3000", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/tracks/entity/search", { service_id: f.service_id, location: f.center, radius: f.radius }, box);
+          }
+        },
+        {
+          id: "addr-truth", name: "地址真实性分析", quota: 0, mode: "proxy",
+          desc: "地址验真：对地址地理要素组合评分判断真实性（GET /ws/smart_address/truth_analy，需企业认证开通）。",
+          fields: [
+            { n: "address", l: "address(需含城市)", v: "广东省佛山市高明区杨和镇杨梅村桃花街2号科顺建筑材料有限公司", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/smart_address/truth_analy", { address: f.address }, box);
+          }
+        },
+        {
+          id: "addr-complete", name: "地址纠正补全", quota: 0, mode: "proxy",
+          desc: "对地址行政区划/路名/路号纠正补全，输出标准化地址（GET /ws/smart_address/address_complete，需企业认证）。",
+          fields: [
+            { n: "address", l: "address(待补全地址)", v: "北京市朝阳区平房镇青年路1号北京市朝阳区平房乡姚家园村民委", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/smart_address/address_complete", { address: f.address }, box);
+          }
+        },
+        {
+          id: "addr-abnormal", name: "地址异常错误分析", quota: 0, mode: "proxy",
+          desc: "判断地址书写是否异常错误并给出原因，识别精细度/完整度（GET /ws/smart_address/abnormal_analy，需企业认证）。",
+          fields: [
+            { n: "address", l: "address(待分析地址)", v: "北京市海淀区西北旺腾讯总部大厦", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/smart_address/abnormal_analy", { address: f.address }, box);
+          }
+        },
+        {
+          id: "addr-name-match", name: "名称与地址匹配真实性校验", quota: 0, mode: "proxy",
+          desc: "校验地点名称与地址是否真实匹配，返回置信度评分（GET /ws/smart_address/name_address_analy，需企业认证）。",
+          fields: [
+            { n: "name", l: "name(地点名称)", v: "海龙大厦", t: "text" },
+            { n: "address", l: "address(地址)", v: "北京市海淀区北四环西路66号", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/smart_address/name_address_analy", { name: f.name, address: f.address }, box);
+          }
+        },
+        {
+          id: "addr-town-rural", name: "智能地址解析:城乡地址识别", quota: 0, mode: "proxy",
+          desc: "⚠️ 腾讯无独立『城乡地址识别』REST 端点；此处用其『地址地点分析 place_analy』近似——返回区域主体地点类型（小区/医院/大厦等）及行政区划，可据以判断城乡属性。",
+          fields: [
+            { n: "address", l: "address(待分析地址)", v: "青浦区朱家角镇沙家埭路88号", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/smart_address/place_analy", { address: f.address }, box);
+          }
+        },
+        {
+          id: "place-analy", name: "地址地点分析", quota: 0, mode: "proxy",
+          desc: "对输入地址（或经纬度）分析其所在区域的主体地点（小区/医院/大厦等），返回名称、地址、分类、行政区划及子点信息。高级企业付费服务（本尊接口，城乡识别卡片为其近似复用）。",
+          fields: [
+            { n: "address", l: "address(待分析地址)", v: "青浦区朱家角镇沙家埭路88号", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/smart_address/place_analy", { address: f.address }, box);
+          }
+        },
+        {
+          id: "search-polygon", name: "多边形区域搜索", quota: 0, mode: "proxy",
+          desc: "基于多边形范围（首尾相连的经纬度点）的地点搜索，支持凸/凹多边形、不自相交，最大返回 200 条。与矩形/周边搜索为独立接口（/ws/place/v1/search_by_polygon）。",
+          fields: [
+            { n: "polygon", l: "polygon(经纬度;经纬度;…)", v: "39.932512,116.355515;39.933697,116.434650;39.913291,116.435509;39.913555,116.356201", t: "text" },
+            { n: "keyword", l: "keyword(关键词)", v: "公园", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/place/v1/search_by_polygon", { polygon: f.polygon, keyword: f.keyword }, box);
+          }
+        },
+        {
+          id: "track-upload-sdk", name: "轨迹上传（轨迹SDK）", quota: 0, mode: "proxy",
+          desc: "轨迹 SDK（Android/iOS/小程序 JS）终端采集后经此服务端接收端点批量上报轨迹点。与服务端『轨迹云:轨迹上传 /tracks/trace/upload』为同一接收接口；此处演示服务端接收形态。",
+          fields: [
+            { n: "service_id", l: "service_id", v: "123456", t: "text" },
+            { n: "entity_id", l: "entity_id", v: "device_001", t: "text" },
+            { n: "entity_traces", l: "entity_traces(JSON)", v: '[{"entity_id":"device_001","points":[{"lat":39.9,"lng":116.4,"coord_type":1,"loc_time":1690000000}]}]', t: "textarea" }
+          ],
+          test: function (f, key, box) {
+            var traces = (function () { try { return JSON.parse(f.entity_traces); } catch (e) { return []; } })();
+            callProxy("/tracks/trace/upload", {}, box, { method: "POST", body: { service_id: f.service_id, entity_id: f.entity_id, entity_traces: traces } });
+          }
+        },
+        {
+          id: "truck-matrix-hp", name: "货车距离矩阵(高性能)", quota: 6000, mode: "proxy",
+          desc: "货车批量距离矩阵高性能版（mode=trucking_hp）。普通版 mode=trucking 已逐步停止接入新用户，建议用此高性能版。需企业认证开通。",
+          fields: [
+            { n: "from", l: "from(起点 lat,lng)", v: "39.9042,116.4074", t: "text" },
+            { n: "to", l: "to(终点 lat,lng;lat,lng)", v: "39.9841,116.3075;39.9835,116.4915", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/distance/v1/matrix", { from: f.from, to: f.to, mode: "trucking_hp" }, box);
+          }
+        },
+        {
+          id: "weather", name: "天气", quota: 6000, mode: "proxy",
+          desc: "通过行政区划编码(adcode)或经纬度(location)查询实时/预报/逐小时天气，可附加预警/指数/空气质量(added_fields=alarm,index,air)。",
+          fields: [
+            { n: "location", l: "location(经纬度)", v: "39.9042,116.4074", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/weather/v1", { location: f.location }, box);
+          }
+        },
+        {
+          id: "matrix-straight", name: "直线距离矩阵", quota: 6000, mode: "proxy",
+          desc: "批量直线距离计算（mode=straight），返回两点间的直线距离，适用于物流成本预估、地理围栏判断等快速估算场景。",
+          fields: [
+            { n: "from", l: "from(起点 lat,lng)", v: "39.9042,116.4074", t: "text" },
+            { n: "to", l: "to(终点 lat,lng;lat,lng)", v: "39.9841,116.3075;39.9835,116.4915", t: "text" }
+          ],
+          test: function (f, key, box) {
+            callProxy("/ws/distance/v1/matrix", { from: f.from, to: f.to, mode: "straight" }, box);
+          }
+        }
+      ];
+
+      // ---------- 渲染 ----------
+      var grid = $("#grid"), activeId = null;
+
+      function cardHTML(c) {
+        return '<button class="cap-card" data-id="' + c.id + '">' +
+          '<div class="name">' + esc(c.name) +
+          '<span class="tag ' + (c.mode === "ok" ? "ok" : "proxy") + '">' + (c.mode === "ok" ? "直连可用" : "经代理") + '</span></div>' +
+          '<div class="desc">' + esc(c.desc) + '</div>' +
+          '<div class="quota"><div class="bar"><i style="width:0%"></i></div>' +
+          '<div class="meta"><span>' + (c.quota > 0 ? ("配额 0 / " + c.quota) : "配额 未公开") + '</span><span class="used">已用 0%</span></div></div>' +
+          '</button>';
+      }
+
+      function renderGrid() {
+        grid.innerHTML = CAPS.map(cardHTML).join("");
+        Array.prototype.forEach.call(grid.querySelectorAll(".cap-card"), function (el) {
+          el.addEventListener("click", function () { selectCap(el.getAttribute("data-id")); });
+        });
+      }
+
+      function fieldHTML(f) {
+        var id = "f_" + f.n;
+        var ctrl = f.t === "select"
+          ? '<select id="' + id + '">' + f.html + '</select>'
+          : '<input id="' + id + '" type="' + (f.t === "number" ? "number" : "text") + '" value="' + esc(f.v) + '"' + (f.ph ? ' placeholder="' + esc(f.ph) + '"' : "") + ' />';
+        return '<div class="field"><label for="' + id + '">' + esc(f.l) + '</label>' + ctrl + '</div>';
+      }
+
+      function selectCap(id) {
+        activeId = id;
+        var c = CAPS.filter(function (x) { return x.id === id; })[0];
+        if (!c) return;
+        Array.prototype.forEach.call(grid.querySelectorAll(".cap-card"), function (el) {
+          el.classList.toggle("active", el.getAttribute("data-id") === id);
+        });
+        $("#tmTitle").textContent = c.name;
+        $("#tmSub").textContent = c.desc;
+        $("#tmBody").innerHTML =
+          '<div class="form">' + c.fields.map(fieldHTML).join("") + '</div>' +
+          '<div class="res empty" id="resBox">点击「测试」查看结果</div>';
+        $("#tmFoot").innerHTML = '<button class="btn btn-primary" id="runBtn">测试</button>';
+        $("#runBtn").addEventListener("click", function () {
+          var vals = {};
+          c.fields.forEach(function (f) { vals[f.n] = $("#f_" + f.n).value; });
+          var box = $("#resBox"); box.className = "res"; box.innerHTML = '<span class="warn">请求中…</span>';
+          try { c.test(vals, getKey(), box); }
+          catch (e) { box.innerHTML = '<div class="err">执行出错：' + esc(e && e.message ? e.message : e) + '</div>'; }
+        });
+        openTest();
+      }
+
+      // ---------- 测试 Modal 控制 ----------
+      var testModal = $("#testModal"), testMask = $("#testMask"), lastFocused = null;
+      function openTest() {
+        lastFocused = document.activeElement;
+        testModal.classList.add("show"); testMask.classList.add("show");
+        testModal.setAttribute("aria-hidden", "false");
+        var first = $("#tmBody").querySelector("input, select");
+        if (first) setTimeout(function () { first.focus(); }, 60);
+        $("#tmBody").scrollTop = 0;
+      }
+      function closeTest() {
+        testModal.classList.remove("show"); testMask.classList.remove("show");
+        testModal.setAttribute("aria-hidden", "true");
+        if (lastFocused && lastFocused.focus) lastFocused.focus();
+      }
+      testMask.addEventListener("click", closeTest);
+      $("#tmClose").addEventListener("click", closeTest);
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && testModal.classList.contains("show")) closeTest();
+      });
+
+      // ---------- Key 抽屉 ----------
+      var sheet = $("#sheet"), mask = $("#sheetMask"), keyInput = $("#keyInput");
+      function openSheet() { keyInput.value = getKey() === DEFAULT_KEY ? "" : getKey(); sheet.classList.add("show"); mask.classList.add("show"); }
+      function closeSheet() { sheet.classList.remove("show"); mask.classList.remove("show"); }
+      $("#keyBtn").addEventListener("click", openSheet);
+      $("#keyClose").addEventListener("click", closeSheet);
+      mask.addEventListener("click", closeSheet);
+      $("#keySave").addEventListener("click", function () {
+        var v = keyInput.value.trim();
+        if (!v) { toast("请输入 Key"); return; }
+        setKey(v); closeSheet(); toast("已保存，刷新后生效");
+      });
+      $("#keyReset").addEventListener("click", function () { clearKey(); keyInput.value = ""; closeSheet(); toast("已恢复默认 Key"); });
+
+      // ---------- 启动 ----------
+      renderGrid();
+      loadMapServices(getKey());
+    })();
+  </script>
+</body>
+</html>

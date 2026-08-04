@@ -42,6 +42,7 @@ ENV_KEYS=(
   DASHSCOPE_WORKSPACE_ID
   DASHSCOPE_TTS_MODEL
   DASHSCOPE_TTS_VOICE
+  TENCENT_MAP_KEY
 )
 
 cd "$ROOT"
@@ -102,20 +103,25 @@ REMOTE
 fi
 
 echo "==> Install deps + systemd unit + restart..."
-"${SSH[@]}" "$DEPLOY_HOST" bash -s <<REMOTE
+# 单独 rsync 单元文件（避免在外层 heredoc 内再嵌套 heredoc 导致脚本外泄到本地执行）。
+rsync -az -e "$RSYNC_SSH" "$UNIT_SRC" "$DEPLOY_HOST:/etc/systemd/system/lilnong-api2.service"
+"${SSH[@]}" "$DEPLOY_HOST" REMOTE_DIR="$REMOTE_DIR" bash -s <<'REMOTE'
 set -euo pipefail
 cd "$REMOTE_DIR"
 npm ci --omit=dev
-
-install -m 644 /dev/stdin /etc/systemd/system/lilnong-api2.service <<'UNIT'
-$(cat "$UNIT_SRC")
-UNIT
-
 systemctl daemon-reload
 systemctl enable lilnong-api2.service
 systemctl restart lilnong-api2.service
-sleep 1
+# 重启后有短暂预热，轮询等待真正 active 再探活，避免 1s 竞态误判失败。
+for i in $(seq 1 20); do
+  [ "$(systemctl is-active lilnong-api2.service)" = "active" ] && break
+  sleep 1
+done
 systemctl is-active lilnong-api2.service
+for i in $(seq 1 20); do
+  curl -sf -o /dev/null http://127.0.0.1:3002/api/health && break
+  sleep 1
+done
 curl -sf http://127.0.0.1:3002/api/health && echo
 REMOTE
 

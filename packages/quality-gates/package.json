@@ -1,0 +1,12 @@
+{
+  "name": "quality-gates",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AI 制品质量闸门框架：约束 -> 生成 -> 确定性闸门 -> judge -> 人审例外 -> 闭环",
+  "main": "src/index.js",
+  "scripts": {
+    "demo": "node demo.mjs",
+    "test": "node --test test/"
+  }
+}

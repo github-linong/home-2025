@@ -1,0 +1,267 @@
+---
+const title = "Harness · 需求到产物（带质量闸门）";
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <style>
+      :root {
+        --brand: #185fa5;
+        --brand-700: #0c447c;
+        --bg: #f4f8fd;
+        --card: #fff;
+        --text: #1f2d3d;
+        --muted: #6b7c93;
+        --border: #e3edf7;
+        --green: #2f9e57;
+        --amber: #c98a17;
+        --red: #d2453f;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: var(--bg); color: var(--text); line-height: 1.7; font-size: 15px; padding: 28px 18px 60px;
+      }
+      h1 { font-size: 22px; color: var(--brand-700); margin-bottom: 4px; }
+      .sub { color: var(--muted); font-size: 13px; margin-bottom: 22px; }
+      .wrap { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 380px 1fr; gap: 22px; }
+      @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
+      .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+      label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 5px; }
+      textarea, input, select {
+        width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px;
+        font-size: 14px; font-family: inherit; background: #fff; color: var(--text);
+      }
+      textarea { min-height: 110px; resize: vertical; }
+      .row { display: flex; gap: 10px; }
+      .row > div { flex: 1; }
+      button {
+        margin-top: 14px; padding: 11px 16px; border: 0; border-radius: 9px; font-size: 14px;
+        font-weight: 600; cursor: pointer; background: var(--brand); color: #fff;
+      }
+      button:disabled { opacity: 0.5; cursor: not-allowed; }
+      button.ghost { background: #eef4fb; color: var(--brand-700); }
+      .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 13px; }
+      .badge.pass { background: #e7f6ec; color: var(--green); }
+      .badge.review { background: #fdf3df; color: var(--amber); }
+      .badge.blocked { background: #fdeaea; color: var(--red); }
+      .badge.running { background: #eef4fb; color: var(--brand); }
+      .topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+      .score { color: var(--muted); font-size: 13px; }
+      #preview { padding: 6px 4px; min-height: 200px; }
+      #preview h1, #preview h2 { color: var(--brand-700); margin: 14px 0 8px; }
+      #preview h1 { font-size: 22px; } #preview h2 { font-size: 18px; border-left: 4px solid var(--brand); padding-left: 10px; }
+      #preview pre { background: #f0f5fb; padding: 12px; border-radius: 8px; overflow: auto; }
+      #preview code { background: #f0f5fb; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+      #preview ul, #preview ol { margin: 10px 0 10px 22px; }
+      .muted { color: var(--muted); }
+      ul.gates { list-style: none; margin: 10px 0 0; }
+      ul.gates li { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 9px; margin-bottom: 8px; }
+      .g-name { font-weight: 700; width: 92px; }
+      .g-msg { flex: 1; color: var(--text); font-size: 13px; }
+      .g-sev { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
+      li.pass .g-sev { background: #e7f6ec; color: var(--green); }
+      li.fail-warn .g-sev { background: #fdf3df; color: var(--amber); }
+      li.fail-block .g-sev { background: #fdeaea; color: var(--red); }
+      .sec-title { font-size: 14px; font-weight: 700; color: var(--brand-700); margin: 18px 0 4px; }
+      #metrics { margin-top: 16px; font-size: 12.5px; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 12px; }
+      #suggestions li { color: var(--amber); font-size: 13px; margin: 4px 0 0 18px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <section class="card">
+        <h1>Harness</h1>
+        <div class="sub">输入需求 + 约束 → 生成带质量闸门的产物</div>
+        <form id="form">
+          <label for="requirement">需求</label>
+          <textarea id="requirement" placeholder="例如：用通俗语言讲清楚 React 的 useEffect 依赖数组"></textarea>
+
+          <label for="docType">产物类型</label>
+          <select id="docType">
+            <option value="doc">通用文档</option>
+            <option value="tutorial" selected>教程</option>
+            <option value="report">报告</option>
+          </select>
+
+          <div class="row">
+            <div>
+              <label for="audience">受众</label>
+              <input id="audience" value="前端初学者" />
+            </div>
+            <div>
+              <label for="tone">语气</label>
+              <input id="tone" value="教程" />
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label for="lengthWords">篇幅(字)</label>
+              <input id="lengthWords" type="number" value="800" />
+            </div>
+            <div>
+              <label for="techStack">技术栈</label>
+              <input id="techStack" value="React" />
+            </div>
+          </div>
+
+          <button type="submit" id="run">生成（跑闸门）</button>
+          <button type="button" id="download" class="ghost" disabled>下载 .md</button>
+          <button type="button" id="save" class="ghost" disabled>保存版本</button>
+        </form>
+        <div id="metrics">适应度指标加载中…</div>
+      </section>
+
+      <section class="card">
+        <div class="topbar">
+          <span id="status" class="badge running">待生成</span>
+          <span id="score" class="score"></span>
+        </div>
+        <div id="preview"><p class="muted">右侧将实时渲染生成的 Markdown，并在下方展示每道质量闸门的结果。</p></div>
+
+        <div class="sec-title">质量闸门结果</div>
+        <ul class="gates" id="gates"></ul>
+
+        <div class="sec-title">改进建议</div>
+        <ul id="suggestions"></ul>
+      </section>
+    </div>
+
+    <script>
+      import { marked } from 'marked';
+
+      const $ = (s) => document.querySelector(s);
+      const els = {
+        form: $('#form'), requirement: $('#requirement'),
+        docType: $('#docType'), audience: $('#audience'), tone: $('#tone'),
+        lengthWords: $('#lengthWords'), techStack: $('#techStack'),
+        preview: $('#preview'), gates: $('#gates'), status: $('#status'),
+        score: $('#score'), suggestions: $('#suggestions'), metrics: $('#metrics'),
+        download: $('#download'), save: $('#save'),
+      };
+
+      let lastContent = '';
+      let lastReport = null;
+
+      const STATUS_LABEL = { pass: '自动放行', review: '需人审(例外)', blocked: '已拦截', running: '生成中…' };
+
+      function setStatus(status) {
+        els.status.className = 'badge ' + status;
+        els.status.dataset.status = status;
+        els.status.textContent = STATUS_LABEL[status] || status;
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      }
+
+      els.form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const requirement = els.requirement.value.trim();
+        if (!requirement) return;
+        const body = {
+          requirement,
+          constraints: {
+            docType: els.docType.value,
+            audience: els.audience.value.trim(),
+            tone: els.tone.value.trim(),
+            lengthWords: Number(els.lengthWords.value) || 800,
+            techStack: els.techStack.value.trim(),
+          },
+        };
+        setStatus('running');
+        els.preview.innerHTML = '<p class="muted">生成中…</p>';
+        els.gates.innerHTML = '';
+        els.suggestions.innerHTML = '';
+        els.download.disabled = true;
+        els.save.disabled = true;
+        try {
+          const res = await fetch('/api/demo/harness-run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error || 'failed');
+          lastContent = data.content;
+          lastReport = data.report;
+          els.preview.innerHTML = marked.parse(data.content);
+          renderReport(data.report);
+          loadMetrics();
+        } catch (err) {
+          setStatus('blocked');
+          els.preview.innerHTML = '<p class="muted">出错：' + escapeHtml(err.message) + '</p>';
+        }
+      });
+
+      function renderReport(report) {
+        setStatus(report.status);
+        els.score.textContent = '质量分 ' + report.score;
+        els.gates.innerHTML = '';
+        for (const g of report.gates) {
+          const li = document.createElement('li');
+          li.className = g.pass ? 'pass' : 'fail-' + g.severity;
+          li.innerHTML =
+            '<span class="g-name">' + g.name + '</span>' +
+            '<span class="g-msg">' + escapeHtml(g.message) + '</span>' +
+            '<span class="g-sev">' + (g.pass ? 'PASS' : g.severity) + '</span>';
+          els.gates.appendChild(li);
+        }
+        els.suggestions.innerHTML = '';
+        for (const s of report.suggestions) {
+          const li = document.createElement('li');
+          li.textContent = s;
+          els.suggestions.appendChild(li);
+        }
+        els.download.disabled = false;
+        els.save.disabled = false;
+      }
+
+      async function loadMetrics() {
+        try {
+          const res = await fetch('/api/demo/harness-metrics');
+          const data = await res.json();
+          if (data.ok) {
+            const m = data.metrics;
+            els.metrics.textContent =
+              '首次通过率 ' + (m.firstPassRate * 100).toFixed(0) + '% · ' +
+              '人审占比 ' + (m.humanReviewRate * 100).toFixed(0) + '% · ' +
+              '逃逸率 ' + (m.escapeRate * 100).toFixed(0) + '% · 样本 ' + m.total;
+          }
+        } catch { /* ignore */ }
+      }
+
+      els.download.addEventListener('click', () => {
+        if (!lastContent) return;
+        const blob = new Blob([lastContent], { type: 'text/markdown' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'harness-artifact.md';
+        a.click();
+      });
+
+      els.save.addEventListener('click', async () => {
+        if (!lastContent) return;
+        const res = await fetch('/api/demo/harness-save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content: lastContent,
+            requirement: els.requirement.value.trim(),
+            status: els.status.dataset.status,
+            score: lastReport ? lastReport.score : null,
+            gates: lastReport ? lastReport.gates : [],
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) alert('已保存版本 ' + data.record.id.slice(0, 8));
+      });
+
+      loadMetrics();
+    </script>
+  </body>
+</html>
