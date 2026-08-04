@@ -1,5 +1,6 @@
 ---
 title: "Chrome 内置 AI LanguageDetector 测试"
+heroImage: "/heroes/demo/language-detector.webp"
 description: "基于 Chrome Built-In AI LanguageDetector API 的客户端语言检测 Demo，支持模型下载进度、置信度排序与多语言示例。"
 pubDate: 2026-08-04
 updatedDate: 2026-08-04

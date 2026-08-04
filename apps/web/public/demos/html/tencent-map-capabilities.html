@@ -196,6 +196,34 @@
     }
     /* 隐藏的 GL 地图容器（仅供 TMap.service 使用，不参与展示） */
     #bgmap { position: fixed; left: -9999px; top: 0; width: 100px; height: 100px; opacity: 0; pointer-events: none; }
+
+    /* Web / JS 端能力（地图渲染类） */
+    .tag.js { background: rgba(167,139,250,0.16); color: #c4b5fd; border-color: rgba(167,139,250,0.42); }
+    .test-modal.wide { width: min(764px, 96vw); }
+    .cap-root { display: flex; flex-direction: column; gap: 12px; }
+    .cap-map { width: 100%; height: 384px; border-radius: 12px; overflow: hidden; background: #0b1430; border: 1px solid var(--border); }
+    .cap-ctl { display: flex; flex-direction: column; gap: 8px; }
+    .cap-ctl .row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .cap-ctl .lbl { font-size: 12.5px; color: var(--muted); }
+    .cap-ctl input, .cap-ctl select, .cap-ctl textarea {
+      width: 100%; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--border);
+      background: rgba(8,12,24,0.55); color: var(--text); font-size: 14px;
+    }
+    .cap-ctl textarea { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 1.5; resize: vertical; }
+    .cap-ctl input:focus, .cap-ctl select:focus, .cap-ctl textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .cap-msg { font-size: 13px; color: var(--text); line-height: 1.6; }
+    .cap-msg .hint { color: var(--muted); font-size: 12px; }
+    .cap-msg .url { color: var(--accent2); word-break: break-all; }
+    .tabs { display: flex; gap: 8px; }
+    .tab {
+      flex: 1; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border);
+      background: rgba(8,12,24,0.5); color: var(--muted); cursor: pointer; font-size: 13px;
+    }
+    .tab.on { background: rgba(45,212,191,0.16); color: var(--accent); border-color: rgba(45,212,191,0.5); }
+    .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .pick-out { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; color: var(--accent); }
+    .btn-ghost { background: rgba(255,255,255,0.05); color: var(--text); }
+    .btn-ghost:hover { background: rgba(255,255,255,0.1); }
   </style>
 </head>
 <body>
@@ -213,8 +241,8 @@
   </div>
 
   <div class="foot">
-    腾讯地图共 <code>86</code> 项能力，此处展示常用的 <code>85</code> 项 WebService / JS 能力。
-    <span class="used">绿色</span> 为浏览器可直连测试；<span style="color:var(--warn)">黄色</span> 为 WebService REST，浏览器直连受 CORS 限制，需经你自己的服务端代理转发（页面会给出完整请求 URL）。
+    腾讯地图能力测试台，共 <code>92</code> 项（WebService REST <code>85</code> + Web/JS 端 <code>7</code>）。
+    <span class="used">绿色</span> 为浏览器可直连测试；<span style="color:var(--warn)">黄色</span> 为 WebService REST，浏览器直连受 CORS 限制，需经你自己的服务端代理转发（页面会给出完整请求 URL）；<span style="color:#c4b5fd">紫色</span> 为 Web/JS 端能力，浏览器实时渲染（需为内置 JS Key 配置当前域名白名单）。
   </div>
 
   <div id="bgmap" aria-hidden="true"></div>
@@ -263,6 +291,12 @@
 
       var $ = function (s) { return document.querySelector(s); };
       function esc(s) { return String(s).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); }
+
+      // 地图实例清理（切换/关闭能力时销毁，避免泄漏）
+      var currentCleanup = null;
+      function cleanupCurrent() {
+        if (currentCleanup) { try { currentCleanup(); } catch (e) {} currentCleanup = null; }
+      }
 
       var toastTimer = null;
       function toast(msg) {
@@ -322,7 +356,8 @@
       function loadMapServices(key) {
         if (window.TMap && window.TMap.service) { initServices(); return; }
         var s = document.createElement("script");
-        s.src = "https://map.qq.com/api/gljs?v=1.exp&key=" + encodeURIComponent(key) + "&libraries=service&callback=__txCapInit";
+        // Web/JS 端能力（绘制/测距/可视化）需要 tools + visualization 附加库
+        s.src = "https://map.qq.com/api/gljs?v=1.exp&key=" + encodeURIComponent(key) + "&libraries=service,tools,visualization&callback=__txCapInit";
         window.__txCapInit = function () {
           try {
             new TMap.Map("bgmap", { center: new TMap.LatLng(39.9088, 116.3975), zoom: 12 });
@@ -407,6 +442,67 @@
         }
         box.textContent = JSON.stringify(res.data, null, 2);
       }
+
+      // ---------- Web/JS 端能力：地图 SDK 辅助 ----------
+      var BJ = { lat: 39.9088, lng: 116.3975 };
+      function sdkReady() { return typeof TMap !== "undefined"; }
+      function sdkErr(e) {
+        return '<div class="err">腾讯地图 JS SDK 未就绪' + (e ? ('：' + (e.message || e)) : '') +
+          '。若为 Key 域名白名单问题，请在腾讯控制台为该 Key 添加当前域名（' + location.hostname + '）的白名单后刷新重试。</div>';
+      }
+      function parseLatLng(s) {
+        var m = String(s || "").split(",");
+        var lat = parseFloat(m[0]), lng = parseFloat(m[1]);
+        if (isNaN(lat) || isNaN(lng)) return null;
+        return { lat: lat, lng: lng };
+      }
+      function newMapEl(id, center, zoom) {
+        var el = document.getElementById(id);
+        if (!el) return null;
+        return new TMap.Map(el, {
+          center: new TMap.LatLng(center.lat, center.lng),
+          zoom: zoom || 12,
+          mapStyleId: "style1"
+        });
+      }
+      // 腾讯路线 encoded polyline 解码（与 Google 编码一致，精度 1e6）
+      function decodePolyline(str) {
+        var idx = 0, lat = 0, lng = 0, out = [], factor = 1e6;
+        while (idx < str.length) {
+          var b, shift = 0, result = 0;
+          do { b = str.charCodeAt(idx++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+          var dlat = (result & 1) ? ~(result >> 1) : (result >> 1); lat += dlat;
+          shift = 0; result = 0;
+          do { b = str.charCodeAt(idx++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+          var dlng = (result & 1) ? ~(result >> 1) : (result >> 1); lng += dlng;
+          out.push({ lat: lat / factor, lng: lng / factor });
+        }
+        return out;
+      }
+      function randomPoints(center, n, spread) {
+        var a = [];
+        for (var i = 0; i < n; i++) {
+          a.push({ lat: center.lat + (Math.random() - 0.5) * spread, lng: center.lng + (Math.random() - 0.5) * spread, count: Math.floor(20 + Math.random() * 100) });
+        }
+        return a;
+      }
+      // 经后端代理拿原始 JSON（供地图卡片解析 polyline 等，而非渲染文本）
+      function proxyJSON(path, params, method, body) {
+        method = method || "GET";
+        var u = PROXY_BASE + "?path=" + encodeURIComponent(path);
+        Object.keys(params || {}).forEach(function (k) {
+          if (params[k] !== "" && params[k] != null) u += "&" + k + "=" + encodeURIComponent(params[k]);
+        });
+        var fo = { method: method };
+        if (method === "POST" && body) { fo.headers = { "Content-Type": "application/json" }; fo.body = JSON.stringify(body); }
+        return fetch(u, fo).then(function (r) {
+          return r.text().then(function (txt) {
+            var j = null; try { j = JSON.parse(txt); } catch (e) { j = { _raw: txt }; }
+            return { ok: r.ok, status: r.status, data: j, url: u };
+          });
+        });
+      }
+      function capMsg(rootId, s) { var m = document.getElementById(rootId); if (m) m.innerHTML = s; }
 
       // ---------- 能力定义 ----------
       var COORD_OPTS = '<option value="WGS84">WGS84 (GPS)</option><option value="GCJ02">GCJ02 (国测局)</option><option value="BD09">BD09 (百度)</option>';
@@ -1470,6 +1566,352 @@
           test: function (f, key, box) {
             callProxy("/ws/distance/v1/matrix", { from: f.from, to: f.to, mode: "straight" }, box);
           }
+        },
+
+        // ===================== Web / JS 端能力 =====================
+        {
+          id: "js-gl", name: "JavaScript API GL", quota: 0, mode: "js",
+          desc: "基于 WebGL 的 3D 地图：基础渲染、个性化样式、自定义图层、点线面绘制（官方 GeometryEditor 绘图工具）、测距/测面（MeasureTool）。",
+          mount: function (ctx) {
+            var root = ctx.root;
+            if (!sdkReady()) { root.innerHTML = sdkErr(); return; }
+            root.innerHTML =
+              '<div class="tabs" id="glTabs">' +
+                '<button data-t="map" class="tab on" type="button">基础&样式</button>' +
+                '<button data-t="draw" class="tab" type="button">绘制</button>' +
+                '<button data-t="measure" class="tab" type="button">测距</button>' +
+              '</div>' +
+              '<div id="capMap" class="cap-map"></div>' +
+              '<div id="capCtl" class="cap-ctl"></div>' +
+              '<div id="capMsg" class="cap-msg"></div>';
+            var capMap, customLayer = null, drawEditor = null, drawOverlay = null, measureTool = null;
+            function msg(s) { var m = document.getElementById("capMsg"); if (m) m.innerHTML = s; }
+            try { capMap = newMapEl("capMap", BJ, 12); } catch (e) { root.innerHTML = sdkErr(e); return; }
+            currentCleanup = function () {
+              try { if (drawEditor) { drawEditor.stop && drawEditor.stop(); drawEditor.destroy && drawEditor.destroy(); } } catch (e) {}
+              try { if (capMap && capMap.destroy) capMap.destroy(); } catch (e) {}
+            };
+            function renderMapTab() {
+              document.getElementById("capCtl").innerHTML =
+                '<label class="lbl">个性化样式（mapStyleId）</label>' +
+                '<select id="glStyle">' +
+                  '<option value="style1">style1 · 标准</option>' +
+                  '<option value="style2">style2 · 极夜</option>' +
+                  '<option value="style3">style3 · 冷色</option>' +
+                  '<option value="style4">style4 · 暖色</option>' +
+                '</select>' +
+                '<button class="btn btn-ghost" id="glCustom" type="button">叠加自定义图层（示例点）</button>';
+              document.getElementById("glStyle").onchange = function () {
+                try { capMap.setMapStyleId(this.value); msg("已切换样式：" + this.value); } catch (e) { msg("切换失败：" + (e.message || e)); }
+              };
+              document.getElementById("glCustom").onclick = function () {
+                if (customLayer) { try { customLayer.setMap(null); } catch (e) {} customLayer = null; msg("已移除自定义图层"); return; }
+                customLayer = new TMap.MultiMarker({ map: capMap, geometries: randomPoints(BJ, 12, 0.06).map(function (p, i) { return { id: "c" + i, position: new TMap.LatLng(p.lat, p.lng) }; }) });
+                msg("已叠加 12 个示例标注（自定义数据图层）");
+              };
+              msg("JavaScript API GL 基础地图已加载。切换个性化样式，或叠加自定义 Marker 图层。");
+            }
+            function shapeLabel(s) { return { marker: "点", polyline: "线", polygon: "面", circle: "圆" }[s] || s; }
+            function stopDraw() {
+              if (drawEditor) { try { drawEditor.stop(); } catch (e) {} try { drawEditor.destroy && drawEditor.destroy(); } catch (e) {} drawEditor = null; }
+              if (drawOverlay) { try { drawOverlay.setMap(null); } catch (e) {} drawOverlay = null; }
+            }
+            function startDraw(shape) {
+              stopDraw();
+              var opt = { map: capMap };
+              if (shape === "marker") drawOverlay = new TMap.MultiMarker(opt);
+              else if (shape === "polyline") drawOverlay = new TMap.MultiPolyline(opt);
+              else if (shape === "polygon") drawOverlay = new TMap.MultiPolygon(opt);
+              else if (shape === "circle") drawOverlay = new TMap.MultiCircle(opt);
+              try {
+                drawEditor = new TMap.tools.GeometryEditor({
+                  map: capMap, overlayList: [{ overlay: drawOverlay, id: "d" }],
+                  actionMode: TMap.tools.constants.EDITOR_ACTION.DRAW, activeOverlayId: "d", snappable: true
+                });
+                drawEditor.on("draw_complete", function () { msg("绘制完成 ✓（" + shapeLabel(shape) + "）"); });
+                msg("点击地图开始绘制「" + shapeLabel(shape) + "」，双击结束");
+              } catch (e) { msg("绘图工具不可用：" + (e.message || e)); }
+            }
+            function renderDrawTab() {
+              document.getElementById("capCtl").innerHTML =
+                '<div class="row">' +
+                  '<button class="btn btn-ghost" data-sh="marker" type="button">画点</button>' +
+                  '<button class="btn btn-ghost" data-sh="polyline" type="button">画线</button>' +
+                  '<button class="btn btn-ghost" data-sh="polygon" type="button">画面</button>' +
+                  '<button class="btn btn-ghost" data-sh="circle" type="button">画圆</button>' +
+                  '<button class="btn btn-ghost" id="glClear" type="button">清除</button>' +
+                '</div>';
+              Array.prototype.forEach.call(document.getElementById("capCtl").querySelectorAll("[data-sh]"), function (b) {
+                b.onclick = function () { startDraw(b.getAttribute("data-sh")); };
+              });
+              document.getElementById("glClear").onclick = function () { stopDraw(); msg("已清除"); };
+              msg("选择一种图形后，在地图上点击绘制（官方 GeometryEditor 绘图工具）。");
+            }
+            function renderMeasureTab() {
+              document.getElementById("capCtl").innerHTML =
+                '<div class="row">' +
+                  '<button class="btn btn-primary" id="mDist" type="button">开始测距</button>' +
+                  '<button class="btn btn-primary" id="mArea" type="button">开始测面</button>' +
+                  '<button class="btn btn-ghost" id="mStop" type="button">结束</button>' +
+                '</div>';
+              if (!measureTool) { try { measureTool = new TMap.tools.MeasureTool({ map: capMap }); } catch (e) { msg("测距工具不可用：" + (e.message || e)); } }
+              document.getElementById("mDist").onclick = function () {
+                if (!measureTool) { msg("测距工具不可用"); return; }
+                measureTool.measureDistance().then(function (r) { msg("测量距离：<b>" + (r.totalDistance / 1000).toFixed(2) + "</b> 公里"); }).catch(function () { msg("已取消测量"); });
+              };
+              document.getElementById("mArea").onclick = function () {
+                if (!measureTool) { msg("测面工具不可用"); return; }
+                measureTool.measureArea().then(function (r) { msg("测量面积：<b>" + (r.totalArea / 1e6).toFixed(2) + "</b> 平方公里"); }).catch(function () { msg("已取消测量"); });
+              };
+              document.getElementById("mStop").onclick = function () { try { measureTool && measureTool.stop && measureTool.stop(); } catch (e) {} msg("已结束测量"); };
+              msg("点击「开始测距 / 测面」，在地图上多点测量，结束自动出结果。");
+            }
+            function setTab(t) {
+              Array.prototype.forEach.call(document.getElementById("glTabs").querySelectorAll(".tab"), function (b) { b.classList.toggle("on", b.getAttribute("data-t") === t); });
+              if (t === "map") renderMapTab(); else if (t === "draw") renderDrawTab(); else renderMeasureTab();
+            }
+            Array.prototype.forEach.call(document.getElementById("glTabs").querySelectorAll(".tab"), function (b) {
+              b.onclick = function () { setTab(b.getAttribute("data-t")); };
+            });
+            setTab("map");
+          }
+        },
+        {
+          id: "js-viz", name: "数据可视化 JS API", quota: 0, mode: "js",
+          desc: "基于 JS API GL 的专业地理空间数据可视化渲染引擎：热力图（Heat）与散点图（Dot），支持海量点高性能渲染。",
+          mount: function (ctx) {
+            var root = ctx.root;
+            if (!sdkReady()) { root.innerHTML = sdkErr(); return; }
+            root.innerHTML =
+              '<div class="tabs" id="vzTabs">' +
+                '<button data-t="heat" class="tab on" type="button">热力图</button>' +
+                '<button data-t="dot" class="tab" type="button">散点图</button>' +
+              '</div>' +
+              '<div id="capMap" class="cap-map"></div>' +
+              '<div id="capCtl" class="cap-ctl"></div>' +
+              '<div id="capMsg" class="cap-msg"></div>';
+            var capMap, heat = null, dot = null;
+            function msg(s) { var m = document.getElementById("capMsg"); if (m) m.innerHTML = s; }
+            try { capMap = newMapEl("capMap", BJ, 12); } catch (e) { root.innerHTML = sdkErr(e); return; }
+            currentCleanup = function () {
+              try { heat && heat.destroy && heat.destroy(); } catch (e) {}
+              try { dot && dot.destroy && dot.destroy(); } catch (e) {}
+              try { if (capMap && capMap.destroy) capMap.destroy(); } catch (e) {}
+            };
+            function renderHeat() {
+              document.getElementById("capCtl").innerHTML = '<button class="btn btn-ghost" id="vzRe" type="button">重新生成 300 点</button>';
+              if (heat) { try { heat.destroy(); } catch (e) {} heat = null; }
+              heat = new TMap.visualization.Heat({ height: 300, radius: 60, max: 120, gradientColor: { 0.1: "rgba(40,118,70,0.3)", 0.4: "rgba(229,195,77,0.6)", 0.7: "rgba(215,136,67,0.8)", 1: "rgba(188,91,82,0.95)" } }).addTo(capMap);
+              heat.setData(randomPoints(BJ, 300, 0.12).map(function (p) { return { lat: p.lat, lng: p.lng, count: p.count }; }));
+              document.getElementById("vzRe").onclick = function () { heat.setData(randomPoints(BJ, 300, 0.12).map(function (p) { return { lat: p.lat, lng: p.lng, count: p.count }; })); msg("已重新生成 300 个热力点"); };
+              msg("热力图（数据可视化 JS API）已渲染 300 个随机点。");
+            }
+            function renderDot() {
+              document.getElementById("capCtl").innerHTML = '<button class="btn btn-ghost" id="vzRe2" type="button">重新生成 500 点</button>';
+              if (dot) { try { dot.destroy(); } catch (e) {} dot = null; }
+              dot = new TMap.visualization.Dot({ faceTo: "screen", styles: { red: { type: "circle", fillColor: "#ff5a5f", radius: 6 } } }).addTo(capMap);
+              var data = randomPoints(BJ, 500, 0.14).map(function (p, i) { return { lat: p.lat, lng: p.lng, styleId: "red", id: "d" + i }; });
+              dot.setData(data);
+              try { dot.on("click", function (evt) { if (evt && evt.detail && evt.detail.dot) { var d = evt.detail.dot; msg("点击散点：(" + d.lat.toFixed(4) + ", " + d.lng.toFixed(4) + ")"); } }); } catch (e) {}
+              document.getElementById("vzRe2").onclick = function () { dot.setData(randomPoints(BJ, 500, 0.14).map(function (p, i) { return { lat: p.lat, lng: p.lng, styleId: "red", id: "d" + i }; })); msg("已重新生成 500 个散点"); };
+              msg("散点图（支持百万级）已渲染 500 点，点击可获取坐标。");
+            }
+            function setTab(t) {
+              Array.prototype.forEach.call(document.getElementById("vzTabs").querySelectorAll(".tab"), function (b) { b.classList.toggle("on", b.getAttribute("data-t") === t); });
+              if (t === "heat") renderHeat(); else renderDot();
+            }
+            Array.prototype.forEach.call(document.getElementById("vzTabs").querySelectorAll(".tab"), function (b) { b.onclick = function () { setTab(b.getAttribute("data-t")); }; });
+            setTab("heat");
+          }
+        },
+        {
+          id: "js-h5-locate", name: "H5 地图定位组件", quota: 0, mode: "js",
+          desc: "调用浏览器地理定位（需授权）获取当前位置，标注到地图并逆地理编码为中文地址；对应官方 H5 地图定位组件。",
+          mount: function (ctx) {
+            var root = ctx.root;
+            if (!sdkReady()) { root.innerHTML = sdkErr(); return; }
+            root.innerHTML =
+              '<div id="capMap" class="cap-map"></div>' +
+              '<div id="capCtl" class="cap-ctl"><button class="btn btn-primary" id="locBtn" type="button">获取我的位置</button></div>' +
+              '<div id="capMsg" class="cap-msg">点击「获取我的位置」，浏览器会请求定位授权。</div>';
+            var capMap, marker = null;
+            function msg(s) { var m = document.getElementById("capMsg"); if (m) m.innerHTML = s; }
+            try { capMap = newMapEl("capMap", BJ, 12); } catch (e) { root.innerHTML = sdkErr(e); return; }
+            currentCleanup = function () { try { if (capMap && capMap.destroy) capMap.destroy(); } catch (e) {} };
+            document.getElementById("locBtn").onclick = function () {
+              if (!navigator.geolocation) { msg("当前浏览器不支持地理定位"); return; }
+              msg("定位中…");
+              navigator.geolocation.getCurrentPosition(function (pos) {
+                var lat = pos.coords.latitude, lng = pos.coords.longitude;
+                var g = convert(lat, lng, "WGS84", "GCJ02");
+                capMap.setCenter(new TMap.LatLng(g[0], g[1])); capMap.setZoom(15);
+                if (marker) try { marker.setMap(null); } catch (e) {}
+                marker = new TMap.MultiMarker({ map: capMap, geometries: [{ id: "me", position: new TMap.LatLng(g[0], g[1]) }] });
+                if (svcReady && revGeocoder) {
+                  revGeocoder.getLocation({ location: new TMap.LatLng(g[0], g[1]) }).then(function (r) {
+                    var a = (r && r.result && r.result.address) || "未知地址";
+                    msg("已定位 ✓<br>" + esc(a) + '<br><span class="hint">原始 GPS：' + lat.toFixed(5) + "," + lng.toFixed(5) + "（已转 GCJ02）</span>");
+                  }).catch(function (e) { msg("已定位 ✓ 但逆地址解析失败：" + (e.message || e)); });
+                } else { msg("已定位 ✓ 坐标：" + g[0].toFixed(5) + "," + g[1].toFixed(5)); }
+              }, function (err) { msg("定位失败/被拒绝：" + ((err && err.message) || err) + "。可在地图上手动查看。"); }, { enableHighAccuracy: true, timeout: 8000 });
+            };
+          }
+        },
+        {
+          id: "js-h5-show", name: "H5 地图位置展示组件", quota: 0, mode: "js",
+          desc: "在地图上展示一个或多个位置点并支持信息窗，对应官方 H5 地图位置展示组件。每行输入 lat,lng,标题。",
+          mount: function (ctx) {
+            var root = ctx.root;
+            if (!sdkReady()) { root.innerHTML = sdkErr(); return; }
+            root.innerHTML =
+              '<div id="capCtl" class="cap-ctl">' +
+                '<label class="lbl">位置点（每行：lat,lng,标题）</label>' +
+                '<textarea id="pts" rows="4">39.9088,116.3975,天安门\n39.9841,116.3075,中关村\n39.9170,116.3970,王府井</textarea>' +
+                '<button class="btn btn-primary" id="showBtn" type="button">在地图上展示</button>' +
+              '</div>' +
+              '<div id="capMap" class="cap-map"></div>' +
+              '<div id="capMsg" class="cap-msg"></div>';
+            var capMap, mk = null, info = null;
+            function msg(s) { var m = document.getElementById("capMsg"); if (m) m.innerHTML = s; }
+            try { capMap = newMapEl("capMap", BJ, 12); } catch (e) { root.innerHTML = sdkErr(e); return; }
+            currentCleanup = function () { try { if (capMap && capMap.destroy) capMap.destroy(); } catch (e) {} };
+            document.getElementById("showBtn").onclick = function () {
+              var geos = [];
+              document.getElementById("pts").value.split("\n").forEach(function (ln, i) {
+                var p = parseLatLng(ln); if (!p) return;
+                var parts = ln.split(","); var title = (parts[2] || ("点" + (i + 1))).trim();
+                geos.push({ id: "p" + i, position: new TMap.LatLng(p.lat, p.lng), properties: { title: title } });
+              });
+              if (!geos.length) { msg("没有有效的坐标"); return; }
+              try { if (mk) mk.setMap(null); } catch (e) {}
+              try { if (info) info.destroy && info.destroy(); } catch (e) {}
+              mk = new TMap.MultiMarker({ map: capMap, geometries: geos });
+              try {
+                info = new TMap.InfoWindow({ map: capMap, content: "", position: geos[0].position });
+                mk.on("click", function (e) {
+                  var g = e.geometry;
+                  info.setPosition(g.position);
+                  info.setContent('<div style="padding:6px 10px">' + esc(g.properties.title) + '<br><span style="color:#9bb0d6">' + g.position.lat().toFixed(5) + "," + g.position.lng().toFixed(5) + "</span></div>");
+                  info.open();
+                });
+              } catch (e) { msg("标记已渲染（信息窗不可用：" + (e.message || e) + "）"); }
+              capMap.setCenter(geos[0].position); capMap.setZoom(11);
+              msg("已展示 " + geos.length + " 个位置点，点击标记查看信息。");
+            };
+          }
+        },
+        {
+          id: "js-h5-route", name: "H5 地图路线规划组件", quota: 0, mode: "js",
+          desc: "根据起终点智能规划驾车路线并绘制到地图；对应官方 H5 地图路线规划组件。路线经后端代理请求 WebService，返回 110 时退化为示意连线。",
+          mount: function (ctx) {
+            var root = ctx.root;
+            if (!sdkReady()) { root.innerHTML = sdkErr(); return; }
+            root.innerHTML =
+              '<div id="capCtl" class="cap-ctl">' +
+                '<label class="lbl">起点（lat,lng）</label><input id="rf" type="text" value="39.9088,116.3975">' +
+                '<label class="lbl">终点（lat,lng）</label><input id="rt" type="text" value="39.9841,116.3075">' +
+                '<button class="btn btn-primary" id="routeBtn" type="button">规划驾车路线</button>' +
+              '</div>' +
+              '<div id="capMap" class="cap-map"></div>' +
+              '<div id="capMsg" class="cap-msg">输入起终点坐标，调用 WebService 驾车路线（经代理）并绘制。代理返回 110 时会退化为示意连线。</div>';
+            var capMap, line = null;
+            function msg(s) { var m = document.getElementById("capMsg"); if (m) m.innerHTML = s; }
+            try { capMap = newMapEl("capMap", BJ, 11); } catch (e) { root.innerHTML = sdkErr(e); return; }
+            currentCleanup = function () { try { if (capMap && capMap.destroy) capMap.destroy(); } catch (e) {} };
+            document.getElementById("routeBtn").onclick = function () {
+              var f = parseLatLng(document.getElementById("rf").value), t = parseLatLng(document.getElementById("rt").value);
+              if (!f || !t) { msg("起点或终点坐标无效"); return; }
+              msg("规划中…");
+              if (line) try { line.setMap(null); } catch (e) {}
+              line = new TMap.MultiPolyline({ map: capMap, geometries: [{ id: "r", paths: [new TMap.LatLng(f.lat, f.lng), new TMap.LatLng(t.lat, t.lng)] }] });
+              capMap.setCenter(new TMap.LatLng((f.lat + t.lat) / 2, (f.lng + t.lng) / 2)); capMap.setZoom(11);
+              proxyJSON("/ws/direction/v1/driving", { from: f.lat + "," + f.lng, to: t.lat + "," + t.lng }).then(function (res) {
+                var d = res.data || {};
+                if (d.status === 0 && d.result && d.result.routes && d.result.routes[0] && d.result.routes[0].polyline) {
+                  var pts = decodePolyline(d.result.routes[0].polyline).map(function (p) { return new TMap.LatLng(p.lat, p.lng); });
+                  if (line) try { line.setMap(null); } catch (e) {}
+                  line = new TMap.MultiPolyline({ map: capMap, geometries: [{ id: "r", paths: pts }] });
+                  var minLat = 1e9, maxLat = -1e9, minLng = 1e9, maxLng = -1e9;
+                  pts.forEach(function (p) { minLat = Math.min(minLat, p.lat()); maxLat = Math.max(maxLat, p.lat()); minLng = Math.min(minLng, p.lng()); maxLng = Math.max(maxLng, p.lng()); });
+                  try { capMap.fitBounds(new TMap.LatLngBounds(new TMap.LatLng(minLat, minLng), new TMap.LatLng(maxLat, maxLng))); } catch (e) {}
+                  msg("✓ 真实驾车路线已绘制（" + pts.length + " 个路径点）");
+                } else {
+                  msg("代理返回 status=" + (d.status != null ? d.status : res.status) + "（多为 Key 未配 IP 白名单 110）。已用起终点示意连线，真实路网待白名单配置后生效。");
+                }
+              }).catch(function (e) { msg("请求失败：" + (e.message || e)); });
+            };
+          }
+        },
+        {
+          id: "js-h5-pick", name: "H5 地图选点组件", quota: 0, mode: "js",
+          desc: "类似微信「发送位置」：点击地图任意位置选取坐标并回传。对应官方 H5 地图选点组件。",
+          mount: function (ctx) {
+            var root = ctx.root;
+            if (!sdkReady()) { root.innerHTML = sdkErr(); return; }
+            root.innerHTML =
+              '<div id="capMap" class="cap-map"></div>' +
+              '<div id="capCtl" class="cap-ctl">' +
+                '<div id="pickOut" class="pick-out">点击地图任意位置选取坐标</div>' +
+                '<button class="btn btn-ghost" id="pickCopy" type="button">复制坐标</button>' +
+              '</div>' +
+              '<div id="capMsg" class="cap-msg">类似微信「发送位置」：点击地图选点，回传经纬度。</div>';
+            var capMap, marker = null, picked = null;
+            try { capMap = newMapEl("capMap", BJ, 13); } catch (e) { root.innerHTML = sdkErr(e); return; }
+            currentCleanup = function () { try { if (capMap && capMap.destroy) capMap.destroy(); } catch (e) {} };
+            capMap.on("click", function (e) {
+              var ll = e.latLng; picked = { lat: ll.lat(), lng: ll.lng() };
+              if (marker) try { marker.setMap(null); } catch (x) {}
+              marker = new TMap.MultiMarker({ map: capMap, geometries: [{ id: "pk", position: new TMap.LatLng(picked.lat, picked.lng) }] });
+              document.getElementById("pickOut").textContent = "已选 ✓  lat: " + picked.lat.toFixed(6) + "  lng: " + picked.lng.toFixed(6);
+            });
+            document.getElementById("pickCopy").onclick = function () {
+              if (!picked) { toast("请先点击地图选点"); return; }
+              var s = picked.lat.toFixed(6) + "," + picked.lng.toFixed(6);
+              if (navigator.clipboard) navigator.clipboard.writeText(s).then(function () { toast("已复制 " + s); }, function () { toast("复制失败"); });
+              else toast(s);
+            };
+          }
+        },
+        {
+          id: "js-uri", name: "URI API（地图调起）", quota: 0, mode: "js",
+          desc: "生成腾讯地图 URI 调起链接（marker / routeplan / geocoder / search），用于在 Web 或 App 中调起腾讯地图。纯前端生成，无需渲染。",
+          mount: function (ctx) {
+            var root = ctx.root, key = ctx.key;
+            root.innerHTML =
+              '<div id="capCtl" class="cap-ctl">' +
+                '<label class="lbl">方法</label>' +
+                '<select id="uMethod">' +
+                  '<option value="marker">marker（地点标注）</option>' +
+                  '<option value="routeplan">routeplan（路线规划）</option>' +
+                  '<option value="geocoder">geocoder（逆地址解析）</option>' +
+                  '<option value="search">search（地点搜索）</option>' +
+                '</select>' +
+                '<label class="lbl">坐标 lat,lng</label><input id="uCoord" type="text" value="39.9088,116.3975">' +
+                '<label class="lbl">标题 / 名称</label><input id="uTitle" type="text" value="天安门">' +
+                '<label class="lbl">终点坐标（routeplan 用，lat,lng）</label><input id="uTo" type="text" value="39.9841,116.3075">' +
+                '<label class="lbl">路线方式（routeplan）</label><select id="uType"><option value="drive">drive 驾车</option><option value="bus">bus 公交</option><option value="walk">walk 步行</option></select>' +
+                '<div class="row"><button class="btn btn-primary" id="uGen" type="button">生成并打开</button>' +
+                '<button class="btn btn-ghost" id="uCopy" type="button">复制链接</button></div>' +
+              '</div>' +
+              '<div id="capMsg" class="cap-msg"></div>';
+            function msg(s) { var m = document.getElementById("capMsg"); if (m) m.innerHTML = s; }
+            function build() {
+              var method = document.getElementById("uMethod").value;
+              var coord = document.getElementById("uCoord").value.trim();
+              var title = document.getElementById("uTitle").value.trim();
+              var to = document.getElementById("uTo").value.trim();
+              var type = document.getElementById("uType").value;
+              var q = "https://apis.map.qq.com/uri/v1/" + method + "?referer=" + encodeURIComponent(key || "lilnong-top");
+              if (method === "marker") q += "&marker=coord:" + coord + ";title:" + encodeURIComponent(title) + ";addr:" + encodeURIComponent(title);
+              else if (method === "routeplan") q += "&type=" + type + "&to=" + encodeURIComponent(title) + "&tocoord=" + to;
+              else if (method === "geocoder") q += "&coord=" + coord;
+              else if (method === "search") q += "&keyword=" + encodeURIComponent(title);
+              return q;
+            }
+            document.getElementById("uGen").onclick = function () { var q = build(); msg('链接：<span class="url">' + esc(q) + "</span>"); window.open(q, "_blank"); };
+            document.getElementById("uCopy").onclick = function () { var q = build(); if (navigator.clipboard) navigator.clipboard.writeText(q).then(function () { toast("已复制链接"); }, function () { toast("复制失败"); }); else toast(q); };
+            msg("URI API 用于调起腾讯地图（Web/App）。选择方法并生成链接，点击「生成并打开」即可调起。");
+          }
         }
       ];
 
@@ -1477,12 +1919,15 @@
       var grid = $("#grid"), activeId = null;
 
       function cardHTML(c) {
+        var tagCls = c.mode === "ok" ? "ok" : (c.mode === "js" ? "js" : "proxy");
+        var tagTxt = c.mode === "ok" ? "直连可用" : (c.mode === "js" ? "Web 端" : "经代理");
+        var metaTxt = c.mode === "js" ? "浏览器实时渲染" : (c.quota > 0 ? ("配额 0 / " + c.quota) : "配额 未公开");
         return '<button class="cap-card" data-id="' + c.id + '">' +
           '<div class="name">' + esc(c.name) +
-          '<span class="tag ' + (c.mode === "ok" ? "ok" : "proxy") + '">' + (c.mode === "ok" ? "直连可用" : "经代理") + '</span></div>' +
+          '<span class="tag ' + tagCls + '">' + tagTxt + '</span></div>' +
           '<div class="desc">' + esc(c.desc) + '</div>' +
           '<div class="quota"><div class="bar"><i style="width:0%"></i></div>' +
-          '<div class="meta"><span>' + (c.quota > 0 ? ("配额 0 / " + c.quota) : "配额 未公开") + '</span><span class="used">已用 0%</span></div></div>' +
+          '<div class="meta"><span>' + metaTxt + '</span><span class="used">已用 0%</span></div></div>' +
           '</button>';
       }
 
@@ -1510,6 +1955,16 @@
         });
         $("#tmTitle").textContent = c.name;
         $("#tmSub").textContent = c.desc;
+        cleanupCurrent();
+        testModal.classList.toggle("wide", !!c.mount);
+        if (c.mount) {
+          $("#tmBody").innerHTML = '<div id="capRoot" class="cap-root"></div>';
+          $("#tmFoot").innerHTML = "";
+          openTest();
+          try { c.mount({ root: $("#capRoot"), foot: $("#tmFoot"), key: getKey() }); }
+          catch (e) { $("#capRoot").innerHTML = '<div class="err">初始化失败：' + esc(e && e.message ? e.message : e) + '</div>'; }
+          return;
+        }
         $("#tmBody").innerHTML =
           '<div class="form">' + c.fields.map(fieldHTML).join("") + '</div>' +
           '<div class="res empty" id="resBox">点击「测试」查看结果</div>';
@@ -1535,6 +1990,8 @@
         $("#tmBody").scrollTop = 0;
       }
       function closeTest() {
+        cleanupCurrent();
+        testModal.classList.remove("wide");
         testModal.classList.remove("show"); testMask.classList.remove("show");
         testModal.setAttribute("aria-hidden", "true");
         if (lastFocused && lastFocused.focus) lastFocused.focus();

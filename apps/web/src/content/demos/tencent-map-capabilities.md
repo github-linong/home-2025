@@ -1,5 +1,6 @@
 ---
 title: "腾讯地图 · 能力测试"
+heroImage: "/heroes/demo/tencent-map-capabilities.webp"
 description: "前端实验交互示例：腾讯地图能力测试台，覆盖坐标转换、行政区划、逆地址解析、IP 定位、地点搜索、关键词提示、静态地图、驾车路线等 10 项常用 WebService / JS 能力，逐项可填参测试。"
 pubDate: "2026-08-04"
 type: web
