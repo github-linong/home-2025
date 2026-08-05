@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>自定义地图 · 异形区域场景覆盖</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://*.qq.com https://*.gtimg.com https://*.lbs.net.cn https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https: https://*.qq.com https://*.gtimg.com https://*.lbs.net.cn https://apis.map.qq.com; connect-src 'self' blob: https: wss: ws: http://localhost:3002; worker-src 'self' blob: data:; frame-src 'self' https:;" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg0: #070b14; --bg1: #0c1422; --panel: rgba(16, 24, 40, 0.72);
+      --border: rgba(120, 160, 220, 0.18); --text: #e8eefc; --muted: #9bb0d6;
+      --accent: #4ea1ff; --accent2: #7c5cff; --ok: #36d399; --warn: #fbbd23;
+      --r: 16px; --shadow: 0 18px 50px rgba(0,0,0,0.45);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: "Sora", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      background: radial-gradient(1200px 800px at 70% -10%, #16223c 0%, var(--bg0) 60%);
+      color: var(--text); overflow: hidden;
+    }
+    #map { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; } /* 堆叠基线：地图 0 → 覆盖层 10 → UI 面板 40 */
+
+    /* 场景覆盖层 —— DOM 覆盖在地图 canvas 之上，天然不受地图图层层级限制 */
+    .scene-overlay {
+      position: absolute;
+      pointer-events: none;   /* 不拦截地图交互 */
+      z-index: 10;            /* 在地图 canvas 之上、UI 面板(z-index:40)之下 */
+      transition: opacity 0.25s ease;
+    }
+
+    .brand {
+      position: fixed; left: 20px; top: 18px; z-index: 40;
+      display: flex; flex-direction: column; gap: 2px;
+      background: var(--panel); border: 1px solid var(--border); border-radius: var(--r);
+      padding: 12px 16px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      box-shadow: var(--shadow); max-width: 280px;
+    }
+    .brand h1 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: 0.2px; }
+    .brand p { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    .panel {
+      position: fixed; right: 20px; top: 18px; z-index: 40; width: 268px;
+      background: var(--panel); border: 1px solid var(--border); border-radius: var(--r);
+      padding: 16px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+    }
+    .panel-h { font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: 0.4px; text-transform: uppercase; }
+    .seg { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+    .seg button {
+      font: inherit; font-size: 12px; padding: 9px 4px; border-radius: 10px; cursor: pointer;
+      color: var(--muted); background: rgba(255,255,255,0.04); border: 1px solid transparent;
+      transition: all 0.15s ease;
+    }
+    .seg button:hover { color: var(--text); border-color: var(--border); }
+    .seg button.on { color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-color: transparent; }
+    .ctl { display: flex; flex-direction: column; gap: 7px; font-size: 13px; color: var(--text); }
+    .ctl.row { flex-direction: row; align-items: center; gap: 9px; }
+    .ctl .val { color: var(--accent); font-weight: 600; }
+    input[type="range"] { width: 100%; accent-color: var(--accent); }
+    select {
+      font: inherit; font-size: 13px; padding: 8px 10px; border-radius: 10px; color: var(--text);
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border); outline: none;
+    }
+    .btn {
+      font: inherit; font-size: 13px; font-weight: 600; padding: 10px; border-radius: 10px; cursor: pointer;
+      color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; transition: transform 0.12s ease, filter 0.15s ease;
+    }
+    .btn:hover { filter: brightness(1.08); }
+    .btn:active { transform: translateY(1px); }
+    .chk { width: 18px; height: 18px; accent-color: var(--accent); }
+    .hint { font-size: 11.5px; color: var(--muted); line-height: 1.5; min-height: 16px; }
+    .hint.err { color: #ff8a8a; }
+
+    .foot {
+      position: fixed; left: 20px; bottom: 16px; z-index: 40; font-size: 11px; color: var(--muted);
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+      padding: 8px 12px; backdrop-filter: blur(10px); max-width: 360px; line-height: 1.5;
+    }
+    .foot code { color: var(--accent); }
+    @media (max-width: 560px) {
+      .panel { left: 12px; right: 12px; width: auto; top: auto; bottom: 12px; }
+      .brand { right: 12px; left: 12px; max-width: none; }
+      .foot { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- 场景覆盖层容器（由 JS 动态创建 img 子元素） -->
+  <div id="sceneOverlay" class="scene-overlay" style="display:none;"></div>
+
+  <div class="brand">
+    <h1>异形区域 · 场景覆盖</h1>
+    <p>将自定义场景概念图按多边形遮罩裁剪后，以 DOM 覆盖层方式贴在地图上的真实地块之上。切换场景、调透明度、开关图层，支持拖拽/缩放联动。</p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-h">场景切换</div>
+    <div class="seg" id="sceneSeg">
+      <button data-s="park" class="on">公园插画</button>
+      <button data-s="eco">生态俯视</button>
+      <button data-s="future">未来街区</button>
+    </div>
+
+    <label class="ctl">图层透明度 · <span class="val" id="opVal">90%</span>
+      <input id="op" type="range" min="0" max="100" value="90" />
+    </label>
+
+    <label class="ctl row"><input id="vis" type="checkbox" class="chk" checked /> 显示场景覆盖层</label>
+
+    <label class="ctl">底图样式
+      <select id="style">
+        <option value="">标准矢量</option>
+        <option value="style1">style1 · 标准</option>
+        <option value="style2">style2 · 极夜</option>
+        <option value="style3">style3 · 冷色</option>
+        <option value="style4">style4 · 暖色</option>
+        <option value="style5">style5 · 商务</option>
+      </select>
+    </label>
+
+    <button id="fly" class="btn">飞向覆盖区域</button>
+    <div class="hint" id="hint">初始化中…</div>
+  </div>
+
+  <div class="foot">
+    区域边界为异形多边形（当前为北京·朝阳公园真实边界，可在源码 <code>REGION</code> 常量中替换坐标）。场景图由 AI 生成，运行时按多边形裁剪覆盖。
+  </div>
+
+  <script>
+    // ============ 配置 ============
+    var KEY = "XNGBZ-MF3HD-EJP4Z-P2D7W-72HCK-ETBJ3";
+    // 异形区域多边形（lat,lng）—— 北京·朝阳公园真实边界（OSM way 233205070，Douglas-Peucker 简化 352→48 节点）
+    var REGION = [
+      { lat: 39.9504196, lng: 116.4718257 },
+      { lat: 39.9502016, lng: 116.4719733 },
+      { lat: 39.9501089, lng: 116.4720331 },
+      { lat: 39.9500186, lng: 116.4720913 },
+      { lat: 39.9500372, lng: 116.4721852 },
+      { lat: 39.9499817, lng: 116.4722094 },
+      { lat: 39.9499475, lng: 116.4722605 },
+      { lat: 39.9494574, lng: 116.4724481 },
+      { lat: 39.9489498, lng: 116.4725926 },
+      { lat: 39.9489770, lng: 116.4725442 },
+      { lat: 39.9489678, lng: 116.4724374 },
+      { lat: 39.9489635, lng: 116.4723949 },
+      { lat: 39.9488718, lng: 116.4723016 },
+      { lat: 39.9487582, lng: 116.4722786 },
+      { lat: 39.9486271, lng: 116.4724004 },
+      { lat: 39.9483492, lng: 116.4725629 },
+      { lat: 39.9482751, lng: 116.4727319 },
+      { lat: 39.9481270, lng: 116.4728472 },
+      { lat: 39.9479611, lng: 116.4728285 },
+      { lat: 39.9479445, lng: 116.4728536 },
+      { lat: 39.9479223, lng: 116.4728698 },
+      { lat: 39.9478973, lng: 116.4728751 },
+      { lat: 39.9478723, lng: 116.4728690 },
+      { lat: 39.9478522, lng: 116.4728540 },
+      { lat: 39.9478366, lng: 116.4728315 },
+      { lat: 39.9478272, lng: 116.4728038 },
+      { lat: 39.9478250, lng: 116.4727737 },
+      { lat: 39.9478300, lng: 116.4727441 },
+      { lat: 39.9476743, lng: 116.4725870 },
+      { lat: 39.9476011, lng: 116.4723345 },
+      { lat: 39.9475758, lng: 116.4720963 },
+      { lat: 39.9474829, lng: 116.4718819 },
+      { lat: 39.9474154, lng: 116.4716795 },
+      { lat: 39.9473764, lng: 116.4714212 },
+      { lat: 39.9473427, lng: 116.4711073 },
+      { lat: 39.9472745, lng: 116.4711391 },
+      { lat: 39.9472274, lng: 116.4710799 },
+      { lat: 39.9472232, lng: 116.4709942 },
+      { lat: 39.9472771, lng: 116.4709547 },
+      { lat: 39.9472409, lng: 116.4707593 },
+      { lat: 39.9471702, lng: 116.4706946 },
+      { lat: 39.9470633, lng: 116.4706803 },
+      { lat: 39.9470370, lng: 116.4706806 },
+      { lat: 39.9469533, lng: 116.4707093 },
+      { lat: 39.9470042, lng: 116.4704568 },
+      { lat: 39.9466111, lng: 116.4694338 },
+      { lat: 39.9462989, lng: 116.4683000 },
+      { lat: 39.9462865, lng: 116.4682747 },
+      { lat: 39.9462064, lng: 116.4683027 },
+      { lat: 39.9457087, lng: 116.4684088 },
+      { lat: 39.9457395, lng: 116.4687870 },
+      { lat: 39.9458156, lng: 116.4692161 },
+      { lat: 39.9458260, lng: 116.4693300 },
+      { lat: 39.9458835, lng: 116.4694843 },
+      { lat: 39.9457709, lng: 116.4695255 },
+      { lat: 39.9456268, lng: 116.4695233 },
+      { lat: 39.9454002, lng: 116.4688594 },
+      { lat: 39.9454372, lng: 116.4688379 },
+      { lat: 39.9452398, lng: 116.4682881 },
+      { lat: 39.9451761, lng: 116.4679340 },
+      { lat: 39.9448102, lng: 116.4680386 },
+      { lat: 39.9448271, lng: 116.4681968 },
+      { lat: 39.9447793, lng: 116.4684356 },
+      { lat: 39.9448431, lng: 116.4688192 },
+      { lat: 39.9444935, lng: 116.4689372 },
+      { lat: 39.9444523, lng: 116.4688460 },
+      { lat: 39.9443845, lng: 116.4684985 },
+      { lat: 39.9443475, lng: 116.4684624 },
+      { lat: 39.9442961, lng: 116.4684436 },
+      { lat: 39.9441645, lng: 116.4684624 },
+      { lat: 39.9440822, lng: 116.4683900 },
+      { lat: 39.9440493, lng: 116.4682893 },
+      { lat: 39.9439907, lng: 116.4683062 },
+      { lat: 39.9439523, lng: 116.4683081 },
+      { lat: 39.9439552, lng: 116.4683330 },
+      { lat: 39.9438416, lng: 116.4683444 },
+      { lat: 39.9438354, lng: 116.4682866 },
+      { lat: 39.9434619, lng: 116.4683313 },
+      { lat: 39.9426140, lng: 116.4684329 },
+      { lat: 39.9425174, lng: 116.4684518 },
+      { lat: 39.9420118, lng: 116.4685088 },
+      { lat: 39.9419805, lng: 116.4689837 },
+      { lat: 39.9419626, lng: 116.4692129 },
+      { lat: 39.9419958, lng: 116.4699230 },
+      { lat: 39.9419600, lng: 116.4706360 },
+      { lat: 39.9419625, lng: 116.4706657 },
+      { lat: 39.9419597, lng: 116.4707076 },
+      { lat: 39.9418762, lng: 116.4712804 },
+      { lat: 39.9418544, lng: 116.4713443 },
+      { lat: 39.9418186, lng: 116.4714494 },
+      { lat: 39.9416478, lng: 116.4717752 },
+      { lat: 39.9414584, lng: 116.4720575 },
+      { lat: 39.9413702, lng: 116.4723035 },
+      { lat: 39.9412921, lng: 116.4725694 },
+      { lat: 39.9412940, lng: 116.4727141 },
+      { lat: 39.9412937, lng: 116.4728155 },
+      { lat: 39.9413040, lng: 116.4729671 },
+      { lat: 39.9413698, lng: 116.4732018 },
+      { lat: 39.9414623, lng: 116.4734512 },
+      { lat: 39.9416536, lng: 116.4733493 },
+      { lat: 39.9419703, lng: 116.4733841 },
+      { lat: 39.9419929, lng: 116.4734432 },
+      { lat: 39.9424618, lng: 116.4735102 },
+      { lat: 39.9424515, lng: 116.4740131 },
+      { lat: 39.9424268, lng: 116.4741057 },
+      { lat: 39.9420422, lng: 116.4745965 },
+      { lat: 39.9420422, lng: 116.4747360 },
+      { lat: 39.9420155, lng: 116.4748111 },
+      { lat: 39.9419641, lng: 116.4748647 },
+      { lat: 39.9418675, lng: 116.4748835 },
+      { lat: 39.9416454, lng: 116.4748647 },
+      { lat: 39.9415960, lng: 116.4748862 },
+      { lat: 39.9415528, lng: 116.4748647 },
+      { lat: 39.9414829, lng: 116.4751249 },
+      { lat: 39.9414597, lng: 116.4754393 },
+      { lat: 39.9412682, lng: 116.4754268 },
+      { lat: 39.9412668, lng: 116.4752426 },
+      { lat: 39.9410981, lng: 116.4752166 },
+      { lat: 39.9410991, lng: 116.4750607 },
+      { lat: 39.9410999, lng: 116.4749445 },
+      { lat: 39.9409958, lng: 116.4749433 },
+      { lat: 39.9409972, lng: 116.4747396 },
+      { lat: 39.9410764, lng: 116.4746061 },
+      { lat: 39.9410954, lng: 116.4744912 },
+      { lat: 39.9410812, lng: 116.4743639 },
+      { lat: 39.9410007, lng: 116.4742181 },
+      { lat: 39.9410115, lng: 116.4740252 },
+      { lat: 39.9411084, lng: 116.4740224 },
+      { lat: 39.9411072, lng: 116.4738805 },
+      { lat: 39.9411082, lng: 116.4737281 },
+      { lat: 39.9411098, lng: 116.4736829 },
+      { lat: 39.9411333, lng: 116.4735853 },
+      { lat: 39.9412114, lng: 116.4734378 },
+      { lat: 39.9412875, lng: 116.4733520 },
+      { lat: 39.9411600, lng: 116.4729094 },
+      { lat: 39.9411710, lng: 116.4725107 },
+      { lat: 39.9412649, lng: 116.4722147 },
+      { lat: 39.9414233, lng: 116.4719103 },
+      { lat: 39.9416227, lng: 116.4715695 },
+      { lat: 39.9417026, lng: 116.4714146 },
+      { lat: 39.9418247, lng: 116.4709144 },
+      { lat: 39.9419023, lng: 116.4702672 },
+      { lat: 39.9418663, lng: 116.4688790 },
+      { lat: 39.9419092, lng: 116.4685276 },
+      { lat: 39.9417090, lng: 116.4685508 },
+      { lat: 39.9403461, lng: 116.4686284 },
+      { lat: 39.9402926, lng: 116.4686314 },
+      { lat: 39.9402679, lng: 116.4686331 },
+      { lat: 39.9396032, lng: 116.4686796 },
+      { lat: 39.9378881, lng: 116.4688137 },
+      { lat: 39.9378943, lng: 116.4690444 },
+      { lat: 39.9379400, lng: 116.4690408 },
+      { lat: 39.9381706, lng: 116.4690268 },
+      { lat: 39.9381699, lng: 116.4689612 },
+      { lat: 39.9383138, lng: 116.4689478 },
+      { lat: 39.9383748, lng: 116.4689380 },
+      { lat: 39.9383752, lng: 116.4690716 },
+      { lat: 39.9381863, lng: 116.4709218 },
+      { lat: 39.9375035, lng: 116.4708092 },
+      { lat: 39.9376269, lng: 116.4696290 },
+      { lat: 39.9371847, lng: 116.4697309 },
+      { lat: 39.9371832, lng: 116.4697730 },
+      { lat: 39.9371953, lng: 116.4698305 },
+      { lat: 39.9369753, lng: 116.4699001 },
+      { lat: 39.9368396, lng: 116.4703968 },
+      { lat: 39.9368399, lng: 116.4704088 },
+      { lat: 39.9368444, lng: 116.4706017 },
+      { lat: 39.9370361, lng: 116.4715617 },
+      { lat: 39.9370073, lng: 116.4716101 },
+      { lat: 39.9368710, lng: 116.4717433 },
+      { lat: 39.9364194, lng: 116.4719228 },
+      { lat: 39.9360581, lng: 116.4719649 },
+      { lat: 39.9357284, lng: 116.4718567 },
+      { lat: 39.9354713, lng: 116.4714624 },
+      { lat: 39.9354643, lng: 116.4710708 },
+      { lat: 39.9355588, lng: 116.4710544 },
+      { lat: 39.9356835, lng: 116.4710439 },
+      { lat: 39.9357122, lng: 116.4710721 },
+      { lat: 39.9357472, lng: 116.4708871 },
+      { lat: 39.9357225, lng: 116.4708736 },
+      { lat: 39.9358156, lng: 116.4704623 },
+      { lat: 39.9358403, lng: 116.4702692 },
+      { lat: 39.9358315, lng: 116.4701146 },
+      { lat: 39.9358274, lng: 116.4699858 },
+      { lat: 39.9358258, lng: 116.4694109 },
+      { lat: 39.9358254, lng: 116.4692429 },
+      { lat: 39.9358356, lng: 116.4691490 },
+      { lat: 39.9357246, lng: 116.4691356 },
+      { lat: 39.9355847, lng: 116.4690873 },
+      { lat: 39.9354161, lng: 116.4689961 },
+      { lat: 39.9354342, lng: 116.4689372 },
+      { lat: 39.9354860, lng: 116.4687681 },
+      { lat: 39.9354468, lng: 116.4687288 },
+      { lat: 39.9354058, lng: 116.4686876 },
+      { lat: 39.9353241, lng: 116.4688798 },
+      { lat: 39.9352762, lng: 116.4689210 },
+      { lat: 39.9351558, lng: 116.4687996 },
+      { lat: 39.9351323, lng: 116.4687762 },
+      { lat: 39.9351069, lng: 116.4687507 },
+      { lat: 39.9348525, lng: 116.4684976 },
+      { lat: 39.9348677, lng: 116.4684702 },
+      { lat: 39.9346502, lng: 116.4682771 },
+      { lat: 39.9344753, lng: 116.4682827 },
+      { lat: 39.9344741, lng: 116.4683184 },
+      { lat: 39.9343232, lng: 116.4683226 },
+      { lat: 39.9343228, lng: 116.4682952 },
+      { lat: 39.9340742, lng: 116.4683089 },
+      { lat: 39.9340587, lng: 116.4683912 },
+      { lat: 39.9340381, lng: 116.4684249 },
+      { lat: 39.9337675, lng: 116.4684653 },
+      { lat: 39.9328803, lng: 116.4685979 },
+      { lat: 39.9328864, lng: 116.4710238 },
+      { lat: 39.9328185, lng: 116.4710453 },
+      { lat: 39.9328288, lng: 116.4722013 },
+      { lat: 39.9327774, lng: 116.4721959 },
+      { lat: 39.9327774, lng: 116.4727337 },
+      { lat: 39.9328183, lng: 116.4727261 },
+      { lat: 39.9329563, lng: 116.4727271 },
+      { lat: 39.9329504, lng: 116.4728078 },
+      { lat: 39.9329008, lng: 116.4729229 },
+      { lat: 39.9328802, lng: 116.4730140 },
+      { lat: 39.9328835, lng: 116.4733634 },
+      { lat: 39.9328953, lng: 116.4746331 },
+      { lat: 39.9328992, lng: 116.4750570 },
+      { lat: 39.9330987, lng: 116.4750677 },
+      { lat: 39.9330987, lng: 116.4750221 },
+      { lat: 39.9331579, lng: 116.4750230 },
+      { lat: 39.9331625, lng: 116.4752313 },
+      { lat: 39.9330345, lng: 116.4754656 },
+      { lat: 39.9330659, lng: 116.4754940 },
+      { lat: 39.9330185, lng: 116.4754916 },
+      { lat: 39.9330144, lng: 116.4757865 },
+      { lat: 39.9330571, lng: 116.4758652 },
+      { lat: 39.9330530, lng: 116.4759055 },
+      { lat: 39.9330633, lng: 116.4761469 },
+      { lat: 39.9330708, lng: 116.4762200 },
+      { lat: 39.9330838, lng: 116.4763480 },
+      { lat: 39.9330982, lng: 116.4764392 },
+      { lat: 39.9330694, lng: 116.4764392 },
+      { lat: 39.9330365, lng: 116.4764687 },
+      { lat: 39.9330016, lng: 116.4765143 },
+      { lat: 39.9329913, lng: 116.4765948 },
+      { lat: 39.9329645, lng: 116.4766431 },
+      { lat: 39.9329255, lng: 116.4766833 },
+      { lat: 39.9328720, lng: 116.4767477 },
+      { lat: 39.9328617, lng: 116.4767665 },
+      { lat: 39.9328370, lng: 116.4768335 },
+      { lat: 39.9328273, lng: 116.4769318 },
+      { lat: 39.9328473, lng: 116.4769918 },
+      { lat: 39.9328987, lng: 116.4770722 },
+      { lat: 39.9329748, lng: 116.4770856 },
+      { lat: 39.9330036, lng: 116.4770749 },
+      { lat: 39.9330015, lng: 116.4772627 },
+      { lat: 39.9329999, lng: 116.4773024 },
+      { lat: 39.9339353, lng: 116.4773096 },
+      { lat: 39.9339415, lng: 116.4782872 },
+      { lat: 39.9341050, lng: 116.4782961 },
+      { lat: 39.9341862, lng: 116.4783087 },
+      { lat: 39.9342726, lng: 116.4783221 },
+      { lat: 39.9342520, lng: 116.4785152 },
+      { lat: 39.9343487, lng: 116.4785233 },
+      { lat: 39.9343487, lng: 116.4785903 },
+      { lat: 39.9359693, lng: 116.4786399 },
+      { lat: 39.9360269, lng: 116.4786185 },
+      { lat: 39.9360310, lng: 116.4785300 },
+      { lat: 39.9360722, lng: 116.4785112 },
+      { lat: 39.9360763, lng: 116.4782148 },
+      { lat: 39.9360990, lng: 116.4782123 },
+      { lat: 39.9360994, lng: 116.4781066 },
+      { lat: 39.9361304, lng: 116.4781073 },
+      { lat: 39.9361032, lng: 116.4778809 },
+      { lat: 39.9364428, lng: 116.4778060 },
+      { lat: 39.9366996, lng: 116.4777884 },
+      { lat: 39.9369462, lng: 116.4778508 },
+      { lat: 39.9372619, lng: 116.4779798 },
+      { lat: 39.9373542, lng: 116.4780578 },
+      { lat: 39.9373349, lng: 116.4783811 },
+      { lat: 39.9375056, lng: 116.4785286 },
+      { lat: 39.9375056, lng: 116.4787821 },
+      { lat: 39.9375056, lng: 116.4791911 },
+      { lat: 39.9375366, lng: 116.4791923 },
+      { lat: 39.9375200, lng: 116.4814509 },
+      { lat: 39.9376743, lng: 116.4818237 },
+      { lat: 39.9376830, lng: 116.4822372 },
+      { lat: 39.9376871, lng: 116.4831733 },
+      { lat: 39.9386608, lng: 116.4831777 },
+      { lat: 39.9387560, lng: 116.4831769 },
+      { lat: 39.9393421, lng: 116.4831743 },
+      { lat: 39.9400393, lng: 116.4831769 },
+      { lat: 39.9402978, lng: 116.4831905 },
+      { lat: 39.9413139, lng: 116.4831759 },
+      { lat: 39.9416022, lng: 116.4831715 },
+      { lat: 39.9421729, lng: 116.4831867 },
+      { lat: 39.9423959, lng: 116.4831908 },
+      { lat: 39.9426116, lng: 116.4831947 },
+      { lat: 39.9432597, lng: 116.4831814 },
+      { lat: 39.9432865, lng: 116.4831809 },
+      { lat: 39.9433647, lng: 116.4831756 },
+      { lat: 39.9442426, lng: 116.4832198 },
+      { lat: 39.9448656, lng: 116.4832353 },
+      { lat: 39.9449973, lng: 116.4832386 },
+      { lat: 39.9452707, lng: 116.4831662 },
+      { lat: 39.9456134, lng: 116.4831461 },
+      { lat: 39.9465518, lng: 116.4830911 },
+      { lat: 39.9469918, lng: 116.4830723 },
+      { lat: 39.9477896, lng: 116.4830186 },
+      { lat: 39.9478258, lng: 116.4830178 },
+      { lat: 39.9479027, lng: 116.4830160 },
+      { lat: 39.9492496, lng: 116.4828979 },
+      { lat: 39.9492933, lng: 116.4828806 },
+      { lat: 39.9493421, lng: 116.4828979 },
+      { lat: 39.9503085, lng: 116.4828148 },
+      { lat: 39.9503908, lng: 116.4827021 },
+      { lat: 39.9512276, lng: 116.4826404 },
+      { lat: 39.9514846, lng: 116.4825948 },
+      { lat: 39.9519561, lng: 116.4825671 },
+      { lat: 39.9520665, lng: 116.4825654 },
+      { lat: 39.9526506, lng: 116.4825452 },
+      { lat: 39.9555125, lng: 116.4812028 },
+      { lat: 39.9557280, lng: 116.4810811 },
+      { lat: 39.9558785, lng: 116.4810258 },
+      { lat: 39.9560403, lng: 116.4809337 },
+      { lat: 39.9552431, lng: 116.4789712 },
+      { lat: 39.9550577, lng: 116.4784837 },
+      { lat: 39.9548280, lng: 116.4786212 },
+      { lat: 39.9546540, lng: 116.4780920 },
+      { lat: 39.9548897, lng: 116.4779567 },
+      { lat: 39.9547436, lng: 116.4775218 },
+      { lat: 39.9547250, lng: 116.4774665 },
+      { lat: 39.9547004, lng: 116.4773995 },
+      { lat: 39.9545509, lng: 116.4769157 },
+      { lat: 39.9545359, lng: 116.4768630 },
+      { lat: 39.9543967, lng: 116.4764463 },
+      { lat: 39.9543284, lng: 116.4762324 },
+      { lat: 39.9542522, lng: 116.4759940 },
+      { lat: 39.9541740, lng: 116.4757365 },
+      { lat: 39.9541494, lng: 116.4756560 },
+      { lat: 39.9540507, lng: 116.4753637 },
+      { lat: 39.9540260, lng: 116.4752966 },
+      { lat: 39.9538923, lng: 116.4748728 },
+      { lat: 39.9538677, lng: 116.4748058 },
+      { lat: 39.9537921, lng: 116.4745721 },
+      { lat: 39.9533661, lng: 116.4732796 },
+      { lat: 39.9532467, lng: 116.4729174 },
+      { lat: 39.9531999, lng: 116.4728238 },
+      { lat: 39.9520769, lng: 116.4735951 },
+      { lat: 39.9516637, lng: 116.4742238 },
+      { lat: 39.9517037, lng: 116.4740771 },
+      { lat: 39.9515275, lng: 116.4735355 },
+      { lat: 39.9516488, lng: 116.4734333 },
+      { lat: 39.9507035, lng: 116.4716283 },
+      { lat: 39.9504196, lng: 116.4718257 }
+    ];
+    var SCENES = {
+      park:   "assets/Aerial_top_down_photorealistic_2026-08-05T12-53-25_paths.png",
+      eco:    "assets/Aerial_top_down_concept_render_2026-08-04T12-51-18.png",
+      future: "assets/Cinematic_futuristic_city_dist_2026-08-04T12-51-44.png"
+    };
+    var SCENE_LABEL = { park: "公园插画", eco: "生态俯视", future: "未来街区" };
+
+    // WGS-84 → GCJ-02 坐标转换（火星坐标），使 OSM 边界与腾讯地图底图对齐
+    function outOfChina(lat, lng) { return (lng < 72.004 || lng > 137.8347) || (lat < 0.8293 || lat > 55.8271); }
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function wgs84ToGcj02(lat, lng) {
+      if (outOfChina(lat, lng)) return { lat: lat, lng: lng };
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat); magic = 1 - 0.00669342162296594323 * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((6378245.0 * (1 - 0.00669342162296594323)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (6378245.0 / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return { lat: lat + dLat, lng: lng + dLng };
+    }
+    REGION = REGION.map(function (p) { var c = wgs84ToGcj02(p.lat, p.lng); return { lat: c.lat, lng: c.lng }; });
+
+    var sw = { lat: Math.min.apply(null, REGION.map(function (p) { return p.lat; })), lng: Math.min.apply(null, REGION.map(function (p) { return p.lng; })) };
+    var ne = { lat: Math.max.apply(null, REGION.map(function (p) { return p.lat; })), lng: Math.max.apply(null, REGION.map(function (p) { return p.lng; })) };
+    var center = { lat: (sw.lat + ne.lat) / 2, lng: (sw.lng + ne.lng) / 2 };
+
+    // 场景画布尺寸：必须与地理边界框的纵横比一致，否则 object-fit:cover 会裁切/拉伸导致错位。
+    // 朝阳公园真实边界框约 1:2（纵向），因此使用 1024×2048；更换 REGION 时请同步调整此尺寸并重新生成插画。
+    var SCENE_W = 1024, SCENE_H = 2048;
+
+    function hint(s, err) { var h = document.getElementById("hint"); if (h) { h.textContent = s; h.className = "hint" + (err ? " err" : ""); } }
+
+    // ============ 运行时：把场景图按多边形遮罩裁剪（生成带多边形裁剪的 data URL）============
+    function buildSceneSrc(img) {
+      var W = SCENE_W, H = SCENE_H;
+      var canvas = document.createElement("canvas");
+      canvas.width = W; canvas.height = H;
+      var ctx = canvas.getContext("2d");
+      // 场景图 cover 铺满画布（对齐外包矩形）
+      var iw = img.naturalWidth, ih = img.naturalHeight;
+      var scale = Math.max(W / iw, H / ih);
+      var dw = iw * scale, dh = ih * scale;
+      ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+      // 用多边形路径做 destination-in 裁剪（仅保留区域内）
+      ctx.globalCompositeOperation = "destination-in";
+      ctx.beginPath();
+      REGION.forEach(function (p, i) {
+        var x = (p.lng - sw.lng) / (ne.lng - sw.lng) * W;
+        var y = (ne.lat - p.lat) / (ne.lat - sw.lat) * H;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.closePath();
+      ctx.fill();
+      // 区域描边（在裁剪结果上叠加，形成清晰边界）
+      ctx.globalCompositeOperation = "source-over";
+      ctx.lineJoin = "round";
+      ctx.lineWidth = Math.max(4, Math.round(7 * W / 1024)); ctx.strokeStyle = "rgba(120, 200, 255, 0.95)";
+      ctx.stroke();
+      return canvas.toDataURL("image/png");
+    }
+
+    function loadImg(src) {
+      return new Promise(function (resolve, reject) {
+        var im = new Image();
+        im.onload = function () { resolve(im); };
+        im.onerror = function () { reject(new Error("图片加载失败：" + src)); };
+        im.src = src;
+      });
+    }
+
+    // ============ 初始化 ============
+    var map = null, outline = null, active = "park";
+
+    // 场景数据：{ key -> { el:HTMLImageElement, dataUrl:string } }
+    var sceneEls = {};
+    var overlayDiv = null;       // 容器 div#sceneOverlay
+    var currentOpacity = 0.9;
+    var visible = true;
+
+    // 坐标转换：LatLng → 地图容器内的像素坐标
+    function latLngToPoint(lat, lng) {
+      if (!map) return null;
+      // 尝试多种可能的 API 名
+      var methods = ["projectToContainer", "lngLatToContainerPoint"];
+      for (var i = 0; i < methods.length; i++) {
+        if (typeof map[methods[i]] === "function") {
+          try {
+            var pt = map[methods[i]](new TMap.LatLng(lat, lng));
+            if (pt && typeof pt.x === "number" && typeof pt.y === "number") {
+              return { x: pt.x, y: pt.y };
+            }
+          } catch (e) {}
+        }
+      }
+      return null;
+    }
+
+    // 更新覆盖层位置和尺寸（随地图平移/缩放联动）
+    function updateOverlayPosition() {
+      if (!overlayDiv || !visible || !sceneEls[active]) return;
+      var swPt = latLngToPoint(sw.lat, sw.lng);
+      var nePt = latLngToPoint(ne.lat, ne.lng);
+      // 防御：任一坐标缺失或值异常则跳过
+      if (!swPt || !nePt) return;
+      if (!isFinite(swPt.x) || !isFinite(swPt.y) || !isFinite(nePt.x) || !isFinite(nePt.y)) return;
+      var w = Math.abs(nePt.x - swPt.x);
+      var h = Math.abs(nePt.y - swPt.y);
+      if (w <= 0 || h <= 0) return; // 尺寸无效则不渲染
+      overlayDiv.style.left = Math.min(swPt.x, nePt.x) + "px";
+      overlayDiv.style.top = Math.min(swPt.y, nePt.y) + "px";
+      overlayDiv.style.width = w + "px";
+      overlayDiv.style.height = h + "px";
+    }
+
+    function init() {
+      if (!window.TMap || !TMap.Map) { hint("腾讯地图 JS API 未加载（请检查 Key 域名白名单）", true); return; }
+      overlayDiv = document.getElementById("sceneOverlay");
+      try {
+        map = new TMap.Map("map", {
+          center: new TMap.LatLng(center.lat, center.lng),
+          zoom: 13.6, pitch: 0, rotation: 0,
+          baseMap: { type: "vector", features: ["base", "building", "point"] }
+        });
+        // 区域边界（始终可见，便于定位）
+        outline = new TMap.MultiPolygon({
+          map: map,
+          geometries: [{ styleId: "polygon", paths: REGION.map(function (p) { return new TMap.LatLng(p.lat, p.lng); }) }],
+          styles: { polygon: new TMap.PolygonStyle({ color: "rgba(78,161,255,0.10)", borderColor: "rgba(120,200,255,0.9)", borderWidth: 3, borderStyle: "solid" }) }
+        });
+        hint("地图已加载，正在合成场景图层…");
+
+        // 监听地图移动/缩放 → 联动更新覆盖层位置
+        try { map.on("update", updateOverlayPosition); } catch (e) {}
+        try { map.on("zoom_changed", updateOverlayPosition); } catch (e) {}
+        try { map.on("center_changed", updateOverlayPosition); } catch (e) {}
+
+        // 预加载 3 张场景图并合成裁剪后的 data URL
+        Promise.all(Object.keys(SCENES).map(function (k) { return loadImg(SCENES[k]); }))
+          .then(function (imgs) {
+            var keys = Object.keys(SCENES);
+            keys.forEach(function (k, i) {
+              var dataUrl = buildSceneSrc(imgs[i]);
+              var img = document.createElement("img");
+              img.src = dataUrl;
+              img.style.cssText = "position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;display:none;";
+              overlayDiv.appendChild(img);
+              sceneEls[k] = { el: img, dataUrl: dataUrl };
+            });
+            // 显示默认场景
+            showScene(active);
+            // 初始定位
+            updateOverlayPosition();
+            hint("就绪 ✓ 当前场景：" + SCENE_LABEL[active] + "。可在控制台切换 / 调透明度。");
+            wireControls();
+          })
+          .catch(function (e) { hint("场景图合成失败：" + (e.message || e), true); });
+      } catch (e) { hint("初始化失败：" + (e.message || e), true); }
+    }
+
+    // 显示指定场景（隐藏其他）
+    function showScene(key) {
+      if (!overlayDiv) return;
+      Object.keys(sceneEls).forEach(function (k) {
+        sceneEls[k].el.style.display = k === key ? "block" : "none";
+      });
+      active = key;
+      // 确保容器可见
+      if (visible) overlayDiv.style.display = "block";
+    }
+
+    function setOverlayOpacity(v) {
+      currentOpacity = v;
+      overlayDiv.style.opacity = String(v);
+    }
+
+    function setOverlayVisible(v) {
+      visible = v;
+      overlayDiv.style.display = v ? "block" : "none";
+      if (v) updateOverlayPosition();
+    }
+
+    function wireControls() {
+      // 场景切换
+      document.getElementById("sceneSeg").addEventListener("click", function (e) {
+        var b = e.target.closest("button[data-s]"); if (!b) return;
+        var s = b.getAttribute("data-s"); if (s === active) return;
+        showScene(s);
+        Array.prototype.forEach.call(this.querySelectorAll("button"), function (x) { x.classList.toggle("on", x === b); });
+        hint("已切换场景：" + SCENE_LABEL[s]);
+      });
+      // 透明度
+      var op = document.getElementById("op");
+      op.addEventListener("input", function () {
+        var v = (+op.value) / 100;
+        setOverlayOpacity(v);
+        document.getElementById("opVal").textContent = op.value + "%";
+      });
+      // 显隐
+      document.getElementById("vis").addEventListener("change", function () {
+        setOverlayVisible(this.checked);
+        hint(this.checked ? "覆盖层已显示" : "覆盖层已隐藏");
+      });
+      // 底图样式
+      document.getElementById("style").addEventListener("change", function () {
+        try { map.setMapStyleId(this.value || ""); hint(this.value ? "底图样式：" + this.value : "底图样式：标准矢量"); }
+        catch (e) { hint("切换底图样式失败：" + (e.message || e), true); }
+      });
+      // 飞向区域
+      document.getElementById("fly").addEventListener("click", function () {
+        try { map.fitBounds(new TMap.LatLngBounds(new TMap.LatLng(sw.lat, sw.lng), new TMap.LatLng(ne.lat, ne.lng)), { padding: 60 }); } catch (e) {}
+        // 飞行动画结束后重新定位覆盖层
+        setTimeout(updateOverlayPosition, 500);
+      });
+    }
+
+    window.__txSceneInit = init;
+    (function loadGL() {
+      var s = document.createElement("script");
+      s.src = "https://map.qq.com/api/gljs?v=1.exp&key=" + encodeURIComponent(KEY) + "&callback=__txSceneInit";
+      s.onerror = function () { hint("地图脚本加载失败（网络或 Key 无效）", true); };
+      document.head.appendChild(s);
+    })();
+  </script>
+</body>
+</html>
