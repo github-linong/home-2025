@@ -129,6 +129,14 @@ export interface TelegraphState {
   readonly startTick: number;
   readonly applyTick: number; // 伤害结算 tick（由 ⑦ 在服务器裁定，D13）
   readonly radius: number;
+  /**
+   * 攻击者朝向（单位向量，世界坐标 x右/y下）。仅「方向性」形状（CONE/LINE）由服务端填充，
+   * RING/AOE_FILL 径向对称省略（undefined → JSON.stringify 自动丢弃键，不影响确定性哈希）。
+   * 客户端据 `dir` 旋转 CONE 三角 apex / LINE 矩形长轴，使其沿攻击者 facing 而非恒指 +x
+   * （N2 / C3 子项：方向性 telegraph 缺朝向字段）。由 `world.snapshot` 从攻击者 `Actor.dir`
+   * (0-7) 换算；约定 0=E(→+x)，顺时针（屏幕 y 下）：1=SE 2=S 3=SW 4=W 5=NW 6=N 7=NE。
+   */
+  readonly dir?: Vec2;
 }
 
 /** 救援读条状态（⑪）。 */

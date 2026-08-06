@@ -26,6 +26,9 @@ signal world_snapshot_received(snapshot: Dictionary)
 signal reconnect_ok(snapshot_tick: int)
 signal connection_closed()
 signal connection_error(reason: String)
+# A2: emitted for every locally-enqueued input so GameWorld can capture MOVE intents for
+# client-side prediction / reconciliation. Pure notification — carries no authority.
+signal local_input_enqueued(seq: int, action: int, dir: Vector2)
 
 const GATEWAY_PATH := "/ws/dungeon"
 const PROTOCOL_VERSION := 1
@@ -103,12 +106,23 @@ func _drain_messages() -> void:
 
 
 func _handle_message(msg: Dictionary) -> void:
+	# Data-plane world.snap (R1 placeholder) is broadcast as a RAW WorldSnapshot JSON with
+	# NO `type` field (see connection-registry.serialize / run-manager.onBroadcast). Route
+	# it by shape BEFORE the control-plane `type` switch, otherwise every snapshot is dropped
+	# and the world view never renders. Control-plane frames always carry a `type`.
+	if not msg.has("type"):
+		var t := msg.get("tick")
+		var ents := msg.get("entities")
+		if (typeof(t) == TYPE_INT or typeof(t) == TYPE_FLOAT) and typeof(ents) == TYPE_ARRAY:
+			world_snapshot_received.emit(msg)
+		return
 	match msg.get("type"):
 		"session.ready":
 			session_ready.emit(msg.get("userId", ""))
 		"room.snapshot":
 			room_snapshot_received.emit(msg)
 		"world.snap":
+			# Retained for forward-compat if the server later tags the data plane with a type.
 			world_snapshot_received.emit(msg)
 		"session.reconnect.ok":
 			_reconnect_token = msg.get("reconnectToken", _reconnect_token)
@@ -146,6 +160,8 @@ func enqueue_input(action: int, dir: Vector2, target: int = -1, param: int = 0) 
 		"param": param,
 	}
 	_send("input.cmd", { "cmd": cmd })
+	# A2: notify the local prediction system (GameWorld) of our own input.
+	local_input_enqueued.emit(_seq, action, Vector2(cmd.dir.x, cmd.dir.y))
 
 
 # --- O-E7 reconnect entry point (called from _on_closed) ---

@@ -29,6 +29,7 @@ import {
   type RoomPhaseValue,
   type EntityKindValue,
   type PersonalState,
+  type Vec2,
 } from "./types.ts";
 import {
   RESCUE_TICKS,
@@ -123,6 +124,28 @@ export interface World {
  */
 function moveSpeedPerTick(classId: PlayerClass): number {
   return CLASS_BASE[classId].moveSpeed / 30;
+}
+
+/**
+ * 8 向 → 单位向量（世界坐标 x右/y下）。0=E(→+x)，顺时针（屏幕 y 下）：
+ * 1=SE 2=S 3=SW 4=W 5=NW 6=N 7=NE。供 `snapshot` 将攻击者 `Actor.dir`(0-7) 换算为
+ * telegraph.dir 单位向量（N2）。Math.SQRT1_2 给出精确的 √2/2 归一化分量，确定性可复现。
+ */
+const DIR_UNIT_VECTORS: readonly Vec2[] = [
+  { x: 1, y: 0 },
+  { x: Math.SQRT1_2, y: Math.SQRT1_2 },
+  { x: 0, y: 1 },
+  { x: -Math.SQRT1_2, y: Math.SQRT1_2 },
+  { x: -1, y: 0 },
+  { x: -Math.SQRT1_2, y: -Math.SQRT1_2 },
+  { x: 0, y: -1 },
+  { x: Math.SQRT1_2, y: -Math.SQRT1_2 },
+];
+
+/** 攻击者朝向 0-7 → 归一化单位向量（N2）；越界值取模保护。 */
+function dirToVector(dir: number): Vec2 {
+  const k = ((Math.trunc(dir) % 8) + 8) % 8;
+  return DIR_UNIT_VECTORS[k];
 }
 
 export function createWorld(opts: CreateWorldOpts): World {
@@ -406,7 +429,16 @@ export function createWorld(opts: CreateWorldOpts): World {
       world.tick += 1;
     },
     snapshot(): WorldSnapshot {
-      const entities: EntityState[] = actors.map((a) => ({
+      const entities: EntityState[] = actors.map((a) => {
+        // N2：方向性 telegraph（CONE/LINE）携带攻击者朝向单位向量；RING/AOE_FILL 径向对称省略。
+        const shape =
+          a.enemyTypeId != null
+            ? ENEMY_PROTOTYPES[a.enemyTypeId].shape
+            : TelegraphShape.RING;
+        const isDirectional = shape === TelegraphShape.CONE || shape === TelegraphShape.LINE;
+        // 攻击者 facing（Actor.dir 0-7）→ 单位向量；径向形状置 undefined（JSON 丢弃，不影响哈希）。
+        const teleDir: Vec2 | undefined = isDirectional ? dirToVector(a.dir) : undefined;
+        return {
         id: a.id,
         kind: a.kind,
         pos: { x: a.x, y: a.y },
@@ -429,10 +461,7 @@ export function createWorld(opts: CreateWorldOpts): World {
         telegraph:
           a.telegraph != null
             ? {
-                shape:
-                  a.enemyTypeId != null
-                    ? ENEMY_PROTOTYPES[a.enemyTypeId].shape
-                    : TelegraphShape.RING,
+                shape,
                 color: DANGER_COLOR,
                 startTick: a.telegraph.startTick,
                 applyTick: a.telegraph.applyTick,
@@ -441,6 +470,8 @@ export function createWorld(opts: CreateWorldOpts): World {
                   a.enemyTypeId != null
                     ? ENEMY_PROTOTYPES[a.enemyTypeId].attackRange
                     : 40,
+                // N2：方向性形状（CONE/LINE）填充攻击者 facing 单位向量；RING/AOE_FILL 省略（undefined）。
+                dir: teleDir,
               }
             : undefined,
         // ⑨ SHIELD_ALLY 减伤护盾：仅护盾窗口仍活跃（> world.tick）才下发，过期则 undefined。
@@ -459,7 +490,8 @@ export function createWorld(opts: CreateWorldOpts): World {
             : undefined,
         // 当前/最近施放协作技 id（E8 HUD 提示）。玩家初值 null → undefined → 不下发。
         activeSkill: a.activeSkill ?? undefined,
-      }));
+        };
+      });
       return {
         tick: world.tick,
         runId: world.runId,
