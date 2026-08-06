@@ -1,0 +1,19 @@
+{
+  "name": "@dungeon/sim-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Engine-agnostic deterministic simulation core (TS) for 余烬小队 / Ember Squad",
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/unit/*.test.ts tests/golden/*.test.ts",
+    "test:unit": "node --experimental-strip-types --test tests/unit/*.test.ts",
+    "test:golden": "node --experimental-strip-types --test tests/golden/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

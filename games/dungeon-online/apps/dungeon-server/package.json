@@ -1,0 +1,17 @@
+{
+  "name": "@dungeon/dungeon-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Authoritative Node server for 余烬小队 (reuses poker WS base, new TS run-runtime)",
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "start": "node --experimental-strip-types src/server.ts"
+  },
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
