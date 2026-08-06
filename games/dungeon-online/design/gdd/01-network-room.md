@@ -33,7 +33,7 @@
 - 房间码：6 位 base32（排除易混字符 I/O/0/1），时效至房间销毁或 24h。
 - 最大人数：**4**；**最小开局人数：1（允许 solo 完整通关，不仅是调试）**。
 - 断线心跳超时：**5s** 无心跳判定断线（绝对阈值，与 RTT 解耦，避免高延迟误判；`待程基岩按网络层定`）。
-- 重连窗口：无硬性上限（只要房间未结算/服务未下线），状态保留至房间结束。
+- 重连窗口：重连 token TTL **30min（`reconnectTokenTtlMs=1_800_000`）**；断线宽限 **30s（`disconnectGraceMs`）**——宽限内可重连（room-service 持 seat=`disconnected` 并启动 30s timer，超时 `clearSeat`），状态保留至清座。
 - co-host 人数：默认按加入顺序自动授予（可多人），上限 `待调`（建议 ≤2，防权限分散）。
 - **`TICK_RATE`（全局唯一初值注记，待调）**：**30 Hz**（33.3ms/tick）。此为本数值在三份 GDD 中的**唯一初值落点**；netcode state-diff 契约的定值、下发节奏与状态 diff schema 由程基岩 P3 ADR（`ADR-NET-01`）锁定，④/⑦ 仅引用、不各自定义（角色见 §8）。
 
@@ -80,5 +80,7 @@
   - 最小开局人数 = 1（solo 完整通关）：见 §4 / §5。
   - 房主掉线管理权自动迁移 + 联席主持人(co-host)：见 §3 / §5（已移除"host 迁移待拍板"标记）。
   - 公共体验房（常驻、无码、任意加入）：见 §1 / §3 / §5。
-  - **【P4 保底契约 · ⑪↔①/⑦】**：掉线托管期间，⑪ 的 `DOWNED` 状态与救援读条**计时暂停**；重连还原至掉线瞬间原状态（`DOWNED`/`ALIVE`，含剩余窗口），**不误判超时→OUT**。由本系统托管快照 + ⑦ 断线跳过 tick 协同实现；频率/归位边界由 `ADR-NET-01` 落地。与 ⑪ §6/§8 同文。
+  - **【P4 保底契约 · ⑪↔①/⑦】**：掉线托管期间，⑪ 的 `DOWNED` 状态与救援读条**计时暂停**；重连还原至掉线瞬间原状态（`DOWNED`/`ALIVE`，含剩余窗口），**不误判超时→OUT**。
+    - **接线（代码权威，D8）**：断线来源 = `gateway` 心跳超时（pongTimeout 5s，L139）/ `ws` close（L167）→ `room-service.markDisconnected`（置 seat=`disconnected` + 启动 30s 宽限 timer）；重连 = `protocol.session.reconnect`（L199）→ `validateReconnect`（token 校验 + 30min TTL）→ `world.setDisconnected(false)` 恢复推进 + 下发全量 `WorldSnapshot`（数据面 binary）。
+    - **托管「三者同发」（`world.setDisconnected`）**：① 跳过该玩家 tick + ② 暂停 `DOWNED`/救援计时 + ③ 单次抓拍 `PersonalState`（冻结态，重连前不被覆盖）；频率/归位边界由 `ADR-NET-01` 落地。与 ⑪ §6 同文。
 - **剩余开放问题**：co-host 人数上限（建议 ≤2）与投票改选是否 MVP 引入？`待调`。

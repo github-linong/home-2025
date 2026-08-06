@@ -24,10 +24,11 @@
 ## 4. 数值/平衡初稿（`待调`）
 - **`TICK_RATE`：引用 `ADR-NET-01`（锁 30Hz），本系统不再单独定义（与 ① §4 / ④ §4 / ⑦ §4 一致）。**
 - 杂兵 HP 30–60；精英 HP 120–200；Boss HP 800–1500（按层递增）。
-- **攻击前摇（telegraph）**：杂兵 ≥0.7s、精英 ≥0.8s、Boss ≥1.0s（须满足 **预警前摇 ≥ max(P3 硬下限 0.6s, RTT 上限 250ms + 余量 K 100ms)**；已锁 `ADR-NET-01`（D3）：0.6s 硬下限主导，telegraph 下限 = 18 tick @30Hz）。
-- 攻击伤害：杂兵 8–12、精英 15–20、Boss 20–35。
+- 移动速率(px/s)：杂兵 110 / 精英 95 / Boss 80；攻击触发范围：40 / 48 / 64 px（平衡初稿，E6 O-E6）。
+- **攻击前摇（telegraph，D12 tier 分层）**：杂兵 ≥0.7s(**21 tick**)、精英 ≥0.8s(**24 tick**)、Boss ≥1.0s(**30 tick**)；均 ≥ **预警前摇 ≥ max(P3 硬下限 0.6s, RTT 上限 250ms + 余量 K 100ms)**；已锁 `ADR-NET-01`（D3）：0.6s 硬下限主导，telegraph 下限 = 18 tick @30Hz（MIN_TELEGRAPH_TICKS）。
+- 攻击伤害（服务端自 `ENEMY_PROTOTYPES.attackDamage` **单一值**裁决；敌人意图携带 `damage` 被忽略，C11 强化纵深；`attackDamageMin/Max` 仅原型数据、未参与结算）：杂兵 **8** / 精英 **12** / Boss **20**（平衡初稿，E6 O-E6）。
 - Boss 阶段：2–3 阶段（按 HP 阈值切换）。
-- 编队规模：杂兵 3–6 一群。
+- 编队规模：杂兵 **2–6** 一群（刷怪点 `count` rng.nextInt(2,6)；每战斗房 1–3 波/层）。
 
 ## 5. 状态机/流程
 - 敌人：`SPAWN`（在 ⑤ 刷怪点）→ `ACTIVE`（行为 + telegraph）→ 受击(HP↓，由 ⑦ 结算) → `DEAD`（移除，掉落由 ⑥）/ BOSS 分阶段。

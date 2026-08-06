@@ -19,6 +19,9 @@ import {
   CLASS_BASE,
   ENEMY_PROTOTYPES,
   InputAction,
+  SKILL_IDS,
+  TelegraphShape,
+  DANGER_COLOR,
   type EntityState,
   type WorldSnapshot,
   type InputCmd,
@@ -53,6 +56,7 @@ import {
   type EnemyAiSelf,
   type EnemyAiPlayer,
 } from "./enemy-ai.ts";
+import { resolveSkillApplication } from "./skills.ts";
 
 export interface PlayerSeat {
   readonly seatId: number;
@@ -81,6 +85,12 @@ interface Actor {
   classId?: PlayerClass; // 玩家职业（驱动移动速率 / 未来伤害派生）
   telegraph?: AttackWindup | null; // 进行中的攻击前摇（D12）
   iframeUntilTick?: number; // dodge 免伤窗口截止 tick（DODGE）
+  // ── E8 协作技运行时状态（仅 world.step 维护；纪律 B：落地只经 world.step / combat）──
+  cooldownUntilTick?: number; // 协作技冷却截止 tick；<= 当前 tick 即可再次施法
+  activeSkill?: number | null; // 当前/最近施放的协作技 id（HUD 用；即时技施放后保留至下次）
+  shieldUntilTick?: number; // ⑨ SHIELD_ALLY 减伤护盾窗口截止 tick（combat 消费）
+  shieldReduction?: number; // ⑨ SHIELD_ALLY 减伤比例 0..1
+  tauntUntilTick?: number; // ⑨ TAUNT 施法者吸引敌火窗口截止 tick（敌人 AI 消费）
   // ── E7 倒地/救援/超时/托管状态（仅 world.step 维护；纪律 B）──
   rescueTicks: number; // 倒地后累积的救援读条 tick（S7.2）
   downedTicks: number; // 倒地后经过的 tick（S7.5 超时判定）
@@ -141,6 +151,12 @@ export function createWorld(opts: CreateWorldOpts): World {
         downedTicks: 0,
         disconnected: false,
         personalState: null,
+        // ── E8 协作技初始状态（仅玩家持有；敌人不施技，字段保持 undefined）──
+        cooldownUntilTick: 0,
+        activeSkill: null,
+        shieldUntilTick: 0,
+        shieldReduction: 0,
+        tauntUntilTick: 0,
       });
   }
 
@@ -199,6 +215,17 @@ export function createWorld(opts: CreateWorldOpts): World {
           a.status &= ~EntityStatus.IFRAME;
           a.iframeUntilTick = undefined;
         }
+        // E8 协作技状态窗口过期清理（仅 world.step 维护；不影响序列化快照确定性）。
+        if (a.shieldUntilTick != null && a.shieldUntilTick > 0 && a.shieldUntilTick <= world.tick) {
+          a.shieldUntilTick = 0;
+          a.shieldReduction = 0;
+        }
+        if (a.tauntUntilTick != null && a.tauntUntilTick > 0 && a.tauntUntilTick <= world.tick) {
+          a.tauntUntilTick = 0;
+        }
+        if (a.cooldownUntilTick != null && a.cooldownUntilTick > 0 && a.cooldownUntilTick <= world.tick) {
+          a.cooldownUntilTick = 0; // 冷却结束，复位以便再次施法
+        }
         // O-M 修复：输入门控改为位运算 —— ALIVE 且非 DOWNED 即可行动（dodge 期间仍可移动/攻击，
         // dodge 纯防御）；DOWNED 玩家被正确排除。不再用严格相等，避免 IFRAME 位使 status(17)≠ALIVE(1)。
         // E7 扩展：OUT 玩家本 run 作旁观（不可行动）；disconnected 玩家跳过 tick（S7.6 托管）。
@@ -216,15 +243,46 @@ export function createWorld(opts: CreateWorldOpts): World {
             const ms = moveSpeedPerTick(a.classId!);
             a.x += cmd.dir.x * ms;
             a.y += cmd.dir.y * ms;
-          } else if (cmd.action === InputAction.ATTACK || cmd.action === InputAction.SKILL) {
+          } else if (cmd.action === InputAction.ATTACK) {
             // 战斗意图：启动前摇（D12）。若已有进行中前摇则忽略（防覆盖/刷新）。
             if (!a.telegraph) {
               a.telegraph = {
                 startTick: world.tick,
                 applyTick: world.tick + MIN_TELEGRAPH_TICKS,
                 targetId: cmd.target ?? a.id,
-                kind: cmd.action,
+                kind: CombatKind.ATTACK,
               };
+            }
+          } else if (cmd.action === InputAction.SKILL) {
+            // E8 / O-A 闭合：协作技路由。skills.ts 纯校验 + 效果数学产出 SkillApplication
+            // 意图；本处（world.step）落地——所有 hp/status 改变只经 combat/world（纪律 B）。
+            // 冷却门控：冷却未结束直接忽略（不进入冷却、不落地）。
+            if ((a.cooldownUntilTick ?? 0) <= world.tick) {
+              const target =
+                cmd.target != null ? actors.find((t) => t.id === cmd.target) ?? null : null;
+              const skillId = cmd.param ?? SKILL_IDS.SHIELD_ALLY;
+              const app = resolveSkillApplication(a, target, skillId, world.tick);
+              if (app) {
+                // ① SHIELD_ALLY：给目标盟友设减伤护盾窗口（combat.resolveDamage 消费）。
+                if (app.shieldTicks > 0) {
+                  const tgt = actors.find((t) => t.id === app.targetId);
+                  if (tgt) {
+                    tgt.shieldUntilTick = world.tick + app.shieldTicks;
+                    tgt.shieldReduction = app.shieldReduction;
+                  }
+                }
+                // ② REVIVE_BOOST：给倒地盟友救援读条直接加成（rescueTicks，非 hp/status）。
+                if (app.rescueBoostTicks > 0) {
+                  const tgt = actors.find((t) => t.id === app.targetId);
+                  if (tgt) tgt.rescueTicks += app.rescueBoostTicks;
+                }
+                // ③ TAUNT：施法者吸引敌火（设 tauntUntilTick，敌人 AI 经 taunt 池优先锁定）。
+                if (app.tauntTicks > 0) {
+                  a.tauntUntilTick = world.tick + app.tauntTicks;
+                }
+                a.cooldownUntilTick = world.tick + app.cooldownTicks;
+                a.activeSkill = app.skillId;
+              }
             }
           } else if (cmd.action === InputAction.DODGE) {
             // 闪避：立即经 ⑦ 授予来源自身 IFRAME 免伤窗口（无前摇）。
@@ -247,7 +305,14 @@ export function createWorld(opts: CreateWorldOpts): World {
           };
           const players: EnemyAiPlayer[] = actors
             .filter((t) => t.kind === EntityKind.PLAYER && isOutEligibleTarget(t.status))
-            .map((t) => ({ id: t.id, x: t.x, y: t.y, alive: true }));
+            .map((t) => ({
+              id: t.id,
+              x: t.x,
+              y: t.y,
+              alive: true,
+              // ⑨ E8 TAUNT：施法者处于嘲讽窗口 → 敌人 AI 优先锁定（吸引敌火）。
+              taunt: t.tauntUntilTick != null && t.tauntUntilTick > 0 && t.tauntUntilTick > world.tick,
+            }));
           const intent = stepEnemyAi(self, { tick: world.tick, players });
           if (intent.type === "MOVE") {
             // 敌人移速按 ENEMY_PROTOTYPES.speed / 30（每 tick 位移，平衡初稿）。
@@ -356,6 +421,44 @@ export function createWorld(opts: CreateWorldOpts): World {
           a.kind === EntityKind.PLAYER && (a.status & EntityStatus.DOWNED) !== 0
             ? { targetId: a.id, progressTicks: a.rescueTicks, totalTicks: RESCUE_TICKS }
             : undefined,
+        // ── E8 / D12 快照序列化（READ-ONLY；纪律 B：绝不改 hp/status，仅公开已存在的权威状态）──
+        // 仅当实体真实持有该状态才下发对应字段，否则赋 undefined（JSON.stringify 自动丢弃 undefined
+        // 键），故「未持有状态的实体」其确定性哈希不受影响——与 rescue 先例完全一致。
+        // D/telegraph 可视化：将运行时 AttackWindup 转换为客户端可读的 TelegraphState
+        // （含 shape/color/radius，EntityView.gd 据 radius 缩放预警图形）。
+        telegraph:
+          a.telegraph != null
+            ? {
+                shape:
+                  a.enemyTypeId != null
+                    ? ENEMY_PROTOTYPES[a.enemyTypeId].shape
+                    : TelegraphShape.RING,
+                color: DANGER_COLOR,
+                startTick: a.telegraph.startTick,
+                applyTick: a.telegraph.applyTick,
+                // 危险区半径：敌人取原型 attackRange；玩家普攻预警半径初稿（待 P5 调优）。
+                radius:
+                  a.enemyTypeId != null
+                    ? ENEMY_PROTOTYPES[a.enemyTypeId].attackRange
+                    : 40,
+              }
+            : undefined,
+        // ⑨ SHIELD_ALLY 减伤护盾：仅护盾窗口仍活跃（> world.tick）才下发，过期则 undefined。
+        shieldUntilTick:
+          a.shieldUntilTick != null && a.shieldUntilTick > world.tick
+            ? a.shieldUntilTick
+            : undefined,
+        shieldReduction:
+          a.shieldUntilTick != null && a.shieldUntilTick > world.tick
+            ? a.shieldReduction
+            : undefined,
+        // ⑨ TAUNT 施法者吸引敌火窗口：仅窗口仍活跃（> world.tick）才下发，过期则 undefined。
+        tauntUntilTick:
+          a.tauntUntilTick != null && a.tauntUntilTick > world.tick
+            ? a.tauntUntilTick
+            : undefined,
+        // 当前/最近施放协作技 id（E8 HUD 提示）。玩家初值 null → undefined → 不下发。
+        activeSkill: a.activeSkill ?? undefined,
       }));
       return {
         tick: world.tick,

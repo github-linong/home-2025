@@ -113,6 +113,13 @@ export interface EntityState {
   readonly ownerId?: number; // PLAYER → 座位
   readonly telegraph?: TelegraphState;
   readonly rescue?: RescueState;
+  // ── E8 协作技运行时状态（world.snapshot 公开，供客户端 HUD/可视化渲染）──
+  // 仅当实体真实持有该状态才下发（snapshot 中按权威窗口判定），否则 undefined → JSON 丢弃键，
+  // 不影响「未持有状态实体」的确定性哈希（与 rescue 先例一致）。
+  readonly activeSkill?: number | null; // 当前/最近协作技 id（HUD 提示；玩家初值 null → 不下发）
+  readonly shieldUntilTick?: number; // ⑨ SHIELD_ALLY 减伤护盾窗口截止 tick（>world.tick 才下发）
+  readonly shieldReduction?: number; // ⑨ SHIELD_ALLY 减伤比例 0..1
+  readonly tauntUntilTick?: number; // ⑨ TAUNT 施法者吸引敌火窗口截止 tick（>world.tick 才下发）
 }
 
 /** telegraph 静态可读预警（P3 硬约束，art-bible §7）。 */
@@ -344,4 +351,95 @@ export interface CombatIntent {
   readonly type: CombatIntentType;
   readonly targetId?: number;
   readonly skillId?: number;
+}
+
+// ============================================================
+// S8.1–S8.3 协作技（系统⑨ / E8，闭合 O-A 设计缺口）
+// ============================================================
+//
+// 协作技是「影响盟友」的协同能力（区别于 solo 普攻/闪避）：护盾链接（减伤）、急救链
+// （加速救援）、嘲讽战吼（吸引敌火保护队友）。所有数值为 **P5 平衡初稿（待调）**。
+//
+// 纪律 B（关键）：本文件只含「数据 + 类型」，无任何运行时逻辑；技能的真实落地（改
+// hp/status/iframe/shield/救援/嘲讽）只发生在 world.step / combat.resolveDamage——
+// skills.ts 仅做「纯校验 + 效果数学」并产出 SkillApplication 意图结构体，绝不直改状态。
+
+/** 协作技目标模式（决定 SKILL InputCmd 的 target 取值与校验）。 */
+export const SkillTargetMode = {
+  SELF: 0, // 仅施法者自身（如嘲讽：吸引敌火保护队友）
+  ALLY: 1, // 必须是指定「其他玩家盟友」（护盾/急救链；不可指向自己或敌人）
+  ENEMY: 2, // 预留（未来进攻型协作技；本 Epic 未启用）
+} as const;
+export type SkillTargetModeValue = (typeof SkillTargetMode)[keyof typeof SkillTargetMode];
+
+/** 协作技 ID（E8 三技能；预留扩展位）。 */
+export const SKILL_IDS = {
+  SHIELD_ALLY: 0, // 护盾链接：给目标盟友施加减伤护盾窗口
+  REVIVE_BOOST: 1, // 急救链：给倒地盟友救援读条直接加成（加速归队）
+  TAUNT: 2, // 嘲讽战吼：施法者吸引敌火（敌人 AI 优先锁定）
+} as const;
+export type SkillIdValue = (typeof SKILL_IDS)[keyof typeof SKILL_IDS];
+
+/** 协作技效果参数（由 SKILL_PROTOTYPES 持有；skills.ts 读取，world.step 落地）。 */
+export interface SkillEffect {
+  /** 减伤护盾持续 tick（SHIELD_ALLY）；0 = 无护盾效果。 */
+  readonly shieldTicks: number;
+  /** 减伤比例 0..1（SHIELD_ALLY）；0 = 不减伤。由 combat.resolveDamage 消费。 */
+  readonly shieldReduction: number;
+  /** 给倒地盟友救援读条加成的 tick（REVIVE_BOOST）；0 = 无。 */
+  readonly rescueBoostTicks: number;
+  /** 施法者吸引敌火的 tick（TAUNT）；0 = 无。 */
+  readonly tauntTicks: number;
+}
+
+/** 协作技原型（纯数据；30Hz → tick 换算见各字段注释）。 */
+export interface SkillPrototype {
+  readonly id: number;
+  readonly name: string;
+  readonly cooldownTicks: number; // 冷却 tick（≈ 12s=360 / 10s=300 / 14s=420 @30Hz）
+  readonly castTicks: number; // 施法前摇 tick；0 = 即时（服务器权威落地，无客户端前摇）
+  readonly targetMode: SkillTargetModeValue;
+  readonly effect: SkillEffect;
+}
+
+/**
+ * SKILL_PROTOTYPES —— 协作技定义表（闭合 O-A：技能从未分化 → 真正协同技）。
+ * 平衡初稿（待 P5 调优）：
+ *   - SHIELD_ALLY：减伤 50%（shieldReduction=0.5）持续 3s(90tick)，CD 12s(360tick)。
+ *   - REVIVE_BOOST：倒地盟友救援读条 +1.5s(45tick)，CD 10s(300tick)。
+ *   - TAUNT：施法者吸引敌火 4s(120tick)，CD 14s(420tick)。
+ */
+export const SKILL_PROTOTYPES: Record<string, SkillPrototype> = {
+  SHIELD_ALLY: {
+    id: SKILL_IDS.SHIELD_ALLY,
+    name: "护盾链接",
+    cooldownTicks: 360,
+    castTicks: 0,
+    targetMode: SkillTargetMode.ALLY,
+    effect: { shieldTicks: 90, shieldReduction: 0.5, rescueBoostTicks: 0, tauntTicks: 0 },
+  },
+  REVIVE_BOOST: {
+    id: SKILL_IDS.REVIVE_BOOST,
+    name: "急救链",
+    cooldownTicks: 300,
+    castTicks: 0,
+    targetMode: SkillTargetMode.ALLY,
+    effect: { shieldTicks: 0, shieldReduction: 0, rescueBoostTicks: 45, tauntTicks: 0 },
+  },
+  TAUNT: {
+    id: SKILL_IDS.TAUNT,
+    name: "嘲讽战吼",
+    cooldownTicks: 420,
+    castTicks: 0,
+    targetMode: SkillTargetMode.SELF,
+    effect: { shieldTicks: 0, shieldReduction: 0, rescueBoostTicks: 0, tauntTicks: 120 },
+  },
+};
+
+/** 按 id 取协作技原型（skills.ts 纯查表）。 */
+export function getSkillPrototype(id: number): SkillPrototype | null {
+  for (const key of Object.keys(SKILL_PROTOTYPES)) {
+    if (SKILL_PROTOTYPES[key].id === id) return SKILL_PROTOTYPES[key];
+  }
+  return null;
 }

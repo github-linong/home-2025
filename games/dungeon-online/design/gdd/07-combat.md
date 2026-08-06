@@ -30,13 +30,14 @@
 - **`TICK_RATE`：引用 `ADR-NET-01`（锁 30Hz），本系统不再单独定义。**
 - 基础 HP（②定义，战斗引用）：坦 **140** / 输出 **80** / 辅助 **90** / 控场 **100**。
 - 移速(px/s，32px tile)：坦 140 / 输出 185 / 辅助 165 / 控场 170。
-- 普攻：CD **0.4s**，伤害 **10–15**（按职业）。
-- 闪避：i-frame **0.3s**，CD **0.8s**。
+- 普攻：CD **0.4s**（CLASS_BASE.attackCooldownMs=400；world 暂未强制 CD 闸门，P5 评估，见 E5 O-L），伤害 **18（全职业统一，服务端 `resolveDamage` 裁决、忽略客户端 amount；职业差异在 ②/⑨/E8 落地）**。
+- 闪避：i-frame **0.4s（12 tick @30Hz，`DODGE_IFRAME_TICKS=12`）**；**无独立冷却闸门**（DODGE 直接授予 iframe 窗口，过期后可再闪避；0.8s CD 为设计意图，P5 评估是否落地）。
 - 技能 CD：**6–10s**（各职业不同）。
 - 状态：眩晕 1.0s；减速 移速×0.5/2s；增益 +20% 攻/3s。
 - 伤害类型：MVP **仅物理**（元素留延展，防过度设计）。
 
 ## 5. 状态机/流程
+- **实体状态位（types.EntityStatus，代码权威，每 tick 紧凑序列化）**：`ALIVE=1<<0`、`DOWNED=1<<1`、`OUT=1<<2`、`DEAD=1<<3`、`IFRAME=1<<4`、`STUN=1<<5`、`SLOW=1<<6`、`BUFF=1<<7`；位运算组合。`DOWNED` 与 `OUT` 互斥（超时清 DOWNED 置 OUT）；`IFRAME` 由 DODGE 授予、过期清除（E5 O-M 修复）；`OUT` 仅超时触发，绝不经由伤害结算（S7.4）。
 - 玩家：`ALIVE` → 受击(HP↓) → HP≤0 → `DOWNED`(倒地, 交 ⑪) → 救援成功回 `ALIVE` / 超时→(由 ⑪ 定：托管/观战/本局出局)。
 - 敌人：`SPAWN` → `ACTIVE`(行为+telegraph) → 受击(HP↓) → `DEAD`(移除) / BOSS 分阶段。
 - **战斗结算 tick 流程**：收集本 tick 全部伤害请求 → 校验(i-frame/存活/命中) → 应用 → 写权威状态 → 触发倒地/Boss 阶段事件 → 联网下发 diff。

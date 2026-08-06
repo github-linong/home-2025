@@ -65,6 +65,14 @@ export interface CombatEntity {
   telegraph?: AttackWindup | null;
   /** dodge 免伤窗口截止 tick；state.tick <= 此值时该实体免疫伤害（DODGE 生效）。 */
   iframeUntilTick?: number;
+  /**
+   * ⑨ E8 SHIELD_ALLY 减伤护盾窗口截止 tick（由 world.step 经技能意图设置）。
+   * state.tick <= 此值且 shieldReduction>0 时，本次伤害按 (1 - shieldReduction) 减免。
+   * 未设置 / 已过期 → 不影响结算（确定性 intact，golden 场景永不触发本分支）。
+   */
+  shieldUntilTick?: number;
+  /** SHIELD_ALLY 减伤比例 0..1（由 world.step 设置；combat 单一出口消费）。 */
+  shieldReduction?: number;
 }
 
 /** resolveDamage 的权威战斗态快照（每 tick 由 world 组装传入）。 */
@@ -121,7 +129,20 @@ export function resolveDamage(state: CombatState, req: DamageRequest): DamageEve
   // C11：玩家攻击服务端裁决伤害，忽略 req.amount（恒 PLAYER_ATTACK_DAMAGE）。
   // E6：敌人攻击取 world 经意图提交的 enemyDamage（来自 ENEMY_PROTOTYPES 平衡初稿），
   //     同样由服务端裁决，客户端不可注入（enemyDamage 只可能由 ① 编排层设置）。
-  const dmg = req.enemyDamage != null ? req.enemyDamage : PLAYER_ATTACK_DAMAGE;
+  const dmgBase = req.enemyDamage != null ? req.enemyDamage : PLAYER_ATTACK_DAMAGE;
+  // ⑨ E8 SHIELD_ALLY 减伤：目标处于护盾窗口且带减伤比例 → 按比例减免。
+  // 仍由本函数（唯一 hp 结算出口）落地，skills 模块绝不直改 hp（discipline B）。
+  // 未设置护盾 / 已过期 → dmgBase 原样结算（golden 场景此分支恒不触发）。
+  let dmg = dmgBase;
+  if (
+    target.shieldUntilTick != null &&
+    target.shieldUntilTick > 0 &&
+    state.tick <= target.shieldUntilTick &&
+    target.shieldReduction != null &&
+    target.shieldReduction > 0
+  ) {
+    dmg = Math.max(0, Math.round(dmgBase * (1 - target.shieldReduction)));
+  }
   const before = target.hp;
   target.hp = Math.max(0, target.hp - dmg);
   const deltaHp = target.hp - before; // 负数

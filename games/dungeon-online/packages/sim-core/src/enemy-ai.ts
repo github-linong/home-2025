@@ -34,6 +34,12 @@ export interface EnemyAiPlayer {
   readonly x: number;
   readonly y: number;
   readonly alive: boolean;
+  /**
+   * ⑨ E8 TAUNT：该玩家是否正处于嘲讽窗口（由 world.step 设置 tauntUntilTick 后投影）。
+   * 若有任意嘲讽中的玩家，敌人只在其范围内选最近目标（吸引敌火、保护其他队友）。
+   * 纯只读标志，不影响本模块「不直改状态」的纪律（仅改变目标选择）。
+   */
+  readonly taunt?: boolean;
 }
 
 /** stepEnemyAi 的调用上下文（tick + 当前存活玩家视图）。 */
@@ -58,10 +64,15 @@ export interface EnemyAiContext {
 export function stepEnemyAi(self: EnemyAiSelf, ctx: EnemyAiContext): EnemyIntent {
   const proto = ENEMY_PROTOTYPES[self.enemyTypeId];
 
+  // ⑨ E8 TAUNT：若有任意嘲讽中的玩家，敌人只在其范围内选最近目标（吸引敌火）。
+  // 否则退回默认「最近存活玩家」。确定性：按输入序，首个最小欧氏距离平方；无随机源。
+  const taunters = ctx.players.filter((p) => p.taunt === true);
+  const pool = taunters.length > 0 ? taunters : ctx.players;
+
   // 最近存活玩家（确定性：按输入序，首个最小欧氏距离平方）。
   let nearest: EnemyAiPlayer | null = null;
   let bestSq = Infinity;
-  for (const p of ctx.players) {
+  for (const p of pool) {
     if (!p.alive) continue;
     const dx = p.x - self.x;
     const dy = p.y - self.y;
