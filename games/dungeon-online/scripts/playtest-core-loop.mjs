@@ -44,8 +44,10 @@ const MAX_TICKS = 220; // 约 200+ tick 脚本化序列
 // 锁定 golden：首次实跑取得 hash 后回填；非 null 时额外断言三次运行均 == 此值。
 // E6 重锁说明：E6 敌人 AI 接入后敌人移速由占位 1px/tick 改为 ENEMY_PROTOTYPES.speed/30
 // （确定性），runCanonical 固定序列下敌人坐标变化 → 哈希改变；三次运行字节相等（确定性 intact），重锁。
+// WEB-FEEL 重锁说明：调宽玩家/怪物速度差（玩家 ×1.5、敌人 ×0.63，仅 speed/moveSpeed 字段），
+// 玩家与敌人坐标变化 → 哈希随之改变；确定性未破坏（三次运行字节相等），故再次重锁本值。
 const GOLDEN_PLAYTEST_HASH =
-  "889a6e972dbac53a89912b1fa28b68fbc53623f764b0e3fea65b233d4e4fca14";
+  "1c874edeb147247bc86689f1330679dbdd0a5708217d77261ae479f4c9023be1";
 
 // ---------------------------------------------------------------- 结果收集
 const checks = [];

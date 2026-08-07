@@ -70,6 +70,8 @@ export interface CreateWorldOpts {
   readonly seed: string;
   readonly biomeId: number;
   readonly players: readonly PlayerSeat[];
+  /** 是否生成敌人（默认 true）。单元测试可在无敌人世界隔离 ⑪ 倒地/救援/超时逻辑。 */
+  readonly spawnEnemies?: boolean;
 }
 
 interface Actor {
@@ -184,28 +186,31 @@ export function createWorld(opts: CreateWorldOpts): World {
   }
 
   // 敌人：从 E3 SpawnPoint[] 实例生成（只读），用确定性 Rng 做位置抖动/血量。
-  const erng = new Rng(hashString64(`${opts.seed}:${opts.biomeId}:enemies`));
-  for (const sp of layout.spawnPoints) {
-    const proto = ENEMY_PROTOTYPES[sp.enemyTypeId];
-    for (let i = 0; i < sp.count; i += 1) {
-      const hp = erng.nextInt(proto.hpMin, proto.hpMax);
-      const kind =
-        proto.tier === "boss" ? EntityKind.BOSS : EntityKind.ENEMY;
-      actors.push({
-        id: nextId++,
-        kind,
-        x: sp.pos.x + erng.nextInt(-32, 32),
-        y: sp.pos.y + erng.nextInt(-32, 32),
-        dir: erng.nextInt(0, 7),
-        hp,
-        maxHp: hp,
-        status: EntityStatus.ALIVE,
-        enemyTypeId: sp.enemyTypeId,
-        rescueTicks: 0,
-        downedTicks: 0,
-        disconnected: false,
-        personalState: null,
-      });
+  // spawnEnemies===false 时跳过（单元测试隔离 ⑪ 机制，避免敌人碰撞噪声污染判定）。
+  if (opts.spawnEnemies !== false) {
+    const erng = new Rng(hashString64(`${opts.seed}:${opts.biomeId}:enemies`));
+    for (const sp of layout.spawnPoints) {
+      const proto = ENEMY_PROTOTYPES[sp.enemyTypeId];
+      for (let i = 0; i < sp.count; i += 1) {
+        const hp = erng.nextInt(proto.hpMin, proto.hpMax);
+        const kind =
+          proto.tier === "boss" ? EntityKind.BOSS : EntityKind.ENEMY;
+        actors.push({
+          id: nextId++,
+          kind,
+          x: sp.pos.x + erng.nextInt(-32, 32),
+          y: sp.pos.y + erng.nextInt(-32, 32),
+          dir: erng.nextInt(0, 7),
+          hp,
+          maxHp: hp,
+          status: EntityStatus.ALIVE,
+          enemyTypeId: sp.enemyTypeId,
+          rescueTicks: 0,
+          downedTicks: 0,
+          disconnected: false,
+          personalState: null,
+        });
+      }
     }
   }
 

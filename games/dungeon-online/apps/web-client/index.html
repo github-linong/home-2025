@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
+<title>Dungeon Online - 浏览器试玩版</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #111; color: #eee; font-family: system-ui, -apple-system, sans-serif; }
+  #hud { position: absolute; top: 0; left: 0; right: 0; padding: 10px 14px; background: rgba(0,0,0,0.7); font-size: 13px; display: flex; gap: 18px; align-items: center; z-index: 10; pointer-events: none; }
+  #hud span { white-space: nowrap; }
+  #status { color: #fa0; font-weight: bold; }
+  #status.ok { color: #3f3; }
+  #status.err { color: #f44; }
+  canvas { display: block; width: 100%; height: 100%; background: #111; }
+  #help { position: absolute; bottom: 12px; left: 14px; color: #aaa; font-size: 12px; z-index: 10; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="hud">
+  <span id="status">连接中...</span>
+  <span id="tick">tick:-</span>
+  <span id="hp">HP:-</span>
+  <span id="ents">entities:0</span>
+</div>
+<canvas id="game"></canvas>
+<div id="help">WASD / 方向键 移动 · 空格 / J 攻击</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const statusEl = document.getElementById('status');
+const tickEl = document.getElementById('tick');
+const hpEl = document.getElementById('hp');
+const entsEl = document.getElementById('ents');
+
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resize);
+resize();
+
+const params = new URLSearchParams(location.search);
+const SERVER = params.get('server') || 'ws://localhost:3010';
+const devUserId = 'web_' + Math.random().toString(36).slice(2, 8);
+
+const ws = new WebSocket(`${SERVER.replace(/\/$/, '')}/ws/dungeon?devUserId=${devUserId}`);
+ws.binaryType = 'arraybuffer';
+
+// exposed for automation/debug (per engineering brief)
+const GAME = window.__game = {
+  connected: false, lastSnapshot: null, localEntityId: null, gameState: 'connecting',
+  fps: 0, errors: [], spritesLoaded: false, localRender: null, predicted: null, authPos: null,
+};
+
+let state = 'connecting';
+let roomId = null, seatIndex = null, reconnectToken = null, runId = null;
+let lastSnapshot = null;
+let localEntityId = null;
+let seq = 1;
+let lastMoveDir = null;
+
+// ── smoothing / interpolation tunables ──
+// WEB-FEEL anti-stutter: frame-rate-independent local prediction + gentle server reconciliation.
+// The OLD model added a fixed step EVERY rAF frame then yanked back 30% of the error on each
+// snapshot → prediction raced ahead of authority → visible oscillation/stutter. The new model
+// advances the RENDER position by PLAYER_SPEED*dt each frame and eases only 15% of the (small,
+// latency-bound) error toward the authoritative pos per snapshot → no snap, no oscillation.
+const PLAYER_SPEED = 210;        // px/s local prediction (≈ new tank CLASS_BASE.moveSpeed, types.ts).
+                                 // TODO: one day this should arrive from the server/snapshot as the
+                                 // single source of truth instead of being hardcoded here.
+const RECONCILE_FACTOR = 0.15;   // per-snapshot ease toward authoritative pos (no snap, no oscillation)
+const SNAP_THRESHOLD = 250;      // hard snap only after a real teleport (e.g. reconnect); else ease
+const INTERP_TICKS = 3;          // render remote entities ~100ms in the past
+const BUF_MAX = 10;              // ring buffer of recent snapshots
+
+let predicted = null;            // predicted RENDER position of the LOCAL player (render-only; never authoritative)
+let snapBuffer = [];             // [{tick, entities}]
+let renderTime = 0;              // current interpolated render tick
+let lastFrameT = performance.now();
+
+// ── sprite / art assets ──
+const SPRITE_SRC = {
+  hero: 'assets/hero.png',
+  grunt: 'assets/grunt.png',
+  elite: 'assets/elite.png',
+  boss: 'assets/boss.png',
+  floor: 'assets/floor.png',
+};
+const SPRITES = {};
+let floorPattern = null;
+let spritesPending = 0;
+for (const [k, src] of Object.entries(SPRITE_SRC)) {
+  const img = new Image();
+  const rec = { img, status: 'loading' };
+  SPRITES[k] = rec;
+  spritesPending++;
+  img.onload = () => {
+    rec.status = 'ok';
+    if (k === 'floor') floorPattern = ctx.createPattern(img, 'repeat');
+    onSpriteSettled();
+  };
+  img.onerror = () => { rec.status = 'err'; onSpriteSettled(); };
+  img.src = src;
+}
+function onSpriteSettled() {
+  const allDone = Object.values(SPRITES).every(s => s.status !== 'loading');
+  if (allDone) GAME.spritesLoaded = true;
+}
+const spriteOk = k => SPRITES[k] && SPRITES[k].status === 'ok';
+
+const keys = new Set();
+const KEY_DIR = {
+  KeyW:{x:0,y:-1}, ArrowUp:{x:0,y:-1},
+  KeyS:{x:0,y:1}, ArrowDown:{x:0,y:1},
+  KeyA:{x:-1,y:0}, ArrowLeft:{x:-1,y:0},
+  KeyD:{x:1,y:0}, ArrowRight:{x:1,y:0},
+};
+
+window.addEventListener('keydown', e => {
+  keys.add(e.code);
+  if (e.code === 'Space' || e.code === 'KeyJ') {
+    e.preventDefault();
+    sendInput(1, lastMoveDir || {x:0,y:0}, nearestEnemyId());
+  }
+});
+window.addEventListener('keyup', e => keys.delete(e.code));
+
+function currentInputDir() {
+  let dx = 0, dy = 0;
+  for (const code of keys) { const v = KEY_DIR[code]; if (v) { dx += v.x; dy += v.y; } }
+  if (dx === 0 && dy === 0) return null;
+  const len = Math.hypot(dx, dy);
+  return { x: dx / len, y: dy / len };
+}
+
+function nearestEnemyId() {
+  if (!lastSnapshot) return 0;
+  const me = lastSnapshot.entities.find(e => e.id === localEntityId);
+  if (!me) return 0;
+  let best = null, bd = 1e9;
+  for (const e of lastSnapshot.entities) {
+    if (e.kind === 0) continue;
+    const d = Math.hypot(e.pos.x - me.pos.x, e.pos.y - me.pos.y);
+    if (d < bd) { bd = d; best = e; }
+  }
+  return best ? best.id : 0;
+}
+
+function sendJson(obj) { ws.send(JSON.stringify(obj)); }
+function sendInput(action, dir, target) {
+  if (!lastSnapshot || state !== 'playing') return;
+  sendJson({
+    type: 'input.cmd',
+    payload: { cmd: { seq: seq++, tick: lastSnapshot.tick, action, dir: { x: dir.x || 0, y: dir.y || 0 }, target: target || 0 } }
+  });
+}
+
+ws.onopen = () => {
+  state = 'auth';
+  GAME.connected = true; GAME.gameState = 'auth';
+  sendJson({ type: 'room.create', requestId: 'r1', payload: { displayName: 'WebPlayer' } });
+};
+
+ws.onerror = () => {
+  statusEl.textContent = '连接错误（服务端是否已启动？）';
+  statusEl.className = 'err';
+  GAME.connected = false; GAME.gameState = 'error';
+};
+
+ws.onclose = () => {
+  statusEl.textContent = '连接已关闭';
+  statusEl.className = 'err';
+  GAME.connected = false; GAME.gameState = 'closed';
+};
+
+function handleControl(msg) {
+  switch (msg.type) {
+    case 'room.create.ok': {
+      roomId = msg.roomId; seatIndex = msg.seatIndex; reconnectToken = msg.reconnectToken;
+      state = 'room';
+      sendJson({ type: 'game.start', requestId: 'r2', payload: { roomId } });
+      break;
+    }
+    case 'game.start.ok': {
+      runId = msg.runId;
+      state = 'playing';
+      statusEl.textContent = '游戏中';
+      statusEl.className = 'ok';
+      break;
+    }
+    case 'game.error': {
+      statusEl.textContent = '错误: ' + (msg.error?.code || 'unknown');
+      statusEl.className = 'err';
+      break;
+    }
+  }
+}
+
+function handleSnapshot(msg) {
+  lastSnapshot = msg;
+  localEntityId = null;
+  if (seatIndex != null && Array.isArray(msg.entities)) {
+    const local = msg.entities.find(e => e.kind === 0 && e.ownerId === seatIndex);
+    if (local) localEntityId = local.id;
+  }
+
+  // ring buffer (keep last BUF_MAX snapshots)
+  snapBuffer.push(msg);
+  if (snapBuffer.length > BUF_MAX) snapBuffer.shift();
+
+  // Gently reconcile predicted RENDER pos toward the authoritative snapshot each tick.
+  // Small 0.15 ease → no snap, no oscillation. Hard snap only past SNAP_THRESHOLD (real teleport).
+  // Discipline B: we ONLY ever write the RENDER position `predicted`; we never touch
+  // msg / lastSnapshot.hp / status or any authoritative field.
+  if (localEntityId != null) {
+    const auth = msg.entities.find(e => e.id === localEntityId);
+    if (auth) {
+      if (!predicted) {
+        predicted = { x: auth.pos.x, y: auth.pos.y };
+      } else {
+        const ex = auth.pos.x - predicted.x;
+        const ey = auth.pos.y - predicted.y;
+        if (Math.hypot(ex, ey) > SNAP_THRESHOLD) {
+          predicted.x = auth.pos.x; predicted.y = auth.pos.y; // real teleport → snap
+        } else {
+          predicted.x += ex * RECONCILE_FACTOR;
+          predicted.y += ey * RECONCILE_FACTOR;
+        }
+      }
+    }
+  }
+
+  GAME.lastSnapshot = lastSnapshot;
+  GAME.localEntityId = localEntityId;
+  GAME.gameState = state;
+}
+
+ws.onmessage = (ev) => {
+  let msg;
+  if (typeof ev.data === 'string') {
+    try { msg = JSON.parse(ev.data); } catch { return; }
+    handleControl(msg);
+    if (msg.tick !== undefined && Array.isArray(msg.entities)) handleSnapshot(msg);
+  } else if (ev.data instanceof ArrayBuffer) {
+    try {
+      msg = JSON.parse(new TextDecoder().decode(ev.data));
+    } catch { return; }
+    if (msg.tick !== undefined && Array.isArray(msg.entities)) handleSnapshot(msg);
+  }
+};
+
+function updateInput() {
+  let dx = 0, dy = 0;
+  for (const code of keys) {
+    const v = KEY_DIR[code];
+    if (v) { dx += v.x; dy += v.y; }
+  }
+  if (dx !== 0 || dy !== 0) {
+    const len = Math.hypot(dx, dy);
+    lastMoveDir = { x: dx / len, y: dy / len };
+    sendInput(0, lastMoveDir);
+  } else {
+    lastMoveDir = null;
+  }
+}
+
+// ── facing / sprite helpers ──
+// EntityState.dir is a number 0-7 in screen coords (0=E, clockwise).
+// 0-7 → screen angle = dir*PI/4. Sprites face UP (-y); align by +PI/2.
+function facingAngle(e) {
+  if (e.dir == null) return null;
+  if (typeof e.dir === 'object' && e.dir.x !== undefined) {
+    return Math.atan2(e.dir.y, e.dir.x) + Math.PI / 2; // vector form (telegraph)
+  }
+  return e.dir * Math.PI / 4 + Math.PI / 2;
+}
+
+function enemySpriteKey(tid) {
+  if (!tid) return 'grunt';
+  if (tid.startsWith('elite')) return 'elite';
+  if (tid.startsWith('boss')) return 'boss';
+  return 'grunt';
+}
+
+function spriteKeyFor(e) {
+  if (e.kind === 0) return 'hero';
+  if (e.kind === 2) return 'boss';
+  if (e.kind === 1) return enemySpriteKey(e.enemyTypeId);
+  return null;
+}
+
+function spriteSizeFor(e) {
+  if (e.kind === 2) return 76;   // boss: massive
+  if (e.kind === 0) return 34;   // hero
+  return 30;                      // grunt / elite
+}
+
+// ── interpolation of remote entities ──
+function interpPos(id, t) {
+  let a = null, b = null;
+  for (let i = 0; i < snapBuffer.length; i++) {
+    const s = snapBuffer[i];
+    const ent = s.entities.find(e => e.id === id);
+    if (!ent) continue;
+    if (s.tick <= t) a = { tick: s.tick, pos: ent.pos };
+    else { b = { tick: s.tick, pos: ent.pos }; break; }
+  }
+  if (a && b) {
+    const span = (b.tick - a.tick) || 1;
+    const f = Math.min(1, Math.max(0, (t - a.tick) / span));
+    return { x: a.pos.x + (b.pos.x - a.pos.x) * f, y: a.pos.y + (b.pos.y - a.pos.y) * f };
+  }
+  if (a) return { x: a.pos.x, y: a.pos.y };
+  if (b) return { x: b.pos.x, y: b.pos.y };
+  const latest = snapBuffer[snapBuffer.length - 1];
+  const ent = latest && latest.entities.find(e => e.id === id);
+  return ent ? { x: ent.pos.x, y: ent.pos.y } : { x: 0, y: 0 };
+}
+
+function renderPosFor(e) {
+  if (e.id === localEntityId && predicted) return predicted;
+  return interpPos(e.id, renderTime);
+}
+
+// ── drawing ──
+function drawTelegraph(e, snap, x, y) {
+  if (!e.telegraph) return;
+  const t = e.telegraph;
+  const radius = t.radius || 1;
+  const progress = t.applyTick > t.startTick ? Math.min(1, Math.max(0, (snap.tick - t.startTick) / (t.applyTick - t.startTick))) : 0;
+  ctx.save();
+  ctx.globalAlpha = 0.35 + progress * 0.4;
+  ctx.strokeStyle = t.color || '#f55';
+  ctx.fillStyle = t.color || '#f55';
+  ctx.lineWidth = 2 + progress * 2;
+
+  let angle = 0;
+  if (t.dir && (t.dir.x || t.dir.y)) {
+    angle = Math.atan2(t.dir.y, t.dir.x);
+  }
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+
+  if (t.shape === 2 || t.shape === 3) { // CONE / LINE
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(Math.cos(-0.5) * radius, Math.sin(-0.5) * radius);
+    ctx.arc(0, 0, radius, -0.5, 0.5);
+    ctx.closePath();
+    ctx.fill();
+  } else if (t.shape === 1) { // AOE_FILL
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.fill();
+  } else { // RING
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 0.15;
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawHpBar(e, x, y, size) {
+  const hp = e.hp ?? 0, max = e.maxHp || hp;
+  if (max <= 0) return;
+  const w = Math.max(24, size), h = 4;
+  const bx = x - w / 2, by = y - size / 2 - 9;
+  ctx.fillStyle = '#400';
+  ctx.fillRect(bx, by, w, h);
+  ctx.fillStyle = '#3f3';
+  ctx.fillRect(bx, by, w * Math.max(0, hp / max), h);
+}
+
+function drawCircleFallback(e, x, y, snap) {
+  const isLocal = e.id === localEntityId;
+  const isPlayer = e.kind === 0;
+  const downed = e.status && (e.status & 2);
+  let fill = isLocal ? '#fd0' : (isPlayer ? '#4af' : '#f55');
+  if (downed) fill = '#888';
+  ctx.fillStyle = fill;
+  ctx.beginPath();
+  ctx.arc(x, y, 10, 0, Math.PI * 2);
+  ctx.fill();
+  if (e.dir && (e.dir.x || e.dir.y)) {
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + e.dir.x * 10, y + e.dir.y * 10);
+    ctx.stroke();
+  }
+}
+
+function drawSpriteAndOverlays(e, x, y, snap) {
+  const isLocal = e.id === localEntityId;
+  const downed = e.status && (e.status & 2);
+  const key = spriteKeyFor(e);
+  const size = spriteSizeFor(e);
+
+  if (key && spriteOk(key)) {
+    ctx.save();
+    ctx.translate(x, y);
+    let angle = null;
+    const held = currentInputDir();
+    if (isLocal && held) angle = Math.atan2(held.y, held.x) + Math.PI / 2;
+    else angle = facingAngle(e);
+    if (angle != null) ctx.rotate(angle);
+    ctx.drawImage(SPRITES[key].img, -size / 2, -size / 2, size, size);
+    ctx.restore();
+
+    if (downed) {
+      ctx.save();
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = '#000';
+      ctx.fillRect(x - size / 2, y - size / 2, size, size);
+      ctx.restore();
+    }
+    if (isLocal) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,210,0,0.95)';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = 'rgba(255,210,0,0.85)';
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(x, y, size / 2 + 4, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  } else {
+    drawCircleFallback(e, x, y, snap);
+  }
+
+  // data-driven overlays (always on top of sprite)
+  drawHpBar(e, x, y, size);
+  if (e.shieldUntilTick != null && e.shieldUntilTick > snap.tick) {
+    ctx.save();
+    ctx.strokeStyle = '#fa0'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(x, y, size / 2 + 5, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+  }
+  if (e.tauntUntilTick != null && e.tauntUntilTick > snap.tick) {
+    ctx.save();
+    ctx.fillStyle = '#ff0';
+    ctx.beginPath();
+    ctx.moveTo(x, y - size / 2 - 12);
+    ctx.lineTo(x - 5, y - size / 2 - 4);
+    ctx.lineTo(x + 5, y - size / 2 - 4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function draw() {
+  const now = performance.now();
+  const dt = Math.min(0.05, (now - lastFrameT) / 1000);
+  lastFrameT = now;
+
+  // local-player client-side prediction: frame-rate-independent, gently reconciled.
+  // Advance the RENDER position by PLAYER_SPEED*dt each frame; never write authoritative fields.
+  const held = currentInputDir();
+  if (held && predicted && state === 'playing') {
+    predicted.x += held.x * PLAYER_SPEED * dt;
+    predicted.y += held.y * PLAYER_SPEED * dt;
+  }
+
+  if (predicted) { GAME.predicted = { x: predicted.x, y: predicted.y }; GAME.localRender = GAME.predicted; }
+  const authEnt = (localEntityId != null && lastSnapshot)
+    ? lastSnapshot.entities.find(e => e.id === localEntityId) : null;
+  if (authEnt) GAME.authPos = { x: authEnt.pos.x, y: authEnt.pos.y };
+
+  ctx.fillStyle = '#111';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  if (!lastSnapshot) {
+    ctx.fillStyle = '#888';
+    ctx.font = '16px system-ui';
+    ctx.fillText('等待服务器快照...', 20, 60);
+    requestAnimationFrame(draw);
+    return;
+  }
+
+  const snap = lastSnapshot;
+  renderTime = snap.tick - INTERP_TICKS;
+  tickEl.textContent = `tick:${snap.tick}`;
+  entsEl.textContent = `entities:${snap.entities.length}`;
+
+  let camX = 0, camY = 0;
+  if (predicted) { camX = predicted.x; camY = predicted.y; }
+  else if (authEnt) { camX = authEnt.pos.x; camY = authEnt.pos.y; }
+
+  const localHp = authEnt ? `${authEnt.hp ?? 0}/${authEnt.maxHp ?? 0}` : '-';
+  hpEl.textContent = `HP:${localHp}`;
+
+  // ── floor (world-space tiled pattern, scrolls with camera) ──
+  ctx.save();
+  ctx.translate(canvas.width / 2 - camX, canvas.height / 2 - camY);
+  const fx = camX - canvas.width / 2 - 64, fy = camY - canvas.height / 2 - 64;
+  const fw = canvas.width + 128, fh = canvas.height + 128;
+  if (floorPattern) {
+    ctx.fillStyle = floorPattern;
+    ctx.fillRect(fx, fy, fw, fh);
+  } else {
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(fx, fy, fw, fh);
+  }
+  ctx.restore();
+
+  // ── entities (camera-centered world space) ──
+  ctx.save();
+  ctx.translate(canvas.width / 2 - camX, canvas.height / 2 - camY);
+
+  // telegraphs under sprites
+  for (const e of snap.entities) {
+    const p = renderPosFor(e);
+    drawTelegraph(e, snap, p.x, p.y);
+  }
+  // sprites + overlays
+  for (const e of snap.entities) {
+    const p = renderPosFor(e);
+    drawSpriteAndOverlays(e, p.x, p.y, snap);
+  }
+
+  ctx.restore();
+  // WEB-FEEL：每帧上报移动输入（≈60Hz），确保权威模拟每个 tick 都收到 MOVE →
+  // 玩家以真实 CLASS_BASE.moveSpeed（tank=210px/s）移动，而非被旧 100ms 轮询饿成 ~70px/s。
+  // 保留 sendInput / sendJson 的 input.cmd 包装与攻击自动选敌（Space/J 在 keydown 中发送，未改动）。
+  updateInput();
+  requestAnimationFrame(draw);
+}
+
+draw();
+</script>
+</body>
+</html>

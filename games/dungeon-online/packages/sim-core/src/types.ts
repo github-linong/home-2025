@@ -30,10 +30,10 @@ export interface ClassBase {
 }
 
 export const CLASS_BASE: Record<PlayerClass, ClassBase> = {
-  tank: { hp: 140, moveSpeed: 140, attackCooldownMs: 400, label: "守卫士" },
-  ranger: { hp: 80, moveSpeed: 185, attackCooldownMs: 400, label: "游侠" },
-  mage: { hp: 90, moveSpeed: 165, attackCooldownMs: 400, label: "术士" },
-  healer: { hp: 100, moveSpeed: 170, attackCooldownMs: 400, label: "医者" },
+  tank: { hp: 140, moveSpeed: 210, attackCooldownMs: 400, label: "守卫士" },
+  ranger: { hp: 80, moveSpeed: 278, attackCooldownMs: 400, label: "游侠" },
+  mage: { hp: 90, moveSpeed: 248, attackCooldownMs: 400, label: "术士" },
+  healer: { hp: 100, moveSpeed: 255, attackCooldownMs: 400, label: "医者" },
 };
 
 /**
@@ -226,7 +226,7 @@ export const ENEMY_PROTOTYPES: Record<string, EnemyPrototype> = {
     attackDamageMin: 8,
     attackDamageMax: 12,
     attackDamage: 8, // 平衡初稿
-    speed: 110, // 平衡初稿 px/s
+    speed: 70, // 平衡初稿 px/s (WEB-FEEL: 110 → 70, 拉开与玩家差距)
     attackRange: 40, // 平衡初稿 px
     telegraphTicks: 21, // 0.7s @30Hz
     shape: TelegraphShape.RING,
@@ -239,7 +239,7 @@ export const ENEMY_PROTOTYPES: Record<string, EnemyPrototype> = {
     attackDamageMin: 15,
     attackDamageMax: 20,
     attackDamage: 12, // 平衡初稿
-    speed: 95, // 平衡初稿 px/s
+    speed: 60, // 平衡初稿 px/s (WEB-FEEL: 95 → 60, 拉开与玩家差距)
     attackRange: 48, // 平衡初稿 px
     telegraphTicks: 24, // 0.8s @30Hz
     shape: TelegraphShape.AOE_FILL,
@@ -252,7 +252,7 @@ export const ENEMY_PROTOTYPES: Record<string, EnemyPrototype> = {
     attackDamageMin: 20,
     attackDamageMax: 35,
     attackDamage: 20, // 平衡初稿
-    speed: 80, // 平衡初稿 px/s
+    speed: 50, // 平衡初稿 px/s (WEB-FEEL: 80 → 50, 拉开与玩家差距)
     attackRange: 64, // 平衡初稿 px
     telegraphTicks: 30, // 1.0s @30Hz
     shape: TelegraphShape.CONE,

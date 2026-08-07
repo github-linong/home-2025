@@ -22,9 +22,11 @@ import { InputAction, PLAYER_CLASSES, EntityKind, EntityStatus } from "../../src
  * E6 重锁说明：E6 敌人 AI 接入后敌人移速由占位 1px/tick 改为 ENEMY_PROTOTYPES.speed/30
  * （确定性，无新增随机源），固定序列下敌人坐标变化 → 世界快照哈希改变。同 seed+输入三次
  * 字节相等（确定性 intact），故重锁本值。GOLDEN_LAYOUT_HASH（E3 布局）不受影响。
+ * WEB-FEEL 重锁说明：调宽玩家/怪物速度差（玩家 ×1.5、敌人 ×0.63，仅 speed/moveSpeed 字段），
+ * 玩家与敌人坐标变化 → 哈希随之改变；确定性未破坏（三次运行字节相等），故再次重锁本值。
  */
 const GOLDEN_WORLD_HASH =
-  "67b358c78a374601bbc0be7d6cf5fdfd5f1ed4680f983ac36f570b2e1a0b89b8";
+  "3a63ab9be49dcf6baf8e8ee7cac0550d283b4c4b4c34cc4a03042c98b827f836";
 
 function hashEntities(entities: readonly unknown[]): string {
   return createHash("sha256").update(JSON.stringify(entities)).digest("hex");

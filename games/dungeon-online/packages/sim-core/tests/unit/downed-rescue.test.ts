@@ -34,7 +34,7 @@ import {
 import type { CombatEntity } from "../../src/combat.ts";
 import type { World } from "../../src/world.ts";
 
-/** 构造 2 名玩家（tank+ranger）的世界（敌人存在但不参与 ⑪ 判定，测试会隔离其干扰）。 */
+/** 构造 2 名玩家（tank+ranger）的世界（无敌人，隔离 ⑪ 倒地/救援/超时状态机，避免敌人碰撞噪声污染判定）。 */
 function makeWorld(players = 2): World {
   const seats = [];
   for (let i = 0; i < players; i++) {
@@ -45,6 +45,7 @@ function makeWorld(players = 2): World {
     seed: "EMBER-S1",
     biomeId: 0,
     players: seats,
+    spawnEnemies: false,
   });
 }
 
