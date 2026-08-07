@@ -643,6 +643,8 @@ export function createWorld(opts: CreateWorldOpts): World {
                 baseAmount = Math.round(baseAmount * 1.5);
               }
               // 对范围内敌人结算（圆形；敌人无格挡 → targetParry undefined）。
+              // E11：intent.range 已按槽位差异化（SKILL_RANGE_BY_SLOT）——MVP 一律圆形范围判定，
+              // 无需按槽区分几何；槽 1「剑气」的直线波为 Phase-2 视觉表现（数值 2.5 tile 已分化，几何暂以圆形近似）。
               for (const e of actors) {
                 if (e.kind !== EntityKind.ENEMY && e.kind !== EntityKind.BOSS) continue;
                 if (Math.hypot(e.x - a.x, e.y - a.y) <= intent.range) {

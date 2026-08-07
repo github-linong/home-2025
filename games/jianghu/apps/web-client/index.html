@@ -9,8 +9,7 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #0d0f13; color: #e8e4d8;
     font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
-  canvas { display: block; width: 100%; height: 100%; cursor: grab; }
-  canvas.panning { cursor: grabbing; }
+  canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 
   /* ── HUD 顶栏 ── */
   #hud { position: absolute; top: 0; left: 0; right: 0; padding: 8px 12px; z-index: 10;
@@ -46,6 +45,15 @@
   .abtn:hover { border-color: #5fd0e0; transform: translateY(-2px); }
   .abtn:active { transform: translateY(0); }
   .abtn .key { font-size: 10px; color: #7a8699; font-weight: 500; }
+  .abtn .sname { font-size: 13px; color: #e8e4d8; line-height: 1.1; }
+
+  /* ── C3 技能悬停 tooltip（名称/描述/伤害/范围/CD）── */
+  #skill-tip { position: fixed; z-index: 40; display: none; background: rgba(14,16,24,.97);
+    border: 1px solid #5f8fb0; border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #e8e4d8;
+    pointer-events: none; box-shadow: 0 6px 20px rgba(0,0,0,.6); max-width: 260px; line-height: 1.6; }
+  #skill-tip .t-name { font-size: 14px; font-weight: 700; color: #f2a03c; }
+  #skill-tip .t-desc { color: #aab; margin-bottom: 4px; }
+  #skill-tip .t-meta { color: #9fd; font-size: 11px; }
   .abtn .cd { position: absolute; inset: 0; border-radius: 8px; background: rgba(8,10,14,.78); color: #f2a03c;
     display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
   .abtn.parry { width: 68px; height: 68px; border-color: #5f8fb0; }
@@ -129,16 +137,17 @@
 <div id="xpbar"><div id="xpfill"></div><span id="xptext">0/0</span></div>
 
 <div id="actionbar">
-  <div class="abtn" id="btn-skill-0" title="技能1（键 1）"><span>技1</span><span class="key">1</span></div>
-  <div class="abtn" id="btn-skill-1" title="技能2（键 2）"><span>技2</span><span class="key">2</span></div>
-  <div class="abtn" id="btn-skill-2" title="技能3（键 3）"><span>技3</span><span class="key">3</span></div>
-  <div class="abtn" id="btn-skill-3" title="技能4（键 4）"><span>技4</span><span class="key">4</span></div>
+  <div class="abtn" id="btn-skill-0" data-skill="0" title="烈斩（键 1）"><span class="sname">烈斩</span><span class="key">1</span></div>
+  <div class="abtn" id="btn-skill-1" data-skill="1" title="剑气（键 2）"><span class="sname">剑气</span><span class="key">2</span></div>
+  <div class="abtn" id="btn-skill-2" data-skill="2" title="震地（键 3）"><span class="sname">震地</span><span class="key">3</span></div>
+  <div class="abtn" id="btn-skill-3" data-skill="3" title="破军（键 4）"><span class="sname">破军</span><span class="key">4</span></div>
   <div class="abtn parry" id="btn-parry" title="格挡（空格）"><span>格挡</span><span class="key">SPACE</span></div>
   <div class="abtn dungeon" id="btn-dungeon" title="进副本 / 出本（F）"><span id="btn-dungeon-label">进副本</span><span class="key">F</span></div>
 </div>
 
 <div id="toast"></div>
 <div id="pickup-toast"></div>
+<div id="skill-tip"></div>
 <div id="invpanel">
   <div id="inv-head">
     <span id="inv-title">背包 <span id="inv-count">0/60</span></span>
@@ -160,8 +169,8 @@
 </div>
 
 <div id="help">
-  <b>左键点敌人</b> 自动走近普攻 · <b>左键点地面</b> 点击移动 · <b>WASD/方向键</b> 移动（8 向） · <b>空格</b> 格挡 · <b>1-4</b> 技能 · <b>I</b> 背包<br>
-  <b>F</b> 进副本/出本 · 靠近掉落按 <b>F</b>（走近自动拾取） · <b>滚轮</b> 缩放 · <b>拖拽</b> 平移 · <b>双击</b> 回中<br>
+  <b>左键点敌人</b> 自动走近普攻 · <b>左键点地面</b> 点击移动 · <b>WASD/方向键</b> 移动（8 向） · <b>空格</b> 格挡 · <b>1-4</b> 技能（<b>烈斩/剑气/震地/破军</b>） · <b>I</b> 背包<br>
+  <b>F</b> 进副本/出本 · 靠近掉落自动拾取 · <b>滚轮</b> 缩放（相机锁定跟随，拖拽不平移） · 技能悬停查看描述<br>
   <b>装备</b>：背包内点「装备」穿装（攻击/生命/暴击立即提升） · 点击装备栏槽位卸下<br>
   <b>死亡</b>：倒地 10s 后自动复活回城 · 死亡不掉永久装备
 </div>
@@ -225,6 +234,15 @@ const BUF_MAX = 10;                     // 快照环缓冲帧数
 const PICKUP_HINT_RADIUS = 1.5 * TILE;  // 拾取提示半径（服务端 PICKUP_RADIUS=1×TILE 自动拾取）
 const SKILL_FX_RADIUS = 76;             // 技能光效半径（≈1.5 tile）
 const SKILL_FX_TTL = 300;               // 技能光效时长（ms）
+
+// ── C3 技能 HUD 本地表（服务端后续下发 SKILL_NAMES 前，先用本地表对齐；伤害/CD/范围镜像 sim-core constants）──
+const SKILL_INFO = [
+  { name: '烈斩', desc: '近战重击', dmg: 20, cd: 3.0, rangeTiles: 1.5 },
+  { name: '剑气', desc: '直线剑气波', dmg: 28, cd: 5.6, rangeTiles: 1.5 },
+  { name: '震地', desc: '范围震击', dmg: 16, cd: 6.8, rangeTiles: 1.5 },
+  { name: '破军', desc: '重击斩', dmg: 36, cd: 8.0, rangeTiles: 1.5 },
+];
+const SKILL_RANGE_TILES = 1.5;          // 技能范围（格，镜像 SKILL_RANGE=1.5×TILE）
 
 // 8 向单位向量（0=E 1=SE 2=S 3=SW 4=W 5=NW 6=N 7=NE；与服务端 dirToVector 对称）
 const DIR_VECTORS = [
@@ -292,55 +310,72 @@ const GAME = window.__game = {
   levelInfo: { level: 1, xp: 0, xpNext: 50 },
   // E10：倒地/复活状态（status 位驱动；E2E 断言钩子）
   downed: false, downedSinceTick: null, iframes: false,
+  // C3：相机锁定 + 渲染标志（E2E 断言钩子）
+  cam: { cx: 0, cy: 0, scale: 1, w: 0, h: 0 },
+  playerScreenPos: null, floatTexts: [], rendered: { enemies: [], lootSlots: [], entrance: false, player: 0 },
   // 调试钩子（仅 ?debug=1 生效；E2E 用）
   debugEnterDungeon: null, debugExitDungeon: null,
   toggleInventory: null, openInventory: null, closeInventory: null, sendSignal: null,
 };
 
-// ── 视图 / 摄像机 ──
+// ── 视图 / 摄像机（C3：锁定跟随本地玩家，只允许缩放；移除拖拽平移）──
 const view = { w: window.innerWidth, h: window.innerHeight, scale: 1.0, cx: ENTRANCE_POS.x, cy: ENTRANCE_POS.y, follow: true };
-let drag = null;          // 拖拽平移状态
-let clickStart = null;    // 潜在左键点击（mousedown 记录；位移 > CLICK_DRAG_TOL 转为拖拽）
+let drag = null;          // 拖拽检测状态（仅用于抑制点击动作；C3 相机不随拖拽移动）
+let clickStart = null;    // 潜在左键点击（mousedown 记录；位移 > CLICK_DRAG_TOL 视为拖拽 → 不触发点击）
+
+// C3：canvas 相对坐标（补偿 canvas 布局偏移；canvas 背板已按 devicePixelRatio 缩放、ctx.setTransform(dpr) 归一，
+// 因此 CSS 像素坐标与绘制坐标一致，无需再乘 dpr）。
+function clientToCanvas(clientX, clientY) {
+  const r = canvas.getBoundingClientRect();
+  return { x: clientX - r.left, y: clientY - r.top };
+}
+// screen → world：(screen - screenCenter) / zoom + cam（与 worldToScreen 严格互逆）
 function screenToWorld(sx, sy) {
   return { x: (sx - view.w / 2) / view.scale + view.cx, y: (sy - view.h / 2) / view.scale + view.cy };
+}
+// C3：相机 clamp —— 视野不露出世界（40×30 格）外空白；视野大于世界时居中。
+function clampCamera() {
+  const halfW = view.w / 2 / view.scale;
+  const halfH = view.h / 2 / view.scale;
+  if (view.w / view.scale >= WORLD_W) view.cx = WORLD_W / 2;
+  else view.cx = Math.max(halfW, Math.min(WORLD_W - halfW, view.cx));
+  if (view.h / view.scale >= WORLD_H) view.cy = WORLD_H / 2;
+  else view.cy = Math.max(halfH, Math.min(WORLD_H - halfH, view.cy));
 }
 canvas.addEventListener('wheel', (e) => {
   e.preventDefault();
   const f = e.deltaY > 0 ? 0.9 : 1.1;
   view.scale = Math.min(2.5, Math.max(0.45, view.scale * f));
-  if (!view.follow) snapFollow();
+  clampCamera(); // 缩放后相机 clamp（不露世界外空白）
 }, { passive: false });
 canvas.addEventListener('mousedown', (e) => {
   if (e.button !== 0) return; // 仅左键可能触发点击/拖拽；右键暂不绑定（E8 说明）
-  const w = screenToWorld(e.clientX, e.clientY);
-  clickStart = { x: e.clientX, y: e.clientY, moved: false, wx: w.x, wy: w.y };
+  const cs = clientToCanvas(e.clientX, e.clientY);
+  clickStart = { x: cs.x, y: cs.y, moved: false };
 });
 window.addEventListener('mousemove', (e) => {
   if (clickStart && !clickStart.moved) {
-    const dx = e.clientX - clickStart.x, dy = e.clientY - clickStart.y;
+    const cs = clientToCanvas(e.clientX, e.clientY);
+    const dx = cs.x - clickStart.x, dy = cs.y - clickStart.y;
     if (Math.hypot(dx, dy) > CLICK_DRAG_TOL) {
-      // 位移超阈值 → 转为拖拽平移（不触发点击动作；相机停止跟随）。
+      // 位移超阈值 → 视为拖拽（不触发点击动作；C3：相机锁定，拖拽不平移）。
       clickStart.moved = true;
-      drag = { x: e.clientX, y: e.clientY, cx: view.cx, cy: view.cy };
-      canvas.classList.add('panning');
-      view.follow = false;
+      drag = true;
     }
-  }
-  if (drag) {
-    view.cx = drag.cx - (e.clientX - drag.x) / view.scale;
-    view.cy = drag.cy - (e.clientY - drag.y) / view.scale;
   }
 });
 window.addEventListener('mouseup', (e) => {
-  if (drag) { drag = null; canvas.classList.remove('panning'); }
+  if (drag) { drag = null; }
   else if (clickStart && !clickStart.moved && e.button === 0) {
     // 左键点击（无位移）→ 交互动作：点敌人点选攻击 / 点地面点击移动（E8）。
-    handleClick(clickStart.wx, clickStart.wy);
+    // C3：以 mouseup 时刻的相机重算世界坐标（防 mousedown→mouseup 间相机/角色位移导致落点偏）。
+    const cs = clientToCanvas(e.clientX, e.clientY);
+    const w = screenToWorld(cs.x, cs.y);
+    handleClick(w.x, w.y);
   }
   clickStart = null;
 });
-canvas.addEventListener('dblclick', snapFollow);
-function snapFollow() { view.follow = true; }
+canvas.addEventListener('dblclick', () => { view.follow = true; });
 
 // ── 状态 ──
 let state = 'connecting';           // connecting | overworld | dungeon | reconnecting | closed
@@ -789,17 +824,19 @@ function handleSnapshot(snap) {
 function recordHit(e, dmg, isLocal, isEnemy) {
   const t = performance.now();
   const color = isLocal ? '#ff5a5a' : (isEnemy ? '#ffd27d' : '#ffffff');
-  floatTexts.push({ x: e.pos.x, y: e.pos.y - 22, text: '-' + dmg, color, born: t, ttl: 1000, vy: -30 });
+  // C3：飘字锚定实体（entityId + 头顶偏移 offY）；绘制时每帧按实体最新渲染位置换算屏幕坐标（跟随实体移动/相机）。
+  const offY = isLocal ? -52 : (e.kind === KIND.BOSS ? -48 : -34);
+  floatTexts.push({ entityId: e.id, x: e.pos.x, y: e.pos.y, offY, text: '-' + dmg, color, born: t, ttl: 1000, vy: -30 });
   hitFlashes.set(e.id, t + 150); // 150ms 闪白
   rings.push({ x: e.pos.x, y: e.pos.y, color, born: t, ttl: 220, r0: 8, r1: isLocal ? 34 : 30 });
 
-  // E2E 钩子：最近飘字
-  GAME.lastHits.push({ id: e.id, dmg, kind: e.kind, t });
+  // E2E 钩子：最近飘字（含 entityId —— C3 断言「飘字跟随实体」）
+  GAME.lastHits.push({ id: e.id, entityId: e.id, dmg, kind: e.kind, t });
   if (GAME.lastHits.length > 30) GAME.lastHits.shift();
 
   if (isLocal && GAME.parryActive) {
     // 格挡生效（受击时 parry 窗口激活）→ 「格挡！」+ 盾闪
-    floatTexts.push({ x: e.pos.x, y: e.pos.y - 48, text: '格挡！', color: '#5fd0e0', born: t, ttl: 900, vy: -24 });
+    floatTexts.push({ entityId: e.id, x: e.pos.x, y: e.pos.y, offY: -72, text: '格挡！', color: '#5fd0e0', born: t, ttl: 900, vy: -24 });
     parryFx.until = t + 400;
     rings.push({ x: e.pos.x, y: e.pos.y, color: '#5fd0e0', born: t, ttl: 300, r0: 20, r1: 46 });
   }
@@ -840,6 +877,10 @@ function updateHud() {
     if (GAME.skillCd[i] > 0) {
       if (!cdEl) { cdEl = document.createElement('div'); cdEl.className = 'cd'; btn.appendChild(cdEl); }
       cdEl.textContent = (GAME.skillCd[i] / TICK_RATE).toFixed(1) + 's';
+      // C3：冷却环（conic 扫角 = 剩余 CD 占比；数字保留在环上）
+      const maxTicks = Math.max(1, Math.round((SKILL_INFO[i] ? SKILL_INFO[i].cd : 3) * TICK_RATE));
+      const remain = Math.max(0, Math.min(1, GAME.skillCd[i] / maxTicks));
+      cdEl.style.background = 'conic-gradient(rgba(242,160,60,0.5) ' + ((1 - remain) * 360).toFixed(1) + 'deg, rgba(8,10,14,0.78) 0deg)';
     } else if (cdEl) cdEl.remove();
   }
 
@@ -996,6 +1037,9 @@ function enemyHitRadius(e) {
 
 // E8：左键点击 → 命中敌人/BOSS → 点选（红圈）并自动走近普攻；命中地面 → 点击移动。
 // 交互优先级：左键点敌人 → 攻击；左键点地面 → 移动；右键暂不绑定。
+// C3 定位修正：
+//   - 命中检测用「渲染位置」（renderPosFor，与玩家所见一致），修复点怪落点偏（此前用权威 pos，移动敌人可差 ~250ms×移速）；
+//   - 命中半径用**屏幕空间**（× view.scale），缩放任意档位点击手感一致（修复低缩放时点怪困难）。
 function handleClick(wx, wy) {
   if (downed) return; // E10：倒地点击交互失效（点选/点击移动不发命令）
   if (!lastSnapshot || localEntityId == null) return;
@@ -1004,8 +1048,11 @@ function handleClick(wx, wy) {
   let hit = null, bestD = Infinity;
   for (const e of lastSnapshot.entities) {
     if ((e.kind !== KIND.ENEMY && e.kind !== KIND.BOSS) || e.hp <= 0) continue;
-    const d = Math.hypot(e.pos.x - wx, e.pos.y - wy);
-    if (d <= enemyHitRadius(e) && d < bestD) { bestD = d; hit = e; }
+    const rp = renderPosFor(e) || e.pos;
+    // 屏幕空间距离（世界差 × zoom），命中半径固定屏幕像素（缩放无关）。
+    const d = Math.hypot((rp.x - wx) * view.scale, (rp.y - wy) * view.scale);
+    const hitR = Math.max(15, enemyHitRadius(e) * 0.75);
+    if (d <= hitR && d < bestD) { bestD = d; hit = e; }
   }
   if (hit) {
     selectedEnemyId = hit.id;
@@ -1131,6 +1178,24 @@ window.addEventListener('beforeunload', () => {
 // 技能/格挡/背包按钮
 for (let i = 0; i < 4; i++) {
   document.getElementById('btn-skill-' + i).addEventListener('click', () => fireAction(() => sendSkill(i)));
+}
+// C3：技能悬停 tooltip（名称/描述/伤害/范围/CD）
+const skillTipEl = document.getElementById('skill-tip');
+function showSkillTip(i, e) {
+  const s = SKILL_INFO[i]; if (!s) return;
+  skillTipEl.innerHTML = '<div class="t-name">' + s.name + '</div><div class="t-desc">' + s.desc + '</div>'
+    + '<div class="t-meta">伤害 ' + s.dmg + ' · 范围 ' + s.rangeTiles.toFixed(1) + ' 格 · CD ' + s.cd.toFixed(1) + 's</div>';
+  skillTipEl.style.display = 'block';
+  const pad = 14;
+  skillTipEl.style.left = Math.min(e.clientX + pad, window.innerWidth - 270) + 'px';
+  skillTipEl.style.top = Math.max(8, e.clientY - 40) + 'px';
+}
+function hideSkillTip() { skillTipEl.style.display = 'none'; }
+for (let i = 0; i < 4; i++) {
+  const b = document.getElementById('btn-skill-' + i);
+  b.addEventListener('mouseenter', (e) => showSkillTip(i, e));
+  b.addEventListener('mousemove', (e) => showSkillTip(i, e));
+  b.addEventListener('mouseleave', hideSkillTip);
 }
 document.getElementById('btn-parry').addEventListener('click', () => fireAction(sendParry));
 dungeonBtn.addEventListener('click', toggleDungeon);
@@ -1300,6 +1365,15 @@ function renderPosFor(e) {
   return interpPos(e.id, renderTime);
 }
 
+// C3：任意实体的当前渲染位置（本地=预测；远端=插值；已消失=lastKnown 兜底）——伤害飘字锚定用。
+function entityRenderPos(id) {
+  if (id === localEntityId && predicted) return { x: predicted.x, y: predicted.y };
+  const cur = lastSnapshot ? lastSnapshot.entities.find((e) => e.id === id) : null;
+  if (cur) return renderPosFor(cur) || cur.pos;
+  const rec = lastKnown.get(id);
+  return rec ? { x: rec.ent.pos.x, y: rec.ent.pos.y } : null;
+}
+
 function draw() {
   requestAnimationFrame(draw);
   const t = performance.now();
@@ -1350,7 +1424,7 @@ function draw() {
   GAME.predicted = predicted ? { x: predicted.x, y: predicted.y } : null;
   GAME.localRenderPos = predicted ? { x: predicted.x, y: predicted.y } : null;
 
-  // 相机跟随本地玩家（预测位置 → 按键即时动，手感优先）
+  // C3 相机锁定跟随本地玩家（预测位置 → 按键即时动，手感优先）+ 世界边界 clamp（不露空白）
   if (view.follow) {
     if (predicted) { view.cx = predicted.x; view.cy = predicted.y; }
     else if (localEntityId != null) {
@@ -1358,7 +1432,11 @@ function draw() {
       if (p) { view.cx = p.x; view.cy = p.y; }
     }
   }
+  clampCamera();
   const camX = view.cx, camY = view.cy;
+  // C3 E2E 钩子：相机状态 + 本地玩家屏幕位置
+  GAME.cam = { cx: view.cx, cy: view.cy, scale: view.scale, w: view.w, h: view.h };
+  GAME.playerScreenPos = predicted ? worldToScreen(predicted) : null;
 
   ctx.fillStyle = '#14161c';
   ctx.fillRect(0, 0, view.w, view.h);
@@ -1464,20 +1542,18 @@ function drawPlayer(e, p) {
   // E10：复活无敌帧 → 半透明闪烁（alpha 呼吸；IFRAME 位由服务端权威驱动，到期即停）。
   if (isIframe) ctx.globalAlpha = 0.45 + 0.3 * Math.sin(performance.now() / 70);
 
-  // 身体（E10：倒地变灰；其余青色方块 + 描边）
-  ctx.fillStyle = isDowned ? (isLocal ? '#6a6e75' : '#565a60') : (isLocal ? '#4CB5F5' : '#3f87b8');
-  ctx.strokeStyle = isDowned ? (isLocal ? '#b9bdc4' : '#8a8e94') : (isLocal ? '#eaf6ff' : '#7fb3d9');
-  ctx.lineWidth = isLocal ? 2.5 : 1.5;
-  roundRect(-size / 2, -size / 2, size, size, 6);
-  ctx.fill(); ctx.stroke();
+  // C3：程序化斗笠侠客剪影（按 dir 朝向旋转；本地更亮；倒地灰色平躺）。IFRAME 闪烁 alpha 由外部层保留。
+  drawWuxiaHero(isLocal, isDowned, facing, size);
+  GAME.rendered.player++;
   ctx.globalAlpha = 1;
 
-  // C2 受击闪白（150ms）
+  // C2 受击闪白（150ms）——叠加在剪影上
   const flashUntil = hitFlashes.get(e.id);
   if (flashUntil && performance.now() < flashUntil) {
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    roundRect(-size / 2, -size / 2, size, size, 6);
-    ctx.fill();
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(0, 0, size / 2 + 2, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
   }
 
   // E10：倒地骷髅标记（白圆 + 双眼 + 嘴；替代朝向点/金圈）
@@ -1488,12 +1564,6 @@ function drawPlayer(e, p) {
     ctx.beginPath(); ctx.arc(-3.2, -1.5, 2, 0, Math.PI * 2); ctx.arc(3.2, -1.5, 2, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = '#22242a'; ctx.lineWidth = 1.4;
     ctx.beginPath(); ctx.moveTo(-3, 3.5); ctx.lineTo(3, 3.5); ctx.stroke();
-  } else {
-    // 朝向点
-    ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.arc(size * 0.28 * facing.x, size * 0.28 * facing.y, 4, 0, Math.PI * 2);
-    ctx.fill();
   }
 
   // 本地玩家金圈（倒地不显示）
@@ -1540,43 +1610,33 @@ function drawEnemy(e, p) {
   const isBoss = e.kind === KIND.BOSS;
   const isElite = e.tier === 1;
   const size = isBoss ? 52 : (isElite ? 34 : 26);
+  const variant = enemyVariant(e); // C3：确定性变体（山贼/野兽/暗影刺客/巨魔）
+  GAME.rendered.enemies.push({ id: e.id, variant, tier: e.tier || 0 });
 
   ctx.save();
   ctx.translate(s.x, s.y);
 
   const ang = e.dir * Math.PI / 4;
   const facing = { x: Math.cos(ang), y: Math.sin(ang) };
-  if (isBoss) {
-    ctx.fillStyle = '#7d1f2b';
-    ctx.strokeStyle = '#e5b25d';
-    ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.strokeStyle = 'rgba(229,178,93,0.35)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.arc(0, 0, size / 2 + 6, 0, Math.PI * 2); ctx.stroke();
-  } else {
-    ctx.fillStyle = isElite ? '#5f8fb0' : '#e5484d';
-    ctx.strokeStyle = isElite ? '#aad4ea' : '#ffb3b3';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    if (isElite) {
-      ctx.strokeStyle = 'rgba(95,208,224,0.8)';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.arc(0, 0, size / 2 + 4, 0, Math.PI * 2); ctx.stroke();
-    }
-  }
+  // C3：程序化武侠剪影（零外部资源，按变体分支绘制）
+  if (variant === 'troll') drawTroll(size);
+  else if (variant === 'shadow') drawShadowAssassin(size, facing);
+  else if (variant === 'savage') drawSavageWolf(size, facing);
+  else drawBrigand(size, facing);
 
   // C2 受击闪白（150ms）
   const flashUntil = hitFlashes.get(e.id);
   if (flashUntil && performance.now() < flashUntil) {
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = '#fff';
     ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
   }
 
-  // 朝向点
-  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  // 朝向点（剪影已表达朝向，仅保留微弱指示）
+  ctx.fillStyle = 'rgba(255,255,255,0.75)';
   ctx.beginPath();
-  ctx.arc(size * 0.30 * facing.x, size * 0.30 * facing.y, 3, 0, Math.PI * 2);
+  ctx.arc(size * 0.32 * facing.x, size * 0.32 * facing.y, 2.5, 0, Math.PI * 2);
   ctx.fill();
 
   // E8：选中敌人红圈（左键点选跟随；脉动呼吸）
@@ -1594,6 +1654,214 @@ function drawEnemy(e, p) {
   drawHpBar(s.x, s.y, isBoss ? 72 : (isElite ? 48 : 38), e.hp, e.maxHp, true);
   if (isBoss) { ctx.fillStyle = '#e5b25d'; ctx.font = '10px system-ui'; ctx.textAlign = 'center'; ctx.fillText('BOSS', s.x, s.y - 40); }
   else if (isElite) { ctx.fillStyle = '#5fd0e0'; ctx.font = '9px system-ui'; ctx.textAlign = 'center'; ctx.fillText('精英', s.x, s.y - 26); }
+}
+
+// ============================================================================
+// C3 程序化武侠剪影（零外部资源，纯 Canvas 路径；确定性；集中 drawEntity 分支）
+// ============================================================================
+// 协议未下发 enemyTypeId（C12），普通怪形状用实体 id 稳定哈希区分（同 id 恒同变体，D9 确定性）。
+function enemyVariant(e) {
+  if (e.kind === KIND.BOSS) return 'troll';
+  if (e.tier === 1) return 'shadow';
+  const h = ((e.id * 2654435761) >>> 0) ^ (e.id >>> 1);
+  return (h % 2 === 0) ? 'brigand' : 'savage';
+}
+
+// 斗笠侠客（玩家）：圆帽 + 披风 + 剑轮廓；按 facing 旋转朝向；本地更亮；倒地灰色。
+function drawWuxiaHero(isLocal, isDowned, facing, size) {
+  const R = size / 2;
+  const robe = isDowned ? '#5c5f66' : (isLocal ? '#2f4a66' : '#3a4d5e');
+  const robeHi = isDowned ? '#7a7d84' : (isLocal ? '#5a86ad' : '#55718a');
+  const hat = isDowned ? '#8d8a80' : '#c8a05c';
+  const blade = isDowned ? '#9aa0a8' : '#dce9ff';
+  const a = Math.atan2(facing.y, facing.x);
+  ctx.save();
+  ctx.rotate(a);
+  // 披风（身后左后飘）
+  ctx.fillStyle = robe;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.35, -R * 0.25);
+  ctx.quadraticCurveTo(-R * 1.5, 0, -R * 0.95, R * 0.5);
+  ctx.quadraticCurveTo(-R * 0.5, R * 0.25, -R * 0.15, R * 0.45);
+  ctx.closePath();
+  ctx.fill();
+  // 身体/袍（躯干 + 下摆）
+  ctx.fillStyle = robe;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.45, -R * 0.35);
+  ctx.lineTo(R * 0.35, -R * 0.3);
+  ctx.quadraticCurveTo(R * 0.55, 0, R * 0.3, R * 0.55);
+  ctx.quadraticCurveTo(0, R * 0.7, -R * 0.4, R * 0.5);
+  ctx.quadraticCurveTo(-R * 0.6, 0, -R * 0.45, -R * 0.35);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = robeHi; ctx.lineWidth = 1.2; ctx.stroke();
+  // 剑（朝 facing 方向伸出：剑身 + 护手）
+  ctx.strokeStyle = blade; ctx.lineWidth = Math.max(2.2, R * 0.15);
+  ctx.beginPath(); ctx.moveTo(R * 0.25, 0); ctx.lineTo(R * 1.15, 0); ctx.stroke();
+  ctx.strokeStyle = isDowned ? '#8d8d8d' : '#e8b64a'; ctx.lineWidth = Math.max(3, R * 0.2);
+  ctx.beginPath(); ctx.moveTo(R * 0.08, 0); ctx.lineTo(R * 0.6, 0); ctx.stroke();
+  // 斗笠（帽檐椭圆 + 帽顶两层）
+  ctx.fillStyle = hat;
+  ctx.beginPath(); ctx.ellipse(0, -R * 0.62, R * 0.85, R * 0.34, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = isDowned ? '#6e6c64' : '#a8813d';
+  ctx.beginPath(); ctx.arc(0, -R * 0.8, R * 0.34, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = isDowned ? '#8d8a80' : '#d9b96e';
+  ctx.beginPath(); ctx.arc(0, -R * 0.8, R * 0.18, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// 山贼（普通怪变体 A）：红头巾 + 粗布衣 + 短刀。
+function drawBrigand(size, facing) {
+  const R = size / 2;
+  const a = Math.atan2(facing.y, facing.x);
+  ctx.save();
+  ctx.rotate(a);
+  ctx.fillStyle = '#7a4a2b';
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.4, -R * 0.3);
+  ctx.lineTo(R * 0.3, -R * 0.32);
+  ctx.quadraticCurveTo(R * 0.5, 0, R * 0.28, R * 0.5);
+  ctx.quadraticCurveTo(0, R * 0.62, -R * 0.42, R * 0.48);
+  ctx.quadraticCurveTo(-R * 0.58, 0, -R * 0.4, -R * 0.3);
+  ctx.closePath(); ctx.fill();
+  // 头
+  ctx.fillStyle = '#c99a6b';
+  ctx.beginPath(); ctx.arc(0, -R * 0.55, R * 0.32, 0, Math.PI * 2); ctx.fill();
+  // 红头巾（额带 + 结）
+  ctx.fillStyle = '#c8323a';
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.44, -R * 0.64); ctx.lineTo(R * 0.44, -R * 0.64);
+  ctx.lineTo(R * 0.5, -R * 0.46); ctx.lineTo(-R * 0.5, -R * 0.46);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.arc(-R * 0.28, -R * 0.56, R * 0.13, 0, Math.PI * 2); ctx.fill();
+  // 短刀（朝前）
+  ctx.strokeStyle = '#e8eef7'; ctx.lineWidth = Math.max(2, R * 0.14);
+  ctx.beginPath(); ctx.moveTo(R * 0.22, 0); ctx.lineTo(R * 1.05, -R * 0.15); ctx.stroke();
+  ctx.strokeStyle = '#6b4a2a'; ctx.lineWidth = Math.max(2.6, R * 0.2);
+  ctx.beginPath(); ctx.moveTo(R * 0.18, 0); ctx.lineTo(R * 0.5, -R * 0.07); ctx.stroke();
+  ctx.restore();
+}
+
+// 野兽/狼（普通怪变体 B）：拉长躯干 + 吻 + 耳 + 尾 + 四腿，眼泛凶光。
+function drawSavageWolf(size, facing) {
+  const R = size / 2;
+  const a = Math.atan2(facing.y, facing.x);
+  ctx.save();
+  ctx.rotate(a);
+  const body = '#5a5f6a';
+  // 躯干
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.ellipse(R * 0.2, 0, R * 0.95, R * 0.45, 0, 0, Math.PI * 2); ctx.fill();
+  // 尾
+  ctx.strokeStyle = body; ctx.lineWidth = Math.max(2.4, R * 0.18);
+  ctx.beginPath(); ctx.moveTo(-R * 0.7, 0); ctx.quadraticCurveTo(-R * 1.05, -R * 0.3, -R * 1.15, -R * 0.55); ctx.stroke();
+  // 腿（前 2 后 2）
+  ctx.strokeStyle = body; ctx.lineWidth = Math.max(2.2, R * 0.16);
+  ctx.beginPath();
+  ctx.moveTo(R * 0.55, R * 0.3); ctx.lineTo(R * 0.55, R * 0.85);
+  ctx.moveTo(R * 0.25, R * 0.35); ctx.lineTo(R * 0.25, R * 0.88);
+  ctx.moveTo(-R * 0.25, R * 0.32); ctx.lineTo(-R * 0.25, R * 0.85);
+  ctx.moveTo(-R * 0.55, R * 0.28); ctx.lineTo(-R * 0.55, R * 0.82);
+  ctx.stroke();
+  // 头 + 吻 + 双耳
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.arc(R * 0.85, -R * 0.12, R * 0.4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(R * 0.9, -R * 0.25); ctx.lineTo(R * 1.55, -R * 0.05); ctx.lineTo(R * 0.95, R * 0.12); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(R * 0.72, -R * 0.42); ctx.lineTo(R * 0.88, -R * 0.72); ctx.lineTo(R * 1.02, -R * 0.42); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(R * 1.05, -R * 0.3); ctx.lineTo(R * 1.25, -R * 0.52); ctx.lineTo(R * 1.2, -R * 0.18); ctx.closePath(); ctx.fill();
+  // 眼
+  ctx.fillStyle = '#ffd27d';
+  ctx.beginPath(); ctx.arc(R * 1.02, -R * 0.16, R * 0.07, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// 暗影刺客（精英）：尖兜帽 + 披风 + 匕首，暗紫调 + 幽青眼。
+function drawShadowAssassin(size, facing) {
+  const R = size / 2;
+  const a = Math.atan2(facing.y, facing.x);
+  ctx.save();
+  ctx.rotate(a);
+  const cloak = '#4a2a5e', cloakHi = '#7a4a9e';
+  // 兜帽（尖顶）
+  ctx.fillStyle = cloak;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.5, -R * 0.2);
+  ctx.quadraticCurveTo(-R * 0.45, -R * 0.8, 0, -R * 0.95);
+  ctx.quadraticCurveTo(R * 0.45, -R * 0.8, R * 0.5, -R * 0.2);
+  ctx.closePath(); ctx.fill();
+  // 披风（身后）
+  ctx.fillStyle = cloak;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.5, -R * 0.15);
+  ctx.quadraticCurveTo(-R * 1.3, R * 0.2, -R * 0.9, R * 0.85);
+  ctx.quadraticCurveTo(-R * 0.4, R * 0.6, -R * 0.15, R * 0.5);
+  ctx.closePath(); ctx.fill();
+  // 身体
+  ctx.fillStyle = cloak;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.45, -R * 0.3);
+  ctx.quadraticCurveTo(R * 0.5, -R * 0.35, R * 0.45, R * 0.05);
+  ctx.quadraticCurveTo(R * 0.5, R * 0.5, 0, R * 0.62);
+  ctx.quadraticCurveTo(-R * 0.5, R * 0.5, -R * 0.45, -R * 0.3);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = cloakHi; ctx.lineWidth = 1.4; ctx.stroke();
+  // 匕首
+  ctx.strokeStyle = '#d9c8f2'; ctx.lineWidth = Math.max(2, R * 0.12);
+  ctx.beginPath(); ctx.moveTo(R * 0.25, 0); ctx.lineTo(R * 1.1, -R * 0.2); ctx.stroke();
+  // 幽青眼
+  ctx.fillStyle = '#5fd0e0';
+  ctx.beginPath(); ctx.arc(R * 0.12, -R * 0.42, R * 0.08, 0, Math.PI * 2); ctx.arc(-R * 0.12, -R * 0.42, R * 0.08, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// 巨魔（BOSS）：巨块身躯 + 弯曲双角 + 金红眼 + 两侧巨拳，深色调。
+function drawTroll(size) {
+  const R = size / 2;
+  ctx.save();
+  const pulse = 1 + 0.03 * Math.sin(performance.now() / 500);
+  ctx.scale(pulse, pulse);
+  const skin = '#4a2f28', dark = '#2c1b16', horn = '#c9a06a';
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.65, -R * 0.55);
+  ctx.quadraticCurveTo(0, -R * 0.85, R * 0.65, -R * 0.5);
+  ctx.lineTo(R * 0.75, R * 0.55);
+  ctx.quadraticCurveTo(0, R * 0.8, -R * 0.75, R * 0.55);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = dark; ctx.lineWidth = 2; ctx.stroke();
+  // 双角
+  ctx.strokeStyle = horn; ctx.lineWidth = Math.max(4, R * 0.18);
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.45, -R * 0.72); ctx.quadraticCurveTo(-R * 0.85, -R * 1.1, -R * 0.75, -R * 1.35); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(R * 0.45, -R * 0.72); ctx.quadraticCurveTo(R * 0.85, -R * 1.1, R * 0.75, -R * 1.35); ctx.stroke();
+  // 眼睛
+  ctx.fillStyle = '#e5b25d';
+  ctx.beginPath(); ctx.arc(-R * 0.22, -R * 0.35, R * 0.1, 0, Math.PI * 2); ctx.arc(R * 0.22, -R * 0.35, R * 0.1, 0, Math.PI * 2); ctx.fill();
+  // 巨拳
+  ctx.fillStyle = dark;
+  ctx.beginPath(); ctx.arc(-R * 0.8, R * 0.3, R * 0.3, 0, Math.PI * 2); ctx.arc(R * 0.8, R * 0.3, R * 0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// C3：地面掉落物品剪影（武器/护甲/饰品，稀有度色；slot = itemId % 3 镜像服务端 itemProto）。
+function drawLootIcon(slot, color) {
+  ctx.save();
+  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
+  if (slot === 0) { // 武器（剑）
+    ctx.beginPath(); ctx.moveTo(0, -7); ctx.lineTo(1.6, 6); ctx.lineTo(-1.6, 6); ctx.closePath(); ctx.fill();
+    ctx.fillRect(-2.6, 4, 5.2, 2);
+  } else if (slot === 1) { // 护甲（盾）
+    ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(20,22,28,0.7)'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(0, -4); ctx.lineTo(0, 4); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, 2.2, 0, Math.PI * 2); ctx.stroke();
+  } else { // 饰品（戒指/宝石）
+    ctx.beginPath(); ctx.arc(0, 0, 4.6, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
 }
 
 function drawLoot(e, p) {
@@ -1635,6 +1903,10 @@ function drawLoot(e, p) {
   ctx.shadowBlur = 0;
   ctx.fillStyle = 'rgba(255,255,255,0.9)';
   ctx.beginPath(); ctx.arc(0, 0, 2.5, 0, Math.PI * 2); ctx.fill();
+  // C3：物品小图标（武器/护甲/饰品剪影，按 itemId % 3 槽位；镜像服务端 itemProto）
+  const slotIdx = e.loot ? (((e.loot.itemId % 3) + 3) % 3) : 0;
+  drawLootIcon(slotIdx, color);
+  GAME.rendered.lootSlots.push(slotIdx);
   ctx.restore();
 
   // C2 名字放大 + 描边 + 脉动
@@ -1667,6 +1939,13 @@ function drawEntrance(e, p) {
 
   ctx.save();
   ctx.translate(s.x, s.y);
+  // C3：旋转光晕增强（外发光径向渐变，呼吸）
+  const glow = ctx.createRadialGradient(0, 0, 4, 0, 0, 42 + Math.sin(t * 1.8) * 6);
+  glow.addColorStop(0, 'rgba(200,150,255,0.38)');
+  glow.addColorStop(1, 'rgba(155,95,214,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.arc(0, 0, 46, 0, Math.PI * 2); ctx.fill();
+  GAME.rendered.entrance = true;
   // 旋转涡流（裂隙异象）
   for (let i = 0; i < 3; i++) {
     const rr = 18 + i * 10 + Math.sin(t * 2 + i) * 3;
@@ -1730,6 +2009,8 @@ function drawTelegraphs() {
 
 function drawEntities() {
   if (!lastSnapshot) return;
+  // C3 E2E 钩子：每帧重置渲染标志（drawPlayer/drawEnemy/drawLoot/drawEntrance 内填充）
+  GAME.rendered = { enemies: [], lootSlots: [], entrance: false, player: 0 };
   // 入口画在实体底层
   for (const e of lastSnapshot.entities) {
     if (e.kind !== KIND.ENTRANCE) continue;
@@ -1811,13 +2092,19 @@ function drawEntities() {
 function drawFx() {
   const t = performance.now();
 
-  // 伤害飘字（1s 淡出上飘）
+  // 伤害飘字（1s 淡出上飘）—— C3：锚定实体当前渲染位置（每帧换算屏幕坐标），实体/相机移动时飘字跟随。
   for (let i = floatTexts.length - 1; i >= 0; i--) {
     const f = floatTexts[i];
     const age = t - f.born;
     if (age > f.ttl) { floatTexts.splice(i, 1); continue; }
     const k = age / f.ttl;
-    const s = worldToScreen({ x: f.x, y: f.y + f.vy * age / 1000 });
+    let ax = f.x, ay = f.y;
+    if (f.entityId != null) {
+      const anchor = entityRenderPos(f.entityId);
+      if (anchor) { ax = anchor.x; ay = anchor.y; }
+    }
+    const s = worldToScreen({ x: ax, y: ay + (f.offY || 0) + f.vy * age / 1000 });
+    f.screen = { x: s.x, y: s.y }; // C3 E2E：飘字当前屏幕位置（断言跟随用）
     ctx.save();
     ctx.globalAlpha = 1 - k * k;
     ctx.font = 'bold 15px system-ui';
@@ -1829,6 +2116,7 @@ function drawFx() {
     ctx.fillText(f.text, s.x, s.y);
     ctx.restore();
   }
+  GAME.floatTexts = floatTexts.map((f) => ({ entityId: f.entityId, text: f.text, screen: f.screen || null }));
 
   // 命中/格挡扩散环
   for (let i = rings.length - 1; i >= 0; i--) {

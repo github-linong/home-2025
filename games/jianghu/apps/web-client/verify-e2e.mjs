@@ -22,6 +22,12 @@
  *      L6 装备穿戴（E7.2：点装备 → 槽位变化）
  *      M1 鼠标左键点空地 → 点击移动（玩家位置向目标点移动）
  *      M2 鼠标左键点敌人 → 自动走近 + 普攻命中（敌人 hp 下降 + lastHits 有普攻记录）
+ *      C3-1 相机锁定（玩家屏幕位置恒定在屏内 + cam clamp 不露世界外）
+ *      C3-3 飘字跟随（lastHits 含 entityId；floatTexts 锚定实体且屏幕位置随实体）
+ *      C3-2 点击定位（点 tile 中心 → moveTo 世界坐标误差 < 20px）
+ *      C3-4 禁平移（拖拽后 cam 不动 + 不触发点击）
+ *      C3-5 技能名 HUD（烈斩/剑气/震地/破军）
+ *      C3-6 程序化贴图（玩家剪影 / 敌人变体 / 掉落图标 / 入口增强）
  *      C  技能被服务端接受（skillCd>0）
  *      D  真实输入 walk+F 进副本（超时兜底 debug 钩子）
  *      E  技能命中敌人（HP 下降，服务端权威）
@@ -368,12 +374,16 @@ const main = async () => {
       const g = window.__game, s = g.lastSnapshot;
       const me = s && s.entities.find((e) => e.id === g.localEntityId);
       if (!me || !g.worldToScreen) return null;
+      // C3：以 predicted 为相机中心参照（更贴近渲染所见）；目标点需在屏幕内（相机锁定+clamp 后避免点到屏外）。
+      const mx = g.predicted ? g.predicted.x : me.pos.x;
+      const my = g.predicted ? g.predicted.y : me.pos.y;
       const dirs = [
         { dx: 3, dy: 0 }, { dx: -3, dy: 0 }, { dx: 0, dy: 3 }, { dx: 0, dy: -3 },
         { dx: 2, dy: 2 }, { dx: -2, dy: 2 }, { dx: 2, dy: -2 }, { dx: -2, dy: -2 },
       ];
+      const W = g.cam ? g.cam.w : 1280, H = g.cam ? g.cam.h : 800;
       for (const d of dirs) {
-        const tx = me.pos.x + d.dx * 48, ty = me.pos.y + d.dy * 48;
+        const tx = mx + d.dx * 48, ty = my + d.dy * 48;
         let nearEnemy = false;
         for (const e of s.entities) {
           if ((e.kind !== 1 && e.kind !== 2) || e.hp <= 0) continue;
@@ -381,6 +391,7 @@ const main = async () => {
         }
         if (!nearEnemy) {
           const scr = g.worldToScreen({ x: tx, y: ty });
+          if (scr.x < 40 || scr.x > W - 40 || scr.y < 40 || scr.y > H - 40) continue; // 屏外跳过
           return { sx: scr.x, sy: scr.y, tx, ty, dir: d };
         }
       }
@@ -413,7 +424,19 @@ const main = async () => {
         if (d < bd) { bd = d; best = e; }
       }
       if (!best) return null;
-      const scr = g.worldToScreen({ x: best.pos.x, y: best.pos.y });
+      let scr = g.worldToScreen({ x: best.pos.x, y: best.pos.y });
+      // C3：最近敌人在屏外 → 点击屏外坐标无效（相机锁定后）；改选屏内最近敌人。
+      const W = g.cam ? g.cam.w : 1280, H = g.cam ? g.cam.h : 800;
+      if (scr.x < 30 || scr.x > W - 30 || scr.y < 30 || scr.y > H - 30) {
+        const onScreen = s.entities
+          .filter((e) => e.kind === 1 && e.hp > 0)
+          .map((e) => ({ e, sc: g.worldToScreen({ x: e.pos.x, y: e.pos.y }) }))
+          .filter((o) => o.sc.x >= 30 && o.sc.x <= W - 30 && o.sc.y >= 30 && o.sc.y <= H - 30)
+          .sort((a, b) => Math.hypot(a.e.pos.x - me.pos.x, a.e.pos.y - me.pos.y) - Math.hypot(b.e.pos.x - me.pos.x, b.e.pos.y - me.pos.y))[0];
+        if (!onScreen) return null;
+        best = onScreen.e;
+        scr = onScreen.sc;
+      }
       return { id: best.id, hp: best.hp, sx: scr.x, sy: scr.y, d: bd };
     });
     if (enemyClick) {
@@ -436,6 +459,200 @@ const main = async () => {
       await page.evaluate(() => window.__game.clearClickTargets());
     } else {
       record("M2 左键点敌人→走近+普攻命中", false, "SKIPPED（主世界无敌人）");
+    }
+
+    // ── C3 客户端体验大修断言（相机锁定/飘字跟随/点击定位/禁平移/技能名/贴图）──
+    // C3-3 飘字跟随：lastHits 含 entityId；floatTexts 锚定存活实体且屏幕位置在实体头顶附近（上飘容差）。
+    {
+      // 确保有一发新鲜受击飘字（M2 可能已把目标击杀 → 点击屏内最近敌人补一发普攻）。
+      const picked = await page.evaluate(() => {
+        const g = window.__game, s = g.lastSnapshot;
+        if (!s || g.localEntityId == null || !g.worldToScreen) return null;
+        const me = s.entities.find((e) => e.id === g.localEntityId);
+        if (!me) return null;
+        const W = g.cam ? g.cam.w : 1280, H = g.cam ? g.cam.h : 800;
+        let best = null, bd = Infinity;
+        for (const e of s.entities) {
+          if (e.kind !== 1 || e.hp <= 0) continue;
+          const scr = g.worldToScreen(e.pos);
+          if (scr.x < 30 || scr.x > W - 30 || scr.y < 30 || scr.y > H - 30) continue;
+          const d = Math.hypot(e.pos.x - me.pos.x, e.pos.y - me.pos.y);
+          if (d < bd) { bd = d; best = { id: e.id, sx: scr.x, sy: scr.y }; }
+        }
+        return best;
+      });
+      if (picked) {
+        await page.mouse.click(picked.sx, picked.sy);
+        await sleep(200);
+      }
+      const ftOk = await waitFor(page, "window.__game.floatTexts.some(f => f.entityId != null)", 6000, "float text entityId");
+      const ft = await page.evaluate(() => ({
+        lastHits: window.__game.lastHits.slice(-8),
+        floatTexts: window.__game.floatTexts.slice(-8),
+        entities: window.__game.lastSnapshot.entities
+          .filter((e) => e.kind === 0 || e.kind === 1 || e.kind === 2)
+          .map((e) => ({ id: e.id, kind: e.kind, x: e.pos.x, y: e.pos.y })),
+      }));
+      const hitsHaveId = ft.lastHits.length > 0 && ft.lastHits.every((h) => h.entityId != null);
+      let followOk = false, followNote = "无锚定存活实体的飘字";
+      const live = new Set(ft.entities.map((e) => e.id));
+      const cand = ft.floatTexts.find((f) => f.entityId != null && live.has(f.entityId) && f.screen);
+      if (cand) {
+        const en = ft.entities.find((e) => e.id === cand.entityId);
+        const es = await page.evaluate((en) => {
+          const g = window.__game;
+          const p = g.lastSnapshot.entities.find((e) => e.id === en.id);
+          return p ? g.worldToScreen(p.pos) : null;
+        }, en);
+        if (es) {
+          const dx = Math.abs(cand.screen.x - es.x);
+          const dy = es.y - cand.screen.y; // 飘字应在实体上方（dy>0）
+          followOk = dx < 70 && dy > 0 && dy < 90;
+          followNote = `text="${cand.text}" 实体#${cand.entityId} screen=(${cand.screen.x.toFixed(0)},${cand.screen.y.toFixed(0)}) 实体=(${es.x.toFixed(0)},${es.y.toFixed(0)}) dx=${dx.toFixed(0)} 上偏=${dy.toFixed(0)}px`;
+        }
+      }
+      record("C3-3 飘字跟随(锚定实体+屏幕随实体)", hitsHaveId && followOk,
+        hitsHaveId ? `lastHits=${ft.lastHits.length}条含entityId；${followNote}` : `lastHits=${ft.lastHits.length} 无 entityId`);
+      await page.evaluate(() => window.__game.clearClickTargets());
+    }
+
+    // C3-1 相机锁定：移动中玩家屏幕位置恒定在屏内（边距 30px），cam clamp 不露世界外空白。
+    {
+      const lockSamples = [];
+      await page.keyboard.down("KeyW");
+      for (let i = 0; i < 5; i++) { await sleep(120); lockSamples.push(await page.evaluate(() => window.__game.playerScreenPos)); }
+      await page.keyboard.up("KeyW");
+      await sleep(120);
+      const camInfo = await page.evaluate(() => ({ ...window.__game.cam }));
+      const inBounds = lockSamples.filter((p) => p && p.x >= 30 && p.x <= camInfo.w - 30 && p.y >= 30 && p.y <= camInfo.h - 30).length;
+      const halfW = camInfo.w / 2 / camInfo.scale, halfH = camInfo.h / 2 / camInfo.scale;
+      const camInside = camInfo.cx >= Math.min(halfW, 960) - 1 && camInfo.cx <= Math.max(1920 - halfW, 960) + 1
+        && camInfo.cy >= Math.min(halfH, 720) - 1 && camInfo.cy <= Math.max(1440 - halfH, 720) + 1;
+      record("C3-1 相机锁定(玩家在屏内+clamp)", lockSamples.length > 0 && inBounds === lockSamples.length && camInside,
+        lockSamples.length ? `samples=${inBounds}/${lockSamples.length} cam=(${camInfo.cx.toFixed(0)},${camInfo.cy.toFixed(0)})@${camInfo.scale}` : "no samples");
+      await page.screenshot({ path: path.join(OUT_DIR, "09-camera-lock.png") });
+    }
+
+    // C3-2 点击定位：点屏幕某点（tile 中心）→ moveTo 世界坐标与点击点误差 < 20px（且玩家实际位移）。
+    {
+      const clickTarget = await page.evaluate(() => {
+        const g = window.__game, s = g.lastSnapshot;
+        if (!s || g.localEntityId == null || !g.worldToScreen) return null;
+        const me = s.entities.find((e) => e.id === g.localEntityId);
+        if (!me) return null;
+        const mx = g.predicted ? g.predicted.x : me.pos.x;
+        const my = g.predicted ? g.predicted.y : me.pos.y;
+        const W = g.cam ? g.cam.w : 1280, H = g.cam ? g.cam.h : 800;
+        const dirs = [
+          { dx: 2, dy: 0 }, { dx: -2, dy: 0 }, { dx: 0, dy: 2 }, { dx: 0, dy: -2 },
+          { dx: 2, dy: 2 }, { dx: -2, dy: 2 }, { dx: 2, dy: -2 }, { dx: -2, dy: -2 },
+        ];
+        for (const d of dirs) {
+          const gx = Math.max(0, Math.min(39, Math.round((mx + d.dx * 48) / 48)));
+          const gy = Math.max(0, Math.min(29, Math.round((my + d.dy * 48) / 48)));
+          const tx = gx * 48 + 24, ty = gy * 48 + 24; // tile 中心（协议目标 = tile 中心）
+          let nearEnemy = false;
+          for (const e of s.entities) {
+            if ((e.kind !== 1 && e.kind !== 2) || e.hp <= 0) continue;
+            if (Math.hypot(e.pos.x - tx, e.pos.y - ty) < 40) { nearEnemy = true; break; }
+          }
+          if (nearEnemy) continue;
+          const scr = g.worldToScreen({ x: tx, y: ty });
+          if (scr.x < 30 || scr.x > W - 30 || scr.y < 30 || scr.y > H - 30) continue;
+          return { sx: scr.x, sy: scr.y, gx, gy, tx, ty };
+        }
+        return null;
+      });
+      if (clickTarget) {
+        const posBefore = await page.evaluate(() => ({ ...window.__game.lastLocalPos }));
+        await page.mouse.click(clickTarget.sx, clickTarget.sy);
+        await sleep(150);
+        const got = await page.evaluate(() => window.__game.lastClickMove);
+        const err = got ? Math.hypot(got.gx * 48 + 24 - got.wx, got.gy * 48 + 24 - got.wy) : Infinity;
+        const targetOk = got && Math.hypot(got.gx * 48 + 24 - clickTarget.tx, got.gy * 48 + 24 - clickTarget.ty) < 20;
+        const posAfter = await page.evaluate(() => ({ ...window.__game.lastLocalPos }));
+        const moved = Math.hypot(posAfter.x - posBefore.x, posAfter.y - posBefore.y) > 5;
+        record("C3-2 点击定位(误差<20px)", targetOk && err < 20,
+          `点击 tile=(${clickTarget.gx},${clickTarget.gy}) → moveTo gx,gy=(${got ? got.gx : '-'},${got ? got.gy : '-'}) 点击点→目标中心误差=${err.toFixed(1)}px 玩家位移=${Math.hypot(posAfter.x - posBefore.x, posAfter.y - posBefore.y).toFixed(0)}px`);
+        await page.screenshot({ path: path.join(OUT_DIR, "10-click-accuracy.png") });
+        await page.evaluate(() => window.__game.clearClickTargets());
+      } else {
+        record("C3-2 点击定位(误差<20px)", false, "SKIPPED（无空闲 tile 中心在屏内）");
+      }
+    }
+
+    // C3-4 禁平移：拖拽后 cam 不变（scale/cx/cy 位移 < 0.5px），且不触发点击动作（target 不变）。
+    {
+      const before = await page.evaluate(() => ({
+        cam: { ...window.__game.cam },
+        mt: window.__game.moveTarget, ct: window.__game.combatTarget, se: window.__game.selectedEnemyId,
+      }));
+      await page.mouse.move(before.cam.w / 2, before.cam.h / 2);
+      await page.mouse.down();
+      await page.mouse.move(before.cam.w / 2 + 90, before.cam.h / 2 + 40, { steps: 6 });
+      await page.mouse.up();
+      await sleep(200);
+      const after = await page.evaluate(() => ({
+        cam: { ...window.__game.cam },
+        mt: window.__game.moveTarget, ct: window.__game.combatTarget, se: window.__game.selectedEnemyId,
+      }));
+      const camMoved = Math.hypot(after.cam.cx - before.cam.cx, after.cam.cy - before.cam.cy);
+      const scaleSame = Math.abs(after.cam.scale - before.cam.scale) < 0.001;
+      const noClick = after.mt === before.mt && after.ct === before.ct && after.se === before.se;
+      record("C3-4 禁平移(拖拽相机不动+不触发点击)", camMoved < 0.5 && scaleSame && noClick,
+        `cam位移=${camMoved.toFixed(2)}px scale=${scaleSame} 点击目标不变=${noClick}`);
+    }
+
+    // C3-5 技能名 HUD：按钮 DOM 含「烈斩/剑气/震地/破军」。
+    {
+      const names = await page.evaluate(() => {
+        const ids = ['btn-skill-0', 'btn-skill-1', 'btn-skill-2', 'btn-skill-3'];
+        return ids.map((id) => document.getElementById(id) ? document.getElementById(id).textContent : '');
+      });
+      const hasAll = ['烈斩', '剑气', '震地', '破军'].every((n) => names.some((t) => t.includes(n)));
+      record("C3-5 技能名HUD(烈斩/剑气/震地/破军)", hasAll, names.join(" | "));
+    }
+
+    // C3-6 程序化贴图：__game.rendered 渲染标志（玩家剪影 / 敌人变体 / 掉落图标 / 入口增强）。
+    {
+      let rend = await page.evaluate(() => window.__game.rendered);
+      if (rend.enemies.length === 0) {
+        const en = await page.evaluate(() => {
+          const g = window.__game, s = g.lastSnapshot;
+          if (!s || g.localEntityId == null) return null;
+          const me = s.entities.find((e) => e.id === g.localEntityId);
+          let b = null, bd = Infinity;
+          for (const e of s.entities) { if (e.kind !== 1 || e.hp <= 0) continue; const d = Math.hypot(e.pos.x - me.pos.x, e.pos.y - me.pos.y); if (d < bd) { bd = d; b = e; } }
+          return b ? b.id : null;
+        });
+        if (en != null) {
+          const tExpr = `s.entities.find(e => e.id === ${en}) ? { x: s.entities.find(e => e.id === ${en}).pos.x, y: s.entities.find(e => e.id === ${en}).pos.y } : null`;
+          await walkToward(page, tExpr, 60, 20);
+          await sleep(150);
+          rend = await page.evaluate(() => window.__game.rendered);
+        }
+      }
+      if (rend.lootSlots.length === 0) {
+        const lt = await page.evaluate(() => {
+          const g = window.__game, s = g.lastSnapshot;
+          if (!s || g.localEntityId == null) return null;
+          const me = s.entities.find((e) => e.id === g.localEntityId);
+          let b = null, bd = Infinity;
+          for (const e of s.entities) { if (e.kind !== 3) continue; const d = Math.hypot(e.pos.x - me.pos.x, e.pos.y - me.pos.y); if (d < bd) { bd = d; b = e; } }
+          return b ? b.id : null;
+        });
+        if (lt != null) {
+          const tExpr = `s.entities.find(e => e.id === ${lt}) ? { x: s.entities.find(e => e.id === ${lt}).pos.x, y: s.entities.find(e => e.id === ${lt}).pos.y } : null`;
+          await walkToward(page, tExpr, 60, 20);
+          await sleep(150);
+          rend = await page.evaluate(() => window.__game.rendered);
+        }
+      }
+      const variants = rend.enemies.map((x) => x.variant);
+      const okSprite = rend.player >= 1 && rend.enemies.length > 0 && rend.lootSlots.length > 0;
+      record("C3-6 程序化贴图(剪影/变体/图标/入口)", okSprite,
+        `player=${rend.player} enemies=[${[...new Set(variants)].join(",")}] lootSlots=[${[...new Set(rend.lootSlots)].join(",")}] entrance=${rend.entrance}`);
+      await page.screenshot({ path: path.join(OUT_DIR, "11-sprites.png") });
     }
 
     // ── C. SKILL1（主世界无敌人：断言服务端接受 cast → skillCd>0）──
@@ -644,6 +861,7 @@ const main = async () => {
       "技能命中敌人受副本随机布局影响：未命中时以「服务端接受 cast(skillCd>0)」为次优断言；H2 击杀反馈为信息项不阻塞。",
       "重连测试用 CDP 模拟断网(服务端 ping 超时断开)→ 恢复后 session.reconnect。",
       "D3 E10 死亡体验为信息项：故意被精英/BOSS 击杀 → 断言 window.__game.downed（倒地红屏+倒计时）→ 复活回血（IFRAME 闪烁）。受副本随机布局影响，未触发不判 FAIL（不阻塞回归）。",
+      "C3 客户端体验大修：①相机锁定跟随本地玩家（clamp 到世界 40×30 格内，不露空白），拖拽不平移（仍抑制点击动作）②点击定位用 mouseup 时刻相机重算 + 命中检测用渲染位置与屏幕空间半径（缩放无关）③伤害飘字锚定实体当前渲染位置（世界空间，随实体/相机移动）④技能 HUD 本地名表（烈斩/剑气/震地/破军，服务端 E11 后对齐 SKILL_NAMES）⑤程序化武侠剪影（斗笠侠客/山贼/野兽/暗影刺客/巨魔 + 掉落物品图标 + 入口漩涡增强，零外部资源）。",
     ],
   }, null, 2));
   process.exit(failed.length > 0 ? 1 : 0);

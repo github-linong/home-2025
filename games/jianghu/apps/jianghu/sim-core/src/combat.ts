@@ -12,7 +12,7 @@
  *   - parry 仅以「类型」被 combat 引用（type-only 引用）满足 dependency-direction 静态契约；
  *   - combat 同时运行时调用 judgeParry（纪律 B 允许：parry 不反向依赖 combat）。
  */
-import { PARRY_REDUCTION, SKILL_DAMAGE, SKILL_RANGE, SKILL_CD_BY_SLOT } from "./constants.ts"; // C7 单一来源
+import { PARRY_REDUCTION, SKILL_DAMAGE, SKILL_RANGE_BY_SLOT, SKILL_CD_BY_SLOT } from "./constants.ts"; // C7 单一来源
 import { judgeParry } from "./parry.ts"; // 运行时（纪律 B 允许：combat 调用 parry，parry 不反向依赖 combat）
 import type { ParryJudgment, ParryView } from "./parry.ts"; // 仅类型（纪律 B 静态契约：dependency-direction 测试期望此 type 边存在）
 
@@ -74,10 +74,11 @@ export interface SkillDef {
   readonly cdTicks: number; // 冷却（tick）
 }
 
-/** 取某槽位技能定义（slot 越界自动归约到 0..3）。 */
+/** 取某槽位技能定义（slot 越界自动归约到 0..3）。
+ *  E11：range 按槽位差异化（SKILL_RANGE_BY_SLOT[slot]）；槽 0 与旧统一值 SKILL_RANGE 一致（golden 锚点）。 */
 export function getSkillDef(slot: number): SkillDef {
   const s = ((slot % SKILL_SLOTS) + SKILL_SLOTS) % SKILL_SLOTS;
-  return { slot: s, damage: SKILL_DAMAGE[s], range: SKILL_RANGE, cdTicks: SKILL_CD_BY_SLOT[s] };
+  return { slot: s, damage: SKILL_DAMAGE[s], range: SKILL_RANGE_BY_SLOT[s], cdTicks: SKILL_CD_BY_SLOT[s] };
 }
 
 /** 技能伤害意图（攻击者=玩家、目标=范围内敌人；几何命中由 world 执行）。 */
@@ -103,5 +104,7 @@ export const PARRY_REDUCTION_REF = PARRY_REDUCTION;
 /** 类型桥接（纪律 B）。 */
 export type { ParryJudgment };
 
-/** 导出战斗数值常量（测试 / 复用；C7 单一来源，实际值来自 constants.ts）。 */
-export { SKILL_DAMAGE, SKILL_RANGE } from "./constants.ts";
+/** 导出战斗数值常量（测试 / 复用；C7 单一来源，实际值来自 constants.ts）。
+ *  E11：新增 SKILL_RANGE_BY_SLOT / SKILL_NAMES / SKILL_DESCS 供客户端 HUD 与测试消费；
+ *  SKILL_RANGE 保留（= BY_SLOT[0]）作兼容引用。 */
+export { SKILL_DAMAGE, SKILL_RANGE, SKILL_RANGE_BY_SLOT, SKILL_NAMES, SKILL_DESCS } from "./constants.ts";

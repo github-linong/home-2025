@@ -200,19 +200,54 @@ export const ENEMY_BASE_HP = 30;
 /** 普通怪接触伤害基础（enemyContact = ENEMY_BASE_ATK * HP_MULT[tier]）。MVP 平衡初值（combat §⑥ 敌人接触伤害）。 */
 export const ENEMY_BASE_ATK = 8;
 
-/** 技能 CD 按槽位（tick），在 [SKILL_CD_MIN_TICKS, SKILL_CD_MAX_TICKS] 内按定位递增（combat §⑥ 3–8s）。 */
+/** 技能 CD 按槽位（tick），对齐 E11 定位表：烈斩 3s / 剑气 5s / 震地 4s / 破军 8s（combat §⑥ 3–8s）。 */
 export const SKILL_CD_BY_SLOT = [
-  SKILL_CD_MIN_TICKS, // 槽0 = 3s
-  Math.round((SKILL_CD_MIN_TICKS + SKILL_CD_MAX_TICKS) / 2 - 10), // 槽1 ≈ 5.6s
-  Math.round((SKILL_CD_MIN_TICKS + SKILL_CD_MAX_TICKS) / 2 + 10), // 槽2 ≈ 7.6s
-  SKILL_CD_MAX_TICKS, // 槽3 = 8s
+  SKILL_CD_MIN_TICKS, // 槽0 烈斩 = 3s（36 tick；playtest golden 锚点，勿改）
+  Math.round(5 * TICK_RATE), // 槽1 剑气 = 5s（60 tick）
+  Math.round(4 * TICK_RATE), // 槽2 震地 = 4s（48 tick）
+  SKILL_CD_MAX_TICKS, // 槽3 破军 = 8s（96 tick）
 ] as const;
 
 /** 技能基础伤害（pre-parry，按槽位区分定位；combat §⑥ 技能伤害 MVP 初值）。 */
 export const SKILL_DAMAGE = [20, 28, 16, 36] as const;
 
-/** 技能命中半径（px），圆形范围（MVP；combat §⑥ castRange）。1.5 tile。 */
-export const SKILL_RANGE = Math.round(1.5 * TILE);
+/**
+ * 技能命中半径按槽位（px），圆形范围（MVP；combat §⑥ castRange；E11 差异化）。
+ * - 槽 0 = 1.5 tile（**保持现值 72px，playtest golden 锚点**）；
+ * - 槽 1/2/3 从统一 1.5 tile 分化：2.5 / 2.0 / 1.8 tile（E11 定位：中距直线波 / 范围震击 / 重击爆发）。
+ * 注：数值已按定位分化；槽 1「剑气」的直线波为 Phase-2 视觉表现，MVP 一律圆形范围结算
+ * （几何差异在 world 技能结算注释中说明，见 world.ts）。
+ */
+export const SKILL_RANGE_BY_SLOT = [
+  Math.round(1.5 * TILE), // 槽0 烈斩 = 72px（保持，golden 锚点）
+  Math.round(2.5 * TILE), // 槽1 剑气 = 120px
+  Math.round(2.0 * TILE), // 槽2 震地 = 96px
+  Math.round(1.8 * TILE), // 槽3 破军 ≈ 86px
+] as const;
+
+/**
+ * 技能命中半径（px）——兼容引用 = 槽 0 值（1.5 tile）。
+ * E11 起单一来源为 SKILL_RANGE_BY_SLOT（C7）；本常量保留仅作旧引用兼容（= BY_SLOT[0]），
+ * 新代码一律用 SKILL_RANGE_BY_SLOT[slot]。
+ */
+export const SKILL_RANGE = SKILL_RANGE_BY_SLOT[0];
+
+/**
+ * 技能中文名（客户端 HUD 显示；E11 差异化定位，C7 单一来源）。
+ * 与 SKILL_DAMAGE / SKILL_RANGE_BY_SLOT / SKILL_CD_BY_SLOT 同槽位对齐（0..3）。
+ */
+export const SKILL_NAMES = ["烈斩", "剑气", "震地", "破军"] as const;
+
+/**
+ * 技能定位短描述（客户端 HUD 显示；E11）。
+ * 槽位对齐 SKILL_NAMES；客户端 index.html 显示部分由并行任务按本表实现（服务端仅导出）。
+ */
+export const SKILL_DESCS = [
+  "近战重击·高伤", // 槽0 烈斩：1.5 tile 近战主力，20 dmg / 3s
+  "直线剑气·中距", // 槽1 剑气：2.5 tile 中距波，28 dmg / 5s
+  "范围震击·群伤", // 槽2 震地：2.0 tile 范围震击，16 dmg / 4s
+  "破军斩·爆发",   // 槽3 破军：1.8 tile 重击爆发，36 dmg / 8s
+] as const;
 
 /** 敌人接触攻击间隔（tick）= 1s @12Hz（combat §⑥ 敌人周期接触伤害）。 */
 export const ENEMY_ATTACK_INTERVAL_TICKS = 12;
