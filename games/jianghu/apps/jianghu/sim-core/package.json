@@ -1,0 +1,20 @@
+{
+  "name": "@jianghu/sim-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Engine-agnostic deterministic simulation core (TS) for 江湖 (jianghu) — E1 scaffold",
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/unit/*.test.ts tests/golden/*.test.ts",
+    "test:unit": "node --experimental-strip-types --test tests/unit/*.test.ts",
+    "test:golden": "node --experimental-strip-types --test tests/golden/*.test.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}

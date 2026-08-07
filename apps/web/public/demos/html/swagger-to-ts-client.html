@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Swagger / OpenAPI 转 TypeScript API Client 在线生成器 - www.lilnong.top</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="在线把 Swagger 2.0 / OpenAPI 3.x 规范转换成 TypeScript 接口与 fetch / axios 请求函数，纯前端零依赖，支持文件树输出（类型集中在 types.d.ts），并对比 openapi-typescript、swagger-typescript-api 等开源生成器。">
+  <link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="/static/js/public_header.js"></script>
+  <script src="/static/js/public_footer.js"></script>
+  <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>
+  <style>
+    :root { --bg:#f6f8fb; --card:#fff; --line:#e6eaf0; --primary:#2f6df6; --primary-d:#1f54d6; --text:#1f2733; --muted:#6b7686; --code-bg:#0f172a; --code-fg:#e2e8f0; --ok:#16a34a; --err:#dc2626; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif; }
+    .ln-wrap { max-width:1400px; margin:0 auto; padding:24px 18px 60px; }
+    h1 { font-size:26px; margin:8px 0 4px; }
+    .sub { color:var(--muted); margin:0 0 18px; }
+    .tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+    .tab { border:1px solid var(--line); background:var(--card); color:var(--text); padding:9px 16px; border-radius:10px; cursor:pointer; font-weight:600; transition:.15s; }
+    .tab:hover { border-color:var(--primary); }
+    .tab.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .tab small { display:block; font-weight:400; font-size:11px; opacity:.8; }
+    .io { display:grid; grid-template-columns:minmax(460px,1fr) 1fr; gap:16px; }
+    .io.tree-active { grid-template-columns:minmax(520px,5fr) 7fr; }
+    @media (max-width:880px){ .io { grid-template-columns:1fr; } .io.tree-active { grid-template-columns:1fr; } }
+    .panel { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; min-width:0; }
+    .panel.input-panel { min-width:460px; }
+    .io.tree-active .panel.input-panel { min-width:520px; }
+    label.lbl { font-weight:600; display:block; margin-bottom:6px; }
+    textarea#specInput { width:100%; height:300px; resize:vertical; border:1px solid var(--line); border-radius:10px; padding:10px 12px; font:13px/1.5 "SFMono-Regular",Consolas,Menlo,monospace; background:#fbfcfe; }
+    .row { display:flex; gap:8px; margin:10px 0; flex-wrap:wrap; }
+    input#urlInput { flex:1; min-width:160px; border:1px solid var(--line); border-radius:8px; padding:8px 10px; }
+    button { border:1px solid var(--line); background:#fff; color:var(--text); padding:8px 14px; border-radius:8px; cursor:pointer; font-weight:600; }
+    button:hover { border-color:var(--primary); color:var(--primary); }
+    button.primary { background:var(--primary); color:#fff; border-color:var(--primary); width:100%; margin-top:6px; padding:11px; font-size:15px; }
+    button.primary:hover { background:var(--primary-d); color:#fff; }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    .controls { margin:10px 0; padding:10px 12px; background:#f3f6fc; border:1px dashed var(--line); border-radius:10px; }
+    .controls.hidden { display:none; }
+    .controls .opt { margin-right:16px; }
+    .toolbar { display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+    .toolbar #status { flex:1; color:var(--muted); font-size:13px; min-width:120px; }
+    .out-body { display:flex; align-items:stretch; }
+    .file-tree { flex:0 0 172px; border-right:1px solid var(--line); padding-right:10px; margin-right:10px; max-height:560px; overflow:auto; position:relative; }
+    .file-tree.hidden { display:none; }
+    .file-tree button { display:block; width:100%; text-align:left; border:1px solid transparent; background:transparent; color:var(--text); padding:7px 9px; border-radius:8px; cursor:pointer; font:13px/1.4 "SFMono-Regular",Consolas,Menlo,monospace; margin-bottom:2px; }
+    .file-tree button:hover { background:#f1f5fb; }
+    .file-tree button.active { background:var(--primary); color:#fff; }
+    .file-tree .ft-title { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin:2px 0 6px 4px; padding-bottom:6px; border-bottom:1px solid var(--line); line-height:22px; }
+    pre { margin:0; background:var(--code-bg); color:var(--code-fg); border-radius:10px; padding:14px; }
+    .code-wrap { flex:1 1 auto; margin:0; max-height:560px; overflow:auto; }
+    pre code { white-space:pre; font:13px/1.55 "SFMono-Regular",Consolas,Menlo,monospace; }
+    .err { background:#fff1f0; border:1px solid #ffccc7; color:#a8071a; border-radius:10px; padding:12px 14px; margin-top:10px; white-space:pre-wrap; font-size:13px; }
+    .info { margin-top:22px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
+    .info h3 { margin:0 0 8px; font-size:16px; }
+    .info ul { margin:0 0 8px; padding-left:20px; }
+    .info li { margin:3px 0; }
+    .info a { color:var(--primary); }
+    .badge { display:inline-block; background:#eef2ff; color:var(--primary-d); border-radius:6px; padding:1px 8px; font-size:12px; margin-left:6px; }
+    .hint { color:var(--muted); font-size:12px; margin-top:6px; }
+    @media (max-width:880px){
+      .out-body { flex-direction:column; }
+      .file-tree { flex:none; width:100%; border-right:none; border-bottom:1px solid var(--line); padding-right:0; margin-right:0; padding-bottom:8px; margin-bottom:8px; max-height:none; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+      .file-tree .ft-title { width:100%; margin:0 0 4px; padding-bottom:6px; border-bottom:1px solid var(--line); }
+      .file-tree button { width:auto; margin-bottom:0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="ln-wrap">
+    <h1>Swagger / OpenAPI → TypeScript API Client</h1>
+    <p class="sub">把 Swagger 2.0 / OpenAPI 3.x 规范在线转换成 TypeScript 接口 + 请求函数。自研生成器纯前端零依赖，支持「文件树」输出（类型集中在 <code>types.d.ts</code>），另外两个对比项通过 CDN 动态加载。</p>
+
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-tab="custom">自研生成器 <small>零依赖 · fetch/axios</small></button>
+      <button class="tab" data-tab="openapi-typescript">openapi-typescript <small>仅类型 · 经 esm.sh</small></button>
+      <button class="tab" data-tab="swagger-typescript-api">swagger-typescript-api <small>完整客户端 · 经 esm.sh</small></button>
+    </div>
+
+    <div class="io">
+      <div class="panel input-panel">
+        <label class="lbl">Swagger / OpenAPI 规范（JSON）</label>
+        <textarea id="specInput" placeholder="在此粘贴 Swagger 2.0 / OpenAPI 3.x 的 JSON，或点下方「加载示例」「拉取地址」"></textarea>
+        <div class="row">
+          <input id="urlInput" placeholder="可选：粘贴 Swagger JSON 地址后点「拉取」（注意跨域）">
+          <button id="fetchBtn">拉取</button>
+          <button id="sampleBtn">加载示例</button>
+          <button id="clearBtn">清空</button>
+        </div>
+
+        <div class="controls" id="customControls">
+          <span class="opt"><b>客户端：</b></span>
+          <label class="opt"><input type="radio" name="client" value="fetch" checked> fetch</label>
+          <label class="opt"><input type="radio" name="client" value="axios"> axios</label>
+          <div style="margin-top:8px"><span class="opt"><b>输出形式：</b></span>
+            <label class="opt"><input type="radio" name="layout" value="tree" checked> 文件树</label>
+            <label class="opt"><input type="radio" name="layout" value="single"> 单文件</label>
+          </div>
+          <div class="hint">「文件树」会把所有类型放进 <code>types.d.ts</code>，按 tag 拆分接口文件（如 <code>pets.ts</code>），并生成 <code>http.ts</code> 与 <code>index.ts</code> 入口；「单文件」则把所有内容合并进一个 <code>.ts</code>。</div>
+        </div>
+        <div class="controls hidden" id="cdnControls">
+          <div class="hint">该生成器通过 <code>https://esm.sh</code> 动态加载，需要联网。若加载失败，会给出本地 Node 命令。</div>
+        </div>
+        <div class="controls hidden" id="envControls">
+          <span class="opt"><b>运行环境：</b></span>
+          <label class="opt"><input type="radio" name="env" value="browser"> 浏览器端</label>
+          <label class="opt"><input type="radio" name="env" value="server"> 服务端</label>
+          <div class="hint" id="envHint"></div>
+        </div>
+
+        <button class="primary" id="genBtn">生成 TypeScript</button>
+      </div>
+
+      <div class="panel">
+        <div class="toolbar">
+          <span id="status">等待生成…</span>
+          <button id="filesBtn" hidden>文件列表</button>
+          <button id="copyBtn">复制</button>
+          <button id="dlBtn">下载</button>
+          <button id="dlAllBtn" hidden>下载全部 .zip</button>
+        </div>
+        <div class="out-body">
+          <div class="file-tree" id="fileTree" hidden>
+            <div class="ft-title">文件</div>
+          </div>
+          <pre class="code-wrap"><code id="output">// 生成结果会显示在这里</code></pre>
+        </div>
+        <div class="err" id="err" hidden></div>
+      </div>
+    </div>
+
+    <div class="info">
+      <h3>用到的开源项目（GitHub）</h3>
+      <ul>
+        <li><a href="https://github.com/acacode/swagger-typescript-api" target="_blank" rel="noopener">acacode/swagger-typescript-api</a> <span class="badge">经典</span> 生成带 axios/fetch 请求方法的完整 API Client。</li>
+        <li><a href="https://github.com/drwpow/openapi-typescript" target="_blank" rel="noopener">openapi-typescript</a> <span class="badge">零依赖</span> 仅生成 .d.ts 类型，runtime-free，浏览器内也能跑。</li>
+        <li><a href="https://github.com/hey-api/openapi-ts" target="_blank" rel="noopener">@hey-api/openapi-ts</a> 现代全功能客户端，插件化（zod / React Query）。</li>
+        <li><a href="https://github.com/ScriptType/orval" target="_blank" rel="noopener">orval</a> 客户端 + React Query / Vue Query hooks + mock + zod + MCP。</li>
+        <li><a href="https://github.com/openapi-ui/openapi-ts-request" target="_blank" rel="noopener">openapi-ui/openapi-ts-request</a> 国产，Swagger2/OpenAPI3/Apifox → TS，含枚举翻译与 mock。</li>
+      </ul>
+      <p class="hint">说明：本页「自研生成器」是演示用的轻量实现（覆盖常见 path/query/body/enum/array/嵌套），并非生产级；生产项目建议直接用上面任一成熟工具（支持 YAML、引用拆分、自定义模板等）。</p>
+    </div>
+  </div>
+
+  <script type="application/json" id="sampleSpec">
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Petstore Demo", "version": "1.0.0" },
+  "paths": {
+    "/pets": {
+      "get": {
+        "operationId": "listPets",
+        "tags": ["pets"],
+        "summary": "分页获取宠物",
+        "parameters": [
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 20 } },
+          { "name": "status", "in": "query", "required": false, "schema": { "type": "string", "enum": ["available", "pending", "sold"] } }
+        ],
+        "responses": {
+          "200": { "description": "ok", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Pet" } } } } }
+        }
+      },
+      "post": {
+        "operationId": "createPet",
+        "tags": ["pets"],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Pet" } } } },
+        "responses": { "201": { "description": "created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Pet" } } } } }
+      }
+    },
+    "/pets/{petId}": {
+      "get": {
+        "operationId": "getPetById",
+        "tags": ["pets"],
+        "parameters": [ { "name": "petId", "in": "path", "required": true, "schema": { "type": "integer" } } ],
+        "responses": { "200": { "description": "ok", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Pet" } } } } }
+      },
+      "delete": {
+        "operationId": "deletePet",
+        "tags": ["pets"],
+        "parameters": [ { "name": "petId", "in": "path", "required": true, "schema": { "type": "integer" } } ],
+        "responses": { "204": { "description": "no content" } }
+      }
+    },
+    "/store/orders": {
+      "post": {
+        "operationId": "placeOrder",
+        "tags": ["store"],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Order" } } } },
+        "responses": { "201": { "description": "created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Order" } } } } }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Pet": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "name": { "type": "string" },
+          "tag": { "type": "string" },
+          "status": { "type": "string", "enum": ["available", "pending", "sold"] },
+          "photos": { "type": "array", "items": { "type": "string" } },
+          "category": { "$ref": "#/components/schemas/Category" }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+      },
+      "Order": {
+        "type": "object",
+        "required": ["id", "petId", "quantity"],
+        "properties": { "id": { "type": "integer" }, "petId": { "type": "integer" }, "quantity": { "type": "integer" }, "shipDate": { "type": "string", "format": "date-time" }, "status": { "type": "string", "enum": ["placed", "approved", "delivered"] } }
+      }
+    }
+  }
+}
+  </script>
+
+  <script type="module">
+    import { generateClient, generateFileTree, detectVersion } from './assets/swagger-to-ts-generator.js';
+
+    const $ = (id) => document.getElementById(id);
+    const specInput = $('specInput');
+    const output = $('output');
+    const errBox = $('err');
+    const statusEl = $('status');
+    const fileTreeEl = $('fileTree');
+    const dlAllBtn = $('dlAllBtn');
+    const filesBtn = $('filesBtn');
+    let activeTab = 'custom';
+    let currentFiles = null;   // 文件树模式下的文件数组
+    let activeFile = null;     // 当前选中文件名
+    let treeVisible = false;   // 文件树显隐状态
+    // 每个 CDN 标签页记忆各自的运行环境默认值（自研生成器始终浏览器端，无此概念）
+    const envByTab = { 'openapi-typescript': 'browser', 'swagger-typescript-api': 'server' };
+
+    function setStatus(t, isErr) { statusEl.textContent = t; statusEl.style.color = isErr ? 'var(--err)' : 'var(--muted)'; }
+    function showErr(msg) { errBox.hidden = false; errBox.textContent = msg; }
+    function clearErr() { errBox.hidden = true; errBox.textContent = ''; }
+
+    function parseSpec() {
+      const raw = specInput.value.trim();
+      if (!raw) throw new Error('请先填入 Swagger / OpenAPI 规范（JSON）。');
+      let spec;
+      try { spec = JSON.parse(raw); }
+      catch (e) { throw new Error('JSON 解析失败：' + e.message + '\n（本生成器支持 JSON；YAML 请先转为 JSON，或使用 openapi-typescript 标签页）'); }
+      const v = detectVersion(spec);
+      if (!v) throw new Error('无法识别版本：既不是 Swagger 2.0 也不是 OpenAPI 3.x。');
+      return spec;
+    }
+
+    // ---------- 渲染：单文件 ----------
+    function renderSingle(code, filename) {
+      currentFiles = null;
+      treeVisible = false;
+      fileTreeEl.hidden = true;
+      fileTreeEl.innerHTML = '<div class="ft-title">文件</div>';
+      document.querySelector('.io').classList.remove('tree-active');
+      dlAllBtn.hidden = true;
+      filesBtn.hidden = true;
+      $('dlBtn').dataset.file = filename || 'api-client.ts';
+      output.textContent = code;
+      clearErr();
+    }
+
+    // ---------- 渲染：文件树 ----------
+    function renderTree(files) {
+      currentFiles = files;
+      dlAllBtn.hidden = files.some((f) => f.path === 'ERROR.txt');
+      filesBtn.hidden = false;
+      document.querySelector('.io').classList.add('tree-active');
+      fileTreeEl.innerHTML = ''; // 清空初始占位标题
+      const title = document.createElement('div');
+      title.className = 'ft-title';
+      title.textContent = '文件（' + files.length + '）';
+      fileTreeEl.appendChild(title);
+      files.forEach((f) => {
+        const b = document.createElement('button');
+        b.textContent = f.path;
+        b.dataset.file = f.path;
+        b.addEventListener('click', () => selectFile(f.path));
+        fileTreeEl.appendChild(b);
+      });
+      selectFile(files[0].path);
+      showTree(); // 默认展开文件树
+      clearErr();
+    }
+
+    function showTree() {
+      treeVisible = true;
+      fileTreeEl.hidden = false;
+      filesBtn.textContent = '隐藏文件列表';
+    }
+    function hideTree() {
+      treeVisible = false;
+      fileTreeEl.hidden = true;
+      filesBtn.textContent = '显示文件列表';
+    }
+
+    function selectFile(path) {
+      if (!currentFiles) return;
+      const f = currentFiles.find((x) => x.path === path);
+      if (!f) return;
+      activeFile = path;
+      output.textContent = f.content;
+      [...fileTreeEl.querySelectorAll('button')].forEach((b) => b.classList.toggle('active', b.dataset.file === path));
+      $('dlBtn').dataset.file = path;
+      setStatus('已选择 ' + path + '（' + f.content.length + ' 字符）');
+    }
+
+    // ---------- 极小 ZIP 写入器（store 无压缩，零依赖） ----------
+    function crc32(buf) {
+      if (!crc32.table) {
+        const t = [];
+        for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c >>> 0; }
+        crc32.table = t;
+      }
+      let crc = 0xFFFFFFFF;
+      for (let i = 0; i < buf.length; i++) crc = (crc >>> 8) ^ crc32.table[(crc ^ buf[i]) & 0xFF];
+      return (crc ^ 0xFFFFFFFF) >>> 0;
+    }
+    function makeZip(files) {
+      const enc = new TextEncoder();
+      const chunks = [], central = [];
+      let offset = 0;
+      for (const f of files) {
+        const data = enc.encode(f.content);
+        const name = enc.encode(f.path);
+        const crc = crc32(data), size = data.length;
+        const lh = new DataView(new ArrayBuffer(30));
+        lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0, true); lh.setUint16(8, 0, true);
+        lh.setUint16(10, 0, true); lh.setUint16(12, 0, true); lh.setUint32(14, crc, true);
+        lh.setUint32(18, size, true); lh.setUint32(22, size, true); lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+        const lhB = new Uint8Array(lh.buffer);
+        chunks.push(lhB, name, data);
+        const cd = new DataView(new ArrayBuffer(46));
+        cd.setUint32(0, 0x02014b50, true); cd.setUint16(4, 20, true); cd.setUint16(6, 20, true); cd.setUint16(8, 0, true);
+        cd.setUint16(10, 0, true); cd.setUint16(12, 0, true); cd.setUint32(16, crc, true);
+        cd.setUint32(20, size, true); cd.setUint32(24, size, true); cd.setUint16(28, name.length, true);
+        cd.setUint16(30, 0, true); cd.setUint16(32, 0, true); cd.setUint16(34, 0, true); cd.setUint16(36, 0, true);
+        cd.setUint32(38, 0, true); cd.setUint32(42, offset, true);
+        central.push(new Uint8Array(cd.buffer), name);
+        offset += lhB.length + name.length + data.length;
+      }
+      const centralSize = central.reduce((a, b) => a + b.length, 0);
+      const eo = new DataView(new ArrayBuffer(22));
+      eo.setUint32(0, 0x06054b50, true); eo.setUint16(4, 0, true); eo.setUint16(6, 0, true);
+      eo.setUint16(8, files.length, true); eo.setUint16(10, files.length, true);
+      eo.setUint32(12, centralSize, true); eo.setUint32(16, offset, true); eo.setUint16(20, 0, true);
+      const all = [...chunks, ...central, new Uint8Array(eo.buffer)];
+      const total = all.reduce((a, b) => a + b.length, 0);
+      const out = new Uint8Array(total); let pos = 0;
+      for (const c of all) { out.set(c, pos); pos += c.length; }
+      return out;
+    }
+    function downloadBlob(blob, filename) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+
+    // ---------- 各生成器 ----------
+    async function genCustom(spec) {
+      const client = (document.querySelector('input[name="client"]:checked') || {}).value || 'fetch';
+      const layout = (document.querySelector('input[name="layout"]:checked') || {}).value || 'tree';
+      if (layout === 'single') {
+        const code = generateClient(spec, { client });
+        return { mode: 'single', code, filename: 'api-client.ts' };
+      }
+      const files = generateFileTree(spec, { client });
+      return { mode: 'tree', files };
+    }
+
+    async function genOpenapiTypescript(spec, env) {
+      if (env === 'server') {
+        const data = await callServer('openapi-typescript', spec);
+        return { mode: 'single', code: data.code, filename: data.filename || 'schema.d.ts' };
+      }
+      setStatus('正在通过 esm.sh 加载 openapi-typescript …');
+      // 注意：esm.sh 会把该库压缩，可读名 openapiTS 在导出表里被改名，真实入口是 default。
+      // esm.sh 的 v7 经打包后 openapiTS 返回的是 TypeScript AST 节点数组（非字符串，不可用）；
+      // 故优先用 v6——v6 的 default 即为 openapiTS，且同步返回完整 .d.ts 字符串。
+      // v6 同步返回 string，v7 异步返回 Promise<string>，这里统一用 await 兜底。
+      const urls = ['https://esm.sh/openapi-typescript@6', 'https://esm.sh/openapi-typescript@7'];
+      let fn = null;
+      for (const url of urls) {
+        try {
+          const mod = await import(/* @vite-ignore */ url);
+          const cand = mod.openapiTS
+            || mod.default?.openapiTS
+            || (typeof mod.default === 'function' ? mod.default : null)
+            || (mod.default?.default && typeof mod.default.default === 'function' ? mod.default.default : null);
+          if (typeof cand === 'function') { fn = cand; break; }
+        } catch (_) { /* 试下一个版本 */ }
+      }
+      if (!fn) throw new Error('openapi-typescript 导出异常（CDN 模块形态不兼容）。');
+      let code = fn(spec, { exportType: true });
+      if (code && typeof code.then === 'function') code = await code; // v7 为 async
+      if (typeof code !== 'string') throw new Error('openapi-typescript 未返回字符串。');
+      return { mode: 'single', code, filename: 'schema.d.ts' };
+    }
+
+    // 服务端调用：本地（localhost/127.0.0.1）直连 api2 :3002；线上走同源 /api（需 nginx 代理 api2）。
+    function apiBase() {
+      const h = location.hostname;
+      if (h === 'localhost' || h === '127.0.0.1') return 'http://127.0.0.1:3002';
+      return '';
+    }
+    async function callServer(generator, spec, extra) {
+      setStatus('正在请求服务端生成（' + generator + '）…');
+      let res;
+      try {
+        res = await fetch(apiBase() + '/api/demo/swagger-ts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(Object.assign({ generator, spec }, extra || {})),
+        });
+      } catch (e) {
+        throw new Error('无法连接服务端（' + (e && e.message ? e.message : e) + '）。请确认 api2 已在 :3002 运行，或线上已配置 nginx 代理 /api/demo。');
+      }
+      let data;
+      try { data = await res.json(); }
+      catch { throw new Error('服务端返回非 JSON（HTTP ' + res.status + '）。'); }
+      if (!res.ok || !data.ok) {
+        throw new Error(data && data.message ? data.message : ('服务端生成失败（HTTP ' + res.status + '）'));
+      }
+      return data;
+    }
+
+    async function genSwaggerTypescriptApi(spec, env) {
+      const client = (document.querySelector('input[name="client"]:checked') || {}).value || 'fetch';
+      if (env === 'server') {
+        const data = await callServer('swagger-typescript-api', spec, { client, modular: false });
+        return { mode: 'single', code: data.code, filename: data.filename || 'api.ts' };
+      }
+      // 浏览器端：swagger-typescript-api 依赖 Node（Biome WASM / fs.statSync），经实测任何版本都无法在浏览器内运行，
+      // 故直接给出诚实提示，引导使用「服务端」模式。
+      throw new Error(
+        'swagger-typescript-api 无法在浏览器端运行。该库依赖 Node 环境（v13 在加载时初始化 Biome WASM 失败；' +
+        'v10–v12 在加载时调用 fs.statSync，而浏览器无文件系统）。请切换到「服务端」模式（已预置为默认值）。'
+      );
+    }
+
+    const GENERATORS = {
+      custom: { fn: genCustom, ok: '自研生成器完成。', fallback: null },
+      'openapi-typescript': {
+        fn: genOpenapiTypescript,
+        ok: 'openapi-typescript 完成（仅类型）。',
+        fallback: 'npx openapi-typescript ./swagger.json -o ./schema.d.ts',
+      },
+      'swagger-typescript-api': {
+        fn: genSwaggerTypescriptApi,
+        ok: 'swagger-typescript-api 完成。',
+        fallback: 'npx swagger-typescript-api generate --path ./swagger.json --name api.ts' + ('(client)'),
+      },
+    };
+
+    async function runGenerate() {
+      clearErr();
+      let spec;
+      try { spec = parseSpec(); }
+      catch (e) { showErr(e.message); setStatus('输入有误', true); return; }
+
+      const g = GENERATORS[activeTab];
+      setStatus('生成中 …');
+      try {
+        const result = await g.fn(spec, envByTab[activeTab]);
+        if (result.mode === 'tree') {
+          renderTree(result.files);
+          const total = result.files.reduce((a, f) => a + f.content.length, 0);
+          setStatus(g.ok + `（${result.files.length} 个文件，${total} 字符）`);
+        } else {
+          renderSingle(result.code, result.filename);
+          setStatus(g.ok + `（${result.code.length} 字符）`);
+        }
+      } catch (e) {
+        let msg = '生成失败：' + (e && e.message ? e.message : e) + '\n';
+        if (g.fallback) msg += '\n本地 Node 用法：\n  ' + g.fallback + '\n（需要联网或先 npm i -D ' + (activeTab === 'openapi-typescript' ? 'openapi-typescript' : 'swagger-typescript-api') + '）';
+        showErr(msg);
+        setStatus('生成失败', true);
+      }
+    }
+
+    // ---------- 事件绑定 ----------
+    $('sampleBtn').addEventListener('click', () => {
+      specInput.value = $('sampleSpec').textContent.trim();
+      clearErr(); setStatus('已加载示例，点「生成 TypeScript」。');
+    });
+    $('clearBtn').addEventListener('click', () => {
+      specInput.value = '';
+      output.textContent = '// 生成结果会显示在这里';
+      fileTreeEl.hidden = true; fileTreeEl.innerHTML = '<div class="ft-title">文件</div>';
+      document.querySelector('.io').classList.remove('tree-active');
+      dlAllBtn.hidden = true; filesBtn.hidden = true; currentFiles = null; treeVisible = false; clearErr(); setStatus('已清空。');
+    });
+    $('fetchBtn').addEventListener('click', async () => {
+      const url = $('urlInput').value.trim();
+      if (!url) { showErr('请先填入 Swagger JSON 地址。'); return; }
+      setStatus('正在拉取 ' + url + ' …');
+      try {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        specInput.value = await r.text();
+        clearErr(); setStatus('拉取成功，点「生成 TypeScript」。');
+      } catch (e) {
+        showErr('拉取失败：' + e.message + '\n（多为跨域 CORS 限制；可改用浏览器已允许的地址，或直接粘贴 JSON）');
+        setStatus('拉取失败', true);
+      }
+    });
+    $('genBtn').addEventListener('click', runGenerate);
+
+    filesBtn.addEventListener('click', () => {
+      if (treeVisible) hideTree(); else showTree();
+    });
+    $('copyBtn').addEventListener('click', async () => {
+      const text = output.textContent;
+      try { await navigator.clipboard.writeText(text); setStatus('已复制到剪贴板。'); }
+      catch { showErr('复制失败，请手动选择代码复制。'); }
+    });
+    $('dlBtn').addEventListener('click', () => {
+      const filename = $('dlBtn').dataset.file || 'api-client.ts';
+      downloadBlob(new Blob([output.textContent], { type: 'text/typescript' }), filename);
+    });
+    dlAllBtn.addEventListener('click', () => {
+      if (!currentFiles) return;
+      const zip = makeZip(currentFiles);
+      downloadBlob(new Blob([zip], { type: 'application/zip' }), 'api-client.zip');
+      setStatus('已打包 ' + currentFiles.length + ' 个文件为 api-client.zip。');
+    });
+
+    // Tab 切换
+    document.querySelectorAll('.tab').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeTab = btn.dataset.tab;
+        const label = btn.childNodes[0].textContent.trim();
+        const isCustom = activeTab === 'custom';
+        $('customControls').classList.toggle('hidden', !isCustom);
+        $('cdnControls').classList.toggle('hidden', isCustom);
+        $('envControls').classList.toggle('hidden', isCustom);
+        if (activeTab === 'openapi-typescript') {
+          $('cdnControls').innerHTML = '<div class="hint">openapi-typescript 可在<b>浏览器端</b>（经 esm.sh）或<b>服务端</b>（api2 同版本包）运行，产物一致，可切换对比。下方「运行环境」默认浏览器端。</div>';
+          $('envHint').textContent = '浏览器端：经 esm.sh 动态加载（需联网）；服务端：调用 /api/demo/swagger-ts（需 api2 运行）。两者产物应一致，便于比对。';
+        } else if (activeTab === 'swagger-typescript-api') {
+          $('cdnControls').innerHTML = '<div class="hint">swagger-typescript-api <b>依赖 Node</b>（Biome WASM / fs），浏览器端无法运行，已默认设为<b>服务端</b>。服务端调用 <code>/api/demo/swagger-ts</code>。</div>';
+          $('envHint').textContent = '该生成器无法在浏览器端运行（实测任何版本均失败），下方切到「浏览器端」会给出说明；默认保持「服务端」即可。';
+        }
+        // 按标签页恢复运行环境默认值
+        const env = envByTab[activeTab] || 'browser';
+        document.querySelectorAll('input[name="env"]').forEach((r) => { r.checked = (r.value === env); });
+        output.textContent = '// 已切换到「' + label + '」，点「生成 TypeScript」。';
+        fileTreeEl.hidden = true; fileTreeEl.innerHTML = '<div class="ft-title">文件</div>';
+        document.querySelector('.io').classList.remove('tree-active');
+        dlAllBtn.hidden = true; filesBtn.hidden = true; currentFiles = null; treeVisible = false;
+        clearErr();
+        setStatus('已切换生成器：' + label);
+      });
+    });
+
+    // 运行环境切换：按当前标签页记忆
+    document.querySelectorAll('input[name="env"]').forEach((r) => {
+      r.addEventListener('change', () => {
+        if (r.checked) envByTab[activeTab] = r.value;
+      });
+    });
+
+    // 初始化
+    $('sampleBtn').click();
+  </script>
+</body>
+</html>

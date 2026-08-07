@@ -3477,6 +3477,15 @@
       "migratedAt": "2026-07-13T01:47:37.086Z"
     },
     {
+      "file": "swagger-to-ts-client.html",
+      "slug": "swagger-to-ts-client",
+      "title": "Swagger / OpenAPI 转 TypeScript API Client 在线生成器",
+      "description": "在线把 Swagger 2.0 / OpenAPI 3.x 规范转换成 TypeScript 接口与 fetch / axios 请求函数，纯前端零依赖，并对比 openapi-typescript、swagger-typescript-api 等开源生成器。",
+      "url": "/demos/html/swagger-to-ts-client.html",
+      "size": 17321,
+      "migratedAt": "2026-08-06T13:13:44.601Z"
+    },
+    {
       "file": "swfobject_chimee.html",
       "slug": "swfobject_chimee",
       "title": "Swfobject_chimee",

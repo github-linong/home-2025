@@ -95,6 +95,7 @@ export const CURATED_DEMO_SECTIONS: CuratedSection[] = [
       "elementui-nav-3",
       "elementui-upload-dialog",
       "sf-mac-pingfang-0-width",
+      "swagger-to-ts-client",
     ],
   },
   {

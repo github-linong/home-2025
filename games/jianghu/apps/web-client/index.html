@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
+<title>江湖 jianghu · 浏览器试玩版（C1）</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0d0f13; color: #e8e4d8;
+    font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+  canvas.panning { cursor: grabbing; }
+
+  /* ── HUD 顶栏 ── */
+  #hud { position: absolute; top: 0; left: 0; right: 0; padding: 8px 12px; z-index: 10;
+    background: linear-gradient(rgba(10,12,16,.92), rgba(10,12,16,.55));
+    display: flex; align-items: center; gap: 16px; font-size: 13px; pointer-events: none; flex-wrap: wrap; }
+  #hud .sep { color: #444; }
+  #status { color: #fa0; font-weight: 700; }
+  #status.ok { color: #5fd0e0; }
+  #status.err { color: #f44; }
+  #hpwrap { display: inline-flex; align-items: center; gap: 6px; }
+  #hpbar { width: 110px; height: 8px; background: #301a1a; border: 1px solid #553; border-radius: 3px; overflow: hidden; }
+  #hpfill { height: 100%; width: 100%; background: linear-gradient(90deg, #c8324a, #f2a03c); transition: width .15s; }
+  #skillcd-hud { color: #9fd; }
+  .btn { pointer-events: auto; }
+
+  /* ── 底部技能栏 ── */
+  #actionbar { position: absolute; left: 12px; bottom: 12px; z-index: 10; display: flex; gap: 8px; align-items: flex-end; }
+  .abtn { width: 58px; height: 58px; border-radius: 8px; border: 1px solid #4a5568; background: rgba(18,22,30,.92);
+    color: #e8e4d8; font-size: 15px; font-weight: 700; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; cursor: pointer; user-select: none; position: relative; transition: transform .06s, border-color .12s; }
+  .abtn:hover { border-color: #5fd0e0; transform: translateY(-2px); }
+  .abtn:active { transform: translateY(0); }
+  .abtn .key { font-size: 10px; color: #7a8699; font-weight: 500; }
+  .abtn .cd { position: absolute; inset: 0; border-radius: 8px; background: rgba(8,10,14,.78); color: #f2a03c;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  .abtn.parry { width: 68px; height: 68px; border-color: #5f8fb0; }
+  .abtn.parry.active { border-color: #5fd0e0; box-shadow: 0 0 12px rgba(95,208,224,.7); color: #5fd0e0; }
+  .abtn.dungeon { width: auto; min-width: 92px; height: 44px; padding: 0 12px; flex-direction: row; gap: 8px; font-size: 13px;
+    border-color: #7d5fa0; color: #cbb; }
+  .abtn.dungeon:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── Toast ── */
+  #toast { position: absolute; top: 52px; left: 50%; transform: translateX(-50%); z-index: 20;
+    background: rgba(20,16,30,.95); border: 1px solid #7d5fa0; color: #e8e4d8; padding: 8px 16px;
+    border-radius: 8px; font-size: 13px; display: none; max-width: 70vw; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,.5); }
+  #toast.err { border-color: #c8324a; background: rgba(40,12,16,.95); }
+
+  /* ── 帮助 ── */
+  #help { position: absolute; right: 12px; bottom: 12px; z-index: 10; color: #7a8699; font-size: 11px;
+    text-align: right; line-height: 1.7; pointer-events: none; text-shadow: 0 1px 3px #000; }
+  #help b { color: #aab; }
+</style>
+</head>
+<body>
+<div id="hud">
+  <span id="status">连接中…</span>
+  <span class="sep">|</span>
+  <span id="room">房间:-</span>
+  <span class="sep">|</span>
+  <span id="tick">tick:-</span>
+  <span class="sep">|</span>
+  <span id="ents">entities:0</span>
+  <span class="sep">|</span>
+  <span id="hpwrap"><span id="hp">HP:-</span><span id="hpbar"><span id="hpfill"></span></span></span>
+  <span id="parryhud"></span>
+  <span id="skillcd-hud"></span>
+</div>
+<canvas id="game"></canvas>
+
+<div id="actionbar">
+  <div class="abtn" id="btn-skill-0" title="技能1（键 1）"><span>技1</span><span class="key">1</span></div>
+  <div class="abtn" id="btn-skill-1" title="技能2（键 2）"><span>技2</span><span class="key">2</span></div>
+  <div class="abtn" id="btn-skill-2" title="技能3（键 3）"><span>技3</span><span class="key">3</span></div>
+  <div class="abtn" id="btn-skill-3" title="技能4（键 4）"><span>技4</span><span class="key">4</span></div>
+  <div class="abtn parry" id="btn-parry" title="格挡（空格）"><span>格挡</span><span class="key">SPACE</span></div>
+  <div class="abtn dungeon" id="btn-dungeon" title="进副本 / 出本（F）"><span id="btn-dungeon-label">进副本</span><span class="key">F</span></div>
+</div>
+
+<div id="toast"></div>
+<div id="help">
+  <b>WASD/方向键</b> 移动（8 向） · <b>空格</b> 格挡 · <b>1-4</b> 技能<br>
+  <b>F / 按钮</b> 进副本/出本 · <b>滚轮</b> 缩放 · <b>拖拽</b> 平移 · <b>双击</b> 回中
+</div>
+
+<script>
+(function () {
+"use strict";
+// ============================================================================
+// 江湖 jianghu · 浏览器客户端 C1（Canvas 2D + WebSocket，零构建，单文件）
+// ============================================================================
+// 协议要点（对齐服务端 gateway/protocol/protocol-binary，见 README.md）：
+//   - 控制面 JSON（显式 type）；数据面二进制（ws.binaryType='arraybuffer'）。
+//   - input.cmd 必须 { type:'input.cmd', payload:{ cmd:{...} } }（服务端读 payload?.cmd）。
+//   - 动作：0=MOVE 1=PARRY 2..5=SKILL1..4 7=STOP（松开移动键 → 服务端清 lastMove 立即停）。
+//     按住方向持续发 MOVE；全部移动键松开 / 失焦 / 切页 / 断连前发 STOP，杜绝惯性滑行。
+//   - 目标/伤害由服务端权威结算，客户端只发 skillSlot，绝不自行锁 target。
+//   - 快照帧：[u8 msgType=0x01][u32 tick LE][u16 count] + 每实体
+//     [u16 id][u16 changeMask][i16 x][i16 y][u8 kind][u8 dir][u16 hp][u16 maxHp]
+//     [u16 status][u8 seCount][se*] + 条件字段（按 changeMask 位）。
+//   - 插值：INTERP_DELAY_MS=100ms 缓冲 lerp，无预测回正（Phase-2）。
+// ============================================================================
+
+const params = new URLSearchParams(location.search);
+const SERVER = (params.get('server') || 'ws://localhost:3011').replace(/\/+$/, '');
+const DEV_USER = params.get('devUserId') || 'dev';
+const DEBUG = params.get('debug') === '1';
+
+// ── 共享常量（与 sim-core/constants.ts 对齐；C1 单一来源的客户端镜像，C7）──
+const TILE = 48;
+const TICK_RATE = 12;
+const TICK_MS = 1000 / TICK_RATE;
+const INTERP_DELAY_MS = 100;            // 插值缓冲
+const WORLD_W = 40 * TILE;              // 1920
+const WORLD_H = 30 * TILE;              // 1440
+const ENTRANCE_POS = { x: 20 * TILE, y: 15 * TILE }; // 主世界入口（tile 20,15）
+const ENTRANCE_ENTER_RADIUS = 3 * TILE; // UI「进副本」可用半径（服务端不校验距离，仅冷却）
+const PARRY_TICKS = 3;                  // 格挡窗口（服务端权威展示用）
+const SKILL_ACTIONS = [2, 3, 4, 5];     // InputAction.SKILL1..4
+const ACTION_STOP = 7;                  // InputAction.STOP：松开移动键，服务端清 lastMove 立即停（P0 手感修复）
+
+// 稀有度配色（art-bible：白/蓝/金/暗金）
+const RARITY_COLORS = ['#D8D2C4', '#4C7FD6', '#F2A03C', '#C8324A'];
+const RARITY_NAMES = ['白', '蓝', '金', '暗金'];
+const KIND = { PLAYER: 0, ENEMY: 1, BOSS: 2, LOOT_GROUND: 3, TELEGRAPH: 4, ENTRANCE: 5 };
+
+// ── DOM ──
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const statusEl = document.getElementById('status');
+const roomEl = document.getElementById('room');
+const tickEl = document.getElementById('tick');
+const entsEl = document.getElementById('ents');
+const hpEl = document.getElementById('hp');
+const hpFill = document.getElementById('hpfill');
+const parryHud = document.getElementById('parryhud');
+const skillCdHud = document.getElementById('skillcd-hud');
+const toastEl = document.getElementById('toast');
+const dungeonBtn = document.getElementById('btn-dungeon');
+const dungeonBtnLabel = document.getElementById('btn-dungeon-label');
+
+function resize() {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  canvas.width = Math.floor(window.innerWidth * dpr);
+  canvas.height = Math.floor(window.innerHeight * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  view.w = window.innerWidth;
+  view.h = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+
+// ── 调试/自动化暴露（E2E 断言用）──
+const GAME = window.__game = {
+  connected: false, state: 'connecting', seatId: null, roomId: null, reconnectToken: null,
+  lastSnapshot: null, localEntityId: null, errors: [], snapshotCount: 0, lastTick: 0,
+  skillCd: [0, 0, 0, 0], parryActive: false, localHp: 0, localMaxHp: 0,
+  lastLocalPos: null, wsState: 'closed', guest: null,
+  // 调试钩子（仅 ?debug=1 生效；E2E 用）
+  debugEnterDungeon: null, debugExitDungeon: null,
+};
+
+// ── 视图 / 摄像机 ──
+const view = { w: window.innerWidth, h: window.innerHeight, scale: 1.0, cx: ENTRANCE_POS.x, cy: ENTRANCE_POS.y, follow: true };
+let drag = null;
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const f = e.deltaY > 0 ? 0.9 : 1.1;
+  view.scale = Math.min(2.5, Math.max(0.45, view.scale * f));
+  if (!view.follow) snapFollow();
+}, { passive: false });
+canvas.addEventListener('mousedown', (e) => { drag = { x: e.clientX, y: e.clientY, cx: view.cx, cy: view.cy }; canvas.classList.add('panning'); view.follow = false; });
+window.addEventListener('mousemove', (e) => {
+  if (!drag) return;
+  view.cx = drag.cx - (e.clientX - drag.x) / view.scale;
+  view.cy = drag.cy - (e.clientY - drag.y) / view.scale;
+});
+window.addEventListener('mouseup', () => { drag = null; canvas.classList.remove('panning'); });
+canvas.addEventListener('dblclick', snapFollow);
+function snapFollow() { view.follow = true; }
+
+// ── 状态 ──
+let state = 'connecting';           // connecting | overworld | dungeon | reconnecting | closed
+function setState(s) { state = s; GAME.state = s; }
+let seq = 1;
+let seatId = null;
+let roomId = null;
+let reconnectToken = null;
+let tickMs = TICK_MS;
+let lastSnapshot = null;            // 最新权威快照
+let localEntityId = null;
+let snapBuffer = [];                // 插值缓冲 [{tick, entities:Map}]
+let lastKnown = new Map();          // id → {ent, alpha} 实体消失淡出
+const keys = new Set();
+let lastMoveDir = null;             // 最近一次发送的移动方向（0-7）
+let inputTimer = null;
+let reconnectAttempts = 0;
+let reconnectTimer = null;
+let ws = null;
+
+// ── Toast ──
+let toastTimer = null;
+function toast(msg, isErr) {
+  toastEl.textContent = msg;
+  toastEl.className = isErr ? 'err' : '';
+  toastEl.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toastEl.style.display = 'none'; }, 3500);
+}
+
+function setStatus(text, cls) {
+  statusEl.textContent = text;
+  statusEl.className = cls || '';
+}
+
+// ============================================================================
+// 二进制快照解码（对齐 protocol-binary.ts decodeEntity）
+// ============================================================================
+function decodeSnapshot(buf) {
+  const dv = new DataView(buf);
+  let off = 0;
+  const msgType = dv.getUint8(off); off += 1;
+  if (msgType !== 0x01) throw new Error('unknown binary msgType 0x' + msgType.toString(16));
+  const tick = dv.getUint32(off, true); off += 4;
+  const count = dv.getUint16(off, true); off += 2;
+  const entities = [];
+  for (let i = 0; i < count; i++) {
+    const id = dv.getUint16(off, true); off += 2;
+    const mask = dv.getUint16(off, true); off += 2;
+    const x = dv.getInt16(off, true); off += 2;
+    const y = dv.getInt16(off, true); off += 2;
+    const kind = dv.getUint8(off); off += 1;
+    const dir = dv.getUint8(off); off += 1;
+    const hp = dv.getUint16(off, true); off += 2;
+    const maxHp = dv.getUint16(off, true); off += 2;
+    const status = dv.getUint16(off, true); off += 2;
+    const seCount = dv.getUint8(off); off += 1;
+    const statusEffects = [];
+    for (let j = 0; j < seCount; j++) {
+      statusEffects.push({ type: dv.getUint8(off), remainingTicks: dv.getUint16(off, true) });
+      off += 3;
+    }
+    const e = { id, mask, kind, dir, pos: { x, y }, hp, maxHp, status, statusEffects };
+
+    // 条件字段（按 changeMask 位；与服务端 encodeEntity 对称）
+    if (mask & (1 << 5))  { e.ownerId = dv.getUint16(off, true); off += 2; }
+    if (mask & (1 << 6))  { e.parryState = { active: dv.getUint8(off) === 1, windowEndTick: dv.getUint32(off, true) }; off += 5; }
+    if (mask & (1 << 7))  {
+      const itemId = dv.getUint32(off, true); off += 4;
+      const rarity = dv.getUint8(off); off += 1;
+      const affixCount = dv.getUint8(off); off += 1;
+      const affixes = [];
+      for (let j = 0; j < affixCount; j++) { affixes.push(dv.getUint8(off)); off += 1; }
+      const ttlTicks = dv.getUint16(off, true); off += 2;
+      e.loot = { itemId, rarity, affixes, ttlTicks };
+    }
+    if (mask & (1 << 8))  {
+      e.telegraph = { shape: dv.getUint8(off), color: dv.getUint8(off), startTick: dv.getUint32(off, true), applyTick: dv.getUint32(off, true), radius: dv.getUint16(off, true) };
+      off += 12;
+    }
+    if (mask & (1 << 9))  { e.entrance = { cooldownTicks: dv.getUint16(off, true), lastUsedTick: dv.getUint32(off, true) }; off += 6; }
+    if (mask & (1 << 10)) { e.tier = dv.getUint8(off); off += 1; }
+    if (mask & (1 << 11)) { e.skillCd = [dv.getUint16(off, true), dv.getUint16(off + 2, true), dv.getUint16(off + 4, true), dv.getUint16(off + 6, true)]; off += 8; }
+    if (mask & (1 << 12)) { e.attrs = { str: dv.getUint8(off), dex: dv.getUint8(off + 1), vit: dv.getUint8(off + 2) }; off += 3; }
+    entities.push(e);
+  }
+  return { tick, entities };
+}
+
+// ============================================================================
+// 连接 / 消息分发
+// ============================================================================
+function wsUrl() {
+  return `${SERVER}/ws/jianghu?devUserId=${encodeURIComponent(DEV_USER)}`;
+}
+
+function connect() {
+  clearTimeout(reconnectTimer);
+  ws = new WebSocket(wsUrl());
+  ws.binaryType = 'arraybuffer';
+  GAME.wsState = 'connecting';
+
+  ws.onopen = () => {
+    GAME.wsState = 'open';
+    reconnectAttempts = 0;
+    // session.ready 到达后：有 token → session.reconnect；否则 room.join
+  };
+
+  ws.onmessage = (ev) => {
+    if (typeof ev.data === 'string') {
+      let msg; try { msg = JSON.parse(ev.data); } catch { return; }
+      handleControl(msg);
+    } else if (ev.data instanceof ArrayBuffer) {
+      try { handleSnapshot(decodeSnapshot(ev.data)); }
+      catch (err) { GAME.errors.push('decode:' + (err && err.message)); }
+    }
+  };
+
+  ws.onerror = () => {
+    setStatus('连接错误', 'err');
+    GAME.errors.push('ws error');
+  };
+
+  ws.onclose = (ev) => {
+    GAME.wsState = 'closed';
+    GAME.connected = false;
+    if (ev.code === 4001) { setStatus('被踢下线（重复登录）', 'err'); setState('closed'); return; }
+    if (state === 'closed') return;
+    setStatus('断线，自动重连中…', 'err');
+    setState('reconnecting');
+    scheduleReconnect();
+  };
+}
+
+function scheduleReconnect() {
+  clearTimeout(reconnectTimer);
+  const delay = Math.min(5000, 800 * Math.pow(1.6, reconnectAttempts++));
+  reconnectTimer = setTimeout(() => connect(), delay);
+}
+
+function sendJson(obj) {
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj));
+}
+
+function handleControl(msg) {
+  switch (msg.type) {
+    case 'session.ready': {
+      seatId = msg.seatId;
+      tickMs = msg.tickMs || TICK_MS;
+      GAME.seatId = seatId; GAME.guest = msg.guest;
+      if (state === 'reconnecting') {
+        // 重连恢复：先用重连 token 回原房间；无 token 则重新 room.join
+        if (reconnectToken && roomId) {
+          sendJson({ type: 'session.reconnect', requestId: 'rec', payload: { roomId, reconnectToken } });
+        } else {
+          sendJson({ type: 'room.join', requestId: 'join' });
+        }
+      } else {
+        sendJson({ type: 'room.join', requestId: 'join' });
+      }
+      break;
+    }
+    case 'room.join.ok': {
+      roomId = msg.roomId;
+      reconnectToken = msg.reconnectToken;
+      setState('overworld');
+      GAME.connected = true;
+      GAME.roomId = roomId; GAME.reconnectToken = reconnectToken;
+      setStatus('主世界', 'ok');
+      startInputLoop();
+      break;
+    }
+    case 'dungeon.enter.ok': {
+      roomId = msg.roomId;
+      reconnectToken = msg.reconnectToken;
+      setState('dungeon');
+      GAME.roomId = roomId; GAME.reconnectToken = reconnectToken;
+      snapBuffer = []; // 房间切换，清插值缓冲防串帧
+      lastKnown.clear();
+      setStatus('副本', 'ok');
+      toast('已进入副本');
+      break;
+    }
+    case 'dungeon.exit.ok': {
+      roomId = msg.roomId || 'room_resident_public';
+      reconnectToken = null;
+      setState('overworld');
+      GAME.roomId = roomId; GAME.reconnectToken = null;
+      snapBuffer = []; lastKnown.clear();
+      setStatus('主世界', 'ok');
+      toast('已出本');
+      break;
+    }
+    case 'session.reconnect.ok': {
+      roomId = msg.roomId;
+      reconnectToken = msg.reconnectToken;
+      setState(msg.fellBackToResident ? 'overworld' : (roomId && roomId !== 'room_resident_public' ? 'dungeon' : 'overworld'));
+      GAME.roomId = roomId; GAME.reconnectToken = reconnectToken;
+      GAME.connected = true;
+      snapBuffer = []; lastKnown.clear();
+      setStatus(state === 'dungeon' ? '副本（已重连）' : '主世界（已重连）', 'ok');
+      toast('已重连');
+      break;
+    }
+    case 'room.snapshot': {
+      // presence 信息（成员数等）暂不渲染，保留日志
+      break;
+    }
+    case 'session.pong':
+      break;
+    case 'game.error': {
+      const code = msg.error && msg.error.code;
+      toast('服务端: ' + (code || 'unknown'), true);
+      GAME.errors.push('game.error:' + code);
+      break;
+    }
+    case 'session.kicked': {
+      setStatus('被踢下线（重复登录）', 'err');
+      toast('已断开：重复登录', true);
+      setState('closed');
+      break;
+    }
+  }
+}
+
+// ============================================================================
+// 快照处理（权威态 + 插值缓冲）
+// ============================================================================
+function handleSnapshot(snap) {
+  GAME.snapshotCount++;
+  GAME.lastTick = snap.tick;
+  lastSnapshot = snap;
+  GAME.lastSnapshot = snap;
+
+  // 定位本地玩家（seatId 权威映射；kind=PLAYER + ownerId===seatId）
+  localEntityId = null;
+  for (const e of snap.entities) {
+    if (e.kind === KIND.PLAYER && e.ownerId === seatId) { localEntityId = e.id; break; }
+  }
+  GAME.localEntityId = localEntityId;
+  const me = localEntityId != null ? snap.entities.find((e) => e.id === localEntityId) : null;
+  if (me) {
+    GAME.localHp = me.hp; GAME.localMaxHp = me.maxHp;
+    GAME.lastLocalPos = { x: me.pos.x, y: me.pos.y };
+    GAME.parryActive = !!(me.parryState && me.parryState.active);
+    if (me.skillCd) GAME.skillCd = me.skillCd.slice();
+  }
+
+  // 插值缓冲（保留最近 10 帧；实体按 id 建 Map 便于 lerp）
+  const emap = new Map();
+  for (const e of snap.entities) emap.set(e.id, e);
+  snapBuffer.push({ tick: snap.tick, entities: emap });
+  if (snapBuffer.length > 10) snapBuffer.shift();
+
+  // 消失实体淡出
+  const seen = new Set(emap.keys());
+  for (const [id, rec] of lastKnown) {
+    if (!seen.has(id)) { rec.alpha -= 0.15; if (rec.alpha <= 0) lastKnown.delete(id); }
+  }
+  for (const e of snap.entities) lastKnown.set(e.id, { ent: e, alpha: 1 });
+
+  updateHud();
+}
+
+// ============================================================================
+// HUD 更新
+// ============================================================================
+function updateHud() {
+  tickEl.textContent = 'tick:' + (GAME.lastTick || '-');
+  entsEl.textContent = 'entities:' + (lastSnapshot ? lastSnapshot.entities.length : 0);
+  roomEl.textContent = '房间:' + (roomId === 'room_resident_public' ? '主世界' : (state === 'dungeon' ? '副本' : (roomId || '-')));
+  hpEl.textContent = 'HP:' + GAME.localHp + '/' + GAME.localMaxHp;
+  hpFill.style.width = (GAME.localMaxHp > 0 ? Math.max(0, GAME.localHp / GAME.localMaxHp) * 100 : 0) + '%';
+
+  // 技能 CD（tick 左 → 秒）
+  skillCdHud.textContent = 'CD: ' + GAME.skillCd.map((t) => (t > 0 ? (t / TICK_RATE).toFixed(1) + 's' : '·')).join(' ');
+  for (let i = 0; i < 4; i++) {
+    const btn = document.getElementById('btn-skill-' + i);
+    let cdEl = btn.querySelector('.cd');
+    if (GAME.skillCd[i] > 0) {
+      if (!cdEl) { cdEl = document.createElement('div'); cdEl.className = 'cd'; btn.appendChild(cdEl); }
+      cdEl.textContent = (GAME.skillCd[i] / TICK_RATE).toFixed(1) + 's';
+    } else if (cdEl) cdEl.remove();
+  }
+
+  // 格挡
+  const parryBtn = document.getElementById('btn-parry');
+  parryBtn.classList.toggle('active', !!GAME.parryActive);
+  parryHud.textContent = GAME.parryActive ? '格挡中' : '';
+
+  // 进副本 / 出本按钮
+  updateDungeonButton();
+}
+
+function updateDungeonButton() {
+  const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+  const ent = lastSnapshot ? lastSnapshot.entities.find((e) => e.kind === KIND.ENTRANCE) : null;
+  const ep = ent ? ent.pos : ENTRANCE_POS;
+  if (state === 'dungeon') {
+    dungeonBtnLabel.textContent = '出本 (F)';
+    dungeonBtn.disabled = false;
+    dungeonBtn.title = '出本（F）';
+  } else if (state === 'overworld') {
+    dungeonBtnLabel.textContent = '进副本 (F)';
+    const near = me && Math.hypot(me.pos.x - ep.x, me.pos.y - ep.y) <= ENTRANCE_ENTER_RADIUS;
+    dungeonBtn.disabled = !near && !DEBUG;
+    dungeonBtn.title = near ? '进副本（F）' : '靠近裂隙入口（或 ?debug=1 强制）';
+  } else {
+    dungeonBtn.disabled = true;
+  }
+}
+
+// ============================================================================
+// 输入
+// ============================================================================
+// 方向 0=E 1=SE 2=S 3=SW 4=W 5=NW 6=N 7=NE（对齐 movement.ts）
+const KEY_DIRS = {
+  KeyW: { dx: 0, dy: -1 }, ArrowUp: { dx: 0, dy: -1 },
+  KeyS: { dx: 0, dy: 1 }, ArrowDown: { dx: 0, dy: 1 },
+  KeyA: { dx: -1, dy: 0 }, ArrowLeft: { dx: -1, dy: 0 },
+  KeyD: { dx: 1, dy: 0 }, ArrowRight: { dx: 1, dy: 0 },
+};
+
+function dirFromKeys() {
+  let dx = 0, dy = 0;
+  for (const code of keys) { const v = KEY_DIRS[code]; if (v) { dx += v.dx; dy += v.dy; } }
+  if (dx === 0 && dy === 0) return null;
+  if (dx > 0 && dy === 0) return 0;
+  if (dx > 0 && dy > 0) return 1;
+  if (dx === 0 && dy > 0) return 2;
+  if (dx < 0 && dy > 0) return 3;
+  if (dx < 0 && dy === 0) return 4;
+  if (dx < 0 && dy < 0) return 5;
+  if (dx === 0 && dy < 0) return 6;
+  return 7; // dx>0 && dy<0 NE
+}
+
+function sendCmd(cmd) {
+  if (!lastSnapshot || !(state === 'overworld' || state === 'dungeon')) return;
+  sendJson({
+    type: 'input.cmd',
+    payload: { cmd: { seq: seq++, tick: lastSnapshot.tick, ...cmd } },
+  });
+}
+
+function sendMove(dir) {
+  sendCmd({ action: 0, dir });
+  lastMoveDir = dir;
+}
+
+// 松开移动键 → 显式 STOP（协议缺口修复，P0）：服务端清 lastMove 立即停，不再惯性滑行。
+// 幂等：未在移动（lastMoveDir === null）直接返回，不空发网络包。
+function sendStop() {
+  if (lastMoveDir == null) return;
+  sendCmd({ action: ACTION_STOP, dir: lastMoveDir });
+  lastMoveDir = null;
+}
+
+function sendParry() { sendCmd({ action: 1, dir: lastMoveDir ?? 0 }); }
+function sendSkill(slot) { sendCmd({ action: SKILL_ACTIONS[slot] ?? 2, skillSlot: slot, dir: lastMoveDir ?? 0 }); }
+
+// 12Hz 输入循环：按住方向持续发 MOVE（服务端 lastMove 语义）；松开/无有效方向 → 兜底发 STOP
+// （keyup/blur 已即时发 STOP，此处覆盖 keyup 丢失的边缘情况；lastMoveDir===null 时幂等不发）。
+function startInputLoop() {
+  if (inputTimer) clearInterval(inputTimer);
+  inputTimer = setInterval(() => {
+    if (!(state === 'overworld' || state === 'dungeon')) return;
+    const dir = dirFromKeys();
+    if (dir != null) sendMove(dir);
+    else sendStop();
+  }, 80);
+}
+
+// 一次性动作（PARRY/SKILL）在按键沿触发，防连发
+let lastActionAt = 0;
+function fireAction(fn) {
+  const now = performance.now();
+  if (now - lastActionAt < 120) return; // 轻微防抖
+  lastActionAt = now;
+  fn();
+}
+
+window.addEventListener('keydown', (e) => {
+  if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+  keys.add(e.code);
+  if (e.repeat) return;
+  if (e.code === 'Space') fireAction(sendParry);
+  if (e.code === 'Digit1') fireAction(() => sendSkill(0));
+  if (e.code === 'Digit2') fireAction(() => sendSkill(1));
+  if (e.code === 'Digit3') fireAction(() => sendSkill(2));
+  if (e.code === 'Digit4') fireAction(() => sendSkill(3));
+  if (e.code === 'KeyF') fireAction(toggleDungeon);
+});
+window.addEventListener('keyup', (e) => {
+  keys.delete(e.code);
+  // 最后一个移动键松开 → 显式 STOP（P0 手感修复：服务端清 lastMove 立即停）。
+  if (KEY_DIRS[e.code] && dirFromKeys() === null) sendStop();
+});
+// 失焦 / 切页 / 断连前：清按键 + 显式 STOP，避免服务端沿最后方向惯性滑行。
+window.addEventListener('blur', () => {
+  keys.clear();
+  sendStop();
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    keys.clear();
+    sendStop();
+  }
+});
+window.addEventListener('beforeunload', () => {
+  // 尽力而为：断连前补发一次 STOP（ws close 后服务端也会在 grace 后清玩家，这里是双保险）。
+  if (lastMoveDir != null && ws && ws.readyState === 1) {
+    try {
+      sendJson({
+        type: 'input.cmd',
+        payload: { cmd: { seq: seq++, tick: lastSnapshot ? lastSnapshot.tick : 0, action: ACTION_STOP, dir: lastMoveDir } },
+      });
+    } catch { /* ignore */ }
+    lastMoveDir = null;
+  }
+});
+
+// 技能/格挡按钮
+for (let i = 0; i < 4; i++) {
+  document.getElementById('btn-skill-' + i).addEventListener('click', () => fireAction(() => sendSkill(i)));
+}
+document.getElementById('btn-parry').addEventListener('click', () => fireAction(sendParry));
+dungeonBtn.addEventListener('click', toggleDungeon);
+
+// 进副本 / 出本
+function enterDungeon() {
+  sendJson({ type: 'dungeon.enter', requestId: 'enter', payload: { entranceId: 1 } });
+}
+function exitDungeon() {
+  sendJson({ type: 'dungeon.exit', requestId: 'exit' });
+}
+function toggleDungeon() {
+  if (state === 'dungeon') { exitDungeon(); return; }
+  if (state !== 'overworld') return;
+  if (DEBUG) { enterDungeon(); return; }
+  // UX：非 debug 模式需靠近裂隙入口（服务端只校验冷却/主世界，此处是客户端门槛）
+  const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+  const ent = lastSnapshot ? lastSnapshot.entities.find((e) => e.kind === KIND.ENTRANCE) : null;
+  const ep = ent ? ent.pos : ENTRANCE_POS;
+  if (me && Math.hypot(me.pos.x - ep.x, me.pos.y - ep.y) <= ENTRANCE_ENTER_RADIUS) enterDungeon();
+  else toast('请先靠近裂隙入口');
+}
+
+// 调试钩子（?debug=1 时暴露给 E2E）
+if (DEBUG) {
+  GAME.debugEnterDungeon = enterDungeon;
+  GAME.debugExitDungeon = exitDungeon;
+  GAME.sendMove = sendMove;
+  GAME.sendSkill = sendSkill;
+  GAME.sendParry = sendParry;
+}
+
+// ============================================================================
+// 渲染
+// ============================================================================
+function worldToScreen(p) {
+  return {
+    x: (p.x - view.cx) * view.scale + view.w / 2,
+    y: (p.y - view.cy) * view.scale + view.h / 2,
+  };
+}
+
+// 插值：renderTick 时刻的实体位置（INTERP_DELAY_MS 缓冲 lerp；本地玩家同样走插值，
+// 无预测回正 —— 100ms 延迟即「手感待调」已知限制，Phase-2 再做本地预测）。
+let renderTick = 0;
+function interpPos(id) {
+  let a = null, b = null;
+  for (let i = snapBuffer.length - 1; i >= 0; i--) {
+    const s = snapBuffer[i];
+    const ent = s.entities.get(id);
+    if (!ent) continue;
+    if (s.tick <= renderTick) { a = { tick: s.tick, pos: ent.pos }; break; }
+    b = { tick: s.tick, pos: ent.pos };
+  }
+  if (a && b) {
+    const span = Math.max(1, b.tick - a.tick);
+    const f = Math.min(1, Math.max(0, (renderTick - a.tick) / span));
+    return { x: a.pos.x + (b.pos.x - a.pos.x) * f, y: a.pos.y + (b.pos.y - a.pos.y) * f };
+  }
+  if (a) return { x: a.pos.x, y: a.pos.y };
+  if (b) return { x: b.pos.x, y: b.pos.y };
+  const rec = lastKnown.get(id);
+  return rec ? { x: rec.ent.pos.x, y: rec.ent.pos.y } : null;
+}
+
+function draw() {
+  requestAnimationFrame(draw);
+  if (!lastSnapshot) {
+    ctx.fillStyle = '#14161c';
+    ctx.fillRect(0, 0, view.w, view.h);
+    ctx.fillStyle = '#7a8699';
+    ctx.font = '15px system-ui';
+    ctx.fillText('等待服务器快照…', 24, 48);
+    return;
+  }
+
+  // 渲染 tick = 最新 tick - INTERP_DELAY（100ms ≈ 1.2 tick）
+  renderTick = lastSnapshot.tick - INTERP_DELAY_MS / tickMs;
+
+  // 相机跟随本地玩家（插值位置）
+  if (view.follow && localEntityId != null) {
+    const p = interpPos(localEntityId) || (lastSnapshot.entities.find((e) => e.id === localEntityId) || {}).pos;
+    if (p) { view.cx = p.x; view.cy = p.y; }
+  }
+  const camX = view.cx, camY = view.cy;
+
+  ctx.fillStyle = '#14161c';
+  ctx.fillRect(0, 0, view.w, view.h);
+
+  ctx.save();
+  ctx.translate(view.w / 2 - camX * view.scale, view.h / 2 - camY * view.scale);
+  ctx.scale(view.scale, view.scale);
+
+  drawGrid();
+  drawWorldBounds();
+  drawTelegraphs();
+  drawEntities();
+
+  ctx.restore();
+  drawMinimap(camX, camY);
+}
+
+function drawGrid() {
+  const x0 = Math.max(0, Math.floor((view.cx - view.w / 2 / view.scale) / TILE) * TILE);
+  const x1 = Math.min(WORLD_W, Math.ceil((view.cx + view.w / 2 / view.scale) / TILE) * TILE);
+  const y0 = Math.max(0, Math.floor((view.cy - view.h / 2 / view.scale) / TILE) * TILE);
+  const y1 = Math.min(WORLD_H, Math.ceil((view.cy + view.h / 2 / view.scale) / TILE) * TILE);
+  ctx.strokeStyle = 'rgba(90,100,120,0.14)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let x = x0; x <= x1; x += TILE) { ctx.moveTo(x, y0); ctx.lineTo(x, y1); }
+  for (let y = y0; y <= y1; y += TILE) { ctx.moveTo(x0, y); ctx.lineTo(x1, y); }
+  ctx.stroke();
+  // 安全区/出生区淡色块（主世界入口附近）
+  ctx.fillStyle = 'rgba(95,208,224,0.04)';
+  ctx.fillRect(18 * TILE, 13 * TILE, 4 * TILE, 4 * TILE);
+}
+
+function drawWorldBounds() {
+  ctx.strokeStyle = 'rgba(200,180,140,0.35)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(1, 1, WORLD_W - 2, WORLD_H - 2);
+}
+
+function drawHpBar(x, y, w, hp, maxHp, alignBottom) {
+  if (!maxHp) return;
+  const h = 5;
+  const bx = x - w / 2, by = alignBottom ? y - 12 : y - 30;
+  ctx.fillStyle = 'rgba(0,0,0,0.65)';
+  ctx.fillRect(bx - 1, by - 1, w + 2, h + 2);
+  ctx.fillStyle = '#3a0f12';
+  ctx.fillRect(bx, by, w, h);
+  const f = Math.max(0, Math.min(1, hp / maxHp));
+  ctx.fillStyle = f > 0.5 ? '#5fa85f' : (f > 0.25 ? '#f2a03c' : '#c8324a');
+  ctx.fillRect(bx, by, w * f, h);
+}
+
+function drawPlayer(e, p) {
+  const isLocal = e.id === localEntityId;
+  const size = isLocal ? 30 : 26;
+  const s = worldToScreen(p);
+  if (s.x < -60 || s.y < -60 || s.x > view.w + 60 || s.y > view.h + 60) return;
+
+  // 朝向指示
+  const ang = e.dir * Math.PI / 4;
+  const facing = { x: Math.cos(ang), y: Math.sin(ang) };
+
+  ctx.save();
+  ctx.translate(s.x, s.y);
+
+  // 身体（青色方块 + 描边）
+  ctx.fillStyle = isLocal ? '#4CB5F5' : '#3f87b8';
+  ctx.strokeStyle = isLocal ? '#eaf6ff' : '#7fb3d9';
+  ctx.lineWidth = isLocal ? 2.5 : 1.5;
+  roundRect(-size / 2, -size / 2, size, size, 6);
+  ctx.fill(); ctx.stroke();
+
+  // 朝向点
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(size * 0.28 * facing.x, size * 0.28 * facing.y, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 本地玩家金圈
+  if (isLocal) {
+    ctx.strokeStyle = 'rgba(255,210,0,0.95)';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = 'rgba(255,210,0,0.8)';
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(0, 0, size / 2 + 5, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  // 格挡光环
+  if (e.parryState && e.parryState.active) {
+    ctx.strokeStyle = '#5fd0e0';
+    ctx.lineWidth = 3;
+    ctx.shadowColor = '#5fd0e0';
+    ctx.shadowBlur = 14;
+    ctx.beginPath();
+    ctx.arc(0, 0, size / 2 + 9, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(95,208,224,0.12)';
+    ctx.beginPath(); ctx.arc(0, 0, size / 2 + 9, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+
+  drawHpBar(s.x, s.y, isLocal ? 44 : 38, e.hp, e.maxHp, true);
+}
+
+function drawEnemy(e, p) {
+  const s = worldToScreen(p);
+  if (s.x < -80 || s.y < -80 || s.x > view.w + 80 || s.y > view.h + 80) return;
+  const isBoss = e.kind === KIND.BOSS;
+  const isElite = e.tier === 1;
+  const size = isBoss ? 52 : (isElite ? 34 : 26);
+
+  ctx.save();
+  ctx.translate(s.x, s.y);
+
+  // 身体（圆形；BOSS 多层 + 金环）
+  const ang = e.dir * Math.PI / 4;
+  const facing = { x: Math.cos(ang), y: Math.sin(ang) };
+  if (isBoss) {
+    ctx.fillStyle = '#7d1f2b';
+    ctx.strokeStyle = '#e5b25d';
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = 'rgba(229,178,93,0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(0, 0, size / 2 + 6, 0, Math.PI * 2); ctx.stroke();
+  } else {
+    ctx.fillStyle = isElite ? '#5f8fb0' : '#e5484d';
+    ctx.strokeStyle = isElite ? '#aad4ea' : '#ffb3b3';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    if (isElite) {
+      ctx.strokeStyle = 'rgba(95,208,224,0.8)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(0, 0, size / 2 + 4, 0, Math.PI * 2); ctx.stroke();
+    }
+  }
+  // 朝向点
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.beginPath();
+  ctx.arc(size * 0.30 * facing.x, size * 0.30 * facing.y, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  drawHpBar(s.x, s.y, isBoss ? 72 : (isElite ? 48 : 38), e.hp, e.maxHp, true);
+  // tier 标签
+  if (isBoss) { ctx.fillStyle = '#e5b25d'; ctx.font = '10px system-ui'; ctx.textAlign = 'center'; ctx.fillText('BOSS', s.x, s.y - 40); }
+  else if (isElite) { ctx.fillStyle = '#5fd0e0'; ctx.font = '9px system-ui'; ctx.textAlign = 'center'; ctx.fillText('精英', s.x, s.y - 26); }
+}
+
+function drawLoot(e, p) {
+  const s = worldToScreen(p);
+  if (s.x < -40 || s.y < -40 || s.x > view.w + 40 || s.y > view.h + 40) return;
+  const rarity = e.loot ? e.loot.rarity : 0;
+  const color = RARITY_COLORS[rarity] || '#D8D2C4';
+  const r = 9;
+
+  // 漂浮光晕 + 菱形
+  ctx.save();
+  ctx.translate(s.x, s.y);
+  ctx.shadowColor = color; ctx.shadowBlur = 8;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(0, -r); ctx.lineTo(r, 0); ctx.lineTo(0, r); ctx.lineTo(-r, 0);
+  ctx.closePath(); ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.beginPath(); ctx.arc(0, 0, 2.5, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+
+  // 稀有度名 + itemId
+  ctx.fillStyle = color;
+  ctx.font = '10px system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText((RARITY_NAMES[rarity] || '?') + ' ' + (e.loot ? e.loot.itemId : ''), s.x, s.y + 24);
+  // TTL 微提示
+  if (e.loot && e.loot.ttlTicks != null) {
+    ctx.fillStyle = 'rgba(200,200,210,0.55)';
+    ctx.font = '8px system-ui';
+    ctx.fillText((e.loot.ttlTicks / TICK_RATE).toFixed(0) + 's', s.x, s.y + 34);
+  }
+}
+
+function drawEntrance(e, p) {
+  const s = worldToScreen(p);
+  if (s.x < -80 || s.y < -80 || s.x > view.w + 80 || s.y > view.h + 80) return;
+  const t = performance.now() / 1000;
+  const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((x) => x.id === localEntityId) : null;
+  const near = me && Math.hypot(me.pos.x - e.pos.x, me.pos.y - e.pos.y) <= ENTRANCE_ENTER_RADIUS;
+
+  ctx.save();
+  ctx.translate(s.x, s.y);
+  // 旋转涡流（裂隙异象）
+  for (let i = 0; i < 3; i++) {
+    const rr = 18 + i * 10 + Math.sin(t * 2 + i) * 3;
+    ctx.strokeStyle = i === 0 ? '#9b5fd6' : (i === 1 ? '#5fd0e0' : 'rgba(155,95,214,0.4)');
+    ctx.lineWidth = 3 - i * 0.7;
+    ctx.setLineDash([6, 5]);
+    ctx.lineDashOffset = -t * 40 * (i + 1);
+    ctx.beginPath(); ctx.arc(0, 0, rr, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  ctx.fillStyle = 'rgba(155,95,214,0.18)';
+  ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI * 2); ctx.fill();
+  // 中心
+  ctx.fillStyle = near ? '#e8d5ff' : '#cbb';
+  ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle = near ? '#e8d5ff' : 'rgba(200,190,220,0.8)';
+  ctx.font = '11px system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText(near ? '裂隙入口（按 F）' : '裂隙入口', s.x, s.y - 30);
+  // 冷却提示
+  if (e.entrance && e.entrance.cooldownTicks > 0) {
+    const left = e.entrance.cooldownTicks - (GAME.lastTick - e.entrance.lastUsedTick);
+    if (left > 0) {
+      ctx.fillStyle = '#f2a03c';
+      ctx.font = '9px system-ui';
+      ctx.fillText('冷却 ' + (left / TICK_RATE).toFixed(1) + 's', s.x, s.y - 20);
+    }
+  }
+}
+
+function drawTelegraph(e, p) {
+  if (!e.telegraph) return;
+  const s = worldToScreen(p);
+  if (s.x < -120 || s.y < -120 || s.x > view.w + 120 || s.y > view.h + 120) return;
+  const t = e.telegraph;
+  const radius = t.radius || 60;
+  const progress = t.applyTick > t.startTick ? Math.min(1, Math.max(0, (GAME.lastTick - t.startTick) / (t.applyTick - t.startTick))) : 0;
+  ctx.save();
+  ctx.translate(s.x, s.y);
+  ctx.globalAlpha = 0.3 + progress * 0.45;
+  ctx.fillStyle = t.color === 1 ? '#5fd0e0' : '#e5484d';
+  ctx.strokeStyle = t.color === 1 ? '#5fd0e0' : '#e5484d';
+  if (t.shape === 1) { ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.fill(); }
+  else {
+    ctx.lineWidth = 3 + progress * 3;
+    ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
+    ctx.globalAlpha = 0.12; ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawTelegraphs() {
+  if (!lastSnapshot) return;
+  for (const e of lastSnapshot.entities) {
+    if (e.kind !== KIND.TELEGRAPH) continue;
+    const p = interpPos(e.id) || e.pos;
+    if (p) drawTelegraph(e, p);
+  }
+}
+
+function drawEntities() {
+  if (!lastSnapshot) return;
+  // 入口画在实体底层
+  for (const e of lastSnapshot.entities) {
+    if (e.kind !== KIND.ENTRANCE) continue;
+    drawEntrance(e, e.pos);
+  }
+  for (const e of lastSnapshot.entities) {
+    if (e.kind === KIND.ENTRANCE) continue;
+    const p = interpPos(e.id) || e.pos;
+    if (!p) continue;
+    if (e.kind === KIND.PLAYER) drawPlayer(e, p);
+    else if (e.kind === KIND.ENEMY || e.kind === KIND.BOSS) drawEnemy(e, p);
+    else if (e.kind === KIND.LOOT_GROUND) drawLoot(e, p);
+    else if (e.kind === KIND.TELEGRAPH) { /* telegraph 已底层绘制 */ }
+  }
+  // 消失实体淡出
+  for (const [id, rec] of lastKnown) {
+    if (!lastSnapshot.entities.some((e) => e.id === id)) {
+      const p = rec.ent.pos;
+      const s = worldToScreen(p);
+      if (s.x < -80 || s.y < -80 || s.x > view.w + 80 || s.y > view.h + 80) continue;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, rec.alpha);
+      if (rec.ent.kind === KIND.LOOT_GROUND) { drawLoot(rec.ent, p); }
+      else if (rec.ent.kind === KIND.ENEMY || rec.ent.kind === KIND.BOSS) { drawEnemy(rec.ent, p); }
+      ctx.restore();
+    }
+  }
+}
+
+function drawMinimap(camX, camY) {
+  const mw = 150, mh = 112, mx = view.w - mw - 12, my = 52;
+  const kx = mw / WORLD_W, ky = mh / WORLD_H;
+  ctx.save();
+  ctx.globalAlpha = 0.85;
+  ctx.fillStyle = 'rgba(10,12,16,0.85)';
+  ctx.fillRect(mx - 2, my - 2, mw + 4, mh + 4);
+  ctx.strokeStyle = 'rgba(90,100,120,0.5)';
+  ctx.strokeRect(mx - 2, my - 2, mw + 4, mh + 4);
+  if (lastSnapshot) {
+    for (const e of lastSnapshot.entities) {
+      let col = null;
+      if (e.kind === KIND.PLAYER) col = e.id === localEntityId ? '#ffd200' : '#4cb5f5';
+      else if (e.kind === KIND.ENEMY) col = '#e5484d';
+      else if (e.kind === KIND.BOSS) col = '#e5b25d';
+      else if (e.kind === KIND.LOOT_GROUND) col = RARITY_COLORS[e.loot ? e.loot.rarity : 0];
+      else if (e.kind === KIND.ENTRANCE) col = '#9b5fd6';
+      if (!col) continue;
+      ctx.fillStyle = col;
+      const r = e.kind === KIND.BOSS ? 4 : (e.kind === KIND.PLAYER ? 3 : 2);
+      ctx.fillRect(mx + e.pos.x * kx - r / 2, my + e.pos.y * ky - r / 2, r, r);
+    }
+  }
+  // 视野框
+  const vw = view.w / view.scale * kx, vh = view.h / view.scale * ky;
+  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+  ctx.strokeRect(mx + camX * kx - vw / 2, my + camY * ky - vh / 2, vw, vh);
+  ctx.restore();
+}
+
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+// ── 启动 ──
+resize();
+connect();
+draw();
+})();
+</script>
+</body>
+</html>

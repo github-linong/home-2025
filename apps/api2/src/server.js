@@ -4,6 +4,7 @@ import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
 import { auth, pool } from "./auth.js";
 import { createLearnRouter } from "./learn/routes.js";
 import { createDemoRouter } from "./demo/stream-routes.js";
+import { createSwaggerTsRouter } from "./demo/swagger-ts-routes.js";
 import { createCompareRouter, handleWsUpgrade } from "./demo/compare-routes.js";
 import { createGuideRouter } from "./demo/guide-routes.js";
 import { createTtsRouter } from "./demo/tts-routes.js";
@@ -79,6 +80,8 @@ app.get("/api/me", async (req, res) => {
 
 app.use("/api/learn", createLearnRouter(pool));
 app.use("/api/demo", express.json({ limit: "30mb" }), createDemoRouter());
+// swagger-typescript-api 服务端生成：Body 限流单独收紧到 4mb（生成器本身较重）。
+app.use("/api/demo", express.json({ limit: "4mb" }), createSwaggerTsRouter());
 app.use("/api/demo/compare", createCompareRouter());
 app.use("/api/demo/guide", createGuideRouter());
 app.use("/api/demo/tts", createTtsRouter());
