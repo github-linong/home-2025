@@ -28,6 +28,7 @@
  *      H1 伤害飘字（lastHits 记录敌人受击）
  *      H2 击杀反馈（lastKills，信息项不阻塞）
  *      F  出本
+ *      D3 E10 死亡体验探针（信息项）：故意被精英/BOSS 击杀 → downed 钩子 → 复活回血
  *      G  断线自动重连（CDP 模拟断网 → session.reconnect）
  *      Z  零 pageerror / GAME.errors / console.error
  *   5) 截图存 ./verify/01-overworld.png … 06-final.png；退出码 0=全绿 1=有失败
@@ -524,6 +525,64 @@ const main = async () => {
       record("H2 击杀反馈", true, "SKIPPED（信息项）");
     }
 
+    // ── E10 死亡体验探针（信息项，不阻塞回归）：故意被精英/BOSS 击杀 → 断言倒地 → 复活回血 ──
+    // 时序受副本随机布局影响（BOSS/精英位置、出生点），故为信息项：未触发仅记录 detail，不判 FAIL。
+    // 位置放在 F1 之前：探针结束保证玩家已复活（倒地 10s 服务端确定性复活），F1 出本不受影响。
+    let deathInfo = { downed: false, revived: false, note: "" };
+    if (okEnter) {
+      try {
+        const aggro = await page.evaluate(() => {
+          const g = window.__game, s = g.lastSnapshot;
+          if (!s || g.localEntityId == null) return null;
+          const me = s.entities.find((e) => e.id === g.localEntityId);
+          if (!me) return null;
+          let best = null, bd = Infinity;
+          for (const e of s.entities) {
+            if (e.kind !== 2 && !(e.kind === 1 && e.tier === 1)) continue; // BOSS 或精英（aggressive）
+            if (e.hp <= 0) continue;
+            const d = Math.hypot(e.pos.x - me.pos.x, e.pos.y - me.pos.y);
+            if (d < bd) { bd = d; best = e; }
+          }
+          return best ? { id: best.id, x: best.pos.x, y: best.pos.y } : null;
+        });
+        if (aggro) {
+          const tExpr = `s.entities.find(e => e.id === ${aggro.id}) ? { x: s.entities.find(e => e.id === ${aggro.id}).pos.x, y: s.entities.find(e => e.id === ${aggro.id}).pos.y } : null`;
+          const walkRes = await walkToward(page, tExpr, 40, 25); // 走进接触范围（≤48px）
+          if (walkRes.ok) {
+            // 站桩不格挡 → 被击杀（精英 atk24/12tick，约 2s 内死亡）→ 服务端置 DOWNED
+            const downedSeen = await waitFor(page, "window.__game.downed === true", 15000, "e10 downed");
+            deathInfo.downed = downedSeen;
+            if (downedSeen) {
+              const dl = await page.evaluate(() => ({ since: window.__game.downedSinceTick, tick: window.__game.lastTick, hp: window.__game.localHp }));
+              deathInfo.note = `倒地 sinceTick≈${dl.since}/cur=${dl.tick} hp=${dl.hp}`;
+              const revived = await waitFor(page, "window.__game.downed === false", 20000, "e10 revive");
+              deathInfo.revived = revived;
+              const st = await page.evaluate(() => ({ hp: window.__game.localHp, maxHp: window.__game.localMaxHp, iframes: window.__game.iframes }));
+              deathInfo.note += ` → 复活 hp=${st.hp}/${st.maxHp} iframes=${st.iframes}`;
+            } else {
+              deathInfo.note = "站桩未触发倒地（目标未接触 / 被其它怪干扰）";
+            }
+          } else {
+            deathInfo.note = "未能走进接触范围（布局随机）";
+          }
+        } else {
+          deathInfo.note = "副本无精英/BOSS（布局随机）";
+        }
+      } catch (e) {
+        deathInfo.note = "探针异常: " + String(e);
+      }
+      record("D3 E10 死亡体验(倒地→复活, 信息项)", true,
+        deathInfo.downed
+          ? `闭环成立：${deathInfo.note}`
+          : `未触发（信息项，不阻塞）：${deathInfo.note}`);
+    } else {
+      record("D3 E10 死亡体验(倒地→复活, 信息项)", true, "SKIPPED（未进副本）");
+    }
+    // 探针后确保玩家存活（倒地 10s 服务端确定性复活；防御性等待，防 F1 在倒地态被禁用）。
+    if (okEnter && deathInfo.downed) {
+      await waitFor(page, "window.__game.downed === false", 15000, "alive before exit");
+    }
+
     // ── F. 出本 ──
     if (okEnter) {
       await page.keyboard.press("KeyF");
@@ -583,6 +642,7 @@ const main = async () => {
       "M1/M2 鼠标交互（E8）：page.mouse.click 真实鼠标事件 → 左键点空地发 MOVE{targetTile} 点击移动；左键点敌人点选 → MOVE 走近 + ATTACK 普攻（服务端权威 CD/距离/伤害，lastHits 复用伤害飘字）。",
       "技能命中敌人受副本随机布局影响：未命中时以「服务端接受 cast(skillCd>0)」为次优断言；H2 击杀反馈为信息项不阻塞。",
       "重连测试用 CDP 模拟断网(服务端 ping 超时断开)→ 恢复后 session.reconnect。",
+      "D3 E10 死亡体验为信息项：故意被精英/BOSS 击杀 → 断言 window.__game.downed（倒地红屏+倒计时）→ 复活回血（IFRAME 闪烁）。受副本随机布局影响，未触发不判 FAIL（不阻塞回归）。",
     ],
   }, null, 2));
   process.exit(failed.length > 0 ? 1 : 0);

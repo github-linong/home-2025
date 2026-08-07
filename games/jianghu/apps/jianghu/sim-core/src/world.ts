@@ -53,6 +53,8 @@ import {
   BOSS_PHASE2_ATTACK_INTERVAL_TICKS,
   DEFAULT_RESPAWN_TICKS,
   RESPAWN_POS,
+  DOWNED_TICKS, // E10：倒地时长（tick）→ 自动复活
+  REVIVE_IFRAME_TICKS, // E10：复活无敌帧（tick）→ IFRAME 防围杀
   LOOT_GROUND_TTL_TICKS,
   ENEMY_BASE_ATK,
   ENTRANCE_COOLDOWN_TICKS, // E5：入口冷却（C-Dgn-4）
@@ -146,6 +148,9 @@ interface Actor {
   level?: number; // 玩家等级（L1 默认；L1 全零加成，golden 锚点）
   xp?: number; // 玩家当前经验（击杀累计；会话内权威，升级时与持久化同步）
   levelStats?: { atk: number; maxHp: number }; // 等级派生属性缓存（复用 equipStats 思路；仅 addPlayer/升级时计算）
+  // E10 新增（玩家倒地/复活；**不进 EntityState 快照**，C12 纪律——客户端用固定 DOWNED_TICKS 推算倒计时）
+  downedAtTick?: number; // 玩家倒地起始 tick（复活计时；仅 world 内部）
+  iframesUntilTick?: number; // 复活无敌帧截止 tick（IFRAME 到期清位；仅 world 内部）
 }
 
 interface SpawnZoneRuntime {
@@ -259,6 +264,8 @@ const TIER_NAMES = ["normal", "elite", "boss"] as const;
  * 纯函数式地改写 e/target 状态（world.step 内调用；无随机无 Date.now，D9）。
  */
 function maybeEnemyAttack(e: Actor, target: Actor, t: number): void {
+  // E10：复活无敌帧内敌人接触攻击无效（IFRAME 防围杀；IFRAME 位在复活时置、到期清）。
+  if (target.status & EntityStatus.IFRAME) return;
   const phase2 = e.kind === EntityKind.BOSS && (e.bossPhase ?? 0) >= 1;
   const interval = phase2 ? BOSS_PHASE2_ATTACK_INTERVAL_TICKS : ENEMY_ATTACK_INTERVAL_TICKS;
   if (t - (e.lastAttackTick ?? -interval) >= interval) {
@@ -518,6 +525,10 @@ export function createWorld(opts: CreateWorldOpts): World {
       const last = lastSeq.get(seatId);
       if (last !== undefined && cmd.seq <= last) return;
       lastSeq.set(seatId, cmd.seq);
+      // E10：倒地玩家输入全丢弃（MOVE/ATTACK/SKILL/PARRY/STOP 均无效），seq 仍单调推进。
+      //   倒地不再续行：死亡时已清 pending/lastMove；此处拦截新输入（防起身前移动/攻击/格挡）。
+      const downedActor = actors.find((x) => x.id === players.get(seatId));
+      if (downedActor && (downedActor.status & EntityStatus.DOWNED)) return;
       // STOP：松开移动键 → 清 pending + lastMove，step 立即停（不再续行）。
       // 注意：STOP 不缓冲进 pending（自身无移动语义），只消费一个 seq 并清状态；
       // 之后同一 tick 再来的更高 seq 输入（如重新 MOVE）会正常覆盖。
@@ -570,6 +581,11 @@ export function createWorld(opts: CreateWorldOpts): World {
         if (a.parryState && a.parryState.windowEndTick < t) {
           a.parryState = undefined;
           a.status &= ~EntityStatus.PARRY_ACTIVE;
+        }
+        // E10：复活无敌帧到期清位（IFRAME；tick 驱动确定性，无 Date.now/Math.random）。
+        if (a.iframesUntilTick !== undefined && t >= a.iframesUntilTick) {
+          a.iframesUntilTick = undefined;
+          a.status &= ~EntityStatus.IFRAME;
         }
 
         const cmd = pending.get(seatId);
@@ -734,6 +750,8 @@ export function createWorld(opts: CreateWorldOpts): World {
         for (const [, actorId] of players) {
           const p = actors.find((x) => x.id === actorId);
           if (!p || p.hp <= 0) continue;
+          // E10：倒地玩家不参与索敌/接触攻击（已在 CHASE 的敌人目标归空 → IDLE 解除追击）。
+          if (p.status & EntityStatus.DOWNED) continue;
           const d = Math.hypot(p.x - e.x, p.y - e.y);
           if (d < best) {
             best = d;
@@ -773,15 +791,37 @@ export function createWorld(opts: CreateWorldOpts): World {
           deadEnemyIds.add(e.id);
         }
       }
-      // 玩家死亡 → 回安全区复活（决策④：不掉永久装备）。
+      // E10 玩家死亡 → 倒地（DOWNED）：躺尸 → DOWNED_TICKS 后自动复活回 RESPAWN_POS。
+      //   倒地期间（status 含 DOWNED）：输入全丢弃（enqueueInput 拦截）、敌人索敌/接触跳过
+      //   （目标选择过滤）、不参与拾取（下方拾取循环过滤）、不掉装不送 xp（玩家非敌人实体，
+      //   无击杀归属；决策④死亡不掉永久装备）。
+      //   复活：hp = 当前 maxHp（含装备/等级加成）、回 RESPAWN_POS、清 DOWNED、置 IFRAME。
+      //   副本内死亡同样回该 world 的 RESPAWN_POS（副本 world 用同一常量，见 constants.ts 说明）。
       for (const a of actors) {
-        if (a.kind === EntityKind.PLAYER && a.hp <= 0) {
-          // E7：复活回满当前 maxHp（含装备加成；无装备 = PLAYER_MAX_HP，golden 锚点不变）。
-          a.hp = a.maxHp;
-          a.x = RESPAWN_POS.x;
-          a.y = RESPAWN_POS.y;
+        if (a.kind !== EntityKind.PLAYER) continue;
+        if (a.hp <= 0 && !(a.status & EntityStatus.DOWNED)) {
+          // 进入倒地：hp 归零、置 DOWNED、记倒地起始 tick、清 parry 与 seat 续行。
+          a.hp = 0;
+          a.status |= EntityStatus.DOWNED;
+          a.downedAtTick = t;
           a.parryState = undefined;
           a.status &= ~EntityStatus.PARRY_ACTIVE;
+          if (a.ownerId !== undefined) {
+            pending.delete(a.ownerId);
+            lastMove.delete(a.ownerId);
+          }
+        } else if (a.status & EntityStatus.DOWNED) {
+          // 倒计时到 → 复活（tick 驱动，确定性）。
+          const downedStart = a.downedAtTick ?? Number.POSITIVE_INFINITY;
+          if (t >= downedStart + DOWNED_TICKS) {
+            a.hp = a.maxHp; // 回满当前 maxHp（E7 装备 + E9 等级加成已并入 maxHp）
+            a.x = RESPAWN_POS.x;
+            a.y = RESPAWN_POS.y;
+            a.status &= ~EntityStatus.DOWNED;
+            a.status |= EntityStatus.IFRAME; // 复活 3s 无敌帧防围杀
+            a.iframesUntilTick = t + REVIVE_IFRAME_TICKS;
+            a.downedAtTick = undefined; // 清理（不进快照）
+          }
         }
       }
       if (deadEnemyIds.size > 0) {
@@ -894,6 +934,8 @@ export function createWorld(opts: CreateWorldOpts): World {
         for (const [, actorId] of players) {
           const p = actors.find((x) => x.id === actorId);
           if (!p) continue;
+          // E10：倒地玩家不参与拾取（躺尸不捡装备）。
+          if (p.status & EntityStatus.DOWNED) continue;
           if (Math.hypot(p.x - a.x, p.y - a.y) < PICKUP_RADIUS) {
             const loot: LootResult = {
               itemId: a.loot.itemId,

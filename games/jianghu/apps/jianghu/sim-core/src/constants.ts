@@ -238,6 +238,18 @@ export const DEFAULT_RESPAWN_TICKS = 30 * TICK_RATE;
 /** 玩家死亡复活点（tile 对齐；persistence SAFE_SPAWN 同源，world 不复用 server 模块，C6）。 */
 export const RESPAWN_POS = { x: 16 * TILE, y: 15 * TILE } as const;
 
+/**
+ * 玩家倒地时长（tick）。E10：hp≤0 → DOWNED → 倒地 10s 后自动复活回 RESPAWN_POS。
+ * 10s @12Hz = 120。C7 单一来源（world 复活计时 / 客户端倒计时镜像）。
+ */
+export const DOWNED_TICKS = 10 * TICK_RATE;
+
+/**
+ * 复活后无敌帧（tick）。E10：复活回城后 3s 内 IFRAME（敌人接触攻击无效，防围杀）。
+ * 3s @12Hz = 36。C7 单一来源（world IFRAME 到期清位 / 客户端闪烁镜像）。
+ */
+export const REVIVE_IFRAME_TICKS = 3 * TICK_RATE;
+
 /** 稀有度名称顺序（索引 0=白/1=蓝/2=金/3=暗金），与 AFFIX_COUNTS / EntityState.LootState.rarity / InventoryItem.rarity 对齐。 */
 export const RARITY_NAMES = ["white", "blue", "gold", "darkgold"] as const;
 

@@ -162,7 +162,8 @@
 <div id="help">
   <b>左键点敌人</b> 自动走近普攻 · <b>左键点地面</b> 点击移动 · <b>WASD/方向键</b> 移动（8 向） · <b>空格</b> 格挡 · <b>1-4</b> 技能 · <b>I</b> 背包<br>
   <b>F</b> 进副本/出本 · 靠近掉落按 <b>F</b>（走近自动拾取） · <b>滚轮</b> 缩放 · <b>拖拽</b> 平移 · <b>双击</b> 回中<br>
-  <b>装备</b>：背包内点「装备」穿装（攻击/生命/暴击立即提升） · 点击装备栏槽位卸下
+  <b>装备</b>：背包内点「装备」穿装（攻击/生命/暴击立即提升） · 点击装备栏槽位卸下<br>
+  <b>死亡</b>：倒地 10s 后自动复活回城 · 死亡不掉永久装备
 </div>
 
 <script>
@@ -208,6 +209,11 @@ const MELEE_RANGE = 48;                 // 服务端 MELEE_RANGE=1×TILE（近�
 const ATTACK_CD_TICKS = 6;              // 服务端 ATTACK_CD_TICKS=6（0.5s 普攻间隔；CD 由服务端权威）
 const ARRIVE_TOL = 24;                  // 服务端 TARGET_ARRIVE_TOL=0.5×TILE（点击移动到达容差）
 const CLICK_DRAG_TOL = 6;               // 鼠标位移阈值：超过视为拖拽平移，否则为左键点击
+// ── E10 死亡/复活（服务端 constants.ts C7 镜像 + EntityStatus bitmask）──
+const DOWNED_TICKS = 10 * TICK_RATE;    // 服务端 DOWNED_TICKS=120（倒地 10s 自动复活）
+const REVIVE_IFRAME_TICKS = 3 * TICK_RATE; // 服务端 REVIVE_IFRAME_TICKS=36（复活 3s 无敌帧）
+const STATUS_IFRAME = 1 << 4;           // EntityStatus.IFRAME（复活无敌帧闪烁）
+const STATUS_DOWNED = 1 << 5;           // EntityStatus.DOWNED（倒地不可行动）
 
 // ── C2 手感/表现参数（WEB-FEEL 模式）──
 const BASE_SPEED = 4;                   // 服务端 BASE_SPEED（格/秒，constants.ts C7 镜像）
@@ -284,6 +290,8 @@ const GAME = window.__game = {
   selectedEnemyId: null, combatTarget: null, moveTarget: null, lastAttackAt: 0,
   // E9：等级/经验（character.level 消息；E2E 断言钩子：登录态打怪后 levelInfo 存在 + 经验条渲染）
   levelInfo: { level: 1, xp: 0, xpNext: 50 },
+  // E10：倒地/复活状态（status 位驱动；E2E 断言钩子）
+  downed: false, downedSinceTick: null, iframes: false,
   // 调试钩子（仅 ?debug=1 生效；E2E 用）
   debugEnterDungeon: null, debugExitDungeon: null,
   toggleInventory: null, openInventory: null, closeInventory: null, sendSignal: null,
@@ -365,6 +373,9 @@ let skillFx = [];                   // 技能光效 {x,y,dir,color,born,ttl,radi
 let killFx = [];                    // 击杀粒子 {x,y,parts,born,ttl}
 let parryFx = { until: 0 };         // 格挡成功盾闪
 let levelFx = { until: 0 };         // E9：升级金色闪光（until = performance.now() 截止）
+let reviveFx = { until: 0 };        // E10：复活白闪（until = performance.now() 截止）
+let downed = false;                 // E10：本地玩家倒地（快照 status 含 DOWNED）
+let downedSinceTick = null;         // E10：客户端推算的倒地起始 tick（首次观测到 DOWNED 的快照 tick）
 let invOpen = false;
 let nearLootId = null;              // 最近可拾取 LOOT_GROUND id（drawEntities 每帧计算，F 键/提示用）
 let inventory = { items: [], cap: 60, loaded: false };
@@ -548,6 +559,8 @@ function resetFxState() {
   prevHp = new Map(); floatTexts = []; hitFlashes = new Map();
   rings = []; skillFx = []; killFx = []; parryFx.until = 0; meleeFx = [];
   levelFx.until = 0; // E9：清升级闪光（防跨房残留）
+  reviveFx.until = 0; downed = false; downedSinceTick = null; // E10：清倒地/复活态（防跨房残留）
+  GAME.downed = false; GAME.downedSinceTick = null; GAME.iframes = false;
   predicted = null;
   // E8：清鼠标交互目标（防跨房 id 误用）。
   selectedEnemyId = null; combatTarget = null; moveTarget = null;
@@ -713,6 +726,27 @@ function handleSnapshot(snap) {
     predicted = null;
   }
   GAME.predicted = predicted ? { x: predicted.x, y: predicted.y } : null;
+
+  // E10：本地玩家倒地/复活转换（status 位驱动，快照级检测）。
+  //   倒地：清输入 + 记推算起始 tick（服务端不下发 downedAtTick，C12 —— 客户端用固定
+  //   DOWNED_TICKS 推算倒计时，误差 ≈ 一个快照 RTT，见 E10 报告取舍）。
+  //   复活：白闪 + toast「已复活」。
+  const meDowned = !!(me && (me.status & STATUS_DOWNED));
+  if (meDowned && !downed) {
+    downed = true;
+    downedSinceTick = snap.tick;
+    keys.clear();
+    clearClickTargets();
+    sendStop();
+  } else if (!meDowned && downed) {
+    downed = false;
+    downedSinceTick = null;
+    reviveFx.until = performance.now() + 450;
+    toast('已复活');
+  }
+  GAME.downed = downed;
+  GAME.downedSinceTick = downedSinceTick;
+  GAME.iframes = !!(me && (me.status & STATUS_IFRAME));
 
   // C2 伤害检测（比较上一帧 hp → 飘字 / 闪白 / 扩散环 / E2E lastHits）
   for (const e of snap.entities) {
@@ -883,6 +917,7 @@ function dirFromKeys() {
 }
 
 function sendCmd(cmd) {
+  if (downed) return; // E10：倒地禁用一切输入（移动/技能/格挡/拾取/点击交互全丢弃）
   if (!lastSnapshot || !(state === 'overworld' || state === 'dungeon')) return;
   sendJson({
     type: 'input.cmd',
@@ -962,6 +997,7 @@ function enemyHitRadius(e) {
 // E8：左键点击 → 命中敌人/BOSS → 点选（红圈）并自动走近普攻；命中地面 → 点击移动。
 // 交互优先级：左键点敌人 → 攻击；左键点地面 → 移动；右键暂不绑定。
 function handleClick(wx, wy) {
+  if (downed) return; // E10：倒地点击交互失效（点选/点击移动不发命令）
   if (!lastSnapshot || localEntityId == null) return;
   if (state !== 'overworld' && state !== 'dungeon') return;
   // ① 优先点选敌人/BOSS（存活）。
@@ -992,6 +1028,7 @@ function handleClick(wx, wy) {
 function startInputLoop() {
   if (inputTimer) clearInterval(inputTimer);
   inputTimer = setInterval(() => {
+    if (downed) return; // E10：倒地不发送任何输入（sendCmd 也兜底拦截）
     if (!(state === 'overworld' || state === 'dungeon')) return;
     const dir = dirFromKeys();
     if (dir != null) {
@@ -1116,6 +1153,7 @@ function exitDungeon() {
   sendJson({ type: 'dungeon.exit', requestId: 'exit' });
 }
 function toggleDungeon() {
+  if (downed) return; // E10：倒地不可进出副本
   if (state === 'dungeon') { exitDungeon(); return; }
   if (state !== 'overworld') return;
   if (DEBUG) { enterDungeon(); return; }
@@ -1282,7 +1320,8 @@ function draw() {
   GAME.renderTick = renderTime;
 
   // C2/E8 本地预测：按键 / 战斗目标 / 点击移动 → 渲染位置立即推进（帧率无关，按 PLAYER_SPEED*dt；仅渲染层）
-  if (predicted && (state === 'overworld' || state === 'dungeon')) {
+  // E10：倒地禁止预测移动（躺尸原地；predicted 由 RECONCILE_FACTOR 收敛回权威死亡点）
+  if (predicted && (state === 'overworld' || state === 'dungeon') && !downed) {
     const d = dirFromKeys();
     if (d != null) {
       const v = DIR_VECTORS[d];
@@ -1334,6 +1373,7 @@ function draw() {
   drawEntities();
 
   ctx.restore();
+  drawDownedOverlay(); // E10：倒地全屏红滤镜 + 大字 + 复活倒计时
   drawFx();
   drawMinimap(camX, camY);
 }
@@ -1360,6 +1400,39 @@ function drawWorldBounds() {
   ctx.strokeRect(1, 1, WORLD_W - 2, WORLD_H - 2);
 }
 
+// E10：倒地全屏反馈（红滤镜 + 大字「你倒下了」+ 复活倒计时）。
+//   倒计时 = 服务端快照 tick + 固定 DOWNED_TICKS 推算（服务端不下发 downedAtTick，C12）。
+function drawDownedOverlay() {
+  if (!downed || downedSinceTick == null || !lastSnapshot) return;
+  const elapsed = Math.max(0, lastSnapshot.tick - downedSinceTick);
+  const remain = Math.max(0, Math.ceil((DOWNED_TICKS - elapsed) / TICK_RATE));
+  ctx.save();
+  // 红滤镜（中心淡、四周深，死亡压迫感）
+  const grad = ctx.createRadialGradient(
+    view.w / 2, view.h / 2, Math.min(view.w, view.h) * 0.22,
+    view.w / 2, view.h / 2, Math.max(view.w, view.h) * 0.72,
+  );
+  grad.addColorStop(0, 'rgba(140,16,26,0.16)');
+  grad.addColorStop(1, 'rgba(140,16,26,0.52)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, view.w, view.h);
+  // 大字
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 44px system-ui';
+  ctx.lineWidth = 6;
+  ctx.strokeStyle = 'rgba(0,0,0,0.78)';
+  ctx.strokeText('你倒下了', view.w / 2, view.h / 2 - 30);
+  ctx.fillStyle = '#ff5a5a';
+  ctx.fillText('你倒下了', view.w / 2, view.h / 2 - 30);
+  // 复活倒计时（秒）
+  ctx.font = 'bold 22px system-ui';
+  ctx.lineWidth = 4;
+  ctx.strokeText(remain + 's 后复活', view.w / 2, view.h / 2 + 14);
+  ctx.fillStyle = '#ffd27d';
+  ctx.fillText(remain + 's 后复活', view.w / 2, view.h / 2 + 14);
+  ctx.restore();
+}
+
 function drawHpBar(x, y, w, hp, maxHp, alignBottom) {
   if (!maxHp) return;
   const h = 5;
@@ -1381,16 +1454,23 @@ function drawPlayer(e, p) {
 
   const ang = e.dir * Math.PI / 4;
   const facing = { x: Math.cos(ang), y: Math.sin(ang) };
+  const isDowned = !!(e.status & STATUS_DOWNED);   // E10：倒地
+  const isIframe = !!(e.status & STATUS_IFRAME);   // E10：复活无敌帧
 
   ctx.save();
   ctx.translate(s.x, s.y);
+  // E10：倒地 → 旋转 90° 平躺（躺尸表现）。
+  if (isDowned) ctx.rotate(Math.PI / 2);
+  // E10：复活无敌帧 → 半透明闪烁（alpha 呼吸；IFRAME 位由服务端权威驱动，到期即停）。
+  if (isIframe) ctx.globalAlpha = 0.45 + 0.3 * Math.sin(performance.now() / 70);
 
-  // 身体（青色方块 + 描边）
-  ctx.fillStyle = isLocal ? '#4CB5F5' : '#3f87b8';
-  ctx.strokeStyle = isLocal ? '#eaf6ff' : '#7fb3d9';
+  // 身体（E10：倒地变灰；其余青色方块 + 描边）
+  ctx.fillStyle = isDowned ? (isLocal ? '#6a6e75' : '#565a60') : (isLocal ? '#4CB5F5' : '#3f87b8');
+  ctx.strokeStyle = isDowned ? (isLocal ? '#b9bdc4' : '#8a8e94') : (isLocal ? '#eaf6ff' : '#7fb3d9');
   ctx.lineWidth = isLocal ? 2.5 : 1.5;
   roundRect(-size / 2, -size / 2, size, size, 6);
   ctx.fill(); ctx.stroke();
+  ctx.globalAlpha = 1;
 
   // C2 受击闪白（150ms）
   const flashUntil = hitFlashes.get(e.id);
@@ -1400,14 +1480,24 @@ function drawPlayer(e, p) {
     ctx.fill();
   }
 
-  // 朝向点
-  ctx.fillStyle = '#fff';
-  ctx.beginPath();
-  ctx.arc(size * 0.28 * facing.x, size * 0.28 * facing.y, 4, 0, Math.PI * 2);
-  ctx.fill();
+  // E10：倒地骷髅标记（白圆 + 双眼 + 嘴；替代朝向点/金圈）
+  if (isDowned) {
+    ctx.fillStyle = '#e8e8ee';
+    ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#22242a';
+    ctx.beginPath(); ctx.arc(-3.2, -1.5, 2, 0, Math.PI * 2); ctx.arc(3.2, -1.5, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#22242a'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(-3, 3.5); ctx.lineTo(3, 3.5); ctx.stroke();
+  } else {
+    // 朝向点
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(size * 0.28 * facing.x, size * 0.28 * facing.y, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
-  // 本地玩家金圈
-  if (isLocal) {
+  // 本地玩家金圈（倒地不显示）
+  if (isLocal && !isDowned) {
     ctx.strokeStyle = 'rgba(255,210,0,0.95)';
     ctx.lineWidth = 2;
     ctx.shadowColor = 'rgba(255,210,0,0.8)';
@@ -1868,6 +1958,31 @@ function drawFx() {
       ctx.shadowBlur = 18;
       ctx.beginPath();
       ctx.arc(s.x, s.y, 30 + k * 40, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // E10：复活白闪（全屏白色快速淡出 + 本地玩家扩散白环，~0.45s）
+  if (reviveFx.until > t) {
+    const k = 1 - (reviveFx.until - t) / 450;
+    ctx.save();
+    ctx.globalAlpha = (1 - k) * 0.72;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, view.w, view.h);
+    ctx.restore();
+    const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+    const base = predicted || (me ? me.pos : null);
+    if (base) {
+      const s = worldToScreen(base);
+      ctx.save();
+      ctx.globalAlpha = (1 - k) * 0.9;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 4;
+      ctx.shadowColor = '#ffffff';
+      ctx.shadowBlur = 18;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 26 + k * 46, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
     }
