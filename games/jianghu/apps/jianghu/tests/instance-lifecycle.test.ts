@@ -67,16 +67,17 @@ function replyOf(r: { reply?: unknown }): Reply | undefined {
 
 test("enterInstance creates instance, locks members; 2nd non-member join rejected (C-Dgn-2)", () => {
   bootResidentRun();
-  const res = enterInstance(1, [{ seatId: 1, userId: "u-lock" }], { lifetimeMs: 10 ** 12 });
+  // E13：每测试用独立 entranceId（同入口的锁定实例会拒绝新进入 → INSTANCE_LOCKED，见 party-gather）。
+  const res = enterInstance(100, [{ seatId: 1, userId: "u-lock" }], { lifetimeMs: 10 ** 12 });
   assert.equal(res.ok, true);
   const instId = res.instanceRoomId!;
   const room = getInstanceRoom(instId);
   assert.ok(room, "instance room exists");
-  assert.equal(room.locked, true, "members locked on enter");
+  assert.equal(room.locked, true, "members locked on enter (room-level C-Dgn-2; E13 等待窗口由 run-manager 表达)");
   assert.ok(isMember(instId, "u-lock"));
   assert.equal(room.members.size, 1, "members locked to trigger");
 
-  // C-Dgn-2：进入后第 2 人无法加入同实例。
+  // C-Dgn-2：进入后第 2 人无法经 room-service joinInstance 加入同实例。
   const late = joinInstance(instId, "u-intruder");
   assert.equal(late.ok, false, "locked instance rejects late joiner");
   assert.equal(room.members.size, 1, "members[] unchanged after rejected join");
@@ -99,13 +100,30 @@ test("enterInstance creates instance, locks members; 2nd non-member join rejecte
 // C-Dgn-4 入口冷却
 // ------------------------------------------------------------------
 
-test("entrance cooldown rejects repeated enter within 10s (C-Dgn-4)", () => {
+test("entrance cooldown: same-player re-create within 10s rejected; different player joins waiting (C-Dgn-4/E13)", () => {
   bootResidentRun();
-  const a = enterInstance(1, [{ seatId: 1, userId: "u-cd1" }], { lifetimeMs: 10 ** 12 });
+  const a = enterInstance(102, [{ seatId: 1, userId: "u-cd1" }], { lifetimeMs: 10 ** 12 });
   assert.equal(a.ok, true, "first enter allowed");
-  const b = enterInstance(1, [{ seatId: 2, userId: "u-cd2" }], { lifetimeMs: 10 ** 12 });
-  assert.equal(b.ok, false, "second enter within cooldown rejected");
-  assert.equal(b.reason, "ENTRANCE_COOLDOWN");
+
+  // E13：不同玩家进入同一入口 → 加入 waiting 实例（不受创建者冷却影响；多人同本核心）。
+  const b = enterInstance(102, [{ seatId: 2, userId: "u-cd2" }], { lifetimeMs: 10 ** 12 });
+  assert.equal(b.ok, true, "different player joins waiting instance (bypasses creator cooldown)");
+  assert.equal(b.instanceRoomId, a.instanceRoomId, "same instance");
+  assert.equal(b.joined, true, "join flag set");
+
+  // 同玩家重复创建：先各自出本（waiting 解散，入口释放）→ 10s 冷却内再进被拒（C-Dgn-4）。
+  exitInstance(b.instanceRoomId!, { seatId: 2 });
+  exitInstance(a.instanceRoomId!, { seatId: 1 });
+  assert.equal(isInstanceRunning(a.instanceRoomId!), false, "waiting dissolved after all members leave");
+  const c = enterInstance(102, [{ seatId: 1, userId: "u-cd1" }], { lifetimeMs: 10 ** 12 });
+  assert.equal(c.ok, false, "same player re-create within cooldown rejected");
+  assert.equal(c.reason, "ENTRANCE_COOLDOWN");
+
+  // 冷却到期（RESIDENT world tick 推进 121+；C-Dgn-4 窗口用 tick 计时，D9）→ 重新允许创建。
+  const rw = getWorld(RESIDENT_ROOM_ID)!;
+  for (let i = 0; i < 121; i++) rw.step();
+  const d = enterInstance(102, [{ seatId: 1, userId: "u-cd1" }], { lifetimeMs: 10 ** 12 });
+  assert.equal(d.ok, true, "allowed after cooldown window");
 });
 
 test("world.tryEnterEntrance: first use activates; blocked in window; allowed after (C-Dgn-4)", () => {
@@ -122,7 +140,7 @@ test("world.tryEnterEntrance: first use activates; blocked in window; allowed af
 
 test("expired instance auto-exits all members back to resident (C-Dgn-4)", () => {
   bootResidentRun();
-  const res = enterInstance(1, [{ seatId: 1, userId: "u-exp" }], { lifetimeMs: 0 }); // 立即过期
+  const res = enterInstance(103, [{ seatId: 1, userId: "u-exp" }], { lifetimeMs: 0 }); // 立即过期
   const instId = res.instanceRoomId!;
   assert.equal(isInstanceRunning(instId), true);
   assert.equal(getRoom(instId) !== null, true);
@@ -146,7 +164,7 @@ test("expired instance auto-exits all members back to resident (C-Dgn-4)", () =>
 
 test("C-Net-1: instance broadcast reaches only instance members; resident only resident (zero-leak)", async () => {
   bootResidentRun();
-  const res = enterInstance(1, [{ seatId: 1, userId: "u-net1" }], { lifetimeMs: 10 ** 12 });
+  const res = enterInstance(104, [{ seatId: 1, userId: "u-net1" }], { lifetimeMs: 10 ** 12 });
   const instId = res.instanceRoomId!;
 
   const a = fakeConn("u-net1-res");
@@ -192,7 +210,7 @@ test("C-Net-2: enter/exit subscription switch is atomic (single room, no double/
   // 进入：dispatch dungeon.enter → roomId=instance；setRoom 单值原子切换。
   const enterRes = dispatch(
     { userId: "u-net2", connId: a.conn.connId, seatId: 1, roomId: RESIDENT_ROOM_ID },
-    { type: "dungeon.enter", requestId: "e1", payload: { entranceId: 1 } },
+    { type: "dungeon.enter", requestId: "e1", payload: { entranceId: 105 } },
   );
   assert.equal(replyOf(enterRes)?.type, "dungeon.enter.ok", "enter acknowledged");
   const instId = enterRes.roomId as string;
@@ -234,7 +252,7 @@ test("C-Net-2: enter/exit subscription switch is atomic (single room, no double/
 
 test("reconnect restores instance within lifetime; falls back to resident when instance gone (C-Net-3/C10)", () => {
   bootResidentRun();
-  const res = enterInstance(1, [{ seatId: 1, userId: "u-rec" }], { lifetimeMs: 10 ** 12 });
+  const res = enterInstance(106, [{ seatId: 1, userId: "u-rec" }], { lifetimeMs: 10 ** 12 });
   const instId = res.instanceRoomId!;
   const room = getInstanceRoom(instId)!;
   const tok = room.members.get("u-rec")!.reconnectToken;
@@ -277,7 +295,7 @@ test("dungeon.exit outside instance is rejected (domain boundary)", () => {
 test("dungeon.enter outside resident is rejected (domain boundary)", () => {
   bootResidentRun();
   // 先进一个副本（把 conn 挪进 instance），再从 instance 触发 dungeon.enter 应被拒。
-  const res = enterInstance(1, [{ seatId: 1, userId: "u-ent-guard" }], { lifetimeMs: 10 ** 12 });
+  const res = enterInstance(107, [{ seatId: 1, userId: "u-ent-guard" }], { lifetimeMs: 10 ** 12 });
   const r = dispatch(
     { userId: "u-ent-guard", connId: "c", seatId: 1, roomId: res.instanceRoomId! },
     { type: "dungeon.enter", requestId: "e", payload: { entranceId: 2 } },

@@ -16,12 +16,14 @@
  */
 
 import { createWorld, type World, type PlayerSeat } from "../sim-core/src/world.ts";
-import { RoomPhase, type WorldSnapshot, type InputCmd } from "../sim-core/src/types.ts";
+import { RoomPhase, type WorldSnapshot, type InputCmd, type Vec2 } from "../sim-core/src/types.ts";
 import {
   TILE,
   RESPAWN_POS,
   DUNGEON_EXPIRE_MS,
   INVENTORY_CAP, // E6：背包数据通道 cap（C7 单一来源）
+  PARTY_GATHER_WINDOW_TICKS, // E13：入口集合窗口（tick）= 5s @12Hz
+  PARTY_MAX_MEMBERS, // E13：同本成员上限（MVP）= 4
 } from "../sim-core/src/constants.ts"; // C7 单一来源
 import type { SpawnZone } from "../sim-core/src/spawning.ts";
 import { computeInstanceSeed, buildDungeonSpec } from "../sim-core/src/dungeonGen.ts"; // C7/D9/C-Dgn-1
@@ -37,6 +39,8 @@ import {
   getRoom,
   createInstanceRoom,
   destroyRoom,
+  leaveRoom, // E13：等待中单成员取消出本
+  addInstanceMember, // E13：等待窗口内向实例追加成员（编排层专用）
   RESIDENT_ROOM_ID,
 } from "./room-service.ts";
 import type { CharacterService, InventoryItem, Inventory, CharacterSnapshot } from "./persistence.ts";
@@ -141,6 +145,38 @@ const runs = new Map<string, RunEntry>();
 const instances = new Map<string, InstanceMeta>();
 
 /**
+ * E13：入口集合缓冲（多人同本）—— 等待窗口内的实例。
+ *
+ * 生命周期：`enterInstance` 创建 → 进入 `waitingInstances`（**可加入**）→
+ * 窗口到期（lockTick）/ 满员（PARTY_MAX_MEMBERS）→ `lockWaitingInstance` 冻结成员
+ * 移入正式 `instances` 表（C-Dgn-2）→ 寿命到点解散（C-Dgn-4）。
+ *
+ * 关键语义（主理人拍板 + playtest golden 兼容的工程裁定）：
+ *   - 实例房间**自创建即 locked=true**（room-service 既有语义 / playtest `instRoom.locked`
+ *     断言）；「等待中未锁定可加入」由本 waiting 状态表达 —— run-manager 编排层在窗口内
+ *     经 `addInstanceMember` 显式追加成员（外部 joinInstance 仍被 locked 拒绝，C-Dgn-2 守门不变）；
+ *   - 单人秒开：窗口内无人加入即单人锁定开本，不强制组队；
+ *   - **窗口用 RESIDENT world tick 计时（D9 确定性，不用 Date.now）**；寿命仍 wall-clock（C-Dgn-4）。
+ */
+interface WaitingInstance {
+  readonly entranceId: number;
+  readonly instanceRoomId: string;
+  /** 等待窗口内可变成员（可追加/取消）；锁定瞬间冻结快照进入 InstanceMeta。 */
+  readonly members: InstanceMember[];
+  readonly seed: string;
+  readonly biomeId: number;
+  /** 副本入口出生点（dungeonGen spec.entryTile；创建者与加入者统一落点，防进本卡墙）。 */
+  readonly entryTile: Vec2;
+  /** RESIDENT world tick 达此值即锁定开本（= 创建时 world.tick + PARTY_GATHER_WINDOW_TICKS）。 */
+  readonly lockTick: number;
+  /** 寿命（wall-clock ms；等待中超时未锁 → 解散，C-Dgn-4）。 */
+  readonly expireAt: number;
+}
+
+/** entranceId → waiting 实例（每入口至多一个 waiting；锁定后移入 instances）。 */
+const waitingInstances = new Map<number, WaitingInstance>();
+
+/**
  * E7：seatId → 已穿戴装备（世界面向缓存）。
  * - 持久化（Character.equipped）为耐用权威；本 Map 是「世界镜像」同步缓存：
  *   装备变更（protocol resolveEquip/Unequip）与 addPlayerToRoom（room.join）时写入，
@@ -185,6 +221,11 @@ export function startRun(opts: StartRunOpts): WorldSnapshot {
   const handle = startRunLoop({
     onTick(_tick, _inputs) {
       world.step();
+      // E13：每 tick sweep 等待窗口（窗口到期/满员 → 锁定开本；D9 tick 计时，非 Date.now）。
+      //     startRun 的 onTick 为 RESIDENT 与 instance run 共用；sweep 幂等且按 RESIDENT
+      //     world tick 判定（instance loop 触发时同样正确，仅为同一判定的旁路）。
+      //     enterInstance 亦惰性 sweep 兜底（进入路径即时生效）。
+      sweepWaitingInstances();
       // E4/F1：取走本 tick 拾取事件，转发给服务端 onPickup 钩子（默认 handlePickup：登录入库、游客忽略，C-Per-1）。
       for (const p of world.consumePickups()) {
         opts.onPickup?.(p.seatId, p.loot);
@@ -256,9 +297,63 @@ export function isRunning(roomId: string): boolean {
   return runs.has(roomId);
 }
 
-/** 是否活跃副本 instance（E5：dungeon.exit 校验用）。 */
+/** 是否活跃副本 instance（E5：dungeon.exit 校验用；E13：含等待窗口内的实例）。 */
 export function isInstanceRunning(roomId: string): boolean {
-  return instances.has(roomId);
+  if (instances.has(roomId)) return true;
+  for (const w of waitingInstances.values()) {
+    if (w.instanceRoomId === roomId) return true;
+  }
+  return false;
+}
+
+/**
+ * E13：是否等待（集合缓冲）中的实例 —— 窗口内可加入；锁定后 false。
+ * 供测试 / 协议校验区分「waiting 可加入」与「locked 已冻结」（C-Dgn-2）。
+ */
+export function isInstanceWaiting(roomId: string): boolean {
+  for (const w of waitingInstances.values()) {
+    if (w.instanceRoomId === roomId) return true;
+  }
+  return false;
+}
+
+/**
+ * E13：锁定一个 waiting 实例 —— 从 waitingInstances 移入正式 instances 表，成员冻结（C-Dgn-2）。
+ * @returns 锁定的 instanceRoomId；非 waiting → null。
+ */
+function lockWaitingInstance(entranceId: number): string | null {
+  const w = waitingInstances.get(entranceId);
+  if (!w) return null;
+  waitingInstances.delete(entranceId);
+  const frozenMembers: readonly InstanceMember[] = [...w.members]; // 冻结快照（C-Dgn-2：锁定后不可变）
+  instances.set(w.instanceRoomId, {
+    entranceId: w.entranceId,
+    biomeId: w.biomeId,
+    seed: w.seed,
+    members: frozenMembers,
+    expireAt: w.expireAt,
+  });
+  return w.instanceRoomId;
+}
+
+/**
+ * E13：sweep 全部 waiting 实例 —— 窗口到期（tick ≥ lockTick）或满员（≥ PARTY_MAX_MEMBERS）
+ * → 立即锁定开本。由 enterInstance 惰性调用 + RESIDENT run 循环每 tick 调用 +
+ * checkInstanceExpiry 调用（生产：窗口到期 ≈ 5s 内自动开本；测试注入确定 nowTick 驱动）。
+ * @param nowTick  RESIDENT world tick（缺省取当前；D9 确定性，测试可注入）。
+ * @returns 本次锁定的 instanceRoomIds。
+ */
+export function sweepWaitingInstances(nowTick?: number): string[] {
+  const resident = runs.get(RESIDENT_ROOM_ID);
+  const tick = nowTick ?? resident?.world.tick ?? 0;
+  const locked: string[] = [];
+  for (const [entranceId, w] of [...waitingInstances.entries()]) {
+    if (w.members.length >= PARTY_MAX_MEMBERS || tick >= w.lockTick) {
+      const roomId = lockWaitingInstance(entranceId);
+      if (roomId) locked.push(roomId);
+    }
+  }
+  return locked;
 }
 
 export function stopRun(roomId: string): void {
@@ -296,45 +391,89 @@ export function bootResidentRun(seed = "jianghu-overworld-0"): WorldSnapshot {
   });
 }
 
-/**
- * E5：进入副本实例（ADR-JH-ENG-03 §3）。
- * 流程：RESIDENT tick → seed → 布局 → instance room（成员锁定）→ 独立 world → 成员切域。
- * - seed 仅服务端计算持有，**不返回给客户端路径**（C-Dgn-1）；
- * - 入口冷却由 RESIDENT world.tryEnterEntrance 权威校验（C-Dgn-4）；
- * - 成员锁定后 members[] 不可变（C-Dgn-2）。
- */
 export interface EnterInstanceOpts {
   readonly biomeId?: number;
   /** 副本寿命（ms），缺省 DUNGEON_EXPIRE_MS=30min（C-Dgn-4）。测试可注入短寿命。 */
   readonly lifetimeMs?: number;
 }
 
+/**
+ * E5/E13：进入副本实例（「进入或加入」；ADR-JH-ENG-03 §3 + E13 入口集合缓冲）。
+ *
+ * 流程（E13 多人同本）：
+ *   1) 该入口存在 waiting（集合窗口内）实例 → **加入**：成员追加 + 副本 world 加玩家实体 +
+ *      域切换（C-Net-1/2；连接订阅由 protocol/gateway setRoom 原子切）；满员（PARTY_MAX_MEMBERS）
+ *      → 立即锁定开本；返回 `{ joined: true }`。
+ *   2) 否则 → **创建**新 waiting 实例：seed（服务端权威，C-Dgn-1）→ 布局 → instance room
+ *      （自创建即锁定，C-Dgn-2）→ 独立 world + 12Hz run（独立广播域，C-Net-1）→ 首个成员入本 →
+ *      记 lockTick = RESIDENT world.tick + PARTY_GATHER_WINDOW_TICKS（**D9：窗口用 tick 计时，
+ *      非 Date.now**）；返回 `{ joined: false }`。
+ *
+ * 判定顺序（创建路径）：
+ *   - 同入口已有**锁定**实例 → `INSTANCE_LOCKED`（C-Dgn-2：锁定后不可再加入）；
+ *   - 入口冷却（C-Dgn-4：10s 防刷本）→ `ENTRANCE_COOLDOWN`。**仅创建路径**校验冷却：
+ *     不同玩家加入 waiting 实例不受任何玩家上次冷却影响（E13）。
+ *
+ * 纪律：seed 仅服务端计算持有，**不返回给客户端路径**（C-Dgn-1）；成员锁定后冻结（C-Dgn-2）。
+ */
 export function enterInstance(
   entranceId: number,
   members: readonly InstanceMember[],
   opts: EnterInstanceOpts = {},
-): { ok: boolean; reason?: string; instanceRoomId?: string } {
-  // ① 取 RESIDENT 当前权威 tick（客户端不可知 ⇒ seed 不可预测，C-Dgn-1）。
+): { ok: boolean; reason?: string; instanceRoomId?: string; joined?: boolean } {
   const resident = runs.get(RESIDENT_ROOM_ID);
   if (!resident) return { ok: false, reason: "RESIDENT_NOT_RUNNING" };
-  const serverTick = resident.handle.getTick();
 
-  // ② 入口冷却（C-Dgn-4：10s 防刷本；服务端权威闸门）。
-  if (!resident.world.tryEnterEntrance(serverTick)) {
-    return { ok: false, reason: "ENTRANCE_COOLDOWN" };
+  // E13：惰性检查 —— 先锁定已到窗口/满员的 waiting 实例（生产由 RESIDENT run 每 tick sweep；
+  // 此处保证 enter 路径即时看到最新状态，如「A 满员 → B 再进 → INSTANCE_LOCKED」）。
+  sweepWaitingInstances();
+
+  // ① 该入口存在 waiting（未锁定）实例 → 加入（E13 多人同本核心）。
+  const waiting = waitingInstances.get(entranceId);
+  if (waiting) {
+    if (members.length !== 1) {
+      return { ok: false, reason: "JOIN_SINGLE_ONLY", instanceRoomId: waiting.instanceRoomId };
+    }
+    const m = members[0];
+    // 防御：seatId / userId 已在实例内（重复加入）→ 拒绝。
+    if (waiting.members.some((x) => x.seatId === m.seatId || x.userId === m.userId)) {
+      return { ok: false, reason: "ALREADY_MEMBER", instanceRoomId: waiting.instanceRoomId };
+    }
+    // 追加成员：waiting 列表 + room.members（编排层显式操作；外部 joinInstance 仍被 locked 拒，C-Dgn-2）。
+    waiting.members.push(m);
+    addInstanceMember(waiting.instanceRoomId, m.userId);
+    // 域切换（C-Net-1/2）：出主世界 + 进副本世界（连接订阅由 protocol/gateway setRoom 原子切）。
+    resident.world.removePlayer(m.seatId);
+    getWorld(waiting.instanceRoomId)?.addPlayer(m.seatId, m.userId, waiting.entryTile, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId));
+    // 满员 → 立即锁定开本。
+    if (waiting.members.length >= PARTY_MAX_MEMBERS) sweepWaitingInstances();
+    return { ok: true, joined: true, instanceRoomId: waiting.instanceRoomId };
   }
 
+  // ② 创建路径。
+  // 2a. 同入口已有锁定实例 → 拒绝（INSTANCE_LOCKED / C-Dgn-2：锁定后不可再加入）。
+  for (const meta of instances.values()) {
+    if (meta.entranceId === entranceId) return { ok: false, reason: "INSTANCE_LOCKED" };
+  }
+  // 2b. 入口冷却（C-Dgn-4：10s 防刷本；服务端权威闸门）。用 RESIDENT world tick（与 E13 窗口
+  //     同源，测试可确定性推进）；join 路径不走本闸门（E13：加入 waiting 不受上次冷却影响）。
+  if (!resident.world.tryEnterEntrance(resident.world.tick)) {
+    return { ok: false, reason: "ENTRANCE_COOLDOWN" };
+  }
   if (members.length === 0) return { ok: false, reason: "NO_MEMBERS" };
 
-  // ③ seed = hash(serverTick + entranceId + partyTag)；partyTag=首个触发者（dungeon §⑥）。
+  // 2c. seed = hash(loopTick + entranceId + partyTag)；partyTag=首个触发者（C-Dgn-1 / dungeon §⑥）。
+  //     **loopTick（resident.handle.getTick）**：playtest golden 在同步切片下 loopTick=0 断言
+  //     seed=computeInstanceSeed(0,...)，保持此语义（world.tick 供冷却/窗口计时，二者解耦）。
+  const serverTick = resident.handle.getTick();
   const partyTag = members[0].userId;
   const seed = computeInstanceSeed(serverTick, entranceId, partyTag).toString();
   const biomeId = opts.biomeId ?? 0;
 
-  // ④ 确定性布局 + 副本规格（BOSS 置最深层，C-Dgn-3；刷怪密度 ×1.5）。
+  // 2d. 确定性布局 + 副本规格（BOSS 置最深层，C-Dgn-3；刷怪密度 ×1.2，DUNGEON_SPAWN_DENSITY）。
   const spec = buildDungeonSpec(seed, biomeId);
 
-  // ⑤ 建 instance 房间（成员锁定，C-Dgn-2）+ 独立 world + 12Hz run（独立广播域，C-Net-1）。
+  // 2e. 建 instance 房间（自创建即锁定，C-Dgn-2）+ 独立 world + 12Hz run（独立广播域，C-Net-1）。
   const room = createInstanceRoom(members.map((m) => m.userId));
   const instanceRoomId = room.roomId;
   startRun({
@@ -351,7 +490,7 @@ export function enterInstance(
     onLevelUp: (seatId, level, xp, xpNext) => handleLevelUp(instanceRoomId, seatId, level, xp, xpNext),
   });
 
-  // 成员实体：出 RESIDENT 世界 + 进 instance 世界（域切换；C-Net-1 不混流大图）。
+  // 2f. 成员实体：出 RESIDENT 世界 + 进 instance 世界（域切换；C-Net-1 不混流大图）。
   for (const m of members) {
     resident.world.removePlayer(m.seatId);
     // E7：进本携带已穿戴装备（世界镜像缓存 → maxHp/attrs 应用到副本 actor）。
@@ -359,18 +498,71 @@ export function enterInstance(
     getWorld(instanceRoomId)?.addPlayer(m.seatId, m.userId, spec.entryTile, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId));
   }
 
-  // ⑥ 寿命记录（C-Dgn-4：30min；wall-clock 计时，循环停滞不误判）。
+  // 2g. 进入 waiting（E13 集合缓冲）：lockTick 用 RESIDENT world tick（D9 可确定性推进）；
+  //     寿命 wall-clock（C-Dgn-4：30min）。窗口结束 / 满员 → sweep 锁定 → 移入 instances。
   const expireAt = Date.now() + (opts.lifetimeMs ?? DUNGEON_EXPIRE_MS);
-  instances.set(instanceRoomId, { entranceId, biomeId, seed, members, expireAt });
+  waitingInstances.set(entranceId, {
+    entranceId,
+    instanceRoomId,
+    members: [...members],
+    seed,
+    biomeId,
+    entryTile: spec.entryTile,
+    lockTick: resident.world.tick + PARTY_GATHER_WINDOW_TICKS,
+    expireAt,
+  });
 
-  return { ok: true, instanceRoomId };
+  return { ok: true, joined: false, instanceRoomId };
 }
 
 /**
- * E5：出本/解散。停 instance run（未拾取地面掉落随 world 销毁）、
- * 存活成员回 RESIDENT 安全区（出本归位 + 连接订阅切回主世界）、instance room 销毁。
+ * E5/E13：出本/解散。
+ * - **等待中（waiting，集合缓冲内）**：
+ *     · 带 `opts.seatId` → **取消该成员**：从 waiting.members + room.members 移除、
+ *       出副本 world、回 RESIDENT 安全区（出本归位 + 订阅切回主世界）；无成员则销毁 waiting 实例；
+ *     · 不带 `opts.seatId` → **整体解散**（expiry / 显式解散全部成员）。
+ * - **锁定后（instances）**：现有逻辑 —— 停 instance run（未拾取掉落随 world 销毁）、
+ *   全部成员回 RESIDENT 安全区、instance room 销毁（多成员各出）。
  */
-export function exitInstance(instanceRoomId: string): { ok: boolean; reason?: string } {
+export function exitInstance(
+  instanceRoomId: string,
+  opts: { seatId?: number } = {},
+): { ok: boolean; reason?: string } {
+  const resident = runs.get(RESIDENT_ROOM_ID);
+
+  // ① waiting 实例：取消单成员 / 整体解散。
+  for (const [entranceId, w] of [...waitingInstances.entries()]) {
+    if (w.instanceRoomId !== instanceRoomId) continue;
+    const idx = opts.seatId !== undefined ? w.members.findIndex((m) => m.seatId === opts.seatId) : -1;
+    if (idx >= 0) {
+      // 单成员取消（E13 等待中玩家可取消）：移除成员 + 出副本 world + 回主世界安全区。
+      const [m] = w.members.splice(idx, 1);
+      leaveRoom(instanceRoomId, m.userId);
+      getWorld(instanceRoomId)?.removePlayer(m.seatId);
+      if (resident) resident.world.addPlayer(m.seatId, m.userId, RESPAWN_POS, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId));
+      const connId = activeUserConn.get(m.userId);
+      if (connId) setRoom(connId, RESIDENT_ROOM_ID); // 无连接则忽略（掉线成员由重连流程接管）
+      // 无成员 → 销毁 waiting 实例。
+      if (w.members.length === 0) {
+        waitingInstances.delete(entranceId);
+        stopRun(instanceRoomId);
+        destroyRoom(instanceRoomId);
+      }
+      return { ok: true };
+    }
+    // 无 seatId / seatId 不在 waiting → 整体解散（expiry / 显式解散全部成员）。
+    waitingInstances.delete(entranceId);
+    for (const m of w.members) {
+      if (resident) resident.world.addPlayer(m.seatId, m.userId, RESPAWN_POS, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId));
+      const connId = activeUserConn.get(m.userId);
+      if (connId) setRoom(connId, RESIDENT_ROOM_ID);
+    }
+    stopRun(instanceRoomId);
+    destroyRoom(instanceRoomId);
+    return { ok: true };
+  }
+
+  // ② 锁定实例：现有解散逻辑（停 run + 全部成员回 RESIDENT 安全区 + room 销毁）。
   const meta = instances.get(instanceRoomId);
   if (!meta) return { ok: false, reason: "NOT_AN_INSTANCE" };
   instances.delete(instanceRoomId);
@@ -379,7 +571,6 @@ export function exitInstance(instanceRoomId: string): { ok: boolean; reason?: st
   stopRun(instanceRoomId);
 
   // 存活成员回 RESIDENT 安全区（出本归位；连接订阅原子切回主世界）。
-  const resident = runs.get(RESIDENT_ROOM_ID);
   for (const m of meta.members) {
     // E7：出本携带已穿戴装备（世界镜像缓存 → 回主世界 actor 保留 maxHp/attrs）。
     // E9：出本携带等级（levelBySeat 缓存 → 回主世界 actor attrs 反映真实等级）。
@@ -394,12 +585,24 @@ export function exitInstance(instanceRoomId: string): { ok: boolean; reason?: st
 }
 
 /**
- * E5：副本寿命巡检（C-Dgn-4）。到点自动 exitInstance 所有成员。
+ * E5/E13：副本寿命巡检（C-Dgn-4）。到点自动解散全部成员。
+ * ① 先 sweep waiting（窗口到期 → 锁定开本）；② waiting 实例超时未锁 → 解散；
+ * ③ 锁定实例寿命到点 → 解散。
  * @param now  wall-clock ms（测试可注入未来时刻）。
  * @returns 被解散的 instance roomIds
  */
 export function checkInstanceExpiry(now = Date.now()): string[] {
   const expired: string[] = [];
+  // E13：先锁定已到窗口的 waiting 实例（窗口结束 → 正式开本）。
+  sweepWaitingInstances();
+  // ① waiting 实例寿命到点（超时未锁）→ 解散（exitInstance 无 seatId → 整体解散）。
+  for (const [, w] of [...waitingInstances.entries()]) {
+    if (w.expireAt <= now) {
+      exitInstance(w.instanceRoomId);
+      expired.push(w.instanceRoomId);
+    }
+  }
+  // ② 锁定实例寿命到点 → 解散（C-Dgn-4 现有）。
   for (const [roomId, meta] of [...instances.entries()]) {
     if (meta.expireAt <= now) {
       exitInstance(roomId);

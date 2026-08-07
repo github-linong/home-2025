@@ -347,6 +347,25 @@ export const ENTRANCE_COOLDOWN_TICKS = 10 * TICK_RATE;
  */
 export const DUNGEON_EXPIRE_MS = 30 * 60 * 1000;
 
+// ─────────────────────────────────────────────────────────────
+// E13 多人同本：入口集合缓冲（ADR-JH-ENG-03 §3 扩展；C7 单一来源）
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * 入口集合窗口（tick）。5s @12Hz = 60（E13 · 主理人拍板）。
+ * 首个成员进入后，窗口内同入口到达的其他成员加入同一 waiting 实例；窗口到期/满员 → 锁定开本。
+ * **确定性（D9）**：窗口用 RESIDENT world tick 计时（run-manager 存 lockTick =
+ * `创建时 RESIDENT world.tick + PARTY_GATHER_WINDOW_TICKS`），绝不用 Date.now（循环停滞不漂移）。
+ */
+export const PARTY_GATHER_WINDOW_TICKS = 5 * TICK_RATE;
+
+/**
+ * 同本成员上限（E13 · MVP）。waiting 实例 members 达上限 → 立即锁定开本（不等窗口）。
+ * 单人秒开（窗口内无人加入即单人锁定开本，不强制组队）由 run-manager 的
+ * lockTick/成员数双重判定表达（本常量仅承载数量上限）。
+ */
+export const PARTY_MAX_MEMBERS = 4;
+
 /**
  * 副本内刷怪密度倍率（spawning.md §⑥）。
  * dungeonGen 在生成 SpawnZone 时按本倍率放大 count。

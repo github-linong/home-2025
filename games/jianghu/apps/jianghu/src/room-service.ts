@@ -159,6 +159,27 @@ export function joinInstance(roomId: string, userId: string): { ok: boolean; rea
   return { ok: true };
 }
 
+/**
+ * E13：向副本实例追加成员（run-manager 编排层专用，C6 编排权）。
+ *
+ * 与 joinInstance 的差异：joinInstance 是**外部调用方**入口，锁定房一律拒绝（C-Dgn-2）；
+ * 本函数供 run-manager 在「入口集合缓冲」窗口内把同入口到达的成员追加进同一 waiting 实例
+ * （E13 多人同本）。
+ *
+ * 注意（E13 与 playtest golden 的兼容性决定）：实例房间**自创建即 locked=true**
+ * （room-service 既有语义 + playtest `instRoom.locked` 断言），「等待中可加入」由
+ * run-manager 的 waiting 状态表达 —— 本函数是编排层在窗口内的显式成员操作，
+ * **不放开 locked 检查**（外部调用方仍被 joinInstance 拒绝，C-Dgn-2 守门不变）。
+ */
+export function addInstanceMember(roomId: string, userId: string): { ok: boolean; reason?: string } {
+  const room = rooms.get(roomId);
+  if (!room || room.resident) return { ok: false, reason: "NOT_INSTANCE" };
+  if (!room.members.has(userId)) room.members.set(userId, emptyMember(userId));
+  bumpRoomActivity(room);
+  notifyRoomChanged(room);
+  return { ok: true };
+}
+
 export function validateReconnect(
   roomId: string,
   userId: string,

@@ -364,7 +364,9 @@ export function dispatch(
       };
     }
 
-    // 进入副本实例（E5 · ADR-JH-ENG-03 §3）：仅允许在主世界 RESIDENT 触发（C-Net-1 域边界）。
+    // 进入副本实例（E5/E13 · ADR-JH-ENG-03 §3 + 入口集合缓冲）：仅允许在主世界 RESIDENT 触发
+    // （C-Net-1 域边界）。E13：同入口 waiting 窗口内的成员加入同一实例（多人同本），
+    // 锁定后拒绝（INSTANCE_LOCKED，C-Dgn-2）；副本内再 enter → NOT_IN_RESIDENT。
     case "dungeon.enter": {
       if (ctx.roomId !== RESIDENT_ROOM_ID) {
         return { reply: err(requestId, "NOT_IN_RESIDENT", "dungeon.enter requires resident world") };
@@ -373,7 +375,7 @@ export function dispatch(
         return { reply: err(requestId, "NO_SEAT", "session not attached") };
       }
       const entranceId = Number(payload.entranceId ?? 0);
-      // MVP 单人进本（成员锁定 = 触发者）；多人「集合缓冲取先到者」归 Phase-2（dungeon §⑧）。
+      // E13：进入或加入（多人同本 —— 同入口 waiting 窗口内加入同一实例）。
       const res = enterInstance(entranceId, [{ seatId: ctx.seatId, userId: ctx.userId }]);
       if (!res.ok) {
         return { reply: err(requestId, res.reason ?? "ENTER_FAILED", "enter instance rejected") };
@@ -386,6 +388,9 @@ export function dispatch(
           type: "dungeon.enter.ok",
           requestId,
           roomId: res.instanceRoomId,
+          // E13：多人同本 —— 返回成员数 + 是否加入已有 waiting 实例（客户端队伍 UI 用）。
+          memberCount: instRoom?.members.size ?? 0,
+          joined: res.joined ?? false,
           // 副本内重连 token（C-Net-3/C10：寿命内回本）。
           reconnectToken: member?.reconnectToken,
         },
@@ -394,13 +399,15 @@ export function dispatch(
       };
     }
 
-    // 出本（E5）：停 instance run、成员回 RESIDENT 安全区、订阅切回主世界（C-Net-2）。
+    // 出本（E5/E13）：等待中 → 取消该成员（回 RESIDENT）；锁定后 → 停 instance run、
+    // 成员回 RESIDENT 安全区、订阅切回主世界（C-Net-2）。
     case "dungeon.exit": {
       const roomId = ctx.roomId;
       if (!roomId || !isInstanceRunning(roomId)) {
         return { reply: err(requestId, "NOT_IN_INSTANCE", "dungeon.exit requires instance room") };
       }
-      const res = exitInstance(roomId);
+      // E13：传 seatId → 等待中取消单成员（其他成员留本）；锁定实例忽略 seatId（整体解散）。
+      const res = exitInstance(roomId, { seatId: ctx.seatId });
       if (!res.ok) {
         return { reply: err(requestId, res.reason ?? "EXIT_FAILED", "exit instance rejected") };
       }
