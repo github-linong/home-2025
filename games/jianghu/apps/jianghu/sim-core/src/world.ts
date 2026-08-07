@@ -43,6 +43,9 @@ import {
   PLAYER_MAX_HP,
   PLAYER_BASE_ATTRS,
   PLAYER_BASE_ATK,
+  MELEE_RANGE, // E8：普攻命中半径（px）= 1×TILE
+  ATTACK_CD_TICKS, // E8：普攻间隔（tick）= 0.5s
+  TARGET_ARRIVE_TOL, // E8：点击移动到达容差（px）= 0.5×TILE
   ENEMY_ATTACK_INTERVAL_TICKS,
   ENEMY_CONTACT_RANGE,
   PICKUP_RADIUS,
@@ -121,6 +124,8 @@ interface Actor {
   // E7 新增（玩家装备）
   equipped?: EquippedSlots; // 3 槽装备（持久化镜像；仅玩家实体持有）
   equipStats?: EquipmentStats; // 装备汇总属性缓存（computeEquipStats；仅在 addPlayer/setPlayerEquipped 时计算，热路径零分配）
+  // E8 新增（玩家普攻）
+  attackCdTicks?: number; // 玩家普攻 CD（tick 左；仅普攻使用后持有，未普攻 → undefined 保持 golden 稳定）
 }
 
 interface SpawnZoneRuntime {
@@ -198,6 +203,27 @@ function dirToward(ax: number, ay: number, bx: number, by: number): number {
   const deg = (Math.atan2(by - ay, bx - ax) * 180) / Math.PI; // -180..180
   const k = Math.round(deg / 45);
   return ((k % 8) + 8) % 8;
+}
+
+// ─────────────────────────────────────────────────────────────
+// E8：目标格编解码（InputCmd.targetTile u16；客户端点击移动/点选敌人共用）
+// ─────────────────────────────────────────────────────────────
+// 世界 40×30 格：gx ∈ [0,39], gy ∈ [0,29]。
+// pack = gx*64 + gy（gx 高 6 位，gy 低 6 位，u16 安全：max = 39*64+29 = 2525）。
+// 确定性纯函数；客户端 index.html 镜像同一定义（C7 注释同步）。
+export function packTile(gx: number, gy: number): number {
+  return gx * 64 + gy;
+}
+
+export function unpackTile(t: number): { gx: number; gy: number } {
+  const v = Math.max(0, Math.trunc(t));
+  return { gx: Math.floor(v / 64), gy: v % 64 };
+}
+
+/** 目标格中心（px）。点击移动朝该点移动；到达判据 = 距中心 ≤ TARGET_ARRIVE_TOL。 */
+export function tileCenter(t: number): { x: number; y: number } {
+  const { gx, gy } = unpackTile(t);
+  return { x: gx * TILE + TILE / 2, y: gy * TILE + TILE / 2 };
 }
 
 /** 敌人 tier 索引 → 名称（rollLoot 用）。 */
@@ -482,6 +508,8 @@ export function createWorld(opts: CreateWorldOpts): World {
             if (a.skillCd[i] > 0) a.skillCd[i] -= 1;
           }
         }
+        // E8：普攻 CD 递减（仅普攻使用后持有；未普攻 → undefined，golden 稳定）。
+        if (a.attackCdTicks !== undefined && a.attackCdTicks > 0) a.attackCdTicks -= 1;
 
         // parry 窗口清理：windowEndTick < 当前 tick → 过期（清 PARRY_ACTIVE 位）。
         if (a.parryState && a.parryState.windowEndTick < t) {
@@ -494,16 +522,38 @@ export function createWorld(opts: CreateWorldOpts): World {
 
         if (cmd) {
           if (cmd.action === InputAction.MOVE) {
-            // E7：moveSpeed 提升移动速度（无装备 moveSpeed=0 → CELLS_PER_TICK*1.0 字节不变，golden 锚点）。
-            const np = stepMovement(
-              { x: a.x, y: a.y },
-              cmd.dir,
-              { speedPerTick: CELLS_PER_TICK * (1 + pStats.moveSpeed), isBlocked },
-            );
-            a.x = np.x;
-            a.y = np.y;
-            a.dir = cmd.dir; // 朝向总是更新（撞墙也转向）
-            lastMove.set(seatId, cmd); // 保留最后一条 MOVE 支撑按住移动
+            if (cmd.targetTile !== undefined) {
+              // E8：点击移动（MOVE 带 targetTile）。朝目标格中心移动；到达（≤ TARGET_ARRIVE_TOL）
+              // 自动停止并清 lastMove（暗黑式点击移动）。受阻沿墙滑行复用 stepMovement（isBlocked）。
+              const tc = tileCenter(cmd.targetTile);
+              const dist = Math.hypot(tc.x - a.x, tc.y - a.y);
+              if (dist <= TARGET_ARRIVE_TOL) {
+                lastMove.delete(seatId); // 到达 → 停止（清续行，不再移动）
+              } else {
+                const dir = dirToward(a.x, a.y, tc.x, tc.y);
+                const np = stepMovement(
+                  { x: a.x, y: a.y },
+                  dir,
+                  { speedPerTick: CELLS_PER_TICK * (1 + pStats.moveSpeed), isBlocked },
+                );
+                a.x = np.x;
+                a.y = np.y;
+                a.dir = dir;
+                lastMove.set(seatId, cmd); // 保留续行（无输入 tick 继续朝目标格）
+              }
+            } else {
+              // E7：moveSpeed 提升移动速度（无装备 moveSpeed=0 → CELLS_PER_TICK*1.0 字节不变，golden 锚点）。
+              // 无 targetTile 的 MOVE 保持「按住方向持续移动」语义（键盘 WASD 兼容）。
+              const np = stepMovement(
+                { x: a.x, y: a.y },
+                cmd.dir,
+                { speedPerTick: CELLS_PER_TICK * (1 + pStats.moveSpeed), isBlocked },
+              );
+              a.x = np.x;
+              a.y = np.y;
+              a.dir = cmd.dir; // 朝向总是更新（撞墙也转向）
+              lastMove.set(seatId, cmd); // 保留最后一条 MOVE 支撑按住移动
+            }
           } else if (cmd.action === InputAction.PARRY) {
             // 开 parry 窗口（服务端时间窗校验；R2b）。
             a.parryState = openParryWindow(t);
@@ -539,19 +589,72 @@ export function createWorld(opts: CreateWorldOpts): World {
               // E7：attackSpeed 缩短技能 CD（无装备 attackSpeed=0 → 原 cd，golden 锚点）。
               a.skillCd[slot] = Math.max(1, Math.round(intent.cdTicks * (1 - pStats.attackSpeed)));
             }
+          } else if (cmd.action === InputAction.ATTACK) {
+            // E8：普攻（服务端权威，C11 同技能模式）。校验：目标存在、敌人/BOSS、存活、
+            // 距离 ≤ MELEE_RANGE（近战范围判定，不强制面向）、普攻 CD 到 → 结算。
+            // 失败（目标不存在/死亡/范围外/CD 中）→ 静默忽略（不设 CD，客户端按范围重发）。
+            const target = actors.find((x) => x.id === cmd.targetEntityId);
+            if (
+              target &&
+              (target.kind === EntityKind.ENEMY || target.kind === EntityKind.BOSS) &&
+              target.hp > 0 &&
+              (a.attackCdTicks ?? 0) <= 0 &&
+              Math.hypot(target.x - a.x, target.y - a.y) <= MELEE_RANGE
+            ) {
+              // E8：普攻伤害 = PLAYER_BASE_ATK + 装备 atk 加成；暴击复用既有门闸
+              // （critChance>0 才消耗 Rng，无装备零消耗 → golden 稳定）。
+              let baseAmount = PLAYER_BASE_ATK + pStats.atk;
+              if (pStats.critChance > 0 && simRng.nextFloat() < pStats.critChance) {
+                baseAmount = Math.round(baseAmount * 1.5);
+              }
+              const dmg = resolveDamage({
+                targetId: target.id,
+                amount: 0,
+                tick: t,
+                baseAmount,
+                targetParry: undefined, // 敌人无格挡
+                targetReduction: undefined, // 敌人无装备减伤
+              });
+              target.hp += dmg.deltaHp;
+              // E6：被动怪被打 → 反击窗口（同技能命中语义）。
+              target.lastDamageTick = t;
+              // 面向目标（表现层：客户端挥砍光效朝目标；不参与命中判定，MVP 近战范围判定即可）。
+              a.dir = dirToward(a.x, a.y, target.x, target.y);
+              // E8：普攻 CD（attackSpeed 缩短；无装备 → ATTACK_CD_TICKS=6，golden 锚点）。
+              a.attackCdTicks = Math.max(1, Math.round(ATTACK_CD_TICKS * (1 - pStats.attackSpeed)));
+            }
           }
           // SIGNAL 等未识别 action → 忽略
         } else if (lastMove.has(seatId)) {
-          // 无本 tick 输入 → 回退到保留的最后一条 MOVE（按住方向持续移动 / 抗单 tick 丢包）。
+          // 无本 tick 输入 → 回退到保留的最后一条 MOVE（按住方向持续移动 / 点击移动续行 / 抗单 tick 丢包）。
           const mv = lastMove.get(seatId)!;
-          const np = stepMovement(
-            { x: a.x, y: a.y },
-            mv.dir,
-            { speedPerTick: CELLS_PER_TICK * (1 + pStats.moveSpeed), isBlocked },
-          );
-          a.x = np.x;
-          a.y = np.y;
-          a.dir = mv.dir;
+          if (mv.targetTile !== undefined) {
+            // E8：点击移动续行 —— 朝目标格中心继续；到达自动停止（清 lastMove）。
+            const tc = tileCenter(mv.targetTile);
+            const dist = Math.hypot(tc.x - a.x, tc.y - a.y);
+            if (dist <= TARGET_ARRIVE_TOL) {
+              lastMove.delete(seatId);
+            } else {
+              const dir = dirToward(a.x, a.y, tc.x, tc.y);
+              const np = stepMovement(
+                { x: a.x, y: a.y },
+                dir,
+                { speedPerTick: CELLS_PER_TICK * (1 + pStats.moveSpeed), isBlocked },
+              );
+              a.x = np.x;
+              a.y = np.y;
+              a.dir = dir;
+            }
+          } else {
+            const np = stepMovement(
+              { x: a.x, y: a.y },
+              mv.dir,
+              { speedPerTick: CELLS_PER_TICK * (1 + pStats.moveSpeed), isBlocked },
+            );
+            a.x = np.x;
+            a.y = np.y;
+            a.dir = mv.dir;
+          }
         }
       }
 

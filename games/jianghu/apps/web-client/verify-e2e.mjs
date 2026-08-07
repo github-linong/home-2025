@@ -19,6 +19,9 @@
  *      L3 拾取 → character.inventory 入库推送
  *      L4 拾取 toast（增量去重文案）
  *      L5 背包面板（打开显示物品格子 / 空态）
+ *      L6 装备穿戴（E7.2：点装备 → 槽位变化）
+ *      M1 鼠标左键点空地 → 点击移动（玩家位置向目标点移动）
+ *      M2 鼠标左键点敌人 → 自动走近 + 普攻命中（敌人 hp 下降 + lastHits 有普攻记录）
  *      C  技能被服务端接受（skillCd>0）
  *      D  真实输入 walk+F 进副本（超时兜底 debug 钩子）
  *      E  技能命中敌人（HP 下降，服务端权威）
@@ -335,6 +338,83 @@ const main = async () => {
       record("L6 装备穿戴", false, "SKIPPED");
     }
 
+    // ── E8 鼠标交互：左键点敌人 → 走近+普攻命中；左键点空地 → 点击移动（暗黑式）──
+    // M1 点空地移动：点击玩家周围 ~3 tile 的**无敌人方向**地面 → 玩家位置向目标点移动（page.mouse.click 真实鼠标事件）
+    // （先排除点击点 40px 内有敌人的方向，避免被 handleClick 识别为「点选敌人」而误发攻击——E2E 稳定性）。
+    const groundClick = await page.evaluate(() => {
+      const g = window.__game, s = g.lastSnapshot;
+      const me = s && s.entities.find((e) => e.id === g.localEntityId);
+      if (!me || !g.worldToScreen) return null;
+      const dirs = [
+        { dx: 3, dy: 0 }, { dx: -3, dy: 0 }, { dx: 0, dy: 3 }, { dx: 0, dy: -3 },
+        { dx: 2, dy: 2 }, { dx: -2, dy: 2 }, { dx: 2, dy: -2 }, { dx: -2, dy: -2 },
+      ];
+      for (const d of dirs) {
+        const tx = me.pos.x + d.dx * 48, ty = me.pos.y + d.dy * 48;
+        let nearEnemy = false;
+        for (const e of s.entities) {
+          if ((e.kind !== 1 && e.kind !== 2) || e.hp <= 0) continue;
+          if (Math.hypot(e.pos.x - tx, e.pos.y - ty) < 40) { nearEnemy = true; break; }
+        }
+        if (!nearEnemy) {
+          const scr = g.worldToScreen({ x: tx, y: ty });
+          return { sx: scr.x, sy: scr.y, tx, ty, dir: d };
+        }
+      }
+      return null;
+    });
+    if (groundClick) {
+      const posBefore = await page.evaluate(() => ({ ...window.__game.lastLocalPos }));
+      await page.mouse.click(groundClick.sx, groundClick.sy);
+      const okMoved = await waitFor(page, `window.__game.lastLocalPos && (Math.hypot(window.__game.lastLocalPos.x - ${posBefore.x}, window.__game.lastLocalPos.y - ${posBefore.y}) > 20)`, 5000, "click-move");
+      const posAfter = await page.evaluate(() => ({ ...window.__game.lastLocalPos }));
+      const moved = okMoved && Math.hypot(posAfter.x - posBefore.x, posAfter.y - posBefore.y) > 20;
+      record("M1 左键点空地→点击移动", moved, moved
+        ? `pos ${posBefore.x.toFixed(0)},${posBefore.y.toFixed(0)} → ${posAfter.x.toFixed(0)},${posAfter.y.toFixed(0)}（dir=${JSON.stringify(groundClick.dir)} 目标 ${groundClick.tx.toFixed(0)},${groundClick.ty.toFixed(0)}）`
+        : `pos ${posBefore.x.toFixed(0)} → ${posAfter.x.toFixed(0)}（期望位移 >20px）`);
+      await page.screenshot({ path: path.join(OUT_DIR, "07-click-move.png") });
+    } else {
+      record("M1 左键点空地→点击移动", false, "SKIPPED（无 worldToScreen 钩子 / 无空闲方向）");
+    }
+
+    // M2 点敌人：点击最近 passive 敌人 → 玩家走近 + 普攻命中（敌人 hp 下降 + lastHits 有普攻记录）
+    const enemyClick = await page.evaluate(() => {
+      const g = window.__game, s = g.lastSnapshot;
+      if (!s || g.localEntityId == null || !g.worldToScreen) return null;
+      const me = s.entities.find((e) => e.id === g.localEntityId);
+      if (!me) return null;
+      let best = null, bd = Infinity;
+      for (const e of s.entities) {
+        if (e.kind !== 1 || e.hp <= 0) continue;
+        const d = Math.hypot(e.pos.x - me.pos.x, e.pos.y - me.pos.y);
+        if (d < bd) { bd = d; best = e; }
+      }
+      if (!best) return null;
+      const scr = g.worldToScreen({ x: best.pos.x, y: best.pos.y });
+      return { id: best.id, hp: best.hp, sx: scr.x, sy: scr.y, d: bd };
+    });
+    if (enemyClick) {
+      const hitsBefore = await page.evaluate(() => window.__game.lastHits.length);
+      await page.mouse.click(enemyClick.sx, enemyClick.sy);
+      // 等待：玩家走近（点击移动）→ 进入 MELEE_RANGE → 自动普攻（服务端权威）→ 敌人 hp 下降。
+      const okHit = await waitFor(page, `window.__game.lastSnapshot.entities.some(e => e.id === ${enemyClick.id} && e.hp < ${enemyClick.hp})`, 15000, "melee hit");
+      const afterHp = await page.evaluate((id) => {
+        const e = window.__game.lastSnapshot.entities.find((x) => x.id === id);
+        return e ? e.hp : null;
+      }, enemyClick.id);
+      const meleeHits = await page.evaluate((n, id) => window.__game.lastHits.slice(n).filter((h) => h.id === id && (h.kind === 1 || h.kind === 2)), hitsBefore, enemyClick.id);
+      const dmgOk = meleeHits.some((h) => h.dmg >= 8);
+      record("M2 左键点敌人→走近+普攻命中", okHit && meleeHits.length > 0 && dmgOk,
+        okHit
+          ? `enemy ${enemyClick.id} hp ${enemyClick.hp}→${afterHp}（初始 dist=${enemyClick.d.toFixed(0)}px）lastHits dmg=[${meleeHits.map((h) => h.dmg).join(",")}]`
+          : `未命中（初始 dist=${enemyClick.d.toFixed(0)}px hp=${enemyClick.hp} lastHits=${meleeHits.length}）`);
+      await page.screenshot({ path: path.join(OUT_DIR, "08-melee.png") });
+      // 清理：停止战斗目标（避免影响后续 C/D 键盘输入流程）。
+      await page.evaluate(() => window.__game.clearClickTargets());
+    } else {
+      record("M2 左键点敌人→走近+普攻命中", false, "SKIPPED（主世界无敌人）");
+    }
+
     // ── C. SKILL1（主世界无敌人：断言服务端接受 cast → skillCd>0）──
     await page.keyboard.press("Digit1");
     await sleep(900);
@@ -479,6 +559,7 @@ const main = async () => {
       "验证边界：Puppeteer headless 真连真实 jianghu 服务端(DEV_SKIP_AUTH=true, port 3011)。",
       "B0 移动预测：按键 60ms 内 predicted 渲染位即变（PLAYER_SPEED=192px/s 理论≈11.5px），证明本地预测生效（旧版需等 ~100ms+RTT 插值缓冲）。",
       "L3/L4 拾取：服务端重叠自动拾取（PICKUP_RADIUS=1×TILE）→ 登录玩家入库 → character.inventory 推送；增量 toast 以 itemId 去重。",
+      "M1/M2 鼠标交互（E8）：page.mouse.click 真实鼠标事件 → 左键点空地发 MOVE{targetTile} 点击移动；左键点敌人点选 → MOVE 走近 + ATTACK 普攻（服务端权威 CD/距离/伤害，lastHits 复用伤害飘字）。",
       "技能命中敌人受副本随机布局影响：未命中时以「服务端接受 cast(skillCd>0)」为次优断言；H2 击杀反馈为信息项不阻塞。",
       "重连测试用 CDP 模拟断网(服务端 ping 超时断开)→ 恢复后 session.reconnect。",
     ],

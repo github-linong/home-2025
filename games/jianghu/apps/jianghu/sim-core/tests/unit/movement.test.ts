@@ -11,8 +11,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { stepMovement, dirToVector } from "../../src/movement.ts";
-import { createWorld } from "../../src/world.ts";
-import { CELLS_PER_TICK, TILE } from "../../src/constants.ts"; // C7 单一来源
+import { createWorld, packTile, tileCenter } from "../../src/world.ts";
+import { CELLS_PER_TICK, TILE, TARGET_ARRIVE_TOL } from "../../src/constants.ts"; // C7 单一来源
 import { InputAction, RoomPhase, EntityKind } from "../../src/types.ts";
 
 const STEP_PX = CELLS_PER_TICK * TILE; // 单 tick 位移（px）= (4/12)*48 = 16
@@ -267,4 +267,102 @@ test("STOP ③：STOP 后重新 MOVE 可继续（seq 单调含 STOP：回退 seq
   const a2 = world.actors().find((a) => a.ownerId === 1)!;
   assert.ok(Math.abs(a2.y - (y0 + STEP_PX)) < 1e-6, "合法 seq 的 MOVE 恢复移动（y 前进）");
   assert.ok(Math.abs(a2.x - xStop) < 1e-9, "新方向不再沿用旧 dir 0（x 不变）");
+});
+
+// ============================================================================
+// E8：点击移动（MOVE 带 targetTile）—— 暗黑式鼠标点击移动
+// ============================================================================
+
+/** 建点击移动测试世界：玩家出生在 (10,15) 格中心（确定性起点）。 */
+function clickWorld(blocked?: ReadonlySet<string>) {
+  return createWorld({
+    runId: "r-click",
+    roomId: "room_click",
+    seed: "CLICK-SEED",
+    phase: RoomPhase.OVERWORLD,
+    blocked,
+  });
+}
+
+test("E8 点击移动①：MOVE 带 targetTile → 朝目标格中心移动；到达 ≤0.5×TILE 自动停止并清 lastMove", () => {
+  const world = clickWorld();
+  world.addPlayer(1, "u1", { x: 10 * TILE + TILE / 2, y: 15 * TILE + TILE / 2 });
+  const tc = tileCenter(packTile(14, 15)); // (14,15) 格中心 = 东 4 格
+  // 发送一次 targetTile MOVE，随后无输入（靠 lastMove 续行）。
+  world.enqueueInput(1, { seq: 1, tick: 0, action: InputAction.MOVE, dir: 0, targetTile: packTile(14, 15) });
+  world.step();
+  // 无输入续行若干 tick → 应到达目标格（≤ TARGET_ARRIVE_TOL）。
+  let arrived = false;
+  for (let i = 0; i < 40 && !arrived; i++) {
+    world.step();
+    const p = world.actors().find((a) => a.ownerId === 1)!;
+    if (Math.hypot(tc.x - p.x, tc.y - p.y) <= TARGET_ARRIVE_TOL) arrived = true;
+  }
+  assert.ok(arrived, "玩家应到达目标格（≤0.5×TILE）");
+  // 到达后：再多步若干 tick，位置不再变化（lastMove 已清，自动停止）。
+  const p1 = world.actors().find((a) => a.ownerId === 1)!;
+  const x1 = p1.x, y1 = p1.y;
+  for (let i = 0; i < 5; i++) world.step();
+  const p2 = world.actors().find((a) => a.ownerId === 1)!;
+  assert.ok(Math.abs(p2.x - x1) < 1e-9 && Math.abs(p2.y - y1) < 1e-9, "到达后自动停止（位置不再变）");
+});
+
+test("E8 点击移动②：无 targetTile 的 MOVE 保持按住续行（键盘兼容不回归）", () => {
+  const world = clickWorld();
+  world.addPlayer(1, "u1", { x: 10 * TILE, y: 15 * TILE });
+  world.enqueueInput(1, { seq: 1, tick: 0, action: InputAction.MOVE, dir: 0 });
+  world.step();
+  world.enqueueInput(1, { seq: 2, tick: 0, action: InputAction.MOVE, dir: 0 });
+  world.step();
+  const x2 = world.actors().find((a) => a.ownerId === 1)!.x;
+  // 无输入 tick → 仍沿 dir 0 续行（按住语义保留，与 E8 前一致）。
+  world.step();
+  const p = world.actors().find((a) => a.ownerId === 1)!;
+  assert.ok(Math.abs(p.x - (x2 + STEP_PX)) < 1e-6, "无 targetTile 的 MOVE 无输入 tick 仍续行");
+});
+
+test("E8 点击移动③：目标格被墙挡住 → 撞墙停（复用 stepMovement 滑动，不瞬移）", () => {
+  // 墙带：grid (12,15) 与 (13,15) 在东侧挡住 (14,15) 目标 → 东行撞墙停。
+  const blocked = new Set(["12,15", "13,15"]);
+  const world = clickWorld(blocked);
+  world.addPlayer(1, "u1", { x: 10 * TILE + TILE / 2, y: 15 * TILE + TILE / 2 });
+  world.enqueueInput(1, { seq: 1, tick: 0, action: InputAction.MOVE, dir: 0, targetTile: packTile(14, 15) });
+  world.step();
+  for (let i = 0; i < 30; i++) world.step();
+  const p = world.actors().find((a) => a.ownerId === 1)!;
+  assert.ok(p.x < 12 * TILE, `玩家被墙挡住，x 不越过墙列（实测 ${p.x.toFixed(1)} < ${12 * TILE}）`);
+  assert.ok(p.x >= 0 && p.x <= 40 * TILE && p.y >= 0 && p.y <= 30 * TILE, "撞墙后坐标仍在世界内（不瞬移）");
+});
+
+test("E8 点击移动④：STOP 仍清 lastMove 立即停（与目标格 MOVE 共存）", () => {
+  const world = clickWorld();
+  world.addPlayer(1, "u1", { x: 10 * TILE + TILE / 2, y: 15 * TILE + TILE / 2 });
+  world.enqueueInput(1, { seq: 1, tick: 0, action: InputAction.MOVE, dir: 0, targetTile: packTile(14, 15) });
+  world.step();
+  const p0 = world.actors().find((a) => a.ownerId === 1)!;
+  const x0 = p0.x;
+  // STOP（seq 2）→ 清 pending + lastMove 立即停，不再朝目标续行。
+  world.enqueueInput(1, { seq: 2, tick: 0, action: InputAction.STOP, dir: 0 });
+  world.step();
+  const p1 = world.actors().find((a) => a.ownerId === 1)!;
+  assert.ok(Math.abs(p1.x - x0) < 1e-9, "STOP 当 tick 不移动");
+  for (let i = 0; i < 5; i++) world.step();
+  const p2 = world.actors().find((a) => a.ownerId === 1)!;
+  assert.ok(Math.abs(p2.x - x0) < 1e-9, "STOP 后续 tick 不再朝目标移动（lastMove 已清）");
+});
+
+test("E8 点击移动⑤：确定性 —— 同 seed + 同 targetTile 输入 ⇒ 同坐标序列（D9）", () => {
+  const run = (): number[] => {
+    const world = clickWorld();
+    world.addPlayer(1, "u1", { x: 10 * TILE + TILE / 2, y: 15 * TILE + TILE / 2 });
+    const xs: number[] = [];
+    world.enqueueInput(1, { seq: 1, tick: 0, action: InputAction.MOVE, dir: 0, targetTile: packTile(14, 15) });
+    for (let i = 0; i < 20; i++) {
+      world.step();
+      const p = world.actors().find((a) => a.ownerId === 1)!;
+      xs.push(Math.round(p.x * 1000) / 1000);
+    }
+    return xs;
+  };
+  assert.deepEqual(run(), run(), "同 seed + 同输入 → 完全相同的坐标序列（确定性）");
 });

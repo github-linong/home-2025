@@ -147,7 +147,7 @@
 </div>
 
 <div id="help">
-  <b>WASD/方向键</b> 移动（8 向） · <b>空格</b> 格挡 · <b>1-4</b> 技能 · <b>I</b> 背包<br>
+  <b>左键点敌人</b> 自动走近普攻 · <b>左键点地面</b> 点击移动 · <b>WASD/方向键</b> 移动（8 向） · <b>空格</b> 格挡 · <b>1-4</b> 技能 · <b>I</b> 背包<br>
   <b>F</b> 进副本/出本 · 靠近掉落按 <b>F</b>（走近自动拾取） · <b>滚轮</b> 缩放 · <b>拖拽</b> 平移 · <b>双击</b> 回中<br>
   <b>装备</b>：背包内点「装备」穿装（攻击/生命/暴击立即提升） · 点击装备栏槽位卸下
 </div>
@@ -161,8 +161,9 @@
 // 协议要点（对齐服务端 gateway/protocol/protocol-binary，见 README.md）：
 //   - 控制面 JSON（显式 type）；数据面二进制（ws.binaryType='arraybuffer'）。
 //   - input.cmd 必须 { type:'input.cmd', payload:{ cmd:{...} } }（服务端读 payload?.cmd）。
-//   - 动作：0=MOVE 1=PARRY 2..5=SKILL1..4 6=SIGNAL 7=STOP（松开移动键 → 服务端清 lastMove 立即停）。
-//   - 目标/伤害由服务端权威结算，客户端只发 skillSlot，绝不自行锁 target。
+//   - 动作：0=MOVE 1=PARRY 2..5=SKILL1..4 6=SIGNAL 7=STOP（松开移动键 → 服务端清 lastMove 立即停）
+//     8=ATTACK（E8 普攻，targetEntityId 指定目标；服务端权威 CD/距离/伤害）。
+//   - 目标/伤害由服务端权威结算，客户端只发 skillSlot/targetEntityId，绝不自行锁 target。
 //   - 快照帧：[u8 msgType=0x01][u32 tick LE][u16 count] + 每实体（见 decodeSnapshot）。
 //   - E6 背包：character.inventory（拾取入库推送）/ character.inventory.get（打开面板拉全量）。
 // ============================================================================
@@ -189,6 +190,11 @@ const ENTRANCE_ENTER_RADIUS = 3 * TILE; // UI「进副本」可用半径（服�
 const PARRY_TICKS = 3;                  // 格挡窗口（服务端权威展示用）
 const SKILL_ACTIONS = [2, 3, 4, 5];     // InputAction.SKILL1..4
 const ACTION_STOP = 7;                  // InputAction.STOP
+const ACTION_ATTACK = 8;                // InputAction.ATTACK（E8 普攻）
+const MELEE_RANGE = 48;                 // 服务端 MELEE_RANGE=1×TILE（近战命中范围，C7 镜像）
+const ATTACK_CD_TICKS = 6;              // 服务端 ATTACK_CD_TICKS=6（0.5s 普攻间隔；CD 由服务端权威）
+const ARRIVE_TOL = 24;                  // 服务端 TARGET_ARRIVE_TOL=0.5×TILE（点击移动到达容差）
+const CLICK_DRAG_TOL = 6;               // 鼠标位移阈值：超过视为拖拽平移，否则为左键点击
 
 // ── C2 手感/表现参数（WEB-FEEL 模式）──
 const BASE_SPEED = 4;                   // 服务端 BASE_SPEED（格/秒，constants.ts C7 镜像）
@@ -261,6 +267,8 @@ const GAME = window.__game = {
   inventory: { items: [], cap: 60, loaded: false },
   equipped: {}, // E7：3 槽已穿戴（character.inventory 消息）
   nearLootId: null, pickupHint: '', invOpen: false,
+  // E8：鼠标交互（左键点敌人点选攻击 / 点地面点击移动；E2E 断言钩子）
+  selectedEnemyId: null, combatTarget: null, moveTarget: null, lastAttackAt: 0,
   // 调试钩子（仅 ?debug=1 生效；E2E 用）
   debugEnterDungeon: null, debugExitDungeon: null,
   toggleInventory: null, openInventory: null, closeInventory: null, sendSignal: null,
@@ -268,20 +276,46 @@ const GAME = window.__game = {
 
 // ── 视图 / 摄像机 ──
 const view = { w: window.innerWidth, h: window.innerHeight, scale: 1.0, cx: ENTRANCE_POS.x, cy: ENTRANCE_POS.y, follow: true };
-let drag = null;
+let drag = null;          // 拖拽平移状态
+let clickStart = null;    // 潜在左键点击（mousedown 记录；位移 > CLICK_DRAG_TOL 转为拖拽）
+function screenToWorld(sx, sy) {
+  return { x: (sx - view.w / 2) / view.scale + view.cx, y: (sy - view.h / 2) / view.scale + view.cy };
+}
 canvas.addEventListener('wheel', (e) => {
   e.preventDefault();
   const f = e.deltaY > 0 ? 0.9 : 1.1;
   view.scale = Math.min(2.5, Math.max(0.45, view.scale * f));
   if (!view.follow) snapFollow();
 }, { passive: false });
-canvas.addEventListener('mousedown', (e) => { drag = { x: e.clientX, y: e.clientY, cx: view.cx, cy: view.cy }; canvas.classList.add('panning'); view.follow = false; });
-window.addEventListener('mousemove', (e) => {
-  if (!drag) return;
-  view.cx = drag.cx - (e.clientX - drag.x) / view.scale;
-  view.cy = drag.cy - (e.clientY - drag.y) / view.scale;
+canvas.addEventListener('mousedown', (e) => {
+  if (e.button !== 0) return; // 仅左键可能触发点击/拖拽；右键暂不绑定（E8 说明）
+  const w = screenToWorld(e.clientX, e.clientY);
+  clickStart = { x: e.clientX, y: e.clientY, moved: false, wx: w.x, wy: w.y };
 });
-window.addEventListener('mouseup', () => { drag = null; canvas.classList.remove('panning'); });
+window.addEventListener('mousemove', (e) => {
+  if (clickStart && !clickStart.moved) {
+    const dx = e.clientX - clickStart.x, dy = e.clientY - clickStart.y;
+    if (Math.hypot(dx, dy) > CLICK_DRAG_TOL) {
+      // 位移超阈值 → 转为拖拽平移（不触发点击动作；相机停止跟随）。
+      clickStart.moved = true;
+      drag = { x: e.clientX, y: e.clientY, cx: view.cx, cy: view.cy };
+      canvas.classList.add('panning');
+      view.follow = false;
+    }
+  }
+  if (drag) {
+    view.cx = drag.cx - (e.clientX - drag.x) / view.scale;
+    view.cy = drag.cy - (e.clientY - drag.y) / view.scale;
+  }
+});
+window.addEventListener('mouseup', (e) => {
+  if (drag) { drag = null; canvas.classList.remove('panning'); }
+  else if (clickStart && !clickStart.moved && e.button === 0) {
+    // 左键点击（无位移）→ 交互动作：点敌人点选攻击 / 点地面点击移动（E8）。
+    handleClick(clickStart.wx, clickStart.wy);
+  }
+  clickStart = null;
+});
 canvas.addEventListener('dblclick', snapFollow);
 function snapFollow() { view.follow = true; }
 
@@ -321,6 +355,12 @@ let inventory = { items: [], cap: 60, loaded: false };
 let equipped = {};                  // E7：3 槽已穿戴（来自 character.inventory）
 let pickupToasts = [];              // 最近拾取 toast（E2E 钩子）
 let invSeq = 1;
+
+// ── E8 鼠标交互状态 ──
+let selectedEnemyId = null;         // 选中敌人 id（红圈跟随）
+let combatTarget = null;            // 战斗目标 entity id（左键点敌人；持续走近/普攻）
+let moveTarget = null;              // 点击移动目标格（packed = gx*64+gy；左键点地面）
+let meleeFx = [];                   // 普攻挥砍光效 {x,y,dir,born,ttl}
 
 // ── Toast ──
 let toastTimer = null;
@@ -488,8 +528,11 @@ function sendJson(obj) {
 function resetFxState() {
   snapBuffer = []; lastKnown.clear();
   prevHp = new Map(); floatTexts = []; hitFlashes = new Map();
-  rings = []; skillFx = []; killFx = []; parryFx.until = 0;
+  rings = []; skillFx = []; killFx = []; parryFx.until = 0; meleeFx = [];
   predicted = null;
+  // E8：清鼠标交互目标（防跨房 id 误用）。
+  selectedEnemyId = null; combatTarget = null; moveTarget = null;
+  GAME.selectedEnemyId = null; GAME.combatTarget = null; GAME.moveTarget = null;
   GAME.lastHits = []; GAME.lastKills = []; GAME.nearLootId = null; GAME.pickupHint = '';
 }
 
@@ -820,14 +863,123 @@ function sendSkill(slot) {
 // SIGNAL(6)：靠近掉落按 F 的拾取意图（服务端为重叠自动拾取，此动作服务端忽略，仅表现/占位）
 function sendSignal() { sendCmd({ action: 6, dir: lastMoveDir ?? 0 }); }
 
-// 12Hz 输入循环：按住方向持续发 MOVE（服务端 lastMove 语义）；松开/无有效方向 → 兜底发 STOP
+// E8：客户端 8 向朝向（与服务端 dirToward 对称；本地预测/光效用，纯几何无随机）。
+function dirTowardClient(ax, ay, bx, by) {
+  const deg = Math.atan2(by - ay, bx - ax) * 180 / Math.PI;
+  const k = Math.round(deg / 45);
+  return ((k % 8) + 8) % 8;
+}
+
+// E8：无条件发 STOP（点击移动/战斗目标结束用；服务端清 lastMove 立即停）。
+function sendStopCmd() {
+  sendCmd({ action: ACTION_STOP, dir: lastMoveDir ?? 0 });
+  lastMoveDir = null;
+}
+
+// E8：点击移动 → MOVE{targetTile}（目标格编码 gx*64+gy，与服务端 world.packTile 一致）。
+function sendMoveToTile(gx, gy) {
+  sendCmd({ action: 0, dir: lastMoveDir ?? 0, targetTile: gx * 64 + gy });
+}
+
+// E8：普攻 → ATTACK{targetEntityId}（服务端权威 CD/距离/伤害）；本地白刃挥砍光效。
+function sendAttack(targetId) {
+  sendCmd({ action: ACTION_ATTACK, dir: lastMoveDir ?? 0, targetEntityId: targetId });
+  const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+  const t = lastSnapshot ? lastSnapshot.entities.find((e) => e.id === targetId) : null;
+  const base = predicted || (me ? me.pos : null);
+  if (base && t) {
+    meleeFx.push({ x: base.x, y: base.y, dir: dirTowardClient(base.x, base.y, t.pos.x, t.pos.y), born: performance.now(), ttl: 220 });
+    GAME.lastAttackAt = performance.now();
+  }
+}
+
+// E8：清鼠标交互目标（点选/战斗/点击移动）。
+function clearClickTargets() {
+  selectedEnemyId = null; combatTarget = null; moveTarget = null;
+  GAME.selectedEnemyId = null; GAME.combatTarget = null; GAME.moveTarget = null;
+}
+
+// E8：敌人点选命中半径（比渲染半径略大，便于点选）。
+function enemyHitRadius(e) {
+  if (e.kind === KIND.BOSS) return 34;
+  if (e.tier === 1) return 24;
+  return 20;
+}
+
+// E8：左键点击 → 命中敌人/BOSS → 点选（红圈）并自动走近普攻；命中地面 → 点击移动。
+// 交互优先级：左键点敌人 → 攻击；左键点地面 → 移动；右键暂不绑定。
+function handleClick(wx, wy) {
+  if (!lastSnapshot || localEntityId == null) return;
+  if (state !== 'overworld' && state !== 'dungeon') return;
+  // ① 优先点选敌人/BOSS（存活）。
+  let hit = null, bestD = Infinity;
+  for (const e of lastSnapshot.entities) {
+    if ((e.kind !== KIND.ENEMY && e.kind !== KIND.BOSS) || e.hp <= 0) continue;
+    const d = Math.hypot(e.pos.x - wx, e.pos.y - wy);
+    if (d <= enemyHitRadius(e) && d < bestD) { bestD = d; hit = e; }
+  }
+  if (hit) {
+    selectedEnemyId = hit.id;
+    combatTarget = hit.id;
+    moveTarget = null;
+    GAME.selectedEnemyId = selectedEnemyId; GAME.combatTarget = combatTarget; GAME.moveTarget = null;
+    GAME.lastClickEnemy = { id: hit.id, x: hit.pos.x, y: hit.pos.y };
+    return;
+  }
+  // ② 空地 → 点击移动（目标格，clamp 到世界 40×30 内）。
+  const gx = Math.max(0, Math.min(39, Math.floor(wx / TILE)));
+  const gy = Math.max(0, Math.min(29, Math.floor(wy / TILE)));
+  selectedEnemyId = null; combatTarget = null;
+  moveTarget = gx * 64 + gy;
+  GAME.selectedEnemyId = null; GAME.combatTarget = null; GAME.moveTarget = moveTarget;
+  GAME.lastClickMove = { wx, wy, gx, gy };
+}
+
+// 12Hz 输入循环：键盘优先（按住持续 MOVE）；无键盘 → 战斗目标（走近+普攻）→ 点击移动 → 兜底 STOP。
 function startInputLoop() {
   if (inputTimer) clearInterval(inputTimer);
   inputTimer = setInterval(() => {
     if (!(state === 'overworld' || state === 'dungeon')) return;
     const dir = dirFromKeys();
-    if (dir != null) sendMove(dir);
-    else sendStop();
+    if (dir != null) {
+      // 键盘优先：清点击目标（点击移动/攻击被按键打断）。
+      if (combatTarget != null || moveTarget != null) clearClickTargets();
+      sendMove(dir);
+      return;
+    }
+    if (combatTarget != null) {
+      // 战斗目标：范围内自动普攻（服务端 CD 门闸），范围外发 MOVE{targetTile:敌人格} 走近。
+      const t = lastSnapshot ? lastSnapshot.entities.find((e) => e.id === combatTarget && (e.kind === KIND.ENEMY || e.kind === KIND.BOSS) && e.hp > 0) : null;
+      if (!t) { // 目标死亡/消失 → 清目标并停。
+        clearClickTargets();
+        sendStopCmd();
+        return;
+      }
+      const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+      if (!me) return;
+      const d = Math.hypot(t.pos.x - me.pos.x, t.pos.y - me.pos.y);
+      if (d <= MELEE_RANGE) sendAttack(combatTarget);
+      else sendMoveToTile(
+        Math.max(0, Math.min(39, Math.floor(t.pos.x / TILE))),
+        Math.max(0, Math.min(29, Math.floor(t.pos.y / TILE))),
+      );
+      return;
+    }
+    if (moveTarget != null) {
+      const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+      if (!me) return;
+      const gx = Math.floor(moveTarget / 64), gy = moveTarget % 64;
+      const tx = gx * TILE + TILE / 2, ty = gy * TILE + TILE / 2;
+      if (Math.hypot(tx - me.pos.x, ty - me.pos.y) <= ARRIVE_TOL) {
+        // 到达 → 清目标并停（服务端到达亦自动清 lastMove，双保险）。
+        moveTarget = null; GAME.moveTarget = null;
+        sendStopCmd();
+      } else {
+        sendMoveToTile(gx, gy);
+      }
+      return;
+    }
+    sendStop();
   }, 80);
 }
 
@@ -861,14 +1013,16 @@ window.addEventListener('keyup', (e) => {
   // 最后一个移动键松开 → 显式 STOP（P0 手感修复：服务端清 lastMove 立即停）。
   if (KEY_DIRS[e.code] && dirFromKeys() === null) sendStop();
 });
-// 失焦 / 切页 / 断连前：清按键 + 显式 STOP，避免服务端沿最后方向惯性滑行。
+// 失焦 / 切页 / 断连前：清按键 + 清点击目标 + 显式 STOP，避免服务端沿最后方向惯性滑行。
 window.addEventListener('blur', () => {
   keys.clear();
+  clearClickTargets();
   sendStop();
 });
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     keys.clear();
+    clearClickTargets();
     sendStop();
   }
 });
@@ -1010,6 +1164,12 @@ if (DEBUG) {
   GAME.sendSignal = sendSignal;
   GAME.sendEquip = sendEquip; // E7
   GAME.sendUnequip = sendUnequip; // E7
+  GAME.sendAttack = sendAttack; // E8 普攻
+  GAME.sendMoveToTile = sendMoveToTile; // E8 点击移动
+  GAME.clickWorld = (wx, wy) => handleClick(wx, wy); // E8 世界坐标点击（E2E 兜底/调试）
+  GAME.clearClickTargets = clearClickTargets; // E8
+  GAME.worldToScreen = worldToScreen; // E8 E2E：世界坐标 → 屏幕坐标（page.mouse.click 用）
+  GAME.screenToWorld = screenToWorld; // E8
 }
 
 // ============================================================================
@@ -1068,17 +1228,32 @@ function draw() {
   renderTime = lastSnapshot.tick - INTERP_TICKS;
   GAME.renderTick = renderTime;
 
-  // C2 本地预测：按键 → 渲染位置立即推进（帧率无关，按 PLAYER_SPEED*dt；仅渲染层）
+  // C2/E8 本地预测：按键 / 战斗目标 / 点击移动 → 渲染位置立即推进（帧率无关，按 PLAYER_SPEED*dt；仅渲染层）
   if (predicted && (state === 'overworld' || state === 'dungeon')) {
     const d = dirFromKeys();
     if (d != null) {
       const v = DIR_VECTORS[d];
       predicted.x += v.x * PLAYER_SPEED * dt;
       predicted.y += v.y * PLAYER_SPEED * dt;
-      // 世界边界 clamp（近似；墙内由 RECONCILE_FACTOR 每快照收敛回正）
-      predicted.x = Math.max(8, Math.min(WORLD_W - 8, predicted.x));
-      predicted.y = Math.max(8, Math.min(WORLD_H - 8, predicted.y));
+    } else if (combatTarget != null) {
+      const t = lastSnapshot ? lastSnapshot.entities.find((e) => e.id === combatTarget && (e.kind === KIND.ENEMY || e.kind === KIND.BOSS) && e.hp > 0) : null;
+      if (t && Math.hypot(t.pos.x - predicted.x, t.pos.y - predicted.y) > MELEE_RANGE) {
+        const v = DIR_VECTORS[dirTowardClient(predicted.x, predicted.y, t.pos.x, t.pos.y)];
+        predicted.x += v.x * PLAYER_SPEED * dt;
+        predicted.y += v.y * PLAYER_SPEED * dt;
+      }
+    } else if (moveTarget != null) {
+      const gx = Math.floor(moveTarget / 64), gy = moveTarget % 64;
+      const tx = gx * TILE + TILE / 2, ty = gy * TILE + TILE / 2;
+      if (Math.hypot(tx - predicted.x, ty - predicted.y) > ARRIVE_TOL) {
+        const v = DIR_VECTORS[dirTowardClient(predicted.x, predicted.y, tx, ty)];
+        predicted.x += v.x * PLAYER_SPEED * dt;
+        predicted.y += v.y * PLAYER_SPEED * dt;
+      }
     }
+    // 世界边界 clamp（近似；墙内由 RECONCILE_FACTOR 每快照收敛回正）
+    predicted.x = Math.max(8, Math.min(WORLD_W - 8, predicted.x));
+    predicted.y = Math.max(8, Math.min(WORLD_H - 8, predicted.y));
   }
   GAME.predicted = predicted ? { x: predicted.x, y: predicted.y } : null;
   GAME.localRenderPos = predicted ? { x: predicted.x, y: predicted.y } : null;
@@ -1260,6 +1435,17 @@ function drawEnemy(e, p) {
   ctx.beginPath();
   ctx.arc(size * 0.30 * facing.x, size * 0.30 * facing.y, 3, 0, Math.PI * 2);
   ctx.fill();
+
+  // E8：选中敌人红圈（左键点选跟随；脉动呼吸）
+  if (e.id === selectedEnemyId) {
+    const pulse = 0.75 + 0.25 * Math.sin(performance.now() / 160);
+    ctx.strokeStyle = 'rgba(255,60,60,' + pulse.toFixed(2) + ')';
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = 'rgba(255,60,60,0.9)';
+    ctx.shadowBlur = 10;
+    ctx.beginPath(); ctx.arc(0, 0, size / 2 + 7, 0, Math.PI * 2); ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
   ctx.restore();
 
   drawHpBar(s.x, s.y, isBoss ? 72 : (isElite ? 48 : 38), e.hp, e.maxHp, true);
@@ -1435,6 +1621,25 @@ function drawEntities() {
     }
   }
 
+  // E8：点击移动目标点标记（小十字圈，淡黄虚线）
+  if (moveTarget != null) {
+    const gx = Math.floor(moveTarget / 64), gy = moveTarget % 64;
+    const ms = worldToScreen({ x: gx * TILE + TILE / 2, y: gy * TILE + TILE / 2 });
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,210,0,0.85)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.arc(ms.x, ms.y, 12, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(ms.x - 17, ms.y); ctx.lineTo(ms.x - 6, ms.y);
+    ctx.moveTo(ms.x + 6, ms.y); ctx.lineTo(ms.x + 17, ms.y);
+    ctx.moveTo(ms.x, ms.y - 17); ctx.lineTo(ms.x, ms.y - 6);
+    ctx.moveTo(ms.x, ms.y + 6); ctx.lineTo(ms.x, ms.y + 17);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   for (const e of lastSnapshot.entities) {
     if (e.kind === KIND.ENTRANCE) continue;
     const p = renderPosFor(e) || e.pos;
@@ -1521,6 +1726,36 @@ function drawFx() {
     ctx.arc(0, 0, fx.radius, -0.62, 0.62);
     ctx.closePath();
     ctx.fill();
+    ctx.restore();
+  }
+
+  // E8 普攻挥砍弧线（白刃扇形短闪 0.22s，复用技能光效模式）
+  for (let i = meleeFx.length - 1; i >= 0; i--) {
+    const fx = meleeFx[i];
+    const age = t - fx.born;
+    if (age > fx.ttl) { meleeFx.splice(i, 1); continue; }
+    const k = age / fx.ttl;
+    const s = worldToScreen({ x: fx.x, y: fx.y });
+    const ang = fx.dir * Math.PI / 4;
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.rotate(ang);
+    ctx.globalAlpha = (1 - k) * 0.85;
+    const grad = ctx.createRadialGradient(0, 0, 2, 0, 0, 36);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(0.5, 'rgba(255,255,255,0.7)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, 36, -0.5, 0.5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(0, 0, 30, -0.5, 0.5);
+    ctx.stroke();
     ctx.restore();
   }
 

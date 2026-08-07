@@ -159,11 +159,21 @@ export const PLAYER_MAX_HP = 100;
 export const PLAYER_BASE_ATTRS: Readonly<{ str: number; dex: number; vit: number }> = Object.freeze({ str: 5, dex: 5, vit: 5 });
 
 /**
- * 玩家基础攻击（面板展示基准；GDD k_str=2 × STR=5 = 10）。
- * 注意：技能实际伤害 = SKILL_DAMAGE[slot] + 装备 atk 加成（无装备 = SKILL_DAMAGE[slot]，golden 锚点）；
- * 本常量仅作属性面板「攻击」展示基值，不进入 combat baseAmount。
+ * 玩家基础攻击（E8 重定：普攻基础伤害 + 面板「攻击」展示基值共用，单一来源）。
+ * E7 时按 GDD k_str=2 × STR=5 = 10 仅作属性面板展示基准；E8 拍板 PLAYER_BASE_ATK=8 作为
+ * 暗黑式普攻基础伤害（8 dmg / 0.5s），面板「攻击」同步展示 8 + 装备 atk —— 显示值 = 实际普攻
+ * 伤害（更直观），不再保留 10 的旧展示语义（equip-message.test 断言同步更新 10→8）。
  */
-export const PLAYER_BASE_ATK = 10;
+export const PLAYER_BASE_ATK = 8;
+
+/** 普攻命中半径（px）= 1×TILE（E8 近战范围判定；暗黑式左键点选普攻）。 */
+export const MELEE_RANGE = TILE;
+
+/** 普攻间隔（tick）= 0.5s @12Hz（E8 普攻 CD；attackSpeed 缩短 CD，无装备 → 6，golden 锚点）。 */
+export const ATTACK_CD_TICKS = 6;
+
+/** 点击移动到达容差（px）= 0.5×TILE；目标格距离 ≤ 容差即到达 → 自动停止并清 lastMove（E8）。 */
+export const TARGET_ARRIVE_TOL = Math.round(0.5 * TILE);
 
 /** 普通怪基础 HP（spawning：enemyHp = ENEMY_BASE_HP * HP_MULT[tier]）。MVP 平衡初值（spawning §⑥ / combat §⑥）。 */
 export const ENEMY_BASE_HP = 30;

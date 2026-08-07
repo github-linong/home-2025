@@ -164,6 +164,7 @@ export const InputAction = {
   SKILL4: 5,
   SIGNAL: 6,
   STOP: 7, // 松开移动键：清 lastMove 立即停（协议缺口修复，P0 手感；见 web-client README §3/§5）
+  ATTACK: 8, // E8：普攻（目标实体 id 由 InputCmd.targetEntityId 指定；服务端权威 CD/距离/伤害）
 } as const;
 export type InputActionValue = (typeof InputAction)[keyof typeof InputAction];
 
@@ -176,7 +177,8 @@ export interface InputCmd {
   readonly tick: number; // u16，上报时客户端所见 tick（仅遥测，非回滚锚）
   readonly action: InputActionValue;
   readonly dir: number; // 0-7 朝向（MOVE 用）
-  readonly targetTile?: number; // u16，目标格（MOVE 用）
+  readonly targetTile?: number; // u16，目标格（MOVE 用；E8 点击移动：packTile(gx,gy)=gx*64+gy）
+  readonly targetEntityId?: number; // u16，普攻目标（ATTACK 用；E8 客户端点击的敌人/BOSS id）
   readonly skillSlot?: number; // u8，SKILL 用（0-3）
   readonly param?: number; // u8，SIGNAL/保留
 }

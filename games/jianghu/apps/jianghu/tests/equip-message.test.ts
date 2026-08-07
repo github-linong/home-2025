@@ -176,7 +176,7 @@ test("世界镜像：equip 后当前房间 world actor maxHp/attrs 即时生效�
     const snap = world.snapshot();
     const ent = snap.entities.find((e) => e.ownerId === seatId)!;
     assert.equal(ent.attrs!.maxHp, 132, "快照 attrs.maxHp = 世界 maxHp");
-    assert.equal(ent.attrs!.atk, 10, "无 atk 词缀 → 面板攻击 = PLAYER_BASE_ATK(10)");
+    assert.equal(ent.attrs!.atk, 8, "无 atk 词缀 → 面板攻击 = PLAYER_BASE_ATK(8)（E8：普攻基础伤害，面板展示同源）");
     assert.equal(ent.attrs!.crit, 0, "无 crit 词缀 → 暴击 0%");
   } finally {
     stopRun(RESIDENT_ROOM_ID);
