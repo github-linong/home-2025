@@ -230,7 +230,8 @@ const main = async () => {
     page.on("pageerror", (e) => pageErrors.push(String(e)));
     page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text()); });
 
-    const url = `http://127.0.0.1:${STATIC_PORT}/index.html?server=ws://127.0.0.1:${PORT}&devUserId=e2ehero_${Math.floor(Math.random() * 1e6)}&debug=1`;
+    const uid = process.env.E2E_USER_ID || `e2ehero_${Math.floor(Math.random() * 1e6)}`;
+    const url = `http://127.0.0.1:${STATIC_PORT}/index.html?server=ws://127.0.0.1:${PORT}&devUserId=${uid}&debug=1`;
     console.log("[e2e] open " + url);
     await page.goto(url, { waitUntil: "domcontentloaded" });
 

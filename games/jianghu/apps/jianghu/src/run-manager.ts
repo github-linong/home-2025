@@ -39,7 +39,7 @@ import {
   destroyRoom,
   RESIDENT_ROOM_ID,
 } from "./room-service.ts";
-import type { CharacterService, InventoryItem, Inventory } from "./persistence.ts";
+import type { CharacterService, InventoryItem, Inventory, CharacterSnapshot } from "./persistence.ts";
 import { addItem, toGroundLoot } from "./inventory.ts";
 import type { LootResult } from "../sim-core/src/loot.ts";
 import { itemProto, type EquippedSlots } from "../sim-core/src/affixes.ts"; // E7：slot 推导 + 装备槽
@@ -56,6 +56,16 @@ let activeCharacterService: CharacterService | null = null;
 /** 注入角色服务（server.ts 启动时调用；测试可注入独立实例隔离状态）。 */
 export function setActiveCharacterService(cs: CharacterService): void {
   activeCharacterService = cs;
+}
+
+/**
+ * 会话快照同步器（gateway 注入）：拾取/升级落库后同步 liveSessions 里该 seat 的
+ * session.snapshot，否则 30s autosave / 下线 save 会用旧快照覆盖文件 → 拾取/升级丢失（P0 修复）。
+ */
+let seatSnapshotSyncer: ((seatId: number, snap: CharacterSnapshot) => void) | null = null;
+
+export function setSeatSnapshotSyncer(fn: ((seatId: number, snap: CharacterSnapshot) => void) | null): void {
+  seatSnapshotSyncer = fn;
 }
 
 /**
@@ -464,6 +474,8 @@ export async function applyLevelUpToCharacter(
   const { snapshot, seatId } = await cs.loadOrCreate(userId);
   const character = { ...snapshot.character, level, exp: xp, updatedAt: Date.now() };
   await cs.save(userId, { character, inventory: snapshot.inventory });
+  // P0 修复：同步 session.snapshot，防止 autosave/下线 save 覆盖升级结果。
+  seatSnapshotSyncer?.(seatId, { character, inventory: snapshot.inventory });
   pushLevelToSeat(seatId, level, xp, xpNext);
 }
 
@@ -506,6 +518,8 @@ export async function applyPickupToInventory(
   };
   const { inventory, overflow } = addItem(snapshot.inventory, item);
   await cs.save(userId, { character: snapshot.character, inventory });
+  // P0 修复：同步 session.snapshot，防止 autosave/下线 save 覆盖拾取结果。
+  seatSnapshotSyncer?.(seatId, { character: snapshot.character, inventory });
   if (overflow) {
     // 背包满 → 溢出落脚下地面（C-Per-3）。
     world.spawnGroundLoot(seatId, toGroundLoot(overflow));

@@ -36,8 +36,8 @@ import {
   sendToConn,
   type Conn,
 } from "./connection-registry.ts";
-import { dispatch, setProtocolCharacterService, resolveInventoryGet, resolveLevelGet, resolveEquip, resolveUnequip } from "./protocol.ts";
-import { enqueueInput, addPlayerToRoom } from "./run-manager.ts";
+import { dispatch, setProtocolCharacterService, setProtocolSnapshotSyncer, resolveInventoryGet, resolveLevelGet, resolveEquip, resolveUnequip } from "./protocol.ts";
+import { enqueueInput, addPlayerToRoom, setSeatSnapshotSyncer } from "./run-manager.ts";
 import { TICK_MS, TICK_RATE } from "../sim-core/src/constants.ts"; // C1 单一来源
 import type { InputCmd } from "../sim-core/src/types.ts";
 
@@ -67,6 +67,17 @@ export function createGateway(server: Server, deps: GatewayDeps = {}): WebSocket
   activeCharacterService = characterService;
   // E6：注入 protocol 层的背包数据通道（character.inventory.get 异步解析用）。
   setProtocolCharacterService(characterService);
+  // P0 修复（装备/拾取/升级丢失根因）：equip/unequip（protocol）与拾取/升级（run-manager）
+  // 落库后同步 liveSessions 里对应 session.snapshot，防止 autosave/下线 save 用旧快照覆盖文件。
+  setProtocolSnapshotSyncer((connId, snap) => {
+    const s = liveSessions.get(connId);
+    if (s && !s.guest) s.snapshot = snap;
+  });
+  setSeatSnapshotSyncer((seatId, snap) => {
+    for (const s of liveSessions.values()) {
+      if (!s.guest && s.seatId === seatId) s.snapshot = snap;
+    }
+  });
   const wss = new WebSocketServer({
     server,
     path: deps.path ?? "/ws/jianghu",

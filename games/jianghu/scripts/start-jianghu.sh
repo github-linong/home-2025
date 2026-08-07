@@ -7,16 +7,20 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SERVER_PORT="${JIANGHU_PORT:-3011}"
 CLIENT_PORT="${JIANGHU_CLIENT_PORT:-8081}"
+STORE_DIR="${JIANGHU_JSON_STORE_DIR:-$ROOT/data}"
 NODE_BIN="${NODE_BIN:-node}"
 PY_BIN="${PY_BIN:-python3}"
+
+# 角色存档目录（装备/等级落盘，重启不丢档）。默认 $ROOT/data，可用 JIANGHU_JSON_STORE_DIR 覆盖。
+mkdir -p "$STORE_DIR"
 
 echo "== jianghu 一键启动 =="
 
 if nc -z 127.0.0.1 "$SERVER_PORT" 2>/dev/null; then
   echo "  ✓ 服务端已在运行 :$SERVER_PORT (跳过)"
 else
-  echo "  ▶ 启动服务端 :$SERVER_PORT (DEV_SKIP_AUTH=true)..."
-  (cd "$ROOT/apps/jianghu" && DEV_SKIP_AUTH=true nohup "$NODE_BIN" --experimental-strip-types src/server.ts >/tmp/jianghu-server.log 2>&1 &)
+  echo "  ▶ 启动服务端 :$SERVER_PORT (DEV_SKIP_AUTH=true, 存档=$STORE_DIR)..."
+  (cd "$ROOT/apps/jianghu" && DEV_SKIP_AUTH=true JIANGHU_JSON_STORE_DIR="$STORE_DIR" nohup "$NODE_BIN" --experimental-strip-types src/server.ts >/tmp/jianghu-server.log 2>&1 &)
   sleep 1
   nc -z 127.0.0.1 "$SERVER_PORT" 2>/dev/null && echo "  ✓ 服务端已就绪" || echo "  ⚠ 服务端启动中，日志: /tmp/jianghu-server.log"
 fi

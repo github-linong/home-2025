@@ -83,6 +83,16 @@ export function setProtocolCharacterService(cs: CharacterService | null): void {
   protocolCharacterService = cs;
 }
 
+/**
+ * 会话快照同步器（gateway 注入）：equip/unequip 落库后同步 liveSessions 里该连接的
+ * session.snapshot，否则 30s autosave / 下线 save 会用旧快照覆盖文件 → 装备丢失（P0 修复）。
+ */
+let protocolSnapshotSyncer: ((connId: string, snap: CharacterSnapshot) => void) | null = null;
+
+export function setProtocolSnapshotSyncer(fn: ((connId: string, snap: CharacterSnapshot) => void) | null): void {
+  protocolSnapshotSyncer = fn;
+}
+
 /** character.inventory 消息体（推送与 get 回复同一格式，供客户端背包面板对接）。 */
 export interface InventoryItemView {
   readonly itemId: number;
@@ -261,6 +271,8 @@ export async function resolveEquip(
 
   const inventory: Inventory = { items: remaining };
   await loaded.cs.save(userId, { character: { ...snapshot.character, equipped }, inventory });
+  // P0 修复：同步 session.snapshot，防止 autosave/下线 save 用旧快照覆盖文件（丢装备）。
+  protocolSnapshotSyncer?.(ctx.connId, { character: { ...snapshot.character, equipped }, inventory });
   // 世界镜像：当前房间世界 actor 应用装备（maxHp/attrs 即时生效；未入房则仅缓存等 addPlayer）。
   setPlayerEquipped(ctx.roomId ?? undefined, seatId, equipped);
   pushInventoryToSeat(seatId, inventory, equipped);
@@ -296,6 +308,7 @@ export async function resolveUnequip(
   const inventory: Inventory = { items: [...snapshot.inventory.items, old] };
 
   await loaded.cs.save(userId, { character: { ...snapshot.character, equipped }, inventory });
+  protocolSnapshotSyncer?.(ctx.connId, { character: { ...snapshot.character, equipped }, inventory });
   setPlayerEquipped(ctx.roomId ?? undefined, seatId, equipped);
   pushInventoryToSeat(seatId, inventory, equipped);
   return inventoryMessage(requestId, inventory, equipped);
