@@ -282,8 +282,23 @@ export const SKILL_DESCS = [
   "破军斩·爆发",   // 槽3 破军：1.8 tile 重击爆发，36 dmg / 8s
 ] as const;
 
-/** 敌人接触攻击间隔（tick）= 1s @12Hz（combat §⑥ 敌人周期接触伤害）。 */
+/**
+ * 敌人接触攻击**动作周期**（tick）= 1s @12Hz（combat §⑥ 敌人周期接触伤害）。
+ * E18 起语义扩展：自「决策 tick」（敌人进入前摇的 tick）起算整周期 =
+ * 前摇 ENEMY_WINDUP_TICKS（5，站立蓄力）+ 后摇 7（恢复/可再移动）——攻击频率不变
+ * （1 击 / 12 tick），落刀点位于周期第 ENEMY_WINDUP_TICKS tick（决策 +5）。
+ * BOSS phase2 用 BOSS_PHASE2_ATTACK_INTERVAL_TICKS（6）= 前摇 5 + 后摇 1。
+ */
 export const ENEMY_ATTACK_INTERVAL_TICKS = 12;
+
+/**
+ * 敌人攻击前摇（tick）= 0.4s @12Hz（E18，主理人拍板）。
+ * 敌人决定攻击（目标在接触范围 + 间隔到）→ 置 EntityStatus.WINDUP + 记
+ * windupUntilTick = t + ENEMY_WINDUP_TICKS → 前摇期间**不移动**（站立蓄力）→
+ * windup 结束（t >= windupUntilTick）对「前摇锁定目标」落刀（目标走开 → 落空）。
+ * 客户端读 WINDUP status 位画抬手表现（压低前倾 + 头部警示），攻击可读可躲。
+ */
+export const ENEMY_WINDUP_TICKS = 5;
 
 /** 敌人接触攻击判定半径（px），相邻即攻击（= 1 tile）。 */
 export const ENEMY_CONTACT_RANGE = TILE;

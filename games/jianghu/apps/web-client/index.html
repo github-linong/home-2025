@@ -279,6 +279,7 @@ const DOWNED_TICKS = 10 * TICK_RATE;    // 服务端 DOWNED_TICKS=120（倒地 1
 const REVIVE_IFRAME_TICKS = 3 * TICK_RATE; // 服务端 REVIVE_IFRAME_TICKS=36（复活 3s 无敌帧）
 const STATUS_IFRAME = 1 << 4;           // EntityStatus.IFRAME（复活无敌帧闪烁）
 const STATUS_DOWNED = 1 << 5;           // EntityStatus.DOWNED（倒地不可行动）
+const STATUS_WINDUP = 1 << 6;           // EntityStatus.WINDUP（E18 敌人攻击前摇：站立蓄力抬手）
 
 // ── C2 手感/表现参数（WEB-FEEL 模式）──
 const BASE_SPEED = 4;                   // 服务端 BASE_SPEED（格/秒，constants.ts C7 镜像）
@@ -643,7 +644,7 @@ const GAME = window.__game = {
   downed: false, downedSinceTick: null, iframes: false,
   // C3：相机锁定 + 渲染标志（E2E 断言钩子）
   cam: { cx: 0, cy: 0, scale: 1, w: 0, h: 0 },
-  playerScreenPos: null, floatTexts: [], rendered: { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0 },
+  playerScreenPos: null, floatTexts: [], rendered: { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0, windup: 0 },
   // E17：队友列表（当前快照中 kind=PLAYER 且 id!==localEntityId；含 ownerId/hp/pos/status，E2E 断言钩子）
   partyMembers: [],
   // 调试钩子（仅 ?debug=1 生效；E2E 用）
@@ -2125,6 +2126,8 @@ function drawEnemy(e, p) {
   const size = isBoss ? 52 : (isElite ? 34 : 26);
   const variant = enemyVariant(e); // C3：确定性变体（山贼/野兽/暗影刺客/巨魔）
   GAME.rendered.enemies.push({ id: e.id, variant, tier: e.tier || 0 });
+  // E18：敌人攻击前摇（服务端 EntityStatus.WINDUP 位驱动）→ 站立蓄力抬手表现。
+  const winding = !!(e.status & STATUS_WINDUP);
 
   ctx.save();
   ctx.translate(s.x, s.y);
@@ -2132,10 +2135,36 @@ function drawEnemy(e, p) {
   const ang = e.dir * Math.PI / 4;
   const facing = { x: Math.cos(ang), y: Math.sin(ang) };
   // C3：程序化武侠剪影（零外部资源，按变体分支绘制）
+  // E18 前摇：压低 scale 0.92 + 前倾 15°（仅作用于剪影；叠加物如受击闪白/选中圈保持不倾斜）
+  ctx.save();
+  if (winding) { ctx.scale(0.92, 0.92); ctx.rotate(0.26); GAME.rendered.windup++; }
   if (variant === 'troll') drawTroll(size);
   else if (variant === 'shadow') drawShadowAssassin(size, facing);
   else if (variant === 'savage') drawSavageWolf(size, facing);
   else drawBrigand(size, facing);
+  ctx.restore();
+
+  // E18 前摇警示：头亮红/黄（可读——「即将出手」）。亮圈置于头部（facing 局部坐标）脉动。
+  if (winding) {
+    const pulse = 0.55 + 0.45 * Math.sin(performance.now() / 90);
+    ctx.save();
+    ctx.rotate(ang);
+    ctx.globalAlpha = 0.55 + pulse * 0.45;
+    ctx.fillStyle = '#ff4438';
+    ctx.shadowColor = '#ff4438';
+    ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.arc(0, -size * 0.60, size * 0.22, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    // BOSS 前摇：脚下红色蓄力圈（复用 telegraph 红色视觉，读作「即将落刀」，可走位躲）。
+    if (isBoss) {
+      ctx.save();
+      ctx.globalAlpha = 0.16 + pulse * 0.30;
+      ctx.strokeStyle = '#ff3b30';
+      ctx.lineWidth = 2 + pulse * 2;
+      ctx.beginPath(); ctx.arc(0, 0, size * 1.5, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+    }
+  }
 
   // C2 受击闪白（150ms）
   const flashUntil = hitFlashes.get(e.id);
@@ -2525,7 +2554,7 @@ function drawTelegraphs() {
 function drawEntities() {
   if (!lastSnapshot) return;
   // C3 E2E 钩子：每帧重置渲染标志（drawPlayer/drawEnemy/drawLoot/drawEntrance 内填充）
-  GAME.rendered = { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0 };
+  GAME.rendered = { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0, windup: 0 };
   // 入口画在实体底层
   for (const e of lastSnapshot.entities) {
     if (e.kind !== KIND.ENTRANCE) continue;

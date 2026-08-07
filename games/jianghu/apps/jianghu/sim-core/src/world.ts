@@ -15,6 +15,10 @@
  *     移除；纯 tick 驱动，无 Rng 消耗）与副本复活点可配置（respawnPos，缺省 RESPAWN_POS）。
  *   - E16：clearPlayerInput（断线清 pending/lastMove，防断线角色漂移）+ 敌人脱战回归出生点
  *     （aggressive 目标离开 AGGRO_RADIUS → 朝 spawnOrigin 移动，到达停；确定性无随机）。
+ *   - E18：敌人攻击前摇（windup）——接触攻击改为「决策 → 前摇 ENEMY_WINDUP_TICKS（站立蓄力，
+ *     不移动）→ 落刀/落空」。WINDUP status 位（1<<6）进快照供客户端画抬手；windupUntilTick /
+ *     windupTargetId 仅 world 内部（C12：不进快照）。间隔语义：lastAttackTick 在决策 tick 记录，
+ *     ENEMY_ATTACK_INTERVAL_TICKS 现为攻击动作周期（前摇 5 + 后摇 7）。玩家前摇期间走开 → 落空。
  *   - parry 窗口清理 / skillCd 递减。
  *
  * 纪律（C6 / C9 / C11 / C12 / D9）：
@@ -52,6 +56,7 @@ import {
   TARGET_ARRIVE_TOL, // E8：点击移动到达容差（px）= 0.5×TILE
   ENEMY_ATTACK_INTERVAL_TICKS,
   ENEMY_CONTACT_RANGE,
+  ENEMY_WINDUP_TICKS, // E18：敌人攻击前摇（tick）= 0.4s @12Hz
   PICKUP_RADIUS,
   BOSS_PHASE_THRESHOLD,
   BOSS_PHASE2_ATTACK_INTERVAL_TICKS,
@@ -171,6 +176,9 @@ interface Actor {
   telegraph?: { shape: number; color: number; startTick: number; applyTick: number; radius: number };
   dmg?: number; // telegraph 落刀伤害（生成时由 BOSS atk × BOSS_AOE_DAMAGE_MULT 计算；不进快照）
   lastAoeTick?: number; // BOSS AOE 预警节流（上次生成 telegraph 的 tick；仅 world 内部）
+  // E18 新增（敌人攻击前摇；**不进 EntityState 快照**，C12 纪律——客户端用 WINDUP status 位表现抬手）
+  windupUntilTick?: number; // 前摇截止 tick（t >= 本值落刀；仅 world 内部）
+  windupTargetId?: number; // 前摇锁定目标 actor id（落刀时判定是否仍在接触范围；仅 world 内部）
 }
 
 interface SpawnZoneRuntime {
@@ -286,28 +294,56 @@ export function tileCenter(t: number): { x: number; y: number } {
 const TIER_NAMES = ["normal", "elite", "boss"] as const;
 
 /**
- * E6：敌人→玩家接触攻击（含 parry 校验，C9/C11 服务端权威）。
+ * E18：敌人攻击前摇（windup）—— 敌人「决定攻击」（目标在接触范围 + 攻击间隔到）→ 进入
+ * WINDUP（置 EntityStatus.WINDUP 位 + 记 windupUntilTick/windupTargetId），伤害延迟到
+ * 前摇结束（t >= windupUntilTick）由 resolveEnemyWindup 结算。
+ *
+ * 间隔语义（主理人拍板）：lastAttackTick 在**决策 tick** 记录，ENEMY_ATTACK_INTERVAL_TICKS
+ * 现在指「攻击动作周期」（前摇 ENEMY_WINDUP_TICKS + 后摇 7）——攻击频率不变（1 击/12 tick），
+ * 落刀点位于周期第 ENEMY_WINDUP_TICKS tick（决策 +5）。BOSS phase2 同理（前摇 5 + 后摇 1）。
+ *
  * 与 E4 原逻辑一致：BOSS phase2 加快攻击间隔；周期由 lastAttackTick 节流。
- * 纯函数式地改写 e/target 状态（world.step 内调用；无随机无 Date.now，D9）。
+ * 纯函数式地改写 e 状态（world.step 内调用；无随机无 Date.now，D9）。
  */
-function maybeEnemyAttack(e: Actor, target: Actor, t: number): void {
-  // E10：复活无敌帧内敌人接触攻击无效（IFRAME 防围杀；IFRAME 位在复活时置、到期清）。
+function maybeEnemyWindup(e: Actor, target: Actor, t: number): void {
+  // E10：复活无敌帧内敌人不发起攻击（IFRAME 防围杀；落刀时还会复查一次）。
   if (target.status & EntityStatus.IFRAME) return;
   const phase2 = e.kind === EntityKind.BOSS && (e.bossPhase ?? 0) >= 1;
   const interval = phase2 ? BOSS_PHASE2_ATTACK_INTERVAL_TICKS : ENEMY_ATTACK_INTERVAL_TICKS;
   if (t - (e.lastAttackTick ?? -interval) >= interval) {
-    const dmg = resolveDamage({
-      targetId: target.id,
-      amount: 0, // C11：忽略客户端 amount
-      tick: t,
-      baseAmount: e.atk ?? ENEMY_BASE_ATK,
-      targetParry: target.parryState, // 玩家格挡校验
-      // E7：玩家装备减伤（无装备 → 0 → 与原逻辑字节一致，golden 锚点）。
-      targetReduction: target.equipStats?.reduction ?? 0,
-    });
-    target.hp += dmg.deltaHp;
-    e.lastAttackTick = t;
+    // E18：进入前摇（WINDUP 位进快照，客户端画抬手蓄力）；伤害在前摇结束时结算。
+    e.status |= EntityStatus.WINDUP;
+    e.windupUntilTick = t + ENEMY_WINDUP_TICKS;
+    e.windupTargetId = target.id;
+    e.lastAttackTick = t; // 间隔自决策 tick 起算（整周期 = 前摇 5 + 后摇 7 = 12）
   }
+}
+
+/**
+ * E18：前摇结算（落刀）。`t >= windupUntilTick` 时调用：
+ *   - 对**前摇锁定目标** resolveDamage（含 parry 校验 / 装备减伤；目标 IFRAME 无效）；
+ *   - 目标死亡 / 倒地 / 走出接触范围 → **落空**（伤害不结算，玩家可走位躲避「可读可躲」）；
+ *   - 清 WINDUP 位 + 内部字段（windupUntilTick / windupTargetId）。
+ * 纯函数式改写 e/target（world.step 内调用；无随机无 Date.now，D9）。
+ */
+function resolveEnemyWindup(e: Actor, target: Actor | null, t: number): void {
+  e.windupUntilTick = undefined;
+  e.windupTargetId = undefined;
+  e.status &= ~EntityStatus.WINDUP;
+  if (!target) return; // 锁定目标已消失（死亡/移除）→ 落空
+  if (target.hp <= 0) return; // 目标死亡 → 落空
+  if (target.status & (EntityStatus.DOWNED | EntityStatus.IFRAME)) return; // 倒地/无敌 → 落空
+  if (Math.hypot(target.x - e.x, target.y - e.y) > ENEMY_CONTACT_RANGE) return; // 玩家走开 → 落空
+  const dmg = resolveDamage({
+    targetId: target.id,
+    amount: 0, // C11：忽略客户端 amount
+    tick: t,
+    baseAmount: e.atk ?? ENEMY_BASE_ATK,
+    targetParry: target.parryState, // 玩家格挡校验（落刀 tick 判定，前摇可读 → 可挡）
+    // E7：玩家装备减伤（无装备 → 0 → 与原逻辑字节一致，golden 锚点）。
+    targetReduction: target.equipStats?.reduction ?? 0,
+  });
+  target.hp += dmg.deltaHp;
 }
 
 /**
@@ -775,15 +811,26 @@ export function createWorld(opts: CreateWorldOpts): World {
         }
       }
 
-      // (3) 敌人 AI（E6）：索敌 → CHASE 追击（aggressive）→ ATTACK（接触内周期攻击，含 parry 校验）。
+      // (3) 敌人 AI（E6）：索敌 → CHASE 追击（aggressive）→ WINDUP（E18 前摇）→ 落刀（含 parry 校验）。
       //     确定性纯逻辑：无随机、无 Date.now（D9）；玩家位置来自世界状态。
       //       · passive（默认普通怪 tier 0）：IDLE 完全静止（不做巡逻，保确定性 + 「站桩」被动怪）；
       //         仅被打后 PROVOKE_DURATION_TICKS 窗口内对接触内玩家反击（被打才反击）。
       //       · aggressive（精英 tier 1 / BOSS tier 2）：仇恨半径 AGGRO_RADIUS 内索敌追击
       //         （复用 stepMovement + isBlocked 滑行）；接触内停止追击改周期攻击；半径外 → IDLE。
+      //       · E18 前摇：敌人在 WINDUP 期间**不移动**（站立蓄力），前摇结束（t >= windupUntilTick）
+      //         对「前摇锁定目标」落刀（玩家走开 → 落空）；期间不索敌/不发 telegraph（正蓄力攻击）。
       for (const e of actors) {
         if (e.kind !== EntityKind.ENEMY && e.kind !== EntityKind.BOSS) continue;
         if (e.hp <= 0) continue;
+        // E18：前摇结算放在索敌之前——即使玩家已走开/死亡，前摇也会按时落刀/落空，不会卡死 WINDUP 位。
+        if (e.windupUntilTick !== undefined) {
+          if (t >= e.windupUntilTick) {
+            const locked =
+              e.windupTargetId !== undefined ? actors.find((a) => a.id === e.windupTargetId) ?? null : null;
+            resolveEnemyWindup(e, locked, t); // 落刀：锁定目标仍存活 + 仍在接触范围 → 结算；否则落空
+          }
+          continue; // 前摇期间不移动（站立蓄力）
+        }
         // 目标选择：最近存活玩家（世界状态，确定性）。
         let target: Actor | null = null;
         let best = Infinity;
@@ -863,12 +910,12 @@ export function createWorld(opts: CreateWorldOpts): World {
               e.dir = dir;
             }
           }
-          if (inContact) maybeEnemyAttack(e, target, t); // 接触内周期性攻击（含 parry 校验）
+          if (inContact) maybeEnemyWindup(e, target, t); // 接触内周期性攻击（E18：进入前摇，伤害延后结算）
         } else {
           // passive：不主动攻击、不追击（完全静止）；仅被打后的反击窗口内对接触内玩家反击。
           const provoked =
             e.lastDamageTick !== undefined && t - e.lastDamageTick <= PROVOKE_DURATION_TICKS;
-          if (provoked && inContact) maybeEnemyAttack(e, target, t);
+          if (provoked && inContact) maybeEnemyWindup(e, target, t);
         }
       }
 

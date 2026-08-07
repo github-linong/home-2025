@@ -35,6 +35,7 @@ export const EntityStatus = {
   PARRY_ACTIVE: 1 << 3,
   IFRAME: 1 << 4, // 无敌帧（E10：复活后 3s 防围杀；敌人攻击无效）
   DOWNED: 1 << 5, // E10：倒地不可行动（玩家死亡 → 躺尸 → 倒计时自动复活）
+  WINDUP: 1 << 6, // E18：敌人攻击前摇（站立蓄力；客户端读位画抬手，落刀后清除）
 } as const;
 export type EntityStatusFlag = (typeof EntityStatus)[keyof typeof EntityStatus];
 

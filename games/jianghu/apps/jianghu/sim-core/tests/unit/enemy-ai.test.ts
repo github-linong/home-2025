@@ -17,6 +17,7 @@ import {
   ENEMY_BASE_HP,
   ENEMY_BASE_ATK,
   ENEMY_ATTACK_INTERVAL_TICKS,
+  ENEMY_WINDUP_TICKS, // E18：敌人攻击前摇（tick）
   ENEMY_MOVE_SPEED,
   AGGRO_RADIUS,
   ENEMY_RETURN_ARRIVE_TOL, // E16：脱战回归到达容差（0.5×TILE）
@@ -131,39 +132,47 @@ test("② aggressive 怪：仇恨半径内 CHASE 追击（坐标向玩家靠近�
 });
 
 // ─────────────────────────────────────────────────────────────
-// ③ 接触攻击触发（aggressive 敌人在接触内按周期扣血）
+// ③ 接触攻击触发（aggressive 敌人在接触内按周期扣血；E18 前摇：决策 tick 起算，落刀在决策+ENEMY_WINDUP_TICKS）
 // ─────────────────────────────────────────────────────────────
 
-test("③ aggressive 接触攻击：接触内按 ENEMY_ATTACK_INTERVAL_TICKS 周期扣玩家 hp", () => {
+test("③ aggressive 接触攻击：接触内按 ENEMY_ATTACK_INTERVAL_TICKS 周期扣玩家 hp（含 E18 前摇）", () => {
   const { world, enemy, player } = worldWithContactEnemy({ seed: "ai-attack", tier: 1 }); // 精英 atk=8*3=24
   const p0 = player.hp;
-  world.step(); // t=0 首次接触攻击（lastAttackTick 初始化为 -interval → 立即命中）
+  world.step(); // t=0 进入前摇（WINDUP），伤害未结算
   const p1 = world.actors().find((a) => a.id === player.id)!;
-  assert.equal(p1.hp, p0 - ENEMY_BASE_ATK * 3, "t=0 接触攻击：100-24=76");
-  // 再走 ENEMY_ATTACK_INTERVAL_TICKS tick → t=12 第二次攻击。
-  for (let i = 0; i < ENEMY_ATTACK_INTERVAL_TICKS; i++) world.step();
+  assert.equal(p1.hp, p0, "t=0 仅进入前摇，伤害未结算");
+  // 再走 ENEMY_WINDUP_TICKS tick → t=ENEMY_WINDUP_TICKS 落刀（前摇结束，100-24=76）。
+  for (let i = 0; i < ENEMY_WINDUP_TICKS; i++) world.step();
   const p2 = world.actors().find((a) => a.id === player.id)!;
-  assert.equal(p2.hp, p0 - 2 * ENEMY_BASE_ATK * 3, "t=12 第二次攻击：100-48=52");
+  assert.equal(p2.hp, p0 - ENEMY_BASE_ATK * 3, "t=5 落刀：100-24=76");
+  // 再走 ENEMY_ATTACK_INTERVAL_TICKS tick（t=6..17）：决策在 t=12（间隔到）→ 落刀在 t=17。
+  for (let i = 0; i < ENEMY_ATTACK_INTERVAL_TICKS; i++) world.step();
+  const p3 = world.actors().find((a) => a.id === player.id)!;
+  assert.equal(p3.hp, p0 - 2 * ENEMY_BASE_ATK * 3, "t=17 第二次落刀：100-48=52");
 });
 
 // ─────────────────────────────────────────────────────────────
-// ④ 被动怪被打后反击（被打才反击）
+// ④ 被动怪被打后反击（被打才反击；E18：反击也走前摇，落刀延后 ENEMY_WINDUP_TICKS）
 // ─────────────────────────────────────────────────────────────
 
-test("④ passive 怪被打后反击：SKILL 命中 → 同 tick 接触内反击；未被打不攻击", () => {
+test("④ passive 怪被打后反击：SKILL 命中 → 前摇 ENEMY_WINDUP_TICKS 后反击；未被打不攻击", () => {
   const { world, enemy, player } = worldWithContactEnemy({ seed: "ai-provoke", tier: 0 });
   // 未被打：玩家与其重叠也不掉血（被动不主动攻击）。
   world.step();
   const pA = world.actors().find((a) => a.id === player.id)!;
   assert.equal(pA.hp, 100, "未被打 → passive 不攻击");
-  // 玩家 SKILL 命中（slot0 dmg20）→ 被动怪被打 → 同 tick 接触内反击（atk=8）。
+  // 玩家 SKILL 命中（slot0 dmg20）→ 被动怪被打 → 同 tick 进入前摇（反击延后）。
   const seq = { s: 0 };
   issueSkill(world, 1, 0, seq);
   world.step();
   const e2 = world.actors().find((a) => a.id === enemy.id)!;
   const p2 = world.actors().find((a) => a.id === player.id)!;
   assert.equal(e2.hp, ENEMY_BASE_HP - 20, "SKILL 命中：30-20=10");
-  assert.equal(p2.hp, 100 - ENEMY_BASE_ATK, "被打后反击：100-8=92");
+  assert.equal(p2.hp, 100, "反击进入前摇：同 tick 不结算");
+  // 前摇结束（t=1..ENEMY_WINDUP_TICKS → t=ENEMY_WINDUP_TICKS 落刀）→ 反击结算。
+  for (let i = 0; i < ENEMY_WINDUP_TICKS; i++) world.step();
+  const p3 = world.actors().find((a) => a.id === player.id)!;
+  assert.equal(p3.hp, 100 - ENEMY_BASE_ATK, "前摇结束反击落刀：100-8=92");
 });
 
 // ─────────────────────────────────────────────────────────────

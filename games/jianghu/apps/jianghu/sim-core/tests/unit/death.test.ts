@@ -26,6 +26,7 @@ import {
   PLAYER_MAX_HP,
   DOWNED_TICKS,
   REVIVE_IFRAME_TICKS,
+  ENEMY_WINDUP_TICKS, // E18：敌人攻击前摇（tick）
   LOOT_GROUND_TTL_TICKS,
 } from "../../src/constants.ts";
 
@@ -77,14 +78,15 @@ test("① 玩家 hp≤0 → DOWNED（status 位 + hp=0 + parryState 清）", () 
   // 手动置格挡窗口：倒地瞬间应清 PARRY_ACTIVE + parryState（同 tick 触发死亡）。
   player.parryState = { active: true, windowEndTick: world.tick + 20 };
   player.status |= EntityStatus.PARRY_ACTIVE;
-  player.hp = 4; // 4 - 24 < 0 → 一击即死（t=0 精英接触攻击）
-  world.step();
+  player.hp = 4; // 4 - 24 < 0 → 前摇落刀一击即死（E18：t=0 进前摇，t=ENEMY_WINDUP_TICKS 落刀）
+  world.step(); // t=0 敌人进入前摇（WINDUP），伤害未结算
+  for (let i = 0; i < ENEMY_WINDUP_TICKS; i++) world.step(); // t=1..5 → t=5 落刀（含格挡窗口覆盖判定）
   const p = findPlayer(world);
   assert.ok(p.status & EntityStatus.DOWNED, "hp≤0 应进入倒地");
   assert.equal(p.hp, 0, "倒地 hp 归零");
   assert.ok(!(p.status & EntityStatus.PARRY_ACTIVE), "倒地清 PARRY_ACTIVE");
   assert.equal(p.parryState, undefined, "倒地清 parryState");
-  assert.equal(p.downedAtTick, 0, "记录倒地起始 tick");
+  assert.equal(p.downedAtTick, ENEMY_WINDUP_TICKS, "记录倒地起始 tick（前摇落刀 tick）");
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -241,12 +243,16 @@ test("⑤ IFRAME：复活后敌人接触攻击无效；到期清位后恢复正�
   assert.equal(p.hp, hpAtRevive, "IFRAME 期间敌人接触攻击无效（hp 不变）");
   assert.ok(p.status & EntityStatus.IFRAME, "IFRAME 尚未到期");
 
-  // 到期那一步：玩家循环先清 IFRAME → 敌人 AI 同 tick 可见无 IFRAME → 攻击生效
+  // 到期那一步：玩家循环先清 IFRAME → 敌人 AI 同 tick 无 IFRAME → 进入前摇（E18：不立即伤害）。
   world.step();
   p = findPlayer(world);
   assert.ok(!(p.status & EntityStatus.IFRAME), "IFRAME 到期清位");
   assert.equal(p.iframesUntilTick, undefined, "iframesUntilTick 清理");
-  assert.ok(p.hp < hpAtRevive, "IFRAME 到期后敌人攻击恢复（hp 下降）");
+  assert.equal(p.hp, hpAtRevive, "到期 tick 敌人进入前摇，伤害未结算（可读可躲）");
+  // 前摇结束（t=到期+ENEMY_WINDUP_TICKS）→ 落刀 → 攻击恢复（hp 下降）。
+  for (let i = 0; i < ENEMY_WINDUP_TICKS; i++) world.step();
+  p = findPlayer(world);
+  assert.ok(p.hp < hpAtRevive, "前摇结束后敌人攻击恢复（hp 下降）");
 });
 
 // ─────────────────────────────────────────────────────────────

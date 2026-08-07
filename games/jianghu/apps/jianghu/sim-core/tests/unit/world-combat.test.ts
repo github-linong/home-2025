@@ -15,7 +15,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createWorld, type World } from "../../src/world.ts";
 import { EntityKind, RoomPhase, InputAction } from "../../src/types.ts";
-import { TILE, ENEMY_BASE_HP, LOOT_GROUND_TTL_TICKS } from "../../src/constants.ts";
+import { TILE, ENEMY_BASE_HP, ENEMY_WINDUP_TICKS, LOOT_GROUND_TTL_TICKS } from "../../src/constants.ts";
 
 const PLAYER_X = 16 * TILE; // 768
 const PLAYER_Y = 15 * TILE; // 720
@@ -93,27 +93,34 @@ test("空转：无刷怪区 + 无玩家 ⇒ 无敌人/玩家（golden 安全）"
   assert.equal(kinds.filter((k) => k === EntityKind.LOOT_GROUND).length, 4);
 });
 
-test("战斗：敌人接触伤害（无 parry）全额扣血（E6：显式 aggressive 敌人在接触内立即攻击）", () => {
+test("战斗：敌人接触伤害（无 parry）全额扣血（E18：前摇 ENEMY_WINDUP_TICKS 后落刀）", () => {
   const world = mkWorld({
     seed: PROX_SEED,
     players: [{ seatId: 0, userId: "u0" }],
     // E6：tier 0 默认 passive（不主动攻击）；此处显式 aggressive 验证接触攻击原语义。
     spawnZones: [{ pos: NEAR, tier: 0, enemyTypeId: "n", count: 1, aggression: "aggressive" }],
   });
-  world.step(); // t=0 敌人即触发首次接触攻击（atk=8）
+  world.step(); // t=0 敌人进入前摇（WINDUP），伤害未结算
+  const p0 = world.actors().find((a) => a.kind === EntityKind.PLAYER)!;
+  assert.equal(p0.hp, 100, "前摇期间不结算伤害（可读可躲）");
+  // 再走 ENEMY_WINDUP_TICKS tick → t=ENEMY_WINDUP_TICKS 落刀（前摇结束）。
+  for (let i = 0; i < ENEMY_WINDUP_TICKS; i++) world.step();
   const player = world.actors().find((a) => a.kind === EntityKind.PLAYER)!;
-  assert.equal(player.hp, 100 - 8, "无格挡应被全额扣 8");
+  assert.equal(player.hp, 100 - 8, "无格挡前摇后落刀全额扣 8");
 });
 
-test("战斗：parry 覆盖 → 接触伤害减伤 0.6（8 → 3）（E6：显式 aggressive）", () => {
+test("战斗：parry 覆盖 → 接触伤害减伤 0.6（8 → 3）（E18：读前摇、在落刀 tick 前开格挡）", () => {
   const world = mkWorld({
     seed: PROX_SEED,
     players: [{ seatId: 0, userId: "u0" }],
     // E6：tier 0 默认 passive；显式 aggressive 保持 E4 接触攻击原语义。
     spawnZones: [{ pos: NEAR, tier: 0, enemyTypeId: "n", count: 1, aggression: "aggressive" }],
   });
-  world.enqueueInput(0, { seq: 0, tick: 0, action: InputAction.PARRY, dir: 0 });
-  world.step(); // 同 tick 内先开 parry 窗口，再结算敌人攻击（覆盖）
+  // 前摇 5 tick（t=0..4），落刀在 t=5：玩家在 t=4 开格挡（窗口 t=4..6）→ 覆盖 t=5 落刀。
+  for (let i = 0; i < ENEMY_WINDUP_TICKS - 1; i++) world.step(); // t=0..3（敌人站立蓄力）
+  world.enqueueInput(0, { seq: 0, tick: 4, action: InputAction.PARRY, dir: 0 });
+  world.step(); // t=4 开格挡窗口（windowEndTick=6）
+  world.step(); // t=5 落刀 → 格挡覆盖 → round(8*0.4)=3
   const player = world.actors().find((a) => a.kind === EntityKind.PLAYER)!;
   assert.equal(player.hp, 100 - 3, "格挡覆盖应减伤 60%（round(8*0.4)=3）");
 });

@@ -14,7 +14,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createWorld, type World } from "../../src/world.ts";
 import { EntityKind, RoomPhase, InputAction } from "../../src/types.ts";
-import { TILE, SKILL_DAMAGE, SKILL_CD_BY_SLOT, CELLS_PER_TICK } from "../../src/constants.ts";
+import { TILE, SKILL_DAMAGE, SKILL_CD_BY_SLOT, CELLS_PER_TICK, ENEMY_WINDUP_TICKS } from "../../src/constants.ts";
 import type { EquippedSlots } from "../../src/affixes.ts";
 
 const PLAYER_X = 16 * TILE; // 768
@@ -104,11 +104,12 @@ test("maxHp 加成生效：装 armor maxHp → maxHp 提升且 hp 同步抬升�
 // ③ reduction 进结算
 // ------------------------------------------------------------------
 
-test("reduction 进结算：敌人接触伤害 ×(1-减伤)", () => {
+test("reduction 进结算：敌人接触伤害 ×(1-减伤)（E18：前摇 ENEMY_WINDUP_TICKS 后落刀）", () => {
   const world = mkWorld({ seed: PROX_SEED, enemy: "aggressive" });
   // trinket（itemId=5，baseMaxHp 5）affix 30（reduction 8）darkgold → round(8*2.4)=19 → 19% 减伤。
   world.setPlayerEquipped(0, { trinket: { itemId: 5, rarity: 3, affixes: [30] } });
-  world.step(); // t=0 敌人首次接触攻击（atk=8，减伤 19% → round(8*0.81)=6）
+  world.step(); // t=0 敌人进入前摇（WINDUP），伤害未结算
+  for (let i = 0; i < ENEMY_WINDUP_TICKS; i++) world.step(); // t=1..5 → t=5 落刀（atk=8，减伤 19% → round(8*0.81)=6）
   const p = findPlayer(world);
   // 装 trinket 抬 maxHp(+5) → hp=105；受击 6 → 99（若无减伤则 105-8=97，差值 2 证明减伤生效）。
   assert.equal(p.hp, 105 - 6, "hp = 105（含 trinket baseMaxHp+5）- 6（8 × (1-0.19)）");
