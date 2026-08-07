@@ -260,7 +260,9 @@ const TICK_MS = 1000 / TICK_RATE;
 const WORLD_W = 40 * TILE;              // 1920
 const WORLD_H = 30 * TILE;              // 1440
 const ENTRANCE_POS = { x: 20 * TILE, y: 15 * TILE }; // 主世界入口（tile 20,15）
-const ENTRANCE_ENTER_RADIUS = 3 * TILE; // UI「进副本」可用半径（服务端不校验距离，仅冷却）
+// E16：进本交互半径 = 1.5×TILE（镜像 C7 ENTRANCE_INTERACT_RADIUS；服务端 dungeon.enter 权威校验同值）。
+// 与拾取提示环（L2 按 F 拾取）一致；超出本半径按 F 不进本（客户端 UI 闸门，服务端仍权威校验）。
+const ENTRANCE_ENTER_RADIUS = Math.round(1.5 * TILE);
 const PARRY_TICKS = 3;                  // 格挡窗口（服务端权威展示用）
 const SKILL_ACTIONS = [2, 3, 4, 5];     // InputAction.SKILL1..4
 const ACTION_STOP = 7;                  // InputAction.STOP

@@ -688,7 +688,9 @@ const main = async () => {
     let enteredVia = "walk+F";
     let okEnter = false;
     let walkTrace = [];
-    for (let i = 0; i < 28 && !okEnter; i++) {
+    // E16：入口服务端坐标校验（全距 ≤ 1.5×TILE=72px，C7）→ walk 需**双轴逼近**（同时修正 x/y），
+    // 走到 dist ≤ 40（交互半径内留余量）再按 F。不能放宽服务端校验。
+    for (let i = 0; i < 40 && !okEnter; i++) {
       const nav = await page.evaluate(() => {
         const g = window.__game, s = g.lastSnapshot;
         if (!s) return null;
@@ -698,18 +700,24 @@ const main = async () => {
       });
       if (!nav) { await sleep(200); continue; }
       const dxEnt = nav.ex - nav.mx;
-      walkTrace.push({ i, dx: Math.round(dxEnt), state: nav.state });
-      if (Math.abs(dxEnt) <= 120) {
+      const dyEnt = nav.ey - nav.my;
+      const distEnt = Math.hypot(dxEnt, dyEnt);
+      walkTrace.push({ i, dx: Math.round(dxEnt), dy: Math.round(dyEnt), dist: Math.round(distEnt), state: nav.state });
+      if (distEnt <= 40) {
         await page.keyboard.down("KeyF");
         await page.keyboard.up("KeyF");
         await sleep(500);
         okEnter = await waitFor(page, "window.__game.state === 'dungeon'", 3500, "enter dungeon");
         if (okEnter) break;
       } else {
-        await page.keyboard.down(dxEnt > 0 ? "KeyD" : "KeyA");
-        await sleep(180);
-        await page.keyboard.up(dxEnt > 0 ? "KeyD" : "KeyA");
-        await sleep(120);
+        const keyX = dxEnt > 0 ? "KeyD" : "KeyA";
+        const keyY = dyEnt > 0 ? "KeyS" : "KeyW";
+        await page.keyboard.down(keyX);
+        if (Math.abs(dyEnt) > 20) await page.keyboard.down(keyY); // y 已对齐时不叠加，避免过冲
+        await sleep(140);
+        await page.keyboard.up(keyY);
+        await page.keyboard.up(keyX);
+        await sleep(100);
       }
     }
     if (!okEnter) {

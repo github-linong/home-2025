@@ -374,6 +374,14 @@ export function instanceSeed(
 export const ENTRANCE_COOLDOWN_TICKS = 10 * TICK_RATE;
 
 /**
+ * 入口交互半径（px）= 1.5×TILE = 72px（E16，C7 单一来源）。
+ * 进本交互半径，与拾取提示一致（客户端 L2「按 F 拾取」提示环同 1.5×TILE）。
+ * E16 服务端入口坐标校验：玩家与 ENTRANCE 实体距离 ≤ 本值才允许 dungeon.enter
+ * （之前仅客户端校验，任意位置可进本；服务端补权威闸门）。
+ */
+export const ENTRANCE_INTERACT_RADIUS = Math.round(1.5 * TILE);
+
+/**
  * 副本实例寿命（ms）。30min（dungeon §⑥ / C-Dgn-4）。
  * 编排层（run-manager）以 wall-clock（Date.now）计时；sim-core 侧仅持有该量化常量（C7）。
  * 注：实例 tick 循环为固定步长（≈wall-clock/83.33ms），用 Date.now 计时更鲁棒（循环停滞不误判）。
@@ -425,3 +433,10 @@ export const AGGRO_RADIUS = 5 * TILE;
  * 被动怪（tier 0 默认 passive）不主动攻击、不追击；仅在被打后的本窗口内对接触内玩家反击。
  */
 export const PROVOKE_DURATION_TICKS = 5 * TICK_RATE;
+
+/**
+ * 敌人脱战回归到达容差（px）= 0.5×TILE（E16）。
+ * aggressive 敌人目标离开 AGGRO_RADIUS 后朝出生点（spawnOrigin）移动，距出生点 ≤ 本值即停（IDLE）。
+ * 与 TARGET_ARRIVE_TOL（玩家点击移动到达容差）同量纲；独立常量承载「敌人回归」语义（C7）。
+ */
+export const ENEMY_RETURN_ARRIVE_TOL = Math.round(0.5 * TILE);

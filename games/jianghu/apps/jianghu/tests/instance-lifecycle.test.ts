@@ -36,7 +36,7 @@ import {
 import { dispatch } from "../src/protocol.ts";
 import { createWorld } from "../sim-core/src/world.ts";
 import { RoomPhase, EntityKind } from "../sim-core/src/types.ts";
-import { RESPAWN_POS } from "../sim-core/src/constants.ts";
+import { RESPAWN_POS, TILE } from "../sim-core/src/constants.ts";
 import { decodeSnapshot } from "../src/protocol-binary.ts";
 
 /** fake Conn：记录控制面 JSON + 数据面二进制（复用 connection-registry.test 模式）。 */
@@ -206,6 +206,10 @@ test("C-Net-2: enter/exit subscription switch is atomic (single room, no double/
   const a = fakeConn("u-net2");
   registerConnection(a.conn);
   setRoom(a.conn.connId, RESIDENT_ROOM_ID);
+  // E16：入口坐标校验 → 先放一个玩家实体到入口旁（seat 1 在 (20,15)*TILE，距离 0 ≤ 72px）。
+  const rwNet2 = getWorld(RESIDENT_ROOM_ID)!;
+  rwNet2.removePlayer(1);
+  rwNet2.addPlayer(1, "u-net2", { x: 20 * TILE, y: 15 * TILE });
 
   // 进入：dispatch dungeon.enter → roomId=instance；setRoom 单值原子切换。
   const enterRes = dispatch(

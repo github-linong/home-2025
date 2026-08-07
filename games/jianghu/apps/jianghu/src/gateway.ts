@@ -37,7 +37,7 @@ import {
   type Conn,
 } from "./connection-registry.ts";
 import { dispatch, setProtocolCharacterService, setProtocolSnapshotSyncer, resolveInventoryGet, resolveLevelGet, resolveEquip, resolveUnequip } from "./protocol.ts";
-import { enqueueInput, addPlayerToRoom, setSeatSnapshotSyncer } from "./run-manager.ts";
+import { enqueueInput, addPlayerToRoom, setSeatSnapshotSyncer, onSeatDisconnect } from "./run-manager.ts";
 import { TICK_MS, TICK_RATE } from "../sim-core/src/constants.ts"; // C1 单一来源
 import type { InputCmd } from "../sim-core/src/types.ts";
 
@@ -216,8 +216,11 @@ export function createGateway(server: Server, deps: GatewayDeps = {}): WebSocket
       clearInterval(pingTimer);
       const room = conn.roomId ? getRoom(conn.roomId) : null;
       if (room) markDisconnected(room.roomId, verified.userId);
-      // 关键事件落库（下线）；游客忽略（零持久写，C-Per-1）。
+      // E16：断线立即清该 seat 的输入续行状态（pending + lastMove）→ 角色停步，不再沿最后方向漂移。
+      // 主世界 + 副本实例都清（conn.roomId 为当前域；C6：gateway → run-manager.onSeatDisconnect → world.clearPlayerInput）。
       const s = liveSessions.get(conn.connId);
+      if (room && s) onSeatDisconnect(room.roomId, s.seatId);
+      // 关键事件落库（下线）；游客忽略（零持久写，C-Per-1）。
       if (s && !s.guest && s.snapshot) {
         void characterService.save(s.userId, s.snapshot).catch(() => {});
       }

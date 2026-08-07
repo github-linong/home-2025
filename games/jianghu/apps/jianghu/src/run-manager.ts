@@ -16,7 +16,7 @@
  */
 
 import { createWorld, type World, type PlayerSeat } from "../sim-core/src/world.ts";
-import { RoomPhase, type WorldSnapshot, type InputCmd, type Vec2 } from "../sim-core/src/types.ts";
+import { RoomPhase, EntityKind, type WorldSnapshot, type InputCmd, type Vec2 } from "../sim-core/src/types.ts";
 import {
   TILE,
   RESPAWN_POS,
@@ -24,6 +24,7 @@ import {
   INVENTORY_CAP, // E6：背包数据通道 cap（C7 单一来源）
   PARTY_GATHER_WINDOW_TICKS, // E13：入口集合窗口（tick）= 5s @12Hz
   PARTY_MAX_MEMBERS, // E13：同本成员上限（MVP）= 4
+  ENTRANCE_INTERACT_RADIUS, // E16：进本交互半径（px）= 1.5×TILE（C7）
 } from "../sim-core/src/constants.ts"; // C7 单一来源
 import type { SpawnZone } from "../sim-core/src/spawning.ts";
 import { computeInstanceSeed, buildDungeonSpec } from "../sim-core/src/dungeonGen.ts"; // C7/D9/C-Dgn-1
@@ -273,6 +274,34 @@ export function addPlayerToRoom(roomId: string, seatId: number, userId: string, 
   // E9：room.join 播种等级（持久化镜像 → 世界；游客/缺省 → undefined → L1 基础属性）。
   if (level !== undefined) levelBySeat.set(seatId, level);
   entry.world.addPlayer(seatId, userId, undefined, equipBySeat.get(seatId), levelBySeat.get(seatId));
+}
+
+/**
+ * E16：座位断线 → 清该 seat 的输入续行状态（world.clearPlayerInput）。
+ * gateway 在 ws.on('close') / ping 超时路径调用（主世界 + 副本实例都清；C6：gateway→run-manager→world）。
+ * 效果：断线角色立即停（step 不再续行），不动 actor 坐标/hp；重连后（room.join 幂等 + 输入恢复）可继续。
+ */
+export function onSeatDisconnect(roomId: string, seatId: number): void {
+  getWorld(roomId)?.clearPlayerInput(seatId);
+}
+
+/**
+ * E16：入口服务端坐标校验 —— 玩家当前主世界（RESIDENT）位置与 ENTRANCE 距离 ≤ ENTRANCE_INTERACT_RADIUS。
+ * 在 protocol dungeon.enter 调 enterInstance **之前**校验（C6：protocol → run-manager → world 读权威状态）。
+ * 仅创建路径走本闸门；dungeon.exit（出本）任意位置可出（需求明确，不做坐标校验）。
+ * @returns { ok: true } 通过；{ ok: false, reason } 拒绝（NOT_AT_ENTRANCE / 玩家不在主世界 / RESIDENT 未跑）。
+ */
+export function canEnterInstance(seatId: number): { ok: boolean; reason?: string } {
+  const resident = runs.get(RESIDENT_ROOM_ID);
+  if (!resident) return { ok: false, reason: "RESIDENT_NOT_RUNNING" };
+  const player = resident.world.actors().find((a) => a.ownerId === seatId);
+  if (!player) return { ok: false, reason: "NOT_IN_RESIDENT" };
+  const entrance = resident.world.actors().find((a) => a.kind === EntityKind.ENTRANCE);
+  if (!entrance) return { ok: false, reason: "NO_ENTRANCE" };
+  if (Math.hypot(player.x - entrance.x, player.y - entrance.y) <= ENTRANCE_INTERACT_RADIUS) {
+    return { ok: true };
+  }
+  return { ok: false, reason: "NOT_AT_ENTRANCE" };
 }
 
 /**

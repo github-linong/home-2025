@@ -7,6 +7,7 @@ import { WebSocket } from "ws";
 import { startServer } from "../src/server.ts";
 import { decodeSnapshot } from "../src/protocol-binary.ts";
 import { EntityKind } from "../sim-core/src/types.ts";
+import { TILE, ENTRANCE_INTERACT_RADIUS } from "../sim-core/src/constants.ts";
 
 /** 缓冲消息队列：连接创建即挂监听，避免 session.ready 在 open 与监听注册之间丢失的竞态。 */
 class MsgQueue {
@@ -100,6 +101,32 @@ async function nextInstanceFrame(mq: MsgQueue, deadlineMs = 2000): Promise<Buffe
   return null;
 }
 
+/**
+ * E16：真实 ws 路径 —— 持续发 MOVE（dir=0=E）直到玩家走进入口交互半径（ENTRANCE_INTERACT_RADIUS=72px）内。
+ * 服务端入口坐标校验要求 dungeon.enter 时玩家站在入口旁；本辅助经数据面 input.cmd 真实行走（C6 数据面路径），
+ * 读二进制快照判定玩家 pos（ENTRANCE=(20*TILE,15*TILE)）。
+ */
+async function walkToEntrance(mq: MsgQueue, ws: WebSocket, deadlineMs = 5000): Promise<boolean> {
+  const entrance = { x: 20 * TILE, y: 15 * TILE };
+  let seq = 1;
+  const deadline = Date.now() + deadlineMs;
+  while (Date.now() < deadline) {
+    // 每个收到的消息都续发 MOVE（东），驱动世界真实移动（~16px/tick @12Hz）。
+    ws.send(
+      JSON.stringify({
+        type: "input.cmd",
+        payload: { cmd: { seq: seq++, tick: 0, action: 0, dir: 0 } },
+      }),
+    );
+    const msg = await mq.next();
+    if (msg.kind !== "binary") continue;
+    const snap = decodeSnapshot(msg.data as Buffer);
+    const me = snap.entities.find((e) => e.ownerId !== undefined);
+    if (me && Math.hypot(me.pos.x - entrance.x, me.pos.y - entrance.y) <= ENTRANCE_INTERACT_RADIUS) return true;
+  }
+  return false;
+}
+
 test("E2E C10: enter instance → disconnect → reconnect within lifetime restores instance subscription (no jump)", async () => {
   const srv = await startServer(0);
   const port = srv.port;
@@ -115,6 +142,9 @@ test("E2E C10: enter instance → disconnect → reconnect within lifetime resto
     const residentToken = joinOk.reconnectToken;
 
     // 2) 进入副本：dungeon.enter → 得到 instance roomId + 副本重连 token。
+    //    E16：入口坐标校验 → 先经数据面真实行走走到入口旁（≤72px）。
+    const walked = await walkToEntrance(mq1, ws1);
+    assert.ok(walked, "player walked within ENTRANCE_INTERACT_RADIUS before dungeon.enter");
     ws1.send(JSON.stringify({ type: "dungeon.enter", requestId: "c10-2", payload: { entranceId: 1 } }));
     let enterOk = (await mq1.next()).data as { type: string; roomId: string; reconnectToken?: string };
     while (enterOk.type !== "dungeon.enter.ok") enterOk = (await mq1.next()).data as typeof enterOk;

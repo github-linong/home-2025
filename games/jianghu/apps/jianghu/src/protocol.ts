@@ -28,6 +28,7 @@ import {
   isInstanceRunning,
   setPlayerEquipped, // E7：equip/unequip → 世界镜像（maxHp/attrs 即时生效）
   pushInventoryToSeat, // E7：装备变更后推送背包（含 equipped）
+  canEnterInstance, // E16：入口服务端坐标校验（进本前检查玩家与 ENTRANCE 距离）
 } from "./run-manager.ts";
 import { RoomPhase } from "../sim-core/src/types.ts";
 import { INVENTORY_CAP, xpForLevel } from "../sim-core/src/constants.ts"; // C7 单一来源（背包上限 / 升级经验需求）
@@ -373,6 +374,12 @@ export function dispatch(
       }
       if (ctx.seatId === undefined) {
         return { reply: err(requestId, "NO_SEAT", "session not attached") };
+      }
+      // E16：入口服务端坐标校验（主世界 RESIDENT 玩家 pos 与 ENTRANCE 距离 ≤ 1.5×TILE）。
+      // 之前仅客户端校验（任意位置可进本）；此处补服务端权威闸门（C11）。出本 dungeon.exit 不做坐标校验。
+      const atEntrance = canEnterInstance(ctx.seatId);
+      if (!atEntrance.ok) {
+        return { reply: err(requestId, atEntrance.reason ?? "NOT_AT_ENTRANCE", "enter instance requires standing at entrance") };
       }
       const entranceId = Number(payload.entranceId ?? 0);
       // E13：进入或加入（多人同本 —— 同入口 waiting 窗口内加入同一实例）。

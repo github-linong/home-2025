@@ -13,6 +13,8 @@
  *   - BOSS 阶段：hp 跨阈值 → bossPhase 改变（提升攻击频率）。
  *   - E15：BOSS phase2 AOE telegraph 预警（生成 TELEGRAPH 实体 → TELEGRAPH_TICKS 后落刀 +
  *     移除；纯 tick 驱动，无 Rng 消耗）与副本复活点可配置（respawnPos，缺省 RESPAWN_POS）。
+ *   - E16：clearPlayerInput（断线清 pending/lastMove，防断线角色漂移）+ 敌人脱战回归出生点
+ *     （aggressive 目标离开 AGGRO_RADIUS → 朝 spawnOrigin 移动，到达停；确定性无随机）。
  *   - parry 窗口清理 / skillCd 递减。
  *
  * 纪律（C6 / C9 / C11 / C12 / D9）：
@@ -63,6 +65,7 @@ import {
   ENEMY_MOVE_SPEED, // E6：敌人 CHASE 追击速度（格/tick）
   AGGRO_RADIUS, // E6：敌人仇恨半径（px）
   PROVOKE_DURATION_TICKS, // E6：被动怪被打后的反击窗口（tick）
+  ENEMY_RETURN_ARRIVE_TOL, // E16：敌人脱战回归到达容差（px）= 0.5×TILE
   TELEGRAPH_TICKS, // E15：telegraph 前摇（tick）= 1s @12Hz（D2 落地）
   TELEGRAPH_RADIUS, // E15：BOSS AOE 警示圈半径（px）= 1.5×TILE
   BOSS_AOE_INTERVAL_TICKS, // E15：BOSS phase2 AOE 预警间隔（tick）= 3s @12Hz
@@ -149,6 +152,8 @@ interface Actor {
   // E6 新增（敌人 AI）
   aggression?: Aggression; // 敌人类别（passive / aggressive；spawnWave 透传或按 tier 缺省）
   lastDamageTick?: number; // 被动怪被打的最后 tick（反击窗口判定）
+  // E16 新增（脱战回归）：敌人出生点（spawnWave/复活时记录的实例化 pos，含散布；E16 脱战后回归用）
+  spawnOrigin?: Vec2;
   // E7 新增（玩家装备）
   equipped?: EquippedSlots; // 3 槽装备（持久化镜像；仅玩家实体持有）
   equipStats?: EquipmentStats; // 装备汇总属性缓存（computeEquipStats；仅在 addPlayer/setPlayerEquipped 时计算，热路径零分配）
@@ -193,6 +198,13 @@ export interface World {
   tryEnterEntrance(nowTick: number): boolean;
   /** 入队一条玩家输入（E4：缓冲 MOVE/PARRY/SKILL 最新指令；C11 seq 单调；STOP 清 lastMove 立即停）。 */
   enqueueInput(seatId: number, cmd: InputCmd): void;
+  /**
+   * E16：玩家断线时清空该 seat 的输入续行状态（pending + lastMove）。
+   * - 效果：step 不再续行（断线角色立即停，不再沿最后方向漂移）；**不动 actor 坐标/hp/等级**。
+   * - lastSeq **保留**（重连后 seq 仍单调，C11 防重放语义不变）；
+   * - 幂等：未注册 seat / 无待清输入 → 无副作用。
+   */
+  clearPlayerInput(seatId: number): void;
   /** 推进一个权威 tick（确定性：刷怪/战斗/掉装/拾取/漂浮 + 玩家权威移动）。 */
   step(): void;
   /** 取当前权威快照。 */
@@ -465,6 +477,8 @@ export function createWorld(opts: CreateWorldOpts): World {
           atk: spec.atk,
           aggression: spec.aggression, // E6 敌人类别（passive / aggressive）
           zoneIndex: spawnStates.length,
+          // E16：出生点（spawnWave 实例化 pos，含散布；脱战后回归用）。
+          spawnOrigin: { x: spec.pos.x, y: spec.pos.y },
           lastAttackTick: -ENEMY_ATTACK_INTERVAL_TICKS,
         });
         aliveIds.push(id);
@@ -559,6 +573,12 @@ export function createWorld(opts: CreateWorldOpts): World {
       pending.set(seatId, cmd);
       // 保留最后一条 MOVE 支撑"按住方向持续移动"（PARRY/SKILL 不更新 lastMove）。
       if (cmd.action === InputAction.MOVE) lastMove.set(seatId, cmd);
+    },
+
+    clearPlayerInput(seatId: number) {
+      // E16：断线清理输入续行状态（pending + lastMove）；不动 actor 坐标/hp/等级，lastSeq 保留。
+      pending.delete(seatId);
+      lastMove.delete(seatId);
     },
 
     step() {
@@ -817,7 +837,7 @@ export function createWorld(opts: CreateWorldOpts): World {
         }
 
         if (aggression === "aggressive") {
-          // aggressive：仇恨半径内索敌追击；接触内不移动（攻击）；半径外 → IDLE 静止。
+          // aggressive：仇恨半径内索敌追击；接触内不移动（攻击）；半径外 → 脱战回归出生点（E16）。
           if (best <= AGGRO_RADIUS && !inContact) {
             const dir = dirToward(e.x, e.y, target.x, target.y);
             const np = stepMovement({ x: e.x, y: e.y }, dir, {
@@ -827,6 +847,21 @@ export function createWorld(opts: CreateWorldOpts): World {
             e.x = np.x;
             e.y = np.y;
             e.dir = dir;
+          } else if (best > AGGRO_RADIUS && e.spawnOrigin) {
+            // E16：脱战回归 —— 目标离开仇恨半径 → 朝出生点移动；到达（≤ ENEMY_RETURN_ARRIVE_TOL）→ 停。
+            // 确定性：纯 stepMovement 积分（D9，无随机/无 Date.now）；玩家不存在时 target=null → best=∞ → 同路径。
+            const dx = e.spawnOrigin.x - e.x;
+            const dy = e.spawnOrigin.y - e.y;
+            if (Math.hypot(dx, dy) > ENEMY_RETURN_ARRIVE_TOL) {
+              const dir = dirToward(e.x, e.y, e.spawnOrigin.x, e.spawnOrigin.y);
+              const np = stepMovement({ x: e.x, y: e.y }, dir, {
+                speedPerTick: ENEMY_MOVE_SPEED,
+                isBlocked,
+              });
+              e.x = np.x;
+              e.y = np.y;
+              e.dir = dir;
+            }
           }
           if (inContact) maybeEnemyAttack(e, target, t); // 接触内周期性攻击（含 parry 校验）
         } else {
@@ -996,6 +1031,8 @@ export function createWorld(opts: CreateWorldOpts): World {
               atk: spec.atk,
               aggression: spec.aggression, // E6 敌人类别（passive / aggressive）
               zoneIndex: zi,
+              // E16：出生点（复活实例化 pos，含散布；脱战后回归用）。
+              spawnOrigin: { x: spec.pos.x, y: spec.pos.y },
               lastAttackTick: t - ENEMY_ATTACK_INTERVAL_TICKS,
             });
             st.aliveIds.push(id);

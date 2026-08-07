@@ -36,7 +36,7 @@ import {
 } from "../src/connection-registry.ts";
 import { getInstanceRoom, joinInstance, RESIDENT_ROOM_ID } from "../src/room-service.ts";
 import { dispatch } from "../src/protocol.ts";
-import { RESPAWN_POS } from "../sim-core/src/constants.ts";
+import { RESPAWN_POS, TILE } from "../sim-core/src/constants.ts";
 import { decodeSnapshot } from "../src/protocol-binary.ts";
 
 /** fake Conn：记录控制面 JSON + 数据面二进制（复用 connection-registry.test 模式）。 */
@@ -101,6 +101,10 @@ test("party-gather ②: A waiting → B joins same instance; after lock C reject
   // B 经协议路径进入（dungeon.enter）→ 加入同一 waiting 实例。
   const fcB = fakeConn("u-pb");
   registerConnection(fcB.conn);
+  // E16：入口坐标校验 → B 需在主世界入口旁（seat 2 提前放置，距离 ≤ 72px）。
+  const rwB = getWorld(RESIDENT_ROOM_ID)!;
+  rwB.removePlayer(2);
+  rwB.addPlayer(2, "u-pb", { x: 20 * TILE, y: 15 * TILE + 24 });
   const bRes = dispatch(
     { userId: "u-pb", connId: fcB.conn.connId, seatId: 2, roomId: RESIDENT_ROOM_ID },
     { type: "dungeon.enter", requestId: "b1", payload: { entranceId: 201 } },
