@@ -464,6 +464,35 @@ export const ENCHANT_STONES_BY_TIER: Readonly<Record<EnemyTier, number>> = {
 } as const;
 
 // ─────────────────────────────────────────────────────────────
+// E20：BOSS 战利品宝箱（chest；C7 单一来源）
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * 宝箱存活时长（tick）= 5min @12Hz（E20 · 主理人拍板）。
+ * BOSS 死亡在其位置刷「战利品宝箱」（EntityKind.CHEST），拾取/开箱前不消失；
+ * 比普通地面掉落（LOOT_GROUND_TTL_TICKS=150s）更长——仪式正反馈窗口，开箱后消失。
+ */
+export const CHEST_TTL_TICKS = 5 * 60 * TICK_RATE;
+
+/**
+ * 开箱交互半径（px）= 1.5×TILE（E20）。
+ * 客户端「按 F 开箱」提示环同半径（镜像 PICKUP_HINT_RADIUS / ENTRANCE_INTERACT_RADIUS）；
+ * 服务端权威闸门：玩家与宝箱距离 ≤ 本值才允许 INTERACT 开箱（C11）。
+ */
+export const CHEST_OPEN_RADIUS = Math.round(1.5 * TILE);
+
+/** 开箱掉落件数区间（3-5 件装备；E20 · 主理人拍板）。 */
+export const CHEST_ITEM_COUNT_MIN = 3;
+export const CHEST_ITEM_COUNT_MAX = 5;
+
+/**
+ * 开箱强化石数（×2；E20 · 主理人拍板）。
+ * 复用 E19 材料计数通道（Character.materials / character.inventory.materials）；
+ * 与 E19 BOSS 击杀强化石数同源（C7 单一来源）——BOSS 战奖励仪式化后开箱仍给同量材料。
+ */
+export const CHEST_STONES = ENCHANT_STONES_BY_TIER.boss;
+
+// ─────────────────────────────────────────────────────────────
 // 敌人 AI（E6：敌人类别 + 仇恨；combat §⑥ / spawning §⑥）
 // ─────────────────────────────────────────────────────────────
 

@@ -16,6 +16,8 @@ import {
   RARITY_NAMES,
   RARITY_WEIGHTS_BY_TIER,
   AFFIX_ID_MAX,
+  CHEST_ITEM_COUNT_MIN, // E20：开箱件数区间下界（C7 单一来源）
+  CHEST_ITEM_COUNT_MAX, // E20：开箱件数区间上界（C7 单一来源）
   type EnemyTier,
 } from "./constants.ts"; // C7 单一来源
 import type { LootState } from "./types.ts";
@@ -85,6 +87,65 @@ export function dropToGround(rng: Rng, tier: EnemyTier): LootState {
     affixes: res.affixes,
     ttlTicks: LOOT_GROUND_TTL_TICKS,
   };
+}
+
+/**
+ * E20：强制产出暗金（rarity=3）。
+ * 掷 boss 掉落（权重 金55/暗金45）直至暗金；guard 上限兜底直接构造（暗金恒 5 词缀）。
+ * 确定性：同 rng 流 ⇒ 同结果（重试次数由 rng 决定，结果确定，D9）。
+ * 用于：① 宝箱实体「显示暗金」（BOSS 死亡刷宝箱时预掷，向玩家预告必含暗金）；
+ * ② 开箱结算第 1 件（必含暗金）。
+ */
+export function rollGuaranteedDarkgold(rng: Rng): LootResult {
+  let res = rollLoot(rng, "boss");
+  let guard = 0;
+  while (res !== null && res.rarity !== 3 && guard < 16) {
+    res = rollLoot(rng, "boss");
+    guard += 1;
+  }
+  if (res === null || res.rarity !== 3) {
+    // 极端兜底（确定性）：暗金 AFFIX_COUNTS.darkgold=[5,5] 恒 5 词缀 + 随机 itemId。
+    const affixes: number[] = [];
+    const count = AFFIX_COUNTS.darkgold[0];
+    for (let i = 0; i < count; i++) affixes.push(rng.nextInt(1, AFFIX_ID_MAX));
+    res = { itemId: rng.nextInt(1, 0x7fffffff), rarity: 3, affixes };
+  }
+  return res;
+}
+
+/**
+ * E20：强制产出金/蓝（rarity ∈ {1,2}，开箱非暗金件）。
+ * 掷 elite 掉落（权重 蓝40/金45/暗金15）直至非暗金；guard 上限兜底直接构造（蓝/金随机）。
+ * 确定性：同 rng 流 ⇒ 同结果（D9）。
+ */
+export function rollGoldOrBlue(rng: Rng): LootResult {
+  let res = rollLoot(rng, "elite");
+  let guard = 0;
+  while (res !== null && res.rarity === 3 && guard < 16) {
+    res = rollLoot(rng, "elite");
+    guard += 1;
+  }
+  if (res === null || res.rarity === 3) {
+    const rarityIdx = rng.nextFloat() < 0.5 ? 1 : 2; // 蓝 / 金
+    const range = AFFIX_COUNTS[RARITY_NAMES[rarityIdx]];
+    const count = rng.nextInt(range[0], range[1]);
+    const affixes: number[] = [];
+    for (let i = 0; i < count; i++) affixes.push(rng.nextInt(1, AFFIX_ID_MAX));
+    res = { itemId: rng.nextInt(1, 0x7fffffff), rarity: rarityIdx, affixes };
+  }
+  return res;
+}
+
+/**
+ * E20：宝箱开箱结算 —— 3-5 件装备：第 1 件必含暗金（rarity=3）+ 其余金/蓝（rarity∈{1,2}）。
+ * 确定性（D9）：同 rng 流 ⇒ 同内容序列；消费 Rng 流发生在**开箱 tick**（非 BOSS 死亡 tick）。
+ * 件数区间 CHEST_ITEM_COUNT_MIN/MAX（C7 单一来源）。
+ */
+export function rollChestContents(rng: Rng): LootResult[] {
+  const count = rng.nextInt(CHEST_ITEM_COUNT_MIN, CHEST_ITEM_COUNT_MAX);
+  const items: LootResult[] = [rollGuaranteedDarkgold(rng)];
+  for (let i = 1; i < count; i++) items.push(rollGoldOrBlue(rng));
+  return items;
 }
 
 /** 导出掉落率/词缀数常量（C7 单一来源，供 E4 复用）。 */

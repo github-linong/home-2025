@@ -131,6 +131,14 @@ export interface StartRunOpts {
    * 调用方可用自定义回调覆盖（如测试注入）；不传则仅维持 world 内计数（actor.materials），不落库/不推送。
    */
   readonly onMaterialGain?: (seatId: number, stones: number) => void;
+  /**
+   * E20：宝箱开箱回调（可选）。每次 BOSS 宝箱开箱触发（seatId + 3-5 件物品 + 强化石×2）。
+   * **默认已接**：bootResidentRun / enterInstance 传 `handleChestOpen` —— 登录批量入库
+   * （addItem 循环 + 溢出落地面 C-Per-3）+ 材料累加（E19 Character.materials）+ 推送
+   * character.inventory（items + materials 一次拉全）；游客直接忽略（C-Per-1）。
+   * 调用方可用自定义回调覆盖（如测试注入）；不传则仅维持 world 内事件缓冲（consumeChestOpens 取走），不落库/不推送。
+   */
+  readonly onChestOpen?: (seatId: number, items: LootResult[], stones: number) => void;
 }
 
 interface RunEntry {
@@ -262,6 +270,11 @@ export function startRun(opts: StartRunOpts): WorldSnapshot {
       //   （默认 handleMaterialGain：登录落库 Character.materials + 推送 inventory.materials，游客忽略 C-Per-1）。
       for (const ev of world.consumeMaterialGains()) {
         opts.onMaterialGain?.(ev.seatId, ev.stones);
+      }
+      // E20：取走本 tick 宝箱开箱事件，转发给服务端 onChestOpen 钩子
+      //   （默认 handleChestOpen：登录批量入库 + 材料累加 + 推送 inventory，游客忽略 C-Per-1）。
+      for (const ev of world.consumeChestOpens()) {
+        opts.onChestOpen?.(ev.seatId, ev.items, ev.stones);
       }
     },
     onSnapshot() {
@@ -449,6 +462,8 @@ export function bootResidentRun(seed = "jianghu-overworld-0"): WorldSnapshot {
     onLevelUp: (seatId, level, xp, xpNext) => handleLevelUp(roomId, seatId, level, xp, xpNext),
     // E19：强化石→落库 + 推送 inventory.materials（登录；游客忽略 C-Per-1）。
     onMaterialGain: (seatId, stones) => handleMaterialGain(seatId, stones),
+    // E20：宝箱开箱→批量入库 + 材料累加 + 推送 inventory（登录；游客忽略 C-Per-1）。
+    onChestOpen: (seatId, items, stones) => handleChestOpen(roomId, seatId, items, stones),
   });
 }
 
@@ -553,6 +568,8 @@ export function enterInstance(
     onLevelUp: (seatId, level, xp, xpNext) => handleLevelUp(instanceRoomId, seatId, level, xp, xpNext),
     // E19：副本精英/BOSS 击杀同样落库 + 推送 inventory.materials（登录；游客忽略 C-Per-1）。
     onMaterialGain: (seatId, stones) => handleMaterialGain(seatId, stones),
+    // E20：副本 BOSS 宝箱开箱同样批量入库 + 材料累加 + 推送 inventory（登录；游客忽略 C-Per-1）。
+    onChestOpen: (seatId, items, stones) => handleChestOpen(instanceRoomId, seatId, items, stones),
   });
 
   // 2f. 成员实体：出 RESIDENT 世界 + 进 instance 世界（域切换；C-Net-1 不混流大图）。
@@ -834,4 +851,64 @@ export async function applyPickupToInventory(
   // E7：equipped 显式传入（equipBySeat 缓存），避免拾取推送把客户端装备栏清空。
   // E19：materials 一并推送（Character.materials 快照，客户端一次拉全）。
   pushInventoryToSeat(seatId, inventory, equipBySeat.get(seatId), snapshot.character.materials ?? 0);
+}
+
+/**
+ * E20：宝箱开箱批量入库（服务端背包接线，C-Per-3 闭环；一次开箱多件装备）。
+ * - 经 CharacterService.loadOrCreate 取角色快照（含背包）；
+ * - items（3-5 件，必含 1 暗金 + 金/蓝）逐件 inventory.addItem：未满入库，满 → 溢出收集；
+ * - 强化石×2（E19 材料计数，Character.materials 累加）与物品**同一原子 save**（防并发落库竞态：
+ *   若材料走独立事件则两次 save 交错可能把材料写回旧值——本函数单次落库保证一致）；
+ * - 溢出 → 全部 world.spawnGroundLoot 落回玩家脚下地面（C-Per-3，TTL 自动消失）；
+ * - 落库后经 pushInventoryToSeat 推送 character.inventory（items + equipped + materials 一次拉全）；
+ * - 更新 materialBySeat 缓存（换域 addPlayer 播种强化石计数）。
+ * 调用方（默认 run-manager.handleChestOpen 接线）应在 onChestOpen 回调内对「登录玩家」调用；
+ * 游客不入库（C-Per-1）。本函数为 async（CharacterService 落库 IO），onTick 以 void 触发、不阻塞 12Hz 循环。
+ */
+export async function applyChestOpenToInventory(
+  cs: CharacterService,
+  userId: string,
+  world: World,
+  items: LootResult[],
+  stones: number,
+): Promise<void> {
+  const { snapshot, seatId } = await cs.loadOrCreate(userId);
+  let inventory = snapshot.inventory;
+  const overflows: InventoryItem[] = [];
+  for (const loot of items) {
+    const item: InventoryItem = {
+      itemId: loot.itemId,
+      rarity: loot.rarity,
+      affixes: loot.affixes,
+      slot: itemProto(loot.itemId).slot, // E7：slot 由 itemId 确定性推导
+    };
+    const { inventory: next, overflow } = addItem(inventory, item);
+    inventory = next;
+    if (overflow) overflows.push(overflow);
+  }
+  // E19：强化石×2（Character.materials 累加；单次 save 原子性见函数头注释）。
+  const materials = (snapshot.character.materials ?? 0) + stones;
+  const character = { ...snapshot.character, materials, updatedAt: Date.now() };
+  await cs.save(userId, { character, inventory });
+  // P0 修复：同步 session.snapshot，防止 autosave/下线 save 覆盖开箱结果。
+  seatSnapshotSyncer?.(seatId, { character, inventory });
+  for (const o of overflows) {
+    // 背包满 → 溢出落脚下地面（C-Per-3）。
+    world.spawnGroundLoot(seatId, toGroundLoot(o));
+  }
+  materialBySeat.set(seatId, materials); // 世界镜像缓存（换域 addPlayer 播种）
+  pushInventoryToSeat(seatId, inventory, equipBySeat.get(seatId), materials);
+}
+
+/**
+ * E20：宝箱开箱事件接线（startRun onTick → 本函数；登录批量入库 + 材料累加 + 推送，游客忽略 C-Per-1）。
+ */
+function handleChestOpen(roomId: string, seatId: number, items: LootResult[], stones: number): void {
+  const cs = activeCharacterService;
+  if (!cs) return; // 未注入服务 → 仅维持 world 内事件缓冲
+  const info = cs.getSeatInfo(seatId);
+  if (!info || info.guest) return; // 游客 → 零持久写 + 不推送（C-Per-1）
+  const world = getWorld(roomId);
+  if (!world) return;
+  void applyChestOpenToInventory(cs, info.userId, world, items, stones).catch(() => {});
 }

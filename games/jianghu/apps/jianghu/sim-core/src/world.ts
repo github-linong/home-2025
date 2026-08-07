@@ -80,12 +80,15 @@ import {
   LEVEL_ATK_PER_LEVEL, // E9：每级 +1 基础攻击（str→atk MVP 映射）
   LEVEL_MAXHP_PER_LEVEL, // E9：每级 +5 生命上限（vit→maxHp MVP 映射）
   ENCHANT_STONES_BY_TIER, // E19：精英/BOSS 击杀强化石数（材料计数独立于掉落 Rng 流）
+  CHEST_TTL_TICKS, // E20：宝箱存活时长（tick）= 5min @12Hz
+  CHEST_OPEN_RADIUS, // E20：开箱交互半径（px）= 1.5×TILE
+  CHEST_STONES, // E20：开箱强化石×2（E19 材料计数；C7 单一来源）
 } from "./constants.ts"; // C7 单一来源
 import { Rng } from "./rng.ts";
 import { stepMovement } from "./movement.ts"; // E3 真移动（纯函数）
 import { resolveDamage, resolveSkill } from "./combat.ts"; // E4 服务端权威结算
 import { spawnWave, nextRespawnTick, type SpawnZone, type Aggression } from "./spawning.ts"; // E4 确定性实例化 / E6 敌人类别
-import { rollLoot } from "./loot.ts"; // E4 掉落
+import { rollLoot, rollChestContents, rollGuaranteedDarkgold } from "./loot.ts"; // E4 掉落 / E20 宝箱开箱结算
 import { computeEquipStats, EMPTY_EQUIP_STATS, type EquippedSlots, type EquipmentStats } from "./affixes.ts"; // E7 装备属性（纯数据）
 import { openParryWindow } from "./parry.ts"; // E4 格挡窗口
 import type { LootResult } from "./loot.ts";
@@ -146,6 +149,18 @@ export interface MaterialGainEvent {
   readonly stones: number;
 }
 
+/**
+ * E20：宝箱开箱事件（world → 编排层；批量物品 + 强化石一次结算）。
+ * - items：3-5 件装备（第 1 件必含暗金 rarity=3 + 其余金/蓝），确定性 Rng 流（D9）；
+ * - stones：强化石×2（E19 材料计数；与物品同一事件结算，编排层单次落库防并发竞态）；
+ * - 开箱后宝箱实体消失（world 内部移除）。
+ */
+export interface ChestOpenEvent {
+  readonly seatId: number;
+  readonly items: LootResult[];
+  readonly stones: number;
+}
+
 interface Actor {
   id: number;
   kind: number;
@@ -194,7 +209,19 @@ interface Actor {
   windupTargetId?: number; // 前摇锁定目标 actor id（落刀时判定是否仍在接触范围；仅 world 内部）
   // E19 新增（强化石计数；**不进 EntityState 快照**，C12 纪律——材料为控制面计数，非世界实体）
   materials?: number; // 玩家当前强化石数（击杀累计；会话内权威，击杀时与持久化同步；仅 world 内部镜像）
+  // E20：宝箱无新增字段 —— EntityKind.CHEST=6 复用 loot（显示暗金 + ttlTicks）承载；kind 分支即语义。
 }
+
+/**
+ * E20 kind 选择说明（BOSS 战利品宝箱）：
+ *   新增 EntityKind.CHEST=6，而非「复用 LOOT_GROUND + loot.chest 标记」——
+ *   - kind 为二进制协议**无条件 u8 核心字段**（encodeEntity 始终写 e.kind），新增取值 6
+ *     不改变任何线格式 / ChangeBit / 解码；客户端仅本地 KIND 表 + 渲染分支同步（最小协议改动）。
+ *   - 若复用 LOOT_GROUND 则必须在 loot 子结构加 chest 标记 → 需改 ChangeBit + 编解码双端，
+ *     协议面更大；且语义混淆——宝箱≠可漂浮/自动拾取的地面 token（浮漂/拾取循环按 kind 过滤）。
+ *   - 宝箱 loot 字段复用 LootState 序列化（ChangeBit.LOOT 既有），承载「显示暗金 + ttlTicks」，
+ *     零新增序列化字段（C12 纪律）。
+ */
 
 interface SpawnZoneRuntime {
   zone: SpawnZone;
@@ -240,6 +267,8 @@ export interface World {
   consumeLevelUps(): LevelUpEvent[];
   /** E19：取出并清空强化石获得事件缓冲（服务端落库 + 推送 character.inventory materials 用）。 */
   consumeMaterialGains(): MaterialGainEvent[];
+  /** E20：取出并清空宝箱开箱事件缓冲（服务端批量入库 + 材料推送用）。 */
+  consumeChestOpens(): ChestOpenEvent[];
   /** 在指定 seat 玩家脚下生成地面掉落实体（背包满溢出回落，C-Per-3）。 */
   spawnGroundLoot(seatId: number, loot: LootState): void;
   /**
@@ -255,6 +284,8 @@ export interface World {
   onLevelUp?: (seatId: number, level: number, xp: number, xpNext: number) => void;
   /** E19：可选：每次强化石获得即时回调（run-manager 可设，替代轮询 consumeMaterialGains）。 */
   onMaterialGain?: (seatId: number, stones: number) => void;
+  /** E20：可选：每次宝箱开箱即时回调（run-manager 可设，替代轮询 consumeChestOpens）。 */
+  onChestOpen?: (seatId: number, items: LootResult[], stones: number) => void;
 }
 
 /**
@@ -473,6 +504,8 @@ export function createWorld(opts: CreateWorldOpts): World {
   const levelUpBuffer: LevelUpEvent[] = [];
   // E19：强化石获得事件缓冲（精英/BOSS 击杀时 push，consumeMaterialGains 取走）
   const materialGainBuffer: MaterialGainEvent[] = [];
+  // E20：宝箱开箱事件缓冲（INTERACT 开箱时 push，consumeChestOpens 取走）
+  const chestOpenBuffer: ChestOpenEvent[] = [];
 
   // ── 确定性 Rng 实例（战斗/刷怪/掉装/复活共用种子流，D9）──
   const simRng = new Rng(`combat:${opts.seed}`);
@@ -801,6 +834,32 @@ export function createWorld(opts: CreateWorldOpts): World {
               // E8：普攻 CD（attackSpeed 缩短；无装备 → ATTACK_CD_TICKS=6，golden 锚点）。
               a.attackCdTicks = Math.max(1, Math.round(ATTACK_CD_TICKS * (1 - pStats.attackSpeed)));
             }
+          } else if (cmd.action === InputAction.INTERACT) {
+            // E20：开箱（宝箱交互）。服务端权威闸门（C11）：目标为 CHEST 实体、存活（ttl>0）、
+            // 玩家在开箱半径（CHEST_OPEN_RADIUS=1.5×TILE）内 → 结算：
+            //   rollChestContents（3-5 件：必含 1 暗金 + 金/蓝，确定性 Rng 流 D9）→ ChestOpenEvent
+            //   + 强化石×2（CHEST_STONES，E19 材料计数，同一事件结算防并发竞态）→ 宝箱消失。
+            // 非宝箱 / 越界 / 不存在 → 静默忽略（客户端按提示重发；服务端不设 CD）。
+            const chest = actors.find((x) => x.id === cmd.targetEntityId);
+            if (
+              chest &&
+              chest.kind === EntityKind.CHEST &&
+              chest.loot &&
+              chest.loot.ttlTicks > 0 &&
+              Math.hypot(chest.x - a.x, chest.y - a.y) <= CHEST_OPEN_RADIUS
+            ) {
+              const items = rollChestContents(simRng);
+              const stones = CHEST_STONES;
+              if (a.ownerId !== undefined) {
+                const cev: ChestOpenEvent = { seatId: a.ownerId, items, stones };
+                chestOpenBuffer.push(cev);
+                if (world.onChestOpen) world.onChestOpen(cev.seatId, cev.items, cev.stones);
+              }
+              // 同步 world 内部材料镜像（与 E19 击杀语义一致；不进快照 C12）。
+              a.materials = (a.materials ?? 0) + stones;
+              // 开箱后宝箱消失（下一帧快照不再下发该实体）。
+              actors = actors.filter((x) => x.id !== chest.id);
+            }
           }
           // SIGNAL 等未识别 action → 忽略
         } else if (lastMove.has(seatId)) {
@@ -1059,12 +1118,17 @@ export function createWorld(opts: CreateWorldOpts): World {
             }
           }
           // 掉装：rollLoot（确定性 Rng 流）；命中 → spawn LOOT_GROUND 于敌人 pos。
+          // E20：BOSS 死亡 → 不直接掉地面，改刷「战利品宝箱」（EntityKind.CHEST）——
+          //   宝箱 loot 字段为「显示暗金」（预掷必含暗金，向玩家预告）+ ttlTicks=CHEST_TTL_TICKS（5min）。
+          //   开箱（INTERACT）时才 rollChestContents 结算 3-5 件（必含 1 暗金 + 金/蓝）+ 强化石×2。
+          //   确定性：BOSS 死亡消费 Rng 流 = 旧版单次 rollLoot 次数（rollGuaranteedDarkgold 重掷至暗金，
+          //   同 seed 结果确定 D9）；普通/精英掉落路径不变。
           const tierName = TIER_NAMES[e.tier ?? 0];
-          const res = rollLoot(simRng, tierName);
-          if (res) {
+          if (tierName === "boss") {
+            const display = rollGuaranteedDarkgold(simRng);
             actors.push({
               id: nextId++,
-              kind: EntityKind.LOOT_GROUND,
+              kind: EntityKind.CHEST,
               x: e.x,
               y: e.y,
               dir: 0,
@@ -1072,12 +1136,32 @@ export function createWorld(opts: CreateWorldOpts): World {
               maxHp: 1,
               status: EntityStatus.ALIVE,
               loot: {
-                itemId: res.itemId,
-                rarity: res.rarity,
-                affixes: res.affixes.slice(),
-                ttlTicks: LOOT_GROUND_TTL_TICKS,
+                itemId: display.itemId,
+                rarity: display.rarity,
+                affixes: display.affixes.slice(),
+                ttlTicks: CHEST_TTL_TICKS,
               },
             });
+          } else {
+            const res = rollLoot(simRng, tierName);
+            if (res) {
+              actors.push({
+                id: nextId++,
+                kind: EntityKind.LOOT_GROUND,
+                x: e.x,
+                y: e.y,
+                dir: 0,
+                hp: 1,
+                maxHp: 1,
+                status: EntityStatus.ALIVE,
+                loot: {
+                  itemId: res.itemId,
+                  rarity: res.rarity,
+                  affixes: res.affixes.slice(),
+                  ttlTicks: LOOT_GROUND_TTL_TICKS,
+                },
+              });
+            }
           }
           // 更新所属刷怪区：alive 列表移除；清空则调度复活。
           if (e.zoneIndex !== undefined) {
@@ -1151,6 +1235,17 @@ export function createWorld(opts: CreateWorldOpts): World {
         }
       }
       if (removeLoot.length > 0) actors = actors.filter((a) => !removeLoot.includes(a.id));
+
+      // (6b) E20：宝箱 ttl 倒计时 + 到期消失。
+      //     宝箱不漂浮（不属于 LOOT_GROUND 漂浮循环）、不自动拾取（拾取循环按 kind 过滤），
+      //     仅 INTERACT 开箱（上文玩家输入段）；ttl 到期 → 消失（拾取前不消失，CHEST_TTL_TICKS=5min）。
+      const removeChest: number[] = [];
+      for (const a of actors) {
+        if (a.kind !== EntityKind.CHEST || !a.loot) continue;
+        a.loot.ttlTicks -= 1;
+        if (a.loot.ttlTicks <= 0) removeChest.push(a.id);
+      }
+      if (removeChest.length > 0) actors = actors.filter((a) => !removeChest.includes(a.id));
 
       // (7) BOSS 阶段推进：hp 跨阈值 → phase 2（提升攻击频率）。
       for (const e of actors) {
@@ -1247,6 +1342,12 @@ export function createWorld(opts: CreateWorldOpts): World {
     consumeMaterialGains(): MaterialGainEvent[] {
       const out = materialGainBuffer.slice();
       materialGainBuffer.length = 0;
+      return out;
+    },
+
+    consumeChestOpens(): ChestOpenEvent[] {
+      const out = chestOpenBuffer.slice();
+      chestOpenBuffer.length = 0;
       return out;
     },
 

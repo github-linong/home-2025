@@ -24,6 +24,7 @@ export const EntityKind = {
   LOOT_GROUND: 3, // 地面溢出掉落（背包满，C-Per-3）
   TELEGRAPH: 4, // 攻击预警
   ENTRANCE: 5, // 裂隙异象漩涡（副本入口，静态）
+  CHEST: 6, // E20：战利品宝箱（BOSS 死亡刷出；可见可交互，开箱结算，不漂浮/不自动拾取）
 } as const;
 export type EntityKindValue = (typeof EntityKind)[keyof typeof EntityKind];
 
@@ -167,6 +168,7 @@ export const InputAction = {
   SIGNAL: 6,
   STOP: 7, // 松开移动键：清 lastMove 立即停（协议缺口修复，P0 手感；见 web-client README §3/§5）
   ATTACK: 8, // E8：普攻（目标实体 id 由 InputCmd.targetEntityId 指定；服务端权威 CD/距离/伤害）
+  INTERACT: 9, // E20：交互（宝箱开箱；目标实体 id 由 InputCmd.targetEntityId 指定；服务端权威半径/结算）
 } as const;
 export type InputActionValue = (typeof InputAction)[keyof typeof InputAction];
 

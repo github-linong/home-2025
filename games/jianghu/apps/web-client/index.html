@@ -229,7 +229,7 @@
 
 <div id="help">
   <b>左键点敌人</b> 自动走近普攻 · <b>左键点地面</b> 点击移动 · <b>WASD/方向键</b> 移动（8 向） · <b>空格</b> 格挡 · <b>1-4</b> 技能（<b>烈斩/剑气/震地/破军</b>） · <b>I</b> 背包<br>
-  <b>F</b> 进副本/出本 · 靠近掉落自动拾取 · <b>滚轮</b> 缩放（相机锁定跟随，拖拽不平移） · 技能悬停查看描述<br>
+  <b>F</b> 进副本/出本 · 靠近掉落自动拾取 · BOSS 死后按 <b>F</b> 开「战利品宝箱」 · <b>滚轮</b> 缩放（相机锁定跟随，拖拽不平移） · 技能悬停查看描述<br>
   <b>装备</b>：背包内点「装备」穿装（攻击/生命/暴击立即提升） · 点击装备栏槽位卸下<br>
   <b>死亡</b>：倒地 10s 后自动复活回城 · 死亡不掉永久装备
 </div>
@@ -280,6 +280,7 @@ const PARRY_TICKS = 3;                  // 格挡窗口（服务端权威展示�
 const SKILL_ACTIONS = [2, 3, 4, 5];     // InputAction.SKILL1..4
 const ACTION_STOP = 7;                  // InputAction.STOP
 const ACTION_ATTACK = 8;                // InputAction.ATTACK（E8 普攻）
+const ACTION_INTERACT = 9;              // InputAction.INTERACT（E20 宝箱开箱，targetEntityId 指定宝箱）
 const MELEE_RANGE = 48;                 // 服务端 MELEE_RANGE=1×TILE（近战命中范围，C7 镜像）
 const ATTACK_CD_TICKS = 6;              // 服务端 ATTACK_CD_TICKS=6（0.5s 普攻间隔；CD 由服务端权威）
 const ARRIVE_TOL = 24;                  // 服务端 TARGET_ARRIVE_TOL=0.5×TILE（点击移动到达容差）
@@ -328,7 +329,7 @@ const RARITY_COLORS = ['#D8D2C4', '#4C7FD6', '#F2A03C', '#C8324A'];
 const RARITY_NAMES = ['白', '蓝', '金', '暗金'];
 // E7：装备槽名称（与服务端 ITEM_PROTOS slot 对齐）
 const SLOT_NAMES = { weapon: '武器', armor: '护甲', trinket: '饰品' };
-const KIND = { PLAYER: 0, ENEMY: 1, BOSS: 2, LOOT_GROUND: 3, TELEGRAPH: 4, ENTRANCE: 5 };
+const KIND = { PLAYER: 0, ENEMY: 1, BOSS: 2, LOOT_GROUND: 3, TELEGRAPH: 4, ENTRANCE: 5, CHEST: 6 };
 
 // ============================================================================
 // E12：WebAudio 程序化武侠音效（零外部资源 / 零网络请求；单文件独立模块，不耦合既有逻辑）
@@ -760,6 +761,9 @@ let downed = false;                 // E10：本地玩家倒地（快照 status 
 let downedSinceTick = null;         // E10：客户端推算的倒地起始 tick（首次观测到 DOWNED 的快照 tick）
 let invOpen = false;
 let nearLootId = null;              // 最近可拾取 LOOT_GROUND id（drawEntities 每帧计算，F 键/提示用）
+let nearChestId = null;             // E20：最近可开箱 CHEST id（drawEntities 每帧计算，F 键/提示用）
+let chestOpenPending = false;       // E20：已按 F 开箱（等待宝箱从快照消失 → 开箱 toast）
+let chestOpenPendingId = null;      // E20：开箱目标宝箱 id（消失判定用）
 let inventory = { items: [], cap: 60, loaded: false };
 let equipped = {};                  // E7：3 槽已穿戴（来自 character.inventory）
 let materials = 0;                  // E19：强化石计数（来自 character.inventory.materials）
@@ -1064,7 +1068,13 @@ function handleControl(msg) {
       inventory.loaded = true;
       equipped = msg.equipped || {};
       // E19：强化石计数（材料独立于背包；击杀精英/BOSS 推送）
+      const prevMaterials = materials;
       materials = msg.materials || 0;
+      // E20：强化石增量 toast（开箱×2 / 精英击杀×1 / BOSS 击杀×2；diff>0 才提示）
+      if (materials > prevMaterials) {
+        toast('强化石 +' + (materials - prevMaterials));
+        SFX.play('ui');
+      }
       GAME.inventory = { items: inventory.items.slice(), cap: inventory.cap, loaded: true };
       GAME.equipped = equipped;
       GAME.materials = materials;
@@ -1117,6 +1127,18 @@ function handleSnapshot(snap) {
   GAME.lastTick = snap.tick;
   lastSnapshot = snap;
   GAME.lastSnapshot = snap;
+
+  // E20：开箱反馈 —— 已按 F 开箱（INTERACT）且目标宝箱从快照消失 → 「打开宝箱！」toast
+  //   （服务端开箱后移除实体；后续 character.inventory 推送逐件「获得」toast + 强化石 +N）。
+  if (chestOpenPending && chestOpenPendingId != null) {
+    const stillThere = snap.entities.some((e) => e.id === chestOpenPendingId && e.kind === KIND.CHEST);
+    if (!stillThere) {
+      chestOpenPending = false;
+      chestOpenPendingId = null;
+      pickupToast('打开宝箱！');
+      SFX.play('pickup');
+    }
+  }
 
   // 定位本地玩家（seatId 权威映射；kind=PLAYER + ownerId===seatId）
   localEntityId = null;
@@ -1396,6 +1418,14 @@ function sendSkill(slot) {
 // SIGNAL(6)：靠近掉落按 F 的拾取意图（服务端为重叠自动拾取，此动作服务端忽略，仅表现/占位）
 function sendSignal() { sendCmd({ action: 6, dir: lastMoveDir ?? 0 }); }
 
+// E20：INTERACT(9) 开箱 —— 按 F 且最近可开箱宝箱存在 → 服务端权威半径/结算（targetEntityId 指定宝箱）。
+function sendInteract(targetId) {
+  sendCmd({ action: ACTION_INTERACT, dir: lastMoveDir ?? 0, targetEntityId: targetId });
+  // 记录开箱意图：宝箱从快照消失 → 「打开宝箱！」toast（服务端开箱后移除实体）。
+  chestOpenPending = true;
+  chestOpenPendingId = targetId;
+}
+
 // E8：客户端 8 向朝向（与服务端 dirToward 对称；本地预测/光效用，纯几何无随机）。
 function dirTowardClient(ax, ay, bx, by) {
   const deg = Math.atan2(by - ay, bx - ax) * 180 / Math.PI;
@@ -1545,10 +1575,12 @@ window.addEventListener('keydown', (e) => {
   if (e.code === 'Digit3') fireAction(() => sendSkill(2));
   if (e.code === 'Digit4') fireAction(() => sendSkill(3));
   if (e.code === 'KeyI') { e.preventDefault(); toggleInventory(); }
-  // F：副本内 → 出本优先；主世界靠近掉落 → 拾取意图（SIGNAL，服务端忽略；走近重叠即自动拾取）；否则进/出本
+  // F：副本内 → 出本优先；主世界靠近宝箱 → 开箱（INTERACT，E20）；靠近掉落 → 拾取意图（SIGNAL，服务端忽略，走近重叠即自动拾取）；否则进/出本
   if (e.code === 'KeyF') fireAction(() => {
     if (state === 'dungeon') { exitDungeon(); return; }
-    if (nearLootId != null) sendSignal(); else toggleDungeon();
+    if (nearChestId != null) sendInteract(nearChestId);
+    else if (nearLootId != null) sendSignal();
+    else toggleDungeon();
   });
 });
 window.addEventListener('keyup', (e) => {
@@ -2528,6 +2560,75 @@ function drawLoot(e, p) {
   ctx.restore();
 }
 
+// E20：战利品宝箱渲染（金色宝箱剪影 + 增强光柱 + 脉动 + TTL 倒计时）
+function drawChest(e, p) {
+  const s = worldToScreen(p);
+  if (s.x < -80 || s.y < -80 || s.x > view.w + 80 || s.y > view.h + 80) return;
+  const t = performance.now() / 1000;
+  const pulse = 0.62 + 0.28 * Math.sin(t * 2.6); // 脉动（alpha 呼吸）
+  const gold = '#f2a03c'; // 金（rarity=2 色，宝箱主题色；暗金预告由开箱 toast 呈现）
+
+  ctx.save();
+  ctx.translate(s.x, s.y);
+
+  // 金色光柱（增强：比普通掉落更高更宽）
+  const pillarH = 80 + pulse * 14;
+  const pillarW = 14 + pulse * 4;
+  const grad = ctx.createLinearGradient(0, -pillarH, 0, 0);
+  grad.addColorStop(0, hexA(gold, 0));
+  grad.addColorStop(0.3, hexA(gold, 0.75 * pulse));
+  grad.addColorStop(1, hexA(gold, 0.4 * pulse));
+  ctx.fillStyle = grad;
+  ctx.fillRect(-pillarW / 2, -pillarH, pillarW, pillarH);
+
+  // 底部金色光晕
+  ctx.globalAlpha = 0.6 * pulse;
+  const bg = ctx.createRadialGradient(0, 0, 2, 0, 0, 32);
+  bg.addColorStop(0, hexA(gold, 0.95));
+  bg.addColorStop(1, hexA(gold, 0));
+  ctx.fillStyle = bg;
+  ctx.beginPath(); ctx.arc(0, 0, 32, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // 宝箱本体（箱体 + 弧盖 + 锁扣 + 金边）
+  ctx.shadowColor = gold; ctx.shadowBlur = 14;
+  ctx.fillStyle = '#7a5416';
+  ctx.strokeStyle = gold; ctx.lineWidth = 2;
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(-15, 2, 30, 15, 3);
+  else ctx.rect(-15, 2, 30, 15);
+  ctx.fill(); ctx.stroke();
+  // 箱盖（弧顶）
+  ctx.beginPath(); ctx.moveTo(-17, 3); ctx.quadraticCurveTo(0, -15, 17, 3); ctx.closePath(); ctx.fill(); ctx.stroke();
+  // 锁扣
+  ctx.fillStyle = gold;
+  ctx.beginPath(); ctx.arc(0, 5, 3.4, 0, Math.PI * 2); ctx.fill();
+  // 盖缝高光
+  ctx.strokeStyle = 'rgba(255,225,150,0.9)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(-14, 3); ctx.lineTo(14, 3); ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.restore();
+  GAME.rendered.chests += 1; // E20 E2E 钩子（宝箱渲染标志）
+
+  // 标签 + TTL 倒计时
+  ctx.save();
+  ctx.font = 'bold 12px system-ui';
+  ctx.textAlign = 'center';
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(10,12,16,0.9)';
+  ctx.strokeText('战利品宝箱', s.x, s.y - 30);
+  ctx.fillStyle = gold;
+  ctx.fillText('战利品宝箱', s.x, s.y - 30);
+  if (e.loot && e.loot.ttlTicks != null) {
+    ctx.font = '9px system-ui';
+    const ttl = (e.loot.ttlTicks / TICK_RATE).toFixed(0) + 's';
+    ctx.strokeText(ttl, s.x, s.y - 18);
+    ctx.fillStyle = 'rgba(240,200,120,0.85)';
+    ctx.fillText(ttl, s.x, s.y - 18);
+  }
+  ctx.restore();
+}
+
 function drawEntrance(e, p) {
   const s = worldToScreen(p);
   if (s.x < -80 || s.y < -80 || s.x > view.w + 80 || s.y > view.h + 80) return;
@@ -2608,24 +2709,42 @@ function drawTelegraphs() {
 function drawEntities() {
   if (!lastSnapshot) return;
   // C3 E2E 钩子：每帧重置渲染标志（drawPlayer/drawEnemy/drawLoot/drawEntrance 内填充）
-  GAME.rendered = { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0, windup: 0 };
+  GAME.rendered = { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0, windup: 0, chests: 0 };
   // 入口画在实体底层
   for (const e of lastSnapshot.entities) {
     if (e.kind !== KIND.ENTRANCE) continue;
     drawEntrance(e, e.pos);
   }
 
-  // C2 拾取提示：最近 LOOT_GROUND ≤ 1.5×TILE → 「按 F 拾取」（服务端重叠自动拾取，走近即拾取）
+  // C2 拾取/开箱提示：最近 LOOT_GROUND ≤ 1.5×TILE → 「按 F 拾取」（服务端重叠自动拾取，走近即拾取）；
+  // E20：最近 CHEST ≤ 1.5×TILE → 「按 F 开箱」（服务端 CHEST_OPEN_RADIUS 权威判定，按 F 触发 INTERACT）。
   nearLootId = null; GAME.nearLootId = null; GAME.pickupHint = '';
+  nearChestId = null; GAME.nearChestId = null;
   const mePos = predicted || (localEntityId != null ? (lastSnapshot.entities.find((e) => e.id === localEntityId) || {}).pos : null);
   if (mePos) {
-    let bestLoot = null, bestD = Infinity;
+    let bestLoot = null, bestLootD = Infinity, bestChest = null, bestChestD = Infinity;
     for (const e of lastSnapshot.entities) {
-      if (e.kind !== KIND.LOOT_GROUND) continue;
       const d = Math.hypot(e.pos.x - mePos.x, e.pos.y - mePos.y);
-      if (d < bestD) { bestD = d; bestLoot = e; }
+      if (e.kind === KIND.LOOT_GROUND && d < bestLootD) { bestLootD = d; bestLoot = e; }
+      else if (e.kind === KIND.CHEST && d < bestChestD) { bestChestD = d; bestChest = e; }
     }
-    if (bestLoot && bestD <= PICKUP_HINT_RADIUS) {
+    // 宝箱优先（仪式感 > 自动拾取；两者同半径时优先开箱）。
+    if (bestChest && bestChestD <= PICKUP_HINT_RADIUS && bestChestD <= bestLootD) {
+      nearChestId = bestChest.id;
+      GAME.nearChestId = nearChestId;
+      GAME.pickupHint = '按 F 开箱';
+      const lp = interpPos(bestChest.id, renderTime) || bestChest.pos;
+      const ls = worldToScreen(lp);
+      ctx.save();
+      ctx.font = 'bold 12px system-ui';
+      ctx.textAlign = 'center';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(10,12,16,0.9)';
+      ctx.strokeText('按 F 开箱', ls.x, ls.y - 46);
+      ctx.fillStyle = '#ffd27d';
+      ctx.fillText('按 F 开箱', ls.x, ls.y - 46);
+      ctx.restore();
+    } else if (bestLoot && bestLootD <= PICKUP_HINT_RADIUS) {
       nearLootId = bestLoot.id;
       GAME.nearLootId = nearLootId;
       GAME.pickupHint = '按 F 拾取';
@@ -2669,6 +2788,7 @@ function drawEntities() {
     if (e.kind === KIND.PLAYER) drawPlayer(e, p);
     else if (e.kind === KIND.ENEMY || e.kind === KIND.BOSS) drawEnemy(e, p);
     else if (e.kind === KIND.LOOT_GROUND) drawLoot(e, p);
+    else if (e.kind === KIND.CHEST) drawChest(e, p); // E20：战利品宝箱
     else if (e.kind === KIND.TELEGRAPH) { /* telegraph 已底层绘制 */ }
   }
   // 消失实体淡出
@@ -2680,6 +2800,7 @@ function drawEntities() {
       ctx.save();
       ctx.globalAlpha = Math.max(0, rec.alpha);
       if (rec.ent.kind === KIND.LOOT_GROUND) { drawLoot(rec.ent, p); }
+      else if (rec.ent.kind === KIND.CHEST) { drawChest(rec.ent, p); } // E20：宝箱开箱/到期淡出
       else if (rec.ent.kind === KIND.ENEMY || rec.ent.kind === KIND.BOSS) { drawEnemy(rec.ent, p); }
       ctx.restore();
     }

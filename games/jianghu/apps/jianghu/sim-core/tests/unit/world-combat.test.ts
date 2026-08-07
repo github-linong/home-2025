@@ -141,7 +141,7 @@ test("战斗：技能 CD 闸门（冷却中二次释放被拦截）", () => {
   assert.equal(enemy.hp, 10, "冷却中技能不得造成伤害");
 });
 
-test("掉装：玩家 SKILL 击杀 BOSS → 必掉并被拾取（consumePickups）", () => {
+test("掉装：玩家 SKILL 击杀 BOSS → 刷战利品宝箱（E20）并开箱结算", () => {
   const world = mkWorld({
     seed: PROX_SEED,
     players: [{ seatId: 0, userId: "u0" }],
@@ -160,10 +160,21 @@ test("掉装：玩家 SKILL 击杀 BOSS → 必掉并被拾取（consumePickups�
     world.step();
   }
   assert.ok(killed, "BOSS 应在 maxTicks 内被击杀");
-  // boss 必然掉（DROP_RATE=1.0），掉落点紧邻玩家 → 同 tick 被拾取进入缓冲。
-  const picks = world.consumePickups();
-  assert.ok(picks.length >= 1, "击杀 BOSS 应触发掉落（boss 必然掉）");
-  assert.equal(picks[0].seatId, 0);
+  // E20：BOSS 死亡不再直接掉地面 token，而是刷「战利品宝箱」（kind=CHEST）。
+  const chest = world.actors().find((a) => a.kind === EntityKind.CHEST);
+  assert.ok(chest, "BOSS 死亡应刷出宝箱实体");
+  assert.ok(chest!.loot && chest!.loot.rarity === 3, "宝箱显示暗金（rarity=3）");
+  // 开箱（INTERACT 目标宝箱）→ ChestOpenEvent（3-5 件恰 1 暗金 + 金/蓝 + 强化石×2）。
+  const p = world.actors().find((a) => a.ownerId === 0)!;
+  p.x = chest!.x;
+  p.y = chest!.y;
+  world.enqueueInput(0, { seq: seq.s++, tick: world.tick, action: InputAction.INTERACT, dir: 0, targetEntityId: chest!.id });
+  world.step();
+  const opens = world.consumeChestOpens();
+  assert.equal(opens.length, 1, "开箱产生一次 ChestOpenEvent");
+  assert.ok(opens[0].items.length >= 3 && opens[0].items.length <= 5, "开箱 3-5 件装备");
+  assert.equal(opens[0].items.filter((i) => i.rarity === 3).length, 1, "必含 1 件暗金");
+  assert.ok(!world.actors().some((a) => a.kind === EntityKind.CHEST), "开箱后宝箱消失");
 });
 
 test("复活：刷怪区清空 → 按 respawnTicks 复活敌人", () => {

@@ -53,6 +53,8 @@ const {
   BOSS_PHASE_THRESHOLD,
   SKILL_DAMAGE,
   SKILL_CD_BY_SLOT, // E6：BOSS 战 poke 用（slot3 cd=96，C7 单一来源）
+  CHEST_TTL_TICKS, // E20：宝箱存活时长（tick）= 5min @12Hz
+  CHEST_STONES, // E20：开箱强化石×2
 } = constants;
 const { computeInstanceSeed } = dungeonGen;
 const {
@@ -76,9 +78,13 @@ const SEAT = 1;
  *  改变副本实例的敌人数量 → simRng 散点/掉装流在 BOSS 死亡前被消费的序列变化 → BOSS 掉装
  *  （金/暗金 itemId+词缀）改变 → journal 哈希变化。普通怪场景（③④⑤/副本普通怪）与 BOSS
  *  hpSeq/phaseSeen 均与旧 golden 一致，仅 boss.drop 变化。属需求驱动重锁（报告已说明）。
+ *  E20 重锁说明（2026-08）：BOSS 死亡不再直接掉地面 token，改刷「战利品宝箱」（EntityKind.CHEST，
+ *  显示暗金 + ttl=CHEST_TTL_TICKS）→ journal 由 boss.drop 扩展为 boss.chest + boss.chestOpen
+ *  （3-5 件恰 1 暗金 + 金/蓝 + 强化石×2）。BOSS hpSeq/phaseSeen 与旧 golden 一致，仅掉装段
+ *  journal 形态变化（需求驱动：E20 仪式化掉装），故重锁。
  */
 const GOLDEN_PLAYTEST_HASH =
-  "1e7b798827a744bf7aa4a163b00cc285d6223c1c064878e92ffb6a81b3c079a4";
+  "c378602b622de61a0b2a5cdd2d09361bbb890b1f5715835d54a81339a22ccf61";
 
 // ---------------------------------------------------------------- 结果收集
 const checks = [];
@@ -433,27 +439,56 @@ function runCanonical(verbose = true) {
 
   // 击杀 BOSS：E6 BOSS 默认 aggressive —— 站桩会被击杀，改用 teleport-poke 适配
   // （瞬移到角落开火 → 瞬移出仇恨半径等 cd；伤害节奏与锁定 golden 一致，hpSeq/phaseSeen 不变）。
+  // E20：BOSS 死亡不再直接掉地面 token，改刷「战利品宝箱」（EntityKind.CHEST，显示暗金 + 5min）；
+  // 开箱（INTERACT）→ 3-5 件（恰 1 暗金 + 金/蓝）+ 强化石×2 → 宝箱消失。journal 相应扩展（重锁 golden）。
   let bossFight = { died: false, hpChanges: [], phaseSeen: null };
-  let bossDrop = null;
+  let bossChest = null;   // 宝箱实体（显示暗金 + ttl）
+  let chestOpen = null;   // 开箱事件（items + stones）
   if (boss) {
     const c2 = relocateToCorner(boss, 2);
     placePlayer(instWorld, SEAT, PARTY, { x: c2.x + 60, y: c2.y });
     bossFight = bossFightPoke(instWorld, seqI, boss.id, 3, 1000); // SKILL4 slot=3, cd96
-    // BOSS 必掉（金/暗金）：掉落出现在 BOSS 死亡点附近。
-    const loots = findLoot(instWorld).filter(
-      (l) => Math.abs(l.x - c2.x) < TILE && Math.abs(l.y - c2.y) < TILE,
+    // E20：宝箱出现在 BOSS 死亡点附近（kind=CHEST；loot 承载显示暗金 + ttl）。
+    const chest = instWorld.actors().find(
+      (a) => a.kind === EntityKind.CHEST && Math.abs(a.x - c2.x) < TILE && Math.abs(a.y - c2.y) < TILE,
     );
-    if (loots.length > 0) bossDrop = loots[0].loot;
+    if (chest) {
+      bossChest = {
+        itemId: chest.loot.itemId,
+        rarity: chest.loot.rarity,
+        affixes: [...chest.loot.affixes],
+        ttlTicks: chest.loot.ttlTicks,
+      };
+      // 开箱（INTERACT 目标宝箱）：玩家移到宝箱旁（距离 0 < CHEST_OPEN_RADIUS）→ 结算 → 宝箱消失。
+      placePlayer(instWorld, SEAT, PARTY, { x: chest.x, y: chest.y });
+      seqI.n += 1;
+      instWorld.enqueueInput(SEAT, { seq: seqI.n, tick: 0, action: InputAction.INTERACT, dir: 0, targetEntityId: chest.id });
+      instWorld.step();
+      const opens = instWorld.consumeChestOpens();
+      if (opens.length > 0) {
+        chestOpen = {
+          stones: opens[0].stones,
+          items: opens[0].items.map((i) => ({ itemId: i.itemId, rarity: i.rarity, affixes: [...i.affixes] })),
+        };
+      }
+    }
   }
   const bossPhaseOk =
     bossFight.died &&
     bossFight.phaseSeen !== null &&
     bossFight.phaseSeen < ENEMY_BASE_HP * HP_MULT.boss * BOSS_PHASE_THRESHOLD;
-  const bossDropOk =
-    !!bossDrop &&
-    (bossDrop.rarity === 2 || bossDrop.rarity === 3) &&
-    bossDrop.affixes.length >= 3 && bossDrop.affixes.length <= 5 &&
-    bossDrop.ttlTicks === LOOT_GROUND_TTL_TICKS;
+  const bossChestOk =
+    !!bossChest &&
+    bossChest.rarity === 3 &&                      // 显示必含暗金
+    bossChest.affixes.length === 5 &&              // 暗金恒 5 词缀
+    bossChest.ttlTicks === CHEST_TTL_TICKS - 1;    // 5min（死亡 tick 的 (6b) 段已递减 1）
+  const chestOpenOk =
+    !!chestOpen &&
+    chestOpen.items.length >= 3 && chestOpen.items.length <= 5 && // 3-5 件
+    chestOpen.items.filter((i) => i.rarity === 3).length === 1 && // 恰 1 暗金
+    chestOpen.items.every((i) => i.rarity === 3 || i.rarity === 1 || i.rarity === 2) && // 其余金/蓝
+    chestOpen.stones === CHEST_STONES &&           // 强化石×2
+    !instWorld.actors().some((a) => a.kind === EntityKind.CHEST); // 开箱后宝箱消失
   if (verbose) {
     check(
       "boss-kill-phase",
@@ -462,19 +497,28 @@ function runCanonical(verbose = true) {
       `hp序列=[${bossFight.hpChanges.join(",")}]；phase 首现 hp=${bossFight.phaseSeen} (<${ENEMY_BASE_HP * HP_MULT.boss * BOSS_PHASE_THRESHOLD})`,
     );
     check(
-      "boss-drop",
-      "⑦c BOSS 必掉装：金(2)/暗金(3) + 词缀合法 + ttl",
-      bossDropOk,
-      bossDrop
-        ? `itemId=${bossDrop.itemId} rarity=${bossDrop.rarity} affixes=[${bossDrop.affixes.join(",")}] ttl=${bossDrop.ttlTicks}`
-        : "BOSS 未掉落（违反 DROP_RATE.boss=1.0）",
+      "boss-chest",
+      "⑦c E20 BOSS 掉装仪式化：死亡刷战利品宝箱（显示暗金 + ttl=5min）",
+      bossChestOk,
+      bossChest
+        ? `itemId=${bossChest.itemId} rarity=${bossChest.rarity} affixes=[${bossChest.affixes.join(",")}] ttl=${bossChest.ttlTicks} (期望 ${CHEST_TTL_TICKS - 1})`
+        : "BOSS 未刷宝箱（违反 E20 必刷）",
+    );
+    check(
+      "boss-chest-open",
+      "⑦d E20 开箱：3-5 件（恰 1 暗金 + 金/蓝）+ 强化石×2 + 宝箱消失",
+      chestOpenOk,
+      chestOpen
+        ? `stones=${chestOpen.stones} items=${chestOpen.items.length} 暗金=${chestOpen.items.filter((i) => i.rarity === 3).length} rarities=[${chestOpen.items.map((i) => i.rarity).join(",")}]`
+        : "开箱未产生 ChestOpenEvent",
     );
   }
   journal.push({
     step: "boss",
     hpSeq: bossFight.hpChanges,
     phaseSeen: bossFight.phaseSeen,
-    drop: bossDrop ? { itemId: bossDrop.itemId, rarity: bossDrop.rarity, affixes: bossDrop.affixes, ttlTicks: bossDrop.ttlTicks } : null,
+    chest: bossChest ? { itemId: bossChest.itemId, rarity: bossChest.rarity, affixes: bossChest.affixes, ttlTicks: bossChest.ttlTicks } : null,
+    chestOpen: chestOpen ? { stones: chestOpen.stones, items: chestOpen.items } : null,
   });
 
   // ---------------- ⑧ 出本（真实 protocol dungeon.exit → run-manager.exitInstance）----------------
