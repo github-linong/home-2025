@@ -124,6 +124,13 @@ export interface StartRunOpts {
    * 调用方可用自定义回调覆盖（如测试注入）；不传则仅维持 world 内升级（actor attrs 更新），不落库/不推送。
    */
   readonly onLevelUp?: (seatId: number, level: number, xp: number, xpNext: number) => void;
+  /**
+   * E19：强化石获得回调（可选）。每次精英/BOSS 击杀触发（seatId + 本次获得石数）。
+   * **默认已接**：bootResidentRun / enterInstance 传 `handleMaterialGain` —— 登录落库
+   * （Character.materials）+ 推送 character.inventory（materials 字段）；游客直接忽略（C-Per-1）。
+   * 调用方可用自定义回调覆盖（如测试注入）；不传则仅维持 world 内计数（actor.materials），不落库/不推送。
+   */
+  readonly onMaterialGain?: (seatId: number, stones: number) => void;
 }
 
 interface RunEntry {
@@ -202,6 +209,16 @@ const equipBySeat = new Map<number, EquippedSlots>();
  */
 const levelBySeat = new Map<number, number>();
 
+/**
+ * E19：seatId → 强化石数（世界面向缓存，镜像 equipBySeat / levelBySeat）。
+ * - 持久化（Character.materials）为耐用权威；本 Map 是「世界镜像」同步缓存：
+ *   击杀事件（handleMaterialGain）与 room.join 播种时写入，enterInstance / exitInstance
+ *   换域 addPlayer 时读取（避免异步 loadOrCreate 塞进同步路径）。
+ * - 同一进程内与持久化保持一致（击杀同时落库 + 写 Map）；服务重启后由 gateway
+ *   room.join 经 snapshot.character.materials 重新播种。
+ */
+const materialBySeat = new Map<number, number>();
+
 // C-Dgn-4：副本寿命巡检（5s；unref 不阻塞进程退出）。测试经 checkInstanceExpiry(now) 直接驱动。
 const expireTimer = setInterval(() => {
   checkInstanceExpiry();
@@ -241,6 +258,11 @@ export function startRun(opts: StartRunOpts): WorldSnapshot {
       for (const ev of world.consumeLevelUps()) {
         opts.onLevelUp?.(ev.seatId, ev.level, ev.xp, ev.xpNext);
       }
+      // E19：取走本 tick 强化石获得事件，转发给服务端 onMaterialGain 钩子
+      //   （默认 handleMaterialGain：登录落库 Character.materials + 推送 inventory.materials，游客忽略 C-Per-1）。
+      for (const ev of world.consumeMaterialGains()) {
+        opts.onMaterialGain?.(ev.seatId, ev.stones);
+      }
     },
     onSnapshot() {
       return world.snapshot();
@@ -266,14 +288,16 @@ export function enqueueInput(roomId: string, _playerId: number, cmd: InputCmd): 
 }
 
 /** 在权威世界 spawn 一个玩家实体（E3：玩家成功加入房间后调用）。room 未运行则静默忽略。 */
-export function addPlayerToRoom(roomId: string, seatId: number, userId: string, equipped?: EquippedSlots, level?: number): void {
+export function addPlayerToRoom(roomId: string, seatId: number, userId: string, equipped?: EquippedSlots, level?: number, materials?: number): void {
   const entry = runs.get(roomId);
   if (!entry) return;
   // E7：room.join 播种装备（持久化镜像 → 世界）。游客/未装备 → undefined → 基础属性。
   if (equipped !== undefined) equipBySeat.set(seatId, equipped);
   // E9：room.join 播种等级（持久化镜像 → 世界；游客/缺省 → undefined → L1 基础属性）。
   if (level !== undefined) levelBySeat.set(seatId, level);
-  entry.world.addPlayer(seatId, userId, undefined, equipBySeat.get(seatId), levelBySeat.get(seatId));
+  // E19：room.join 播种强化石（持久化镜像 → 世界；游客/缺省 → undefined → 0）。
+  if (materials !== undefined) materialBySeat.set(seatId, materials);
+  entry.world.addPlayer(seatId, userId, undefined, equipBySeat.get(seatId), levelBySeat.get(seatId), materialBySeat.get(seatId));
 }
 
 /**
@@ -423,6 +447,8 @@ export function bootResidentRun(seed = "jianghu-overworld-0"): WorldSnapshot {
     onPickup: (seatId, loot) => handlePickup(roomId, seatId, loot),
     // E9：升级→落库 + 推送 character.level（登录；游客忽略 C-Per-1）。
     onLevelUp: (seatId, level, xp, xpNext) => handleLevelUp(roomId, seatId, level, xp, xpNext),
+    // E19：强化石→落库 + 推送 inventory.materials（登录；游客忽略 C-Per-1）。
+    onMaterialGain: (seatId, stones) => handleMaterialGain(seatId, stones),
   });
 }
 
@@ -479,7 +505,7 @@ export function enterInstance(
     addInstanceMember(waiting.instanceRoomId, m.userId);
     // 域切换（C-Net-1/2）：出主世界 + 进副本世界（连接订阅由 protocol/gateway setRoom 原子切）。
     resident.world.removePlayer(m.seatId);
-    getWorld(waiting.instanceRoomId)?.addPlayer(m.seatId, m.userId, waiting.entryTile, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId));
+    getWorld(waiting.instanceRoomId)?.addPlayer(m.seatId, m.userId, waiting.entryTile, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId), materialBySeat.get(m.seatId));
     // 满员 → 立即锁定开本。
     if (waiting.members.length >= PARTY_MAX_MEMBERS) sweepWaitingInstances();
     return { ok: true, joined: true, instanceRoomId: waiting.instanceRoomId };
@@ -525,6 +551,8 @@ export function enterInstance(
     onPickup: (seatId, loot) => handlePickup(instanceRoomId, seatId, loot),
     // E9：副本升级同样落库 + 推送（登录；游客忽略 C-Per-1）。
     onLevelUp: (seatId, level, xp, xpNext) => handleLevelUp(instanceRoomId, seatId, level, xp, xpNext),
+    // E19：副本精英/BOSS 击杀同样落库 + 推送 inventory.materials（登录；游客忽略 C-Per-1）。
+    onMaterialGain: (seatId, stones) => handleMaterialGain(seatId, stones),
   });
 
   // 2f. 成员实体：出 RESIDENT 世界 + 进 instance 世界（域切换；C-Net-1 不混流大图）。
@@ -532,7 +560,7 @@ export function enterInstance(
     resident.world.removePlayer(m.seatId);
     // E7：进本携带已穿戴装备（世界镜像缓存 → maxHp/attrs 应用到副本 actor）。
     // E9：进本携带等级（levelBySeat 缓存 → attrs 反映真实等级）。
-    getWorld(instanceRoomId)?.addPlayer(m.seatId, m.userId, spec.entryTile, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId));
+    getWorld(instanceRoomId)?.addPlayer(m.seatId, m.userId, spec.entryTile, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId), materialBySeat.get(m.seatId));
   }
 
   // 2g. 进入 waiting（E13 集合缓冲）：lockTick 用 RESIDENT world tick（D9 可确定性推进）；
@@ -576,7 +604,7 @@ export function exitInstance(
       const [m] = w.members.splice(idx, 1);
       leaveRoom(instanceRoomId, m.userId);
       getWorld(instanceRoomId)?.removePlayer(m.seatId);
-      if (resident) resident.world.addPlayer(m.seatId, m.userId, RESPAWN_POS, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId));
+      if (resident) resident.world.addPlayer(m.seatId, m.userId, RESPAWN_POS, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId), materialBySeat.get(m.seatId));
       const connId = activeUserConn.get(m.userId);
       if (connId) setRoom(connId, RESIDENT_ROOM_ID); // 无连接则忽略（掉线成员由重连流程接管）
       // 无成员 → 销毁 waiting 实例。
@@ -590,7 +618,7 @@ export function exitInstance(
     // 无 seatId / seatId 不在 waiting → 整体解散（expiry / 显式解散全部成员）。
     waitingInstances.delete(entranceId);
     for (const m of w.members) {
-      if (resident) resident.world.addPlayer(m.seatId, m.userId, RESPAWN_POS, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId));
+      if (resident) resident.world.addPlayer(m.seatId, m.userId, RESPAWN_POS, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId), materialBySeat.get(m.seatId));
       const connId = activeUserConn.get(m.userId);
       if (connId) setRoom(connId, RESIDENT_ROOM_ID);
     }
@@ -611,7 +639,7 @@ export function exitInstance(
   for (const m of meta.members) {
     // E7：出本携带已穿戴装备（世界镜像缓存 → 回主世界 actor 保留 maxHp/attrs）。
     // E9：出本携带等级（levelBySeat 缓存 → 回主世界 actor attrs 反映真实等级）。
-    if (resident) resident.world.addPlayer(m.seatId, m.userId, RESPAWN_POS, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId));
+    if (resident) resident.world.addPlayer(m.seatId, m.userId, RESPAWN_POS, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId), materialBySeat.get(m.seatId));
     const connId = activeUserConn.get(m.userId);
     if (connId) setRoom(connId, RESIDENT_ROOM_ID); // 无连接则忽略（掉线成员由重连流程接管）
   }
@@ -657,10 +685,11 @@ const GRID_H_PX = 30 * TILE;
  * E6：背包数据通道（控制面）。拾取入库成功后，向该 seatId 对应连接推送
  * `{ type: "character.inventory", items, equipped, cap }`（登录玩家；游客不经过本函数，C-Per-1 零持久写）。
  * E7：items 携带 slot（itemProto 确定性推导）；equipped 携带 3 槽已穿戴（客户端装备栏/属性面板）。
+ * E19：items/equipped 携带 enchantLevel；消息携带 materials（强化石计数，客户端一次拉全）。
  * seatId → userId（CharacterService.getSeatInfo）→ connId（activeUserConn）→ sendToConn。
  * C6：run-manager → connection-registry（叶子），方向合法；不反向被 sim-core import。
  */
-export function pushInventoryToSeat(seatId: number, inventory: Inventory, equipped?: EquippedSlots): void {
+export function pushInventoryToSeat(seatId: number, inventory: Inventory, equipped?: EquippedSlots, materials = 0): void {
   const cs = activeCharacterService;
   const info = cs?.getSeatInfo(seatId);
   if (!info) return; // 座位未登记（未知 seatId）→ 忽略
@@ -673,9 +702,11 @@ export function pushInventoryToSeat(seatId: number, inventory: Inventory, equipp
       rarity: i.rarity,
       affixes: [...i.affixes],
       slot: itemProto(i.itemId).slot,
+      ...(i.enchantLevel ? { enchantLevel: i.enchantLevel } : {}),
     })),
     equipped: equipped ?? {},
     cap: INVENTORY_CAP,
+    materials,
   });
 }
 
@@ -733,6 +764,41 @@ function handleLevelUp(roomId: string, seatId: number, level: number, xp: number
 }
 
 /**
+ * E19：强化石落库 + 推送（登录玩家；精英/BOSS 击杀事件后由 handleMaterialGain 调用）。
+ * - Character.materials = 原值 + 本次击杀获得石数（world 事件 stones 为**增量**，权威累加）；
+ * - 落库后向 seat 连接推送 character.inventory（含 materials 字段，客户端一次拉全）；
+ * - 更新 materialBySeat 缓存（换域 addPlayer 播种世界镜像计数）。
+ * 调用方为 run-manager.onTick（async 触发、不阻塞 12Hz 循环，镜像 applyLevelUpToCharacter）。
+ */
+export async function applyMaterialGainToCharacter(
+  cs: CharacterService,
+  userId: string,
+  seatId: number,
+  stones: number,
+): Promise<void> {
+  const { snapshot } = await cs.loadOrCreate(userId);
+  const materials = (snapshot.character.materials ?? 0) + stones;
+  const character = { ...snapshot.character, materials, updatedAt: Date.now() };
+  await cs.save(userId, { character, inventory: snapshot.inventory });
+  // P0 修复：同步 session.snapshot，防止 autosave/下线 save 覆盖强化石结果。
+  seatSnapshotSyncer?.(seatId, { character, inventory: snapshot.inventory });
+  materialBySeat.set(seatId, materials); // 世界镜像缓存（换域 addPlayer 播种）
+  pushInventoryToSeat(seatId, snapshot.inventory, snapshot.character.equipped, materials);
+}
+
+/**
+ * E19：强化石获得事件接线（startRun onTick → 本函数；登录落库 + 推送，游客忽略 C-Per-1）。
+ * 同时更新 materialBySeat 缓存（供换域 addPlayer 时播种强化石计数）。
+ */
+function handleMaterialGain(seatId: number, stones: number): void {
+  const cs = activeCharacterService;
+  if (!cs) return; // 未注入服务 → 仅维持世界内计数（actor.materials 已累计）
+  const info = cs.getSeatInfo(seatId);
+  if (!info || info.guest) return; // 游客 → 零持久写 + 不推送（C-Per-1）
+  void applyMaterialGainToCharacter(cs, info.userId, seatId, stones).catch(() => {});
+}
+
+/**
  * E4 服务端背包接线（尽力项，C-Per-3 闭环）：把一次拾取应用到登录玩家背包。
  * - 经 CharacterService.loadOrCreate 取角色快照（含背包）；
  * - inventory.addItem：未满则入库，满 → 返回溢出物品；
@@ -766,5 +832,6 @@ export async function applyPickupToInventory(
   }
   // E6：拾取入库成功 → 控制面推送背包（登录玩家；游客不经过本函数，C-Per-1）。
   // E7：equipped 显式传入（equipBySeat 缓存），避免拾取推送把客户端装备栏清空。
-  pushInventoryToSeat(seatId, inventory, equipBySeat.get(seatId));
+  // E19：materials 一并推送（Character.materials 快照，客户端一次拉全）。
+  pushInventoryToSeat(seatId, inventory, equipBySeat.get(seatId), snapshot.character.materials ?? 0);
 }

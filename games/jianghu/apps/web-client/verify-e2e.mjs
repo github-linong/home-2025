@@ -366,6 +366,18 @@ const main = async () => {
       }));
       record("L5 背包面板(打开+格子/空态)", invDom.open && (invDom.cells > 0 || invDom.empty), JSON.stringify(invDom));
       await page.screenshot({ path: path.join(OUT_DIR, "05-inventory.png") });
+      // L5b E19 强化（加分断言）：背包物品格存在「强化」按钮（DOM；完整强化流程时序难控——
+      //   需先打精英/BOSS 掉强化石再点强化，且材料计数独立于掉落，不在此 E2E 内做全流程）。
+      if (!invDom.empty) {
+        const enchantBtn = await page.evaluate(() => ({
+          exists: !!document.querySelector("#inv-grid .enchant-btn"),
+          count: document.querySelectorAll("#inv-grid .enchant-btn").length,
+          materials: document.getElementById("inv-materials-count") ? document.getElementById("inv-materials-count").textContent : "-",
+        }));
+        record("L5b E19 强化按钮存在(背包格子 DOM)", enchantBtn.exists && enchantBtn.count >= 1, JSON.stringify(enchantBtn));
+      } else {
+        record("L5b E19 强化按钮存在", true, "SKIPPED（背包无物品，游客场景不测）");
+      }
       // L6 装备穿戴（E7.2）：点第一个物品的「装备」→ equipped 槽位变化（服务端回推；登录态才有效）。
       if (!invDom.empty) {
         const clicked = await page.evaluate(() => {

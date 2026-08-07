@@ -431,6 +431,39 @@ export const PARTY_MAX_MEMBERS = 4;
 export const DUNGEON_SPAWN_DENSITY = 1.2;
 
 // ─────────────────────────────────────────────────────────────
+// E19：装备强化（enchant；C7 单一来源）
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * 强化石物品 id（材料计数，非背包物品）。
+ * 材料**不进 LootResult / 地面掉落实体**（独立于掉落 Rng 流 → playtest golden 稳），
+ * 仅作为 Character.materials 计数由击杀事件驱动；本常量用于「强化石不可强化」防御校验
+ * 与文档标识（掉落序列永不产生该 itemId 的背包物品——掉落 itemId 来自 rng 1..0x7fffffff）。
+ */
+export const ENCHANT_STONE_ITEM_ID = 900000;
+
+/** 强化上限（+5；达到后拒绝强化）。 */
+export const MAX_ENCHANT_LEVEL = 5;
+
+/** 单次强化消耗强化石数（1 石/次，MVP 固定）。 */
+export const ENCHANT_COST = 1;
+
+/**
+ * 每级词缀强度放大系数：词缀实际值 = affixValue(id,rarity) × (1 + ENCHANT_AFFIX_MULT_PER_LEVEL × level)。
+ * 仅放大**词缀 value**（proto baseAtk/baseMaxHp 不放大）；computeEquipStats 消费（E19）。
+ * 例：+5 暗金 atk 词缀 base=24 → 24×1.3×2.4? 否——affixValue 已含稀有度倍率（round(24×2.4)=58），
+ * 强化再 ×(1+0.15×5)=×1.75 → round(58×1.75)=102。
+ */
+export const ENCHANT_AFFIX_MULT_PER_LEVEL = 0.15;
+
+/** 精英/BOSS 击杀获得强化石数（普通怪 0；不依赖 Rng，固定必得 → 确定性）。 */
+export const ENCHANT_STONES_BY_TIER: Readonly<Record<EnemyTier, number>> = {
+  normal: 0,
+  elite: 1,
+  boss: 2,
+} as const;
+
+// ─────────────────────────────────────────────────────────────
 // 敌人 AI（E6：敌人类别 + 仇恨；combat §⑥ / spawning §⑥）
 // ─────────────────────────────────────────────────────────────
 

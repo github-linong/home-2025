@@ -140,6 +140,14 @@
   .equip-btn { margin-top: 3px; font-size: 10px; border: 1px solid #4a5568; background: rgba(40,48,64,.9);
     color: #e8e4d8; border-radius: 5px; padding: 1px 8px; cursor: pointer; }
   .equip-btn:hover { border-color: #f2a03c; color: #f2a03c; }
+  /* ── E19 强化：强化按钮 + 材料显示 ── */
+  .enchant-btn { margin-top: 3px; font-size: 10px; border: 1px solid #7a5c2e; background: rgba(64,48,24,.9);
+    color: #e8d8b0; border-radius: 5px; padding: 1px 8px; cursor: pointer; }
+  .enchant-btn:hover:not(:disabled) { border-color: #f2a03c; color: #f2a03c; }
+  .enchant-btn:disabled { opacity: .45; cursor: not-allowed; border-color: #3a4250; color: #7a8699; }
+  #inv-materials { margin-bottom: 6px; font-size: 11px; color: #e8d8b0; border: 1px solid #3a4250;
+    border-radius: 6px; padding: 3px 8px; background: rgba(30,26,18,.55); }
+  #inv-materials b { color: #f2a03c; }
 
   /* ── 帮助 ── */
   #help { position: absolute; right: 12px; bottom: 12px; z-index: 10; color: #7a8699; font-size: 11px;
@@ -189,6 +197,8 @@
     <span id="inv-title">背包 <span id="inv-count">0/60</span></span>
     <button id="inv-close">✕</button>
   </div>
+  <!-- E19：强化石计数（材料独立于背包；character.inventory.materials 推送） -->
+  <div id="inv-materials">强化石 ×<b id="inv-materials-count">0</b></div>
   <!-- E7：属性面板（攻击/生命/暴击，来自快照 attrs） -->
   <div id="attr-panel">
     <span>攻击 <b id="attr-atk">-</b></span>
@@ -635,6 +645,7 @@ const GAME = window.__game = {
   lastHits: [], lastKills: [], pickupToasts: [], lastSkillAt: 0,
   inventory: { items: [], cap: 60, loaded: false },
   equipped: {}, // E7：3 槽已穿戴（character.inventory 消息）
+  materials: 0, // E19：强化石计数（character.inventory.materials）
   nearLootId: null, pickupHint: '', invOpen: false,
   // E8：鼠标交互（左键点敌人点选攻击 / 点地面点击移动；E2E 断言钩子）
   selectedEnemyId: null, combatTarget: null, moveTarget: null, lastAttackAt: 0,
@@ -751,6 +762,8 @@ let invOpen = false;
 let nearLootId = null;              // 最近可拾取 LOOT_GROUND id（drawEntities 每帧计算，F 键/提示用）
 let inventory = { items: [], cap: 60, loaded: false };
 let equipped = {};                  // E7：3 槽已穿戴（来自 character.inventory）
+let materials = 0;                  // E19：强化石计数（来自 character.inventory.materials）
+let lastEnchant = null;             // E19：最近一次强化请求 {itemId, prevLevel}（回复 toast 用）
 let pickupToasts = [];              // 最近拾取 toast（E2E 钩子）
 let invSeq = 1;
 let levelInfo = { level: 1, xp: 0, xpNext: 50 }; // E9：等级/经验（character.level 消息）
@@ -782,6 +795,9 @@ const ERROR_TEXT = {
   BAD_ITEM_ID: '无效物品',
   SLOT_EMPTY: '该装备槽是空的',
   BAD_SLOT: '无效装备槽',
+  ENCHANT_MAX_LEVEL: '已达最大强化等级（+5）',
+  NO_MATERIALS: '强化石不足（击杀精英/BOSS 获得）',
+  ENCHANT_MATERIAL: '强化石不可强化',
   NOT_IN_RESIDENT: '需在主世界才能进副本',
   NOT_IN_INSTANCE: '需在副本内才能出本',
   COOLDOWN: '入口冷却中，稍后再试',
@@ -1039,22 +1055,35 @@ function handleControl(msg) {
       setState('closed');
       break;
     }
-    // ── E6 背包数据通道：拾取入库推送 / character.inventory.get 回复 / E7 equip/unequip 回复（同一格式）──
+    // ── E6 背包数据通道：拾取入库推送 / character.inventory.get 回复 / E7 equip/unequip 回复 / E19 enchant 回复（同一格式）──
     case 'character.inventory': {
-      const items = (msg.items || []).map((i) => ({ itemId: i.itemId, rarity: i.rarity, affixes: (i.affixes || []).slice(), slot: i.slot }));
+      const items = (msg.items || []).map((i) => ({ itemId: i.itemId, rarity: i.rarity, affixes: (i.affixes || []).slice(), slot: i.slot, enchantLevel: i.enchantLevel || 0 }));
       const prevIds = new Set(inventory.items.map((i) => i.itemId));
       inventory.items = items;
       inventory.cap = msg.cap || 60;
       inventory.loaded = true;
       equipped = msg.equipped || {};
+      // E19：强化石计数（材料独立于背包；击杀精英/BOSS 推送）
+      materials = msg.materials || 0;
       GAME.inventory = { items: inventory.items.slice(), cap: inventory.cap, loaded: true };
       GAME.equipped = equipped;
+      GAME.materials = materials;
       // 增量 toast：新入库物品 → 屏幕下方「拾取 [稀有度色]物品（词缀xN）」
       const added = items.filter((i) => !prevIds.has(i.itemId));
       for (const it of added) {
         const color = RARITY_COLORS[it.rarity] || '#D8D2C4';
         pickupToast(`拾取 <span class="r" style="color:${color}">${RARITY_NAMES[it.rarity] || '?'}品</span>（词缀×${it.affixes.length}）`);
       }
+      // E19：强化成功 toast（character.enchant 回复 requestId 以 'ench' 开头；服务端回推同一格式）。
+      if (msg.requestId && String(msg.requestId).indexOf('ench') === 0 && lastEnchant) {
+        const hit = items.find((i) => i.itemId === lastEnchant.itemId)
+          || Object.values(equipped).find((i) => i && i.itemId === lastEnchant.itemId);
+        const newLv = hit ? (hit.enchantLevel || 0) : (lastEnchant.prevLevel + 1);
+        toast('强化成功！+' + newLv);
+        SFX.play('ui'); // E12：UI 点击（强化成功）
+        lastEnchant = null;
+      }
+      renderMaterials();
       renderInventory();
       renderEquip();
       break;
@@ -1727,6 +1756,12 @@ function closeInventory() {
 }
 function toggleInventory() { invOpen ? closeInventory() : openInventory(); }
 
+// E19：强化石计数显示（背包面板顶部「强化石 ×N」）。
+function renderMaterials() {
+  const el = document.getElementById('inv-materials-count');
+  if (el) el.textContent = String(materials);
+}
+
 function renderInventory() {
   invCountEl.textContent = inventory.items.length + '/' + inventory.cap;
   if (inventory.items.length === 0) {
@@ -1742,18 +1777,28 @@ function renderInventory() {
     const short = '#' + (it.itemId % 0x10000).toString(16).toUpperCase().padStart(4, '0');
     const aff = it.affixes.length > 0 ? '词缀×' + it.affixes.length : '无词缀';
     const slotName = SLOT_NAMES[it.slot] || '';
-    cell.innerHTML = `<div class="inv-id">${short}</div><div class="inv-meta" style="color:${color}">${RARITY_NAMES[it.rarity] || '?'} · ${aff}${slotName ? ' · ' + slotName : ''}</div>`;
+    // E19：强化等级 +N 显示（enchantLevel>0）。
+    const ench = (it.enchantLevel || 0) > 0 ? ' +' + it.enchantLevel : '';
+    cell.innerHTML = `<div class="inv-id">${short}</div><div class="inv-meta" style="color:${color}">${RARITY_NAMES[it.rarity] || '?'}${ench} · ${aff}${slotName ? ' · ' + slotName : ''}</div>`;
     // E7：装备按钮（发 character.equip；已穿同槽位物品会被换下回背包）。
     const eqBtn = document.createElement('button');
     eqBtn.className = 'equip-btn';
     eqBtn.textContent = '装备';
     eqBtn.addEventListener('click', () => { SFX.play('ui'); sendEquip(it.itemId); });
     cell.appendChild(eqBtn);
+    // E19：强化按钮（有材料可用，消耗 1 石；已达上限禁用）。class=enchant-btn 供 E2E DOM 断言。
+    const enchBtn = document.createElement('button');
+    enchBtn.className = 'enchant-btn';
+    const lv = it.enchantLevel || 0;
+    enchBtn.textContent = lv >= 5 ? '已满' : '强化';
+    enchBtn.disabled = lv >= 5 || materials < 1;
+    enchBtn.addEventListener('click', () => { SFX.play('ui'); sendEnchant(it.itemId); });
+    cell.appendChild(enchBtn);
     invGridEl.appendChild(cell);
   }
 }
 
-// E7：3 槽已穿戴渲染（稀有度色边框 + 短号；点击已穿槽位 → 卸下）
+// E7：3 槽已穿戴渲染（稀有度色边框 + 短号；点击已穿槽位 → 卸下）。E19：已强化 +N。
 function renderEquip() {
   for (const slot of ['weapon', 'armor', 'trinket']) {
     const el = document.getElementById('slot-' + (slot === 'trinket' ? 'trin' : slot));
@@ -1764,9 +1809,10 @@ function renderEquip() {
     if (item) {
       const color = RARITY_COLORS[item.rarity] || '#D8D2C4';
       const short = '#' + (item.itemId % 0x10000).toString(16).toUpperCase().padStart(4, '0');
+      const ench = (item.enchantLevel || 0) > 0 ? ' +' + item.enchantLevel : '';
       el.classList.remove('empty'); el.classList.add('filled');
       el.style.borderColor = color;
-      itemEl.textContent = short + ' · 词缀×' + (item.affixes || []).length;
+      itemEl.textContent = short + ench + ' · 词缀×' + (item.affixes || []).length;
       itemEl.style.color = color;
       actionEl.textContent = '点击卸下';
     } else {
@@ -1787,6 +1833,13 @@ function sendUnequip(slot) {
   sendJson({ type: 'character.unequip', requestId: 'ueq' + (invSeq++), payload: { slot } });
 }
 
+// E19：强化（消耗 1 强化石；服务端经 character.inventory 回推刷新 + requestId 关联 toast）。
+function sendEnchant(itemId) {
+  const it = inventory.items.find((i) => i.itemId === itemId);
+  lastEnchant = { itemId, prevLevel: it ? (it.enchantLevel || 0) : 0 };
+  sendJson({ type: 'character.enchant', requestId: 'ench' + (invSeq++), payload: { itemId } });
+}
+
 // 调试钩子（?debug=1 时暴露给 E2E）
 if (DEBUG) {
   GAME.debugEnterDungeon = enterDungeon;
@@ -1800,6 +1853,7 @@ if (DEBUG) {
   GAME.sendSignal = sendSignal;
   GAME.sendEquip = sendEquip; // E7
   GAME.sendUnequip = sendUnequip; // E7
+  GAME.sendEnchant = sendEnchant; // E19
   GAME.sendAttack = sendAttack; // E8 普攻
   GAME.sendMoveToTile = sendMoveToTile; // E8 点击移动
   GAME.clickWorld = (wx, wy) => handleClick(wx, wy); // E8 世界坐标点击（E2E 兜底/调试）

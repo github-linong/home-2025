@@ -31,7 +31,7 @@ import {
   canEnterInstance, // E16：入口服务端坐标校验（进本前检查玩家与 ENTRANCE 距离）
 } from "./run-manager.ts";
 import { RoomPhase } from "../sim-core/src/types.ts";
-import { INVENTORY_CAP, xpForLevel } from "../sim-core/src/constants.ts"; // C7 单一来源（背包上限 / 升级经验需求）
+import { INVENTORY_CAP, xpForLevel, ENCHANT_STONE_ITEM_ID, MAX_ENCHANT_LEVEL, ENCHANT_COST } from "../sim-core/src/constants.ts"; // C7 单一来源（背包上限 / 升级经验需求 / E19 强化常量）
 import { itemProto, type EquippedSlots } from "../sim-core/src/affixes.ts"; // E7：slot 推导 / 装备槽
 import { encodeSnapshot } from "./protocol-binary.ts";
 import { generateId } from "./ids.ts";
@@ -101,13 +101,15 @@ export interface InventoryItemView {
   readonly affixes: readonly number[];
   /** E7：物品槽位（itemProto 确定性推导；客户端装备栏/换装用）。 */
   readonly slot: "weapon" | "armor" | "trinket";
+  /** E19：强化等级（+N；缺省 0 = 未强化）。 */
+  readonly enchantLevel?: number;
 }
 
 /** 已穿戴装备视图（客户端装备栏渲染用；slot 即键）。 */
 export interface EquippedView {
-  readonly weapon?: { readonly itemId: number; readonly rarity: number; readonly affixes: readonly number[] };
-  readonly armor?: { readonly itemId: number; readonly rarity: number; readonly affixes: readonly number[] };
-  readonly trinket?: { readonly itemId: number; readonly rarity: number; readonly affixes: readonly number[] };
+  readonly weapon?: { readonly itemId: number; readonly rarity: number; readonly affixes: readonly number[]; readonly enchantLevel?: number };
+  readonly armor?: { readonly itemId: number; readonly rarity: number; readonly affixes: readonly number[]; readonly enchantLevel?: number };
+  readonly trinket?: { readonly itemId: number; readonly rarity: number; readonly affixes: readonly number[]; readonly enchantLevel?: number };
 }
 
 export interface InventoryMessage {
@@ -117,40 +119,44 @@ export interface InventoryMessage {
   /** E7：3 槽已穿戴（客户端装备栏）。 */
   readonly equipped: EquippedView;
   readonly cap: number; // 背包上限（INVENTORY_CAP=60）
+  /** E19：强化石计数（Character.materials；客户端背包面板顶部「强化石 ×N」）。 */
+  readonly materials: number;
 }
 
-/** EquippedSlots → EquippedView（去 slot 键、展平 affixes；缺省空槽）。 */
+/** EquippedSlots → EquippedView（去 slot 键、展平 affixes；缺省空槽）。E19：保留 enchantLevel。 */
 function equippedView(equipped: EquippedSlots | undefined): EquippedView {
   return {
     ...(equipped?.weapon
-      ? { weapon: { itemId: equipped.weapon.itemId, rarity: equipped.weapon.rarity, affixes: [...equipped.weapon.affixes] } }
+      ? { weapon: { itemId: equipped.weapon.itemId, rarity: equipped.weapon.rarity, affixes: [...equipped.weapon.affixes], ...(equipped.weapon.enchantLevel ? { enchantLevel: equipped.weapon.enchantLevel } : {}) } }
       : {}),
     ...(equipped?.armor
-      ? { armor: { itemId: equipped.armor.itemId, rarity: equipped.armor.rarity, affixes: [...equipped.armor.affixes] } }
+      ? { armor: { itemId: equipped.armor.itemId, rarity: equipped.armor.rarity, affixes: [...equipped.armor.affixes], ...(equipped.armor.enchantLevel ? { enchantLevel: equipped.armor.enchantLevel } : {}) } }
       : {}),
     ...(equipped?.trinket
-      ? { trinket: { itemId: equipped.trinket.itemId, rarity: equipped.trinket.rarity, affixes: [...equipped.trinket.affixes] } }
+      ? { trinket: { itemId: equipped.trinket.itemId, rarity: equipped.trinket.rarity, affixes: [...equipped.trinket.affixes], ...(equipped.trinket.enchantLevel ? { enchantLevel: equipped.trinket.enchantLevel } : {}) } }
       : {}),
   };
 }
 
-/** 背包 → 消息 items 视图（slot 由 itemId 推导）。 */
+/** 背包 → 消息 items 视图（slot 由 itemId 推导）。E19：保留 enchantLevel。 */
 function itemsView(inventory: Inventory): InventoryItemView[] {
   return inventory.items.map((i) => ({
     itemId: i.itemId,
     rarity: i.rarity,
     affixes: [...i.affixes],
     slot: itemProto(i.itemId).slot,
+    ...(i.enchantLevel ? { enchantLevel: i.enchantLevel } : {}),
   }));
 }
 
-function inventoryMessage(requestId: string | undefined, inventory: Inventory, equipped: EquippedSlots | undefined): InventoryMessage {
+function inventoryMessage(requestId: string | undefined, inventory: Inventory, equipped: EquippedSlots | undefined, materials: number): InventoryMessage {
   return {
     type: "character.inventory",
     requestId,
     items: itemsView(inventory),
     equipped: equippedView(equipped),
     cap: INVENTORY_CAP,
+    materials,
   };
 }
 
@@ -160,7 +166,7 @@ function equipError(requestId: string | undefined, code: string, message: string
 
 /**
  * 处理 `character.inventory.get`（异步）：登录玩家返回持久化背包；游客/未知座位回空 items
- * （C-Per-1 零持久写不涉及：游客不 loadOrCreate，直接空背包）。E7：附带 equipped。
+ * （C-Per-1 零持久写不涉及：游客不 loadOrCreate，直接空背包）。E7：附带 equipped。E19：附带 materials。
  */
 export async function resolveInventoryGet(
   ctx: ProtocolContext,
@@ -172,6 +178,7 @@ export async function resolveInventoryGet(
     items: [],
     equipped: {},
     cap: INVENTORY_CAP,
+    materials: 0,
   });
   const cs = protocolCharacterService;
   const seatId = ctx.seatId;
@@ -179,7 +186,7 @@ export async function resolveInventoryGet(
   const info = cs.getSeatInfo(seatId);
   if (!info || info.guest) return empty(); // 游客 / 未知座位 → 空背包（C-Per-1）
   const { snapshot } = await cs.loadOrCreate(info.userId);
-  return inventoryMessage(msg.requestId, snapshot.inventory, snapshot.character.equipped);
+  return inventoryMessage(msg.requestId, snapshot.inventory, snapshot.character.equipped, snapshot.character.materials ?? 0);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -268,7 +275,13 @@ export async function resolveEquip(
   if (remaining.length > INVENTORY_CAP) {
     return equipError(requestId, "BAG_FULL", "unequipping would overflow bag");
   }
-  equipped[slot] = { itemId: item.itemId, rarity: item.rarity, affixes: [...item.affixes] };
+  // E19：装备入槽保留 enchantLevel（强化等级随穿戴生效，computeEquipStats 放大词缀）。
+  equipped[slot] = {
+    itemId: item.itemId,
+    rarity: item.rarity,
+    affixes: [...item.affixes],
+    ...(item.enchantLevel ? { enchantLevel: item.enchantLevel } : {}),
+  };
 
   const inventory: Inventory = { items: remaining };
   await loaded.cs.save(userId, { character: { ...snapshot.character, equipped }, inventory });
@@ -276,8 +289,8 @@ export async function resolveEquip(
   protocolSnapshotSyncer?.(ctx.connId, { character: { ...snapshot.character, equipped }, inventory });
   // 世界镜像：当前房间世界 actor 应用装备（maxHp/attrs 即时生效；未入房则仅缓存等 addPlayer）。
   setPlayerEquipped(ctx.roomId ?? undefined, seatId, equipped);
-  pushInventoryToSeat(seatId, inventory, equipped);
-  return inventoryMessage(requestId, inventory, equipped);
+  pushInventoryToSeat(seatId, inventory, equipped, snapshot.character.materials ?? 0);
+  return inventoryMessage(requestId, inventory, equipped, snapshot.character.materials ?? 0);
 }
 
 /**
@@ -311,8 +324,85 @@ export async function resolveUnequip(
   await loaded.cs.save(userId, { character: { ...snapshot.character, equipped }, inventory });
   protocolSnapshotSyncer?.(ctx.connId, { character: { ...snapshot.character, equipped }, inventory });
   setPlayerEquipped(ctx.roomId ?? undefined, seatId, equipped);
-  pushInventoryToSeat(seatId, inventory, equipped);
-  return inventoryMessage(requestId, inventory, equipped);
+  pushInventoryToSeat(seatId, inventory, equipped, snapshot.character.materials ?? 0);
+  return inventoryMessage(requestId, inventory, equipped, snapshot.character.materials ?? 0);
+}
+
+/**
+ * E19：处理 `character.enchant { itemId }`（异步，仿 equip）。
+ * - 目标：背包物品（itemId 在背包）或**已装备物品**（itemId 在 equipped 槽，防御数据完整性）；
+ * - 校验：itemId 合法整数 / 非强化石（ENCHANT_STONE_ITEM_ID，强化石不可强化）/
+ *   enchantLevel < MAX_ENCHANT_LEVEL(=5) / materials ≥ ENCHANT_COST(=1 石/次)；
+ * - 效果：item.enchantLevel = (enchantLevel ?? 0) + 1；词缀强度在**属性计算时**放大
+ *   （computeEquipStats：词缀 value ×(1 + 0.15×level)，不存词缀表）；消耗 1 强化石；
+ * - MVP **不失败**（100% 成功，友善）；回推 character.inventory（items/equipped/materials）；
+ * - 已装备目标 → setPlayerEquipped 重算世界 actor 属性（maxHp/attrs 即时生效）；
+ * - 落库 + P0 syncer（protocolSnapshotSyncer 防 autosave/下线覆盖）。
+ */
+export async function resolveEnchant(
+  ctx: ProtocolContext,
+  msg: { type: string; requestId?: string; payload?: Record<string, unknown> },
+): Promise<InventoryMessage | GameErrorReply> {
+  const requestId = msg.requestId;
+  const loaded = await loadLoginSnapshot(ctx, requestId);
+  if (!loaded.ok) return loaded.reply as never;
+  const { snapshot, userId, seatId } = loaded;
+
+  const itemId = Number(msg.payload?.itemId);
+  if (!Number.isInteger(itemId) || itemId <= 0) {
+    return equipError(requestId, "BAD_ITEM_ID", `invalid itemId: ${itemId}`);
+  }
+  // 强化石不可强化（材料计数，非装备；防御 crafted/旧存档注入）。
+  if (itemId === ENCHANT_STONE_ITEM_ID) {
+    return equipError(requestId, "ENCHANT_MATERIAL", "enchant stone cannot be enchanted");
+  }
+
+  // 目标定位：背包优先；未在背包 → 已装备槽（防御：equipped 物品强化需同步 actor 属性）。
+  const bagIdx = snapshot.inventory.items.findIndex((i) => i.itemId === itemId);
+  const equipped: EquippedSlots = { ...(snapshot.character.equipped ?? {}) };
+  let targetSlot: "weapon" | "armor" | "trinket" | null = null;
+  if (bagIdx < 0) {
+    for (const slot of ["weapon", "armor", "trinket"] as const) {
+      if (equipped[slot]?.itemId === itemId) { targetSlot = slot; break; }
+    }
+    if (!targetSlot) return equipError(requestId, "ITEM_NOT_FOUND", `item ${itemId} not in inventory or equipped`);
+  }
+
+  const curLevel = bagIdx >= 0
+    ? (snapshot.inventory.items[bagIdx].enchantLevel ?? 0)
+    : (equipped[targetSlot!]!.enchantLevel ?? 0);
+  if (curLevel >= MAX_ENCHANT_LEVEL) {
+    return equipError(requestId, "ENCHANT_MAX_LEVEL", `item already at max enchant level (+${MAX_ENCHANT_LEVEL})`);
+  }
+  const materials = snapshot.character.materials ?? 0;
+  if (materials < ENCHANT_COST) {
+    return equipError(requestId, "NO_MATERIALS", `need ${ENCHANT_COST} enchant stone(s), have ${materials}`);
+  }
+
+  const nextLevel = curLevel + 1;
+  const newMaterials = materials - ENCHANT_COST;
+
+  // 应用：背包物品原地更新；已装备目标更新槽位（含 enchantLevel）。
+  let inventory = snapshot.inventory;
+  if (bagIdx >= 0) {
+    inventory = {
+      items: snapshot.inventory.items.map((it, i) =>
+        i === bagIdx ? { ...it, enchantLevel: nextLevel } : it,
+      ),
+    };
+  } else {
+    const slot = targetSlot!;
+    equipped[slot] = { ...equipped[slot]!, enchantLevel: nextLevel };
+  }
+  const character = { ...snapshot.character, equipped, materials: newMaterials, updatedAt: Date.now() };
+
+  await loaded.cs.save(userId, { character, inventory });
+  // P0 修复：同步 session.snapshot，防止 autosave/下线 save 用旧快照覆盖强化结果。
+  protocolSnapshotSyncer?.(ctx.connId, { character, inventory });
+  // 已装备目标 → 世界 actor 属性重算（maxHp/attrs 即时生效；背包目标不触世界镜像）。
+  if (targetSlot) setPlayerEquipped(ctx.roomId ?? undefined, seatId, equipped);
+  pushInventoryToSeat(seatId, inventory, equipped, newMaterials);
+  return inventoryMessage(requestId, inventory, equipped, newMaterials);
 }
 
 export function dispatch(

@@ -38,6 +38,8 @@ export interface InventoryItem {
   readonly affixes: readonly number[];
   /** 物品槽位（weapon|armor|trinket；可缺省，消费侧按 itemId 推导）。 */
   readonly slot?: ItemSlot;
+  /** E19：强化等级（+N；可缺省 = 未强化，旧存档兼容）。仅在属性计算时放大词缀值，不存词缀表。 */
+  readonly enchantLevel?: number;
 }
 
 /** 背包（≤ INVENTORY_CAP）。 */
@@ -54,6 +56,8 @@ export interface Character {
   pos: Vec2;
   /** E7：已穿戴装备（3 槽；可缺省 = 未穿戴，旧角色兼容）。 */
   equipped?: EquippedSlots;
+  /** E19：强化石计数（材料；可缺省 = 0，旧角色兼容）。独立于背包（强化石不入包）。 */
+  materials?: number;
   /** 最近落库时间（ms）；仅服务端维护。 */
   updatedAt: number;
 }
@@ -170,7 +174,7 @@ export const DEFAULT_ATTRS: AttrSet = Object.freeze({ ...PLAYER_BASE_ATTRS });
 /** 主世界安全区出生点（tile 对齐，48px）。死亡回安全区（决策④）。 */
 export const SAFE_SPAWN: Vec2 = Object.freeze({ x: 16 * 48, y: 15 * 48 });
 
-/** 创建新角色快照（Lv1 / EXP0 / 基础属性 / 安全区 / 空装备）。 */
+/** 创建新角色快照（Lv1 / EXP0 / 基础属性 / 安全区 / 空装备 / 0 强化石）。 */
 export function createNewCharacter(userId: string, now: number = Date.now()): CharacterSnapshot {
   return {
     character: {
@@ -180,6 +184,7 @@ export function createNewCharacter(userId: string, now: number = Date.now()): Ch
       attrs: { ...DEFAULT_ATTRS },
       pos: { ...SAFE_SPAWN },
       equipped: {}, // E7：空装备槽
+      materials: 0, // E19：0 强化石
       updatedAt: now,
     },
     inventory: { items: [] },

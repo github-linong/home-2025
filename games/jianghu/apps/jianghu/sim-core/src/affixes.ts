@@ -14,6 +14,7 @@
  *
  * 纪律：本文件只含类型 / const 数据 / 纯函数；无 I/O、无随机、无全局可变状态。
  */
+import { ENCHANT_AFFIX_MULT_PER_LEVEL } from "./constants.ts"; // E19：强化放大系数（C7 单一来源）
 
 // ─────────────────────────────────────────────────────────────
 // 词缀 stat 类型（6 类；combat/world 消费）
@@ -187,6 +188,8 @@ export interface EquippedItem {
   readonly itemId: number;
   readonly rarity: number;
   readonly affixes: readonly number[];
+  /** E19：强化等级（+N；缺省 0 = 未强化）。仅放大词缀 value，见 computeEquipStats。 */
+  readonly enchantLevel?: number;
 }
 
 /** 装备槽（3 槽；缺省 undefined = 空槽）。 */
@@ -217,6 +220,8 @@ export const EMPTY_EQUIP_STATS: EquipmentStats = Object.freeze({
  * - atk      = Σ proto.baseAtk + Σ atk 词缀值
  * - maxHp    = Σ proto.baseMaxHp + Σ maxHp 词缀值
  * - reduction/critChance/attackSpeed/moveSpeed = Σ 词缀百分点 / 100（0..1）
+ * E19 强化：词缀值 ×(1 + ENCHANT_AFFIX_MULT_PER_LEVEL × enchantLevel)（仅放大词缀，
+ *   proto baseAtk/baseMaxHp 不放大）；enchantLevel 缺省 0 → 原值（golden 锚点）。
  * 无装备（undefined）→ 全零（EMPTY_EQUIP_STATS 副本；战斗侧无装备 = 原值，golden 锚点）。
  */
 export function computeEquipStats(equipped: EquippedSlots | undefined): EquipmentStats {
@@ -228,10 +233,12 @@ export function computeEquipStats(equipped: EquippedSlots | undefined): Equipmen
     const proto = itemProto(item.itemId);
     s.atk += proto.baseAtk;
     s.maxHp += proto.baseMaxHp;
+    // E19：强化放大词缀值（1 + 0.15×level；无强化 level=0 → 乘 1 → 原值，golden 锚点）。
+    const enchantMult = 1 + ENCHANT_AFFIX_MULT_PER_LEVEL * (item.enchantLevel ?? 0);
     for (const affixId of item.affixes) {
       const def = affixDef(affixId);
       if (!def) continue;
-      const v = affixValue(affixId, item.rarity);
+      const v = Math.round(affixValue(affixId, item.rarity) * enchantMult);
       switch (def.stat) {
         case "atk": s.atk += v; break;
         case "maxHp": s.maxHp += v; break;

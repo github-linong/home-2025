@@ -79,6 +79,7 @@ import {
   ENEMY_XP, // E9：击杀经验表（按 EnemyTier 索引）
   LEVEL_ATK_PER_LEVEL, // E9：每级 +1 基础攻击（str→atk MVP 映射）
   LEVEL_MAXHP_PER_LEVEL, // E9：每级 +5 生命上限（vit→maxHp MVP 映射）
+  ENCHANT_STONES_BY_TIER, // E19：精英/BOSS 击杀强化石数（材料计数独立于掉落 Rng 流）
 } from "./constants.ts"; // C7 单一来源
 import { Rng } from "./rng.ts";
 import { stepMovement } from "./movement.ts"; // E3 真移动（纯函数）
@@ -133,6 +134,18 @@ export interface LevelUpEvent {
   readonly xpNext: number;
 }
 
+/**
+ * E19：强化石获得事件（world → 编排层；精英/BOSS 击杀触发）。
+ * 材料计数**独立于掉落 Rng 流**（固定必得，不消耗 Rng）且**不进 EntityState 快照**
+ * （C12：不落世界实体）→ 不污染 playtest golden（journal 无材料字段，BOSS 掉装不变）。
+ * 编排层收到后落库 Character.materials + 推送 character.inventory（materials 字段）。
+ */
+export interface MaterialGainEvent {
+  readonly seatId: number;
+  /** 本次击杀获得强化石数（精英 1 / BOSS 2；ENCHANT_STONES_BY_TIER，C7）。 */
+  readonly stones: number;
+}
+
 interface Actor {
   id: number;
   kind: number;
@@ -179,6 +192,8 @@ interface Actor {
   // E18 新增（敌人攻击前摇；**不进 EntityState 快照**，C12 纪律——客户端用 WINDUP status 位表现抬手）
   windupUntilTick?: number; // 前摇截止 tick（t >= 本值落刀；仅 world 内部）
   windupTargetId?: number; // 前摇锁定目标 actor id（落刀时判定是否仍在接触范围；仅 world 内部）
+  // E19 新增（强化石计数；**不进 EntityState 快照**，C12 纪律——材料为控制面计数，非世界实体）
+  materials?: number; // 玩家当前强化石数（击杀累计；会话内权威，击杀时与持久化同步；仅 world 内部镜像）
 }
 
 interface SpawnZoneRuntime {
@@ -193,8 +208,8 @@ export interface World {
   readonly seed: string;
   tick: number;
   phase: RoomPhaseValue;
-  /** 在权威世界 spawn 一个玩家实体（幂等：重复 seatId 不叠加）。E7：equipped 可选（持久化镜像）。E9：level 可选（持久化镜像）。 */
-  addPlayer(seatId: number, userId: string, spawn?: Vec2, equipped?: EquippedSlots, level?: number): void;
+  /** 在权威世界 spawn 一个玩家实体（幂等：重复 seatId 不叠加）。E7：equipped 可选（持久化镜像）。E9：level 可选（持久化镜像）。E19：materials 可选（持久化镜像）。 */
+  addPlayer(seatId: number, userId: string, spawn?: Vec2, equipped?: EquippedSlots, level?: number, materials?: number): void;
   /** 从权威世界移除一个玩家实体（进本时出主世界 / 测试清理；幂等：不存在则忽略）。 */
   removePlayer(seatId: number): void;
   /**
@@ -223,6 +238,8 @@ export interface World {
   consumePickups(): PickupEvent[];
   /** E9：取出并清空升级事件缓冲（服务端落库 + 推送 character.level 用）。 */
   consumeLevelUps(): LevelUpEvent[];
+  /** E19：取出并清空强化石获得事件缓冲（服务端落库 + 推送 character.inventory materials 用）。 */
+  consumeMaterialGains(): MaterialGainEvent[];
   /** 在指定 seat 玩家脚下生成地面掉落实体（背包满溢出回落，C-Per-3）。 */
   spawnGroundLoot(seatId: number, loot: LootState): void;
   /**
@@ -236,6 +253,8 @@ export interface World {
   onPickup?: (seatId: number, loot: LootResult) => void;
   /** E9：可选：每次升级即时回调（run-manager 可设，替代轮询 consumeLevelUps）。 */
   onLevelUp?: (seatId: number, level: number, xp: number, xpNext: number) => void;
+  /** E19：可选：每次强化石获得即时回调（run-manager 可设，替代轮询 consumeMaterialGains）。 */
+  onMaterialGain?: (seatId: number, stones: number) => void;
 }
 
 /**
@@ -371,6 +390,8 @@ function makePlayerActor(opts: {
   equipped?: EquippedSlots;
   /** E9：玩家等级（缺省 L1；重连时经持久化播种，attrs 反映真实等级）。 */
   level?: number;
+  /** E19：玩家强化石数（缺省 0；重连/换域时经持久化镜像播种，击杀累计）。 */
+  materials?: number;
   /** 缺省出生点 x 是否做 %40 防越界（addPlayer 用；构造时占位玩家传 false 保持 E1 原值）。 */
   wrapX?: boolean;
 }): Actor {
@@ -398,6 +419,7 @@ function makePlayerActor(opts: {
     level: lv,
     xp: 0,
     levelStats,
+    materials: opts.materials ?? 0, // E19：强化石计数（持久化镜像；仅 world 内部，不进快照）
   };
 }
 
@@ -449,6 +471,8 @@ export function createWorld(opts: CreateWorldOpts): World {
   const pickupBuffer: PickupEvent[] = [];
   // E9：升级事件缓冲（升级时 push，consumeLevelUps 取走）
   const levelUpBuffer: LevelUpEvent[] = [];
+  // E19：强化石获得事件缓冲（精英/BOSS 击杀时 push，consumeMaterialGains 取走）
+  const materialGainBuffer: MaterialGainEvent[] = [];
 
   // ── 确定性 Rng 实例（战斗/刷怪/掉装/复活共用种子流，D9）──
   const simRng = new Rng(`combat:${opts.seed}`);
@@ -538,13 +562,14 @@ export function createWorld(opts: CreateWorldOpts): World {
     phase: opts.phase,
     actors: () => actors.slice(),
 
-    addPlayer(seatId: number, _userId: string, spawn?: Vec2, equipped?: EquippedSlots, level?: number) {
+    addPlayer(seatId: number, _userId: string, spawn?: Vec2, equipped?: EquippedSlots, level?: number, materials?: number) {
       // 幂等：重复加入不叠加实体（重连/重复 room.join 安全）。
       if (players.has(seatId)) return;
       const id = nextId++;
       // E7：equipped 可选（持久化镜像）；缺省 → 基础属性（maxHp=100，golden 锚点）。
       // E9：level 可选（持久化镜像）；缺省 → L1（全零加成，golden 锚点）。
-      actors.push(makePlayerActor({ id, seatId, spawn, equipped, level, wrapX: true }));
+      // E19：materials 可选（持久化镜像）；缺省 → 0（击杀累计；仅 world 内部，不进快照）。
+      actors.push(makePlayerActor({ id, seatId, spawn, equipped, level, materials, wrapX: true }));
       players.set(seatId, id);
     },
 
@@ -1021,6 +1046,16 @@ export function createWorld(opts: CreateWorldOpts): World {
                 levelUpBuffer.push(ev);
                 if (world.onLevelUp) world.onLevelUp(ev.seatId, ev.level, ev.xp, ev.xpNext);
               }
+              // E19：精英/BOSS 击杀 → 强化石（ENCHANT_STONES_BY_TIER；普通怪 0 → 无事件）。
+              //   材料计数**独立于掉落 Rng 流**（固定必得，不消耗 Rng）+ 仅 world 内部（不进快照）
+              //   → 不污染 playtest golden（journal 无材料字段，BOSS 掉装不变）。
+              const stones = ENCHANT_STONES_BY_TIER[tierName];
+              if (stones > 0) {
+                killer.materials = (killer.materials ?? 0) + stones;
+                const mev: MaterialGainEvent = { seatId: killerSeat, stones };
+                materialGainBuffer.push(mev);
+                if (world.onMaterialGain) world.onMaterialGain(mev.seatId, mev.stones);
+              }
             }
           }
           // 掉装：rollLoot（确定性 Rng 流）；命中 → spawn LOOT_GROUND 于敌人 pos。
@@ -1206,6 +1241,12 @@ export function createWorld(opts: CreateWorldOpts): World {
     consumeLevelUps(): LevelUpEvent[] {
       const out = levelUpBuffer.slice();
       levelUpBuffer.length = 0;
+      return out;
+    },
+
+    consumeMaterialGains(): MaterialGainEvent[] {
+      const out = materialGainBuffer.slice();
+      materialGainBuffer.length = 0;
       return out;
     },
 

@@ -36,7 +36,7 @@ import {
   sendToConn,
   type Conn,
 } from "./connection-registry.ts";
-import { dispatch, setProtocolCharacterService, setProtocolSnapshotSyncer, resolveInventoryGet, resolveLevelGet, resolveEquip, resolveUnequip } from "./protocol.ts";
+import { dispatch, setProtocolCharacterService, setProtocolSnapshotSyncer, resolveInventoryGet, resolveLevelGet, resolveEquip, resolveUnequip, resolveEnchant } from "./protocol.ts";
 import { enqueueInput, addPlayerToRoom, setSeatSnapshotSyncer, onSeatDisconnect } from "./run-manager.ts";
 import { TICK_MS, TICK_RATE } from "../sim-core/src/constants.ts"; // C1 单一来源
 import type { InputCmd } from "../sim-core/src/types.ts";
@@ -313,6 +313,16 @@ function handleRaw(conn: Conn, raw: Buffer): void {
     return;
   }
 
+  // E19 强化数据通道（控制面）：character.enchant → 强化（消耗强化石，async，同 equip 模式）。
+  if (msg.type === "character.enchant") {
+    const s = liveSessions.get(conn.connId);
+    void resolveEnchant(
+      { userId: conn.userId, connId: conn.connId, seatId: s?.seatId, roomId: conn.roomId },
+      msg,
+    ).then((reply) => sendToConn(conn.connId, reply));
+    return;
+  }
+
   const s = liveSessions.get(conn.connId);
   const result = dispatch(
     { userId: conn.userId, connId: conn.connId, seatId: s?.seatId, roomId: conn.roomId },
@@ -327,7 +337,8 @@ function handleRaw(conn: Conn, raw: Buffer): void {
     if (s2) {
       // E7：登录玩家携带持久化装备（equipped）→ 世界镜像 maxHp/attrs；游客 snapshot=null → undefined → 基础属性。
       // E9：登录玩家携带持久化等级（level）→ 世界镜像 attrs（str/dex/vit/atk/maxHp 反映真实等级）。
-      addPlayerToRoom(joinedRoomId, s2.seatId, s2.userId, s2.snapshot?.character.equipped, s2.snapshot?.character.level);
+      // E19：登录玩家携带持久化强化石（materials）→ 世界镜像计数（击杀累计；游客 → undefined → 0）。
+      addPlayerToRoom(joinedRoomId, s2.seatId, s2.userId, s2.snapshot?.character.equipped, s2.snapshot?.character.level, s2.snapshot?.character.materials);
       // 双模式关键事件：登录玩家加入房间 → last-wins 顶替（C-Per-4）+ 落库（架构 §7）。
       if (!s2.guest) {
         enforceLastWins(joinedRoomId, s2.userId);
