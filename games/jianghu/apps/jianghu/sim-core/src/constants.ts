@@ -62,6 +62,39 @@ export const PARRY_RTT_TOL_MS = 150;
 export const MIN_TELEGRAPH_TICKS = 8;
 
 // ─────────────────────────────────────────────────────────────
+// E15：BOSS telegraph 预警（D2 落地；C7 单一来源，全工程唯一引用点）
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * telegraph 前摇时长（tick）= 1s @12Hz = 12。
+ * world 在 BOSS phase2 AOE 生成 TELEGRAPH 实体时用 startTick=t / applyTick=t+TELEGRAPH_TICKS
+ * 表达（TelegraphState schema，types.ts；客户端 drawTelegraph 依 startTick→applyTick 呼吸显隐）。
+ * ≥ MIN_TELEGRAPH_TICKS（8）可读下界（P3 硬约束）。
+ */
+export const TELEGRAPH_TICKS = TICK_RATE;
+
+/**
+ * BOSS AOE 警示圈半径（px）= 1.5×TILE = 72px。
+ * 覆盖近战站桩（接触 48px）到技能射程 0 槽（72px）区间——站桩必吃，需走出圈躲避。
+ * 客户端 drawTelegraph 以 t.radius 画圆（缺省 60），服务端本值为唯一来源（C7）。
+ */
+export const TELEGRAPH_RADIUS = Math.round(1.5 * TILE);
+
+/**
+ * BOSS phase2 AOE 预警间隔（tick）= 3s @12Hz = 36。
+ * 主理人拍板（E15）：BOSS（tier=2）phase≥2 时每 BOSS_AOE_INTERVAL_TICKS 在自身周围生成
+ * AOE 警示圈 → TELEGRAPH_TICKS 后落刀（对圈内玩家 resolveDamage）+ 移除。
+ */
+export const BOSS_AOE_INTERVAL_TICKS = 3 * TICK_RATE;
+
+/**
+ * BOSS AOE 伤害倍率（× 敌人攻击力）。GDD combat §⑥ BOSS ATK ≈ 普通 ×10 = 80
+ * （ENEMY_BASE_ATK×HP_MULT.boss）→ AOE = 120（1s 预警可躲，吃圈即死；平衡旋钮，后续可调）。
+ * 取「敌人攻击力 ×1.5」（E15 主理人拍板；GDD 无 AOE 固定值）。
+ */
+export const BOSS_AOE_DAMAGE_MULT = 1.5;
+
+// ─────────────────────────────────────────────────────────────
 // 客户端插值 / 预测缓冲
 // ─────────────────────────────────────────────────────────────
 

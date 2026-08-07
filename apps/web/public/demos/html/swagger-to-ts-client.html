@@ -7,8 +7,6 @@
   <meta name="description" content="在线把 Swagger 2.0 / OpenAPI 3.x 规范转换成 TypeScript 接口与 fetch / axios 请求函数，纯前端零依赖，支持文件树输出（类型集中在 types.d.ts），并对比 openapi-typescript、swagger-typescript-api 等开源生成器。">
   <link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="/static/js/public_header.js"></script>
-  <script src="/static/js/public_footer.js"></script>
   <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>
   <style>
     :root { --bg:#f6f8fb; --card:#fff; --line:#e6eaf0; --primary:#2f6df6; --primary-d:#1f54d6; --text:#1f2733; --muted:#6b7686; --code-bg:#0f172a; --code-fg:#e2e8f0; --ok:#16a34a; --err:#dc2626; }
@@ -40,6 +38,8 @@
     .controls { margin:10px 0; padding:10px 12px; background:#f3f6fc; border:1px dashed var(--line); border-radius:10px; }
     .controls.hidden { display:none; }
     .controls .opt { margin-right:16px; }
+    .controls .opt input:disabled + span,
+    .controls .opt input:disabled { opacity:0.4; cursor:not-allowed; }
     .toolbar { display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
     .toolbar #status { flex:1; color:var(--muted); font-size:13px; min-width:120px; }
     .out-body { display:flex; align-items:stretch; }
@@ -53,6 +53,28 @@
     .code-wrap { flex:1 1 auto; margin:0; max-height:560px; overflow:auto; }
     pre code { white-space:pre; font:13px/1.55 "SFMono-Regular",Consolas,Menlo,monospace; }
     .err { background:#fff1f0; border:1px solid #ffccc7; color:#a8071a; border-radius:10px; padding:12px 14px; margin-top:10px; white-space:pre-wrap; font-size:13px; }
+    /* 规范校验结果 */
+    .validate-area { margin-top:10px; display:none; }
+    .validate-area.show { display:block; }
+    .validate-area .vt-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .validate-area .vt-header .vt-badge { padding:2px 10px; border-radius:6px; font-size:12px; font-weight:600; }
+    .vt-badge.ok { background:#e6ffed; color:#16a34a; }
+    .vt-badge.err { background:#fff1f0; color:#dc2626; }
+    .vt-badge.warn { background:#fffbe6; color:#d48806; }
+    .vt-count { font-size:12px; color:var(--muted); }
+    .vt-list { max-height:240px; overflow:auto; margin:0; padding:0; list-style:none; border:1px solid var(--line); border-radius:10px; }
+    .vt-list li { padding:7px 10px; border-bottom:1px solid var(--line); font-size:12px; line-height:1.5; display:flex; align-items:flex-start; gap:6px; }
+    .vt-list li:last-child { border-bottom:none; }
+    .vt-list li .vt-icon { flex-shrink:0; width:16px; font-weight:700; }
+    .vt-list li.err .vt-icon { color:#dc2626; }
+    .vt-list li.warn .vt-icon { color:#d48806; }
+    .vt-list li.info .vt-icon { color:var(--primary); }
+    .vt-list li .vt-msg { flex:1; word-break:break-all; }
+    .vt-list li .vt-path { color:var(--muted); font-family:monospace; font-size:11px; }
+    button.validate-btn { background:#fef7e0; color:#b5590a; border-color:#f5d479; }
+    button.validate-btn:hover { background:#fdf0cd; color:#b5590a; border-color:#e8b730; }
+    /* swagger-typescript-api 的文件树控件 */
+    #staControls { margin:6px 0 0; }
     .info { margin-top:22px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
     .info h3 { margin:0 0 8px; font-size:16px; }
     .info ul { margin:0 0 8px; padding-left:20px; }
@@ -71,29 +93,36 @@
 <body>
   <div class="ln-wrap">
     <h1>Swagger / OpenAPI → TypeScript API Client</h1>
-    <p class="sub">把 Swagger 2.0 / OpenAPI 3.x 规范在线转换成 TypeScript 接口 + 请求函数。自研生成器纯前端零依赖，支持「文件树」输出（类型集中在 <code>types.d.ts</code>），另外两个对比项通过 CDN 动态加载。</p>
+    <p class="sub">把 Swagger 2.0 / OpenAPI 3.x 规范（JSON / YAML）在线转换成 TypeScript 接口 + 请求函数。自研生成器纯前端零依赖，支持「文件树」输出。swagger-typescript-api 也支持 modular 文件树。含双引擎规范校验（结构检查 + Redocly lint）。</p>
 
     <div class="tabs" id="tabs">
       <button class="tab active" data-tab="custom">自研生成器 <small>零依赖 · fetch/axios</small></button>
-      <button class="tab" data-tab="openapi-typescript">openapi-typescript <small>仅类型 · 经 esm.sh</small></button>
-      <button class="tab" data-tab="swagger-typescript-api">swagger-typescript-api <small>完整客户端 · 经 esm.sh</small></button>
+      <button class="tab" data-tab="openapi-typescript">openapi-typescript <small>仅类型 · esm.sh</small></button>
+      <button class="tab" data-tab="swagger-typescript-api">swagger-typescript-api <small>完整客户端</small></button>
+      <button class="tab" data-tab="hey-api">@hey-api/openapi-ts <small>SDK 插件 · Zod/TanStack</small></button>
+      <button class="tab" data-tab="orval">Orval <small>React Hooks · SWR/Query</small></button>
+      <button class="tab" data-tab="kubb">Kubb <small>插件架构 · Zod/MSW</small></button>
+      <button class="tab" data-tab="openapi-typescript-codegen">openapi-typescript-codegen <small>经典轻量 · Fetch/Axios</small></button>
     </div>
 
     <div class="io">
       <div class="panel input-panel">
-        <label class="lbl">Swagger / OpenAPI 规范（JSON）</label>
-        <textarea id="specInput" placeholder="在此粘贴 Swagger 2.0 / OpenAPI 3.x 的 JSON，或点下方「加载示例」「拉取地址」"></textarea>
+        <label class="lbl">Swagger / OpenAPI 规范（JSON / YAML）</label>
+        <textarea id="specInput" placeholder="在此粘贴 Swagger 2.0 / OpenAPI 3.x 的 JSON 或 YAML，或点下方「加载示例」「拉取地址」"></textarea>
         <div class="row">
-          <input id="urlInput" placeholder="可选：粘贴 Swagger JSON 地址后点「拉取」（注意跨域）">
+          <input id="urlInput" placeholder="可选：粘贴 Swagger JSON/YAML 地址后点「拉取」（注意跨域）">
           <button id="fetchBtn">拉取</button>
           <button id="sampleBtn">加载示例</button>
           <button id="clearBtn">清空</button>
+          <button class="validate-btn" id="validateBtn">🔍 结构校验</button>
+          <button class="validate-btn" id="redoclyBtn" style="background:#e8f0fe;color:#1a56db;border-color:#a8c8fa;">🔬 Redocly 校验</button>
         </div>
+        <div id="validateArea" class="validate-area"></div>
 
         <div class="controls" id="customControls">
           <span class="opt"><b>客户端：</b></span>
-          <label class="opt"><input type="radio" name="client" value="fetch" checked> fetch</label>
-          <label class="opt"><input type="radio" name="client" value="axios"> axios</label>
+          <label class="opt"><input type="radio" name="client" value="fetch"> fetch</label>
+          <label class="opt"><input type="radio" name="client" value="axios" checked> axios</label>
           <div style="margin-top:8px"><span class="opt"><b>输出形式：</b></span>
             <label class="opt"><input type="radio" name="layout" value="tree" checked> 文件树</label>
             <label class="opt"><input type="radio" name="layout" value="single"> 单文件</label>
@@ -102,6 +131,52 @@
         </div>
         <div class="controls hidden" id="cdnControls">
           <div class="hint">该生成器通过 <code>https://esm.sh</code> 动态加载，需要联网。若加载失败，会给出本地 Node 命令。</div>
+        </div>
+        <div class="controls hidden" id="otsControls">
+          <span class="opt"><b>枚举风格：</b></span>
+          <label class="opt"><input type="radio" name="otsEnum" value="union" checked> 联合类型</label>
+          <label class="opt"><input type="radio" name="otsEnum" value="enum"> TS enum</label>
+          <div class="hint">openapi-typescript 默认输出 <code>type Status = "a" | "b"</code>，也可选 <code>enum Status { ... }</code>。</div>
+        </div>
+        <div class="controls hidden" id="heyControls">
+          <span class="opt"><b>插件：</b></span>
+          <label class="opt"><input type="checkbox" name="heyPlug" value="@hey-api/client-fetch" checked> client-fetch</label>
+          <label class="opt"><input type="checkbox" name="heyPlug" value="zod"> zod</label>
+          <label class="opt"><input type="checkbox" name="heyPlug" value="@tanstack/react-query"> react-query</label>
+          <label class="opt"><input type="checkbox" name="heyPlug" value="@tanstack/solid-query"> solid-query</label>
+          <div class="hint">@hey-api/openapi-ts 通过插件扩展：类型 + 客户端必选，zod 生成校验 schema，react-query/solid-query 生成 hooks。</div>
+        </div>
+        <div class="controls hidden" id="orvalControls">
+          <span class="opt"><b>客户端：</b></span>
+          <label class="opt"><input type="radio" name="orvalClient" value="axios" checked> axios</label>
+          <label class="opt"><input type="radio" name="orvalClient" value="fetch"> fetch</label>
+          <label class="opt"><input type="radio" name="orvalClient" value="react-query"> react-query</label>
+          <label class="opt"><input type="radio" name="orvalClient" value="swr"> swr</label>
+          <label class="opt"><input type="radio" name="orvalClient" value="vue-query"> vue-query</label>
+          <div class="hint">Orval 的 output 配置决定生成客户端代码还是 hooks。</div>
+        </div>
+        <div class="controls hidden" id="kubbControls">
+          <span class="opt"><b>插件：</b></span>
+          <label class="opt"><input type="checkbox" name="kubbPlug" value="ts" checked> types</label>
+          <label class="opt"><input type="checkbox" name="kubbPlug" value="zod"> zod</label>
+          <label class="opt"><input type="checkbox" name="kubbPlug" value="msw"> msw</label>
+          <label class="opt"><input type="checkbox" name="kubbPlug" value="faker"> faker</label>
+          <div class="hint">Kubb 插件架构：types 生成类型，zod 生成校验 schema，msw 生成 mock handler，faker 生成假数据。</div>
+        </div>
+        <div class="controls hidden" id="otcControls">
+          <span class="opt"><b>客户端：</b></span>
+          <label class="opt"><input type="radio" name="otcClient" value="fetch" checked> fetch</label>
+          <label class="opt"><input type="radio" name="otcClient" value="axios"> axios</label>
+          <label class="opt"><input type="radio" name="otcClient" value="xhr"> xhr</label>
+          <label class="opt"><input type="radio" name="otcClient" value="node"> node-fetch</label>
+          <div class="hint">openapi-typescript-codegen 支持 fetch / axios / xhr / node-fetch 四种 HTTP 客户端生成。</div>
+        </div>
+        <div class="controls hidden" id="staControls">
+          <div style="margin-top:8px"><span class="opt"><b>输出形式：</b></span>
+            <label class="opt"><input type="radio" name="staLayout" value="single"> 单文件</label>
+            <label class="opt"><input type="radio" name="staLayout" value="tree" checked> 文件树（modular）</label>
+          </div>
+          <div class="hint" id="staHint">swagger-typescript-api 的 modular 模式会按模块拆分 <code>.ts</code> 文件，并生成 <code>data-contracts.ts</code>（类型）、<code>http-client.ts</code>、<code>Route.ts</code> 等。</div>
         </div>
         <div class="controls hidden" id="envControls">
           <span class="opt"><b>运行环境：</b></span>
@@ -139,6 +214,7 @@
         <li><a href="https://github.com/hey-api/openapi-ts" target="_blank" rel="noopener">@hey-api/openapi-ts</a> 现代全功能客户端，插件化（zod / React Query）。</li>
         <li><a href="https://github.com/ScriptType/orval" target="_blank" rel="noopener">orval</a> 客户端 + React Query / Vue Query hooks + mock + zod + MCP。</li>
         <li><a href="https://github.com/openapi-ui/openapi-ts-request" target="_blank" rel="noopener">openapi-ui/openapi-ts-request</a> 国产，Swagger2/OpenAPI3/Apifox → TS，含枚举翻译与 mock。</li>
+        <li><a href="https://github.com/ferdikoomen/openapi-typescript-codegen" target="_blank" rel="noopener">ferdikoomen/openapi-typescript-codegen</a> 经典轻量，纯 Node.js，支持 Fetch / Axios / XHR，已归档。</li>
       </ul>
       <p class="hint">说明：本页「自研生成器」是演示用的轻量实现（覆盖常见 path/query/body/enum/array/嵌套），并非生产级；生产项目建议直接用上面任一成熟工具（支持 YAML、引用拆分、自定义模板等）。</p>
     </div>
@@ -235,22 +311,279 @@
     let currentFiles = null;   // 文件树模式下的文件数组
     let activeFile = null;     // 当前选中文件名
     let treeVisible = false;   // 文件树显隐状态
-    // 每个 CDN 标签页记忆各自的运行环境默认值（自研生成器始终浏览器端，无此概念）
-    const envByTab = { 'openapi-typescript': 'browser', 'swagger-typescript-api': 'server' };
+    // 只能在服务端运行的工具（依赖 Node fs / CLI）
+    const SERVER_ONLY = new Set(['swagger-typescript-api', 'hey-api', 'orval', 'kubb', 'openapi-typescript-codegen']);
+    // 每个标签页记忆各自的运行环境默认值
+    const envByTab = {
+      'openapi-typescript': 'browser',
+      'swagger-typescript-api': 'server',
+      'hey-api': 'server',
+      'orval': 'server',
+      'kubb': 'server',
+      'openapi-typescript-codegen': 'server',
+    };
 
     function setStatus(t, isErr) { statusEl.textContent = t; statusEl.style.color = isErr ? 'var(--err)' : 'var(--muted)'; }
     function showErr(msg) { errBox.hidden = false; errBox.textContent = msg; }
     function clearErr() { errBox.hidden = true; errBox.textContent = ''; }
 
-    function parseSpec() {
+    // YAML / JSON 输入解析（优先 JSON 快路径，再走 js-yaml CDN）
+    async function parseInput(raw) {
+      // 以 { 或 [ 开头的文本优先尝试 JSON 解析（快路径，零依赖）
+      if (raw.startsWith('{') || raw.startsWith('[')) {
+        try { return JSON.parse(raw); }
+        catch (e) { throw new Error('JSON 解析失败：' + e.message); }
+      }
+      // 否则尝试 YAML（也可能是无缩进 JSON，兜底也会试 JSON.parse）
+      try {
+        const mod = await import(/* @vite-ignore */ 'https://esm.sh/js-yaml@4');
+        const parsed = mod.load ? mod.load(raw) : (mod.default && mod.default.load ? mod.default.load(raw) : null);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+        // 可能实际是 JSON 无缩进
+        try { return JSON.parse(raw); } catch {}
+        throw new Error('YAML 解析结果无效（可能格式不正确）。');
+      } catch (e) {
+        if (e.message && e.message.includes('Failed to fetch')) {
+          throw new Error('无法加载 js-yaml（网络不可用），请粘贴 JSON 格式的规范。');
+        }
+        throw new Error('内容解析失败：' + (e && e.message ? e.message : '未知错误') + '\n支持格式：JSON（直接解析）、YAML（通过 js-yaml CDN 解析）。');
+      }
+    }
+
+    async function parseSpec() {
       const raw = specInput.value.trim();
-      if (!raw) throw new Error('请先填入 Swagger / OpenAPI 规范（JSON）。');
-      let spec;
-      try { spec = JSON.parse(raw); }
-      catch (e) { throw new Error('JSON 解析失败：' + e.message + '\n（本生成器支持 JSON；YAML 请先转为 JSON，或使用 openapi-typescript 标签页）'); }
+      if (!raw) throw new Error('请先填入 Swagger / OpenAPI 规范（JSON 或 YAML）。');
+      const spec = await parseInput(raw);
       const v = detectVersion(spec);
       if (!v) throw new Error('无法识别版本：既不是 Swagger 2.0 也不是 OpenAPI 3.x。');
       return spec;
+    }
+
+    // ---------- 规范校验 ----------
+    async function doValidate() {
+      const raw = specInput.value.trim();
+      const area = $('validateArea');
+      if (!raw) {
+        area.className = 'validate-area show';
+        area.innerHTML = '<div class="vt-header"><span class="vt-badge warn">⚠️</span><span class="vt-count">文本框为空，无法校验。</span></div>';
+        return;
+      }
+      let spec;
+      try { spec = await parseInput(raw); }
+      catch (e) { area.className = 'validate-area show'; area.innerHTML = '<div class="vt-header"><span class="vt-badge err">✗ 解析失败</span><span class="vt-count">' + e.message + '</span></div>'; return; }
+      const issues = validateSpec(spec);
+      renderValidateResults(area, issues);
+    }
+
+    function renderValidateResults(area, issues) {
+      area.className = 'validate-area show';
+      let html = '';
+      const errs = issues.filter(i => i.severity === 'error');
+      const warns = issues.filter(i => i.severity === 'warning');
+      const infos = issues.filter(i => i.severity === 'info');
+      const hasIssue = errs.length + warns.length > 0;
+      const badgeCls = errs.length > 0 ? 'err' : (warns.length > 0 ? 'warn' : 'ok');
+      const badgeText = errs.length > 0 ? '✗ 不合规' : (warns.length > 0 ? '⚠ 有警告' : '✓ 规范校验通过');
+      html += '<div class="vt-header"><span class="vt-badge ' + badgeCls + '">' + badgeText + '</span>';
+      html += '<span class="vt-count">' + errs.length + ' 错误 · ' + warns.length + ' 警告 · ' + infos.length + ' 提示</span></div>';
+      if (hasIssue) {
+        html += '<ul class="vt-list">';
+        for (const issue of issues) {
+          if (issue.severity === 'info') continue;
+          const cls = issue.severity === 'error' ? 'err' : 'warn';
+          const icon = issue.severity === 'error' ? '✕' : '⚠';
+          html += '<li class="' + cls + '"><span class="vt-icon">' + icon + '</span><span class="vt-msg">' + issue.message + '</span></li>';
+        }
+        html += '</ul>';
+      }
+      area.innerHTML = html;
+    }
+
+    function validateSpec(spec) {
+      const issues = [];
+      if (!spec || typeof spec !== 'object' || Array.isArray(spec)) {
+        return [{ severity: 'error', message: '规范必须是一个 JSON/YAML 对象。' }];
+      }
+
+      const isOAS3 = !!spec.openapi;
+      const isSwagger2 = !!spec.swagger;
+      let oasVersionMajor = 0;
+      if (isOAS3) {
+        const v = String(spec.openapi || '');
+        if (!v.startsWith('3.')) issues.push({ severity: 'warning', message: 'openapi 版本为 ' + v + '，本工具为 3.x 设计，其他大版本结果可能不准。' });
+        oasVersionMajor = parseInt(v.split('.')[0]) || 0;
+      } else if (isSwagger2) {
+        const v = String(spec.swagger || '');
+        if (!v.startsWith('2.')) issues.push({ severity: 'warning', message: 'swagger 版本为 ' + v + '，本工具为 2.0 设计。' });
+        oasVersionMajor = 2;
+      } else {
+        issues.push({ severity: 'error', message: '缺少 openapi（OpenAPI 3.x）或 swagger（Swagger 2.0）字段，无法识别规范版本。' });
+        return issues;
+      }
+
+      // info
+      if (!spec.info || typeof spec.info !== 'object') {
+        issues.push({ severity: 'error', message: '缺少 info 字段。' });
+      } else {
+        if (!spec.info.title) issues.push({ severity: 'warning', message: 'info.title 为空，建议填写 API 名称。' });
+        if (!spec.info.version) issues.push({ severity: 'warning', message: 'info.version 为空，建议填写版本号。' });
+      }
+
+      // host/basePath (Swagger 2)
+      if (isSwagger2) {
+        if (!spec.host) issues.push({ severity: 'info', message: 'Swagger 2.0 建议填写 host 字段。' });
+      }
+
+      // servers (OAS3)
+      if (isOAS3) {
+        if (!spec.servers || !Array.isArray(spec.servers) || spec.servers.length === 0) {
+          issues.push({ severity: 'warning', message: 'OpenAPI 3.x 建议填写 servers 字段。' });
+        }
+      }
+
+      // paths
+      if (!spec.paths || typeof spec.paths !== 'object' || Object.keys(spec.paths).length === 0) {
+        issues.push({ severity: 'error', message: '缺少 paths 字段或 paths 为空，至少需要一个接口路径。' });
+      } else {
+        let totalOps = 0;
+        const methods = ['get','post','put','delete','patch','options','head','trace'];
+        const pathKeys = Object.keys(spec.paths);
+        if (pathKeys.length > 100) {
+          issues.push({ severity: 'info', message: '共有 ' + pathKeys.length + ' 个路径，大规范生成可能较慢。' });
+        }
+        for (const path of pathKeys) {
+          const pi = spec.paths[path];
+          if (!pi || typeof pi !== 'object') {
+            issues.push({ severity: 'warning', message: '路径 "' + path + '" 下没有有效的操作方法。' });
+            continue;
+          }
+          // 检查是否有参数（path parameters should be defined here or in operation）
+          if (Array.isArray(pi.parameters)) {
+            for (const p of pi.parameters) {
+              if (!p.name) issues.push({ severity: 'warning', message: '路径 "' + path + '" 的公共参数缺少 name。' });
+              if (!p.in) issues.push({ severity: 'warning', message: '路径 "' + path + '" 的参数 "' + (p.name||'?') + '" 缺少 in 字段。' });
+            }
+          }
+          const opMethods = methods.filter(m => pi[m]);
+          totalOps += opMethods.length;
+          for (const m of methods) {
+            const op = pi[m];
+            if (!op) continue;
+            // operationId
+            if (!op.operationId) {
+              issues.push({ severity: 'info', message: m.toUpperCase() + ' ' + path + ' 缺少 operationId，自研生成器会从方法 + 路径自动推导。' });
+            }
+            // responses
+            if (!op.responses || typeof op.responses !== 'object' || Object.keys(op.responses).length === 0) {
+              issues.push({ severity: 'warning', message: m.toUpperCase() + ' ' + path + ' 缺少 responses 定义。' });
+            } else {
+              const hasSuccess = Object.keys(op.responses).some(code => code.startsWith('2') || code === 'default');
+              if (!hasSuccess) {
+                issues.push({ severity: 'warning', message: m.toUpperCase() + ' ' + path + ' 缺少 2xx 成功响应。' });
+              }
+            }
+            // requestBody content type (OAS3)
+            if (isOAS3 && op.requestBody && op.requestBody.content) {
+              const cts = Object.keys(op.requestBody.content);
+              if (cts.length === 0) {
+                issues.push({ severity: 'warning', message: m.toUpperCase() + ' ' + path + ' 的 requestBody.content 为空。' });
+              }
+            }
+            // tags
+            if (!op.tags || op.tags.length === 0) {
+              issues.push({ severity: 'info', message: m.toUpperCase() + ' ' + path + ' 缺少 tags，文件树模式会归入 default.ts。' });
+            }
+          }
+        }
+        if (totalOps === 0) {
+          issues.push({ severity: 'warning', message: 'paths 下没有任何 HTTP 操作方法。' });
+        } else {
+          issues.push({ severity: 'info', message: '共发现 ' + totalOps + ' 个操作（' + pathKeys.length + ' 个路径）。' });
+        }
+      }
+
+      // components/schemas (OAS3) or definitions (Swagger2)
+      const schemasKey = isOAS3 ? 'components' : 'definitions';
+      const schemas = isOAS3 ? (spec.components && spec.components.schemas) : spec.definitions;
+      if (schemas && typeof schemas === 'object' && Object.keys(schemas).length > 0) {
+        let schemaCount = Object.keys(schemas).length;
+        if (schemaCount > 200) {
+          issues.push({ severity: 'info', message: '共有 ' + schemaCount + ' 个数据模型定义。' });
+        }
+        // Check for circular refs quickly - cheap heuristic: count refs
+        let totalRefs = 0;
+        const walkForRefs = (obj, depth) => {
+          if (depth > 50) return; // safety
+          if (!obj || typeof obj !== 'object') return;
+          if (obj.$ref) { totalRefs++; return; }
+          for (const v of Object.values(obj)) walkForRefs(v, depth + 1);
+        };
+        for (const name of Object.keys(schemas)) {
+          const schema = schemas[name];
+          if (schema && !schema.type && !schema.$ref && !schema.allOf && !schema.oneOf && !schema.anyOf && !schema.properties) {
+            issues.push({ severity: 'warning', message: '模型 "' + name + '" 缺少 type 且未使用 allOf/oneOf/anyOf，生成器可能无法正确推断类型。' });
+          }
+        }
+      } else if (spec.paths && Object.values(spec.paths).some(pi => {
+        if (!pi || typeof pi !== 'object') return false;
+        return ['get','post','put','delete','patch'].some(m => pi[m] && pi[m].responses);
+      })) {
+        // Has operations with responses but no schemas - might use inline schemas, that's ok
+        issues.push({ severity: 'info', message: '未找到 ' + (isOAS3 ? 'components.schemas' : 'definitions') + '，所有类型均为内联定义。' });
+      }
+
+      // parameters common checks
+      if (isOAS3 && spec.components && spec.components.parameters) {
+        issues.push({ severity: 'info', message: 'compontents.parameters 中有 ' + Object.keys(spec.components.parameters).length + ' 个可复用参数。' });
+      }
+
+      return issues;
+    }
+
+    // ---------- Redocly 规范校验（服务端）----------
+    async function doRedoclyValidate() {
+      const raw = specInput.value.trim();
+      const area = $('validateArea');
+      if (!raw) {
+        area.className = 'validate-area show';
+        area.innerHTML = '<div class="vt-header"><span class="vt-badge warn">⚠️</span><span class="vt-count">文本框为空，无法校验。</span></div>';
+        return;
+      }
+      area.className = 'validate-area show';
+      area.innerHTML = '<div class="vt-header"><span class="vt-badge info">⏳</span><span class="vt-count">正在连接服务端 Redocly 引擎…</span></div>';
+      setStatus('Redocly 校验中…');
+      try {
+        let spec;
+        try { spec = await parseInput(raw); }
+        catch (e) { renderValidateResults(area, [{ severity: 'error', message: '解析输入失败：' + e.message }]); setStatus('解析失败', true); return; }
+        const res = await fetch(apiBase() + '/api/demo/swagger-ts/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ spec }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          const msg = data && data.message ? data.message : ('服务端 Redocly 校验失败（HTTP ' + res.status + '）');
+          renderValidateResults(area, [{ severity: 'error', message: msg }]);
+          setStatus('Redocly 校验失败', true);
+          return;
+        }
+        // 将 Redocly severity 映射为 error / warning
+        const issues = (data.results || []).map((r) => ({
+          severity: r.severity === 'error' ? 'error' : (r.severity === 'warn' ? 'warning' : 'info'),
+          message: r.message || r.ruleId || JSON.stringify(r),
+        }));
+        if (issues.length === 0) issues.push({ severity: 'info', message: 'Redocly 未发现任何规范问题。' });
+        renderValidateResults(area, issues);
+        setStatus('Redocly 校验完成。');
+      } catch (e) {
+        let msg = 'Redocly 校验失败：' + (e && e.message ? e.message : e) + '\n\n';
+        msg += '可能原因：\n1. 服务端未安装 @redocly/openapi-core（运行 npm i @redocly/openapi-core 安装）\n';
+        msg += '2. api2 服务未运行（需在本地 :3002 或线上同源代理）\n\n';
+        msg += '本地 CLI 用法：\n  npx @redocly/cli lint ./swagger.json';
+        renderValidateResults(area, [{ severity: 'error', message: msg }]);
+        setStatus('Redocly 校验失败', true);
+      }
     }
 
     // ---------- 渲染：单文件 ----------
@@ -378,8 +711,9 @@
     }
 
     async function genOpenapiTypescript(spec, env) {
+      const otsEnum = (document.querySelector('input[name="otsEnum"]:checked') || {}).value === 'enum';
       if (env === 'server') {
-        const data = await callServer('openapi-typescript', spec);
+        const data = await callServer('openapi-typescript', spec, { enumStyle: otsEnum ? 'enum' : 'union' });
         return { mode: 'single', code: data.code, filename: data.filename || 'schema.d.ts' };
       }
       setStatus('正在通过 esm.sh 加载 openapi-typescript …');
@@ -400,7 +734,7 @@
         } catch (_) { /* 试下一个版本 */ }
       }
       if (!fn) throw new Error('openapi-typescript 导出异常（CDN 模块形态不兼容）。');
-      let code = fn(spec, { exportType: true });
+      let code = fn(spec, { exportType: true, ...(otsEnum ? { enum: true } : {}) });
       if (code && typeof code.then === 'function') code = await code; // v7 为 async
       if (typeof code !== 'string') throw new Error('openapi-typescript 未返回字符串。');
       return { mode: 'single', code, filename: 'schema.d.ts' };
@@ -435,36 +769,103 @@
 
     async function genSwaggerTypescriptApi(spec, env) {
       const client = (document.querySelector('input[name="client"]:checked') || {}).value || 'fetch';
-      if (env === 'server') {
-        const data = await callServer('swagger-typescript-api', spec, { client, modular: false });
-        return { mode: 'single', code: data.code, filename: data.filename || 'api.ts' };
+      const staLayout = (document.querySelector('input[name="staLayout"]:checked') || {}).value || 'single';
+      const modular = staLayout === 'tree';
+      if (env === 'browser') throw new Error('swagger-typescript-api 依赖 Node，仅支持服务端运行。');
+      const data = await callServer('swagger-typescript-api', spec, { client, modular });
+      if (data.files && data.files.length > 0 && modular) {
+        return renderServerFiles(data);
       }
-      // 浏览器端：swagger-typescript-api 依赖 Node（Biome WASM / fs.statSync），经实测任何版本都无法在浏览器内运行，
-      // 故直接给出诚实提示，引导使用「服务端」模式。
-      throw new Error(
-        'swagger-typescript-api 无法在浏览器端运行。该库依赖 Node 环境（v13 在加载时初始化 Biome WASM 失败；' +
-        'v10–v12 在加载时调用 fs.statSync，而浏览器无文件系统）。请切换到「服务端」模式（已预置为默认值）。'
-      );
+      return renderServerFiles(data);
+    }
+
+    // @hey-api/openapi-ts — 现代化 SDK 生成器，插件架构（Zod / TanStack Query）
+    async function genHeyApi(spec, env) {
+      if (env === 'browser') throw new Error('@hey-api/openapi-ts 依赖 Node 文件系统，仅支持服务端运行。');
+      const plugins = Array.from(document.querySelectorAll('input[name="heyPlug"]:checked')).map((c) => c.value);
+      const data = await callServer('hey-api', spec, { plugins });
+      return renderServerFiles(data);
+    }
+
+    // Orval — React 生态生成器，自动生成 SWR / React Query hooks
+    async function genOrval(spec, env) {
+      if (env === 'browser') throw new Error('Orval 依赖 Node，仅支持服务端运行。');
+      const client = (document.querySelector('input[name="orvalClient"]:checked') || {}).value || 'axios';
+      const data = await callServer('orval', spec, { orvalClient: client });
+      return renderServerFiles(data);
+    }
+
+    // Kubb — 插件化代码生成器，支持 Zod / Faker.js / MSW
+    async function genKubb(spec, env) {
+      if (env === 'browser') throw new Error('Kubb 依赖 Node，仅支持服务端运行。');
+      const plugins = Array.from(document.querySelectorAll('input[name="kubbPlug"]:checked')).map((c) => c.value);
+      const data = await callServer('kubb', spec, { kubbPlugins: plugins });
+      return renderServerFiles(data);
+    }
+
+    // 统一处理服务端多文件返回（兼容 name/path 字段差异）
+    function renderServerFiles(data) {
+      if (data.files && data.files.length > 0) {
+        const files = data.files.map(f => ({ path: f.path || f.name || 'api.ts', content: f.content || '' }));
+        return files.length > 1
+          ? { mode: 'tree', files }
+          : { mode: 'single', code: files[0].content, filename: files[0].path };
+      }
+      return { mode: 'single', code: data.code, filename: data.filename || 'api.ts' };
+    }
+
+    // --- openapi-typescript-codegen ---
+    async function genOpenapiCodegen(spec, env) {
+      if (env === 'browser') throw new Error('openapi-typescript-codegen 依赖 Node，仅支持服务端运行。');
+      const client = (document.querySelector('input[name="otcClient"]:checked') || {}).value || 'fetch';
+      const data = await callServer('openapi-typescript-codegen', spec, { codegenClient: client });
+      return renderServerFiles(data);
     }
 
     const GENERATORS = {
-      custom: { fn: genCustom, ok: '自研生成器完成。', fallback: null },
+      custom: { fn: genCustom, ok: '自研生成器完成。', fallback: null, pkg: null },
       'openapi-typescript': {
         fn: genOpenapiTypescript,
         ok: 'openapi-typescript 完成（仅类型）。',
         fallback: 'npx openapi-typescript ./swagger.json -o ./schema.d.ts',
+        pkg: 'openapi-typescript',
       },
       'swagger-typescript-api': {
         fn: genSwaggerTypescriptApi,
         ok: 'swagger-typescript-api 完成。',
-        fallback: 'npx swagger-typescript-api generate --path ./swagger.json --name api.ts' + ('(client)'),
+        fallback: null,
+        pkg: null,
+      },
+      'hey-api': {
+        fn: genHeyApi,
+        ok: '@hey-api/openapi-ts 完成。',
+        fallback: null,
+        pkg: null,
+      },
+      orval: {
+        fn: genOrval,
+        ok: 'Orval 完成（含 React hooks）。',
+        fallback: null,
+        pkg: null,
+      },
+      kubb: {
+        fn: genKubb,
+        ok: 'Kubb 完成。',
+        fallback: null,
+        pkg: null,
+      },
+      'openapi-typescript-codegen': {
+        fn: genOpenapiCodegen,
+        ok: 'openapi-typescript-codegen 完成。',
+        fallback: 'npm i -D openapi-typescript-codegen && npx openapi --input ./swagger.json --output ./api --client fetch',
+        pkg: 'openapi-typescript-codegen',
       },
     };
 
     async function runGenerate() {
       clearErr();
       let spec;
-      try { spec = parseSpec(); }
+      try { spec = await parseSpec(); }
       catch (e) { showErr(e.message); setStatus('输入有误', true); return; }
 
       const g = GENERATORS[activeTab];
@@ -481,7 +882,11 @@
         }
       } catch (e) {
         let msg = '生成失败：' + (e && e.message ? e.message : e) + '\n';
-        if (g.fallback) msg += '\n本地 Node 用法：\n  ' + g.fallback + '\n（需要联网或先 npm i -D ' + (activeTab === 'openapi-typescript' ? 'openapi-typescript' : 'swagger-typescript-api') + '）';
+        // 服务端错误已自带 CLI 用法（如 503），不再画蛇添足
+        if (g.fallback && !msg.includes('npx ')) {
+          msg += '\n本地 Node 用法：\n  ' + g.fallback;
+          if (g.pkg) msg += '\n（需要联网或先 npm i -D ' + g.pkg + '）';
+        }
         showErr(msg);
         setStatus('生成失败', true);
       }
@@ -497,7 +902,9 @@
       output.textContent = '// 生成结果会显示在这里';
       fileTreeEl.hidden = true; fileTreeEl.innerHTML = '<div class="ft-title">文件</div>';
       document.querySelector('.io').classList.remove('tree-active');
-      dlAllBtn.hidden = true; filesBtn.hidden = true; currentFiles = null; treeVisible = false; clearErr(); setStatus('已清空。');
+      dlAllBtn.hidden = true; filesBtn.hidden = true; currentFiles = null; treeVisible = false;
+      $('validateArea').className = 'validate-area'; $('validateArea').innerHTML = '';
+      clearErr(); setStatus('已清空。');
     });
     $('fetchBtn').addEventListener('click', async () => {
       const url = $('urlInput').value.trim();
@@ -513,6 +920,8 @@
         setStatus('拉取失败', true);
       }
     });
+    $('validateBtn').addEventListener('click', doValidate);
+    $('redoclyBtn').addEventListener('click', doRedoclyValidate);
     $('genBtn').addEventListener('click', runGenerate);
 
     filesBtn.addEventListener('click', () => {
@@ -542,19 +951,36 @@
         activeTab = btn.dataset.tab;
         const label = btn.childNodes[0].textContent.trim();
         const isCustom = activeTab === 'custom';
+        const isServerOnly = SERVER_ONLY.has(activeTab);
+        const isOts = activeTab === 'openapi-typescript';
+        const isSta = activeTab === 'swagger-typescript-api';
+        const isHey = activeTab === 'hey-api';
+        const isOrval = activeTab === 'orval';
+        const isKubb = activeTab === 'kubb';
+        const isOtc = activeTab === 'openapi-typescript-codegen';
         $('customControls').classList.toggle('hidden', !isCustom);
-        $('cdnControls').classList.toggle('hidden', isCustom);
+        $('cdnControls').classList.toggle('hidden', isCustom || isServerOnly);
         $('envControls').classList.toggle('hidden', isCustom);
-        if (activeTab === 'openapi-typescript') {
-          $('cdnControls').innerHTML = '<div class="hint">openapi-typescript 可在<b>浏览器端</b>（经 esm.sh）或<b>服务端</b>（api2 同版本包）运行，产物一致，可切换对比。下方「运行环境」默认浏览器端。</div>';
+        $('otsControls').classList.toggle('hidden', !isOts);
+        $('staControls').classList.toggle('hidden', !isSta);
+        $('heyControls').classList.toggle('hidden', !isHey);
+        $('orvalControls').classList.toggle('hidden', !isOrval);
+        $('kubbControls').classList.toggle('hidden', !isKubb);
+        $('otcControls').classList.toggle('hidden', !isOtc);
+        if (isOts) {
+          $('cdnControls').innerHTML = '<div class="hint">openapi-typescript <b>仅生成 .d.ts 类型声明</b>，天然只输出单文件。可在<b>浏览器端</b>（经 esm.sh）或<b>服务端</b>（api2 同版本包）运行，产物一致，可切换对比。下方「运行环境」默认浏览器端。</div>';
           $('envHint').textContent = '浏览器端：经 esm.sh 动态加载（需联网）；服务端：调用 /api/demo/swagger-ts（需 api2 运行）。两者产物应一致，便于比对。';
-        } else if (activeTab === 'swagger-typescript-api') {
-          $('cdnControls').innerHTML = '<div class="hint">swagger-typescript-api <b>依赖 Node</b>（Biome WASM / fs），浏览器端无法运行，已默认设为<b>服务端</b>。服务端调用 <code>/api/demo/swagger-ts</code>。</div>';
-          $('envHint').textContent = '该生成器无法在浏览器端运行（实测任何版本均失败），下方切到「浏览器端」会给出说明；默认保持「服务端」即可。';
+        } else if (isServerOnly) {
+          $('cdnControls').innerHTML = '<div class="hint">' + label + ' <b>依赖 Node</b>，仅支持服务端运行，调用 <code>/api/demo/swagger-ts</code>。</div>';
+          $('envHint').textContent = label + ' 无法在浏览器端运行，运行环境已固定为「服务端」。请确保 api2 已启动。';
         }
-        // 按标签页恢复运行环境默认值
-        const env = envByTab[activeTab] || 'browser';
-        document.querySelectorAll('input[name="env"]').forEach((r) => { r.checked = (r.value === env); });
+        // 按标签页恢复运行环境默认值；服务端专用工具强制服务端并禁用浏览器端选项
+        if (isServerOnly) envByTab[activeTab] = 'server';
+        const env = isServerOnly ? 'server' : (envByTab[activeTab] || 'browser');
+        document.querySelectorAll('input[name="env"]').forEach((r) => {
+          r.checked = (r.value === env);
+          r.disabled = isServerOnly;
+        });
         output.textContent = '// 已切换到「' + label + '」，点「生成 TypeScript」。';
         fileTreeEl.hidden = true; fileTreeEl.innerHTML = '<div class="ft-title">文件</div>';
         document.querySelector('.io').classList.remove('tree-active');

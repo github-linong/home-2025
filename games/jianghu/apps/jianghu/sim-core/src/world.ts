@@ -11,6 +11,8 @@
  *   - 死亡/掉装：敌人 hp≤0 → rollLoot →  spawn LOOT_GROUND（ttlTicks）→ 移除；zone 清空→复活计时。
  *   - 拾取：玩家与 LOOT_GROUND 重叠 → 记录 PickupEvent，移除地面 token；consumePickups/onPickup 暴露。
  *   - BOSS 阶段：hp 跨阈值 → bossPhase 改变（提升攻击频率）。
+ *   - E15：BOSS phase2 AOE telegraph 预警（生成 TELEGRAPH 实体 → TELEGRAPH_TICKS 后落刀 +
+ *     移除；纯 tick 驱动，无 Rng 消耗）与副本复活点可配置（respawnPos，缺省 RESPAWN_POS）。
  *   - parry 窗口清理 / skillCd 递减。
  *
  * 纪律（C6 / C9 / C11 / C12 / D9）：
@@ -61,6 +63,10 @@ import {
   ENEMY_MOVE_SPEED, // E6：敌人 CHASE 追击速度（格/tick）
   AGGRO_RADIUS, // E6：敌人仇恨半径（px）
   PROVOKE_DURATION_TICKS, // E6：被动怪被打后的反击窗口（tick）
+  TELEGRAPH_TICKS, // E15：telegraph 前摇（tick）= 1s @12Hz（D2 落地）
+  TELEGRAPH_RADIUS, // E15：BOSS AOE 警示圈半径（px）= 1.5×TILE
+  BOSS_AOE_INTERVAL_TICKS, // E15：BOSS phase2 AOE 预警间隔（tick）= 3s @12Hz
+  BOSS_AOE_DAMAGE_MULT, // E15：BOSS AOE 伤害倍率（× 敌人攻击力）
   xpForLevel, // E9：升级经验需求（XP_req = 50·L^1.5，单一来源公式）
   ENEMY_XP, // E9：击杀经验表（按 EnemyTier 索引）
   LEVEL_ATK_PER_LEVEL, // E9：每级 +1 基础攻击（str→atk MVP 映射）
@@ -95,6 +101,11 @@ export interface CreateWorldOpts {
   readonly blocked?: ReadonlySet<string>;
   /** E4 刷怪区（自定 SpawnZone，不依赖 dungeonGen/E5）。构造时 spawnWave 实例化敌人。 */
   readonly spawnZones?: readonly SpawnZone[];
+  /**
+   * E15：玩家死亡复活点（px，tile 对齐）。缺省 RESPAWN_POS（主世界不变，golden 稳定）。
+   * 副本 instance world 由 run-manager 传 spec.entryTile（进本落点一致，防复活卡墙/出副本）。
+   */
+  readonly respawnPos?: Vec2;
 }
 
 /** 拾取事件（地面掉落被玩家拾取）。 */
@@ -151,6 +162,10 @@ interface Actor {
   // E10 新增（玩家倒地/复活；**不进 EntityState 快照**，C12 纪律——客户端用固定 DOWNED_TICKS 推算倒计时）
   downedAtTick?: number; // 玩家倒地起始 tick（复活计时；仅 world 内部）
   iframesUntilTick?: number; // 复活无敌帧截止 tick（IFRAME 到期清位；仅 world 内部）
+  // E15 新增（telegraph 预警；C12 条件序列化——仅 telegraph 字段进快照，dmg/lastAoeTick 仅 world 内部）
+  telegraph?: { shape: number; color: number; startTick: number; applyTick: number; radius: number };
+  dmg?: number; // telegraph 落刀伤害（生成时由 BOSS atk × BOSS_AOE_DAMAGE_MULT 计算；不进快照）
+  lastAoeTick?: number; // BOSS AOE 预警节流（上次生成 telegraph 的 tick；仅 world 内部）
 }
 
 interface SpawnZoneRuntime {
@@ -361,6 +376,9 @@ function playerAttrs(
 export function createWorld(opts: CreateWorldOpts): World {
   let actors: Actor[] = [];
   let nextId = 1;
+
+  // E15：玩家死亡复活点（缺省 RESPAWN_POS=主世界安全区；副本 world 由 run-manager 传 entryTile）。
+  const respawnPos: Vec2 = opts.respawnPos ?? RESPAWN_POS;
 
   // ── 世界尺寸 / 占用格（碰撞只读）──
   const bounds = opts.bounds ?? { w: 40 * TILE, h: 30 * TILE };
@@ -765,6 +783,39 @@ export function createWorld(opts: CreateWorldOpts): World {
         const aggression = e.aggression ?? (e.tier === 0 ? "passive" : "aggressive");
         const inContact = best <= ENEMY_CONTACT_RANGE;
 
+        // E15：BOSS phase2 AOE 预警（telegraph；D2 落地）。仅当 BOSS 处于「战斗态」
+        // （目标在仇恨半径内，best 已由上方目标选择算出）且 bossPhase≥1（phase2）时，
+        // 每 BOSS_AOE_INTERVAL_TICKS 在自身周围生成 AOE 警示圈（TELEGRAPH 实体）——
+        // TELEGRAPH_TICKS 后由下方 telegraph 处理段对圈内玩家 resolveDamage（落刀）+ 移除。
+        // 确定性：纯 tick 驱动，无 Rng 消耗（D9：不扰动掉落/暴击 Rng 流，golden 稳定）。
+        if (
+          e.kind === EntityKind.BOSS &&
+          (e.bossPhase ?? 0) >= 1 &&
+          best <= AGGRO_RADIUS &&
+          t - (e.lastAoeTick ?? -BOSS_AOE_INTERVAL_TICKS) >= BOSS_AOE_INTERVAL_TICKS
+        ) {
+          actors.push({
+            id: nextId++,
+            kind: EntityKind.TELEGRAPH,
+            x: e.x,
+            y: e.y,
+            dir: 0,
+            hp: 1,
+            maxHp: 1,
+            status: EntityStatus.ALIVE,
+            telegraph: {
+              shape: 1, // AOE 填充（types.ts TelegraphState schema；0=圆环 1=AOE填充）
+              color: 0, // DANGER（红；客户端 drawTelegraph color===1 才青色，0 红色）
+              startTick: t,
+              applyTick: t + TELEGRAPH_TICKS,
+              radius: TELEGRAPH_RADIUS,
+            },
+            // 落刀伤害（生成时由 BOSS atk × BOSS_AOE_DAMAGE_MULT 计算，服务端权威 C11）。
+            dmg: Math.round((e.atk ?? ENEMY_BASE_ATK) * BOSS_AOE_DAMAGE_MULT),
+          });
+          e.lastAoeTick = t;
+        }
+
         if (aggression === "aggressive") {
           // aggressive：仇恨半径内索敌追击；接触内不移动（攻击）；半径外 → IDLE 静止。
           if (best <= AGGRO_RADIUS && !inContact) {
@@ -785,6 +836,34 @@ export function createWorld(opts: CreateWorldOpts): World {
           if (provoked && inContact) maybeEnemyAttack(e, target, t);
         }
       }
+
+      // (3b) E15：telegraph 落刀 + 清理（applyTick 到点 → 对圈内玩家 resolveDamage + 移除实体）。
+      //     地面 AOE 不可格挡（targetParry undefined）；复活无敌帧内不受（与接触攻击一致，防围杀）；
+      //     DOWNED 玩家 hp=0 跳过（与敌人接触攻击一致）。确定性：无 Rng 消耗（D9）。
+      const expiredTelegraph: number[] = [];
+      for (const a of actors) {
+        if (a.kind !== EntityKind.TELEGRAPH || !a.telegraph) continue;
+        if (t >= a.telegraph.applyTick) {
+          for (const [, actorId] of players) {
+            const p = actors.find((x) => x.id === actorId);
+            if (!p || p.hp <= 0) continue;
+            if (p.status & EntityStatus.IFRAME) continue;
+            if (Math.hypot(p.x - a.x, p.y - a.y) <= a.telegraph.radius) {
+              const dmg = resolveDamage({
+                targetId: p.id,
+                amount: 0, // C11：忽略客户端 amount，服务端按 baseAmount 裁决
+                tick: t,
+                baseAmount: a.dmg ?? 0,
+                targetParry: undefined, // 地面 AOE 不可格挡（parry 仅覆盖近战接触攻击）
+                targetReduction: p.equipStats?.reduction ?? 0, // 装备减伤仍生效
+              });
+              p.hp += dmg.deltaHp;
+            }
+          }
+          expiredTelegraph.push(a.id);
+        }
+      }
+      if (expiredTelegraph.length > 0) actors = actors.filter((a) => !expiredTelegraph.includes(a.id));
 
       // (4) 死亡处理：玩家复活 / 敌人掉装 + 移除 + 复活调度。
       const deadEnemyIds = new Set<number>();
@@ -817,8 +896,9 @@ export function createWorld(opts: CreateWorldOpts): World {
           const downedStart = a.downedAtTick ?? Number.POSITIVE_INFINITY;
           if (t >= downedStart + DOWNED_TICKS) {
             a.hp = a.maxHp; // 回满当前 maxHp（E7 装备 + E9 等级加成已并入 maxHp）
-            a.x = RESPAWN_POS.x;
-            a.y = RESPAWN_POS.y;
+            // E15：复活回本 world 的 respawnPos（主世界 = RESPAWN_POS；副本 = entryTile，防卡墙/出副本）。
+            a.x = respawnPos.x;
+            a.y = respawnPos.y;
             a.status &= ~EntityStatus.DOWNED;
             a.status |= EntityStatus.IFRAME; // 复活 3s 无敌帧防围杀
             a.iframesUntilTick = t + REVIVE_IFRAME_TICKS;
@@ -997,6 +1077,18 @@ export function createWorld(opts: CreateWorldOpts): World {
                 },
               }
             : {}),
+          // E15：telegraph（仅真实持有才下发；C12 条件序列化——未持有不污染确定性哈希）。
+          ...(a.telegraph
+            ? {
+                telegraph: {
+                  shape: a.telegraph.shape,
+                  color: a.telegraph.color,
+                  startTick: a.telegraph.startTick,
+                  applyTick: a.telegraph.applyTick,
+                  radius: a.telegraph.radius,
+                },
+              }
+            : {}),
           // 玩家：回填 ownerId（seatId 映射）+ 条件字段 parryState / skillCd / attrs（E7）。
           ...(a.ownerId !== undefined ? { ownerId: a.ownerId } : {}),
           ...(a.ownerId !== undefined && a.parryState
@@ -1036,7 +1128,8 @@ export function createWorld(opts: CreateWorldOpts): World {
     spawnGroundLoot(seatId: number, loot: LootState) {
       // 在指定 seat 玩家脚下生成地面掉落（背包满溢出回落，C-Per-3）。
       const p = actors.find((x) => x.ownerId === seatId);
-      const pos = p ? { x: p.x, y: p.y } : { x: RESPAWN_POS.x, y: RESPAWN_POS.y };
+      // E15：无玩家时的安全落点 = 本 world respawnPos（主世界 RESPAWN_POS / 副本 entryTile）。
+      const pos = p ? { x: p.x, y: p.y } : { x: respawnPos.x, y: respawnPos.y };
       actors.push({
         id: nextId++,
         kind: EntityKind.LOOT_GROUND,

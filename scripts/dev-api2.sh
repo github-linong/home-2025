@@ -18,5 +18,13 @@ ensure_tunnel() {
 }
 
 ensure_tunnel
+
+# Ensure correct Node version via nvm
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+  . "$NVM_DIR/nvm.sh"
+  nvm use --silent 2>/dev/null || nvm install
+fi
+
 echo "[api2-dev] starting (log: $LOG)"
 exec node --watch --env-file=.env src/server.js >>"$LOG" 2>&1

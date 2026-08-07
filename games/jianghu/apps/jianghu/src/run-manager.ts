@@ -105,6 +105,11 @@ export interface StartRunOpts {
   /** 世界尺寸（px），缺省 40*TILE × 30*TILE（与 createWorld 默认一致）。 */
   readonly bounds?: { readonly w: number; readonly h: number };
   /**
+   * E15：玩家死亡复活点（px）。缺省 RESPAWN_POS（主世界不变）；副本 instance 由
+   * enterInstance 传 spec.entryTile（进本落点一致，防复活卡墙/出副本坐标）。
+   */
+  readonly respawnPos?: Vec2;
+  /**
    * 拾取回调（可选）。每次玩家拾取地面掉落时触发（seatId + 掉落）。
    * **默认已接**（F1）：bootResidentRun / enterInstance 传 `handlePickup` —— seatId → 登录/游客解析，
    * 登录玩家经 applyPickupToInventory 落背包，游客直接忽略（C-Per-1 零持久写）。
@@ -216,6 +221,7 @@ export function startRun(opts: StartRunOpts): WorldSnapshot {
     lootTokens: opts.lootTokens,
     spawnZones: opts.spawnZones, // E5：副本刷怪区
     bounds: opts.bounds, // E5：实例世界尺寸
+    respawnPos: opts.respawnPos, // E15：副本复活点（缺省 RESPAWN_POS）
   });
 
   const handle = startRunLoop({
@@ -484,6 +490,8 @@ export function enterInstance(
     spawnZones: spec.spawnZones,
     bounds: { w: GRID_W_PX, h: GRID_H_PX },
     lootTokens: 0, // 副本无占位漂浮 token（掉落仅来自敌人，C-Net-1 域干净）
+    // E15：副本死亡复活点 = 进本出生点（entryTile，与进本落点一致，防复活卡墙/出副本坐标）。
+    respawnPos: spec.entryTile,
     // F1（P1）：副本拾取同样落背包（登录入库、游客忽略 C-Per-1）。
     onPickup: (seatId, loot) => handlePickup(instanceRoomId, seatId, loot),
     // E9：副本升级同样落库 + 推送（登录；游客忽略 C-Per-1）。

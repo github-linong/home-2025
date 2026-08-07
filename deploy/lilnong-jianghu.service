@@ -1,0 +1,17 @@
+[Unit]
+Description=lilnong.top Jianghu ARPG (WebSocket)
+After=network.target lilnong-api2.service
+Wants=lilnong-api2.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/lilnong-jianghu
+EnvironmentFile=/opt/lilnong-jianghu/.env
+ExecStart=/usr/local/bin/node --experimental-strip-types /opt/lilnong-jianghu/src/server.ts
+Restart=on-failure
+RestartSec=3
+Environment=NODE_OPTIONS=--max-old-space-size=512
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

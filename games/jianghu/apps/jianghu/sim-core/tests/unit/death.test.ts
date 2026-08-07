@@ -10,6 +10,7 @@
  *   ⑤ IFRAME：复活后敌人接触攻击无效；REVIVE_IFRAME_TICKS 到期清位后恢复正常
  *   ⑥ 倒地期间不被拾取（地面掉落与倒地玩家重叠不产生 pickup）
  *   ⑦ 确定性：同 seed + 同输入序列 ⇒ 同死亡/复活 tick 序列
+ *   ⑧ 副本复活点可配置（E15）：respawnPos=entryTile 复活回 entryTile；主世界默认 RESPAWN_POS 不变
  *
  * 说明：直接改 actor 字段（hp/status/downedAtTick）等价于 playtest 的 relocateToCorner
  *   先例（world.actors() 返回浅拷贝，Actor 对象同引用）；不依赖真实攻击时序的场景用
@@ -264,6 +265,45 @@ test("⑥ 倒地不拾取：地面掉落与倒地玩家重叠 → 无 pickup，�
     world.actors().some((a) => a.kind === EntityKind.LOOT_GROUND && a.loot?.itemId === 777),
     "掉落保留在地面（未被移除）",
   );
+});
+
+// ─────────────────────────────────────────────────────────────
+// ⑧ 副本复活点可配置（E15：respawnPos）
+// ─────────────────────────────────────────────────────────────
+
+test("⑧ 副本 world（respawnPos=entryTile）死亡复活到 entryTile；主世界默认 RESPAWN_POS 不变", () => {
+  // 副本：respawnPos = entryTile（run-manager.enterInstance 传 spec.entryTile）。
+  const entry = { x: 5 * TILE, y: 7 * TILE };
+  const dungeon = createWorld({
+    runId: "d",
+    roomId: "inst",
+    seed: "dungeon-death",
+    phase: RoomPhase.DUNGEON,
+    players: [{ seatId: 0, userId: "u0" }],
+    lootTokens: 0,
+    respawnPos: entry,
+  });
+  const dp = findPlayer(dungeon);
+  forceDowned(dungeon);
+  dp.x = 30 * TILE; // 移到远处，验证复活瞬移回 entryTile
+  dp.y = 20 * TILE;
+  for (let i = 0; i < DOWNED_TICKS + 1; i++) dungeon.step();
+  const dp2 = findPlayer(dungeon);
+  assert.ok(!(dp2.status & EntityStatus.DOWNED), "副本复活后 DOWNED 清");
+  assert.equal(dp2.hp, dp2.maxHp, "副本复活 hp 回满");
+  assert.equal(dp2.x, entry.x, "副本复活回 entryTile.x（防复活卡墙/出副本）");
+  assert.equal(dp2.y, entry.y, "副本复活回 entryTile.y");
+
+  // 主世界：缺省 respawnPos → RESPAWN_POS 不变（现有 ④ 已覆盖，此处显式再验保持 golden）。
+  const world = mkWorld({ seed: "death-respawn-default", players: [{ seatId: 0, userId: "u0" }] });
+  const p = findPlayer(world);
+  forceDowned(world);
+  p.x = 10 * TILE;
+  p.y = 10 * TILE;
+  for (let i = 0; i < DOWNED_TICKS + 1; i++) world.step();
+  const p2 = findPlayer(world);
+  assert.equal(p2.x, RESPAWN_POS.x, "主世界复活仍回 RESPAWN_POS.x（golden 稳）");
+  assert.equal(p2.y, RESPAWN_POS.y, "主世界复活仍回 RESPAWN_POS.y（golden 稳）");
 });
 
 // ─────────────────────────────────────────────────────────────

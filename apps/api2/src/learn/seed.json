@@ -29,7 +29,27 @@
         { "en": "curious", "zh": "好奇的", "hint": "want to know more", "sort_order": 22 },
         { "en": "grateful", "zh": "感激的", "hint": "thankful", "sort_order": 23 },
         { "en": "honest", "zh": "诚实的", "hint": "tell the truth", "sort_order": 24 },
-        { "en": "improve", "zh": "改进；提高", "hint": "make better", "sort_order": 25 }
+        { "en": "improve", "zh": "改进；提高", "hint": "make better", "sort_order": 25 },
+        { "en": "negotiate", "zh": "谈判；协商", "hint": "discuss to reach a deal", "sort_order": 26 },
+        { "en": "recipe", "zh": "食谱；秘诀", "hint": "cooking instructions", "sort_order": 27 },
+        { "en": "feedback", "zh": "反馈", "hint": "response to your work", "sort_order": 28 },
+        { "en": "laundry", "zh": "待洗的衣服", "hint": "clothes to wash", "sort_order": 29 },
+        { "en": "empathy", "zh": "共情；同理心", "hint": "feeling what others feel", "sort_order": 30 },
+        { "en": "streamline", "zh": "精简；使更高效", "hint": "simplify a process", "sort_order": 31 },
+        { "en": "checkout", "zh": "结账；退房", "hint": "pay and leave", "sort_order": 32 },
+        { "en": "versatile", "zh": "多功能的", "hint": "usable in many ways", "sort_order": 33 },
+        { "en": "implement", "zh": "实施；落实", "hint": "put into action", "sort_order": 34 },
+        { "en": "subscription", "zh": "订阅", "hint": "recurring payment plan", "sort_order": 35 },
+        { "en": "delegate", "zh": "授权；委派", "hint": "assign a task to someone", "sort_order": 36 },
+        { "en": "collaborate", "zh": "合作；协作", "hint": "work together closely", "sort_order": 37 },
+        { "en": "brief", "zh": "简短的；做简报", "hint": "short or give a quick update", "sort_order": 38 },
+        { "en": "compromise", "zh": "妥协；折中", "hint": "each side gives up something", "sort_order": 39 },
+        { "en": "occasion", "zh": "场合；时机", "hint": "a particular time or event", "sort_order": 40 },
+        { "en": "portion", "zh": "一份；部分", "hint": "a served amount of food", "sort_order": 41 },
+        { "en": "spontaneous", "zh": "自发的；即兴的", "hint": "not planned in advance", "sort_order": 42 },
+        { "en": "inevitable", "zh": "不可避免的", "hint": "sure to happen", "sort_order": 43 },
+        { "en": "distinguish", "zh": "区分；辨别", "hint": "tell apart", "sort_order": 44 },
+        { "en": "perspective", "zh": "视角；观点", "hint": "a way of viewing things", "sort_order": 45 }
       ]
     }
   ],
@@ -201,6 +221,146 @@
       "zh": "习惯",
       "pos": "n.",
       "example": "Reading before sleep is a good habit."
+    },
+    {
+      "lemma": "negotiate",
+      "phonetic": "/nɪˈɡəʊʃieɪt/",
+      "zh": "谈判；协商",
+      "pos": "v.",
+      "example": "We need to negotiate the price with the supplier."
+    },
+    {
+      "lemma": "recipe",
+      "phonetic": "/ˈresɪpi/",
+      "zh": "食谱；配方；秘诀",
+      "pos": "n.",
+      "example": "My grandmother's recipe for dumplings is the best."
+    },
+    {
+      "lemma": "feedback",
+      "phonetic": "/ˈfiːdbæk/",
+      "zh": "反馈；反馈意见",
+      "pos": "n.",
+      "example": "Could you give me some feedback on the draft?"
+    },
+    {
+      "lemma": "laundry",
+      "phonetic": "/ˈlɔːndri/",
+      "zh": "待洗的衣服；洗衣店",
+      "pos": "n.",
+      "example": "I need to do the laundry before the weekend."
+    },
+    {
+      "lemma": "empathy",
+      "phonetic": "/ˈempəθi/",
+      "zh": "共情；同理心",
+      "pos": "n.",
+      "example": "A good leader needs empathy, not just authority."
+    },
+    {
+      "lemma": "streamline",
+      "phonetic": "/ˈstriːmlaɪn/",
+      "zh": "精简；使流程更高效",
+      "pos": "v.",
+      "example": "We streamlined the approval process from five steps to two."
+    },
+    {
+      "lemma": "checkout",
+      "phonetic": "/ˈtʃekaʊt/",
+      "zh": "结账；退房",
+      "pos": "n.",
+      "example": "Hotel checkout is at noon."
+    },
+    {
+      "lemma": "versatile",
+      "phonetic": "/ˈvɜːsətaɪl/",
+      "zh": "多功能的；多才多艺的",
+      "pos": "adj.",
+      "example": "This versatile tool can be used for cooking and cleaning."
+    },
+    {
+      "lemma": "implement",
+      "phonetic": "/ˈɪmplɪment/",
+      "zh": "实施；落实",
+      "pos": "v./n.",
+      "example": "We will implement the new policy starting next month."
+    },
+    {
+      "lemma": "subscription",
+      "phonetic": "/səbˈskrɪpʃn/",
+      "zh": "订阅；订阅费",
+      "pos": "n.",
+      "example": "I cancelled my streaming subscription to save money."
+    },
+    {
+      "lemma": "delegate",
+      "phonetic": "/ˈdelɪɡeɪt/",
+      "zh": "授权；委派",
+      "pos": "v.",
+      "example": "A good manager knows when to delegate tasks to the team."
+    },
+    {
+      "lemma": "collaborate",
+      "phonetic": "/kəˈlæbəreɪt/",
+      "zh": "合作；协作",
+      "pos": "v.",
+      "example": "Two teams collaborated on the new product launch."
+    },
+    {
+      "lemma": "brief",
+      "phonetic": "/briːf/",
+      "zh": "简短的；向…做简报",
+      "pos": "adj./v.",
+      "example": "Let me brief you on the situation before the call."
+    },
+    {
+      "lemma": "compromise",
+      "phonetic": "/ˈkɒmprəmaɪz/",
+      "zh": "妥协；折中",
+      "pos": "n./v.",
+      "example": "Both sides had to compromise to reach an agreement."
+    },
+    {
+      "lemma": "occasion",
+      "phonetic": "/əˈkeɪʒn/",
+      "zh": "场合；时机",
+      "pos": "n.",
+      "example": "This is a special occasion, so I dressed up."
+    },
+    {
+      "lemma": "portion",
+      "phonetic": "/ˈpɔːʃn/",
+      "zh": "一份；部分",
+      "pos": "n.",
+      "example": "I only ate a small portion of the cake."
+    },
+    {
+      "lemma": "spontaneous",
+      "phonetic": "/spɒnˈteɪniəs/",
+      "zh": "自发的；即兴的",
+      "pos": "adj.",
+      "example": "We took a spontaneous trip to the beach this weekend."
+    },
+    {
+      "lemma": "inevitable",
+      "phonetic": "/ɪnˈevɪtəbl/",
+      "zh": "不可避免的",
+      "pos": "adj.",
+      "example": "Given the delays, a postponement was inevitable."
+    },
+    {
+      "lemma": "distinguish",
+      "phonetic": "/dɪˈstɪŋɡwɪʃ/",
+      "zh": "区分；辨别",
+      "pos": "v.",
+      "example": "Can you distinguish between the two versions?"
+    },
+    {
+      "lemma": "perspective",
+      "phonetic": "/pəˈspektɪv/",
+      "zh": "视角；观点",
+      "pos": "n.",
+      "example": "From my perspective, this is actually a good thing."
     }
   ],
   "passages": [
@@ -224,6 +384,13 @@
       "level": "B1",
       "body": "On the weekend I meet a friend at a small cafe. We order a latte and sit at a table by the window. Our conversation is slow and relaxed. Sometimes we go to the library later to borrow a book from the shelf and return another one.",
       "wordLemmas": ["weekend", "cafe", "order", "latte", "table", "conversation", "library", "borrow", "shelf", "return"]
+    },
+    {
+      "slug": "streamlining-work",
+      "title": "Streamlining Our Workflow",
+      "level": "B1",
+      "body": "Our team decided to streamline the approval process. We used to negotiate every detail by email, but now we give quick feedback in a shared document. We implemented the new workflow last month, and everyone says it is more convenient than before. We also cancelled a subscription we no longer needed. Small changes like these make a big difference.",
+      "wordLemmas": ["streamline", "negotiate", "feedback", "implement", "convenient", "subscription"]
     }
   ]
 }

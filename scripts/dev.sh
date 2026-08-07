@@ -124,11 +124,11 @@ for name in "${SELECTED_NAMES[@]}"; do
 
   if $first; then
     tmux new-session -d -s "$SESSION" -n "$name" -c "$dir" \
-      "$cmd; exec zsh"
+      "source ~/.nvm/nvm.sh 2>/dev/null && nvm use; $cmd; exec zsh"
     first=false
   else
     tmux new-window -t "$SESSION" -n "$name" -c "$dir" \
-      "$cmd; exec zsh"
+      "source ~/.nvm/nvm.sh 2>/dev/null && nvm use; $cmd; exec zsh"
   fi
 done
 
