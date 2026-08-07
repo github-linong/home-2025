@@ -332,6 +332,20 @@ function toast(msg, isErr) {
   toastTimer = setTimeout(() => { toastEl.style.display = 'none'; }, 3500);
 }
 
+// E7.2：服务端错误码 → 中文友好文案（equip/拾取/进出本常见错误）。
+const ERROR_TEXT = {
+  AUTH_REQUIRED: '需要登录（请刷新或检查连接）',
+  NOT_LOGGED_IN: '未登录：游客无法拾取/穿戴。请用 ?devUserId=dev 打开体验完整玩法',
+  ITEM_NOT_FOUND: '物品不在背包（游客模式拾取不会入包）',
+  BAG_FULL: '背包已满',
+  BAD_ITEM_ID: '无效物品',
+  SLOT_EMPTY: '该装备槽是空的',
+  BAD_SLOT: '无效装备槽',
+  NOT_IN_RESIDENT: '需在主世界才能进副本',
+  NOT_IN_INSTANCE: '需在副本内才能出本',
+  COOLDOWN: '入口冷却中，稍后再试',
+};
+
 // 拾取 toast（屏幕下方，稀有度色）
 let pickupToastTimer = null;
 function pickupToast(html) {
@@ -485,6 +499,8 @@ function handleControl(msg) {
       seatId = msg.seatId;
       tickMs = msg.tickMs || TICK_MS;
       GAME.seatId = seatId; GAME.guest = msg.guest;
+      // E7.2：游客模式提示（裸开页面=游客，拾取/装备不保存）。
+      if (msg.guest) setTimeout(() => toast('游客模式：拾取/装备不保存，用 ?devUserId=dev 打开可登录体验完整玩法'), 800);
       if (state === 'reconnecting') {
         if (reconnectToken && roomId) {
           sendJson({ type: 'session.reconnect', requestId: 'rec', payload: { roomId, reconnectToken } });
@@ -546,7 +562,7 @@ function handleControl(msg) {
       break;
     case 'game.error': {
       const code = msg.error && msg.error.code;
-      toast('服务端: ' + (code || 'unknown'), true);
+      toast(ERROR_TEXT[code] || ('服务端: ' + (code || 'unknown')), true);
       GAME.errors.push('game.error:' + code);
       break;
     }

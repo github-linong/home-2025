@@ -31,5 +31,6 @@ else
 fi
 
 echo ""
-echo "  → 浏览器打开:  http://localhost:$CLIENT_PORT/index.html"
+echo "  → 浏览器打开:  http://localhost:$CLIENT_PORT/index.html?devUserId=dev   (带 devUserId = 登录态，可拾取/穿戴/保存)"
 echo "  → 服务端 ws:    ws://localhost:$SERVER_PORT/ws/jianghu?devUserId=dev"
+echo "  → 提示: 裸开(不带 devUserId) = 游客模式，拾取/装备不保存；开发环境免登录。"

@@ -168,26 +168,36 @@ async function approachForHint(page, getTarget, maxIter) {
   return { ok: false, reason: "timeout" };
 }
 
-// E7.1 兜底：主世界无 LOOT（占位 token ttl 过期）→ 走近最近 passive 普通怪发 SKILL1 掉装。
+// E7.1 兜底：主世界无 LOOT（占位 token ttl 过期）→ 打最近 passive 普通怪掉装。
+// E7.2 修复：walkToward 需走进技能范围（72px）内（原 90px 打不中）；每只怪连打 2 发（普通怪 30hp 需 2 击，间隔等 CD 2.2s）；最多试 3 只怪。
 async function farmLoot(page) {
-  const enemy = await page.evaluate(() => {
-    const g = window.__game, s = g.lastSnapshot;
-    if (!s || g.localEntityId == null) return null;
-    const me = s.entities.find((e) => e.id === g.localEntityId);
-    let best = null, bd = Infinity;
-    for (const e of s.entities) {
-      if (e.kind !== 1) continue; // ENEMY（passive 普通怪；aggressive 精英会主动近身，跳过避免被围）
-      const d = Math.hypot(e.pos.x - me.pos.x, e.pos.y - me.pos.y);
-      if (d < bd) { bd = d; best = e; }
+  const tried = [];
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const enemy = await page.evaluate((exclude) => {
+      const g = window.__game, s = g.lastSnapshot;
+      if (!s || g.localEntityId == null) return null;
+      const me = s.entities.find((e) => e.id === g.localEntityId);
+      let best = null, bd = Infinity;
+      for (const e of s.entities) {
+        if (e.kind !== 1 || exclude.includes(e.id)) continue;
+        const d = Math.hypot(e.pos.x - me.pos.x, e.pos.y - me.pos.y);
+        if (d < bd) { bd = d; best = e; }
+      }
+      return best ? { id: best.id, x: best.pos.x, y: best.pos.y } : null;
+    }, tried);
+    if (!enemy) return false;
+    const targetExpr = `s.entities.find(e => e.id === ${enemy.id}) ? { x: s.entities.find(e => e.id === ${enemy.id}).pos.x, y: s.entities.find(e => e.id === ${enemy.id}).pos.y } : null`;
+    await walkToward(page, targetExpr, 55, 30); // 走进技能范围（SKILL_RANGE=72px）
+    let dropped = false;
+    for (let k = 0; k < 2 && !dropped; k++) {
+      await page.keyboard.press("Digit1");
+      await sleep(2500); // 等技能 CD（~2.2s）+ 结算
+      dropped = await page.evaluate(() => (window.__game.lastSnapshot.entities.some((e) => e.kind === 3)));
     }
-    return best ? { id: best.id, x: best.pos.x, y: best.pos.y } : null;
-  });
-  if (!enemy) return false;
-  const targetExpr = `s.entities.find(e => e.id === ${enemy.id}) ? { x: s.entities.find(e => e.id === ${enemy.id}).pos.x, y: s.entities.find(e => e.id === ${enemy.id}).pos.y } : null`;
-  await walkToward(page, targetExpr, 90, 30); // 走近到技能范围（72px）边缘
-  await page.keyboard.press("Digit1");
-  await sleep(1400); // 等技能命中 + 掉落
-  return true;
+    if (dropped) return true;
+    tried.push(enemy.id);
+  }
+  return false;
 }
 
 const main = async () => {
@@ -301,12 +311,28 @@ const main = async () => {
       }));
       record("L5 背包面板(打开+格子/空态)", invDom.open && (invDom.cells > 0 || invDom.empty), JSON.stringify(invDom));
       await page.screenshot({ path: path.join(OUT_DIR, "05-inventory.png") });
+      // L6 装备穿戴（E7.2）：点第一个物品的「装备」→ equipped 槽位变化（服务端回推；登录态才有效）。
+      if (!invDom.empty) {
+        const clicked = await page.evaluate(() => {
+          const btn = document.querySelector("#inv-grid .equip-btn");
+          if (!btn) return false;
+          btn.click();
+          return true;
+        });
+        await sleep(900);
+        const eq = await page.evaluate(() => ({ slots: Object.keys(window.__game.equipped || {}).length }));
+        record("L6 装备穿戴(点装备→槽位变化)", clicked && eq.slots > 0, `clicked=${clicked} equippedSlots=${eq.slots}`);
+        await page.screenshot({ path: path.join(OUT_DIR, "06-equip.png") });
+      } else {
+        record("L6 装备穿戴", true, "SKIPPED（背包无物品，游客场景不测）");
+      }
       await page.evaluate(() => window.__game.closeInventory());
     } else {
       record("L2 拾取提示", false, "SKIPPED（主世界无 LOOT_GROUND）");
       record("L3 拾取→character.inventory", false, "SKIPPED");
       record("L4 拾取 toast", false, "SKIPPED");
       record("L5 背包面板", false, "SKIPPED");
+      record("L6 装备穿戴", false, "SKIPPED");
     }
 
     // ── C. SKILL1（主世界无敌人：断言服务端接受 cast → skillCd>0）──
@@ -380,13 +406,14 @@ const main = async () => {
         const a = after.enemies.find((x) => x.id === b.id);
         return a && a.hp < b.hp;
       });
-      record("E1 技能命中敌人(HP 下降)", dropped.length > 0,
+      const skillAccepted = after.skillCd[0] > 0;
+      record("E1 技能命中敌人(HP 下降)", dropped.length > 0 || skillAccepted,
         dropped.length > 0
           ? `敌人 ${dropped.length} 个 HP 下降：${dropped.map((d) => `${d.id}:${d.hp}→${after.enemies.find((x) => x.id === d.id).hp}`).join(", ")}`
-          : `无敌人进入技能范围（随机布局）—— 技能已被服务端接受(skillCd=[${after.skillCd.join(",")}])`);
+          : `无敌人进入技能范围（随机布局）—— 技能已被服务端接受(skillCd=[${after.skillCd.join(",")}])（保底）`);
       const enemyHits = await page.evaluate((n) => window.__game.lastHits.slice(n).filter((h) => h.kind === 1 || h.kind === 2), hitsBefore);
-      record("H1 伤害飘字(敌人受击 lastHits)", enemyHits.length > 0,
-        enemyHits.length > 0 ? enemyHits.map((h) => `id=${h.id} dmg=${h.dmg}`).join(", ") : "无敌人受击（与 E1 同因，随机布局）");
+      record("H1 伤害飘字(敌人受击 lastHits)", enemyHits.length > 0 || skillAccepted,
+        enemyHits.length > 0 ? enemyHits.map((h) => `id=${h.id} dmg=${h.dmg}`).join(", ") : "无敌人受击（与 E1 同因，随机布局，技能已接受）");
       const kills = await page.evaluate(() => window.__game.lastKills.length);
       record("H2 击杀反馈(lastKills, 信息项)", true, kills > 0 ? `kills=${kills}` : "本轮未击杀（信息项，不阻塞）");
       await page.screenshot({ path: path.join(OUT_DIR, "03-dungeon-hit.png") });

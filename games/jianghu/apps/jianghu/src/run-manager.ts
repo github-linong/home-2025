@@ -240,13 +240,14 @@ export function stopRun(roomId: string): void {
 export function bootResidentRun(seed = "jianghu-overworld-0"): WorldSnapshot {
   const room = getRoom(RESIDENT_ROOM_ID);
   const roomId = room?.roomId ?? RESIDENT_ROOM_ID;
-  // E7.1：主世界刷怪区（普通 passive 站桩 + 1 精英 aggressive 巡逻；围绕出生点四周，出生点/入口保持安全距离）。
-  // 解决「主世界无怪可打、无掉落来源、E1 占位 LOOT token ttl 过期后空场」；掉落持续循环（respawnTicks 600-900）。
+  // E7.1：主世界刷怪区（普通 passive 站桩 + 精英 aggressive 巡逻；围绕出生点四周，出生点/入口保持安全距离）。
+  // E7.2：精英移到远角 (36,4)，出生点 (16,15) 附近全是 passive 普通怪（新手/E2E farmLoot 不会被精英反杀）。
   const overworldZones: SpawnZone[] = [
     { pos: { x: 8 * TILE, y: 8 * TILE }, tier: 0, enemyTypeId: "savage", count: 3, respawnTicks: 600, aggression: "passive" },
     { pos: { x: 28 * TILE, y: 8 * TILE }, tier: 0, enemyTypeId: "brigand", count: 2, respawnTicks: 600, aggression: "passive" },
-    { pos: { x: 14 * TILE, y: 22 * TILE }, tier: 1, enemyTypeId: "shadow", count: 1, respawnTicks: 900, aggression: "aggressive" },
+    { pos: { x: 14 * TILE, y: 22 * TILE }, tier: 0, enemyTypeId: "brigand", count: 2, respawnTicks: 600, aggression: "passive" },
     { pos: { x: 26 * TILE, y: 22 * TILE }, tier: 0, enemyTypeId: "brigand", count: 2, respawnTicks: 600, aggression: "passive" },
+    { pos: { x: 36 * TILE, y: 4 * TILE }, tier: 1, enemyTypeId: "shadow", count: 1, respawnTicks: 900, aggression: "aggressive" },
   ];
   return startRun({
     runId: "run_resident",
