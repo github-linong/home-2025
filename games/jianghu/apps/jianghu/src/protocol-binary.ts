@@ -167,6 +167,14 @@ function encodeEntity(e: EntityState): Buffer {
     w.u8(e.attrs.str);
     w.u8(e.attrs.dex);
     w.u8(e.attrs.vit);
+    // E7：可选扩展字段（atk/maxHp/crit 千分比；仅当全部存在才编码，C12 条件序列化）。
+    const hasExt = e.attrs.atk !== undefined && e.attrs.maxHp !== undefined && e.attrs.crit !== undefined;
+    w.u8(hasExt ? 1 : 0);
+    if (hasExt) {
+      w.u16(e.attrs.atk!);
+      w.u16(e.attrs.maxHp!);
+      w.u16(e.attrs.crit!);
+    }
     mask |= ChangeBit.ATTRS;
   }
 
@@ -197,7 +205,7 @@ function decodeEntity(r: BufReader): EntityState {
   let entrance: { cooldownTicks: number; lastUsedTick: number } | undefined;
   let tier: number | undefined;
   let skillCd: number[] | undefined;
-  let attrs: { str: number; dex: number; vit: number } | undefined;
+  let attrs: { str: number; dex: number; vit: number; atk?: number; maxHp?: number; crit?: number } | undefined;
 
   if (mask & ChangeBit.OWNER) ownerId = r.u16();
   if (mask & ChangeBit.PARRY) {
@@ -229,7 +237,15 @@ function decodeEntity(r: BufReader): EntityState {
     skillCd = [r.u16(), r.u16(), r.u16(), r.u16()];
   }
   if (mask & ChangeBit.ATTRS) {
-    attrs = { str: r.u8(), dex: r.u8(), vit: r.u8() };
+    const str = r.u8();
+    const dex = r.u8();
+    const vit = r.u8();
+    // E7：可选扩展字段（hasExt 标志 + u16×3 atk/maxHp/crit 千分比）。
+    if (r.u8() === 1) {
+      attrs = { str, dex, vit, atk: r.u16(), maxHp: r.u16(), crit: r.u16() };
+    } else {
+      attrs = { str, dex, vit };
+    }
   }
 
   // 单次字面量构造：EntityState 的条件字段为只读，仅可在字面量初始化时赋值（满足 C12 只读契约）。

@@ -140,7 +140,8 @@ async function walkToward(page, getTarget, distThreshold, maxIter) {
   return { ok: false, reason: "timeout" };
 }
 
-// C2 L2：细步走近掉落，每步前检查「按 F 拾取」提示（72px 提示环 vs 48px 拾取环，粗步会跳过窗口）
+// C2 L2：细步走近掉落，每步前检查「按 F 拾取」提示（72px 提示环 vs 48px 拾取环）。
+// E7.1：定向改用客户端 predicted（更跟手，避免服务端快照滞后导致方向来回摆）；步长 60→110ms（≈21px）。
 async function approachForHint(page, getTarget, maxIter) {
   for (let i = 0; i < (maxIter || 60); i++) {
     const hint = await page.evaluate(() => ({ near: window.__game.nearLootId, text: window.__game.pickupHint }));
@@ -151,18 +152,42 @@ async function approachForHint(page, getTarget, maxIter) {
       const me = s.entities.find((e) => e.id === g.localEntityId);
       const target = eval(getTargetStr);
       if (!me || !target) return null;
-      return { mx: me.pos.x, my: me.pos.y, tx: target.x, ty: target.y, d: Math.hypot(target.x - me.pos.x, target.y - me.pos.y) };
+      const mx = g.predicted ? g.predicted.x : me.pos.x;
+      const my = g.predicted ? g.predicted.y : me.pos.y;
+      return { mx, my, tx: target.x, ty: target.y, d: Math.hypot(target.x - mx, target.y - my) };
     }, getTarget);
     if (!nav) return { ok: false, reason: "no target (可能已拾取)" };
     if (nav.d <= 48) return { ok: false, reason: "已进入拾取环(≤48px)仍未显示提示" };
     const dx = nav.tx - nav.mx, dy = nav.ty - nav.my;
     const key = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? "KeyD" : "KeyA") : (dy > 0 ? "KeyS" : "KeyW");
     await page.keyboard.down(key);
-    await sleep(60);   // 细步 ≈11px @192px/s，不会跳过 72→48 的提示窗口
+    await sleep(110);   // E7.1：60→110ms（≈21px），减少步数、抗方向抖动
     await page.keyboard.up(key);
-    await sleep(40);
+    await sleep(60);
   }
   return { ok: false, reason: "timeout" };
+}
+
+// E7.1 兜底：主世界无 LOOT（占位 token ttl 过期）→ 走近最近 passive 普通怪发 SKILL1 掉装。
+async function farmLoot(page) {
+  const enemy = await page.evaluate(() => {
+    const g = window.__game, s = g.lastSnapshot;
+    if (!s || g.localEntityId == null) return null;
+    const me = s.entities.find((e) => e.id === g.localEntityId);
+    let best = null, bd = Infinity;
+    for (const e of s.entities) {
+      if (e.kind !== 1) continue; // ENEMY（passive 普通怪；aggressive 精英会主动近身，跳过避免被围）
+      const d = Math.hypot(e.pos.x - me.pos.x, e.pos.y - me.pos.y);
+      if (d < bd) { bd = d; best = e; }
+    }
+    return best ? { id: best.id, x: best.pos.x, y: best.pos.y } : null;
+  });
+  if (!enemy) return false;
+  const targetExpr = `s.entities.find(e => e.id === ${enemy.id}) ? { x: s.entities.find(e => e.id === ${enemy.id}).pos.x, y: s.entities.find(e => e.id === ${enemy.id}).pos.y } : null`;
+  await walkToward(page, targetExpr, 90, 30); // 走近到技能范围（72px）边缘
+  await page.keyboard.press("Digit1");
+  await sleep(1400); // 等技能命中 + 掉落
+  return true;
 }
 
 const main = async () => {
@@ -191,7 +216,7 @@ const main = async () => {
     page.on("pageerror", (e) => pageErrors.push(String(e)));
     page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text()); });
 
-    const url = `http://127.0.0.1:${STATIC_PORT}/index.html?server=ws://127.0.0.1:${PORT}&devUserId=e2ehero&debug=1`;
+    const url = `http://127.0.0.1:${STATIC_PORT}/index.html?server=ws://127.0.0.1:${PORT}&devUserId=e2ehero_${Math.floor(Math.random() * 1e6)}&debug=1`;
     console.log("[e2e] open " + url);
     await page.goto(url, { waitUntil: "domcontentloaded" });
 
@@ -234,13 +259,23 @@ const main = async () => {
     record("B2 预测收敛(松键后 err<30px)", conv != null && conv.err < 30, conv ? `err=${conv.err.toFixed(1)}px` : "n/a");
 
     // ── L. 掉落可见性 + 拾取 + 背包（主世界；服务端重叠自动拾取 PICKUP_RADIUS=1×TILE）──
-    const lootInfo = await page.evaluate(() => {
+    let lootInfo = await page.evaluate(() => {
       const g = window.__game, s = g.lastSnapshot;
       const loots = s ? s.entities.filter((e) => e.kind === 3).map((e) => ({ id: e.id, rarity: e.loot ? e.loot.rarity : -1 })) : [];
       return { count: loots.length, first: loots[0] || null };
     });
     record("L1 主世界 LOOT_GROUND(≥1)", lootInfo.count >= 1, `count=${lootInfo.count} rarity=${lootInfo.first ? lootInfo.first.rarity : "-"}`);
 
+    // E7.1 兜底：主世界无 LOOT（占位 token ttl 过期）→ 打最近 passive 怪掉装，再走 L2-L5
+    if (!lootInfo.first) {
+      const farmed = await farmLoot(page);
+      lootInfo = await page.evaluate(() => {
+        const g = window.__game, s = g.lastSnapshot;
+        const loots = s ? s.entities.filter((e) => e.kind === 3).map((e) => ({ id: e.id, rarity: e.loot ? e.loot.rarity : -1 })) : [];
+        return { count: loots.length, first: loots[0] || null };
+      });
+      record("L1b 兜底打怪掉装", farmed && lootInfo.count >= 1, `farmed=${farmed} count=${lootInfo.count}`);
+    }
     if (lootInfo.first) {
       const targetExpr = `s.entities.find(e => e.id === ${lootInfo.first.id}) ? { x: s.entities.find(e => e.id === ${lootInfo.first.id}).pos.x, y: s.entities.find(e => e.id === ${lootInfo.first.id}).pos.y } : null`;
       // L2 拾取提示：细步走近，进入 ≤1.5×TILE(72px) 提示环即应出现「按 F 拾取」

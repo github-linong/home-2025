@@ -155,6 +155,16 @@ export const LOOT_GROUND_TTL_TICKS = 1800;
 /** 玩家最大 HP（world 出生与死亡复活用；与 E1 占位 100 对齐，combat §⑥ / persistence SAFE_SPAWN 同源）。 */
 export const PLAYER_MAX_HP = 100;
 
+/** 玩家基础三围（STR/DEX/VIT）。C7 单一来源：persistence.DEFAULT_ATTRS 引用此处（E7），world 快照 attrs 回填同源。 */
+export const PLAYER_BASE_ATTRS: Readonly<{ str: number; dex: number; vit: number }> = Object.freeze({ str: 5, dex: 5, vit: 5 });
+
+/**
+ * 玩家基础攻击（面板展示基准；GDD k_str=2 × STR=5 = 10）。
+ * 注意：技能实际伤害 = SKILL_DAMAGE[slot] + 装备 atk 加成（无装备 = SKILL_DAMAGE[slot]，golden 锚点）；
+ * 本常量仅作属性面板「攻击」展示基值，不进入 combat baseAmount。
+ */
+export const PLAYER_BASE_ATK = 10;
+
 /** 普通怪基础 HP（spawning：enemyHp = ENEMY_BASE_HP * HP_MULT[tier]）。MVP 平衡初值（spawning §⑥ / combat §⑥）。 */
 export const ENEMY_BASE_HP = 30;
 

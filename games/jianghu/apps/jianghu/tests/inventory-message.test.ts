@@ -30,6 +30,7 @@ import {
 } from "../src/connection-registry.ts";
 import { setProtocolCharacterService, resolveInventoryGet, type ProtocolContext } from "../src/protocol.ts";
 import { INVENTORY_CAP, LOOT_GROUND_TTL_TICKS } from "../sim-core/src/constants.ts";
+import { itemProto } from "../sim-core/src/affixes.ts"; // E7：slot 由 itemId 确定性推导
 import { RESIDENT_ROOM_ID } from "../src/room-service.ts";
 
 /** fake Conn：记录控制面 JSON（复用既有测试模式）。 */
@@ -136,9 +137,10 @@ test("E6: character.inventory.get (login) returns persisted bag", async () => {
     assert.equal(reply.items.length, 1);
     assert.deepEqual(
       { ...reply.items[0] },
-      { itemId: 777, rarity: 2, affixes: [3, 8] },
-      "返回与持久化背包一致（itemId/rarity/affixes）",
+      { itemId: 777, rarity: 2, affixes: [3, 8], slot: itemProto(777).slot },
+      "返回与持久化背包一致（itemId/rarity/affixes + E7 slot 由 itemId 推导）",
     );
+    assert.deepEqual(reply.equipped, {}, "新角色无穿戴（equipped 空槽）");
   } finally {
     // 无 run 循环，仅清理连接注册（如有）。
   }

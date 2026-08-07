@@ -41,6 +41,8 @@ import {
   TILE,
   CELLS_PER_TICK,
   PLAYER_MAX_HP,
+  PLAYER_BASE_ATTRS,
+  PLAYER_BASE_ATK,
   ENEMY_ATTACK_INTERVAL_TICKS,
   ENEMY_CONTACT_RANGE,
   PICKUP_RADIUS,
@@ -60,6 +62,7 @@ import { stepMovement } from "./movement.ts"; // E3 真移动（纯函数）
 import { resolveDamage, resolveSkill } from "./combat.ts"; // E4 服务端权威结算
 import { spawnWave, nextRespawnTick, type SpawnZone, type Aggression } from "./spawning.ts"; // E4 确定性实例化 / E6 敌人类别
 import { rollLoot } from "./loot.ts"; // E4 掉落
+import { computeEquipStats, EMPTY_EQUIP_STATS, type EquippedSlots, type EquipmentStats } from "./affixes.ts"; // E7 装备属性（纯数据）
 import { openParryWindow } from "./parry.ts"; // E4 格挡窗口
 import type { LootResult } from "./loot.ts";
 
@@ -115,6 +118,9 @@ interface Actor {
   // E6 新增（敌人 AI）
   aggression?: Aggression; // 敌人类别（passive / aggressive；spawnWave 透传或按 tier 缺省）
   lastDamageTick?: number; // 被动怪被打的最后 tick（反击窗口判定）
+  // E7 新增（玩家装备）
+  equipped?: EquippedSlots; // 3 槽装备（持久化镜像；仅玩家实体持有）
+  equipStats?: EquipmentStats; // 装备汇总属性缓存（computeEquipStats；仅在 addPlayer/setPlayerEquipped 时计算，热路径零分配）
 }
 
 interface SpawnZoneRuntime {
@@ -129,8 +135,8 @@ export interface World {
   readonly seed: string;
   tick: number;
   phase: RoomPhaseValue;
-  /** 在权威世界 spawn 一个玩家实体（幂等：重复 seatId 不叠加）。 */
-  addPlayer(seatId: number, userId: string, spawn?: Vec2): void;
+  /** 在权威世界 spawn 一个玩家实体（幂等：重复 seatId 不叠加）。E7：equipped 可选（持久化镜像）。 */
+  addPlayer(seatId: number, userId: string, spawn?: Vec2, equipped?: EquippedSlots): void;
   /** 从权威世界移除一个玩家实体（进本时出主世界 / 测试清理；幂等：不存在则忽略）。 */
   removePlayer(seatId: number): void;
   /**
@@ -152,6 +158,13 @@ export interface World {
   consumePickups(): PickupEvent[];
   /** 在指定 seat 玩家脚下生成地面掉落实体（背包满溢出回落，C-Per-3）。 */
   spawnGroundLoot(seatId: number, loot: LootState): void;
+  /**
+   * E7：应用玩家装备到权威世界 actor（换装/卸下后由服务端调用）。
+   * - 更新 actor.equipped + equipStats（重算 maxHp/attrs）；
+   * - hp 随 maxHp 差值同步（装 +maxHp 装备不亏血；卸下时 clamp 到新上限）；
+   * - 未注册 seat / 无 actor → 幂等忽略。
+   */
+  setPlayerEquipped(seatId: number, equipped: EquippedSlots): void;
   /** 可选：每次拾取即时回调（run-manager 可设，替代轮询 consumePickups）。 */
   onPickup?: (seatId: number, loot: LootResult) => void;
 }
@@ -205,10 +218,60 @@ function maybeEnemyAttack(e: Actor, target: Actor, t: number): void {
       tick: t,
       baseAmount: e.atk ?? ENEMY_BASE_ATK,
       targetParry: target.parryState, // 玩家格挡校验
+      // E7：玩家装备减伤（无装备 → 0 → 与原逻辑字节一致，golden 锚点）。
+      targetReduction: target.equipStats?.reduction ?? 0,
     });
     target.hp += dmg.deltaHp;
     e.lastAttackTick = t;
   }
+}
+
+/**
+ * E7：构造玩家 actor（addPlayer / 构造时占位玩家共用）。
+ * - maxHp = PLAYER_MAX_HP + 装备 maxHp 加成（无装备 → 100，golden 锚点）；
+ * - 缓存 equipStats（computeEquipStats 仅在此/换装时计算，热路径零分配）；
+ * - spawn 缺省沿用 E1 占位公式（按 seatId 错开）。
+ */
+function makePlayerActor(opts: {
+  id: number;
+  seatId: number;
+  spawn?: Vec2;
+  equipped?: EquippedSlots;
+  /** 缺省出生点 x 是否做 %40 防越界（addPlayer 用；构造时占位玩家传 false 保持 E1 原值）。 */
+  wrapX?: boolean;
+}): Actor {
+  const equipStats = computeEquipStats(opts.equipped);
+  const maxHp = PLAYER_MAX_HP + equipStats.maxHp;
+  const sx = opts.spawn
+    ? opts.spawn.x
+    : (opts.wrapX === false ? (16 + opts.seatId) * TILE : ((16 + opts.seatId) % 40) * TILE);
+  const sy = opts.spawn ? opts.spawn.y : 15 * TILE;
+  return {
+    id: opts.id,
+    kind: EntityKind.PLAYER,
+    x: sx,
+    y: sy,
+    dir: 0,
+    hp: maxHp,
+    maxHp,
+    status: EntityStatus.ALIVE,
+    ownerId: opts.seatId,
+    skillCd: [0, 0, 0, 0],
+    equipped: opts.equipped,
+    equipStats,
+  };
+}
+
+/** E7：玩家快照 attrs（面板展示；STR/DEX/VIT 基础 + 装备派生 atk/maxHp/crit）。 */
+function playerAttrs(stats: EquipmentStats, maxHp: number): EntityState["attrs"] {
+  return {
+    str: PLAYER_BASE_ATTRS.str,
+    dex: PLAYER_BASE_ATTRS.dex,
+    vit: PLAYER_BASE_ATTRS.vit,
+    atk: PLAYER_BASE_ATK + stats.atk,
+    maxHp,
+    crit: Math.round(stats.critChance * 1000),
+  };
 }
 
 export function createWorld(opts: CreateWorldOpts): World {
@@ -309,18 +372,7 @@ export function createWorld(opts: CreateWorldOpts): World {
   // 构造时占位玩家（E1 兼容）：注册进 players 以便 step 驱动。
   for (const p of opts.players ?? []) {
     const id = nextId++;
-    actors.push({
-      id,
-      kind: EntityKind.PLAYER,
-      x: (16 + p.seatId) * TILE,
-      y: 15 * TILE,
-      dir: 0,
-      hp: PLAYER_MAX_HP,
-      maxHp: PLAYER_MAX_HP,
-      status: EntityStatus.ALIVE,
-      ownerId: p.seatId,
-      skillCd: [0, 0, 0, 0],
-    });
+    actors.push(makePlayerActor({ id, seatId: p.seatId, wrapX: false }));
     players.set(p.seatId, id);
   }
 
@@ -332,25 +384,12 @@ export function createWorld(opts: CreateWorldOpts): World {
     phase: opts.phase,
     actors: () => actors.slice(),
 
-    addPlayer(seatId: number, _userId: string, spawn?: Vec2) {
+    addPlayer(seatId: number, _userId: string, spawn?: Vec2, equipped?: EquippedSlots) {
       // 幂等：重复加入不叠加实体（重连/重复 room.join 安全）。
       if (players.has(seatId)) return;
       const id = nextId++;
-      // 默认出生点：复用 E1 占位公式，按 seatId 错开；% 40 防止越界（世界宽 40 tile）。
-      const sx = spawn ? spawn.x : ((16 + seatId) % 40) * TILE;
-      const sy = spawn ? spawn.y : 15 * TILE;
-      actors.push({
-        id,
-        kind: EntityKind.PLAYER,
-        x: sx,
-        y: sy,
-        dir: 0,
-        hp: PLAYER_MAX_HP,
-        maxHp: PLAYER_MAX_HP,
-        status: EntityStatus.ALIVE,
-        ownerId: seatId,
-        skillCd: [0, 0, 0, 0],
-      });
+      // E7：equipped 可选（持久化镜像）；缺省 → 基础属性（maxHp=100，golden 锚点）。
+      actors.push(makePlayerActor({ id, seatId, spawn, equipped, wrapX: true }));
       players.set(seatId, id);
     },
 
@@ -362,6 +401,21 @@ export function createWorld(opts: CreateWorldOpts): World {
       pending.delete(seatId);
       lastSeq.delete(seatId);
       lastMove.delete(seatId);
+    },
+
+    setPlayerEquipped(seatId: number, equipped: EquippedSlots) {
+      const actorId = players.get(seatId);
+      if (actorId === undefined) return; // 幂等：未注册 seat 忽略
+      const a = actors.find((x) => x.id === actorId);
+      if (!a) return;
+      const stats = computeEquipStats(equipped);
+      const oldMax = a.maxHp;
+      const newMax = PLAYER_MAX_HP + stats.maxHp;
+      a.equipped = equipped;
+      a.equipStats = stats;
+      a.maxHp = newMax;
+      // 装 +maxHp 装备 → hp 同步抬升（不亏血）；卸下 → clamp 到新上限。
+      a.hp = Math.max(1, Math.min(a.hp + (newMax - oldMax), newMax));
     },
 
     tryEnterEntrance(nowTick: number): boolean {
@@ -419,6 +473,8 @@ export function createWorld(opts: CreateWorldOpts): World {
       for (const [seatId, actorId] of players) {
         const a = actors.find((x) => x.id === actorId);
         if (!a) continue;
+        // E7：装备汇总属性缓存（makePlayerActor/setPlayerEquipped 已算好，热路径零分配；防御回退共享冻结常量）。
+        const pStats: EquipmentStats = a.equipStats ?? EMPTY_EQUIP_STATS;
 
         // skillCd 递减
         if (a.skillCd) {
@@ -438,10 +494,11 @@ export function createWorld(opts: CreateWorldOpts): World {
 
         if (cmd) {
           if (cmd.action === InputAction.MOVE) {
+            // E7：moveSpeed 提升移动速度（无装备 moveSpeed=0 → CELLS_PER_TICK*1.0 字节不变，golden 锚点）。
             const np = stepMovement(
               { x: a.x, y: a.y },
               cmd.dir,
-              { speedPerTick: CELLS_PER_TICK, isBlocked },
+              { speedPerTick: CELLS_PER_TICK * (1 + pStats.moveSpeed), isBlocked },
             );
             a.x = np.x;
             a.y = np.y;
@@ -457,6 +514,12 @@ export function createWorld(opts: CreateWorldOpts): World {
             // 仅当 skillCd 归零才可释放（C11 服务端权威 CD 闸门）。
             if (a.skillCd && a.skillCd[slot] <= 0) {
               const intent = resolveSkill(a.id, slot, t);
+              // E7：玩家攻击 = 技能基础伤害 + 装备 atk（武器 baseAtk + atk 词缀）；无装备 → 原值（golden 锚点）。
+              let baseAmount = intent.damage + pStats.atk;
+              // E7：暴击 ×1.5（D9 确定性 Rng；仅装备 critChance>0 时消耗 rng，无装备零消耗 → golden 稳定）。
+              if (pStats.critChance > 0 && simRng.nextFloat() < pStats.critChance) {
+                baseAmount = Math.round(baseAmount * 1.5);
+              }
               // 对范围内敌人结算（圆形；敌人无格挡 → targetParry undefined）。
               for (const e of actors) {
                 if (e.kind !== EntityKind.ENEMY && e.kind !== EntityKind.BOSS) continue;
@@ -465,7 +528,7 @@ export function createWorld(opts: CreateWorldOpts): World {
                     targetId: e.id,
                     amount: 0, // C11：忽略客户端 amount，服务端按 baseAmount 裁决
                     tick: t,
-                    baseAmount: intent.damage,
+                    baseAmount,
                     targetParry: undefined,
                   });
                   e.hp += dmg.deltaHp;
@@ -473,7 +536,8 @@ export function createWorld(opts: CreateWorldOpts): World {
                   e.lastDamageTick = t;
                 }
               }
-              a.skillCd[slot] = intent.cdTicks;
+              // E7：attackSpeed 缩短技能 CD（无装备 attackSpeed=0 → 原 cd，golden 锚点）。
+              a.skillCd[slot] = Math.max(1, Math.round(intent.cdTicks * (1 - pStats.attackSpeed)));
             }
           }
           // SIGNAL 等未识别 action → 忽略
@@ -483,7 +547,7 @@ export function createWorld(opts: CreateWorldOpts): World {
           const np = stepMovement(
             { x: a.x, y: a.y },
             mv.dir,
-            { speedPerTick: CELLS_PER_TICK, isBlocked },
+            { speedPerTick: CELLS_PER_TICK * (1 + pStats.moveSpeed), isBlocked },
           );
           a.x = np.x;
           a.y = np.y;
@@ -548,7 +612,8 @@ export function createWorld(opts: CreateWorldOpts): World {
       // 玩家死亡 → 回安全区复活（决策④：不掉永久装备）。
       for (const a of actors) {
         if (a.kind === EntityKind.PLAYER && a.hp <= 0) {
-          a.hp = PLAYER_MAX_HP;
+          // E7：复活回满当前 maxHp（含装备加成；无装备 = PLAYER_MAX_HP，golden 锚点不变）。
+          a.hp = a.maxHp;
           a.x = RESPAWN_POS.x;
           a.y = RESPAWN_POS.y;
           a.parryState = undefined;
@@ -692,13 +757,16 @@ export function createWorld(opts: CreateWorldOpts): World {
                 },
               }
             : {}),
-          // 玩家：回填 ownerId（seatId 映射）+ 条件字段 parryState / skillCd。
+          // 玩家：回填 ownerId（seatId 映射）+ 条件字段 parryState / skillCd / attrs（E7）。
           ...(a.ownerId !== undefined ? { ownerId: a.ownerId } : {}),
           ...(a.ownerId !== undefined && a.parryState
             ? { parryState: { active: a.parryState.active, windowEndTick: a.parryState.windowEndTick } }
             : {}),
           ...(a.ownerId !== undefined && a.skillCd
             ? { skillCd: a.skillCd.slice() }
+            : {}),
+          ...(a.ownerId !== undefined
+            ? { attrs: playerAttrs(a.equipStats ?? EMPTY_EQUIP_STATS, a.maxHp) }
             : {}),
           // 敌人/BOSS：tier（仅持有才下发）。
           ...(a.tier !== undefined ? { tier: a.tier } : {}),

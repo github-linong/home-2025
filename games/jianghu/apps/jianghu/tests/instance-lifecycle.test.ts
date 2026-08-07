@@ -166,8 +166,10 @@ test("C-Net-1: instance broadcast reaches only instance members; resident only r
   for (const buf of a.binarySent) for (const e of decodeSnapshot(Buffer.from(buf)).entities) kindsA.add(e.kind);
   for (const buf of b.binarySent) for (const e of decodeSnapshot(Buffer.from(buf)).entities) kindsB.add(e.kind);
 
-  // 主世界广播不含实例实体（无 ENEMY/BOSS）。
-  assert.ok(!kindsA.has(EntityKind.ENEMY) && !kindsA.has(EntityKind.BOSS), "resident frames carry no instance enemies");
+  // 主世界广播不含实例专属实体（主世界无 BOSS——tier2 仅实例；E7.1 起主世界合法含 ENEMY 刷怪区）。
+  assert.ok(!kindsA.has(EntityKind.BOSS), "resident frames carry no instance boss");
+  // E7.1：主世界刷怪区 → 主世界帧应含 ENEMY（普通/精英）。
+  assert.ok(kindsA.has(EntityKind.ENEMY), "resident frames carry overworld enemies (E7.1 spawn zones)");
   // 实例广播不含主世界占位 loot token（实例 lootTokens=0 → 无 LOOT_GROUND）。
   assert.ok(!kindsB.has(EntityKind.LOOT_GROUND), "instance frames carry no resident ambient loot");
   // 实例广播含敌人/BOSS（实例世界 spawnZones）。

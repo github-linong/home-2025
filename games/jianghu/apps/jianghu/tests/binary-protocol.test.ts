@@ -123,3 +123,39 @@ test("changeMask bit layout is stable", () => {
   assert.equal(ChangeBit.LOOT, 1 << 7);
   assert.equal(ChangeBit.ENTRANCE, 1 << 9);
 });
+
+test("E7: ATTRS extended fields (atk/maxHp/crit) round-trip", () => {
+  const ent: EntityState = {
+    id: 9,
+    kind: EntityKind.PLAYER,
+    pos: { x: 768, y: 720 },
+    dir: 0,
+    hp: 132,
+    maxHp: 132,
+    status: EntityStatus.ALIVE,
+    statusEffects: [],
+    ownerId: 1,
+    attrs: { str: 5, dex: 5, vit: 5, atk: 18, maxHp: 132, crit: 240 },
+  };
+  const buf = encodeSnapshot(makeSnapshot([ent]));
+  const d = decodeSnapshot(buf).entities[0];
+  assert.deepEqual(d.attrs, { str: 5, dex: 5, vit: 5, atk: 18, maxHp: 132, crit: 240 }, "extended attrs round-trip");
+});
+
+test("E7: ATTRS without extended fields (legacy) round-trip", () => {
+  const ent: EntityState = {
+    id: 10,
+    kind: EntityKind.PLAYER,
+    pos: { x: 768, y: 720 },
+    dir: 0,
+    hp: 100,
+    maxHp: 100,
+    status: EntityStatus.ALIVE,
+    statusEffects: [],
+    ownerId: 2,
+    attrs: { str: 5, dex: 5, vit: 5 },
+  };
+  const buf = encodeSnapshot(makeSnapshot([ent]));
+  const d = decodeSnapshot(buf).entities[0];
+  assert.deepEqual(d.attrs, { str: 5, dex: 5, vit: 5 }, "legacy attrs round-trip (no ext)");
+});

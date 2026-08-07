@@ -97,6 +97,12 @@ export interface AttrSet {
   readonly str: number;
   readonly dex: number;
   readonly vit: number;
+  /** E7：装备后派生属性（面板展示；C12 条件序列化，仅玩家实体持有，可缺省保持旧持久化兼容）。 */
+  readonly atk?: number;
+  /** 生命上限（含装备 maxHp 加成，= PLAYER_MAX_HP + 加成）。 */
+  readonly maxHp?: number;
+  /** 暴击率千分比（150 = 15%）。 */
+  readonly crit?: number;
 }
 
 // ============================================================

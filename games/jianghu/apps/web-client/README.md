@@ -1,8 +1,9 @@
 # 江湖 jianghu · 浏览器客户端 C2（可玩性打磨）
 
-> 目标：零安装即玩 —— 浏览器打开即连真实 jianghu 权威服务端，看到/玩到 **主世界移动 + 技能 + 进副本**。
+> 目标：零安装即玩 —— 浏览器打开即连真实 jianghu 权威服务端，看到/玩到 **主世界移动 + 技能 + 进副本 + 掉落装备**。
 > 自包含单文件（Canvas 2D + WebSocket，内联 CSS/JS，**无构建步骤**）。
-> C2 新增（纯客户端，服务端 E6 已上线）：**本地移动预测 + 远端插值（手感）**、**打击感（伤害飘字/受击闪白/技能光效/格挡反馈/击杀粒子）**、**掉落可见性（稀有度光柱/拾取提示/拾取 toast）**、**背包面板（I 键）**。服务端零改动。
+> C2 新增（纯客户端，服务端 E6 已上线）：**本地移动预测 + 远端插值（手感）**、**打击感（伤害飘字/受击闪白/技能光效/格挡反馈/击杀粒子）**、**掉落可见性（稀有度光柱/拾取提示/拾取 toast）**、**背包面板（I 键）**。
+> E7 新增（服务端 E7 装备实装）：**装备栏（3 槽）+ 属性面板** —— 背包物品点「装备」穿装，攻击/生命/暴击立即提升（服务端权威，见 §2）。
 
 ---
 
@@ -55,7 +56,10 @@ http://localhost:8080/index.html
 | 格挡 | `空格` / 格挡按钮 | 服务端开 250ms 格挡窗口（PARRY_TICKS=3）；窗口内减伤 60%，角色出现青蓝护盾光环 + 「格挡中」提示；受击时 parry 生效显示「格挡！」+ 盾闪 |
 | 技能 1-4 | `1 2 3 4` / 按钮 | 服务端权威 AoE 命中（半径 1.5 tile）；**客户端即时扇形技能光效（0.3s 淡出）**；命中叠加扩散环/闪白；按钮显示剩余 CD（来自快照 `skillCd`） |
 | 拾取 | 走近掉落自动拾取 | 靠近掉落（≤1.5 tile）显示「按 F 拾取」提示；服务端为**重叠自动拾取**（PICKUP_RADIUS=1 tile），走近即入包；按 F 发 SIGNAL（服务端忽略，占位） |
-| 背包 | `I` / HUD「背包 [I]」按钮 | 打开时拉 `character.inventory.get` 全量 + 拾取后实时推送刷新；格子显示稀有度色边框 + itemId 短号 + 词缀数；空背包显示「空」；游客也显示 |
+| 背包 | `I` / HUD「背包 [I]」按钮 | 打开时拉 `character.inventory.get` 全量 + 拾取后实时推送刷新；格子显示稀有度色边框 + itemId 短号 + 词缀数 + 槽位；空背包显示「空」；游客也显示 |
+| **装备**（E7） | 背包物品点「装备」按钮 | 发 `character.equip {itemId}` → 物品从背包移入对应槽（武器/护甲/饰品）；服务端回推 `character.inventory`（含 `equipped`）；**攻击/生命/暴击立即提升**（服务端权威 `setPlayerEquipped` → world maxHp/attrs 即时生效） |
+| **卸下**（E7） | 点击装备栏已穿槽位 | 发 `character.unequip {slot}` → 物品回背包；背包满则拒绝（BAG_FULL） |
+| **属性面板**（E7） | 背包面板顶部 | 攻击 / 生命 / 暴击（来自快照 `EntityState.attrs`，服务端装备后回填：`atk = 10+装备atk`、`maxHp = 100+装备maxHp`、`crit = 暴击率%`） |
 | 进副本 | 走到裂隙入口附近 → `F` 或「进副本」按钮 | 发 `dungeon.enter`；服务端校验主世界 + 入口 10s 冷却（`tryEnterEntrance`） |
 | 出本 | 副本内按 `F` 或「出本」按钮 | 发 `dungeon.exit`，回主世界安全区 |
 | 缩放 / 平移 | 滚轮 / 拖拽；双击回中 | 摄像机跟随本地玩家（预测位置，按键即时动） |
@@ -90,7 +94,7 @@ http://localhost:8080/index.html
     bit9 ENTRANCE   u16 cooldownTicks + u32 lastUsedTick
     bit10 TIER      u8 tier (0 normal / 1 elite / 2 boss)
     bit11 SKILL_CD  u16×4 skillCd
-    bit12 ATTRS     u8 str + u8 dex + u8 vit
+    bit12 ATTRS     u8 str + u8 dex + u8 vit + u8 hasExt + (u16 atk + u16 maxHp + u16 crit千分比)×hasExt   ← E7 扩展
 ```
 
 **kind**：0=PLAYER 1=ENEMY 2=BOSS 3=LOOT_GROUND 4=TELEGRAPH 5=ENTRANCE。
@@ -115,12 +119,25 @@ ws.send(JSON.stringify({
 ```js
 // 打开背包面板拉全量（异步回复同格式）
 { type: 'character.inventory.get', requestId: 'inv1' }
-// 拾取入库成功 → 服务端推送（与 get 回复同一格式，items 可能为空）
-{ type: 'character.inventory', items: [{ itemId, rarity, affixes: number[] }], cap: 60 }
+// 拾取入库成功 / E7 装备/卸下 → 服务端推送（与 get 回复同一格式，items 可能为空）
+{ type: 'character.inventory', items: [{ itemId, rarity, affixes: number[], slot: 'weapon'|'armor'|'trinket' }], equipped: { weapon?: {...}, armor?: {...}, trinket?: {...} }, cap: 60 }
 ```
 
 - 登录玩家（`DEV_SKIP_AUTH` + `devUserId`）拾取入库后推送；游客零持久写（不推送，`items: []`）。
 - 客户端以 itemId 去重做增量 toast（新入库物品 → 屏幕下方拾取提示）。
+- **E7**：`items[].slot` 由服务端 `itemProto(itemId)` 确定性推导；`equipped` 为 3 槽已穿戴（客户端装备栏渲染）。
+
+**E7 装备 / 卸下（控制面）**：
+
+```js
+// 穿装：物品从背包移入对应槽；换装时原槽装备自动回背包
+{ type: 'character.equip', requestId, payload: { itemId } }
+// 卸下：槽位物品回背包（背包满 → BAG_FULL 拒绝）
+{ type: 'character.unequip', requestId, payload: { slot: 'weapon'|'armor'|'trinket' } }
+// 两者成功均回复 character.inventory（含 equipped）；失败回 game.error（ITEM_NOT_FOUND / BAG_FULL / SLOT_EMPTY / BAD_SLOT / NOT_LOGGED_IN）
+```
+
+- 装备是**服务端权威**：`world.setPlayerEquipped` 即时更新 actor maxHp/attrs，战斗伤害（技能 +atk、暴击×1.5、减伤、攻速、移速）由服务端按装备计算；客户端只发 itemId/slot，不自行改属性。
 
 **进本/出本**：
 
@@ -142,10 +159,11 @@ GAME.connected / state / seatId / roomId / reconnectToken / lastSnapshot / local
 GAME.snapshotCount / lastTick / skillCd / parryActive / localHp / localMaxHp / lastLocalPos
 GAME.predicted / localRenderPos / renderTick     // C2 本地预测渲染位置 / 远端插值 tick
 GAME.lastHits / lastKills / lastSkillAt          // C2 打击感：最近伤害飘字 / 击杀 / 技能时刻
-GAME.inventory {items,cap,loaded} / pickupToasts / nearLootId / pickupHint / invOpen
+GAME.inventory {items,cap,loaded} / GAME.equipped / pickupToasts / nearLootId / pickupHint / invOpen
 GAME.errors          // 收集的运行时/解码错误
 GAME.debugEnterDungeon() / GAME.debugExitDungeon()   // 强制进出本（绕过「靠近入口」UI 门槛）
 GAME.sendMove(dir) / GAME.sendSkill(slot) / GAME.sendParry() / GAME.sendSignal()
+GAME.sendEquip(itemId) / GAME.sendUnequip(slot)       // E7：装备 / 卸下
 GAME.toggleInventory() / GAME.openInventory() / GAME.closeInventory()
 ```
 
@@ -163,7 +181,9 @@ C2 E2E 断言约定：`lastHits` 记录最近 30 条 `{id, dmg, kind, t}`（hp �
 6. **入口冷却 UI**：`entrance.cooldownTicks` 已读取并显示，但进本门槛主要靠「靠近 + 服务端冷却」；多人「集合缓冲取先到者」归 Phase-3。
 7. **游客模式**：`devUserId` 缺省时服务端按游客处理（`guest_*`，零持久写）；游客拾取不入背包（无 `character.inventory` 推送），背包面板显示「空」——登录态（传 `devUserId`）才能看到拾取入库。
 8. **打击感为纯客户端表现**：飘字/闪白/光效/粒子基于快照 hp 变化与实体消失推断，非服务端事件推送；服务端若日后下发 `DamageEvent`/`KillEvent` 可替换为权威事件（更精确、免误判）。
-9. **背包 itemId 去重做增量 toast**：极端情况（同 itemId 重复入库）会合并为一条 toast；词缀数显示为「词缀×N」，词缀具体效果未展示（Phase-3）。
+9. **背包 itemId 去重做增量 toast**：极端情况（同 itemId 重复入库）会合并为一条 toast；词缀数显示为「词缀×N」，**词缀具体名称/数值 tooltip 未展示（E7 已实装属性效果，tooltip 分层归 Phase-2）**。
+10. **装备平衡未调**：E7 词缀 value 为初值（稀有度系数 1/1.3/1.7/2.4），未做强度/经济联调（GDD §⑧）；crit/减伤叠加无上限钳制，极端堆叠可达必暴/近免伤（Phase-2 平衡项）。
+11. **移速词缀（moveSpeed）已进战斗**（玩家移动 ×(1+移速%)）；未装备时字节不变（golden 锚点）。
 
 ---
 

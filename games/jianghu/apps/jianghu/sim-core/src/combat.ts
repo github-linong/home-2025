@@ -27,6 +27,8 @@ export interface DamageRequest {
   readonly baseAmount: number;
   /** 目标 parry 视图（用于减伤判定）；敌人目标无格挡 → undefined。 */
   readonly targetParry?: ParryView;
+  /** 目标装备减伤（0..1，如 0.15 = 15%）；无装备 / 敌人 → undefined（E7）。 */
+  readonly targetReduction?: number;
 }
 
 /** 伤害结算事件（⑦ 输出，供 ① 广播）。combat 不改 hp（纯函数），由 world 应用 deltaHp。 */
@@ -47,8 +49,13 @@ export function resolveDamage(req: DamageRequest): DamageEvent {
   // C11：服务端权威，忽略客户端上报 amount，仅用 baseAmount。
   const parry = judgeParry(req.targetParry, req.tick);
   const raw = req.baseAmount;
-  // GDD：Damage(final) = max(1, ...)。covered → 伤害 ×(1-PARRY_REDUCTION)。
-  const dealt = Math.max(1, parry.covered ? Math.round(raw * (1 - PARRY_REDUCTION)) : raw);
+  // E7：装备减伤（0..1；无装备 → 0 → 与原逻辑字节一致，golden 锚点）。clamp 防御越界。
+  const red = Math.max(0, Math.min(1, req.targetReduction ?? 0));
+  // GDD：Damage(final) = max(1, ...)。covered → 伤害 ×(1-PARRY_REDUCTION)，再乘 (1-装备减伤)。
+  const dealt = Math.max(
+    1,
+    parry.covered ? Math.round(raw * (1 - PARRY_REDUCTION) * (1 - red)) : Math.round(raw * (1 - red)),
+  );
   return { targetId: req.targetId, deltaHp: -dealt, statusChange: 0, tick: req.tick };
 }
 

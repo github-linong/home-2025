@@ -42,6 +42,7 @@ import {
 import type { CharacterService, InventoryItem, Inventory } from "./persistence.ts";
 import { addItem, toGroundLoot } from "./inventory.ts";
 import type { LootResult } from "../sim-core/src/loot.ts";
+import { itemProto, type EquippedSlots } from "../sim-core/src/affixes.ts"; // E7：slot 推导 + 装备槽
 import { generateId } from "./ids.ts";
 
 // ─────────────────────────────────────────────────────────────
@@ -122,6 +123,16 @@ interface InstanceMeta {
 const runs = new Map<string, RunEntry>();
 const instances = new Map<string, InstanceMeta>();
 
+/**
+ * E7：seatId → 已穿戴装备（世界面向缓存）。
+ * - 持久化（Character.equipped）为耐用权威；本 Map 是「世界镜像」同步缓存：
+ *   装备变更（protocol resolveEquip/Unequip）与 addPlayerToRoom（room.join）时写入，
+ *   enterInstance / exitInstance 换域 addPlayer 时读取（避免异步 loadOrCreate 塞进同步路径）。
+ * - 同一进程内与持久化保持一致（equip 请求同时落库 + 写 Map）；服务重启后由
+ *   gateway room.join 经 snapshot.character.equipped 重新播种。
+ */
+const equipBySeat = new Map<number, EquippedSlots>();
+
 // C-Dgn-4：副本寿命巡检（5s；unref 不阻塞进程退出）。测试经 checkInstanceExpiry(now) 直接驱动。
 const expireTimer = setInterval(() => {
   checkInstanceExpiry();
@@ -176,10 +187,26 @@ export function enqueueInput(roomId: string, _playerId: number, cmd: InputCmd): 
 }
 
 /** 在权威世界 spawn 一个玩家实体（E3：玩家成功加入房间后调用）。room 未运行则静默忽略。 */
-export function addPlayerToRoom(roomId: string, seatId: number, userId: string): void {
+export function addPlayerToRoom(roomId: string, seatId: number, userId: string, equipped?: EquippedSlots): void {
   const entry = runs.get(roomId);
   if (!entry) return;
-  entry.world.addPlayer(seatId, userId);
+  // E7：room.join 播种装备（持久化镜像 → 世界）。游客/未装备 → undefined → 基础属性。
+  if (equipped !== undefined) equipBySeat.set(seatId, equipped);
+  entry.world.addPlayer(seatId, userId, undefined, equipBySeat.get(seatId));
+}
+
+/**
+ * E7：应用装备到世界 actor（equip/unequip 请求后由 protocol 调用）。
+ * - 更新 equipBySeat 缓存（供换域 addPlayer 时重新应用）；
+ * - roomId 存在 → 同步更新该房间世界 actor（maxHp/attrs 重算，combat 即时生效）。
+ * - roomId 为空（未加入房间）→ 仅缓存，等下次 addPlayer 应用。
+ */
+export function setPlayerEquipped(roomId: string | null | undefined, seatId: number, equipped: EquippedSlots): void {
+  equipBySeat.set(seatId, equipped);
+  if (roomId) {
+    const entry = runs.get(roomId);
+    entry?.world.setPlayerEquipped(seatId, equipped);
+  }
 }
 
 /** 取某 room 权威 World（测试 / 编排用；room 未运行返回 null）。 */
@@ -213,12 +240,21 @@ export function stopRun(roomId: string): void {
 export function bootResidentRun(seed = "jianghu-overworld-0"): WorldSnapshot {
   const room = getRoom(RESIDENT_ROOM_ID);
   const roomId = room?.roomId ?? RESIDENT_ROOM_ID;
+  // E7.1：主世界刷怪区（普通 passive 站桩 + 1 精英 aggressive 巡逻；围绕出生点四周，出生点/入口保持安全距离）。
+  // 解决「主世界无怪可打、无掉落来源、E1 占位 LOOT token ttl 过期后空场」；掉落持续循环（respawnTicks 600-900）。
+  const overworldZones: SpawnZone[] = [
+    { pos: { x: 8 * TILE, y: 8 * TILE }, tier: 0, enemyTypeId: "savage", count: 3, respawnTicks: 600, aggression: "passive" },
+    { pos: { x: 28 * TILE, y: 8 * TILE }, tier: 0, enemyTypeId: "brigand", count: 2, respawnTicks: 600, aggression: "passive" },
+    { pos: { x: 14 * TILE, y: 22 * TILE }, tier: 1, enemyTypeId: "shadow", count: 1, respawnTicks: 900, aggression: "aggressive" },
+    { pos: { x: 26 * TILE, y: 22 * TILE }, tier: 0, enemyTypeId: "brigand", count: 2, respawnTicks: 600, aggression: "passive" },
+  ];
   return startRun({
     runId: "run_resident",
     roomId,
     seed,
     phase: RoomPhase.OVERWORLD,
     lootTokens: 4,
+    spawnZones: overworldZones, // E7.1 主世界刷怪区（持续掉落来源）
     // F1（P1）：拾取→背包接线（登录入库、游客忽略 C-Per-1）。
     onPickup: (seatId, loot) => handlePickup(roomId, seatId, loot),
   });
@@ -280,7 +316,8 @@ export function enterInstance(
   // 成员实体：出 RESIDENT 世界 + 进 instance 世界（域切换；C-Net-1 不混流大图）。
   for (const m of members) {
     resident.world.removePlayer(m.seatId);
-    getWorld(instanceRoomId)?.addPlayer(m.seatId, m.userId, spec.entryTile);
+    // E7：进本携带已穿戴装备（世界镜像缓存 → maxHp/attrs 应用到副本 actor）。
+    getWorld(instanceRoomId)?.addPlayer(m.seatId, m.userId, spec.entryTile, equipBySeat.get(m.seatId));
   }
 
   // ⑥ 寿命记录（C-Dgn-4：30min；wall-clock 计时，循环停滞不误判）。
@@ -305,7 +342,8 @@ export function exitInstance(instanceRoomId: string): { ok: boolean; reason?: st
   // 存活成员回 RESIDENT 安全区（出本归位；连接订阅原子切回主世界）。
   const resident = runs.get(RESIDENT_ROOM_ID);
   for (const m of meta.members) {
-    if (resident) resident.world.addPlayer(m.seatId, m.userId, RESPAWN_POS);
+    // E7：出本携带已穿戴装备（世界镜像缓存 → 回主世界 actor 保留 maxHp/attrs）。
+    if (resident) resident.world.addPlayer(m.seatId, m.userId, RESPAWN_POS, equipBySeat.get(m.seatId));
     const connId = activeUserConn.get(m.userId);
     if (connId) setRoom(connId, RESIDENT_ROOM_ID); // 无连接则忽略（掉线成员由重连流程接管）
   }
@@ -337,11 +375,12 @@ const GRID_H_PX = 30 * TILE;
 
 /**
  * E6：背包数据通道（控制面）。拾取入库成功后，向该 seatId 对应连接推送
- * `{ type: "character.inventory", items, cap }`（登录玩家；游客不经过本函数，C-Per-1 零持久写）。
+ * `{ type: "character.inventory", items, equipped, cap }`（登录玩家；游客不经过本函数，C-Per-1 零持久写）。
+ * E7：items 携带 slot（itemProto 确定性推导）；equipped 携带 3 槽已穿戴（客户端装备栏/属性面板）。
  * seatId → userId（CharacterService.getSeatInfo）→ connId（activeUserConn）→ sendToConn。
  * C6：run-manager → connection-registry（叶子），方向合法；不反向被 sim-core import。
  */
-export function pushInventoryToSeat(seatId: number, inventory: Inventory): void {
+export function pushInventoryToSeat(seatId: number, inventory: Inventory, equipped?: EquippedSlots): void {
   const cs = activeCharacterService;
   const info = cs?.getSeatInfo(seatId);
   if (!info) return; // 座位未登记（未知 seatId）→ 忽略
@@ -353,7 +392,9 @@ export function pushInventoryToSeat(seatId: number, inventory: Inventory): void 
       itemId: i.itemId,
       rarity: i.rarity,
       affixes: [...i.affixes],
+      slot: itemProto(i.itemId).slot,
     })),
+    equipped: equipped ?? {},
     cap: INVENTORY_CAP,
   });
 }
@@ -376,7 +417,12 @@ export async function applyPickupToInventory(
   loot: LootResult,
 ): Promise<void> {
   const { snapshot, seatId } = await cs.loadOrCreate(userId);
-  const item: InventoryItem = { itemId: loot.itemId, rarity: loot.rarity, affixes: loot.affixes };
+  const item: InventoryItem = {
+    itemId: loot.itemId,
+    rarity: loot.rarity,
+    affixes: loot.affixes,
+    slot: itemProto(loot.itemId).slot, // E7：slot 由 itemId 确定性推导（掉落后再映射）
+  };
   const { inventory, overflow } = addItem(snapshot.inventory, item);
   await cs.save(userId, { character: snapshot.character, inventory });
   if (overflow) {
@@ -384,5 +430,6 @@ export async function applyPickupToInventory(
     world.spawnGroundLoot(seatId, toGroundLoot(overflow));
   }
   // E6：拾取入库成功 → 控制面推送背包（登录玩家；游客不经过本函数，C-Per-1）。
-  pushInventoryToSeat(seatId, inventory);
+  // E7：equipped 显式传入（equipBySeat 缓存），避免拾取推送把客户端装备栏清空。
+  pushInventoryToSeat(seatId, inventory, equipBySeat.get(seatId));
 }

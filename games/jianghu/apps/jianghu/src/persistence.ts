@@ -15,8 +15,10 @@
 
 import { writeFile, readFile, mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { INVENTORY_CAP, LOOT_GROUND_TTL_TICKS } from "../sim-core/src/constants.ts"; // C7 单一来源
+import { INVENTORY_CAP, LOOT_GROUND_TTL_TICKS, PLAYER_BASE_ATTRS } from "../sim-core/src/constants.ts"; // C7 单一来源
 import type { AttrSet, Vec2 } from "../sim-core/src/types.ts";
+import type { EquippedSlots, ItemSlot } from "../sim-core/src/affixes.ts"; // E7：装备槽（仅类型）
+import { itemProto } from "../sim-core/src/affixes.ts"; // E7：旧存档 slot 归一化（确定性推导）
 import { config } from "./config.ts";
 import type { VerifiedIdentity } from "./auth.ts";
 
@@ -24,12 +26,18 @@ import type { VerifiedIdentity } from "./auth.ts";
 // 领域类型
 // ─────────────────────────────────────────────────────────────
 
-/** 背包物品（持久化最小单元）。 */
+/**
+ * 背包物品（持久化最小单元）。
+ * slot 为**派生字段**（itemProto(itemId).slot 确定性推导）：E7 后新增，旧持久化 JSON 无此字段
+ * → 标记可选；消费侧（inventory 消息 / equip）一律用 itemProto(itemId).slot 取权威槽位。
+ */
 export interface InventoryItem {
   readonly itemId: number;
   /** 0=白 1=蓝 2=金 3=暗金（与 sim-core AFFIX_COUNTS 对齐）。 */
   readonly rarity: number;
   readonly affixes: readonly number[];
+  /** 物品槽位（weapon|armor|trinket；可缺省，消费侧按 itemId 推导）。 */
+  readonly slot?: ItemSlot;
 }
 
 /** 背包（≤ INVENTORY_CAP）。 */
@@ -44,6 +52,8 @@ export interface Character {
   exp: number;
   attrs: AttrSet;
   pos: Vec2;
+  /** E7：已穿戴装备（3 槽；可缺省 = 未穿戴，旧角色兼容）。 */
+  equipped?: EquippedSlots;
   /** 最近落库时间（ms）；仅服务端维护。 */
   updatedAt: number;
 }
@@ -118,8 +128,15 @@ export class JsonFileCharacterStore implements CharacterStore {
     try {
       const raw = await readFile(this.fileFor(userId), "utf8");
       const snap = JSON.parse(raw) as CharacterSnapshot;
-      this.cache.set(userId, snap);
-      return snap;
+      // E7：旧存档归一化（equipped 缺省空槽；item slot 按 itemId 确定性推导）。
+      const normalized: CharacterSnapshot = {
+        character: { ...snap.character, equipped: snap.character.equipped ?? {} },
+        inventory: {
+          items: snap.inventory.items.map((i) => ({ ...i, slot: i.slot ?? itemProto(i.itemId).slot })),
+        },
+      };
+      this.cache.set(userId, normalized);
+      return normalized;
     } catch {
       return null;
     }
@@ -147,13 +164,13 @@ export class JsonFileCharacterStore implements CharacterStore {
 // 新角色工厂 + 默认数值
 // ─────────────────────────────────────────────────────────────
 
-/** 新角色基础属性（STR·DEX·VIT）。C7 单一来源：未来由 GDD 初值对齐此处。 */
-export const DEFAULT_ATTRS: AttrSet = Object.freeze({ str: 5, dex: 5, vit: 5 });
+/** 新角色基础属性（STR·DEX·VIT）。C7 单一来源：来自 sim-core PLAYER_BASE_ATTRS（world 快照同源）。 */
+export const DEFAULT_ATTRS: AttrSet = Object.freeze({ ...PLAYER_BASE_ATTRS });
 
 /** 主世界安全区出生点（tile 对齐，48px）。死亡回安全区（决策④）。 */
 export const SAFE_SPAWN: Vec2 = Object.freeze({ x: 16 * 48, y: 15 * 48 });
 
-/** 创建新角色快照（Lv1 / EXP0 / 基础属性 / 安全区）。 */
+/** 创建新角色快照（Lv1 / EXP0 / 基础属性 / 安全区 / 空装备）。 */
 export function createNewCharacter(userId: string, now: number = Date.now()): CharacterSnapshot {
   return {
     character: {
@@ -162,6 +179,7 @@ export function createNewCharacter(userId: string, now: number = Date.now()): Ch
       exp: 0,
       attrs: { ...DEFAULT_ATTRS },
       pos: { ...SAFE_SPAWN },
+      equipped: {}, // E7：空装备槽
       updatedAt: now,
     },
     inventory: { items: [] },

@@ -9,5 +9,6 @@ export * from "./movement.ts";
 export * from "./parry.ts";
 export * from "./combat.ts";
 export * from "./loot.ts";
+export * from "./affixes.ts"; // E7：词缀表 / 物品原型 / 装备属性
 export * from "./dungeonGen.ts";
 export * from "./spawning.ts";

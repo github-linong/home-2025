@@ -75,6 +75,23 @@
   .inv-meta { font-size: 9px; color: #9aa; margin-top: 2px; }
   #inv-empty { color: #7a8699; text-align: center; padding: 18px 0; font-size: 13px; }
 
+  /* ── E7 装备栏 + 属性面板 ── */
+  #attr-panel { margin-bottom: 8px; border: 1px solid #3a4250; border-radius: 8px; padding: 6px 8px; font-size: 12px;
+    display: flex; gap: 16px; background: rgba(18,22,30,.7); color: #aab; flex-wrap: wrap; }
+  #attr-panel b { color: #f2a03c; }
+  #inv-equip { display: flex; gap: 6px; margin-bottom: 8px; }
+  .equip-slot { flex: 1; border: 2px solid #4a5568; border-radius: 8px; padding: 5px 3px; text-align: center;
+    background: rgba(30,34,44,.7); cursor: pointer; user-select: none; }
+  .equip-slot:hover { border-color: #5fd0e0; }
+  .equip-slot .slot-label { font-size: 9px; color: #9aa; display: block; margin-bottom: 2px; }
+  .equip-slot .slot-item { font-size: 10px; font-weight: 700; word-break: break-all; }
+  .equip-slot.empty .slot-item { color: #556; }
+  .equip-slot .slot-action { font-size: 9px; color: #7a8699; display: block; margin-top: 2px; }
+  .equip-slot.filled:hover .slot-action { color: #f2a03c; }
+  .equip-btn { margin-top: 3px; font-size: 10px; border: 1px solid #4a5568; background: rgba(40,48,64,.9);
+    color: #e8e4d8; border-radius: 5px; padding: 1px 8px; cursor: pointer; }
+  .equip-btn:hover { border-color: #f2a03c; color: #f2a03c; }
+
   /* ── 帮助 ── */
   #help { position: absolute; right: 12px; bottom: 12px; z-index: 10; color: #7a8699; font-size: 11px;
     text-align: right; line-height: 1.7; pointer-events: none; text-shadow: 0 1px 3px #000; }
@@ -114,12 +131,25 @@
     <span id="inv-title">背包 <span id="inv-count">0/60</span></span>
     <button id="inv-close">✕</button>
   </div>
+  <!-- E7：属性面板（攻击/生命/暴击，来自快照 attrs） -->
+  <div id="attr-panel">
+    <span>攻击 <b id="attr-atk">-</b></span>
+    <span>生命 <b id="attr-hp">-</b></span>
+    <span>暴击 <b id="attr-crit">-</b></span>
+  </div>
+  <!-- E7：3 槽装备栏（点击已穿槽位卸下） -->
+  <div id="inv-equip">
+    <div class="equip-slot empty" id="slot-weapon" data-slot="weapon"><span class="slot-label">武器</span><span class="slot-item">—</span><span class="slot-action"></span></div>
+    <div class="equip-slot empty" id="slot-armor" data-slot="armor"><span class="slot-label">护甲</span><span class="slot-item">—</span><span class="slot-action"></span></div>
+    <div class="equip-slot empty" id="slot-trin" data-slot="trinket"><span class="slot-label">饰品</span><span class="slot-item">—</span><span class="slot-action"></span></div>
+  </div>
   <div id="inv-grid"><div id="inv-empty">空</div></div>
 </div>
 
 <div id="help">
   <b>WASD/方向键</b> 移动（8 向） · <b>空格</b> 格挡 · <b>1-4</b> 技能 · <b>I</b> 背包<br>
-  <b>F</b> 进副本/出本 · 靠近掉落按 <b>F</b>（走近自动拾取） · <b>滚轮</b> 缩放 · <b>拖拽</b> 平移 · <b>双击</b> 回中
+  <b>F</b> 进副本/出本 · 靠近掉落按 <b>F</b>（走近自动拾取） · <b>滚轮</b> 缩放 · <b>拖拽</b> 平移 · <b>双击</b> 回中<br>
+  <b>装备</b>：背包内点「装备」穿装（攻击/生命/暴击立即提升） · 点击装备栏槽位卸下
 </div>
 
 <script>
@@ -186,6 +216,8 @@ const DIR_VECTORS = [
 // 稀有度配色（art-bible：白/蓝/金/暗金）
 const RARITY_COLORS = ['#D8D2C4', '#4C7FD6', '#F2A03C', '#C8324A'];
 const RARITY_NAMES = ['白', '蓝', '金', '暗金'];
+// E7：装备槽名称（与服务端 ITEM_PROTOS slot 对齐）
+const SLOT_NAMES = { weapon: '武器', armor: '护甲', trinket: '饰品' };
 const KIND = { PLAYER: 0, ENEMY: 1, BOSS: 2, LOOT_GROUND: 3, TELEGRAPH: 4, ENTRANCE: 5 };
 
 // ── DOM ──
@@ -227,6 +259,7 @@ const GAME = window.__game = {
   predicted: null, localRenderPos: null, renderTick: 0,
   lastHits: [], lastKills: [], pickupToasts: [], lastSkillAt: 0,
   inventory: { items: [], cap: 60, loaded: false },
+  equipped: {}, // E7：3 槽已穿戴（character.inventory 消息）
   nearLootId: null, pickupHint: '', invOpen: false,
   // 调试钩子（仅 ?debug=1 生效；E2E 用）
   debugEnterDungeon: null, debugExitDungeon: null,
@@ -285,6 +318,7 @@ let parryFx = { until: 0 };         // 格挡成功盾闪
 let invOpen = false;
 let nearLootId = null;              // 最近可拾取 LOOT_GROUND id（drawEntities 每帧计算，F 键/提示用）
 let inventory = { items: [], cap: 60, loaded: false };
+let equipped = {};                  // E7：3 槽已穿戴（来自 character.inventory）
 let pickupToasts = [];              // 最近拾取 toast（E2E 钩子）
 let invSeq = 1;
 
@@ -364,7 +398,18 @@ function decodeSnapshot(buf) {
     if (mask & (1 << 9))  { e.entrance = { cooldownTicks: dv.getUint16(off, true), lastUsedTick: dv.getUint32(off, true) }; off += 6; }
     if (mask & (1 << 10)) { e.tier = dv.getUint8(off); off += 1; }
     if (mask & (1 << 11)) { e.skillCd = [dv.getUint16(off, true), dv.getUint16(off + 2, true), dv.getUint16(off + 4, true), dv.getUint16(off + 6, true)]; off += 8; }
-    if (mask & (1 << 12)) { e.attrs = { str: dv.getUint8(off), dex: dv.getUint8(off + 1), vit: dv.getUint8(off + 2) }; off += 3; }
+    if (mask & (1 << 12)) {
+      // E7 扩展 attrs：str/dex/vit + hasExt(u8) + (atk u16, maxHp u16, crit千分比 u16)×hasExt
+      const str = dv.getUint8(off); const dex = dv.getUint8(off + 1); const vit = dv.getUint8(off + 2); off += 3;
+      if (dv.getUint8(off) === 1) {
+        off += 1;
+        e.attrs = { str, dex, vit, atk: dv.getUint16(off, true), maxHp: dv.getUint16(off + 2, true), crit: dv.getUint16(off + 4, true) };
+        off += 6;
+      } else {
+        off += 1;
+        e.attrs = { str, dex, vit };
+      }
+    }
     entities.push(e);
   }
   return { tick, entities };
@@ -511,14 +556,16 @@ function handleControl(msg) {
       setState('closed');
       break;
     }
-    // ── E6 背包数据通道：拾取入库推送 / character.inventory.get 回复（同一格式）──
+    // ── E6 背包数据通道：拾取入库推送 / character.inventory.get 回复 / E7 equip/unequip 回复（同一格式）──
     case 'character.inventory': {
-      const items = (msg.items || []).map((i) => ({ itemId: i.itemId, rarity: i.rarity, affixes: (i.affixes || []).slice() }));
+      const items = (msg.items || []).map((i) => ({ itemId: i.itemId, rarity: i.rarity, affixes: (i.affixes || []).slice(), slot: i.slot }));
       const prevIds = new Set(inventory.items.map((i) => i.itemId));
       inventory.items = items;
       inventory.cap = msg.cap || 60;
       inventory.loaded = true;
+      equipped = msg.equipped || {};
       GAME.inventory = { items: inventory.items.slice(), cap: inventory.cap, loaded: true };
+      GAME.equipped = equipped;
       // 增量 toast：新入库物品 → 屏幕下方「拾取 [稀有度色]物品（词缀xN）」
       const added = items.filter((i) => !prevIds.has(i.itemId));
       for (const it of added) {
@@ -526,6 +573,7 @@ function handleControl(msg) {
         pickupToast(`拾取 <span class="r" style="color:${color}">${RARITY_NAMES[it.rarity] || '?'}品</span>（词缀×${it.affixes.length}）`);
       }
       renderInventory();
+      renderEquip();
       break;
     }
   }
@@ -666,6 +714,14 @@ function updateHud() {
   const parryBtn = document.getElementById('btn-parry');
   parryBtn.classList.toggle('active', !!GAME.parryActive);
   parryHud.textContent = GAME.parryActive ? '格挡中' : '';
+
+  // E7 属性面板（攻击/生命/暴击，来自快照 attrs；crit 千分比 → 百分比）
+  const attrMe = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+  if (attrMe && attrMe.attrs) {
+    document.getElementById('attr-atk').textContent = attrMe.attrs.atk != null ? String(attrMe.attrs.atk) : '-';
+    document.getElementById('attr-hp').textContent = attrMe.attrs.maxHp != null ? String(attrMe.attrs.maxHp) : '-';
+    document.getElementById('attr-crit').textContent = attrMe.attrs.crit != null ? (attrMe.attrs.crit / 10).toFixed(1) + '%' : '-';
+  }
 
   // 进副本 / 出本按钮
   updateDungeonButton();
@@ -821,6 +877,14 @@ dungeonBtn.addEventListener('click', toggleDungeon);
 invBtn.addEventListener('click', toggleInventory);
 document.getElementById('inv-close').addEventListener('click', closeInventory);
 
+// E7：点击已穿槽位 → 卸下（character.unequip）
+for (const slotEl of document.querySelectorAll('.equip-slot')) {
+  slotEl.addEventListener('click', () => {
+    const slot = slotEl.dataset.slot;
+    if (equipped && equipped[slot]) sendUnequip(slot);
+  });
+}
+
 // 进副本 / 出本
 function enterDungeon() {
   sendJson({ type: 'dungeon.enter', requestId: 'enter', payload: { entranceId: 1 } });
@@ -848,6 +912,7 @@ function openInventory() {
   invBtn.classList.add('on');
   sendJson({ type: 'character.inventory.get', requestId: 'inv' + (invSeq++) }); // 打开拉全量
   renderInventory();
+  renderEquip();
 }
 function closeInventory() {
   invOpen = false; GAME.invOpen = false;
@@ -870,9 +935,50 @@ function renderInventory() {
     cell.style.borderColor = color;
     const short = '#' + (it.itemId % 0x10000).toString(16).toUpperCase().padStart(4, '0');
     const aff = it.affixes.length > 0 ? '词缀×' + it.affixes.length : '无词缀';
-    cell.innerHTML = `<div class="inv-id">${short}</div><div class="inv-meta" style="color:${color}">${RARITY_NAMES[it.rarity] || '?'} · ${aff}</div>`;
+    const slotName = SLOT_NAMES[it.slot] || '';
+    cell.innerHTML = `<div class="inv-id">${short}</div><div class="inv-meta" style="color:${color}">${RARITY_NAMES[it.rarity] || '?'} · ${aff}${slotName ? ' · ' + slotName : ''}</div>`;
+    // E7：装备按钮（发 character.equip；已穿同槽位物品会被换下回背包）。
+    const eqBtn = document.createElement('button');
+    eqBtn.className = 'equip-btn';
+    eqBtn.textContent = '装备';
+    eqBtn.addEventListener('click', () => sendEquip(it.itemId));
+    cell.appendChild(eqBtn);
     invGridEl.appendChild(cell);
   }
+}
+
+// E7：3 槽已穿戴渲染（稀有度色边框 + 短号；点击已穿槽位 → 卸下）
+function renderEquip() {
+  for (const slot of ['weapon', 'armor', 'trinket']) {
+    const el = document.getElementById('slot-' + (slot === 'trinket' ? 'trin' : slot));
+    if (!el) continue;
+    const item = equipped[slot] || null;
+    const itemEl = el.querySelector('.slot-item');
+    const actionEl = el.querySelector('.slot-action');
+    if (item) {
+      const color = RARITY_COLORS[item.rarity] || '#D8D2C4';
+      const short = '#' + (item.itemId % 0x10000).toString(16).toUpperCase().padStart(4, '0');
+      el.classList.remove('empty'); el.classList.add('filled');
+      el.style.borderColor = color;
+      itemEl.textContent = short + ' · 词缀×' + (item.affixes || []).length;
+      itemEl.style.color = color;
+      actionEl.textContent = '点击卸下';
+    } else {
+      el.classList.add('empty'); el.classList.remove('filled');
+      el.style.borderColor = '';
+      itemEl.textContent = '—';
+      itemEl.style.color = '';
+      actionEl.textContent = '';
+    }
+  }
+}
+
+// E7：装备 / 卸下（服务端经 character.inventory 回推刷新）
+function sendEquip(itemId) {
+  sendJson({ type: 'character.equip', requestId: 'eq' + (invSeq++), payload: { itemId } });
+}
+function sendUnequip(slot) {
+  sendJson({ type: 'character.unequip', requestId: 'ueq' + (invSeq++), payload: { slot } });
 }
 
 // 调试钩子（?debug=1 时暴露给 E2E）
@@ -886,6 +992,8 @@ if (DEBUG) {
   GAME.openInventory = openInventory;
   GAME.closeInventory = closeInventory;
   GAME.sendSignal = sendSignal;
+  GAME.sendEquip = sendEquip; // E7
+  GAME.sendUnequip = sendUnequip; // E7
 }
 
 // ============================================================================
