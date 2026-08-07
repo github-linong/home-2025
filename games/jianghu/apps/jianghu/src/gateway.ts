@@ -36,7 +36,7 @@ import {
   sendToConn,
   type Conn,
 } from "./connection-registry.ts";
-import { dispatch, setProtocolCharacterService, resolveInventoryGet, resolveEquip, resolveUnequip } from "./protocol.ts";
+import { dispatch, setProtocolCharacterService, resolveInventoryGet, resolveLevelGet, resolveEquip, resolveUnequip } from "./protocol.ts";
 import { enqueueInput, addPlayerToRoom } from "./run-manager.ts";
 import { TICK_MS, TICK_RATE } from "../sim-core/src/constants.ts"; // C1 单一来源
 import type { InputCmd } from "../sim-core/src/types.ts";
@@ -273,6 +273,18 @@ function handleRaw(conn: Conn, raw: Buffer): void {
     return;
   }
 
+  // E9 等级数据通道（控制面）：character.level.get → HUD 等级/经验拉取（登录返回；游客忽略）。
+  if (msg.type === "character.level.get") {
+    const s = liveSessions.get(conn.connId);
+    void resolveLevelGet(
+      { userId: conn.userId, connId: conn.connId, seatId: s?.seatId, roomId: conn.roomId },
+      msg,
+    ).then((reply) => {
+      if (reply) sendToConn(conn.connId, reply); // null（游客/未知座位）→ 忽略不回复
+    });
+    return;
+  }
+
   // E7 装备数据通道（控制面）：character.equip / character.unequip → 换装/卸下（async，同背包模式）。
   if (msg.type === "character.equip" || msg.type === "character.unequip") {
     const s = liveSessions.get(conn.connId);
@@ -297,7 +309,8 @@ function handleRaw(conn: Conn, raw: Buffer): void {
     const s2 = liveSessions.get(conn.connId);
     if (s2) {
       // E7：登录玩家携带持久化装备（equipped）→ 世界镜像 maxHp/attrs；游客 snapshot=null → undefined → 基础属性。
-      addPlayerToRoom(joinedRoomId, s2.seatId, s2.userId, s2.snapshot?.character.equipped);
+      // E9：登录玩家携带持久化等级（level）→ 世界镜像 attrs（str/dex/vit/atk/maxHp 反映真实等级）。
+      addPlayerToRoom(joinedRoomId, s2.seatId, s2.userId, s2.snapshot?.character.equipped, s2.snapshot?.character.level);
       // 双模式关键事件：登录玩家加入房间 → last-wins 顶替（C-Per-4）+ 落库（架构 §7）。
       if (!s2.guest) {
         enforceLastWins(joinedRoomId, s2.userId);

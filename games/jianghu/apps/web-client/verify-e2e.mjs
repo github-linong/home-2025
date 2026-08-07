@@ -244,6 +244,27 @@ const main = async () => {
     })) : null;
     record("A2 二进制快照(主世界实体≥5)", okSnap, okSnap ? `tick=${snapInfo.tick} entities=${snapInfo.count} kinds=${snapInfo.kinds.join(",")} seatId=${snapInfo.seatId}` : undefined);
 
+    // ── E9 等级 HUD（非阻塞加分项）：levelInfo 钩子存在 + 顶部 Lv + 底部经验条渲染 ──
+    // 登录态连上即发 character.level.get → GAME.levelInfo 被初始化/更新；renderLevelHud 每快照刷新。
+    const lvlInfo = await page.evaluate(() => {
+      const g = window.__game;
+      const lvEl = document.getElementById('level');
+      const fill = document.getElementById('xpfill');
+      const txt = document.getElementById('xptext');
+      return {
+        hook: g && g.levelInfo ? { level: g.levelInfo.level, xp: g.levelInfo.xp, xpNext: g.levelInfo.xpNext } : null,
+        hud: lvEl ? lvEl.textContent : null,
+        xpbar: fill ? { w: fill.style.width, text: txt ? txt.textContent : null } : null,
+      };
+    });
+    record(
+      "E9 等级HUD(levelInfo钩子+经验条渲染)",
+      !!lvlInfo.hook && /^Lv\.\d+$/.test(lvlInfo.hud || "") && !!lvlInfo.xpbar && !!lvlInfo.xpbar.text,
+      lvlInfo.hook
+        ? `levelInfo=${JSON.stringify(lvlInfo.hook)} hud=${lvlInfo.hud} xp=${lvlInfo.xpbar && lvlInfo.xpbar.text}`
+        : "no levelInfo hook",
+    );
+
     // ── B. 移动手感：本地预测 + 权威收敛 ──
     // B0 移动预测：按键后 60ms 内渲染位置即变（本地预测 PLAYER_SPEED*dt；旧版需等 ~100ms+RTT 插值缓冲）
     const pred0 = await page.evaluate(() => ({ ...window.__game.predicted }));

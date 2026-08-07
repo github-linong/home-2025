@@ -97,6 +97,13 @@ export interface StartRunOpts {
    * 调用方可用自定义回调覆盖（如测试注入）；不传则仅维持 sim-core 地面掉落生命周期（掉落→ttl→拾取移除），不落背包。
    */
   readonly onPickup?: (seatId: number, loot: LootResult) => void;
+  /**
+   * E9：升级回调（可选）。每次玩家升级时触发（seatId + level/xp/xpNext）。
+   * **默认已接**：bootResidentRun / enterInstance 传 `handleLevelUp` —— 登录落库（Character.level/exp）+
+   * 推送 character.level；游客直接忽略（C-Per-1 零持久写 + 不推送）。
+   * 调用方可用自定义回调覆盖（如测试注入）；不传则仅维持 world 内升级（actor attrs 更新），不落库/不推送。
+   */
+  readonly onLevelUp?: (seatId: number, level: number, xp: number, xpNext: number) => void;
 }
 
 interface RunEntry {
@@ -133,6 +140,16 @@ const instances = new Map<string, InstanceMeta>();
  */
 const equipBySeat = new Map<number, EquippedSlots>();
 
+/**
+ * E9：seatId → 等级（世界面向缓存，镜像 equipBySeat）。
+ * - 持久化（Character.level）为耐用权威；本 Map 是「世界镜像」同步缓存：
+ *   升级事件（handleLevelUp）与 room.join 播种时写入，enterInstance / exitInstance 换域
+ *   addPlayer 时读取（避免异步 loadOrCreate 塞进同步路径）。
+ * - 同一进程内与持久化保持一致（升级同时落库 + 写 Map）；服务重启后由 gateway
+ *   room.join 经 snapshot.character.level 重新播种。
+ */
+const levelBySeat = new Map<number, number>();
+
 // C-Dgn-4：副本寿命巡检（5s；unref 不阻塞进程退出）。测试经 checkInstanceExpiry(now) 直接驱动。
 const expireTimer = setInterval(() => {
   checkInstanceExpiry();
@@ -162,6 +179,10 @@ export function startRun(opts: StartRunOpts): WorldSnapshot {
       for (const p of world.consumePickups()) {
         opts.onPickup?.(p.seatId, p.loot);
       }
+      // E9：取走本 tick 升级事件，转发给服务端 onLevelUp 钩子（默认 handleLevelUp：登录落库 + 推送 character.level，游客忽略 C-Per-1）。
+      for (const ev of world.consumeLevelUps()) {
+        opts.onLevelUp?.(ev.seatId, ev.level, ev.xp, ev.xpNext);
+      }
     },
     onSnapshot() {
       return world.snapshot();
@@ -187,12 +208,14 @@ export function enqueueInput(roomId: string, _playerId: number, cmd: InputCmd): 
 }
 
 /** 在权威世界 spawn 一个玩家实体（E3：玩家成功加入房间后调用）。room 未运行则静默忽略。 */
-export function addPlayerToRoom(roomId: string, seatId: number, userId: string, equipped?: EquippedSlots): void {
+export function addPlayerToRoom(roomId: string, seatId: number, userId: string, equipped?: EquippedSlots, level?: number): void {
   const entry = runs.get(roomId);
   if (!entry) return;
   // E7：room.join 播种装备（持久化镜像 → 世界）。游客/未装备 → undefined → 基础属性。
   if (equipped !== undefined) equipBySeat.set(seatId, equipped);
-  entry.world.addPlayer(seatId, userId, undefined, equipBySeat.get(seatId));
+  // E9：room.join 播种等级（持久化镜像 → 世界；游客/缺省 → undefined → L1 基础属性）。
+  if (level !== undefined) levelBySeat.set(seatId, level);
+  entry.world.addPlayer(seatId, userId, undefined, equipBySeat.get(seatId), levelBySeat.get(seatId));
 }
 
 /**
@@ -258,6 +281,8 @@ export function bootResidentRun(seed = "jianghu-overworld-0"): WorldSnapshot {
     spawnZones: overworldZones, // E7.1 主世界刷怪区（持续掉落来源）
     // F1（P1）：拾取→背包接线（登录入库、游客忽略 C-Per-1）。
     onPickup: (seatId, loot) => handlePickup(roomId, seatId, loot),
+    // E9：升级→落库 + 推送 character.level（登录；游客忽略 C-Per-1）。
+    onLevelUp: (seatId, level, xp, xpNext) => handleLevelUp(roomId, seatId, level, xp, xpNext),
   });
 }
 
@@ -312,13 +337,16 @@ export function enterInstance(
     lootTokens: 0, // 副本无占位漂浮 token（掉落仅来自敌人，C-Net-1 域干净）
     // F1（P1）：副本拾取同样落背包（登录入库、游客忽略 C-Per-1）。
     onPickup: (seatId, loot) => handlePickup(instanceRoomId, seatId, loot),
+    // E9：副本升级同样落库 + 推送（登录；游客忽略 C-Per-1）。
+    onLevelUp: (seatId, level, xp, xpNext) => handleLevelUp(instanceRoomId, seatId, level, xp, xpNext),
   });
 
   // 成员实体：出 RESIDENT 世界 + 进 instance 世界（域切换；C-Net-1 不混流大图）。
   for (const m of members) {
     resident.world.removePlayer(m.seatId);
     // E7：进本携带已穿戴装备（世界镜像缓存 → maxHp/attrs 应用到副本 actor）。
-    getWorld(instanceRoomId)?.addPlayer(m.seatId, m.userId, spec.entryTile, equipBySeat.get(m.seatId));
+    // E9：进本携带等级（levelBySeat 缓存 → attrs 反映真实等级）。
+    getWorld(instanceRoomId)?.addPlayer(m.seatId, m.userId, spec.entryTile, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId));
   }
 
   // ⑥ 寿命记录（C-Dgn-4：30min；wall-clock 计时，循环停滞不误判）。
@@ -344,7 +372,8 @@ export function exitInstance(instanceRoomId: string): { ok: boolean; reason?: st
   const resident = runs.get(RESIDENT_ROOM_ID);
   for (const m of meta.members) {
     // E7：出本携带已穿戴装备（世界镜像缓存 → 回主世界 actor 保留 maxHp/attrs）。
-    if (resident) resident.world.addPlayer(m.seatId, m.userId, RESPAWN_POS, equipBySeat.get(m.seatId));
+    // E9：出本携带等级（levelBySeat 缓存 → 回主世界 actor attrs 反映真实等级）。
+    if (resident) resident.world.addPlayer(m.seatId, m.userId, RESPAWN_POS, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId));
     const connId = activeUserConn.get(m.userId);
     if (connId) setRoom(connId, RESIDENT_ROOM_ID); // 无连接则忽略（掉线成员由重连流程接管）
   }
@@ -398,6 +427,57 @@ export function pushInventoryToSeat(seatId: number, inventory: Inventory, equipp
     equipped: equipped ?? {},
     cap: INVENTORY_CAP,
   });
+}
+
+// ─────────────────────────────────────────────────────────────
+// E9：升级数据通道（控制面 character.level）
+// ─────────────────────────────────────────────────────────────
+// 镜像 E6 背包通道：世界升级事件 → 登录落库（Character.level/exp）+ 向 seat 连接推送
+// `{ type: "character.level", level, xp, xpNext }`（登录玩家；游客零持久写 + 不推送，C-Per-1）。
+
+/**
+ * E9：向 seatId 对应连接推送 character.level（登录玩家；游客/离线忽略，C-Per-1）。
+ * seatId → userId（CharacterService.getSeatInfo）→ connId（activeUserConn）→ sendToConn。
+ */
+export function pushLevelToSeat(seatId: number, level: number, xp: number, xpNext: number): void {
+  const cs = activeCharacterService;
+  const info = cs?.getSeatInfo(seatId);
+  if (!info || info.guest) return; // 未知座位 / 游客 → 不推送（C-Per-1）
+  const connId = activeUserConn.get(info.userId);
+  if (!connId) return; // 离线 → 忽略（重连时经 character.level.get 拉取）
+  sendToConn(connId, { type: "character.level", level, xp, xpNext });
+}
+
+/**
+ * E9：升级落库 + 推送（登录玩家；升级事件后由 handleLevelUp 调用）。
+ * - Character.level = 升级后等级；Character.exp = 当前剩余经验（world 会话内权威，升级时同步）；
+ * - 落库后向 seat 连接推送 character.level（客户端经验条 / 升级特效）。
+ * 调用方为 run-manager.onTick（async 触发、不阻塞 12Hz 循环，镜像 applyPickupToInventory）。
+ */
+export async function applyLevelUpToCharacter(
+  cs: CharacterService,
+  userId: string,
+  level: number,
+  xp: number,
+  xpNext: number,
+): Promise<void> {
+  const { snapshot, seatId } = await cs.loadOrCreate(userId);
+  const character = { ...snapshot.character, level, exp: xp, updatedAt: Date.now() };
+  await cs.save(userId, { character, inventory: snapshot.inventory });
+  pushLevelToSeat(seatId, level, xp, xpNext);
+}
+
+/**
+ * E9：升级事件接线（startRun onTick → 本函数；登录落库 + 推送，游客忽略 C-Per-1）。
+ * 同时更新 levelBySeat 缓存（供换域 addPlayer 时播种等级 → attrs 反映真实等级）。
+ */
+function handleLevelUp(roomId: string, seatId: number, level: number, xp: number, xpNext: number): void {
+  const cs = activeCharacterService;
+  if (!cs) return; // 未注入服务 → 仅维持世界内升级（actor attrs 已更新）
+  const info = cs.getSeatInfo(seatId);
+  if (!info || info.guest) return; // 游客 → 零持久写 + 不推送（C-Per-1）
+  levelBySeat.set(seatId, level); // 世界镜像缓存（换域 addPlayer 应用）
+  void applyLevelUpToCharacter(cs, info.userId, level, xp, xpNext).catch(() => {});
 }
 
 /**

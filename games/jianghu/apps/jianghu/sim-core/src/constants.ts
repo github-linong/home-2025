@@ -80,6 +80,15 @@ export function xpForLevel(level: number): number {
   return Math.floor(50 * Math.pow(Math.max(1, level), 1.5));
 }
 
+/**
+ * 每级属性成长（E9，C7 单一来源；GDD §8.3-7 三系线性 MVP 映射）：
+ *   - str → atk：每级 +1 基础攻击（LEVEL_ATK_PER_LEVEL）；
+ *   - vit → maxHp：每级 +5 生命上限（LEVEL_MAXHP_PER_LEVEL）；
+ *   - dex → 暴击/攻速：Phase-2 预留（本常量不承载，world.levelStatsFor 注释说明）。
+ */
+export const LEVEL_ATK_PER_LEVEL = 1;
+export const LEVEL_MAXHP_PER_LEVEL = 5;
+
 // ─────────────────────────────────────────────────────────────
 // 掉落（loot §；ADR §）
 // ─────────────────────────────────────────────────────────────
@@ -117,6 +126,16 @@ export const HP_MULT = {
 } as const;
 
 export type EnemyTier = keyof typeof HP_MULT;
+
+/**
+ * 击杀经验表（E9，C7 确定性常量，按 EnemyTier 索引）。
+ * 击杀者（lastDamagerSeatId）击杀敌人/BOSS 时获得对应经验。
+ */
+export const ENEMY_XP: Readonly<Record<EnemyTier, number>> = {
+  normal: 5,
+  elite: 20,
+  boss: 80,
+} as const;
 
 // ─────────────────────────────────────────────────────────────
 // 技能 CD（combat §；ADR §）

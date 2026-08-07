@@ -59,6 +59,10 @@ import {
   ENEMY_MOVE_SPEED, // E6：敌人 CHASE 追击速度（格/tick）
   AGGRO_RADIUS, // E6：敌人仇恨半径（px）
   PROVOKE_DURATION_TICKS, // E6：被动怪被打后的反击窗口（tick）
+  xpForLevel, // E9：升级经验需求（XP_req = 50·L^1.5，单一来源公式）
+  ENEMY_XP, // E9：击杀经验表（按 EnemyTier 索引）
+  LEVEL_ATK_PER_LEVEL, // E9：每级 +1 基础攻击（str→atk MVP 映射）
+  LEVEL_MAXHP_PER_LEVEL, // E9：每级 +5 生命上限（vit→maxHp MVP 映射）
 } from "./constants.ts"; // C7 单一来源
 import { Rng } from "./rng.ts";
 import { stepMovement } from "./movement.ts"; // E3 真移动（纯函数）
@@ -97,6 +101,17 @@ export interface PickupEvent {
   readonly loot: LootResult;
 }
 
+/** E9：升级事件（world → 编排层；升级时推送 character.level + 落库）。 */
+export interface LevelUpEvent {
+  readonly seatId: number;
+  /** 升级后等级。 */
+  readonly level: number;
+  /** 当前剩余经验（扣减升级阈值后；持久化 exp 同源）。 */
+  readonly xp: number;
+  /** 下一级所需经验（xpForLevel(level)；消息 character.level.xpNext）。 */
+  readonly xpNext: number;
+}
+
 interface Actor {
   id: number;
   kind: number;
@@ -126,6 +141,11 @@ interface Actor {
   equipStats?: EquipmentStats; // 装备汇总属性缓存（computeEquipStats；仅在 addPlayer/setPlayerEquipped 时计算，热路径零分配）
   // E8 新增（玩家普攻）
   attackCdTicks?: number; // 玩家普攻 CD（tick 左；仅普攻使用后持有，未普攻 → undefined 保持 golden 稳定）
+  // E9 新增（升级/经验；**不进 EntityState 快照**，C12 纪律，防污染确定性 journal）
+  lastDamagerSeatId?: number; // 敌人：最后对目标造成伤害的玩家 seatId（击杀者归属，world 结算时写）
+  level?: number; // 玩家等级（L1 默认；L1 全零加成，golden 锚点）
+  xp?: number; // 玩家当前经验（击杀累计；会话内权威，升级时与持久化同步）
+  levelStats?: { atk: number; maxHp: number }; // 等级派生属性缓存（复用 equipStats 思路；仅 addPlayer/升级时计算）
 }
 
 interface SpawnZoneRuntime {
@@ -140,8 +160,8 @@ export interface World {
   readonly seed: string;
   tick: number;
   phase: RoomPhaseValue;
-  /** 在权威世界 spawn 一个玩家实体（幂等：重复 seatId 不叠加）。E7：equipped 可选（持久化镜像）。 */
-  addPlayer(seatId: number, userId: string, spawn?: Vec2, equipped?: EquippedSlots): void;
+  /** 在权威世界 spawn 一个玩家实体（幂等：重复 seatId 不叠加）。E7：equipped 可选（持久化镜像）。E9：level 可选（持久化镜像）。 */
+  addPlayer(seatId: number, userId: string, spawn?: Vec2, equipped?: EquippedSlots, level?: number): void;
   /** 从权威世界移除一个玩家实体（进本时出主世界 / 测试清理；幂等：不存在则忽略）。 */
   removePlayer(seatId: number): void;
   /**
@@ -161,6 +181,8 @@ export interface World {
   actors(): readonly Actor[];
   /** 取出并清空拾取事件缓冲（服务端应用背包用）。 */
   consumePickups(): PickupEvent[];
+  /** E9：取出并清空升级事件缓冲（服务端落库 + 推送 character.level 用）。 */
+  consumeLevelUps(): LevelUpEvent[];
   /** 在指定 seat 玩家脚下生成地面掉落实体（背包满溢出回落，C-Per-3）。 */
   spawnGroundLoot(seatId: number, loot: LootState): void;
   /**
@@ -172,6 +194,8 @@ export interface World {
   setPlayerEquipped(seatId: number, equipped: EquippedSlots): void;
   /** 可选：每次拾取即时回调（run-manager 可设，替代轮询 consumePickups）。 */
   onPickup?: (seatId: number, loot: LootResult) => void;
+  /** E9：可选：每次升级即时回调（run-manager 可设，替代轮询 consumeLevelUps）。 */
+  onLevelUp?: (seatId: number, level: number, xp: number, xpNext: number) => void;
 }
 
 /**
@@ -253,9 +277,21 @@ function maybeEnemyAttack(e: Actor, target: Actor, t: number): void {
 }
 
 /**
+ * E9：等级派生属性缓存（每级 +1 atk / +5 maxHp；L1 → 全零，golden 锚点）。
+ * - str→atk、vit→maxHp 为 MVP 简化映射（GDD §8.3-7 三系线性）；
+ * - dex→暴击/攻速 属 Phase-2 预留（LEVEL_ATK/MAXHP 常量不承载 dex，说明见 constants.ts）。
+ * 纯函数确定性（D9）：同 level ⇒ 同 levelStats。
+ */
+function levelStatsFor(level: number): { atk: number; maxHp: number } {
+  const lv = Math.max(1, Math.trunc(level));
+  return { atk: (lv - 1) * LEVEL_ATK_PER_LEVEL, maxHp: (lv - 1) * LEVEL_MAXHP_PER_LEVEL };
+}
+
+/**
  * E7：构造玩家 actor（addPlayer / 构造时占位玩家共用）。
- * - maxHp = PLAYER_MAX_HP + 装备 maxHp 加成（无装备 → 100，golden 锚点）；
+ * - maxHp = PLAYER_MAX_HP + 装备 maxHp 加成 + 等级 maxHp 加成（无装备 L1 → 100，golden 锚点）；
  * - 缓存 equipStats（computeEquipStats 仅在此/换装时计算，热路径零分配）；
+ * - 缓存 levelStats（E9；仅在此/升级时计算，热路径零分配）；
  * - spawn 缺省沿用 E1 占位公式（按 seatId 错开）。
  */
 function makePlayerActor(opts: {
@@ -263,11 +299,15 @@ function makePlayerActor(opts: {
   seatId: number;
   spawn?: Vec2;
   equipped?: EquippedSlots;
+  /** E9：玩家等级（缺省 L1；重连时经持久化播种，attrs 反映真实等级）。 */
+  level?: number;
   /** 缺省出生点 x 是否做 %40 防越界（addPlayer 用；构造时占位玩家传 false 保持 E1 原值）。 */
   wrapX?: boolean;
 }): Actor {
   const equipStats = computeEquipStats(opts.equipped);
-  const maxHp = PLAYER_MAX_HP + equipStats.maxHp;
+  const levelStats = levelStatsFor(opts.level ?? 1);
+  const lv = Math.max(1, Math.trunc(opts.level ?? 1));
+  const maxHp = PLAYER_MAX_HP + equipStats.maxHp + levelStats.maxHp;
   const sx = opts.spawn
     ? opts.spawn.x
     : (opts.wrapX === false ? (16 + opts.seatId) * TILE : ((16 + opts.seatId) % 40) * TILE);
@@ -285,16 +325,27 @@ function makePlayerActor(opts: {
     skillCd: [0, 0, 0, 0],
     equipped: opts.equipped,
     equipStats,
+    level: lv,
+    xp: 0,
+    levelStats,
   };
 }
 
-/** E7：玩家快照 attrs（面板展示；STR/DEX/VIT 基础 + 装备派生 atk/maxHp/crit）。 */
-function playerAttrs(stats: EquipmentStats, maxHp: number): EntityState["attrs"] {
+/** E7：玩家快照 attrs（面板展示；STR/DEX/VIT 基础 + 每级三系各 1 + 装备派生 atk/maxHp/crit）。 */
+function playerAttrs(
+  stats: EquipmentStats,
+  levelStats: { atk: number; maxHp: number } | undefined,
+  level: number | undefined,
+  maxHp: number,
+): EntityState["attrs"] {
+  const lv = Math.max(1, Math.trunc(level ?? 1));
   return {
-    str: PLAYER_BASE_ATTRS.str,
-    dex: PLAYER_BASE_ATTRS.dex,
-    vit: PLAYER_BASE_ATTRS.vit,
-    atk: PLAYER_BASE_ATK + stats.atk,
+    // GDD 三系属性：基础 5 + 每级 +1（L1 → 5/5/5，golden 锚点）。
+    str: PLAYER_BASE_ATTRS.str + (lv - 1),
+    dex: PLAYER_BASE_ATTRS.dex + (lv - 1),
+    vit: PLAYER_BASE_ATTRS.vit + (lv - 1),
+    // 战斗映射：基础攻击 + 装备 atk + 等级 atk（str→atk；L1 → PLAYER_BASE_ATK，golden 锚点）。
+    atk: PLAYER_BASE_ATK + stats.atk + (levelStats?.atk ?? 0),
     maxHp,
     crit: Math.round(stats.critChance * 1000),
   };
@@ -323,6 +374,8 @@ export function createWorld(opts: CreateWorldOpts): World {
 
   // ── 拾取事件缓冲 ──
   const pickupBuffer: PickupEvent[] = [];
+  // E9：升级事件缓冲（升级时 push，consumeLevelUps 取走）
+  const levelUpBuffer: LevelUpEvent[] = [];
 
   // ── 确定性 Rng 实例（战斗/刷怪/掉装/复活共用种子流，D9）──
   const simRng = new Rng(`combat:${opts.seed}`);
@@ -410,12 +463,13 @@ export function createWorld(opts: CreateWorldOpts): World {
     phase: opts.phase,
     actors: () => actors.slice(),
 
-    addPlayer(seatId: number, _userId: string, spawn?: Vec2, equipped?: EquippedSlots) {
+    addPlayer(seatId: number, _userId: string, spawn?: Vec2, equipped?: EquippedSlots, level?: number) {
       // 幂等：重复加入不叠加实体（重连/重复 room.join 安全）。
       if (players.has(seatId)) return;
       const id = nextId++;
       // E7：equipped 可选（持久化镜像）；缺省 → 基础属性（maxHp=100，golden 锚点）。
-      actors.push(makePlayerActor({ id, seatId, spawn, equipped, wrapX: true }));
+      // E9：level 可选（持久化镜像）；缺省 → L1（全零加成，golden 锚点）。
+      actors.push(makePlayerActor({ id, seatId, spawn, equipped, level, wrapX: true }));
       players.set(seatId, id);
     },
 
@@ -436,7 +490,8 @@ export function createWorld(opts: CreateWorldOpts): World {
       if (!a) return;
       const stats = computeEquipStats(equipped);
       const oldMax = a.maxHp;
-      const newMax = PLAYER_MAX_HP + stats.maxHp;
+      // E9：maxHp = 基础 + 装备 + 等级（等级加成来自 levelStats 缓存，换装不变）。
+      const newMax = PLAYER_MAX_HP + stats.maxHp + (a.levelStats?.maxHp ?? 0);
       a.equipped = equipped;
       a.equipStats = stats;
       a.maxHp = newMax;
@@ -565,7 +620,8 @@ export function createWorld(opts: CreateWorldOpts): World {
             if (a.skillCd && a.skillCd[slot] <= 0) {
               const intent = resolveSkill(a.id, slot, t);
               // E7：玩家攻击 = 技能基础伤害 + 装备 atk（武器 baseAtk + atk 词缀）；无装备 → 原值（golden 锚点）。
-              let baseAmount = intent.damage + pStats.atk;
+              // E9：+ 等级 atk（每级 +1；L1 → 0 → 字节不变）。
+              let baseAmount = intent.damage + pStats.atk + (a.levelStats?.atk ?? 0);
               // E7：暴击 ×1.5（D9 确定性 Rng；仅装备 critChance>0 时消耗 rng，无装备零消耗 → golden 稳定）。
               if (pStats.critChance > 0 && simRng.nextFloat() < pStats.critChance) {
                 baseAmount = Math.round(baseAmount * 1.5);
@@ -584,6 +640,8 @@ export function createWorld(opts: CreateWorldOpts): World {
                   e.hp += dmg.deltaHp;
                   // E6：被动怪被打 → 记录反击窗口（被打才反击，窗口内对接触内玩家反击）。
                   e.lastDamageTick = t;
+                  // E9：记录最后造成伤害的玩家 seatId（击杀者归属；world 结算时查该字段）。
+                  e.lastDamagerSeatId = seatId;
                 }
               }
               // E7：attackSpeed 缩短技能 CD（无装备 attackSpeed=0 → 原 cd，golden 锚点）。
@@ -603,7 +661,8 @@ export function createWorld(opts: CreateWorldOpts): World {
             ) {
               // E8：普攻伤害 = PLAYER_BASE_ATK + 装备 atk 加成；暴击复用既有门闸
               // （critChance>0 才消耗 Rng，无装备零消耗 → golden 稳定）。
-              let baseAmount = PLAYER_BASE_ATK + pStats.atk;
+              // E9：+ 等级 atk（每级 +1；L1 → 0 → 字节不变）。
+              let baseAmount = PLAYER_BASE_ATK + pStats.atk + (a.levelStats?.atk ?? 0);
               if (pStats.critChance > 0 && simRng.nextFloat() < pStats.critChance) {
                 baseAmount = Math.round(baseAmount * 1.5);
               }
@@ -618,6 +677,8 @@ export function createWorld(opts: CreateWorldOpts): World {
               target.hp += dmg.deltaHp;
               // E6：被动怪被打 → 反击窗口（同技能命中语义）。
               target.lastDamageTick = t;
+              // E9：记录最后造成伤害的玩家 seatId（击杀者归属）。
+              target.lastDamagerSeatId = seatId;
               // 面向目标（表现层：客户端挥砍光效朝目标；不参与命中判定，MVP 近战范围判定即可）。
               a.dir = dirToward(a.x, a.y, target.x, target.y);
               // E8：普攻 CD（attackSpeed 缩短；无装备 → ATTACK_CD_TICKS=6，golden 锚点）。
@@ -726,6 +787,38 @@ export function createWorld(opts: CreateWorldOpts): World {
       if (deadEnemyIds.size > 0) {
         for (const e of actors) {
           if (!deadEnemyIds.has(e.id)) continue;
+          // E9：击杀者 = 最后对目标造成伤害的玩家（lastDamagerSeatId，world 结算时写）。
+          //   xp += ENEMY_XP[tier]；while 循环可连升多级（C7 确定性）。
+          //   升级 → 属性成长（+1 atk/+5 maxHp）→ hp 回满 → 升级事件（编排层推送/落库）。
+          //   注：本段不消费 simRng（rollLoot 在下方），插入不影响掉落 Rng 流 → golden 稳定。
+          const killerSeat = e.lastDamagerSeatId;
+          if (killerSeat !== undefined) {
+            const killerId = players.get(killerSeat);
+            const killer = killerId !== undefined ? actors.find((x) => x.id === killerId) : undefined;
+            if (killer && killer.hp > 0) {
+              const tierName = TIER_NAMES[e.tier ?? 0];
+              let xp = (killer.xp ?? 0) + ENEMY_XP[tierName];
+              let level = killer.level ?? 1;
+              let leveled = false;
+              while (xp >= xpForLevel(level)) {
+                xp -= xpForLevel(level);
+                level += 1;
+                leveled = true;
+              }
+              killer.xp = xp; // 未升级也累计（会话内权威，升级时与持久化同步）
+              if (leveled) {
+                killer.level = level;
+                killer.levelStats = levelStatsFor(level);
+                // 属性成长后 maxHp 提升 + 升级瞬间 hp 回满（同步到新上限）。
+                const newMax = PLAYER_MAX_HP + (killer.equipStats?.maxHp ?? 0) + killer.levelStats.maxHp;
+                killer.maxHp = newMax;
+                killer.hp = newMax;
+                const ev: LevelUpEvent = { seatId: killerSeat, level, xp, xpNext: xpForLevel(level) };
+                levelUpBuffer.push(ev);
+                if (world.onLevelUp) world.onLevelUp(ev.seatId, ev.level, ev.xp, ev.xpNext);
+              }
+            }
+          }
           // 掉装：rollLoot（确定性 Rng 流）；命中 → spawn LOOT_GROUND 于敌人 pos。
           const tierName = TIER_NAMES[e.tier ?? 0];
           const res = rollLoot(simRng, tierName);
@@ -869,7 +962,7 @@ export function createWorld(opts: CreateWorldOpts): World {
             ? { skillCd: a.skillCd.slice() }
             : {}),
           ...(a.ownerId !== undefined
-            ? { attrs: playerAttrs(a.equipStats ?? EMPTY_EQUIP_STATS, a.maxHp) }
+            ? { attrs: playerAttrs(a.equipStats ?? EMPTY_EQUIP_STATS, a.levelStats, a.level, a.maxHp) }
             : {}),
           // 敌人/BOSS：tier（仅持有才下发）。
           ...(a.tier !== undefined ? { tier: a.tier } : {}),
@@ -887,6 +980,12 @@ export function createWorld(opts: CreateWorldOpts): World {
     consumePickups(): PickupEvent[] {
       const out = pickupBuffer.slice();
       pickupBuffer.length = 0;
+      return out;
+    },
+
+    consumeLevelUps(): LevelUpEvent[] {
+      const out = levelUpBuffer.slice();
+      levelUpBuffer.length = 0;
       return out;
     },
 

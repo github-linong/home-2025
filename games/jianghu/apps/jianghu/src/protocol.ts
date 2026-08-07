@@ -30,7 +30,7 @@ import {
   pushInventoryToSeat, // E7：装备变更后推送背包（含 equipped）
 } from "./run-manager.ts";
 import { RoomPhase } from "../sim-core/src/types.ts";
-import { INVENTORY_CAP } from "../sim-core/src/constants.ts"; // C7 单一来源（背包上限）
+import { INVENTORY_CAP, xpForLevel } from "../sim-core/src/constants.ts"; // C7 单一来源（背包上限 / 升级经验需求）
 import { itemProto, type EquippedSlots } from "../sim-core/src/affixes.ts"; // E7：slot 推导 / 装备槽
 import { encodeSnapshot } from "./protocol-binary.ts";
 import { generateId } from "./ids.ts";
@@ -169,6 +169,42 @@ export async function resolveInventoryGet(
   if (!info || info.guest) return empty(); // 游客 / 未知座位 → 空背包（C-Per-1）
   const { snapshot } = await cs.loadOrCreate(info.userId);
   return inventoryMessage(msg.requestId, snapshot.inventory, snapshot.character.equipped);
+}
+
+// ─────────────────────────────────────────────────────────────
+// E9 等级数据通道（控制面）：character.level
+// ─────────────────────────────────────────────────────────────
+// 镜像 character.inventory：`character.level.get` 由 gateway 显式 type 路由到本函数（C4），
+// 业务逻辑（guest 忽略 / 登录读持久化等级）收在本协议层，便于 fake ctx 单测。
+
+/** character.level 消息体（推送与 get 回复同一格式，供客户端 HUD 经验条 + 等级展示）。 */
+export interface LevelMessage {
+  readonly type: "character.level";
+  readonly requestId?: string;
+  readonly level: number;
+  /** 当前经验（升级后为剩余经验；Character.exp 同源）。 */
+  readonly xp: number;
+  /** 下一级所需经验（xpForLevel(level)，C7 单一来源）。 */
+  readonly xpNext: number;
+}
+
+/**
+ * 处理 `character.level.get`（异步）：登录玩家返回持久化等级/经验；
+ * 游客/未知座位 → null（忽略，不回复；C-Per-1 零持久写不涉及）。
+ */
+export async function resolveLevelGet(
+  ctx: ProtocolContext,
+  msg: { type: string; requestId?: string },
+): Promise<LevelMessage | null> {
+  const cs = protocolCharacterService;
+  const seatId = ctx.seatId;
+  if (!cs || seatId === undefined) return null;
+  const info = cs.getSeatInfo(seatId);
+  if (!info || info.guest) return null; // 游客 / 未知座位 → 忽略（C-Per-1）
+  const { snapshot } = await cs.loadOrCreate(info.userId);
+  const level = Math.max(1, Math.trunc(snapshot.character.level ?? 1));
+  const xp = Math.max(0, snapshot.character.exp ?? 0);
+  return { type: "character.level", requestId: msg.requestId, level, xp, xpNext: xpForLevel(level) };
 }
 
 /** 校验登录 + 取角色快照（equip/unequip 共用；游客 → 错误）。 */

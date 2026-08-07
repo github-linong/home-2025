@@ -23,7 +23,16 @@
   #hpwrap { display: inline-flex; align-items: center; gap: 6px; }
   #hpbar { width: 110px; height: 8px; background: #301a1a; border: 1px solid #553; border-radius: 3px; overflow: hidden; }
   #hpfill { height: 100%; width: 100%; background: linear-gradient(90deg, #c8324a, #f2a03c); transition: width .15s; }
+  #level { color: #f2a03c; font-weight: 700; }
   #skillcd-hud { color: #9fd; }
+
+  /* ── E9 底部经验条（当前 xp/xpNext）── */
+  #xpbar { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 10;
+    width: 340px; height: 12px; background: rgba(12,14,20,.88); border: 1px solid #5f8fb0;
+    border-radius: 6px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.5); }
+  #xpfill { height: 100%; width: 0%; background: linear-gradient(90deg, #4f8fc0, #5fd0e0, #f2a03c); transition: width .25s; }
+  #xptext { position: absolute; inset: 0; text-align: center; font-size: 9px; line-height: 12px;
+    color: #e8e4d8; text-shadow: 0 1px 2px #000; letter-spacing: .5px; }
   .btn { pointer-events: auto; cursor: pointer; }
   #btn-inv { border: 1px solid #4a5568; padding: 3px 9px; border-radius: 6px; background: rgba(18,22,30,.9); user-select: none; }
   #btn-inv:hover { border-color: #f2a03c; color: #f2a03c; }
@@ -111,9 +120,13 @@
   <span id="hpwrap"><span id="hp">HP:-</span><span id="hpbar"><span id="hpfill"></span></span></span>
   <span id="parryhud"></span>
   <span id="skillcd-hud"></span>
+  <span class="sep">|</span>
+  <span id="level">Lv.-</span>
   <span class="btn" id="btn-inv" title="背包（I）">背包 [I]</span>
 </div>
 <canvas id="game"></canvas>
+
+<div id="xpbar"><div id="xpfill"></div><span id="xptext">0/0</span></div>
 
 <div id="actionbar">
   <div class="abtn" id="btn-skill-0" title="技能1（键 1）"><span>技1</span><span class="key">1</span></div>
@@ -269,6 +282,8 @@ const GAME = window.__game = {
   nearLootId: null, pickupHint: '', invOpen: false,
   // E8：鼠标交互（左键点敌人点选攻击 / 点地面点击移动；E2E 断言钩子）
   selectedEnemyId: null, combatTarget: null, moveTarget: null, lastAttackAt: 0,
+  // E9：等级/经验（character.level 消息；E2E 断言钩子：登录态打怪后 levelInfo 存在 + 经验条渲染）
+  levelInfo: { level: 1, xp: 0, xpNext: 50 },
   // 调试钩子（仅 ?debug=1 生效；E2E 用）
   debugEnterDungeon: null, debugExitDungeon: null,
   toggleInventory: null, openInventory: null, closeInventory: null, sendSignal: null,
@@ -349,12 +364,15 @@ let rings = [];                     // 命中/格挡扩散环 {x,y,color,born,tt
 let skillFx = [];                   // 技能光效 {x,y,dir,color,born,ttl,radius}
 let killFx = [];                    // 击杀粒子 {x,y,parts,born,ttl}
 let parryFx = { until: 0 };         // 格挡成功盾闪
+let levelFx = { until: 0 };         // E9：升级金色闪光（until = performance.now() 截止）
 let invOpen = false;
 let nearLootId = null;              // 最近可拾取 LOOT_GROUND id（drawEntities 每帧计算，F 键/提示用）
 let inventory = { items: [], cap: 60, loaded: false };
 let equipped = {};                  // E7：3 槽已穿戴（来自 character.inventory）
 let pickupToasts = [];              // 最近拾取 toast（E2E 钩子）
 let invSeq = 1;
+let levelInfo = { level: 1, xp: 0, xpNext: 50 }; // E9：等级/经验（character.level 消息）
+let lvSeq = 1;                      // E9：character.level.get requestId 序号
 
 // ── E8 鼠标交互状态 ──
 let selectedEnemyId = null;         // 选中敌人 id（红圈跟随）
@@ -529,6 +547,7 @@ function resetFxState() {
   snapBuffer = []; lastKnown.clear();
   prevHp = new Map(); floatTexts = []; hitFlashes = new Map();
   rings = []; skillFx = []; killFx = []; parryFx.until = 0; meleeFx = [];
+  levelFx.until = 0; // E9：清升级闪光（防跨房残留）
   predicted = null;
   // E8：清鼠标交互目标（防跨房 id 误用）。
   selectedEnemyId = null; combatTarget = null; moveTarget = null;
@@ -564,6 +583,8 @@ function handleControl(msg) {
       setStatus('主世界', 'ok');
       resetFxState();
       startInputLoop();
+      // E9：进入房间拉取当前等级/经验（升级后持久化；游客经服务端忽略）。
+      sendJson({ type: 'character.level.get', requestId: 'lv' + (lvSeq++) });
       break;
     }
     case 'dungeon.enter.ok': {
@@ -595,6 +616,8 @@ function handleControl(msg) {
       resetFxState();
       setStatus(state === 'dungeon' ? '副本（已重连）' : '主世界（已重连）', 'ok');
       toast('已重连');
+      // E9：重连拉取当前等级/经验（断线期间升级以持久化为准）。
+      sendJson({ type: 'character.level.get', requestId: 'lv' + (lvSeq++) });
       break;
     }
     case 'room.snapshot': {
@@ -633,6 +656,23 @@ function handleControl(msg) {
       }
       renderInventory();
       renderEquip();
+      break;
+    }
+    // ── E9 等级数据通道：升级推送 / character.level.get 回复（同一格式）──
+    case 'character.level': {
+      const prevLevel = levelInfo.level;
+      levelInfo = {
+        level: Math.max(1, msg.level || 1),
+        xp: Math.max(0, msg.xp || 0),
+        xpNext: Math.max(1, msg.xpNext || 1),
+      };
+      GAME.levelInfo = { ...levelInfo };
+      renderLevelHud();
+      // 升级特效：金色闪光 + toast「升级！Lv.N」（属性面板 atk/maxHp 由下一快照 attrs 自动刷新）。
+      if (msg.level != null && msg.level > prevLevel) {
+        levelFx.until = performance.now() + 1000;
+        toast('升级！Lv.' + msg.level);
+      }
       break;
     }
   }
@@ -784,6 +824,19 @@ function updateHud() {
 
   // 进副本 / 出本按钮
   updateDungeonButton();
+
+  // E9：等级 HUD（顶部 Lv.N + 底部经验条 xp/xpNext）——每帧刷新（消息到达即更新，快照循环兜底）。
+  renderLevelHud();
+}
+
+// E9：等级 HUD 渲染（左上 Lv.N + 底部经验条 xp/xpNext）。
+function renderLevelHud() {
+  const lvEl = document.getElementById('level');
+  if (lvEl) lvEl.textContent = 'Lv.' + levelInfo.level;
+  const fill = document.getElementById('xpfill');
+  const txt = document.getElementById('xptext');
+  if (fill) fill.style.width = (levelInfo.xpNext > 0 ? Math.min(100, levelInfo.xp / levelInfo.xpNext * 100) : 0) + '%';
+  if (txt) txt.textContent = levelInfo.xp + '/' + levelInfo.xpNext;
 }
 
 function updateDungeonButton() {
@@ -1790,6 +1843,31 @@ function drawFx() {
       ctx.lineWidth = 3.5;
       ctx.beginPath();
       ctx.arc(s.x, s.y, 26 + k * 18, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // E9：升级金色闪光（全屏淡金 + 本地玩家扩散金环，1s 淡出）
+  if (levelFx.until > t) {
+    const k = 1 - (levelFx.until - t) / 1000;
+    ctx.save();
+    ctx.globalAlpha = (1 - k) * 0.28;
+    ctx.fillStyle = '#f2a03c';
+    ctx.fillRect(0, 0, view.w, view.h);
+    ctx.restore();
+    const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+    const base = predicted || (me ? me.pos : null);
+    if (base) {
+      const s = worldToScreen(base);
+      ctx.save();
+      ctx.globalAlpha = (1 - k) * 0.9;
+      ctx.strokeStyle = '#f2a03c';
+      ctx.lineWidth = 4;
+      ctx.shadowColor = '#f2a03c';
+      ctx.shadowBlur = 18;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 30 + k * 40, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
     }
