@@ -66,7 +66,7 @@ http://localhost:8080/index.html
 | 缩放 | 滚轮 | **C3 相机锁定跟随本地玩家**（预测位置 → 按键即时动），缩放区间 0.45×~2.5×；**拖拽不再平移相机**（仅抑制点击动作），相机 clamp 到世界 40×30 格内（不露出世界外空白）。双击重置 follow 标志 |
 | 小地图 | 右上角 | 玩家/敌人/BOSS/掉落/入口着色点位 + 视野框 |
 
-**HUD**：顶部 = 连接状态 / 房间（主世界·副本）/ tick / 实体数 / 本地 HP 条 / 格挡态 / 技能 CD / **背包按钮** / **音效开关（🔊/🔇）+ 音量滑块**（E12）；底部 = 技能栏；屏幕下方 = **拾取 toast**（「拾取 [稀有度色]品（词缀×N）」）。
+**HUD**：顶部 = 连接状态 / 房间（主世界·副本）/ tick / 实体数 / 本地 HP 条 / 格挡态 / 技能 CD / **队伍提示（E17：快照含队友时「队伍：N 人」）** / **背包按钮** / **音效开关（🔊/🔇）+ 音量滑块**（E12）；底部 = 技能栏；屏幕下方 = **拾取 toast**（「拾取 [稀有度色]品（词缀×N）」）。
 
 **打击感（纯客户端表现）**：实体 HP 下降 → **C3 飘字锚定实体**（头顶 -N，敌人受击黄 / 玩家受击红，1s 淡出上飘；**每帧按实体当前渲染位置换算屏幕坐标，实体移动/相机移动时跟随**）+ **150ms 受击闪白** + 扩散环；玩家放技能 → 朝向扇形光效；击杀 → 6-12 个小方块粒子四散淡出。
 
@@ -79,6 +79,11 @@ http://localhost:8080/index.html
 - **BOSS「巨魔」**：巨块身躯 + 弯曲双角 + 金红眼 + 两侧巨拳，深色调。
 - **掉落物品图标**（按 `itemId % 3` 槽位，镜像服务端 `itemProto`）：武器（剑剪影）/ 护甲（盾）/ 饰品（戒指/宝石），稀有度色描边。
 - **入口「裂隙」**：旋转涡流 + 径向外发光增强（呼吸脉动）。
+
+**E17 客户端多人渲染（纯客户端；服务端 E13 已支持多人同本，本版本零服务端改动）**：
+- **队友识别**：`kind===0 && id!==localEntityId` → 队友（非本地玩家；主世界/副本通用——任一房间快照出现其他玩家即按队友渲染）。
+- **渲染差异**：队友斗笠侠客改**暖橙调**（本地保持深青）+ 头顶**名牌**「侠客·N」（N=ownerId/seatId；服务端未下发用户名，MVP 取舍：真实用户名归 Phase-3）；倒地（DOWNED）队友躺尸灰 + 名牌变灰；本地玩家保持现状（金圈标识，不加名牌）。HP 条保留。
+- **队伍提示**：快照含队友时 HUD 显示「队伍：N 人」（N 含本地玩家）。
 
 ---
 
@@ -107,6 +112,8 @@ http://localhost:8080/index.html
 ```
 
 **kind**：0=PLAYER 1=ENEMY 2=BOSS 3=LOOT_GROUND 4=TELEGRAPH 5=ENTRANCE。
+
+> **E17 队友判定**：`ownerId`（bit5）对玩家恒下发（服务端 `encodeEntity` 在 `ownerId!==undefined` 时置 OWNER 位）；客户端 `decodeSnapshot` 已解析。本地玩家 = `kind===PLAYER && ownerId===seatId`；其余 `kind===PLAYER`（`id!==localEntityId`）即队友，名牌用 `ownerId`（=seatId）编号。
 
 **输入**（`gateway.routeInput` 只读 `msg.payload?.cmd`，**放顶层会被静默丢弃**）：
 
@@ -169,7 +176,8 @@ GAME.snapshotCount / lastTick / skillCd / parryActive / localHp / localMaxHp / l
 GAME.predicted / localRenderPos / renderTick     // C2 本地预测渲染位置 / 远端插值 tick
 GAME.lastHits / lastKills / lastSkillAt          // C2 打击感：最近伤害飘字 / 击杀 / 技能时刻（C3 lastHits 含 entityId）
 GAME.inventory {items,cap,loaded} / GAME.equipped / pickupToasts / nearLootId / pickupHint / invOpen
-GAME.cam {cx,cy,scale,w,h} / GAME.playerScreenPos / GAME.floatTexts[] / GAME.rendered {enemies,lootSlots,entrance,player}   // C3 相机+飘字+贴图标志
+GAME.cam {cx,cy,scale,w,h} / GAME.playerScreenPos / GAME.floatTexts[] / GAME.rendered {enemies,lootSlots,entrance,player,party}   // C3 相机+飘字+贴图标志（E17：party=本帧渲染队友数）
+GAME.partyMembers    // E17：当前快照队友列表 [{id,ownerId,kind,hp,maxHp,pos,status}]（kind=PLAYER 且 id!==localEntityId）
 GAME.errors          // 收集的运行时/解码错误
 GAME.debugEnterDungeon() / GAME.debugExitDungeon()   // 强制进出本（绕过「靠近入口」UI 门槛）
 GAME.sendMove(dir) / GAME.sendSkill(slot) / GAME.sendParry() / GAME.sendSignal()
@@ -179,7 +187,9 @@ GAME.toggleInventory() / GAME.openInventory() / GAME.closeInventory()
 
 C2 E2E 断言约定：`lastHits` 记录最近 30 条 `{id, entityId, dmg, kind, t}`（hp 下降即记录；C3 entityId 锚定飘字跟随）；`lastKills` 记录敌人消失 `{x,y,isBoss,t}`；`pickupToasts` 记录最近拾取文案；`inventory.loaded` 收到过 `character.inventory`；`nearLootId` 非空表示拾取提示已显示。
 
-C3 E2E 断言约定：`cam` 每帧更新 `{cx,cy,scale,w,h}`（相机锁定跟随 + clamp）；`playerScreenPos` 每帧更新（断言移动中恒在屏内）；`floatTexts` 每帧更新为 `{entityId, text, screen}`（断言锚定实体且屏幕位置随实体）；`rendered` 每帧重置为 `{enemies:[{id,variant,tier}], lootSlots:[slot], entrance:false, player:count}`（断言玩家/敌人剪影/掉落图标/入口增强渲染）。
+C3 E2E 断言约定：`cam` 每帧更新 `{cx,cy,scale,w,h}`（相机锁定跟随 + clamp）；`playerScreenPos` 每帧更新（断言移动中恒在屏内）；`floatTexts` 每帧更新为 `{entityId, text, screen}`（断言锚定实体且屏幕位置随实体）；`rendered` 每帧重置为 `{enemies:[{id,variant,tier}], lootSlots:[slot], entrance:false, player:count, party:count}`（断言玩家/敌人剪影/掉落图标/入口增强渲染；E17 增 `party`=本帧渲染队友数）。
+
+E17 E2E 断言约定（加分）：`partyMembers` = 当前快照队友列表（kind=PLAYER 且 id!==localEntityId，含 ownerId）；双页面真连 → P1 先进本（E13 waiting）→ P2 5s 窗口内加入同一 instance → 断言同 roomId、副本快照含 ≥2 个 kind=0、`partyMembers≥1`、`rendered.party≥1`（名牌为 Canvas 绘制无 DOM，用渲染标志代）。
 
 ---
 
@@ -187,7 +197,7 @@ C3 E2E 断言约定：`cam` 每帧更新 `{cx,cy,scale,w,h}`（相机锁定跟�
 
 1. ~~松开方向键后角色惯性滑行~~（**P0 已修复**）：`InputAction.STOP=7`，客户端在全部移动键松开 / 失焦 / 切页 / 断连前发 STOP。残余边界：`beforeunload` 的 STOP 为尽力而为；纯网络断线时 STOP 无法发出，服务端仍按 `DISCONNECT_GRACE_MS`（30s）后清理玩家。
 2. ~~无本地预测 / 回正~~（**C2 已修复**）：本地玩家按键即时推进渲染位置（`PLAYER_SPEED=192px/s`，对齐服务端 `BASE_SPEED=4 格/s`），每快照 `lerp 0.3` 向权威收敛；远端实体 `renderTime=tick-3` 双快照插值。预测仅渲染层，位置仍以快照为准。残余边界：客户端预测不含墙碰撞（副本内撞墙由 0.3 收敛回正，有轻微回拉）；`PLAYER_SPEED` 为客户端常量，未来可随快照下发（单一来源）。
-3. **无角色名**：协议未下发 displayName，玩家/敌人仅以形状+HP 条区分。
+3. **无角色名**：协议未下发 displayName；玩家/敌人仅以形状+HP 条区分。**E17 部分缓解**：队友头顶名牌用 ownerId/seatId 编号「侠客·N」（主世界/副本通用），真实用户名归 Phase-3（服务端下发 displayName 后替换）。
 4. **diff/ChangeBit Phase-3**：当前客户端解析全量帧（服务端当前也发全量），后续服务端切 delta 需同步升级解码。
 5. **TELEGRAPH 实体**：服务端当前未生成 telegraph（预留 kind=4），客户端已支持渲染（红/青预警圈），后续 BOSS 战启用。
 6. **入口冷却 UI**：`entrance.cooldownTicks` 已读取并显示，但进本门槛主要靠「靠近 + 服务端冷却」；多人「集合缓冲取先到者」归 Phase-3。
@@ -203,7 +213,7 @@ C3 E2E 断言约定：`cam` 每帧更新 `{cx,cy,scale,w,h}`（相机锁定跟�
 ## 6. 验证（真连真实服务端）
 
 - **服务端回归**：`cd apps/jianghu && npm test` → **全绿（135）**（C2 未动服务端代码）。
-- **C3 E2E**（`verify-e2e.mjs`，Puppeteer 真连真实 jianghu 服务端，puppeteer@24 + Chrome for Testing）：自管进程（起 jianghu 服务 + 静态服务 + Puppeteer）→ 断言链：连接→`session.ready`→`room.join`→收二进制快照→**移动预测（按键 60ms 内渲染位即变 + 松键收敛）**→**掉落可见性（LOOT_GROUND + 拾取提示）→ 拾取→`character.inventory` 入库→背包面板**→鼠标点击移动（M1，屏内 tile 守卫）→鼠标点敌人 + 普攻（M2，屏内敌人守卫）→**C3 客户端体验大修**：**C3-3 飘字跟随**（lastHits.entityId + floatTexts.screen 锚定实体）→**C3-1 相机锁定**（移动中 playerScreenPos 在屏内 + cam clamp）→**C3-2 点击定位**（点 tile 中心 → moveTo 世界坐标误差 < 20px）→**C3-4 禁平移**（拖拽 cam 不动 + 不触发点击）→**C3-5 技能名 HUD**（烈斩/剑气/震地/破军）→**C3-6 程序化贴图**（rendered.player/enemies/lootSlots/entrance）→SKILL1→**真实输入 walk+F 进副本**→副本内 SKILL1 命中敌人（HP 下降 + **伤害飘字 lastHits**）→出本→CDP 模拟断网→自动重连（`session.reconnect`）；截图存 `verify/01-overworld.png` / `02-dungeon.png` / `03-after-exit.png` / `04-loot-pickup.png` / `05-inventory.png` / `06-equip.png` / `07-click-move.png` / `08-melee.png` / `09-camera-lock.png` / `10-click-accuracy.png` / `11-sprites.png`。零 pageerror / GAME.errors / console.error。退出码 0=全绿（**32 项断言**：C2 原 26 项 + C3 新 6 项）。
+- **C3 E2E**（`verify-e2e.mjs`，Puppeteer 真连真实 jianghu 服务端，puppeteer@24 + Chrome for Testing）：自管进程（起 jianghu 服务 + 静态服务 + Puppeteer）→ 断言链：连接→`session.ready`→`room.join`→收二进制快照→**移动预测（按键 60ms 内渲染位即变 + 松键收敛）**→**掉落可见性（LOOT_GROUND + 拾取提示）→ 拾取→`character.inventory` 入库→背包面板**→鼠标点击移动（M1，屏内 tile 守卫）→鼠标点敌人 + 普攻（M2，屏内敌人守卫）→**C3 客户端体验大修**：**C3-3 飘字跟随**（lastHits.entityId + floatTexts.screen 锚定实体）→**C3-1 相机锁定**（移动中 playerScreenPos 在屏内 + cam clamp）→**C3-2 点击定位**（点 tile 中心 → moveTo 世界坐标误差 < 20px）→**C3-4 禁平移**（拖拽 cam 不动 + 不触发点击）→**C3-5 技能名 HUD**（烈斩/剑气/震地/破军）→**C3-6 程序化贴图**（rendered.player/enemies/lootSlots/entrance）→SKILL1→**真实输入 walk+F 进副本**→副本内 SKILL1 命中敌人（HP 下降 + **伤害飘字 lastHits**）→出本→CDP 模拟断网→自动重连（`session.reconnect`）→**E17 双人同本（P1 进本 + P2 集合窗口加入 → 同 roomId / partyMembers / rendered.party）**；截图存 `verify/01-overworld.png` / `02-dungeon.png` / `03-after-exit.png` / `04-loot-pickup.png` / `05-inventory.png` / `06-equip.png` / `07-click-move.png` / `08-melee.png` / `09-camera-lock.png` / `10-click-accuracy.png` / `11-sprites.png` / `12-party-dungeon.png`。零 pageerror / GAME.errors / console.error。退出码 0=全绿（**37 项断言**：原 33 项 + E17 新 4 项）。
 
   ```bash
   cd games/jianghu/apps/web-client

@@ -868,6 +868,135 @@ const main = async () => {
     record("Z2 无 JS 运行时错误(收集)", gameErrors.length === 0, gameErrors.length ? gameErrors.join(" | ") : "GAME.errors=0");
     record("Z3 控制台无 error", consoleErrors.length === 0, consoleErrors.length ? consoleErrors.slice(0, 3).join(" | ") : "consoleErrors=0");
 
+    // ── E17 客户端多人渲染（加分断言）：副本内队友识别 + 名牌 + rendered.party ──
+    // 双页面（不同 devUserId）真连：P1 先进本（创建 E13 waiting 实例）→ P2 在 5s 集合窗口内
+    // 加入同一 instance → 断言 P1 快照含队友（kind=0 && id!==localEntityId）、partyMembers 钩子、
+    // rendered.party≥1（名牌为 Canvas 绘制，无 DOM 可断言，用渲染标志代）。
+    // 主世界段：P1/P2 同在 RESIDENT 时即应互相识别为队友（通用逻辑，主世界多人未单独做副本限定）。
+    {
+      let e17 = { notes: [] };
+      try {
+        const uidA = "e2eA_" + Math.floor(Math.random() * 1e6);
+        const uidB = "e2eB_" + Math.floor(Math.random() * 1e6);
+        const baseUrl = `http://127.0.0.1:${STATIC_PORT}/index.html?server=ws://127.0.0.1:${PORT}&debug=1&devUserId=`;
+        const pA = await browser.newPage();
+        const pB = await browser.newPage();
+        await pA.setViewport({ width: 960, height: 720 });
+        await pB.setViewport({ width: 960, height: 720 });
+        const errA = [], errB = [];
+        pA.on("pageerror", (e) => errA.push(String(e)));
+        pB.on("pageerror", (e) => errB.push(String(e)));
+        await pA.goto(baseUrl + uidA, { waitUntil: "domcontentloaded" });
+        await pB.goto(baseUrl + uidB, { waitUntil: "domcontentloaded" });
+        const readyA = await waitFor(pA, "window.__game && window.__game.connected === true && window.__game.state === 'overworld' && window.__game.localEntityId != null", 15000, "E17 P1 ready");
+        const readyB = await waitFor(pB, "window.__game && window.__game.connected === true && window.__game.state === 'overworld' && window.__game.localEntityId != null", 15000, "E17 P2 ready");
+        e17.notes.push(`ready A=${readyA} B=${readyB}`);
+        if (readyA && readyB) {
+          // E17-0 主世界多人可见：同一 RESIDENT 快照含其他玩家 → 通用队友识别。
+          const overSeen = await waitFor(pA, "window.__game.partyMembers.length >= 1", 8000, "E17 overworld teammate");
+          const overInfo = overSeen ? await pA.evaluate(() => ({
+            members: window.__game.partyMembers.map((m) => ({ id: m.id, ownerId: m.ownerId })),
+            players: window.__game.lastSnapshot.entities.filter((e) => e.kind === 0).length,
+            hud: document.getElementById("party-hud") ? document.getElementById("party-hud").textContent : null,
+          })) : null;
+          record("E17-0 主世界多人可见(队友识别通用)", overSeen,
+            overSeen ? `players(kind=0)=${overInfo.players} partyMembers=${JSON.stringify(overInfo.members)} HUD=${overInfo.hud}` : "主世界未识别到其他玩家");
+          e17.notes.push(`overSeen=${overSeen}`);
+          // 双轴走到入口（E16 服务端校验 ≤1.5×TILE=72px；留 40px 余量再触发进本）。
+          const entExpr = `s.entities.find(e => e.kind === 5) ? { x: s.entities.find(e => e.kind === 5).pos.x, y: s.entities.find(e => e.kind === 5).pos.y } : null`;
+          const walkA = await walkToward(pA, entExpr, 40, 30);
+          const walkB = await walkToward(pB, entExpr, 40, 30);
+          e17.notes.push(`walk A=${walkA.ok} B=${walkB.ok}`);
+          // P1 进本（debugEnterDungeon 直发 dungeon.enter；服务端权威校验坐标/冷却）。
+          // 冷却兜底：主流程 F1 出本后的 10s 入口冷却若未过，重试（最多 4 次 × 2.5s）。
+          let okInA = false;
+          for (let attempt = 0; attempt < 4 && !okInA; attempt++) {
+            await pA.evaluate(() => { if (window.__game.state === 'overworld' && window.__game.debugEnterDungeon) window.__game.debugEnterDungeon(); });
+            okInA = await waitFor(pA, "window.__game.state === 'dungeon'", 4000, "E17 P1 enter");
+            if (!okInA) await sleep(2500);
+          }
+          e17.notes.push(`enterA=${okInA}`);
+          // P2 在 5s 集合窗口内加入同一 waiting 实例（E13 join 路径不走入口冷却）。
+          let okInB = false;
+          if (okInA) {
+            await pB.evaluate(() => { if (window.__game.state === 'overworld' && window.__game.debugEnterDungeon) window.__game.debugEnterDungeon(); });
+            okInB = await waitFor(pB, "window.__game.state === 'dungeon'", 5000, "E17 P2 join");
+          }
+          e17.notes.push(`enterB=${okInB}`);
+          if (okInA && okInB) {
+            // 同一 instance？roomId 相同即同本。
+            const rooms = await Promise.all([
+              pA.evaluate(() => ({ roomId: window.__game.roomId, state: window.__game.state })),
+              pB.evaluate(() => ({ roomId: window.__game.roomId, state: window.__game.state })),
+            ]);
+            const sameRoom = rooms[0].roomId === rooms[1].roomId && rooms[0].roomId != null && rooms[0].roomId !== "room_resident_public";
+            record("E17-1 双人同本(同一 instance roomId)", sameRoom, `A=${rooms[0].roomId} B=${rooms[1].roomId}`);
+            // 等 P2 的 actor 进入 P1 的下一个 12Hz 广播快照（join 后同步 addPlayer，需等下一 tick 广播）。
+            const partySeen = await waitFor(pA, "window.__game.partyMembers.length >= 1", 6000, "E17 dungeon party");
+            // 副本队友识别：P1 快照含 ≥2 个 kind=0，partyMembers≥1（非本地玩家）。
+            const partyInfo = await pA.evaluate(() => {
+              const g = window.__game, s = g.lastSnapshot;
+              const players = s ? s.entities.filter((e) => e.kind === 0).map((e) => ({ id: e.id, ownerId: e.ownerId, local: e.id === g.localEntityId })) : [];
+              return {
+                localEntityId: g.localEntityId,
+                players,
+                members: (g.partyMembers || []).map((m) => ({ id: m.id, ownerId: m.ownerId, hp: m.hp, maxHp: m.maxHp })),
+                hud: document.getElementById("party-hud") ? document.getElementById("party-hud").textContent : null,
+              };
+            });
+            const okParty = partySeen && partyInfo.players.length >= 2 && partyInfo.members.length >= 1
+              && partyInfo.players.some((p) => p.local) && partyInfo.players.some((p) => !p.local && p.ownerId != null);
+            record("E17-2 副本队友识别(partyMembers+kind=0)", okParty,
+              `local=${partyInfo.localEntityId} players=[${partyInfo.players.map((p) => `#${p.id}${p.local ? "(me)" : ""}@${p.ownerId}`).join(",")}] members=${JSON.stringify(partyInfo.members)} HUD=${partyInfo.hud}`);
+            // 副本队友渲染：rendered.party≥1（Canvas 名牌无法 DOM 断言，用渲染标志 + ownerId 名牌数据代）。
+            // 注意：headless 后台页 rAF 可能被节流（rendered 为每帧重置的渲染标志）→ 先把 pA 置前台，
+            // 仍不触发则截图强制合成器出帧后再读。
+            await pA.bringToFront();
+            await sleep(300);
+            let rendOk = await waitFor(pA, "window.__game.rendered.party >= 1", 4000, "E17 rendered.party");
+            if (!rendOk) {
+              await pA.screenshot({ path: path.join(OUT_DIR, "12-party-dungeon.png") });
+              await sleep(200);
+              rendOk = await waitFor(pA, "window.__game.rendered.party >= 1", 4000, "E17 rendered.party(shot)");
+            }
+            const rendInfo = await pA.evaluate(() => ({
+              party: window.__game.rendered.party,
+              player: window.__game.rendered.player,
+              nameplate: (window.__game.partyMembers || []).map((m) => (m.ownerId != null ? `侠客·${m.ownerId}` : "队友")),
+            }));
+            record("E17-3 副本队友渲染(rendered.party≥1+名牌)", rendOk && rendInfo.party >= 1,
+              rendOk ? `rendered.player=${rendInfo.player} party=${rendInfo.party} 名牌=[${rendInfo.nameplate.join(",")}]` : `rendered.party=${rendInfo.party}`);
+            await pA.screenshot({ path: path.join(OUT_DIR, "12-party-dungeon.png") });
+          } else {
+            record("E17-1 双人同本(同一 instance roomId)", false, `SKIPPED（P1 进本=${okInA} P2 加入=${okInB}）`);
+            record("E17-2 副本队友识别(partyMembers+kind=0)", false, "SKIPPED");
+            record("E17-3 副本队友渲染(rendered.party≥1+名牌)", false, "SKIPPED");
+          }
+          // 清理：P1/P2 出本（容忍失败，不阻塞主结果）。
+          try {
+            await pA.evaluate(() => { if (window.__game.state === 'dungeon' && window.__game.debugExitDungeon) window.__game.debugExitDungeon(); });
+            await waitFor(pA, "window.__game.state === 'overworld'", 5000, "E17 P1 exit");
+            await pB.evaluate(() => { if (window.__game.state === 'dungeon' && window.__game.debugExitDungeon) window.__game.debugExitDungeon(); });
+            await waitFor(pB, "window.__game.state === 'overworld'", 5000, "E17 P2 exit");
+          } catch (e) { e17.notes.push("cleanup:" + String(e)); }
+        } else {
+          record("E17-0 主世界多人可见(队友识别通用)", false, `SKIPPED（P1=${readyA} P2=${readyB}）`);
+          record("E17-1 双人同本(同一 instance roomId)", false, "SKIPPED");
+          record("E17-2 副本队友识别(partyMembers+kind=0)", false, "SKIPPED");
+          record("E17-3 副本队友渲染(rendered.party≥1+名牌)", false, "SKIPPED");
+        }
+        await pA.close().catch(() => {});
+        await pB.close().catch(() => {});
+      } catch (e) {
+        record("E17-0 主世界多人可见(队友识别通用)", false, "异常: " + String(e && e.message || e));
+        record("E17-1 双人同本(同一 instance roomId)", false, "异常");
+        record("E17-2 副本队友识别(partyMembers+kind=0)", false, "异常");
+        record("E17-3 副本队友渲染(rendered.party≥1+名牌)", false, "异常");
+        e17.notes.push("exception: " + String(e && e.stack || e));
+      }
+      console.log("   [E17] notes=" + JSON.stringify(e17.notes));
+    }
+
     await page.screenshot({ path: path.join(OUT_DIR, "06-final.png") });
   } catch (err) {
     record("E2E 整体", false, String(err && err.stack || err));
@@ -893,6 +1022,7 @@ const main = async () => {
       "重连测试用 CDP 模拟断网(服务端 ping 超时断开)→ 恢复后 session.reconnect。",
       "D3 E10 死亡体验为信息项：故意被精英/BOSS 击杀 → 断言 window.__game.downed（倒地红屏+倒计时）→ 复活回血（IFRAME 闪烁）。受副本随机布局影响，未触发不判 FAIL（不阻塞回归）。",
       "C3 客户端体验大修：①相机锁定跟随本地玩家（clamp 到世界 40×30 格内，不露空白），拖拽不平移（仍抑制点击动作）②点击定位用 mouseup 时刻相机重算 + 命中检测用渲染位置与屏幕空间半径（缩放无关）③伤害飘字锚定实体当前渲染位置（世界空间，随实体/相机移动）④技能 HUD 本地名表（烈斩/剑气/震地/破军，服务端 E11 后对齐 SKILL_NAMES）⑤程序化武侠剪影（斗笠侠客/山贼/野兽/暗影刺客/巨魔 + 掉落物品图标 + 入口漩涡增强，零外部资源）。",
+      "E17 客户端多人渲染（加分）：双页面（不同 devUserId）→ P1 先进本（E13 创建 waiting 实例）→ P2 在 5s 集合窗口内加入同一 instance → 断言同 roomId、副本快照含 ≥2 个 kind=0、partyMembers（id!==localEntityId 判定队友）、rendered.party≥1（名牌为 Canvas 绘制无 DOM，用渲染标志代）。主世界段断言 P1/P2 同在 RESIDENT 即互相识别为队友（通用逻辑）。服务端零改动。",
     ],
   }, null, 2));
   process.exit(failed.length > 0 ? 1 : 0);
