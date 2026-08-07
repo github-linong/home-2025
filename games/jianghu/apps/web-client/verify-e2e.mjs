@@ -252,6 +252,29 @@ const main = async () => {
     })) : null;
     record("A2 二进制快照(主世界实体≥5)", okSnap, okSnap ? `tick=${snapInfo.tick} entities=${snapInfo.count} kinds=${snapInfo.kinds.join(",")} seatId=${snapInfo.seatId}` : undefined);
 
+    // ── E14 真实登录（加分断言，不跑完整登录流程）：HUD 登录按钮 + 面板 DOM 存在 ──
+    // 完整登录需真实 api2（本回归 DEV_SKIP_AUTH=true，未起 api2），仅断言 UI 元素已就位。
+    const loginDom = await page.evaluate(() => {
+      const btn = document.getElementById('btn-login');
+      const panel = document.getElementById('loginpanel');
+      return {
+        btn: btn ? btn.textContent : null,
+        panel: !!panel,
+        email: !!document.getElementById('login-email'),
+        pass: !!document.getElementById('login-pass'),
+        submit: !!document.getElementById('btn-login-submit'),
+        guest: window.__game ? window.__game.guest : null,
+        sessionToken: window.__game ? window.__game.sessionToken : null,
+      };
+    });
+    record(
+      "E14 登录按钮+面板 DOM（加分断言）",
+      !!loginDom.btn && !!loginDom.panel && !!loginDom.email && !!loginDom.pass && !!loginDom.submit,
+      loginDom.btn
+        ? `btn=${loginDom.btn} panel=${loginDom.panel} guest=${loginDom.guest} token=${loginDom.sessionToken || "null"}`
+        : "no #btn-login",
+    );
+
     // ── E9 等级 HUD（非阻塞加分项）：levelInfo 钩子存在 + 顶部 Lv + 底部经验条渲染 ──
     // 登录态连上即发 character.level.get → GAME.levelInfo 被初始化/更新；renderLevelHud 每快照刷新。
     const lvlInfo = await page.evaluate(() => {

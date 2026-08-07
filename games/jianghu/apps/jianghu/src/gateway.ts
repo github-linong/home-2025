@@ -114,9 +114,12 @@ export function createGateway(server: Server, deps: GatewayDeps = {}): WebSocket
 
     const cookie = req.headers.cookie ?? "";
     let devUserId: string | null = null;
+    let sessionToken: string | null = null;
     try {
       const url = new URL(req.url ?? "/", "http://localhost");
       devUserId = url.searchParams.get("devUserId");
+      // E14：登录会话 token（客户端经服务端 :3011 HTTP 登录代理取得后，以 ?sessionToken= 重连）。
+      sessionToken = url.searchParams.get("sessionToken");
     } catch {
       /* ignore */
     }
@@ -129,7 +132,7 @@ export function createGateway(server: Server, deps: GatewayDeps = {}): WebSocket
     };
     ws.on("message", earlyHandler);
 
-    const verified = await verify(cookie, { devUserId });
+    const verified = await verify(cookie, { devUserId, token: sessionToken });
     if (!verified) {
       try {
         ws.send(

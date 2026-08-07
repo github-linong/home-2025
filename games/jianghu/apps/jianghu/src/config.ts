@@ -20,8 +20,18 @@ export const config = {
   /** HTTP/WS 监听端口。 */
   port: num("PORT", 3011),
 
-  /** API2 鉴权基址（verifyWithApi2）。 */
-  api2BaseUrl: process.env.API2_BASE_URL ?? "http://127.0.0.1:3002",
+  /** API2 鉴权基址（verifyWithApi2 + HTTP 登录代理）。E14：优先 JIANGHU_API2_URL，
+   *  兼容旧 API2_BASE_URL（chat 等兄弟服务沿用），默认 http://127.0.0.1:3002。 */
+  api2BaseUrl:
+    process.env.JIANGHU_API2_URL ??
+    process.env.API2_BASE_URL ??
+    "http://127.0.0.1:3002",
+
+  /** API2 Better Auth 信任的 Origin（HTTP 登录代理转发时携带，过 CSRF 校验）。
+   *  E14：Node fetch 自动带 sec-fetch-mode:cors → api2 强制 Origin 校验；值必须在
+   *  api2 的 BETTER_AUTH_TRUSTED_ORIGINS 内。默认匹配本地 dev api2（4321 端口）的
+   *  trustedOrigins；生产部署须设 JIANGHU_API2_ORIGIN=https://lilnong.top。 */
+  api2Origin: process.env.JIANGHU_API2_ORIGIN ?? "http://localhost:4321",
 
   /** 开发态跳过真实鉴权（用 devUserId 注入身份）。E1 默认开启以便离线起服务。 */
   devSkipAuth: process.env.DEV_SKIP_AUTH !== "false",

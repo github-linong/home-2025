@@ -45,6 +45,28 @@
   .sfx-vol:hover { border-color: #5fd0e0; }
   #sfx-vol { width: 64px; accent-color: #5fd0e0; }
 
+  /* ── E14 登录按钮 + 登录/注册面板 ── */
+  #btn-login { border: 1px solid #4a5568; padding: 3px 9px; border-radius: 6px; background: rgba(18,22,30,.9); user-select: none; }
+  #btn-login:hover { border-color: #f2a03c; color: #f2a03c; }
+  #btn-login.logged { border-color: #3f8f5f; color: #7fd09a; }
+  #loginpanel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 300px; z-index: 35; display: none;
+    background: rgba(12,14,20,.97); border: 1px solid #4a5568; border-radius: 10px; padding: 16px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.6); }
+  #loginpanel.open { display: block; }
+  #loginpanel h3 { margin-bottom: 10px; font-size: 15px; color: #f2a03c; }
+  #loginpanel input { width: 100%; margin-bottom: 8px; padding: 7px 9px; border: 1px solid #4a5568; border-radius: 6px;
+    background: rgba(18,22,30,.9); color: #e8e4d8; font-size: 13px; }
+  #loginpanel input:focus { outline: none; border-color: #5fd0e0; }
+  #login-row { display: flex; gap: 8px; margin-top: 4px; }
+  #loginpanel .lbtn { flex: 1; border: 1px solid #4a5568; background: rgba(40,48,64,.9); color: #e8e4d8; border-radius: 6px;
+    padding: 6px 0; font-size: 13px; cursor: pointer; user-select: none; }
+  #loginpanel .lbtn.primary { border-color: #5f8fb0; background: rgba(30,50,80,.9); }
+  #loginpanel .lbtn:hover { border-color: #f2a03c; color: #f2a03c; }
+  #login-close { position: absolute; right: 8px; top: 8px; cursor: pointer; border: 1px solid #4a5568; background: transparent;
+    color: #aab; border-radius: 6px; padding: 1px 8px; font-size: 12px; }
+  #login-close:hover { color: #fff; border-color: #f44; }
+  #loginpanel .hint { font-size: 11px; color: #7a8699; margin-top: 8px; line-height: 1.5; }
+
   /* ── 底部技能栏 ── */
   #actionbar { position: absolute; left: 12px; bottom: 12px; z-index: 10; display: flex; gap: 8px; align-items: flex-end; }
   .abtn { width: 58px; height: 58px; border-radius: 8px; border: 1px solid #4a5568; background: rgba(18,22,30,.92);
@@ -141,6 +163,7 @@
   <span class="btn" id="btn-inv" title="背包（I）">背包 [I]</span>
   <span class="btn" id="btn-sfx" title="音效开关（点击静音/恢复）">🔊</span>
   <label class="btn sfx-vol" title="音效音量"><span id="sfx-vol-ico">🔉</span><input type="range" id="sfx-vol" min="0" max="100" value="50"></label>
+  <span class="btn" id="btn-login" title="登录（邮箱+密码；游客可跳过直接玩）">登录</span>
 </div>
 <canvas id="game"></canvas>
 
@@ -178,6 +201,19 @@
   <div id="inv-grid"><div id="inv-empty">空</div></div>
 </div>
 
+<!-- E14：登录/注册面板（游客可关闭跳过；登录成功 → 服务端 session_token → ws 重连） -->
+<div id="loginpanel">
+  <button id="login-close" title="关闭（游客可继续玩）">✕</button>
+  <h3>登录江湖</h3>
+  <input id="login-email" type="email" placeholder="邮箱" autocomplete="email">
+  <input id="login-pass" type="password" placeholder="密码" autocomplete="current-password">
+  <div id="login-row">
+    <button class="lbtn primary" id="btn-login-submit">登录</button>
+    <button class="lbtn" id="btn-login-register">注册</button>
+  </div>
+  <div class="hint">游客可直接关闭面板游玩（拾取/装备不保存）。注册需 api2 配置邀请码。</div>
+</div>
+
 <div id="help">
   <b>左键点敌人</b> 自动走近普攻 · <b>左键点地面</b> 点击移动 · <b>WASD/方向键</b> 移动（8 向） · <b>空格</b> 格挡 · <b>1-4</b> 技能（<b>烈斩/剑气/震地/破军</b>） · <b>I</b> 背包<br>
   <b>F</b> 进副本/出本 · 靠近掉落自动拾取 · <b>滚轮</b> 缩放（相机锁定跟随，拖拽不平移） · 技能悬停查看描述<br>
@@ -211,6 +247,11 @@ const params = new URLSearchParams(location.search);
 const SERVER = (params.get('server') || 'ws://localhost:3011').replace(/\/+$/, '');
 const DEV_USER = params.get('devUserId') || 'dev';
 const DEBUG = params.get('debug') === '1';
+
+// ── E14 真实登录：HTTP 登录代理基址（由 ws SERVER 推导） + localStorage 会话 token ──
+const SESSION_TOKEN_KEY = 'jianghu_session_token';
+const HTTP_BASE = SERVER.replace(/^wss:\/\//, 'https://').replace(/^ws:\/\//, 'http://');
+let sessionToken = (() => { try { return localStorage.getItem(SESSION_TOKEN_KEY) || ''; } catch { return ''; } })();
 
 // ── 共享常量（与 sim-core/constants.ts 对齐；C1 单一来源的客户端镜像，C7）──
 const TILE = 48;
@@ -580,6 +621,8 @@ const GAME = window.__game = {
   lastSnapshot: null, localEntityId: null, errors: [], snapshotCount: 0, lastTick: 0,
   skillCd: [0, 0, 0, 0], parryActive: false, localHp: 0, localMaxHp: 0,
   lastLocalPos: null, wsState: 'closed', guest: null,
+  // E14：登录会话 token（服务端 :3011 HTTP 登录代理颁发；E2E 断言钩子）
+  sessionToken: null,
   // C2：本地预测 / 打击感 / 掉落 / 背包（E2E 断言钩子）
   predicted: null, localRenderPos: null, renderTick: 0,
   lastHits: [], lastKills: [], pickupToasts: [], lastSkillAt: 0,
@@ -823,7 +866,11 @@ function decodeSnapshot(buf) {
 // 连接 / 消息分发
 // ============================================================================
 function wsUrl() {
-  return `${SERVER}/ws/jianghu?devUserId=${encodeURIComponent(DEV_USER)}`;
+  const q = new URLSearchParams();
+  q.set('devUserId', DEV_USER);
+  // E14：已存/已登录的 better-auth session_token → ws 握手带 ?sessionToken=（生产态服务端优先）。
+  if (sessionToken) q.set('sessionToken', sessionToken);
+  return `${SERVER}/ws/jianghu?${q.toString()}`;
 }
 
 function connect() {
@@ -896,8 +943,15 @@ function handleControl(msg) {
       seatId = msg.seatId;
       tickMs = msg.tickMs || TICK_MS;
       GAME.seatId = seatId; GAME.guest = msg.guest;
-      // E7.2：游客模式提示（裸开页面=游客，拾取/装备不保存）。
-      if (msg.guest) setTimeout(() => toast('游客模式：拾取/装备不保存，用 ?devUserId=dev 打开可登录体验完整玩法'), 800);
+      // E14：登录态（非游客）→ 按钮「已登录」+ 欢迎 toast；游客保持原提示。
+      if (!msg.guest) {
+        if (loginBtnEl) { loginBtnEl.textContent = '已登录'; loginBtnEl.classList.add('logged'); }
+        if (pendingLoginEmail) { toast('欢迎，' + pendingLoginEmail); pendingLoginEmail = null; }
+      } else {
+        if (loginBtnEl) { loginBtnEl.textContent = '登录'; loginBtnEl.classList.remove('logged'); }
+        // E7.2：游客模式提示（裸开页面=游客，拾取/装备不保存）。
+        setTimeout(() => toast('游客模式：拾取/装备不保存，用 ?devUserId=dev 打开可登录体验完整玩法'), 800);
+      }
       if (state === 'reconnecting') {
         if (reconnectToken && roomId) {
           sendJson({ type: 'session.reconnect', requestId: 'rec', payload: { roomId, reconnectToken } });
@@ -1536,6 +1590,78 @@ document.getElementById('inv-close').addEventListener('click', closeInventory);
     sync();
   } catch (e) { /* 静默失败：不阻断游戏 */ }
 })();
+
+// ============================================================================
+// E14：真实登录（服务端 :3011 HTTP 登录代理 → better-auth session_token → ws 重连）
+// 游客免登录照玩（关闭面板/跳过即可）；已存 token 时连接直接带 ?sessionToken=。
+// ============================================================================
+let pendingLoginEmail = null; // 登录后等 session.ready（非游客）→ 欢迎 toast
+const loginBtnEl = document.getElementById('btn-login');
+const loginPanelEl = document.getElementById('loginpanel');
+const loginEmailEl = document.getElementById('login-email');
+const loginPassEl = document.getElementById('login-pass');
+GAME.sessionToken = sessionToken || null;
+
+const LOGIN_ERROR_TEXT = {
+  API2_UNREACHABLE: '登录服务暂不可用，请稍后再试',
+  INVALID_CREDENTIALS: '邮箱或密码错误（注册需邀请码）',
+  BAD_REQUEST: '请求无效，请检查输入',
+  SERVER_ERROR: '登录服务异常，请稍后再试',
+};
+
+function openLoginPanel() {
+  loginPanelEl.classList.add('open');
+  loginEmailEl.focus();
+  SFX.play('ui');
+}
+function closeLoginPanel() {
+  loginPanelEl.classList.remove('open');
+  SFX.play('ui');
+}
+
+// 登录/注册提交：调服务端 HTTP 代理 → 存 token → 重连 ws（带 ?sessionToken=）
+async function submitLogin(mode) {
+  const email = loginEmailEl.value.trim();
+  const password = loginPassEl.value;
+  if (!email || !password) { toast('请输入邮箱和密码', true); return; }
+  const path = mode === 'register' ? '/api/auth/register' : '/api/auth/login';
+  let data;
+  try {
+    const res = await fetch(HTTP_BASE + path, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok || !data.sessionToken) {
+      toast(LOGIN_ERROR_TEXT[data.error] || '登录失败，请重试', true);
+      return;
+    }
+  } catch {
+    toast('无法连接登录服务，请稍后再试', true);
+    return;
+  }
+  try { localStorage.setItem(SESSION_TOKEN_KEY, data.sessionToken); } catch { /* ignore */ }
+  sessionToken = data.sessionToken;
+  GAME.sessionToken = sessionToken;
+  pendingLoginEmail = email;
+  closeLoginPanel();
+  loginPassEl.value = '';
+  toast(mode === 'register' ? '注册成功，正在进入…' : '登录成功，正在进入…');
+  // 重连 ws（?sessionToken= 由 wsUrl() 读取 sessionToken 自动带上）→ session.ready 非游客 → 欢迎 toast
+  if (ws) { try { ws.onclose = null; ws.close(); } catch { /* ignore */ } }
+  setState('connecting');
+  setStatus('登录中，重连…');
+  connect();
+}
+
+loginBtnEl.addEventListener('click', () => {
+  loginPanelEl.classList.contains('open') ? closeLoginPanel() : openLoginPanel();
+});
+document.getElementById('login-close').addEventListener('click', closeLoginPanel);
+document.getElementById('btn-login-submit').addEventListener('click', () => submitLogin('login'));
+document.getElementById('btn-login-register').addEventListener('click', () => submitLogin('register'));
+loginPassEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitLogin('login'); });
 
 // E7：点击已穿槽位 → 卸下（character.unequip）
 for (const slotEl of document.querySelectorAll('.equip-slot')) {
