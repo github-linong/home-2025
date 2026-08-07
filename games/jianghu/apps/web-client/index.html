@@ -37,6 +37,14 @@
   #btn-inv:hover { border-color: #f2a03c; color: #f2a03c; }
   #btn-inv.on { border-color: #f2a03c; color: #f2a03c; box-shadow: 0 0 8px rgba(242,160,60,.5); }
 
+  /* ── E12 音效控件（静音按钮 + 音量滑块）── */
+  #btn-sfx { border: 1px solid #4a5568; padding: 3px 9px; border-radius: 6px; background: rgba(18,22,30,.9); user-select: none; }
+  #btn-sfx:hover { border-color: #5fd0e0; }
+  #btn-sfx.off { opacity: .45; border-color: #7a8699; }
+  .sfx-vol { display: inline-flex; align-items: center; gap: 4px; border: 1px solid #4a5568; padding: 2px 8px; border-radius: 6px; background: rgba(18,22,30,.9); cursor: pointer; }
+  .sfx-vol:hover { border-color: #5fd0e0; }
+  #sfx-vol { width: 64px; accent-color: #5fd0e0; }
+
   /* ── 底部技能栏 ── */
   #actionbar { position: absolute; left: 12px; bottom: 12px; z-index: 10; display: flex; gap: 8px; align-items: flex-end; }
   .abtn { width: 58px; height: 58px; border-radius: 8px; border: 1px solid #4a5568; background: rgba(18,22,30,.92);
@@ -131,6 +139,8 @@
   <span class="sep">|</span>
   <span id="level">Lv.-</span>
   <span class="btn" id="btn-inv" title="背包（I）">背包 [I]</span>
+  <span class="btn" id="btn-sfx" title="音效开关（点击静音/恢复）">🔊</span>
+  <label class="btn sfx-vol" title="音效音量"><span id="sfx-vol-ico">🔉</span><input type="range" id="sfx-vol" min="0" max="100" value="50"></label>
 </div>
 <canvas id="game"></canvas>
 
@@ -263,6 +273,278 @@ const RARITY_NAMES = ['白', '蓝', '金', '暗金'];
 const SLOT_NAMES = { weapon: '武器', armor: '护甲', trinket: '饰品' };
 const KIND = { PLAYER: 0, ENEMY: 1, BOSS: 2, LOOT_GROUND: 3, TELEGRAPH: 4, ENTRANCE: 5 };
 
+// ============================================================================
+// E12：WebAudio 程序化武侠音效（零外部资源 / 零网络请求；单文件独立模块，不耦合既有逻辑）
+// ============================================================================
+// 浏览器自动播放策略：首次用户手势（pointerdown/keydown/touchstart）才惰性创建 AudioContext 并 resume；
+// 无手势 / 无音频环境 / 静音时 play() 直接 return（不创建 ctx、不抛错）→ Z1-Z3 保护（无音频环境零报错）。
+// 音量/静音持久化到 localStorage（jianghu_sfx_vol / jianghu_sfx_muted），默认开启。
+const SFX = (() => {
+  const VOL_KEY = 'jianghu_sfx_vol';
+  const MUTE_KEY = 'jianghu_sfx_muted';
+  let ctx = null;          // AudioContext（惰性）
+  let master = null;       // 主增益（音量/静音总闸）
+  let noiseBuf = null;     // 复用白噪声缓冲
+  let vol = 0.5;           // 默认音量 0.5
+  let muted = false;
+  let unlocked = false;    // 是否已有用户手势（自动播放策略门闸）
+
+  // 读取持久化设置（localStorage 不可用时静默忽略）
+  try {
+    const sv = parseFloat(localStorage.getItem(VOL_KEY));
+    if (isFinite(sv) && sv >= 0 && sv <= 1) vol = sv;
+    muted = localStorage.getItem(MUTE_KEY) === '1';
+  } catch (e) { /* ignore */ }
+
+  // 惰性创建 AudioContext（仅首次用户手势后允许；失败/不存在 → null，静默）
+  function ensure() {
+    try {
+      if (ctx) {
+        if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+        return ctx;
+      }
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      ctx = new AC();
+      master = ctx.createGain();
+      master.gain.value = muted ? 0 : vol;
+      master.connect(ctx.destination);
+      if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+      return ctx;
+    } catch (e) {
+      ctx = null;
+      return null;
+    }
+  }
+
+  function unlock() {
+    unlocked = true;
+    ensure();
+  }
+  try {
+    window.addEventListener('pointerdown', unlock, { once: true });
+    window.addEventListener('keydown', unlock, { once: true });
+    window.addEventListener('touchstart', unlock, { once: true });
+  } catch (e) { /* ignore */ }
+
+  // 复用噪声缓冲（避免每音效重建）
+  function getNoise(c, dur) {
+    try {
+      if (noiseBuf && noiseBuf.duration >= dur) return noiseBuf;
+      const len = Math.max(1, Math.ceil(c.sampleRate * dur));
+      const buf = c.createBuffer(1, len, c.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      noiseBuf = buf;
+      return buf;
+    } catch (e) { return null; }
+  }
+
+  // 单振荡器：频率滑落（可选）+ 指数衰减包络（可选 0.15s 延迟回声，剑气/传送用）
+  function osc(c, type, f0, f1, t0, dur, gv, opts) {
+    try {
+      const o = c.createOscillator();
+      o.type = type;
+      o.frequency.setValueAtTime(Math.max(1, f0), t0);
+      if (f1 != null && f1 > 0 && Math.abs(f1 - f0) > 0.5) {
+        o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t0 + dur);
+      }
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0001, gv), t0 + Math.min(0.012, dur * 0.25));
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g);
+      let out = g;
+      if (opts && opts.echo) {
+        const d = c.createDelay(1);
+        d.delayTime.value = opts.echo;
+        const fb = c.createGain();
+        fb.gain.value = opts.echoVol != null ? opts.echoVol : 0.3;
+        const g2 = c.createGain();
+        g2.gain.value = opts.echoGain != null ? opts.echoGain : 0.5;
+        o.connect(g2); g2.connect(d); d.connect(fb); fb.connect(d);
+        const dg = c.createGain();
+        dg.gain.setValueAtTime(0.0001, t0 + opts.echo);
+        dg.gain.exponentialRampToValueAtTime(0.0001, t0 + dur + opts.echo + 0.05);
+        d.connect(dg);
+        dg.connect(master || c.destination);
+      }
+      out.connect(master || c.destination);
+      o.start(t0);
+      o.stop(t0 + dur + (opts && opts.echo ? opts.echo + 0.1 : 0.05));
+    } catch (e) { /* ignore */ }
+  }
+
+  // 白噪声（可选 lowpass/highpass 滤波）
+  function noise(c, t0, dur, gv, filterFreq, filterType) {
+    try {
+      const src = c.createBufferSource();
+      const buf = getNoise(c, Math.max(dur, 0.2));
+      if (!buf) return;
+      src.buffer = buf;
+      src.loop = true;
+      let node = src;
+      if (filterFreq) {
+        const f = c.createBiquadFilter();
+        f.type = filterType || 'lowpass';
+        f.frequency.setValueAtTime(filterFreq, t0);
+        f.Q.value = 0.8;
+        node.connect(f);
+        node = f;
+      }
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0001, gv), t0 + Math.min(0.012, dur * 0.25));
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      node.connect(g);
+      g.connect(master || c.destination);
+      src.start(t0);
+      src.stop(t0 + dur + 0.05);
+    } catch (e) { /* ignore */ }
+  }
+
+  // 噪声扫频（带通滤波，进/出副本传送感）
+  function noiseSweep(c, f0, f1, t0, dur, gv) {
+    try {
+      const src = c.createBufferSource();
+      const buf = getNoise(c, Math.max(dur, 0.3));
+      if (!buf) return;
+      src.buffer = buf;
+      src.loop = true;
+      const f = c.createBiquadFilter();
+      f.type = 'bandpass';
+      f.frequency.setValueAtTime(Math.max(30, f0), t0);
+      f.frequency.exponentialRampToValueAtTime(Math.max(30, f1), t0 + dur);
+      f.Q.value = 1.2;
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0001, gv), t0 + Math.min(0.03, dur * 0.2));
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      src.connect(f); f.connect(g); g.connect(master || c.destination);
+      src.start(t0); src.stop(t0 + dur + 0.05);
+    } catch (e) { /* ignore */ }
+  }
+
+  // ── E12 音效表（全部 WebAudio 程序化合成；def(c, t0)，t0=开始时刻）──
+  const DEFS = {
+    attack(c, t0) {            // 普攻挥砍：短促白噪声爆破(0.08s) + 低频方波 90Hz 衰减
+      noise(c, t0, 0.08, 0.5, 1400, 'lowpass');
+      osc(c, 'square', 90, 55, t0, 0.12, 0.32);
+    },
+    skill_1(c, t0) {           // 烈斩：重击，低频正弦 80→40Hz 滑落 + 噪声爆
+      osc(c, 'sine', 80, 40, t0, 0.35, 0.7);
+      noise(c, t0, 0.18, 0.5, 320, 'lowpass');
+    },
+    skill_2(c, t0) {           // 剑气：尖锐，锯齿波 600→1200Hz 上行 + 0.15s 延迟回声
+      osc(c, 'sawtooth', 600, 1200, t0, 0.28, 0.3, { echo: 0.15, echoVol: 0.35, echoGain: 0.5 });
+      noise(c, t0, 0.15, 0.2, 2500, 'highpass');
+    },
+    skill_3(c, t0) {           // 震地：次低频，正弦 50Hz 长衰减(0.4s) + 隆隆噪声
+      osc(c, 'sine', 50, 32, t0, 0.42, 0.85);
+      noise(c, t0, 0.4, 0.5, 180, 'lowpass');
+    },
+    skill_4(c, t0) {           // 破军：爆发，噪声+低频混合，0.3s 强衰减
+      noise(c, t0, 0.3, 0.6, 900, 'lowpass');
+      osc(c, 'sine', 72, 40, t0, 0.3, 0.7);
+      osc(c, 'square', 110, 60, t0, 0.2, 0.25);
+    },
+    hit(c, t0) {               // 命中（敌人受击）：短促方波 click 220Hz + 噪声(0.05s)
+      osc(c, 'square', 220, 160, t0, 0.06, 0.22);
+      noise(c, t0, 0.05, 0.18, 3000, 'highpass');
+    },
+    crit(c, t0) {              // 暴击：命中 + 高八度泛音
+      osc(c, 'square', 220, 160, t0, 0.06, 0.22);
+      noise(c, t0, 0.05, 0.18, 3000, 'highpass');
+      osc(c, 'sine', 880, 1240, t0, 0.14, 0.2);
+    },
+    parry(c, t0) {             // 格挡：金属，方波 800Hz 快速衰减 + 噪声薄片
+      osc(c, 'square', 800, 480, t0, 0.1, 0.28);
+      noise(c, t0, 0.06, 0.15, 4000, 'highpass');
+    },
+    parry_success(c, t0) {     // 格挡成功：金属 + 泛音 1200Hz
+      osc(c, 'square', 800, 480, t0, 0.1, 0.3);
+      osc(c, 'sine', 1200, 1800, t0, 0.16, 0.22);
+      noise(c, t0, 0.05, 0.12, 4000, 'highpass');
+    },
+    pickup(c, t0) {            // 拾取：轻快上滑音，正弦 400→800Hz 0.1s
+      osc(c, 'sine', 400, 800, t0, 0.1, 0.3);
+      osc(c, 'sine', 600, 1200, t0, 0.08, 0.12);
+    },
+    levelup(c, t0) {           // 升级：金色彩虹音，三连音上行 523/659/784Hz
+      osc(c, 'sine', 523, 523, t0, 0.12, 0.35);
+      osc(c, 'sine', 659, 659, t0 + 0.09, 0.12, 0.35);
+      osc(c, 'sine', 784, 784, t0 + 0.18, 0.2, 0.4);
+      osc(c, 'sine', 1046, 1046, t0 + 0.18, 0.22, 0.15);
+    },
+    downed(c, t0) {            // 玩家倒地：低沉下降，正弦 200→60Hz 0.6s
+      osc(c, 'sine', 200, 60, t0, 0.6, 0.6);
+      noise(c, t0, 0.5, 0.25, 240, 'lowpass');
+    },
+    revive(c, t0) {            // 复活：上升音，正弦 200→600Hz 0.4s + 泛音
+      osc(c, 'sine', 200, 600, t0, 0.4, 0.4);
+      osc(c, 'sine', 400, 1200, t0, 0.4, 0.14);
+    },
+    enter_dungeon(c, t0) {     // 进副本：传送，噪声扫频 200→2000Hz + 混响感
+      noiseSweep(c, 200, 2000, t0, 0.5, 0.5);
+      osc(c, 'sine', 240, 880, t0, 0.5, 0.15, { echo: 0.22, echoVol: 0.3, echoGain: 0.4 });
+    },
+    exit_dungeon(c, t0) {      // 出副本：传送反向 2000→200Hz
+      noiseSweep(c, 2000, 200, t0, 0.5, 0.5);
+      osc(c, 'sine', 880, 240, t0, 0.5, 0.15, { echo: 0.22, echoVol: 0.3, echoGain: 0.4 });
+    },
+    disconnect(c, t0) {        // 断线：提示音（单音 440Hz 短，双短）
+      osc(c, 'sine', 440, 440, t0, 0.1, 0.25);
+      osc(c, 'sine', 440, 440, t0 + 0.14, 0.12, 0.25);
+    },
+    reconnect(c, t0) {         // 重连：提示音（440Hz → 660Hz 上行）
+      osc(c, 'sine', 440, 440, t0, 0.1, 0.25);
+      osc(c, 'sine', 660, 660, t0 + 0.14, 0.14, 0.25);
+    },
+    ui(c, t0) {                // UI 点击（背包/按钮）：轻 click 方波 600Hz 0.03s
+      osc(c, 'square', 600, 480, t0, 0.03, 0.14);
+    },
+    enemy_dead(c, t0) {        // 敌人死亡：短促下降音 + 噪声
+      osc(c, 'sine', 300, 70, t0, 0.25, 0.4);
+      noise(c, t0, 0.15, 0.28, 800, 'lowpass');
+    },
+  };
+
+  // 播放（全静默失败：无手势 / 无音频环境 / 静音 → 直接 return，绝不抛错 → Z1-Z3 保护）
+  function play(name) {
+    try {
+      if (muted || !unlocked) return;   // 无手势不创建 ctx（自动播放策略）；静音直接 return
+      const c = ensure();
+      if (!c) return;
+      const def = DEFS[name];
+      if (!def) return;
+      def(c, c.currentTime + 0.005);
+    } catch (e) { /* 静默失败：无音频环境/自动播放策略下不报错 */ }
+  }
+
+  function setVolume(v) {
+    vol = Math.max(0, Math.min(1, v));
+    try { localStorage.setItem(VOL_KEY, String(vol)); } catch (e) { /* ignore */ }
+    if (master) { try { master.gain.value = muted ? 0 : vol; } catch (e) { /* ignore */ } }
+    return vol;
+  }
+
+  function toggleMute() {
+    muted = !muted;
+    try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) { /* ignore */ }
+    if (master) { try { master.gain.value = muted ? 0 : vol; } catch (e) { /* ignore */ } }
+    return muted;
+  }
+
+  return {
+    init: unlock,          // 首次用户手势时调用（惰性创建 + resume）
+    play: play,
+    setVolume: setVolume,
+    getVolume: () => vol,
+    toggleMute: toggleMute,
+    isMuted: () => muted,
+  };
+})();
+
 // ── DOM ──
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -316,6 +598,8 @@ const GAME = window.__game = {
   // 调试钩子（仅 ?debug=1 生效；E2E 用）
   debugEnterDungeon: null, debugExitDungeon: null,
   toggleInventory: null, openInventory: null, closeInventory: null, sendSignal: null,
+  // E12：WebAudio 音效（调试/自动化钩子：SFX.play / toggleMute / setVolume / isMuted）
+  sfx: SFX,
 };
 
 // ── 视图 / 摄像机（C3：锁定跟随本地玩家，只允许缩放；移除拖拽平移）──
@@ -425,6 +709,7 @@ let selectedEnemyId = null;         // 选中敌人 id（红圈跟随）
 let combatTarget = null;            // 战斗目标 entity id（左键点敌人；持续走近/普攻）
 let moveTarget = null;              // 点击移动目标格（packed = gx*64+gy；左键点地面）
 let meleeFx = [];                   // 普攻挥砍光效 {x,y,dir,born,ttl}
+let lastSwingSfxAt = 0;             // E12：普攻挥砍音效节流（input loop 12Hz 连发时防机枪声）
 
 // ── Toast ──
 let toastTimer = null;
@@ -453,6 +738,7 @@ const ERROR_TEXT = {
 // 拾取 toast（屏幕下方，稀有度色）
 let pickupToastTimer = null;
 function pickupToast(html) {
+  SFX.play('pickup'); // E12：拾取轻快上滑音
   const el = document.getElementById('pickup-toast');
   el.innerHTML = html;
   el.style.display = 'block';
@@ -574,6 +860,7 @@ function connect() {
     if (state === 'closed') return;
     setStatus('断线，自动重连中…', 'err');
     setState('reconnecting');
+    SFX.play('disconnect'); // E12：断线提示音（440Hz 短）
     scheduleReconnect();
   };
 }
@@ -643,6 +930,7 @@ function handleControl(msg) {
       resetFxState();
       setStatus('副本', 'ok');
       toast('已进入副本');
+      SFX.play('enter_dungeon'); // E12：噪声扫频传送感
       break;
     }
     case 'dungeon.exit.ok': {
@@ -653,6 +941,7 @@ function handleControl(msg) {
       resetFxState();
       setStatus('主世界', 'ok');
       toast('已出本');
+      SFX.play('exit_dungeon'); // E12：传送反向
       break;
     }
     case 'session.reconnect.ok': {
@@ -664,6 +953,7 @@ function handleControl(msg) {
       resetFxState();
       setStatus(state === 'dungeon' ? '副本（已重连）' : '主世界（已重连）', 'ok');
       toast('已重连');
+      SFX.play('reconnect'); // E12：重连提示音（440→660Hz 上行）
       // E9：重连拉取当前等级/经验（断线期间升级以持久化为准）。
       sendJson({ type: 'character.level.get', requestId: 'lv' + (lvSeq++) });
       break;
@@ -720,6 +1010,7 @@ function handleControl(msg) {
       if (msg.level != null && msg.level > prevLevel) {
         levelFx.until = performance.now() + 1000;
         toast('升级！Lv.' + msg.level);
+        SFX.play('levelup'); // E12：金色彩虹三连音
       }
       break;
     }
@@ -773,11 +1064,13 @@ function handleSnapshot(snap) {
     keys.clear();
     clearClickTargets();
     sendStop();
+    SFX.play('downed'); // E12：低沉下降（玩家倒地）
   } else if (!meDowned && downed) {
     downed = false;
     downedSinceTick = null;
     reviveFx.until = performance.now() + 450;
     toast('已复活');
+    SFX.play('revive'); // E12：上升音 + 泛音（复活）
   }
   GAME.downed = downed;
   GAME.downedSinceTick = downedSinceTick;
@@ -839,6 +1132,15 @@ function recordHit(e, dmg, isLocal, isEnemy) {
     floatTexts.push({ entityId: e.id, x: e.pos.x, y: e.pos.y, offY: -72, text: '格挡！', color: '#5fd0e0', born: t, ttl: 900, vy: -24 });
     parryFx.until = t + 400;
     rings.push({ x: e.pos.x, y: e.pos.y, color: '#5fd0e0', born: t, ttl: 300, r0: 20, r1: 46 });
+    SFX.play('parry_success'); // E12：格挡成功（金属 + 泛音）
+  } else if (isEnemy && !isLocal) {
+    // E12：我方打中敌人 → 命中音；暴击音按本地玩家面板暴击率近似（服务端不下发 crit 标志，C12 已知限制）
+    let critChance = 0;
+    const attrMe = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((x) => x.id === localEntityId) : null;
+    if (attrMe && attrMe.attrs && attrMe.attrs.crit != null) critChance = attrMe.attrs.crit / 1000;
+    SFX.play(Math.random() < critChance ? 'crit' : 'hit');
+  } else {
+    SFX.play('hit'); // E12：我方受击 / 其它实体受击
   }
   // 技能命中叠加闪光（刚放技能且附近敌人受击）
   if (isEnemy && t - GAME.lastSkillAt < 600) {
@@ -857,6 +1159,7 @@ function spawnKillFx(x, y, isBoss) {
   killFx.push({ x, y, parts, born: performance.now(), ttl: 260 });
   GAME.lastKills.push({ x, y, isBoss, t: performance.now() });
   if (GAME.lastKills.length > 20) GAME.lastKills.shift();
+  SFX.play('enemy_dead'); // E12：敌人死亡短促下降音 + 噪声
 }
 
 // ============================================================================
@@ -978,7 +1281,7 @@ function sendStop() {
   lastMoveDir = null;
 }
 
-function sendParry() { sendCmd({ action: 1, dir: lastMoveDir ?? 0 }); }
+function sendParry() { sendCmd({ action: 1, dir: lastMoveDir ?? 0 }); SFX.play('parry'); }
 
 // C2：技能释放 → 立即本地技能光效（朝向扇形闪光 0.3s 淡出）+ E2E lastSkillAt
 function sendSkill(slot) {
@@ -987,6 +1290,7 @@ function sendSkill(slot) {
   const base = predicted || (localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId).pos : { x: 0, y: 0 });
   skillFx.push({ x: base.x, y: base.y, dir: d, color: 'rgba(255,179,71,1)', born: performance.now(), ttl: SKILL_FX_TTL, radius: SKILL_FX_RADIUS });
   GAME.lastSkillAt = performance.now();
+  SFX.play('skill_' + (slot + 1)); // E12：技能音效按 slot 区分（skill_1..4）
 }
 
 // SIGNAL(6)：靠近掉落按 F 的拾取意图（服务端为重叠自动拾取，此动作服务端忽略，仅表现/占位）
@@ -1019,6 +1323,8 @@ function sendAttack(targetId) {
   if (base && t) {
     meleeFx.push({ x: base.x, y: base.y, dir: dirTowardClient(base.x, base.y, t.pos.x, t.pos.y), born: performance.now(), ttl: 220 });
     GAME.lastAttackAt = performance.now();
+    // E12：普攻挥砍音（节流 350ms，input loop 12Hz 连发时避免机枪声）
+    if (performance.now() - lastSwingSfxAt > 350) { SFX.play('attack'); lastSwingSfxAt = performance.now(); }
   }
 }
 
@@ -1202,6 +1508,35 @@ dungeonBtn.addEventListener('click', toggleDungeon);
 invBtn.addEventListener('click', toggleInventory);
 document.getElementById('inv-close').addEventListener('click', closeInventory);
 
+// ── E12：音效 HUD（静音按钮 🔊/🔇 + 音量滑块；默认开启，localStorage 记忆）──
+(function initSfxHud() {
+  try {
+    const btn = document.getElementById('btn-sfx');
+    const slider = document.getElementById('sfx-vol');
+    const ico = document.getElementById('sfx-vol-ico');
+    const sync = () => {
+      const m = SFX.isMuted();
+      btn.textContent = m ? '🔇' : '🔊';
+      btn.classList.toggle('off', m);
+      slider.value = String(Math.round(SFX.getVolume() * 100));
+      if (ico) ico.textContent = SFX.getVolume() <= 0.01 ? '🔇' : (SFX.getVolume() < 0.5 ? '🔉' : '🔊');
+    };
+    btn.addEventListener('click', () => {
+      const m = SFX.toggleMute();
+      sync();
+      if (!m) SFX.play('ui'); // 恢复声音时的反馈 click
+    });
+    slider.addEventListener('input', () => { // 拖动实时改音量
+      SFX.setVolume(Number(slider.value) / 100);
+      sync();
+    });
+    slider.addEventListener('change', () => { // 松手后播一声反馈
+      if (!SFX.isMuted()) SFX.play('ui');
+    });
+    sync();
+  } catch (e) { /* 静默失败：不阻断游戏 */ }
+})();
+
 // E7：点击已穿槽位 → 卸下（character.unequip）
 for (const slotEl of document.querySelectorAll('.equip-slot')) {
   slotEl.addEventListener('click', () => {
@@ -1239,11 +1574,13 @@ function openInventory() {
   sendJson({ type: 'character.inventory.get', requestId: 'inv' + (invSeq++) }); // 打开拉全量
   renderInventory();
   renderEquip();
+  SFX.play('ui'); // E12：UI 点击（背包打开）
 }
 function closeInventory() {
   invOpen = false; GAME.invOpen = false;
   invPanelEl.classList.remove('open');
   invBtn.classList.remove('on');
+  SFX.play('ui'); // E12：UI 点击（背包关闭）
 }
 function toggleInventory() { invOpen ? closeInventory() : openInventory(); }
 
@@ -1267,7 +1604,7 @@ function renderInventory() {
     const eqBtn = document.createElement('button');
     eqBtn.className = 'equip-btn';
     eqBtn.textContent = '装备';
-    eqBtn.addEventListener('click', () => sendEquip(it.itemId));
+    eqBtn.addEventListener('click', () => { SFX.play('ui'); sendEquip(it.itemId); });
     cell.appendChild(eqBtn);
     invGridEl.appendChild(cell);
   }
