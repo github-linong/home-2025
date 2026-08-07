@@ -93,22 +93,24 @@ test("空转：无刷怪区 + 无玩家 ⇒ 无敌人/玩家（golden 安全）"
   assert.equal(kinds.filter((k) => k === EntityKind.LOOT_GROUND).length, 4);
 });
 
-test("战斗：敌人接触伤害（无 parry）全额扣血", () => {
+test("战斗：敌人接触伤害（无 parry）全额扣血（E6：显式 aggressive 敌人在接触内立即攻击）", () => {
   const world = mkWorld({
     seed: PROX_SEED,
     players: [{ seatId: 0, userId: "u0" }],
-    spawnZones: [{ pos: NEAR, tier: 0, enemyTypeId: "n", count: 1 }],
+    // E6：tier 0 默认 passive（不主动攻击）；此处显式 aggressive 验证接触攻击原语义。
+    spawnZones: [{ pos: NEAR, tier: 0, enemyTypeId: "n", count: 1, aggression: "aggressive" }],
   });
   world.step(); // t=0 敌人即触发首次接触攻击（atk=8）
   const player = world.actors().find((a) => a.kind === EntityKind.PLAYER)!;
   assert.equal(player.hp, 100 - 8, "无格挡应被全额扣 8");
 });
 
-test("战斗：parry 覆盖 → 接触伤害减伤 0.6（8 → 3）", () => {
+test("战斗：parry 覆盖 → 接触伤害减伤 0.6（8 → 3）（E6：显式 aggressive）", () => {
   const world = mkWorld({
     seed: PROX_SEED,
     players: [{ seatId: 0, userId: "u0" }],
-    spawnZones: [{ pos: NEAR, tier: 0, enemyTypeId: "n", count: 1 }],
+    // E6：tier 0 默认 passive；显式 aggressive 保持 E4 接触攻击原语义。
+    spawnZones: [{ pos: NEAR, tier: 0, enemyTypeId: "n", count: 1, aggression: "aggressive" }],
   });
   world.enqueueInput(0, { seq: 0, tick: 0, action: InputAction.PARRY, dir: 0 });
   world.step(); // 同 tick 内先开 parry 窗口，再结算敌人攻击（覆盖）

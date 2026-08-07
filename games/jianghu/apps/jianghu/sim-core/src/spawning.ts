@@ -24,10 +24,19 @@ import {
 /** 数值 tier（0/1/2）→ HP_MULT / RARITY 键（字符串），避免 `HP_MULT[0]` 误取 undefined。 */
 const TIER_KEYS: readonly EnemyTier[] = ["normal", "elite", "boss"];
 
+/** 敌人类别（E6）：aggressive=仇恨半径内索敌追击+接触攻击；passive=不主动攻击/不追击，被打才反击。 */
+export type Aggression = "passive" | "aggressive";
+
+/** 敌人类别缺省规则（主理人拍板）：普通怪（tier 0）passive；精英（tier 1）/ BOSS（tier 2）aggressive。 */
+export function defaultAggression(tier: 0 | 1 | 2): Aggression {
+  return tier === 0 ? "passive" : "aggressive";
+}
+
 /**
  * 简单刷怪区（E4 联调用，不依赖 dungeonGen/E5）。
  * tier: 0=normal / 1=elite / 2=boss；count 为该区实例敌人数量；respawnTicks 为清空后复活间隔。
- * 形状刻意轻量（pos/tier/enemyTypeId/count/respawnTicks），覆盖 spawning §③ 核心字段。
+ * aggression（E6）：显式指定敌人类别；缺省按 tier（0→passive，1/2→aggressive）。
+ * 形状刻意轻量（pos/tier/enemyTypeId/count/respawnTicks/aggression），覆盖 spawning §③ 核心字段。
  */
 export interface SpawnZone {
   readonly pos: Vec2;
@@ -35,6 +44,8 @@ export interface SpawnZone {
   readonly enemyTypeId: string;
   readonly count: number;
   readonly respawnTicks?: number;
+  /** E6 敌人类别：aggressive 追击/接触攻击；passive 被打才反击。缺省按 tier 缺省规则。 */
+  readonly aggression?: Aggression;
 }
 
 /** 单个被实例化敌人的规格（id 由 world 统一分配，避免 spawning 触碰世界状态）。 */
@@ -45,6 +56,7 @@ export interface SpawnedEnemySpec {
   readonly maxHp: number;
   readonly tier: number; // 0/1/2
   readonly atk: number; // 接触伤害基础
+  readonly aggression: Aggression; // E6 敌人类别（world 据此跑 AI 状态机）
 }
 
 /** 刷怪波次实例结果。 */
@@ -70,6 +82,7 @@ export function spawnWave(zones: readonly SpawnZone[], rng: Rng): SpawnResult {
     const maxHp = ENEMY_BASE_HP * mult;
     const atk = ENEMY_BASE_ATK * mult;
     const kind = z.tier === 2 ? EntityKind.BOSS : EntityKind.ENEMY;
+    const aggression = z.aggression ?? defaultAggression(z.tier); // E6：显式覆盖或按 tier 缺省
     for (let i = 0; i < z.count; i++) {
       const ox = rng.nextInt(-SPAWN_SCATTER_PX, SPAWN_SCATTER_PX);
       const oy = rng.nextInt(-SPAWN_SCATTER_PX, SPAWN_SCATTER_PX);
@@ -80,6 +93,7 @@ export function spawnWave(zones: readonly SpawnZone[], rng: Rng): SpawnResult {
         maxHp,
         tier: z.tier,
         atk,
+        aggression,
       });
     }
   }

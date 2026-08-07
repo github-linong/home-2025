@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="data:,">
-<title>江湖 jianghu · 浏览器试玩版（C1）</title>
+<title>江湖 jianghu · 浏览器试玩版（C2）</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #0d0f13; color: #e8e4d8;
@@ -24,7 +24,10 @@
   #hpbar { width: 110px; height: 8px; background: #301a1a; border: 1px solid #553; border-radius: 3px; overflow: hidden; }
   #hpfill { height: 100%; width: 100%; background: linear-gradient(90deg, #c8324a, #f2a03c); transition: width .15s; }
   #skillcd-hud { color: #9fd; }
-  .btn { pointer-events: auto; }
+  .btn { pointer-events: auto; cursor: pointer; }
+  #btn-inv { border: 1px solid #4a5568; padding: 3px 9px; border-radius: 6px; background: rgba(18,22,30,.9); user-select: none; }
+  #btn-inv:hover { border-color: #f2a03c; color: #f2a03c; }
+  #btn-inv.on { border-color: #f2a03c; color: #f2a03c; box-shadow: 0 0 8px rgba(242,160,60,.5); }
 
   /* ── 底部技能栏 ── */
   #actionbar { position: absolute; left: 12px; bottom: 12px; z-index: 10; display: flex; gap: 8px; align-items: flex-end; }
@@ -42,11 +45,35 @@
     border-color: #7d5fa0; color: #cbb; }
   .abtn.dungeon:disabled { opacity: .4; cursor: not-allowed; }
 
-  /* ── Toast ── */
+  /* ── Toast（顶部）── */
   #toast { position: absolute; top: 52px; left: 50%; transform: translateX(-50%); z-index: 20;
     background: rgba(20,16,30,.95); border: 1px solid #7d5fa0; color: #e8e4d8; padding: 8px 16px;
     border-radius: 8px; font-size: 13px; display: none; max-width: 70vw; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,.5); }
   #toast.err { border-color: #c8324a; background: rgba(40,12,16,.95); }
+
+  /* ── 拾取 toast（屏幕下方，C2）── */
+  #pickup-toast { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 21;
+    background: rgba(14,12,22,.94); border: 1px solid #5f8fb0; color: #e8e4d8; padding: 6px 14px;
+    border-radius: 10px; font-size: 13px; display: none; box-shadow: 0 4px 14px rgba(0,0,0,.55);
+    white-space: nowrap; }
+  #pickup-toast .r { font-weight: 700; }
+
+  /* ── 背包面板（C2）── */
+  #invpanel { position: absolute; right: 16px; top: 64px; width: 320px; z-index: 30; display: none;
+    background: rgba(12,14,20,.96); border: 1px solid #4a5568; border-radius: 10px; padding: 10px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.6); }
+  #invpanel.open { display: block; }
+  #inv-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  #inv-title { font-weight: 700; font-size: 14px; }
+  #inv-count { color: #7a8699; font-size: 12px; margin-left: 6px; }
+  #inv-close { cursor: pointer; border: 1px solid #4a5568; background: transparent; color: #aab; border-radius: 6px;
+    padding: 2px 8px; font-size: 12px; }
+  #inv-close:hover { color: #fff; border-color: #f44; }
+  #inv-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; max-height: 320px; overflow-y: auto; }
+  .inv-cell { border: 2px solid #666; border-radius: 6px; padding: 4px 2px; text-align: center; background: rgba(30,34,44,.7); }
+  .inv-id { font-size: 10px; color: #ddd; font-weight: 700; word-break: break-all; }
+  .inv-meta { font-size: 9px; color: #9aa; margin-top: 2px; }
+  #inv-empty { color: #7a8699; text-align: center; padding: 18px 0; font-size: 13px; }
 
   /* ── 帮助 ── */
   #help { position: absolute; right: 12px; bottom: 12px; z-index: 10; color: #7a8699; font-size: 11px;
@@ -67,6 +94,7 @@
   <span id="hpwrap"><span id="hp">HP:-</span><span id="hpbar"><span id="hpfill"></span></span></span>
   <span id="parryhud"></span>
   <span id="skillcd-hud"></span>
+  <span class="btn" id="btn-inv" title="背包（I）">背包 [I]</span>
 </div>
 <canvas id="game"></canvas>
 
@@ -80,27 +108,39 @@
 </div>
 
 <div id="toast"></div>
+<div id="pickup-toast"></div>
+<div id="invpanel">
+  <div id="inv-head">
+    <span id="inv-title">背包 <span id="inv-count">0/60</span></span>
+    <button id="inv-close">✕</button>
+  </div>
+  <div id="inv-grid"><div id="inv-empty">空</div></div>
+</div>
+
 <div id="help">
-  <b>WASD/方向键</b> 移动（8 向） · <b>空格</b> 格挡 · <b>1-4</b> 技能<br>
-  <b>F / 按钮</b> 进副本/出本 · <b>滚轮</b> 缩放 · <b>拖拽</b> 平移 · <b>双击</b> 回中
+  <b>WASD/方向键</b> 移动（8 向） · <b>空格</b> 格挡 · <b>1-4</b> 技能 · <b>I</b> 背包<br>
+  <b>F</b> 进副本/出本 · 靠近掉落按 <b>F</b>（走近自动拾取） · <b>滚轮</b> 缩放 · <b>拖拽</b> 平移 · <b>双击</b> 回中
 </div>
 
 <script>
 (function () {
 "use strict";
 // ============================================================================
-// 江湖 jianghu · 浏览器客户端 C1（Canvas 2D + WebSocket，零构建，单文件）
+// 江湖 jianghu · 浏览器客户端 C2（Canvas 2D + WebSocket，零构建，单文件）
 // ============================================================================
 // 协议要点（对齐服务端 gateway/protocol/protocol-binary，见 README.md）：
 //   - 控制面 JSON（显式 type）；数据面二进制（ws.binaryType='arraybuffer'）。
 //   - input.cmd 必须 { type:'input.cmd', payload:{ cmd:{...} } }（服务端读 payload?.cmd）。
-//   - 动作：0=MOVE 1=PARRY 2..5=SKILL1..4 7=STOP（松开移动键 → 服务端清 lastMove 立即停）。
-//     按住方向持续发 MOVE；全部移动键松开 / 失焦 / 切页 / 断连前发 STOP，杜绝惯性滑行。
+//   - 动作：0=MOVE 1=PARRY 2..5=SKILL1..4 6=SIGNAL 7=STOP（松开移动键 → 服务端清 lastMove 立即停）。
 //   - 目标/伤害由服务端权威结算，客户端只发 skillSlot，绝不自行锁 target。
-//   - 快照帧：[u8 msgType=0x01][u32 tick LE][u16 count] + 每实体
-//     [u16 id][u16 changeMask][i16 x][i16 y][u8 kind][u8 dir][u16 hp][u16 maxHp]
-//     [u16 status][u8 seCount][se*] + 条件字段（按 changeMask 位）。
-//   - 插值：INTERP_DELAY_MS=100ms 缓冲 lerp，无预测回正（Phase-2）。
+//   - 快照帧：[u8 msgType=0x01][u32 tick LE][u16 count] + 每实体（见 decodeSnapshot）。
+//   - E6 背包：character.inventory（拾取入库推送）/ character.inventory.get（打开面板拉全量）。
+// ============================================================================
+// C2 手感方案（WEB-FEEL 已验证模式，dungeon-online PASS）：
+//   - 本地玩家：按键 → 渲染位置立即按 PLAYER_SPEED*dt 推进（本地预测，仅渲染层，不伪造权威）；
+//     每收到权威快照向 me.pos lerp(RECONCILE_FACTOR=0.3) 收敛；仅瞬移（err>SNAP_THRESHOLD）硬回正。
+//   - 远端实体：10 帧环缓冲，renderTime = lastTick - INTERP_TICKS(3) 双快照 lerp。
+//   - 服务端权威位置不变：预测只是渲染坐标，位置仍以快照为准。
 // ============================================================================
 
 const params = new URLSearchParams(location.search);
@@ -112,14 +152,36 @@ const DEBUG = params.get('debug') === '1';
 const TILE = 48;
 const TICK_RATE = 12;
 const TICK_MS = 1000 / TICK_RATE;
-const INTERP_DELAY_MS = 100;            // 插值缓冲
 const WORLD_W = 40 * TILE;              // 1920
 const WORLD_H = 30 * TILE;              // 1440
 const ENTRANCE_POS = { x: 20 * TILE, y: 15 * TILE }; // 主世界入口（tile 20,15）
 const ENTRANCE_ENTER_RADIUS = 3 * TILE; // UI「进副本」可用半径（服务端不校验距离，仅冷却）
 const PARRY_TICKS = 3;                  // 格挡窗口（服务端权威展示用）
 const SKILL_ACTIONS = [2, 3, 4, 5];     // InputAction.SKILL1..4
-const ACTION_STOP = 7;                  // InputAction.STOP：松开移动键，服务端清 lastMove 立即停（P0 手感修复）
+const ACTION_STOP = 7;                  // InputAction.STOP
+
+// ── C2 手感/表现参数（WEB-FEEL 模式）──
+const BASE_SPEED = 4;                   // 服务端 BASE_SPEED（格/秒，constants.ts C7 镜像）
+const PLAYER_SPEED = BASE_SPEED * TILE; // 192 px/s 本地预测速度（与服务端权威 1:1）
+const RECONCILE_FACTOR = 0.3;           // 每快照向权威 pos lerp 收敛（无瞬移、无振荡）
+const SNAP_THRESHOLD = 250;             // 仅真实瞬移（重连/切房）硬回正
+const INTERP_TICKS = 3;                 // 远端实体渲染 = 最新 tick - 3（≈250ms @12Hz）
+const BUF_MAX = 10;                     // 快照环缓冲帧数
+const PICKUP_HINT_RADIUS = 1.5 * TILE;  // 拾取提示半径（服务端 PICKUP_RADIUS=1×TILE 自动拾取）
+const SKILL_FX_RADIUS = 76;             // 技能光效半径（≈1.5 tile）
+const SKILL_FX_TTL = 300;               // 技能光效时长（ms）
+
+// 8 向单位向量（0=E 1=SE 2=S 3=SW 4=W 5=NW 6=N 7=NE；与服务端 dirToVector 对称）
+const DIR_VECTORS = [
+  { x: 1, y: 0 },
+  { x: Math.SQRT1_2, y: Math.SQRT1_2 },
+  { x: 0, y: 1 },
+  { x: -Math.SQRT1_2, y: Math.SQRT1_2 },
+  { x: -1, y: 0 },
+  { x: -Math.SQRT1_2, y: -Math.SQRT1_2 },
+  { x: 0, y: -1 },
+  { x: Math.SQRT1_2, y: -Math.SQRT1_2 },
+];
 
 // 稀有度配色（art-bible：白/蓝/金/暗金）
 const RARITY_COLORS = ['#D8D2C4', '#4C7FD6', '#F2A03C', '#C8324A'];
@@ -140,6 +202,10 @@ const skillCdHud = document.getElementById('skillcd-hud');
 const toastEl = document.getElementById('toast');
 const dungeonBtn = document.getElementById('btn-dungeon');
 const dungeonBtnLabel = document.getElementById('btn-dungeon-label');
+const invPanelEl = document.getElementById('invpanel');
+const invGridEl = document.getElementById('inv-grid');
+const invCountEl = document.getElementById('inv-count');
+const invBtn = document.getElementById('btn-inv');
 
 function resize() {
   const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -151,14 +217,20 @@ function resize() {
 }
 window.addEventListener('resize', resize);
 
-// ── 调试/自动化暴露（E2E 断言用）──
+// ── 调试/自动化暴露（E2E 断言用；C2 新增 lastHits/lastKills/inventory/predicted 钩子）──
 const GAME = window.__game = {
   connected: false, state: 'connecting', seatId: null, roomId: null, reconnectToken: null,
   lastSnapshot: null, localEntityId: null, errors: [], snapshotCount: 0, lastTick: 0,
   skillCd: [0, 0, 0, 0], parryActive: false, localHp: 0, localMaxHp: 0,
   lastLocalPos: null, wsState: 'closed', guest: null,
+  // C2：本地预测 / 打击感 / 掉落 / 背包（E2E 断言钩子）
+  predicted: null, localRenderPos: null, renderTick: 0,
+  lastHits: [], lastKills: [], pickupToasts: [], lastSkillAt: 0,
+  inventory: { items: [], cap: 60, loaded: false },
+  nearLootId: null, pickupHint: '', invOpen: false,
   // 调试钩子（仅 ?debug=1 生效；E2E 用）
   debugEnterDungeon: null, debugExitDungeon: null,
+  toggleInventory: null, openInventory: null, closeInventory: null, sendSignal: null,
 };
 
 // ── 视图 / 摄像机 ──
@@ -199,6 +271,23 @@ let reconnectAttempts = 0;
 let reconnectTimer = null;
 let ws = null;
 
+// ── C2 表现状态 ──
+let predicted = null;               // 本地玩家渲染位置（预测，仅渲染层）
+let renderTime = 0;                 // 远端实体插值渲染 tick
+let lastFrameT = performance.now();
+let prevHp = new Map();             // id → 上一帧 hp（伤害检测）
+let floatTexts = [];                // 伤害飘字 {x,y,text,color,born,ttl,vy}
+let hitFlashes = new Map();         // id → until(performance.now()) 受击闪白
+let rings = [];                     // 命中/格挡扩散环 {x,y,color,born,ttl,r0,r1}
+let skillFx = [];                   // 技能光效 {x,y,dir,color,born,ttl,radius}
+let killFx = [];                    // 击杀粒子 {x,y,parts,born,ttl}
+let parryFx = { until: 0 };         // 格挡成功盾闪
+let invOpen = false;
+let nearLootId = null;              // 最近可拾取 LOOT_GROUND id（drawEntities 每帧计算，F 键/提示用）
+let inventory = { items: [], cap: 60, loaded: false };
+let pickupToasts = [];              // 最近拾取 toast（E2E 钩子）
+let invSeq = 1;
+
 // ── Toast ──
 let toastTimer = null;
 function toast(msg, isErr) {
@@ -207,6 +296,19 @@ function toast(msg, isErr) {
   toastEl.style.display = 'block';
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { toastEl.style.display = 'none'; }, 3500);
+}
+
+// 拾取 toast（屏幕下方，稀有度色）
+let pickupToastTimer = null;
+function pickupToast(html) {
+  const el = document.getElementById('pickup-toast');
+  el.innerHTML = html;
+  el.style.display = 'block';
+  pickupToasts.push(html.replace(/<[^>]*>/g, ''));
+  if (pickupToasts.length > 40) pickupToasts.shift();
+  GAME.pickupToasts = pickupToasts.slice();
+  clearTimeout(pickupToastTimer);
+  pickupToastTimer = setTimeout(() => { el.style.display = 'none'; }, 2600);
 }
 
 function setStatus(text, cls) {
@@ -323,6 +425,15 @@ function sendJson(obj) {
   if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj));
 }
 
+// C2：房间切换/重连 → 清空表现态（防跨房实体 id 误判伤害/击杀）
+function resetFxState() {
+  snapBuffer = []; lastKnown.clear();
+  prevHp = new Map(); floatTexts = []; hitFlashes = new Map();
+  rings = []; skillFx = []; killFx = []; parryFx.until = 0;
+  predicted = null;
+  GAME.lastHits = []; GAME.lastKills = []; GAME.nearLootId = null; GAME.pickupHint = '';
+}
+
 function handleControl(msg) {
   switch (msg.type) {
     case 'session.ready': {
@@ -330,7 +441,6 @@ function handleControl(msg) {
       tickMs = msg.tickMs || TICK_MS;
       GAME.seatId = seatId; GAME.guest = msg.guest;
       if (state === 'reconnecting') {
-        // 重连恢复：先用重连 token 回原房间；无 token 则重新 room.join
         if (reconnectToken && roomId) {
           sendJson({ type: 'session.reconnect', requestId: 'rec', payload: { roomId, reconnectToken } });
         } else {
@@ -348,6 +458,7 @@ function handleControl(msg) {
       GAME.connected = true;
       GAME.roomId = roomId; GAME.reconnectToken = reconnectToken;
       setStatus('主世界', 'ok');
+      resetFxState();
       startInputLoop();
       break;
     }
@@ -356,8 +467,7 @@ function handleControl(msg) {
       reconnectToken = msg.reconnectToken;
       setState('dungeon');
       GAME.roomId = roomId; GAME.reconnectToken = reconnectToken;
-      snapBuffer = []; // 房间切换，清插值缓冲防串帧
-      lastKnown.clear();
+      resetFxState();
       setStatus('副本', 'ok');
       toast('已进入副本');
       break;
@@ -367,7 +477,7 @@ function handleControl(msg) {
       reconnectToken = null;
       setState('overworld');
       GAME.roomId = roomId; GAME.reconnectToken = null;
-      snapBuffer = []; lastKnown.clear();
+      resetFxState();
       setStatus('主世界', 'ok');
       toast('已出本');
       break;
@@ -378,7 +488,7 @@ function handleControl(msg) {
       setState(msg.fellBackToResident ? 'overworld' : (roomId && roomId !== 'room_resident_public' ? 'dungeon' : 'overworld'));
       GAME.roomId = roomId; GAME.reconnectToken = reconnectToken;
       GAME.connected = true;
-      snapBuffer = []; lastKnown.clear();
+      resetFxState();
       setStatus(state === 'dungeon' ? '副本（已重连）' : '主世界（已重连）', 'ok');
       toast('已重连');
       break;
@@ -401,11 +511,28 @@ function handleControl(msg) {
       setState('closed');
       break;
     }
+    // ── E6 背包数据通道：拾取入库推送 / character.inventory.get 回复（同一格式）──
+    case 'character.inventory': {
+      const items = (msg.items || []).map((i) => ({ itemId: i.itemId, rarity: i.rarity, affixes: (i.affixes || []).slice() }));
+      const prevIds = new Set(inventory.items.map((i) => i.itemId));
+      inventory.items = items;
+      inventory.cap = msg.cap || 60;
+      inventory.loaded = true;
+      GAME.inventory = { items: inventory.items.slice(), cap: inventory.cap, loaded: true };
+      // 增量 toast：新入库物品 → 屏幕下方「拾取 [稀有度色]物品（词缀xN）」
+      const added = items.filter((i) => !prevIds.has(i.itemId));
+      for (const it of added) {
+        const color = RARITY_COLORS[it.rarity] || '#D8D2C4';
+        pickupToast(`拾取 <span class="r" style="color:${color}">${RARITY_NAMES[it.rarity] || '?'}品</span>（词缀×${it.affixes.length}）`);
+      }
+      renderInventory();
+      break;
+    }
   }
 }
 
 // ============================================================================
-// 快照处理（权威态 + 插值缓冲）
+// 快照处理（权威态 + 本地预测收敛 + 伤害/击杀检测 + 插值缓冲）
 // ============================================================================
 function handleSnapshot(snap) {
   GAME.snapshotCount++;
@@ -425,13 +552,47 @@ function handleSnapshot(snap) {
     GAME.lastLocalPos = { x: me.pos.x, y: me.pos.y };
     GAME.parryActive = !!(me.parryState && me.parryState.active);
     if (me.skillCd) GAME.skillCd = me.skillCd.slice();
+
+    // C2 本地预测初始化 / 收敛（只改渲染坐标 predicted，绝不写 me/快照权威字段）
+    if (!predicted) {
+      predicted = { x: me.pos.x, y: me.pos.y };
+    } else {
+      const ex = me.pos.x - predicted.x, ey = me.pos.y - predicted.y;
+      const err = Math.hypot(ex, ey);
+      if (err > SNAP_THRESHOLD) { predicted.x = me.pos.x; predicted.y = me.pos.y; } // 真瞬移 → 硬回正
+      else { predicted.x += ex * RECONCILE_FACTOR; predicted.y += ey * RECONCILE_FACTOR; } // lerp 收敛
+    }
+  } else {
+    predicted = null;
+  }
+  GAME.predicted = predicted ? { x: predicted.x, y: predicted.y } : null;
+
+  // C2 伤害检测（比较上一帧 hp → 飘字 / 闪白 / 扩散环 / E2E lastHits）
+  for (const e of snap.entities) {
+    const old = prevHp.get(e.id);
+    if (old != null && e.hp < old && e.kind !== KIND.LOOT_GROUND && e.kind !== KIND.ENTRANCE) {
+      recordHit(e, old - e.hp, e.id === localEntityId, e.kind === KIND.ENEMY || e.kind === KIND.BOSS);
+    }
   }
 
-  // 插值缓冲（保留最近 10 帧；实体按 id 建 Map 便于 lerp）
+  // C2 击杀检测：上一帧在、本帧消失的敌人/BOSS → 粒子爆散 + E2E lastKills
+  const newIds = new Set(snap.entities.map((e) => e.id));
+  for (const [id] of prevHp) {
+    if (!newIds.has(id)) {
+      const gone = lastKnown.get(id);
+      if (gone && (gone.ent.kind === KIND.ENEMY || gone.ent.kind === KIND.BOSS)) {
+        spawnKillFx(gone.ent.pos.x, gone.ent.pos.y, gone.ent.kind === KIND.BOSS);
+      }
+    }
+  }
+  prevHp = new Map();
+  for (const e of snap.entities) prevHp.set(e.id, e.hp);
+
+  // 插值缓冲（环缓冲，最多 BUF_MAX 帧；实体按 id 建 Map 便于 lerp）
   const emap = new Map();
   for (const e of snap.entities) emap.set(e.id, e);
   snapBuffer.push({ tick: snap.tick, entities: emap });
-  if (snapBuffer.length > 10) snapBuffer.shift();
+  if (snapBuffer.length > BUF_MAX) snapBuffer.shift();
 
   // 消失实体淡出
   const seen = new Set(emap.keys());
@@ -441,6 +602,43 @@ function handleSnapshot(snap) {
   for (const e of snap.entities) lastKnown.set(e.id, { ent: e, alpha: 1 });
 
   updateHud();
+}
+
+// ── C2 打击感：伤害飘字 / 闪白 / 扩散环 / 格挡反馈 / E2E 钩子 ──
+function recordHit(e, dmg, isLocal, isEnemy) {
+  const t = performance.now();
+  const color = isLocal ? '#ff5a5a' : (isEnemy ? '#ffd27d' : '#ffffff');
+  floatTexts.push({ x: e.pos.x, y: e.pos.y - 22, text: '-' + dmg, color, born: t, ttl: 1000, vy: -30 });
+  hitFlashes.set(e.id, t + 150); // 150ms 闪白
+  rings.push({ x: e.pos.x, y: e.pos.y, color, born: t, ttl: 220, r0: 8, r1: isLocal ? 34 : 30 });
+
+  // E2E 钩子：最近飘字
+  GAME.lastHits.push({ id: e.id, dmg, kind: e.kind, t });
+  if (GAME.lastHits.length > 30) GAME.lastHits.shift();
+
+  if (isLocal && GAME.parryActive) {
+    // 格挡生效（受击时 parry 窗口激活）→ 「格挡！」+ 盾闪
+    floatTexts.push({ x: e.pos.x, y: e.pos.y - 48, text: '格挡！', color: '#5fd0e0', born: t, ttl: 900, vy: -24 });
+    parryFx.until = t + 400;
+    rings.push({ x: e.pos.x, y: e.pos.y, color: '#5fd0e0', born: t, ttl: 300, r0: 20, r1: 46 });
+  }
+  // 技能命中叠加闪光（刚放技能且附近敌人受击）
+  if (isEnemy && t - GAME.lastSkillAt < 600) {
+    rings.push({ x: e.pos.x, y: e.pos.y, color: '#fff2d0', born: t, ttl: 200, r0: 4, r1: 26 });
+  }
+}
+
+function spawnKillFx(x, y, isBoss) {
+  const parts = [];
+  const n = isBoss ? 12 : 7;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + Math.random() * 0.6;
+    const sp = 42 + Math.random() * 70;
+    parts.push({ dx: Math.cos(a) * sp, dy: Math.sin(a) * sp, size: 3 + Math.random() * 4, color: isBoss ? '#e5b25d' : '#e5484d' });
+  }
+  killFx.push({ x, y, parts, born: performance.now(), ttl: 260 });
+  GAME.lastKills.push({ x, y, isBoss, t: performance.now() });
+  if (GAME.lastKills.length > 20) GAME.lastKills.shift();
 }
 
 // ============================================================================
@@ -530,7 +728,6 @@ function sendMove(dir) {
 }
 
 // 松开移动键 → 显式 STOP（协议缺口修复，P0）：服务端清 lastMove 立即停，不再惯性滑行。
-// 幂等：未在移动（lastMoveDir === null）直接返回，不空发网络包。
 function sendStop() {
   if (lastMoveDir == null) return;
   sendCmd({ action: ACTION_STOP, dir: lastMoveDir });
@@ -538,10 +735,20 @@ function sendStop() {
 }
 
 function sendParry() { sendCmd({ action: 1, dir: lastMoveDir ?? 0 }); }
-function sendSkill(slot) { sendCmd({ action: SKILL_ACTIONS[slot] ?? 2, skillSlot: slot, dir: lastMoveDir ?? 0 }); }
+
+// C2：技能释放 → 立即本地技能光效（朝向扇形闪光 0.3s 淡出）+ E2E lastSkillAt
+function sendSkill(slot) {
+  sendCmd({ action: SKILL_ACTIONS[slot] ?? 2, skillSlot: slot, dir: lastMoveDir ?? 0 });
+  const d = dirFromKeys() ?? lastMoveDir ?? 0;
+  const base = predicted || (localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId).pos : { x: 0, y: 0 });
+  skillFx.push({ x: base.x, y: base.y, dir: d, color: 'rgba(255,179,71,1)', born: performance.now(), ttl: SKILL_FX_TTL, radius: SKILL_FX_RADIUS });
+  GAME.lastSkillAt = performance.now();
+}
+
+// SIGNAL(6)：靠近掉落按 F 的拾取意图（服务端为重叠自动拾取，此动作服务端忽略，仅表现/占位）
+function sendSignal() { sendCmd({ action: 6, dir: lastMoveDir ?? 0 }); }
 
 // 12Hz 输入循环：按住方向持续发 MOVE（服务端 lastMove 语义）；松开/无有效方向 → 兜底发 STOP
-// （keyup/blur 已即时发 STOP，此处覆盖 keyup 丢失的边缘情况；lastMoveDir===null 时幂等不发）。
 function startInputLoop() {
   if (inputTimer) clearInterval(inputTimer);
   inputTimer = setInterval(() => {
@@ -570,7 +777,12 @@ window.addEventListener('keydown', (e) => {
   if (e.code === 'Digit2') fireAction(() => sendSkill(1));
   if (e.code === 'Digit3') fireAction(() => sendSkill(2));
   if (e.code === 'Digit4') fireAction(() => sendSkill(3));
-  if (e.code === 'KeyF') fireAction(toggleDungeon);
+  if (e.code === 'KeyI') { e.preventDefault(); toggleInventory(); }
+  // F：副本内 → 出本优先；主世界靠近掉落 → 拾取意图（SIGNAL，服务端忽略；走近重叠即自动拾取）；否则进/出本
+  if (e.code === 'KeyF') fireAction(() => {
+    if (state === 'dungeon') { exitDungeon(); return; }
+    if (nearLootId != null) sendSignal(); else toggleDungeon();
+  });
 });
 window.addEventListener('keyup', (e) => {
   keys.delete(e.code);
@@ -589,7 +801,6 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 window.addEventListener('beforeunload', () => {
-  // 尽力而为：断连前补发一次 STOP（ws close 后服务端也会在 grace 后清玩家，这里是双保险）。
   if (lastMoveDir != null && ws && ws.readyState === 1) {
     try {
       sendJson({
@@ -601,12 +812,14 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
-// 技能/格挡按钮
+// 技能/格挡/背包按钮
 for (let i = 0; i < 4; i++) {
   document.getElementById('btn-skill-' + i).addEventListener('click', () => fireAction(() => sendSkill(i)));
 }
 document.getElementById('btn-parry').addEventListener('click', () => fireAction(sendParry));
 dungeonBtn.addEventListener('click', toggleDungeon);
+invBtn.addEventListener('click', toggleInventory);
+document.getElementById('inv-close').addEventListener('click', closeInventory);
 
 // 进副本 / 出本
 function enterDungeon() {
@@ -619,12 +832,47 @@ function toggleDungeon() {
   if (state === 'dungeon') { exitDungeon(); return; }
   if (state !== 'overworld') return;
   if (DEBUG) { enterDungeon(); return; }
-  // UX：非 debug 模式需靠近裂隙入口（服务端只校验冷却/主世界，此处是客户端门槛）
   const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
   const ent = lastSnapshot ? lastSnapshot.entities.find((e) => e.kind === KIND.ENTRANCE) : null;
   const ep = ent ? ent.pos : ENTRANCE_POS;
   if (me && Math.hypot(me.pos.x - ep.x, me.pos.y - ep.y) <= ENTRANCE_ENTER_RADIUS) enterDungeon();
   else toast('请先靠近裂隙入口');
+}
+
+// ============================================================================
+// 背包面板（C2）：按 I / HUD 按钮开关；character.inventory 推送实时刷新 + 打开拉全量
+// ============================================================================
+function openInventory() {
+  invOpen = true; GAME.invOpen = true;
+  invPanelEl.classList.add('open');
+  invBtn.classList.add('on');
+  sendJson({ type: 'character.inventory.get', requestId: 'inv' + (invSeq++) }); // 打开拉全量
+  renderInventory();
+}
+function closeInventory() {
+  invOpen = false; GAME.invOpen = false;
+  invPanelEl.classList.remove('open');
+  invBtn.classList.remove('on');
+}
+function toggleInventory() { invOpen ? closeInventory() : openInventory(); }
+
+function renderInventory() {
+  invCountEl.textContent = inventory.items.length + '/' + inventory.cap;
+  if (inventory.items.length === 0) {
+    invGridEl.innerHTML = '<div id="inv-empty">空</div>';
+    return;
+  }
+  invGridEl.innerHTML = '';
+  for (const it of inventory.items) {
+    const color = RARITY_COLORS[it.rarity] || '#D8D2C4';
+    const cell = document.createElement('div');
+    cell.className = 'inv-cell';
+    cell.style.borderColor = color;
+    const short = '#' + (it.itemId % 0x10000).toString(16).toUpperCase().padStart(4, '0');
+    const aff = it.affixes.length > 0 ? '词缀×' + it.affixes.length : '无词缀';
+    cell.innerHTML = `<div class="inv-id">${short}</div><div class="inv-meta" style="color:${color}">${RARITY_NAMES[it.rarity] || '?'} · ${aff}</div>`;
+    invGridEl.appendChild(cell);
+  }
 }
 
 // 调试钩子（?debug=1 时暴露给 E2E）
@@ -634,6 +882,10 @@ if (DEBUG) {
   GAME.sendMove = sendMove;
   GAME.sendSkill = sendSkill;
   GAME.sendParry = sendParry;
+  GAME.toggleInventory = toggleInventory;
+  GAME.openInventory = openInventory;
+  GAME.closeInventory = closeInventory;
+  GAME.sendSignal = sendSignal;
 }
 
 // ============================================================================
@@ -646,21 +898,19 @@ function worldToScreen(p) {
   };
 }
 
-// 插值：renderTick 时刻的实体位置（INTERP_DELAY_MS 缓冲 lerp；本地玩家同样走插值，
-// 无预测回正 —— 100ms 延迟即「手感待调」已知限制，Phase-2 再做本地预测）。
-let renderTick = 0;
-function interpPos(id) {
+// C2 远端实体插值：10 帧环缓冲，renderTime = 最新 tick - INTERP_TICKS 双快照 lerp
+function interpPos(id, t) {
   let a = null, b = null;
   for (let i = snapBuffer.length - 1; i >= 0; i--) {
     const s = snapBuffer[i];
     const ent = s.entities.get(id);
     if (!ent) continue;
-    if (s.tick <= renderTick) { a = { tick: s.tick, pos: ent.pos }; break; }
+    if (s.tick <= t) { a = { tick: s.tick, pos: ent.pos }; break; }
     b = { tick: s.tick, pos: ent.pos };
   }
   if (a && b) {
     const span = Math.max(1, b.tick - a.tick);
-    const f = Math.min(1, Math.max(0, (renderTick - a.tick) / span));
+    const f = Math.min(1, Math.max(0, (t - a.tick) / span));
     return { x: a.pos.x + (b.pos.x - a.pos.x) * f, y: a.pos.y + (b.pos.y - a.pos.y) * f };
   }
   if (a) return { x: a.pos.x, y: a.pos.y };
@@ -669,8 +919,18 @@ function interpPos(id) {
   return rec ? { x: rec.ent.pos.x, y: rec.ent.pos.y } : null;
 }
 
+// 实体渲染位置：本地 → 预测坐标；远端 → renderTime 插值
+function renderPosFor(e) {
+  if (e.id === localEntityId && predicted) return { x: predicted.x, y: predicted.y };
+  return interpPos(e.id, renderTime);
+}
+
 function draw() {
   requestAnimationFrame(draw);
+  const t = performance.now();
+  const dt = Math.min(0.05, (t - lastFrameT) / 1000);
+  lastFrameT = t;
+
   if (!lastSnapshot) {
     ctx.fillStyle = '#14161c';
     ctx.fillRect(0, 0, view.w, view.h);
@@ -680,13 +940,32 @@ function draw() {
     return;
   }
 
-  // 渲染 tick = 最新 tick - INTERP_DELAY（100ms ≈ 1.2 tick）
-  renderTick = lastSnapshot.tick - INTERP_DELAY_MS / tickMs;
+  // C2 远端渲染 tick = 最新 tick - INTERP_TICKS（≈250ms @12Hz）
+  renderTime = lastSnapshot.tick - INTERP_TICKS;
+  GAME.renderTick = renderTime;
 
-  // 相机跟随本地玩家（插值位置）
-  if (view.follow && localEntityId != null) {
-    const p = interpPos(localEntityId) || (lastSnapshot.entities.find((e) => e.id === localEntityId) || {}).pos;
-    if (p) { view.cx = p.x; view.cy = p.y; }
+  // C2 本地预测：按键 → 渲染位置立即推进（帧率无关，按 PLAYER_SPEED*dt；仅渲染层）
+  if (predicted && (state === 'overworld' || state === 'dungeon')) {
+    const d = dirFromKeys();
+    if (d != null) {
+      const v = DIR_VECTORS[d];
+      predicted.x += v.x * PLAYER_SPEED * dt;
+      predicted.y += v.y * PLAYER_SPEED * dt;
+      // 世界边界 clamp（近似；墙内由 RECONCILE_FACTOR 每快照收敛回正）
+      predicted.x = Math.max(8, Math.min(WORLD_W - 8, predicted.x));
+      predicted.y = Math.max(8, Math.min(WORLD_H - 8, predicted.y));
+    }
+  }
+  GAME.predicted = predicted ? { x: predicted.x, y: predicted.y } : null;
+  GAME.localRenderPos = predicted ? { x: predicted.x, y: predicted.y } : null;
+
+  // 相机跟随本地玩家（预测位置 → 按键即时动，手感优先）
+  if (view.follow) {
+    if (predicted) { view.cx = predicted.x; view.cy = predicted.y; }
+    else if (localEntityId != null) {
+      const p = interpPos(localEntityId, renderTime);
+      if (p) { view.cx = p.x; view.cy = p.y; }
+    }
   }
   const camX = view.cx, camY = view.cy;
 
@@ -703,6 +982,7 @@ function draw() {
   drawEntities();
 
   ctx.restore();
+  drawFx();
   drawMinimap(camX, camY);
 }
 
@@ -747,7 +1027,6 @@ function drawPlayer(e, p) {
   const s = worldToScreen(p);
   if (s.x < -60 || s.y < -60 || s.x > view.w + 60 || s.y > view.h + 60) return;
 
-  // 朝向指示
   const ang = e.dir * Math.PI / 4;
   const facing = { x: Math.cos(ang), y: Math.sin(ang) };
 
@@ -760,6 +1039,14 @@ function drawPlayer(e, p) {
   ctx.lineWidth = isLocal ? 2.5 : 1.5;
   roundRect(-size / 2, -size / 2, size, size, 6);
   ctx.fill(); ctx.stroke();
+
+  // C2 受击闪白（150ms）
+  const flashUntil = hitFlashes.get(e.id);
+  if (flashUntil && performance.now() < flashUntil) {
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    roundRect(-size / 2, -size / 2, size, size, 6);
+    ctx.fill();
+  }
 
   // 朝向点
   ctx.fillStyle = '#fff';
@@ -794,6 +1081,14 @@ function drawPlayer(e, p) {
   }
   ctx.restore();
 
+  // C2 格挡中提示（本地玩家，parry 窗口）
+  if (isLocal && e.parryState && e.parryState.active) {
+    ctx.fillStyle = '#5fd0e0';
+    ctx.font = 'bold 11px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText('格挡中', s.x, s.y - size / 2 - 20);
+  }
+
   drawHpBar(s.x, s.y, isLocal ? 44 : 38, e.hp, e.maxHp, true);
 }
 
@@ -807,7 +1102,6 @@ function drawEnemy(e, p) {
   ctx.save();
   ctx.translate(s.x, s.y);
 
-  // 身体（圆形；BOSS 多层 + 金环）
   const ang = e.dir * Math.PI / 4;
   const facing = { x: Math.cos(ang), y: Math.sin(ang) };
   if (isBoss) {
@@ -829,6 +1123,14 @@ function drawEnemy(e, p) {
       ctx.beginPath(); ctx.arc(0, 0, size / 2 + 4, 0, Math.PI * 2); ctx.stroke();
     }
   }
+
+  // C2 受击闪白（150ms）
+  const flashUntil = hitFlashes.get(e.id);
+  if (flashUntil && performance.now() < flashUntil) {
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2); ctx.fill();
+  }
+
   // 朝向点
   ctx.fillStyle = 'rgba(255,255,255,0.9)';
   ctx.beginPath();
@@ -837,42 +1139,70 @@ function drawEnemy(e, p) {
   ctx.restore();
 
   drawHpBar(s.x, s.y, isBoss ? 72 : (isElite ? 48 : 38), e.hp, e.maxHp, true);
-  // tier 标签
   if (isBoss) { ctx.fillStyle = '#e5b25d'; ctx.font = '10px system-ui'; ctx.textAlign = 'center'; ctx.fillText('BOSS', s.x, s.y - 40); }
   else if (isElite) { ctx.fillStyle = '#5fd0e0'; ctx.font = '9px system-ui'; ctx.textAlign = 'center'; ctx.fillText('精英', s.x, s.y - 26); }
 }
 
 function drawLoot(e, p) {
   const s = worldToScreen(p);
-  if (s.x < -40 || s.y < -40 || s.x > view.w + 40 || s.y > view.h + 40) return;
+  if (s.x < -60 || s.y < -60 || s.x > view.w + 60 || s.y > view.h + 60) return;
   const rarity = e.loot ? e.loot.rarity : 0;
   const color = RARITY_COLORS[rarity] || '#D8D2C4';
-  const r = 9;
+  const t = performance.now() / 1000;
+  const pulse = 0.62 + 0.28 * Math.sin(t * 3.2); // 轻微脉动（alpha 呼吸）
 
-  // 漂浮光晕 + 菱形
   ctx.save();
   ctx.translate(s.x, s.y);
-  ctx.shadowColor = color; ctx.shadowBlur = 8;
+
+  // C2 稀有度光柱（地面向上竖条，alpha 呼吸）
+  const pillarH = 58 + pulse * 10;
+  const pillarW = 10 + pulse * 3;
+  const grad = ctx.createLinearGradient(0, -pillarH, 0, 0);
+  grad.addColorStop(0, hexA(color, 0));
+  grad.addColorStop(0.25, hexA(color, 0.65 * pulse));
+  grad.addColorStop(1, hexA(color, 0.35 * pulse));
+  ctx.fillStyle = grad;
+  ctx.fillRect(-pillarW / 2, -pillarH, pillarW, pillarH);
+
+  // 底部光晕
+  ctx.globalAlpha = 0.5 * pulse;
+  const bg = ctx.createRadialGradient(0, 0, 2, 0, 0, 22);
+  bg.addColorStop(0, hexA(color, 0.9));
+  bg.addColorStop(1, hexA(color, 0));
+  ctx.fillStyle = bg;
+  ctx.beginPath(); ctx.arc(0, 0, 22, 0, Math.PI * 2); ctx.fill();
+
+  // 菱形核心（漂浮光晕）
+  ctx.globalAlpha = 1;
+  ctx.shadowColor = color; ctx.shadowBlur = 10;
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.moveTo(0, -r); ctx.lineTo(r, 0); ctx.lineTo(0, r); ctx.lineTo(-r, 0);
+  ctx.moveTo(0, -9); ctx.lineTo(9, 0); ctx.lineTo(0, 9); ctx.lineTo(-9, 0);
   ctx.closePath(); ctx.fill();
   ctx.shadowBlur = 0;
-  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
   ctx.beginPath(); ctx.arc(0, 0, 2.5, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 
-  // 稀有度名 + itemId
-  ctx.fillStyle = color;
-  ctx.font = '10px system-ui';
+  // C2 名字放大 + 描边 + 脉动
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, pulse + 0.15);
+  ctx.font = 'bold 12px system-ui';
   ctx.textAlign = 'center';
-  ctx.fillText((RARITY_NAMES[rarity] || '?') + ' ' + (e.loot ? e.loot.itemId : ''), s.x, s.y + 24);
-  // TTL 微提示
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(10,12,16,0.9)';
+  const label = (RARITY_NAMES[rarity] || '?') + ' ' + (e.loot ? e.loot.itemId : '');
+  ctx.strokeText(label, s.x, s.y + 26);
+  ctx.fillStyle = color;
+  ctx.fillText(label, s.x, s.y + 26);
   if (e.loot && e.loot.ttlTicks != null) {
-    ctx.fillStyle = 'rgba(200,200,210,0.55)';
-    ctx.font = '8px system-ui';
-    ctx.fillText((e.loot.ttlTicks / TICK_RATE).toFixed(0) + 's', s.x, s.y + 34);
+    ctx.font = '9px system-ui';
+    const ttl = (e.loot.ttlTicks / TICK_RATE).toFixed(0) + 's';
+    ctx.strokeText(ttl, s.x, s.y + 38);
+    ctx.fillStyle = 'rgba(210,210,220,0.75)';
+    ctx.fillText(ttl, s.x, s.y + 38);
   }
+  ctx.restore();
 }
 
 function drawEntrance(e, p) {
@@ -905,7 +1235,6 @@ function drawEntrance(e, p) {
   ctx.font = '11px system-ui';
   ctx.textAlign = 'center';
   ctx.fillText(near ? '裂隙入口（按 F）' : '裂隙入口', s.x, s.y - 30);
-  // 冷却提示
   if (e.entrance && e.entrance.cooldownTicks > 0) {
     const left = e.entrance.cooldownTicks - (GAME.lastTick - e.entrance.lastUsedTick);
     if (left > 0) {
@@ -941,7 +1270,7 @@ function drawTelegraphs() {
   if (!lastSnapshot) return;
   for (const e of lastSnapshot.entities) {
     if (e.kind !== KIND.TELEGRAPH) continue;
-    const p = interpPos(e.id) || e.pos;
+    const p = renderPosFor(e) || e.pos;
     if (p) drawTelegraph(e, p);
   }
 }
@@ -953,9 +1282,38 @@ function drawEntities() {
     if (e.kind !== KIND.ENTRANCE) continue;
     drawEntrance(e, e.pos);
   }
+
+  // C2 拾取提示：最近 LOOT_GROUND ≤ 1.5×TILE → 「按 F 拾取」（服务端重叠自动拾取，走近即拾取）
+  nearLootId = null; GAME.nearLootId = null; GAME.pickupHint = '';
+  const mePos = predicted || (localEntityId != null ? (lastSnapshot.entities.find((e) => e.id === localEntityId) || {}).pos : null);
+  if (mePos) {
+    let bestLoot = null, bestD = Infinity;
+    for (const e of lastSnapshot.entities) {
+      if (e.kind !== KIND.LOOT_GROUND) continue;
+      const d = Math.hypot(e.pos.x - mePos.x, e.pos.y - mePos.y);
+      if (d < bestD) { bestD = d; bestLoot = e; }
+    }
+    if (bestLoot && bestD <= PICKUP_HINT_RADIUS) {
+      nearLootId = bestLoot.id;
+      GAME.nearLootId = nearLootId;
+      GAME.pickupHint = '按 F 拾取';
+      const lp = interpPos(bestLoot.id, renderTime) || bestLoot.pos;
+      const ls = worldToScreen(lp);
+      ctx.save();
+      ctx.font = 'bold 12px system-ui';
+      ctx.textAlign = 'center';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(10,12,16,0.9)';
+      ctx.strokeText('按 F 拾取', ls.x, ls.y - 42);
+      ctx.fillStyle = '#ffd27d';
+      ctx.fillText('按 F 拾取', ls.x, ls.y - 42);
+      ctx.restore();
+    }
+  }
+
   for (const e of lastSnapshot.entities) {
     if (e.kind === KIND.ENTRANCE) continue;
-    const p = interpPos(e.id) || e.pos;
+    const p = renderPosFor(e) || e.pos;
     if (!p) continue;
     if (e.kind === KIND.PLAYER) drawPlayer(e, p);
     else if (e.kind === KIND.ENEMY || e.kind === KIND.BOSS) drawEnemy(e, p);
@@ -972,6 +1330,108 @@ function drawEntities() {
       ctx.globalAlpha = Math.max(0, rec.alpha);
       if (rec.ent.kind === KIND.LOOT_GROUND) { drawLoot(rec.ent, p); }
       else if (rec.ent.kind === KIND.ENEMY || rec.ent.kind === KIND.BOSS) { drawEnemy(rec.ent, p); }
+      ctx.restore();
+    }
+  }
+}
+
+// C2 表现层特效（飘字 / 命中环 / 技能光效 / 击杀粒子）— 屏幕空间绘制
+function drawFx() {
+  const t = performance.now();
+
+  // 伤害飘字（1s 淡出上飘）
+  for (let i = floatTexts.length - 1; i >= 0; i--) {
+    const f = floatTexts[i];
+    const age = t - f.born;
+    if (age > f.ttl) { floatTexts.splice(i, 1); continue; }
+    const k = age / f.ttl;
+    const s = worldToScreen({ x: f.x, y: f.y + f.vy * age / 1000 });
+    ctx.save();
+    ctx.globalAlpha = 1 - k * k;
+    ctx.font = 'bold 15px system-ui';
+    ctx.textAlign = 'center';
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+    ctx.strokeText(f.text, s.x, s.y);
+    ctx.fillStyle = f.color;
+    ctx.fillText(f.text, s.x, s.y);
+    ctx.restore();
+  }
+
+  // 命中/格挡扩散环
+  for (let i = rings.length - 1; i >= 0; i--) {
+    const r = rings[i];
+    const age = t - r.born;
+    if (age > r.ttl) { rings.splice(i, 1); continue; }
+    const k = age / r.ttl;
+    const s = worldToScreen({ x: r.x, y: r.y });
+    ctx.save();
+    ctx.globalAlpha = (1 - k) * 0.9;
+    ctx.strokeStyle = r.color;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, r.r0 + (r.r1 - r.r0) * k, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 技能光效（玩家放技能方向扇形闪光，0.3s 淡出）
+  for (let i = skillFx.length - 1; i >= 0; i--) {
+    const fx = skillFx[i];
+    const age = t - fx.born;
+    if (age > fx.ttl) { skillFx.splice(i, 1); continue; }
+    const k = age / fx.ttl;
+    const s = worldToScreen({ x: fx.x, y: fx.y });
+    const ang = fx.dir * Math.PI / 4;
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.rotate(ang);
+    ctx.globalAlpha = (1 - k) * 0.55;
+    const grad = ctx.createRadialGradient(0, 0, 4, 0, 0, fx.radius);
+    grad.addColorStop(0, 'rgba(255,255,255,0.95)');
+    grad.addColorStop(0.4, fx.color);
+    grad.addColorStop(1, 'rgba(255,140,66,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, fx.radius, -0.62, 0.62);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // 击杀粒子（6-12 个小方块，200ms 淡出四散）
+  for (let i = killFx.length - 1; i >= 0; i--) {
+    const fx = killFx[i];
+    const age = t - fx.born;
+    if (age > fx.ttl) { killFx.splice(i, 1); continue; }
+    const k = age / fx.ttl;
+    for (const p of fx.parts) {
+      const s = worldToScreen({ x: fx.x + p.dx * k, y: fx.y + p.dy * k });
+      ctx.save();
+      ctx.globalAlpha = 1 - k;
+      ctx.fillStyle = p.color;
+      ctx.translate(s.x, s.y);
+      ctx.rotate(p.dx * k * 0.1);
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+      ctx.restore();
+    }
+  }
+
+  // 格挡成功盾闪（本地玩家，受击时 parry 生效）
+  if (parryFx.until > t) {
+    const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+    const base = predicted || (me ? me.pos : null);
+    if (base) {
+      const s = worldToScreen(base);
+      const k = 1 - (parryFx.until - t) / 400;
+      ctx.save();
+      ctx.globalAlpha = (1 - k) * 0.8;
+      ctx.strokeStyle = '#5fd0e0';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 26 + k * 18, 0, Math.PI * 2);
+      ctx.stroke();
       ctx.restore();
     }
   }
@@ -1015,6 +1475,13 @@ function roundRect(x, y, w, h, r) {
   ctx.arcTo(x, y + h, x, y, r);
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
+}
+
+// hex → rgba(...,a) 辅助（稀有度色光柱渐变）
+function hexA(hex, a) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
 }
 
 // ── 启动 ──

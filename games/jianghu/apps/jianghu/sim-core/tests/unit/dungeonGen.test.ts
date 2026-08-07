@@ -60,8 +60,8 @@ test("DungeonSpec zones are valid SpawnZone shapes (tier 0|1|2, count>0)", () =>
     assert.ok(typeof z.enemyTypeId === "string" && z.enemyTypeId.length > 0);
     assert.ok(Number.isFinite(z.pos.x) && Number.isFinite(z.pos.y));
   }
-  // 副本刷怪密度 ×1.5 标注（spawning.md §⑥）。
-  assert.equal(spec.spawnDensityMultiplier, 1.5);
+  // 副本刷怪密度 ×1.2 标注（E6 调低：1.5→1.2，spawning.md §⑥）。
+  assert.equal(spec.spawnDensityMultiplier, 1.2);
 });
 
 test("different biome → different layout (biome participates in seed stream)", () => {

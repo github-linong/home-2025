@@ -21,19 +21,25 @@ import {
   TILE,
   RESPAWN_POS,
   DUNGEON_EXPIRE_MS,
+  INVENTORY_CAP, // E6：背包数据通道 cap（C7 单一来源）
 } from "../sim-core/src/constants.ts"; // C7 单一来源
 import type { SpawnZone } from "../sim-core/src/spawning.ts";
 import { computeInstanceSeed, buildDungeonSpec } from "../sim-core/src/dungeonGen.ts"; // C7/D9/C-Dgn-1
 import { startRunLoop, type RunLoopHandle } from "./run-runtime.ts";
 import { encodeSnapshot } from "./protocol-binary.ts";
-import { broadcastData, setRoom, activeUserConn } from "./connection-registry.ts";
+import {
+  broadcastData,
+  setRoom,
+  activeUserConn,
+  sendToConn, // E6：背包数据通道（控制面推送）
+} from "./connection-registry.ts";
 import {
   getRoom,
   createInstanceRoom,
   destroyRoom,
   RESIDENT_ROOM_ID,
 } from "./room-service.ts";
-import type { CharacterService, InventoryItem } from "./persistence.ts";
+import type { CharacterService, InventoryItem, Inventory } from "./persistence.ts";
 import { addItem, toGroundLoot } from "./inventory.ts";
 import type { LootResult } from "../sim-core/src/loot.ts";
 import { generateId } from "./ids.ts";
@@ -330,10 +336,34 @@ const GRID_W_PX = 40 * TILE;
 const GRID_H_PX = 30 * TILE;
 
 /**
+ * E6：背包数据通道（控制面）。拾取入库成功后，向该 seatId 对应连接推送
+ * `{ type: "character.inventory", items, cap }`（登录玩家；游客不经过本函数，C-Per-1 零持久写）。
+ * seatId → userId（CharacterService.getSeatInfo）→ connId（activeUserConn）→ sendToConn。
+ * C6：run-manager → connection-registry（叶子），方向合法；不反向被 sim-core import。
+ */
+export function pushInventoryToSeat(seatId: number, inventory: Inventory): void {
+  const cs = activeCharacterService;
+  const info = cs?.getSeatInfo(seatId);
+  if (!info) return; // 座位未登记（未知 seatId）→ 忽略
+  const connId = activeUserConn.get(info.userId);
+  if (!connId) return; // 该用户当前无连接（离线）→ 忽略（重连时经 character.inventory.get 拉取）
+  sendToConn(connId, {
+    type: "character.inventory",
+    items: inventory.items.map((i) => ({
+      itemId: i.itemId,
+      rarity: i.rarity,
+      affixes: [...i.affixes],
+    })),
+    cap: INVENTORY_CAP,
+  });
+}
+
+/**
  * E4 服务端背包接线（尽力项，C-Per-3 闭环）：把一次拾取应用到登录玩家背包。
  * - 经 CharacterService.loadOrCreate 取角色快照（含背包）；
  * - inventory.addItem：未满则入库，满 → 返回溢出物品；
  * - 溢出 → inventory.toGroundLoot（带 ttlTicks）→ world.spawnGroundLoot 落回玩家脚下地面（TTL 自动消失）。
+ * - E6：入库成功后经 pushInventoryToSeat 向该 seat 连接推送 character.inventory（控制面背包面板）。
  *
  * 调用方（默认 run-manager.handlePickup 接线 / 自定义 onPickup）应在 onPickup 回调内对「登录玩家」
  * 调用本函数；游客不入库（C-Per-1），直接忽略（handlePickup 经 getSeatInfo 判定）。
@@ -353,4 +383,6 @@ export async function applyPickupToInventory(
     // 背包满 → 溢出落脚下地面（C-Per-3）。
     world.spawnGroundLoot(seatId, toGroundLoot(overflow));
   }
+  // E6：拾取入库成功 → 控制面推送背包（登录玩家；游客不经过本函数，C-Per-1）。
+  pushInventoryToSeat(seatId, inventory);
 }

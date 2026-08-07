@@ -52,6 +52,7 @@ const {
   LOOT_GROUND_TTL_TICKS,
   BOSS_PHASE_THRESHOLD,
   SKILL_DAMAGE,
+  SKILL_CD_BY_SLOT, // E6：BOSS 战 poke 用（slot3 cd=96，C7 单一来源）
 } = constants;
 const { computeInstanceSeed } = dungeonGen;
 const {
@@ -70,9 +71,14 @@ const SEED = "JIANGHU-S1";
 const PARTY = "PLAYER1";
 const ENTRANCE_ID = 1;
 const SEAT = 1;
-/** 锁定 golden：首次实跑取得 hash 后回填；非 null 时额外断言两次运行均 == 此值。 */
+/** 锁定 golden：首次实跑取得 hash 后回填；非 null 时额外断言两次运行均 == 此值。
+ *  E6 重锁说明（2026-08）：敌人类别 + 密度调整（DUNGEON_SPAWN_DENSITY 1.5→1.2 + count 区间 2..4→1..3）
+ *  改变副本实例的敌人数量 → simRng 散点/掉装流在 BOSS 死亡前被消费的序列变化 → BOSS 掉装
+ *  （金/暗金 itemId+词缀）改变 → journal 哈希变化。普通怪场景（③④⑤/副本普通怪）与 BOSS
+ *  hpSeq/phaseSeen 均与旧 golden 一致，仅 boss.drop 变化。属需求驱动重锁（报告已说明）。
+ */
 const GOLDEN_PLAYTEST_HASH =
-  "fb383df88bd8cb85deaabc9c6c3fd6bb8b1138ab4f65a10302ef1419ce5a12f4";
+  "1e7b798827a744bf7aa4a163b00cc285d6223c1c064878e92ffb6a81b3c079a4";
 
 // ---------------------------------------------------------------- 结果收集
 const checks = [];
@@ -162,6 +168,62 @@ function fightUntilDead(w, seqState, enemyId, slot, maxTicks) {
     if (hpNow !== hpBefore) hpChanges.push(hpNow);
     if (e2 && e2.kind === EntityKind.BOSS && e2.bossPhase === 1 && phaseSeen === null) {
       phaseSeen = hpNow;
+    }
+  }
+  return { died, hpChanges, phaseSeen };
+}
+
+/**
+ * E6 BOSS 战（aggressive BOSS 适配）：teleport-poke。
+ * BOSS（tier 2）默认 aggressive —— 会索敌追击 + 接触攻击（80 dmg/12tick），站桩会被击杀。
+ * 本函数每 96 tick 周期：把 BOSS 与玩家瞬移到固定角落 → 施放 SKILL（cd 命中即开火）
+ * → 玩家瞬移出仇恨半径（BOSS IDLE）→ 等 cd 走完。全程玩家不进入接触范围 → 不受伤害，
+ * 技能节奏与站桩版一致（cd 闸门 96 tick/发）→ hpSeq/phaseSeen 与锁定 golden 结构相同；
+ * 仅 BOSS 掉落（simRng 流，随 E6 密度调整变化）需重锁 golden（见报告说明）。
+ * 注：依赖 ENEMY_MOVE_SPEED=8px/tick < 12px/tick（接触 48px 内一 tick 内不被追进），
+ *     若未来敌人速度上调超过 12px/tick，需同步调整本函数的开火间距。
+ */
+function bossFightPoke(w, seqState, bossId, slot, maxTicks) {
+  const corner = { x: 3 * TILE, y: 26 * TILE }; // corner 2（与旧版一致）
+  const park = { x: -10 * TILE, y: -10 * TILE }; // 地图外停车位：任何敌人距其 >240px → BOSS IDLE
+  const cd = SKILL_CD_BY_SLOT[slot]; // slot3 cd=96
+  let died = false;
+  let hpChanges = [];
+  let phaseSeen = null;
+  let ticks = 0;
+  while (ticks < maxTicks && !died) {
+    const e = w.actors().find((a) => a.id === bossId);
+    if (!e || e.hp <= 0) {
+      died = true;
+      break;
+    }
+    const player = findPlayer(w, SEAT);
+    if (!player) break;
+    // ① 瞬移到固定角落：BOSS 在 corner，玩家在 corner+60（技能射程 72 内、接触 48 外）。
+    e.x = corner.x;
+    e.y = corner.y;
+    player.x = corner.x + 60;
+    player.y = corner.y;
+    const hpBefore = e.hp;
+    seqState.n += 1;
+    w.enqueueInput(SEAT, { seq: seqState.n, tick: 0, action: InputAction.SKILL1 + slot, dir: 0 });
+    w.step();
+    const e2 = w.actors().find((a) => a.id === bossId);
+    const hpNow = e2 ? e2.hp : 0;
+    if (hpNow !== hpBefore) hpChanges.push(hpNow);
+    if (e2 && e2.kind === EntityKind.BOSS && e2.bossPhase === 1 && phaseSeen === null) {
+      phaseSeen = hpNow;
+    }
+    ticks++;
+    // ② 命中后（cd 已重置为 96）：玩家瞬移出仇恨半径 → BOSS IDLE → 等 cd 走完（95 tick 后归零）。
+    if (hpNow !== hpBefore && hpNow > 0) {
+      const p2 = findPlayer(w, SEAT);
+      p2.x = park.x;
+      p2.y = park.y;
+      for (let i = 0; i < cd - 1 && ticks < maxTicks; i++) {
+        w.step();
+        ticks++;
+      }
     }
   }
   return { died, hpChanges, phaseSeen };
@@ -369,13 +431,14 @@ function runCanonical(verbose = true) {
   }
   journal.push({ step: "dungeon-normal", hpSeq: normalKill.hpChanges });
 
-  // 击杀 BOSS：隔离到角落，SKILL4(36 dmg) cd 96 → ~9 次施放。phase 推进 + 必掉装（DROP_RATE.boss=1.0）。
+  // 击杀 BOSS：E6 BOSS 默认 aggressive —— 站桩会被击杀，改用 teleport-poke 适配
+  // （瞬移到角落开火 → 瞬移出仇恨半径等 cd；伤害节奏与锁定 golden 一致，hpSeq/phaseSeen 不变）。
   let bossFight = { died: false, hpChanges: [], phaseSeen: null };
   let bossDrop = null;
   if (boss) {
     const c2 = relocateToCorner(boss, 2);
     placePlayer(instWorld, SEAT, PARTY, { x: c2.x + 60, y: c2.y });
-    bossFight = fightUntilDead(instWorld, seqI, boss.id, 3, 1000); // SKILL4 slot=3
+    bossFight = bossFightPoke(instWorld, seqI, boss.id, 3, 1000); // SKILL4 slot=3, cd96
     // BOSS 必掉（金/暗金）：掉落出现在 BOSS 死亡点附近。
     const loots = findLoot(instWorld).filter(
       (l) => Math.abs(l.x - c2.x) < TILE && Math.abs(l.y - c2.y) < TILE,

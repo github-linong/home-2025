@@ -51,11 +51,14 @@ import {
   LOOT_GROUND_TTL_TICKS,
   ENEMY_BASE_ATK,
   ENTRANCE_COOLDOWN_TICKS, // E5：入口冷却（C-Dgn-4）
+  ENEMY_MOVE_SPEED, // E6：敌人 CHASE 追击速度（格/tick）
+  AGGRO_RADIUS, // E6：敌人仇恨半径（px）
+  PROVOKE_DURATION_TICKS, // E6：被动怪被打后的反击窗口（tick）
 } from "./constants.ts"; // C7 单一来源
 import { Rng } from "./rng.ts";
 import { stepMovement } from "./movement.ts"; // E3 真移动（纯函数）
 import { resolveDamage, resolveSkill } from "./combat.ts"; // E4 服务端权威结算
-import { spawnWave, nextRespawnTick, type SpawnZone } from "./spawning.ts"; // E4 确定性实例化
+import { spawnWave, nextRespawnTick, type SpawnZone, type Aggression } from "./spawning.ts"; // E4 确定性实例化 / E6 敌人类别
 import { rollLoot } from "./loot.ts"; // E4 掉落
 import { openParryWindow } from "./parry.ts"; // E4 格挡窗口
 import type { LootResult } from "./loot.ts";
@@ -109,6 +112,9 @@ interface Actor {
   zoneIndex?: number; // 敌人所属 spawn zone（复活用）
   bossPhase?: number; // BOSS 阶段（0/1）
   lastAttackTick?: number; // 敌人上次接触攻击 tick（攻击节奏）
+  // E6 新增（敌人 AI）
+  aggression?: Aggression; // 敌人类别（passive / aggressive；spawnWave 透传或按 tier 缺省）
+  lastDamageTick?: number; // 被动怪被打的最后 tick（反击窗口判定）
 }
 
 interface SpawnZoneRuntime {
@@ -171,8 +177,39 @@ function dirToVector(dir: number): { x: number; y: number } {
   return DIR_UNIT_VECTORS[k];
 }
 
+/**
+ * E6：从 (ax,ay) 指向 (bx,by) 的 8 向朝向（确定性；x右/y下，E=0° 顺时针 45° 步进）。
+ * 用 atan2 归一化到最近 45°，纯数学无随机（D9）。AI CHASE 用。
+ */
+function dirToward(ax: number, ay: number, bx: number, by: number): number {
+  const deg = (Math.atan2(by - ay, bx - ax) * 180) / Math.PI; // -180..180
+  const k = Math.round(deg / 45);
+  return ((k % 8) + 8) % 8;
+}
+
 /** 敌人 tier 索引 → 名称（rollLoot 用）。 */
 const TIER_NAMES = ["normal", "elite", "boss"] as const;
+
+/**
+ * E6：敌人→玩家接触攻击（含 parry 校验，C9/C11 服务端权威）。
+ * 与 E4 原逻辑一致：BOSS phase2 加快攻击间隔；周期由 lastAttackTick 节流。
+ * 纯函数式地改写 e/target 状态（world.step 内调用；无随机无 Date.now，D9）。
+ */
+function maybeEnemyAttack(e: Actor, target: Actor, t: number): void {
+  const phase2 = e.kind === EntityKind.BOSS && (e.bossPhase ?? 0) >= 1;
+  const interval = phase2 ? BOSS_PHASE2_ATTACK_INTERVAL_TICKS : ENEMY_ATTACK_INTERVAL_TICKS;
+  if (t - (e.lastAttackTick ?? -interval) >= interval) {
+    const dmg = resolveDamage({
+      targetId: target.id,
+      amount: 0, // C11：忽略客户端 amount
+      tick: t,
+      baseAmount: e.atk ?? ENEMY_BASE_ATK,
+      targetParry: target.parryState, // 玩家格挡校验
+    });
+    target.hp += dmg.deltaHp;
+    e.lastAttackTick = t;
+  }
+}
 
 export function createWorld(opts: CreateWorldOpts): World {
   let actors: Actor[] = [];
@@ -259,6 +296,7 @@ export function createWorld(opts: CreateWorldOpts): World {
           status: EntityStatus.ALIVE,
           tier: spec.tier,
           atk: spec.atk,
+          aggression: spec.aggression, // E6 敌人类别（passive / aggressive）
           zoneIndex: spawnStates.length,
           lastAttackTick: -ENEMY_ATTACK_INTERVAL_TICKS,
         });
@@ -431,6 +469,8 @@ export function createWorld(opts: CreateWorldOpts): World {
                     targetParry: undefined,
                   });
                   e.hp += dmg.deltaHp;
+                  // E6：被动怪被打 → 记录反击窗口（被打才反击，窗口内对接触内玩家反击）。
+                  e.lastDamageTick = t;
                 }
               }
               a.skillCd[slot] = intent.cdTicks;
@@ -451,35 +491,50 @@ export function createWorld(opts: CreateWorldOpts): World {
         }
       }
 
-      // (3) 敌人→玩家周期性接触伤害（含 parry 校验，C9/C11 服务端权威）。
+      // (3) 敌人 AI（E6）：索敌 → CHASE 追击（aggressive）→ ATTACK（接触内周期攻击，含 parry 校验）。
+      //     确定性纯逻辑：无随机、无 Date.now（D9）；玩家位置来自世界状态。
+      //       · passive（默认普通怪 tier 0）：IDLE 完全静止（不做巡逻，保确定性 + 「站桩」被动怪）；
+      //         仅被打后 PROVOKE_DURATION_TICKS 窗口内对接触内玩家反击（被打才反击）。
+      //       · aggressive（精英 tier 1 / BOSS tier 2）：仇恨半径 AGGRO_RADIUS 内索敌追击
+      //         （复用 stepMovement + isBlocked 滑行）；接触内停止追击改周期攻击；半径外 → IDLE。
       for (const e of actors) {
         if (e.kind !== EntityKind.ENEMY && e.kind !== EntityKind.BOSS) continue;
         if (e.hp <= 0) continue;
-        // 锁定最近存活玩家
+        // 目标选择：最近存活玩家（世界状态，确定性）。
         let target: Actor | null = null;
         let best = Infinity;
         for (const [, actorId] of players) {
           const p = actors.find((x) => x.id === actorId);
           if (!p || p.hp <= 0) continue;
           const d = Math.hypot(p.x - e.x, p.y - e.y);
-          if (d <= ENEMY_CONTACT_RANGE && d < best) {
+          if (d < best) {
             best = d;
             target = p;
           }
         }
-        if (!target) continue;
-        const phase2 = e.kind === EntityKind.BOSS && (e.bossPhase ?? 0) >= 1;
-        const interval = phase2 ? BOSS_PHASE2_ATTACK_INTERVAL_TICKS : ENEMY_ATTACK_INTERVAL_TICKS;
-        if (t - (e.lastAttackTick ?? -interval) >= interval) {
-          const dmg = resolveDamage({
-            targetId: target.id,
-            amount: 0, // C11：忽略客户端 amount
-            tick: t,
-            baseAmount: e.atk ?? ENEMY_BASE_ATK,
-            targetParry: target.parryState, // 玩家格挡校验
-          });
-          target.hp += dmg.deltaHp;
-          e.lastAttackTick = t;
+        if (!target) continue; // 无存活玩家 → IDLE（完全静止）
+
+        const aggression = e.aggression ?? (e.tier === 0 ? "passive" : "aggressive");
+        const inContact = best <= ENEMY_CONTACT_RANGE;
+
+        if (aggression === "aggressive") {
+          // aggressive：仇恨半径内索敌追击；接触内不移动（攻击）；半径外 → IDLE 静止。
+          if (best <= AGGRO_RADIUS && !inContact) {
+            const dir = dirToward(e.x, e.y, target.x, target.y);
+            const np = stepMovement({ x: e.x, y: e.y }, dir, {
+              speedPerTick: ENEMY_MOVE_SPEED, // E6：2 格/s = 0.1667 格/tick
+              isBlocked,
+            });
+            e.x = np.x;
+            e.y = np.y;
+            e.dir = dir;
+          }
+          if (inContact) maybeEnemyAttack(e, target, t); // 接触内周期性攻击（含 parry 校验）
+        } else {
+          // passive：不主动攻击、不追击（完全静止）；仅被打后的反击窗口内对接触内玩家反击。
+          const provoked =
+            e.lastDamageTick !== undefined && t - e.lastDamageTick <= PROVOKE_DURATION_TICKS;
+          if (provoked && inContact) maybeEnemyAttack(e, target, t);
         }
       }
 
@@ -556,6 +611,7 @@ export function createWorld(opts: CreateWorldOpts): World {
               status: EntityStatus.ALIVE,
               tier: spec.tier,
               atk: spec.atk,
+              aggression: spec.aggression, // E6 敌人类别（passive / aggressive）
               zoneIndex: zi,
               lastAttackTick: t - ENEMY_ATTACK_INTERVAL_TICKS,
             });

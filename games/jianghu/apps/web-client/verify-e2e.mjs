@@ -1,16 +1,33 @@
 #!/usr/bin/env node
 /**
- * verify-e2e.mjs — jianghu C1 浏览器客户端 E2E（Puppeteer 真连真实服务端）
+ * verify-e2e.mjs — jianghu C2 浏览器客户端 E2E（Puppeteer 真连真实服务端）
  * ============================================================================
  * 用法：
  *   node verify-e2e.mjs [--port 3011] [--static 8090] [--headless]
  *
  * 自管进程：
- *   1) spawn jianghu 服务端（DEV_SKIP_AUTH=true PORT=3011，cwd=apps/jianghu）
+ *   1) 探测 :3011 —— 已有服务端则复用；否则 spawn jianghu 服务端（DEV_SKIP_AUTH=true PORT=3011）
  *   2) spawn 静态服务器（serve 本 web-client 目录）
  *   3) Puppeteer 打开 index.html?server=ws://127.0.0.1:3011&devUserId=e2ehero&debug=1
- *   4) 断言链：连接→room.join→二进制快照→MOVE→SKILL1→进副本→敌人HP→出本→重连
- *   5) 截图存 ./verify/*.png；退出码 0=全绿 1=有失败
+ *   4) 断言链：
+ *      A  连接 → session.ready → room.join → 二进制快照
+ *      B0 移动预测（按键 60ms 内渲染位置即变，无需等 RTT/插值缓冲）
+ *      B1 移动（服务端权威 MOVE 位移）
+ *      B2 预测收敛（松键后 |predicted - 权威| < 30px，无漂移）
+ *      L1 掉落可见性（主世界 LOOT_GROUND 存在）
+ *      L2 拾取提示（≤1.5×TILE 显示「按 F 拾取」）
+ *      L3 拾取 → character.inventory 入库推送
+ *      L4 拾取 toast（增量去重文案）
+ *      L5 背包面板（打开显示物品格子 / 空态）
+ *      C  技能被服务端接受（skillCd>0）
+ *      D  真实输入 walk+F 进副本（超时兜底 debug 钩子）
+ *      E  技能命中敌人（HP 下降，服务端权威）
+ *      H1 伤害飘字（lastHits 记录敌人受击）
+ *      H2 击杀反馈（lastKills，信息项不阻塞）
+ *      F  出本
+ *      G  断线自动重连（CDP 模拟断网 → session.reconnect）
+ *      Z  零 pageerror / GAME.errors / console.error
+ *   5) 截图存 ./verify/01-overworld.png … 06-final.png；退出码 0=全绿 1=有失败
  *
  * 诚实说明验证边界：见输出 JSON 的 notes 字段（如 SKILL 命中与否受副本随机布局影响）。
  */
@@ -18,6 +35,7 @@ import { spawn } from "node:child_process";
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
+import net from "node:net";
 import { fileURLToPath } from "node:url";
 import puppeteer from "puppeteer";
 
@@ -38,6 +56,14 @@ const HEADLESS = !args.includes("--headed");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let results = [];
 function record(name, ok, detail) { results.push({ name, ok: !!ok, detail }); console.log(`${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`); }
+
+// ── 0) 探测 :3011 是否已有服务端（有则复用；无则自起）──
+function probeServer(port) {
+  return new Promise((resolve) => {
+    const sock = net.connect(port, "127.0.0.1", () => { sock.destroy(); resolve(true); });
+    sock.on("error", () => resolve(false));
+  });
+}
 
 // ── 1) 起 jianghu 服务端 ──
 function startServer() {
@@ -91,11 +117,67 @@ async function waitFor(page, fnExpr, timeoutMs, label) {
   }
 }
 
+// 朝向某实体逐轴移动（8 向键）；到 distThreshold 内返回
+async function walkToward(page, getTarget, distThreshold, maxIter) {
+  for (let i = 0; i < (maxIter || 40); i++) {
+    const nav = await page.evaluate((getTargetStr) => {
+      const g = window.__game, s = g.lastSnapshot;
+      if (!s || g.localEntityId == null) return null;
+      const me = s.entities.find((e) => e.id === g.localEntityId);
+      const target = eval(getTargetStr);
+      if (!me || !target) return null;
+      return { mx: me.pos.x, my: me.pos.y, tx: target.x, ty: target.y, d: Math.hypot(target.x - me.pos.x, target.y - me.pos.y) };
+    }, getTarget);
+    if (!nav) { await sleep(150); continue; }
+    if (nav.d <= distThreshold) return { ok: true, d: nav.d, iter: i };
+    const dx = nav.tx - nav.mx, dy = nav.ty - nav.my;
+    const key = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? "KeyD" : "KeyA") : (dy > 0 ? "KeyS" : "KeyW");
+    await page.keyboard.down(key);
+    await sleep(140);
+    await page.keyboard.up(key);
+    await sleep(90);
+  }
+  return { ok: false, reason: "timeout" };
+}
+
+// C2 L2：细步走近掉落，每步前检查「按 F 拾取」提示（72px 提示环 vs 48px 拾取环，粗步会跳过窗口）
+async function approachForHint(page, getTarget, maxIter) {
+  for (let i = 0; i < (maxIter || 60); i++) {
+    const hint = await page.evaluate(() => ({ near: window.__game.nearLootId, text: window.__game.pickupHint }));
+    if (hint.near != null) return { ok: true, hint, iter: i };
+    const nav = await page.evaluate((getTargetStr) => {
+      const g = window.__game, s = g.lastSnapshot;
+      if (!s || g.localEntityId == null) return null;
+      const me = s.entities.find((e) => e.id === g.localEntityId);
+      const target = eval(getTargetStr);
+      if (!me || !target) return null;
+      return { mx: me.pos.x, my: me.pos.y, tx: target.x, ty: target.y, d: Math.hypot(target.x - me.pos.x, target.y - me.pos.y) };
+    }, getTarget);
+    if (!nav) return { ok: false, reason: "no target (可能已拾取)" };
+    if (nav.d <= 48) return { ok: false, reason: "已进入拾取环(≤48px)仍未显示提示" };
+    const dx = nav.tx - nav.mx, dy = nav.ty - nav.my;
+    const key = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? "KeyD" : "KeyA") : (dy > 0 ? "KeyS" : "KeyW");
+    await page.keyboard.down(key);
+    await sleep(60);   // 细步 ≈11px @192px/s，不会跳过 72→48 的提示窗口
+    await page.keyboard.up(key);
+    await sleep(40);
+  }
+  return { ok: false, reason: "timeout" };
+}
+
 const main = async () => {
   fs.mkdirSync(OUT_DIR, { recursive: true });
-  const server = startServer();
-  await server.ready;
-  console.log("[e2e] jianghu server up on :" + PORT);
+
+  // 已有服务端 → 复用；否则自起
+  const existing = await probeServer(PORT);
+  let server = null;
+  if (existing) {
+    console.log(`[e2e] reuse existing jianghu server on :${PORT}`);
+  } else {
+    server = startServer();
+    await server.ready;
+    console.log("[e2e] jianghu server up on :" + PORT);
+  }
   const staticSrv = await startStatic();
   console.log("[e2e] static server up on :" + STATIC_PORT);
 
@@ -124,16 +206,73 @@ const main = async () => {
     })) : null;
     record("A2 二进制快照(主世界实体≥5)", okSnap, okSnap ? `tick=${snapInfo.tick} entities=${snapInfo.count} kinds=${snapInfo.kinds.join(",")} seatId=${snapInfo.seatId}` : undefined);
 
-    // ── B. MOVE → 玩家位移 ──
-    const pos0 = await page.evaluate(() => ({ ...window.__game.lastLocalPos }));
+    // ── B. 移动手感：本地预测 + 权威收敛 ──
+    // B0 移动预测：按键后 60ms 内渲染位置即变（本地预测 PLAYER_SPEED*dt；旧版需等 ~100ms+RTT 插值缓冲）
+    const pred0 = await page.evaluate(() => ({ ...window.__game.predicted }));
     await page.keyboard.down("KeyD");
-    await sleep(1000);
+    await sleep(60);
+    const pred1 = await page.evaluate(() => ({ ...window.__game.predicted }));
+    const pdx = pred1.x - pred0.x;
+    record("B0 移动预测(按键60ms内渲染位即变)", pdx > 5, `predicted ${pred0.x.toFixed(1)},${pred0.y.toFixed(1)} → ${pred1.x.toFixed(1)},${pred1.y.toFixed(1)} (dx=${pdx.toFixed(1)}px @60ms, 理论≈11.5px)`);
+
+    // B1 移动（服务端权威 MOVE）：继续按住 940ms 再松
+    const pos0 = await page.evaluate(() => ({ ...window.__game.lastLocalPos }));
+    await sleep(940);
     await page.keyboard.up("KeyD");
     await sleep(350);
     const pos1 = await page.evaluate(() => ({ ...window.__game.lastLocalPos }));
     const dx = pos1.x - pos0.x;
-    record("B1 移动(MOVE dir=E)", dx > 20, `pos ${pos0.x},${pos0.y} → ${pos1.x},${pos1.y} (dx=${dx.toFixed(1)}px)`);
+    record("B1 移动(服务端权威 MOVE)", dx > 20, `server pos ${pos0.x},${pos0.y} → ${pos1.x},${pos1.y} (dx=${dx.toFixed(1)}px)`);
     await page.screenshot({ path: path.join(OUT_DIR, "01-overworld.png") });
+
+    // B2 预测收敛：松键后 predicted 向权威收敛（无漂移）
+    const conv = await page.evaluate(() => {
+      const g = window.__game, s = g.lastSnapshot;
+      const me = s && s.entities.find((e) => e.id === g.localEntityId);
+      return me && g.predicted ? { err: Math.hypot(me.pos.x - g.predicted.x, me.pos.y - g.predicted.y) } : null;
+    });
+    record("B2 预测收敛(松键后 err<30px)", conv != null && conv.err < 30, conv ? `err=${conv.err.toFixed(1)}px` : "n/a");
+
+    // ── L. 掉落可见性 + 拾取 + 背包（主世界；服务端重叠自动拾取 PICKUP_RADIUS=1×TILE）──
+    const lootInfo = await page.evaluate(() => {
+      const g = window.__game, s = g.lastSnapshot;
+      const loots = s ? s.entities.filter((e) => e.kind === 3).map((e) => ({ id: e.id, rarity: e.loot ? e.loot.rarity : -1 })) : [];
+      return { count: loots.length, first: loots[0] || null };
+    });
+    record("L1 主世界 LOOT_GROUND(≥1)", lootInfo.count >= 1, `count=${lootInfo.count} rarity=${lootInfo.first ? lootInfo.first.rarity : "-"}`);
+
+    if (lootInfo.first) {
+      const targetExpr = `s.entities.find(e => e.id === ${lootInfo.first.id}) ? { x: s.entities.find(e => e.id === ${lootInfo.first.id}).pos.x, y: s.entities.find(e => e.id === ${lootInfo.first.id}).pos.y } : null`;
+      // L2 拾取提示：细步走近，进入 ≤1.5×TILE(72px) 提示环即应出现「按 F 拾取」
+      const hintRes = await approachForHint(page, targetExpr, 60);
+      record("L2 拾取提示(≤1.5×TILE)", hintRes.ok, hintRes.ok ? JSON.stringify(hintRes.hint) + ` @iter=${hintRes.iter}` : hintRes.reason);
+      await page.screenshot({ path: path.join(OUT_DIR, "04-loot-pickup.png") });
+      // L3/L4 继续走近（≤PICKUP_RADIUS=48px）→ 服务端重叠自动拾取 → character.inventory 推送 + toast
+      const beforeInv = await page.evaluate(() => ({ items: window.__game.inventory.items.length, toasts: window.__game.pickupToasts.length }));
+      await walkToward(page, targetExpr, 30, 45);
+      const okInv = await waitFor(page, "window.__game.pickupToasts.length > 0", 6000, "pickup inventory push");
+      const afterInv = await page.evaluate(() => ({ items: window.__game.inventory.items.length, toasts: window.__game.pickupToasts.length, loaded: window.__game.inventory.loaded }));
+      record("L3 拾取→character.inventory 入库", okInv || (afterInv.items > beforeInv.items), `before=${beforeInv.items} after=${afterInv.items} loaded=${afterInv.loaded}`);
+      const toastDetail = await page.evaluate(() => window.__game.pickupToasts.slice(-3).join(" | "));
+      record("L4 拾取 toast(增量)", afterInv.toasts > beforeInv.toasts, afterInv.toasts > beforeInv.toasts ? toastDetail : "无新 toast");
+      // 打开背包面板 → 显示物品格子（或空态）
+      await page.evaluate(() => window.__game.openInventory());
+      await sleep(500); // 等 character.inventory.get 回复
+      const invDom = await page.evaluate(() => ({
+        open: !!document.getElementById("invpanel").classList.contains("open"),
+        cells: document.querySelectorAll("#inv-grid .inv-cell").length,
+        empty: !!document.querySelector("#inv-empty"),
+        count: document.getElementById("inv-count") ? document.getElementById("inv-count").textContent : "-",
+      }));
+      record("L5 背包面板(打开+格子/空态)", invDom.open && (invDom.cells > 0 || invDom.empty), JSON.stringify(invDom));
+      await page.screenshot({ path: path.join(OUT_DIR, "05-inventory.png") });
+      await page.evaluate(() => window.__game.closeInventory());
+    } else {
+      record("L2 拾取提示", false, "SKIPPED（主世界无 LOOT_GROUND）");
+      record("L3 拾取→character.inventory", false, "SKIPPED");
+      record("L4 拾取 toast", false, "SKIPPED");
+      record("L5 背包面板", false, "SKIPPED");
+    }
 
     // ── C. SKILL1（主世界无敌人：断言服务端接受 cast → skillCd>0）──
     await page.keyboard.press("Digit1");
@@ -145,7 +284,7 @@ const main = async () => {
     let enteredVia = "walk+F";
     let okEnter = false;
     let walkTrace = [];
-    for (let i = 0; i < 16 && !okEnter; i++) {
+    for (let i = 0; i < 28 && !okEnter; i++) {
       const nav = await page.evaluate(() => {
         const g = window.__game, s = g.lastSnapshot;
         if (!s) return null;
@@ -188,11 +327,12 @@ const main = async () => {
     record("D2 副本快照含敌人/BOSS", okEnemy);
     await page.screenshot({ path: path.join(OUT_DIR, "02-dungeon.png") });
 
-    // ── E. 技能命中敌人（副本内）──
+    // ── E + H1 + H2. 技能命中敌人（副本内）：HP 下降（权威） + 伤害飘字（lastHits）+ 击杀（信息）──
     if (okEnter && okEnemy) {
       const before = await page.evaluate(() => window.__game.lastSnapshot.entities
         .filter((e) => e.kind === 1 || e.kind === 2)
         .map((e) => ({ id: e.id, hp: e.hp })));
+      const hitsBefore = await page.evaluate(() => window.__game.lastHits.length);
       await page.keyboard.press("Digit1");
       await sleep(1000);
       const after = await page.evaluate(() => ({
@@ -209,8 +349,16 @@ const main = async () => {
         dropped.length > 0
           ? `敌人 ${dropped.length} 个 HP 下降：${dropped.map((d) => `${d.id}:${d.hp}→${after.enemies.find((x) => x.id === d.id).hp}`).join(", ")}`
           : `无敌人进入技能范围（随机布局）—— 技能已被服务端接受(skillCd=[${after.skillCd.join(",")}])`);
+      const enemyHits = await page.evaluate((n) => window.__game.lastHits.slice(n).filter((h) => h.kind === 1 || h.kind === 2), hitsBefore);
+      record("H1 伤害飘字(敌人受击 lastHits)", enemyHits.length > 0,
+        enemyHits.length > 0 ? enemyHits.map((h) => `id=${h.id} dmg=${h.dmg}`).join(", ") : "无敌人受击（与 E1 同因，随机布局）");
+      const kills = await page.evaluate(() => window.__game.lastKills.length);
+      record("H2 击杀反馈(lastKills, 信息项)", true, kills > 0 ? `kills=${kills}` : "本轮未击杀（信息项，不阻塞）");
+      await page.screenshot({ path: path.join(OUT_DIR, "03-dungeon-hit.png") });
     } else {
       record("E1 技能命中敌人", false, "SKIPPED（未进副本/无敌人）");
+      record("H1 伤害飘字", false, "SKIPPED");
+      record("H2 击杀反馈", true, "SKIPPED（信息项）");
     }
 
     // ── F. 出本 ──
@@ -233,7 +381,8 @@ const main = async () => {
       await sleep(7000); // 让服务端 ping 超时(5s)断开
       const stOffline = await page.evaluate(() => window.__game.state).catch(() => "eval-fail");
       await cdp.send("Network.emulateNetworkConditions", { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
-      const okRec = await waitFor(page, "window.__game.connected === true && window.__game.state === 'overworld'", 20000, "reconnect");
+      // 重连可能回主世界（本流程 F1 已出本）或回存活副本：只要 connected+非 connecting/reconnecting 即视为成功
+      const okRec = await waitFor(page, "window.__game.connected === true && (window.__game.state === 'overworld' || window.__game.state === 'dungeon')", 20000, "reconnect");
       const stAfter = okRec ? await page.evaluate(() => ({ state: window.__game.state, roomId: window.__game.roomId })) : null;
       recOk = okRec;
       recDetail = `offline 期间 state=${stOffline} → 恢复后 ${okRec ? `state=${stAfter.state} roomId=${stAfter.roomId}` : "未恢复"}`;
@@ -242,19 +391,19 @@ const main = async () => {
     }
     record("G1 断线自动重连(session.reconnect)", recOk, recDetail);
 
-    // ── H. 无 pageerror / 渲染健康 ──
+    // ── Z. 无 pageerror / 渲染健康 ──
     const gameErrors = await page.evaluate(() => window.__game.errors.slice(0, 8)).catch(() => []);
-    record("H1 无 pageerror", pageErrors.length === 0, pageErrors.length ? pageErrors.join(" | ") : "pageErrors=0");
-    record("H2 无 JS 运行时错误(收集)", gameErrors.length === 0, gameErrors.length ? gameErrors.join(" | ") : "GAME.errors=0");
-    record("H3 控制台无 error", consoleErrors.length === 0, consoleErrors.length ? consoleErrors.slice(0, 3).join(" | ") : "consoleErrors=0");
+    record("Z1 无 pageerror", pageErrors.length === 0, pageErrors.length ? pageErrors.join(" | ") : "pageErrors=0");
+    record("Z2 无 JS 运行时错误(收集)", gameErrors.length === 0, gameErrors.length ? gameErrors.join(" | ") : "GAME.errors=0");
+    record("Z3 控制台无 error", consoleErrors.length === 0, consoleErrors.length ? consoleErrors.slice(0, 3).join(" | ") : "consoleErrors=0");
 
-    await page.screenshot({ path: path.join(OUT_DIR, "04-final.png") });
+    await page.screenshot({ path: path.join(OUT_DIR, "06-final.png") });
   } catch (err) {
     record("E2E 整体", false, String(err && err.stack || err));
   } finally {
     if (browser) await browser.close().catch(() => {});
     staticSrv.close();
-    server.proc.kill("SIGTERM");
+    if (server) server.proc.kill("SIGTERM");
   }
 
   const failed = results.filter((r) => !r.ok);
@@ -266,7 +415,9 @@ const main = async () => {
     total: results.length,
     notes: [
       "验证边界：Puppeteer headless 真连真实 jianghu 服务端(DEV_SKIP_AUTH=true, port 3011)。",
-      "技能命中敌人受副本随机布局影响：未命中时以「服务端接受 cast(skillCd>0)」为次优断言。",
+      "B0 移动预测：按键 60ms 内 predicted 渲染位即变（PLAYER_SPEED=192px/s 理论≈11.5px），证明本地预测生效（旧版需等 ~100ms+RTT 插值缓冲）。",
+      "L3/L4 拾取：服务端重叠自动拾取（PICKUP_RADIUS=1×TILE）→ 登录玩家入库 → character.inventory 推送；增量 toast 以 itemId 去重。",
+      "技能命中敌人受副本随机布局影响：未命中时以「服务端接受 cast(skillCd>0)」为次优断言；H2 击杀反馈为信息项不阻塞。",
       "重连测试用 CDP 模拟断网(服务端 ping 超时断开)→ 恢复后 session.reconnect。",
     ],
   }, null, 2));

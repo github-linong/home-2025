@@ -28,9 +28,11 @@ import {
   isInstanceRunning,
 } from "./run-manager.ts";
 import { RoomPhase } from "../sim-core/src/types.ts";
+import { INVENTORY_CAP } from "../sim-core/src/constants.ts"; // C7 单一来源（背包上限）
 import { encodeSnapshot } from "./protocol-binary.ts";
 import { generateId } from "./ids.ts";
 import { config } from "./config.ts";
+import type { CharacterService } from "./persistence.ts"; // 仅类型（resolveInventoryGet 运行时经注入的模块级引用）
 
 export interface ProtocolContext {
   readonly userId: string;
@@ -54,6 +56,61 @@ export interface DispatchResult {
 
 function err(requestId: string | undefined, code: string, message: string) {
   return { type: "game.error", requestId, error: { code, message } };
+}
+
+// ─────────────────────────────────────────────────────────────
+// E6 背包数据通道（控制面）：character.inventory
+// ─────────────────────────────────────────────────────────────
+// dispatch 为同步纯函数（D9 纪律），而背包拉取依赖 CharacterService（async IO）。
+// 故 `character.inventory.get` 由 gateway 显式 type 路由到本文件的异步解析函数（C4），
+// 业务逻辑（guest 空背包 / 登录读背包）仍收在本协议层，便于 fake ctx 单测。
+// C6：gateway → protocol（调用方向合法）；protocol → persistence（叶子服务）。
+
+/** 模块级角色服务引用（gateway.createGateway 启动时注入，镜像 run-manager 模式）。 */
+let protocolCharacterService: CharacterService | null = null;
+
+export function setProtocolCharacterService(cs: CharacterService | null): void {
+  protocolCharacterService = cs;
+}
+
+/** character.inventory 消息体（推送与 get 回复同一格式，供客户端背包面板对接）。 */
+export interface InventoryMessage {
+  readonly type: "character.inventory";
+  readonly requestId?: string;
+  readonly items: readonly { itemId: number; rarity: number; affixes: readonly number[] }[];
+  readonly cap: number; // 背包上限（INVENTORY_CAP=60）
+}
+
+/**
+ * 处理 `character.inventory.get`（异步）：登录玩家返回持久化背包；游客/未知座位回空 items
+ * （C-Per-1 零持久写不涉及：游客不 loadOrCreate，直接空背包）。
+ */
+export async function resolveInventoryGet(
+  ctx: ProtocolContext,
+  msg: { type: string; requestId?: string },
+): Promise<InventoryMessage> {
+  const empty = (): InventoryMessage => ({
+    type: "character.inventory",
+    requestId: msg.requestId,
+    items: [],
+    cap: INVENTORY_CAP,
+  });
+  const cs = protocolCharacterService;
+  const seatId = ctx.seatId;
+  if (!cs || seatId === undefined) return empty();
+  const info = cs.getSeatInfo(seatId);
+  if (!info || info.guest) return empty(); // 游客 / 未知座位 → 空背包（C-Per-1）
+  const { snapshot } = await cs.loadOrCreate(info.userId);
+  return {
+    type: "character.inventory",
+    requestId: msg.requestId,
+    items: snapshot.inventory.items.map((i) => ({
+      itemId: i.itemId,
+      rarity: i.rarity,
+      affixes: [...i.affixes],
+    })),
+    cap: INVENTORY_CAP,
+  };
 }
 
 export function dispatch(

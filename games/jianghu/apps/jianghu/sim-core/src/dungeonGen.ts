@@ -13,7 +13,7 @@
  * 布局规则（dungeon §⑥）：
  *   - rooms ∈ [5,12]；maxDepth = 3；
  *   - BOSS 必置最深层（最后一间房 depth = maxDepth，C-Dgn-3）；
- *   - 副本刷怪密度 ×DUNGEON_SPAWN_DENSITY（1.5，spawning.md §⑥）。
+ *   - 副本刷怪密度 ×DUNGEON_SPAWN_DENSITY（1.2，E6 调低，spawning.md §⑥）。
  */
 
 import type { SpawnPoint, Vec2 } from "./types.ts";
@@ -42,7 +42,7 @@ export interface DungeonSpec {
   readonly bossTile: Vec2; // BOSS 房中心（最深层）
   readonly bossDepth: number; // BOSS 所在层（= maxDepth，C-Dgn-3）
   readonly bossPlaced: boolean;
-  readonly spawnDensityMultiplier: number; // 副本密度 ×1.5（spawning.md §⑥）
+  readonly spawnDensityMultiplier: number; // 副本密度 ×1.2（E6 调低，spawning.md §⑥）
 }
 
 /** 网格尺寸（tile）。与 createWorld 默认 bounds（40×30 tile）一致。 */
@@ -94,14 +94,15 @@ function generateInternal(seed: string, biomeId: number): InternalDungeon {
       if (isBossRoom && w === 0) {
         // BOSS 房第一波 = BOSS（tier=2，必掉更好词缀）；置于最深层中心。
         spawnPoints.push({ pos: center, enemyTypeId: "dungeon_boss", wave, count: 1 });
-        spawnZones.push({ pos: center, tier: 2, enemyTypeId: "dungeon_boss", count: 1 });
+        // E6：BOSS 默认 aggressive（仇恨半径内索敌追击 + 接触攻击）。
+        spawnZones.push({ pos: center, tier: 2, enemyTypeId: "dungeon_boss", count: 1, aggression: "aggressive" });
         bossPlaced = true;
         bossTile = center;
         exitTile = center;
         continue;
       }
-      // 普通/精英波：count 依副本密度 ×1.5（spawning.md §⑥）。
-      const count = Math.max(1, Math.round(rng.nextInt(2, 4) * DUNGEON_SPAWN_DENSITY));
+      // 普通/精英波：count 依副本密度 ×1.2（E6 调低：1.5→1.2，配区间 1..3，避免副本被围死）。
+      const count = Math.max(1, Math.round(rng.nextInt(1, 3) * DUNGEON_SPAWN_DENSITY));
       const pos: Vec2 = {
         x: center.x + rng.nextInt(-1, 1) * TILE,
         y: center.y + rng.nextInt(-1, 1) * TILE,
@@ -110,7 +111,9 @@ function generateInternal(seed: string, biomeId: number): InternalDungeon {
       spawnPoints.push({ pos, enemyTypeId, wave, count });
       // 15% 精英（tier=1），其余普通（tier=0）。
       const tier = rng.nextBool(0.15) ? (1 as const) : (0 as const);
-      spawnZones.push({ pos, tier, enemyTypeId, count });
+      // E6 敌人类别：普通怪（tier 0）passive（不主动攻击/不追击，被打才反击）；精英（tier 1）aggressive。
+      const aggression = tier === 0 ? ("passive" as const) : ("aggressive" as const);
+      spawnZones.push({ pos, tier, enemyTypeId, count, aggression });
     }
   }
 

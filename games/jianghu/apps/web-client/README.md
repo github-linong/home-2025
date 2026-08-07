@@ -1,7 +1,8 @@
-# 江湖 jianghu · 浏览器客户端 C1（第一个可玩版）
+# 江湖 jianghu · 浏览器客户端 C2（可玩性打磨）
 
 > 目标：零安装即玩 —— 浏览器打开即连真实 jianghu 权威服务端，看到/玩到 **主世界移动 + 技能 + 进副本**。
-> 自包含单文件（Canvas 2D + WebSocket，内联 CSS/JS，**无构建步骤**）。本版含 **STOP 协议修复**（服务端 `sim-core` + 客户端同步升级，见 §3 / §5）。
+> 自包含单文件（Canvas 2D + WebSocket，内联 CSS/JS，**无构建步骤**）。
+> C2 新增（纯客户端，服务端 E6 已上线）：**本地移动预测 + 远端插值（手感）**、**打击感（伤害飘字/受击闪白/技能光效/格挡反馈/击杀粒子）**、**掉落可见性（稀有度光柱/拾取提示/拾取 toast）**、**背包面板（I 键）**。服务端零改动。
 
 ---
 
@@ -50,17 +51,21 @@ http://localhost:8080/index.html
 
 | 操作 | 按键 | 说明 |
 |---|---|---|
-| 移动 | `W A S D` / 方向键 | 8 向移动（按住持续移动，12Hz 上报；松开即发 STOP 立即停） |
-| 格挡 | `空格` / 格挡按钮 | 服务端开 250ms 格挡窗口（PARRY_TICKS=3）；窗口内减伤 60%，角色出现青蓝护盾光环 |
-| 技能 1-4 | `1 2 3 4` / 按钮 | 服务端权威 AoE 命中（半径 1.5 tile）；按钮显示剩余 CD（来自快照 `skillCd`，tick→秒） |
+| 移动 | `W A S D` / 方向键 | 8 向移动（**本地预测**：按键即时移动，体感 <50ms；按住持续移动，12Hz 上报；松开即发 STOP 立即停） |
+| 格挡 | `空格` / 格挡按钮 | 服务端开 250ms 格挡窗口（PARRY_TICKS=3）；窗口内减伤 60%，角色出现青蓝护盾光环 + 「格挡中」提示；受击时 parry 生效显示「格挡！」+ 盾闪 |
+| 技能 1-4 | `1 2 3 4` / 按钮 | 服务端权威 AoE 命中（半径 1.5 tile）；**客户端即时扇形技能光效（0.3s 淡出）**；命中叠加扩散环/闪白；按钮显示剩余 CD（来自快照 `skillCd`） |
+| 拾取 | 走近掉落自动拾取 | 靠近掉落（≤1.5 tile）显示「按 F 拾取」提示；服务端为**重叠自动拾取**（PICKUP_RADIUS=1 tile），走近即入包；按 F 发 SIGNAL（服务端忽略，占位） |
+| 背包 | `I` / HUD「背包 [I]」按钮 | 打开时拉 `character.inventory.get` 全量 + 拾取后实时推送刷新；格子显示稀有度色边框 + itemId 短号 + 词缀数；空背包显示「空」；游客也显示 |
 | 进副本 | 走到裂隙入口附近 → `F` 或「进副本」按钮 | 发 `dungeon.enter`；服务端校验主世界 + 入口 10s 冷却（`tryEnterEntrance`） |
 | 出本 | 副本内按 `F` 或「出本」按钮 | 发 `dungeon.exit`，回主世界安全区 |
-| 缩放 / 平移 | 滚轮 / 拖拽；双击回中 | 摄像机跟随本地玩家 |
+| 缩放 / 平移 | 滚轮 / 拖拽；双击回中 | 摄像机跟随本地玩家（预测位置，按键即时动） |
 | 小地图 | 右上角 | 玩家/敌人/BOSS/掉落/入口着色点位 + 视野框 |
 
-**HUD**：顶部 = 连接状态 / 房间（主世界·副本）/ tick / 实体数 / 本地 HP 条 / 格挡态 / 技能 CD；底部 = 技能栏。
+**HUD**：顶部 = 连接状态 / 房间（主世界·副本）/ tick / 实体数 / 本地 HP 条 / 格挡态 / 技能 CD / **背包按钮**；底部 = 技能栏；屏幕下方 = **拾取 toast**（「拾取 [稀有度色]品（词缀×N）」）。
 
-**配色（placeholder，对齐 art-bible）**：玩家=青蓝方块；敌人=红圆（精英=钢蓝+青环）；BOSS=深绯大圆+金环；地面掉落=稀有度菱形（白 `#D8D2C4` / 蓝 `#4C7FD6` / 金 `#F2A03C` / 暗金 `#C8324A`）+ itemId 标签；入口=紫青旋转裂隙。
+**打击感（纯客户端表现）**：实体 HP 下降 → 头顶飘 `-N`（敌人受击黄 / 玩家受击红，1s 淡出上飘）+ **150ms 受击闪白** + 扩散环；玩家放技能 → 朝向扇形光效；击杀 → 6-12 个小方块粒子四散淡出。
+
+**配色（placeholder，对齐 art-bible）**：玩家=青蓝方块；敌人=红圆（精英=钢蓝+青环）；BOSS=深绯大圆+金环；地面掉落=**稀有度光柱**（白 `#D8D2C4` / 蓝 `#4C7FD6` / 金 `#F2A03C` / 暗金 `#C8324A`，竖条光柱 + 呼吸脉动）+ 描边名字 + itemId；入口=紫青旋转裂隙。
 
 ---
 
@@ -102,7 +107,20 @@ ws.send(JSON.stringify({
 - `action`：0=MOVE 1=PARRY 2..5=SKILL1..4 6=SIGNAL 7=STOP（技能须带 `skillSlot: 0..3`）。
 - `dir`：0=E 1=SE 2=S 3=SW 4=W 5=NW 6=N 7=NE（顺时针，屏幕坐标 y 向下）。
 - **STOP（7）**：全部移动键松开 / 失焦 / 切页 / 断连前，客户端发 `action:7`；服务端 `world.enqueueInput` 清该 seat 的 `pending` + `lastMove`，下一 tick 起立即停（不再沿最后 MOVE 惯性滑行）。STOP 也走同一 `seq` 单调计数（C11），回退 seq 不生效。
+- **SIGNAL（6）**：靠近掉落按 F 时发送（服务端 world.step 忽略未识别 action，仅客户端占位；拾取走重叠自动拾取）。
 - **客户端不锁 target、不发伤害量** —— 技能命中/格挡/伤害全部服务端权威（`combat.resolveSkill`/`resolveDamage` 按范围结算）。
+
+**E6 背包数据通道（控制面）**：
+
+```js
+// 打开背包面板拉全量（异步回复同格式）
+{ type: 'character.inventory.get', requestId: 'inv1' }
+// 拾取入库成功 → 服务端推送（与 get 回复同一格式，items 可能为空）
+{ type: 'character.inventory', items: [{ itemId, rarity, affixes: number[] }], cap: 60 }
+```
+
+- 登录玩家（`DEV_SKIP_AUTH` + `devUserId`）拾取入库后推送；游客零持久写（不推送，`items: []`）。
+- 客户端以 itemId 去重做增量 toast（新入库物品 → 屏幕下方拾取提示）。
 
 **进本/出本**：
 
@@ -122,29 +140,37 @@ ws.send(JSON.stringify({
 ```js
 GAME.connected / state / seatId / roomId / reconnectToken / lastSnapshot / localEntityId
 GAME.snapshotCount / lastTick / skillCd / parryActive / localHp / localMaxHp / lastLocalPos
+GAME.predicted / localRenderPos / renderTick     // C2 本地预测渲染位置 / 远端插值 tick
+GAME.lastHits / lastKills / lastSkillAt          // C2 打击感：最近伤害飘字 / 击杀 / 技能时刻
+GAME.inventory {items,cap,loaded} / pickupToasts / nearLootId / pickupHint / invOpen
 GAME.errors          // 收集的运行时/解码错误
 GAME.debugEnterDungeon() / GAME.debugExitDungeon()   // 强制进出本（绕过「靠近入口」UI 门槛）
-GAME.sendMove(dir) / GAME.sendSkill(slot) / GAME.sendParry()
+GAME.sendMove(dir) / GAME.sendSkill(slot) / GAME.sendParry() / GAME.sendSignal()
+GAME.toggleInventory() / GAME.openInventory() / GAME.closeInventory()
 ```
+
+C2 E2E 断言约定：`lastHits` 记录最近 30 条 `{id, dmg, kind, t}`（hp 下降即记录，kind 0=玩家 1=敌人 2=BOSS）；`lastKills` 记录敌人消失 `{x,y,isBoss,t}`；`pickupToasts` 记录最近拾取文案；`inventory.loaded` 收到过 `character.inventory`；`nearLootId` 非空表示拾取提示已显示。
 
 ---
 
-## 5. 已知限制（MVP，Phase-2 待办）
+## 5. 已知限制（MVP，Phase-3 待办）
 
-1. ~~松开方向键后角色惯性滑行~~（**P0 已修复**）：新增 `InputAction.STOP=7`，客户端在全部移动键松开 / 失焦 / 切页 / 断连前发 STOP，服务端 `world.enqueueInput` 清 `pending` + `lastMove` 立即停。残余边界：`beforeunload` 的 STOP 为尽力而为（浏览器不保证送达）；纯网络断线（非主动关闭）时 STOP 无法发出，服务端仍按 `DISCONNECT_GRACE_MS`（30s）后清理玩家——如需断线即停，后续可在服务端 `markDisconnected` 时清该玩家 `lastMove`。
-2. **无本地预测 / 回正**：所有实体（含本地玩家）都按 100ms 插值缓冲渲染，输入→画面有 ~100ms+RTT 延迟（手感待调）。Phase-2 再做客户端预测 + 服务端回正。
+1. ~~松开方向键后角色惯性滑行~~（**P0 已修复**）：`InputAction.STOP=7`，客户端在全部移动键松开 / 失焦 / 切页 / 断连前发 STOP。残余边界：`beforeunload` 的 STOP 为尽力而为；纯网络断线时 STOP 无法发出，服务端仍按 `DISCONNECT_GRACE_MS`（30s）后清理玩家。
+2. ~~无本地预测 / 回正~~（**C2 已修复**）：本地玩家按键即时推进渲染位置（`PLAYER_SPEED=192px/s`，对齐服务端 `BASE_SPEED=4 格/s`），每快照 `lerp 0.3` 向权威收敛；远端实体 `renderTime=tick-3` 双快照插值。预测仅渲染层，位置仍以快照为准。残余边界：客户端预测不含墙碰撞（副本内撞墙由 0.3 收敛回正，有轻微回拉）；`PLAYER_SPEED` 为客户端常量，未来可随快照下发（单一来源）。
 3. **无角色名**：协议未下发 displayName，玩家/敌人仅以形状+HP 条区分。
-4. **diff/ChangeBit Phase-2**：当前客户端解析全量帧（服务端当前也发全量），后续服务端切 delta 需同步升级解码。
+4. **diff/ChangeBit Phase-3**：当前客户端解析全量帧（服务端当前也发全量），后续服务端切 delta 需同步升级解码。
 5. **TELEGRAPH 实体**：服务端当前未生成 telegraph（预留 kind=4），客户端已支持渲染（红/青预警圈），后续 BOSS 战启用。
-6. **入口冷却 UI**：`entrance.cooldownTicks` 已读取并显示，但进本门槛主要靠「靠近 + 服务端冷却」；多人「集合缓冲取先到者」归 Phase-2。
-7. **游客模式**：`devUserId` 缺省时服务端按游客处理（`guest_*`，零持久写），但 C1 客户端默认传 `devUserId=dev`（登录态，seatId 稳定、便于定位本地实体）。
+6. **入口冷却 UI**：`entrance.cooldownTicks` 已读取并显示，但进本门槛主要靠「靠近 + 服务端冷却」；多人「集合缓冲取先到者」归 Phase-3。
+7. **游客模式**：`devUserId` 缺省时服务端按游客处理（`guest_*`，零持久写）；游客拾取不入背包（无 `character.inventory` 推送），背包面板显示「空」——登录态（传 `devUserId`）才能看到拾取入库。
+8. **打击感为纯客户端表现**：飘字/闪白/光效/粒子基于快照 hp 变化与实体消失推断，非服务端事件推送；服务端若日后下发 `DamageEvent`/`KillEvent` 可替换为权威事件（更精确、免误判）。
+9. **背包 itemId 去重做增量 toast**：极端情况（同 itemId 重复入库）会合并为一条 toast；词缀数显示为「词缀×N」，词缀具体效果未展示（Phase-3）。
 
 ---
 
 ## 6. 验证（真连真实服务端）
 
-- **服务端回归**：`cd apps/jianghu && npm test` → **全绿（124 + STOP 新增用例）**（本版含 sim-core STOP 协议修复）。
-- **C1 E2E**（`verify-e2e.mjs`，Puppeteer 真连真实 jianghu 服务端，puppeteer@24 + Chrome for Testing）：自管进程（起 jianghu 服务 + 静态服务 + Puppeteer）→ 断言链：连接→`session.ready`→`room.join`→收二进制快照→MOVE→SKILL1→**真实输入 walk+F 进副本**→副本内 SKILL1 命中敌人（HP 30→10，服务端权威）→出本→CDP 模拟断网→自动重连（`session.reconnect`）；截图存 `verify/01-overworld.png` / `02-dungeon.png` / `03-after-exit.png` / `04-final.png`。当前最新结果：**12/12 PASS**（含零 pageerror / GAME.errors / console.error）。退出码 0=全绿。
+- **服务端回归**：`cd apps/jianghu && npm test` → **全绿（135）**（C2 未动服务端代码）。
+- **C2 E2E**（`verify-e2e.mjs`，Puppeteer 真连真实 jianghu 服务端，puppeteer@24 + Chrome for Testing）：自管进程（起 jianghu 服务 + 静态服务 + Puppeteer）→ 断言链：连接→`session.ready`→`room.join`→收二进制快照→**移动预测（按键 60ms 内渲染位即变 + 松键收敛）**→**掉落可见性（LOOT_GROUND + 拾取提示）→ 拾取→`character.inventory` 入库→背包面板**→SKILL1→**真实输入 walk+F 进副本**→副本内 SKILL1 命中敌人（HP 下降 + **伤害飘字 lastHits**）→出本→CDP 模拟断网→自动重连（`session.reconnect`）；截图存 `verify/01-overworld.png` / `02-dungeon.png` / `03-after-exit.png` / `04-loot-pickup.png` / `05-inventory.png` / `06-final.png`。零 pageerror / GAME.errors / console.error。退出码 0=全绿。
 
   ```bash
   cd games/jianghu/apps/web-client

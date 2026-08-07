@@ -262,7 +262,28 @@ export const ENTRANCE_COOLDOWN_TICKS = 10 * TICK_RATE;
 export const DUNGEON_EXPIRE_MS = 30 * 60 * 1000;
 
 /**
- * 副本内刷怪密度倍率（≈ 大图刷怪区 ×1.5，spawning.md §⑥）。
- * dungeonGen 在生成 SpawnZone 时按本倍率放大 count，保证副本更密、更刺激。
+ * 副本内刷怪密度倍率（spawning.md §⑥）。
+ * dungeonGen 在生成 SpawnZone 时按本倍率放大 count。
+ * E6（用户试玩反馈③「副本里被围死」）：1.5 → 1.2 调低密度，配 count 区间 2..4 → 1..3，
+ *   副本不再被围死（详见 dungeonGen §count 公式与 E6 报告）。
  */
-export const DUNGEON_SPAWN_DENSITY = 1.5;
+export const DUNGEON_SPAWN_DENSITY = 1.2;
+
+// ─────────────────────────────────────────────────────────────
+// 敌人 AI（E6：敌人类别 + 仇恨；combat §⑥ / spawning §⑥）
+// ─────────────────────────────────────────────────────────────
+
+/** 敌人基础移动速度（格/s）。AI CHASE 追击速度（E6 建议 2 格/s）。 */
+export const BASE_ENEMY_SPEED = 2;
+
+/** 敌人每 tick 位移（格）= 2/12 ≈ 0.1667。AI CHASE 复用 stepMovement 纯积分。 */
+export const ENEMY_MOVE_SPEED = BASE_ENEMY_SPEED / TICK_RATE;
+
+/** 敌人仇恨半径（px）= 5 tile。aggressive 敌人在此半径内索敌追击（E6）。 */
+export const AGGRO_RADIUS = 5 * TILE;
+
+/**
+ * 被动怪「被打才反击」的复仇窗口（tick）= 5s @12Hz（E6）。
+ * 被动怪（tier 0 默认 passive）不主动攻击、不追击；仅在被打后的本窗口内对接触内玩家反击。
+ */
+export const PROVOKE_DURATION_TICKS = 5 * TICK_RATE;

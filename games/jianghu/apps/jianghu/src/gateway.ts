@@ -36,7 +36,7 @@ import {
   sendToConn,
   type Conn,
 } from "./connection-registry.ts";
-import { dispatch } from "./protocol.ts";
+import { dispatch, setProtocolCharacterService, resolveInventoryGet } from "./protocol.ts";
 import { enqueueInput, addPlayerToRoom } from "./run-manager.ts";
 import { TICK_MS, TICK_RATE } from "../sim-core/src/constants.ts"; // C1 单一来源
 import type { InputCmd } from "../sim-core/src/types.ts";
@@ -65,6 +65,8 @@ export function createGateway(server: Server, deps: GatewayDeps = {}): WebSocket
   const verify = deps.verify ?? verifyWithApi2;
   const characterService = deps.characterService ?? getDefaultCharacterService();
   activeCharacterService = characterService;
+  // E6：注入 protocol 层的背包数据通道（character.inventory.get 异步解析用）。
+  setProtocolCharacterService(characterService);
   const wss = new WebSocketServer({
     server,
     path: deps.path ?? "/ws/jianghu",
@@ -256,6 +258,18 @@ function handleRaw(conn: Conn, raw: Buffer): void {
   // 数据面输入摄取（C6 纪律 B 解耦于控制分派）。
   if (msg.type === "input.cmd") {
     routeInput(conn, msg);
+    return;
+  }
+
+  // E6 背包数据通道（控制面）：character.inventory.get → 背包面板拉取。
+  // dispatch 为同步纯函数（D9 纪律），背包拉取依赖 CharacterService（async IO），
+  // 故在此显式 type 路由到 protocol.resolveInventoryGet（C4 显式 type，C6 gateway→protocol）。
+  if (msg.type === "character.inventory.get") {
+    const s = liveSessions.get(conn.connId);
+    void resolveInventoryGet(
+      { userId: conn.userId, connId: conn.connId, seatId: s?.seatId, roomId: conn.roomId },
+      msg,
+    ).then((reply) => sendToConn(conn.connId, reply));
     return;
   }
 
