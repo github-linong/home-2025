@@ -29,6 +29,7 @@
  *      C3-5 技能名 HUD（烈斩/剑气/震地/破军）
  *      C3-6 程序化贴图（玩家剪影 / 敌人变体 / 掉落图标 / 入口增强）
  *      C  技能被服务端接受（skillCd>0）
+ *      E23 技能光效差异化（lastSkillFx 钩子：1-4 按下即播 → 槽位对应 slash/beam/quake/crush）
  *      D  真实输入 walk+F 进副本（超时兜底 debug 钩子）
  *      E  技能命中敌人（HP 下降，服务端权威）
  *      H1 伤害飘字（lastHits 记录敌人受击）
@@ -708,6 +709,23 @@ const main = async () => {
     const skillCd0 = await page.evaluate(() => window.__game.skillCd.slice());
     record("C1 技能1被服务端接受", skillCd0[0] > 0, `skillCd=[${skillCd0.join(",")}] (tick→${(skillCd0[0] / 12).toFixed(1)}s)`);
 
+    // ── E23 技能光效差异化（加分断言）：四技能按下即播本地光效，lastSkillFx 钩子断言 槽位→类型 ──
+    // 时序完全可控：sendSkill 同步写 GAME.lastSkillFx（不等服务端命中确认），按 1-4 后立即读。
+    // 注意：fireAction 有 120ms 防抖 → 每次按下间隔需 >120ms（160ms），否则按键被吞。
+    {
+      const expect = ['slash', 'beam', 'quake', 'crush'];
+      const got = [];
+      for (let slot = 0; slot < 4; slot++) {
+        await page.keyboard.press("Digit" + (slot + 1));
+        await sleep(160); // > fireAction 120ms 防抖，保证 4 次按键全部生效
+        got.push(await page.evaluate(() => window.__game.lastSkillFx ? { slot: window.__game.lastSkillFx.slot, type: window.__game.lastSkillFx.type } : null));
+      }
+      const allOk = expect.every((ty, i) => got[i] && got[i].slot === i && got[i].type === ty);
+      record("E23 技能光效差异化(lastSkillFx 槽位→类型)",
+        allOk,
+        got.map((g) => (g ? `${g.slot}:${g.type}` : "null")).join(" | ") + `（期望 ${expect.join("/")}）`);
+    }
+
     // ── D. 进副本：走到入口附近按 F（真实输入路径）；超时兜底 debug 钩子 ──
     let enteredVia = "walk+F";
     let okEnter = false;
@@ -1047,6 +1065,7 @@ const main = async () => {
       "D3 E10 死亡体验为信息项：故意被精英/BOSS 击杀 → 断言 window.__game.downed（倒地红屏+倒计时）→ 复活回血（IFRAME 闪烁）。受副本随机布局影响，未触发不判 FAIL（不阻塞回归）。",
       "C3 客户端体验大修：①相机锁定跟随本地玩家（clamp 到世界 40×30 格内，不露空白），拖拽不平移（仍抑制点击动作）②点击定位用 mouseup 时刻相机重算 + 命中检测用渲染位置与屏幕空间半径（缩放无关）③伤害飘字锚定实体当前渲染位置（世界空间，随实体/相机移动）④技能 HUD 本地名表（烈斩/剑气/震地/破军，服务端 E11 后对齐 SKILL_NAMES）⑤程序化武侠剪影（斗笠侠客/山贼/野兽/暗影刺客/巨魔 + 掉落物品图标 + 入口漩涡增强，零外部资源）。",
       "E17 客户端多人渲染（加分）：双页面（不同 devUserId）→ P1 先进本（E13 创建 waiting 实例）→ P2 在 5s 集合窗口内加入同一 instance → 断言同 roomId、副本快照含 ≥2 个 kind=0、partyMembers（id!==localEntityId 判定队友）、rendered.party≥1（名牌为 Canvas 绘制无 DOM，用渲染标志代）。主世界段断言 P1/P2 同在 RESIDENT 即互相识别为队友（通用逻辑）。服务端零改动。",
+      "E23 技能光效差异化（纯客户端）：四技能按下即播本地光效（不等服务端命中；命中后叠加命中闪光/飘字）。按槽位区分：烈斩=短促白色挥砍弧(90°/0.15s)、剑气=直线剑气波(青白金/2.5×TILE 飞行+尾迹/到终点消散)、震地=地面震荡圈(土褐圆环+裂纹/2.0×TILE/0.3s)、破军=大范围斩闪(180°红金巨弧+轻微屏幕震动/1.8×TILE/0.2s)。范围对齐服务端 SKILL_RANGE_BY_SLOT=72/120/96/86px。E2E 断言 GAME.lastSkillFx={slot,type}（时序可控：sendSkill 同步写入）。同时修正客户端 SKILL_INFO 镜像（cd 3/5/4/8s、范围 1.5/2.5/2.0/1.8 格），HUD tooltip 与 CD 环随之对齐。服务端零改动。",
     ],
   }, null, 2));
   process.exit(failed.length > 0 ? 1 : 0);

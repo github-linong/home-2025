@@ -7,6 +7,7 @@
 > E19 新增（服务端 E19 装备强化实装）：**强化石 + 强化按钮** —— 击杀精英/BOSS 掉强化石，背包物品点「强化」+5（词缀 ×1.15/级）。
 > E21 新增（服务端 E21 药水实装）：**Q 喝药** —— 击杀精英/BOSS 掉疗伤药（普通怪概率），喝药回 30% 生命 + 5s CD；HUD 药水槽 + 回血绿字 + 咕嘟音效。
 > C3 新增（用户试玩反馈 · 纯客户端）：**①相机锁定跟随**（人物不超屏，世界 40×30 格 clamp 不露空白）**②点击定位修正**（mouseup 重算 + 命中用渲染位置 + 屏幕空间半径）**③飘字跟随实体**（锚定 entityId，每帧按实体渲染位置换算）**④技能 HUD**（烈斩/剑气/震地/破军 + 悬停描述 + 冷却环）**⑤程序化武侠剪影**（斗笠侠客 / 山贼 / 野兽 / 暗影刺客 / 巨魔 + 掉落物品图标 + 入口漩涡增强，零外部资源）。
+> E23 新增（纯客户端 · 技能光效差异化）：四技能**按下即播**本地差异化光效（不等服务端命中，命中后叠加命中闪光/飘字），视觉与 E11 定位/数值匹配 —— **烈斩=短促白色挥砍弧（90°/0.15s 近战感）、剑气=直线剑气波（青白金，飞 2.5×TILE+尾迹，到终点消散）、震地=地面震荡圈（土褐圆环+裂纹，2.0×TILE/0.3s）、破军=大范围斩闪（180° 红金巨弧+轻微屏幕震动，1.8×TILE/0.2s）**；范围对齐服务端 `SKILL_RANGE_BY_SLOT=72/120/96/86px`。同时修正客户端 SKILL_INFO 镜像（CD 3/5/4/8s、范围 1.5/2.5/2.0/1.8 格），HUD tooltip 与 CD 环对齐。服务端零改动。
 
 ---
 
@@ -58,7 +59,7 @@ http://localhost:8080/index.html
 | 移动 | `W A S D` / 方向键 | 8 向移动（**本地预测**：按键即时移动，体感 <50ms；按住持续移动，12Hz 上报；松开即发 STOP 立即停） |
 | 格挡 | `空格` / 格挡按钮 | 服务端开 250ms 格挡窗口（PARRY_TICKS=3）；窗口内减伤 60%，角色出现青蓝护盾光环 + 「格挡中」提示；受击时 parry 生效显示「格挡！」+ 盾闪 |
 | **喝药**（E21） | `Q` / HUD 药水槽 | 发 `character.usePotion` → 服务端权威回血 **30% 生命上限**（`hp = min(maxHp, hp + round(maxHp×0.3))`）+ **5s CD**（POTION_CD_TICKS=60）；回血绿字 +N + 咕嘟喝药音效 + CD 冷却环；**满血不可用**（FULL_HP，不浪费）；开局 **2 瓶疗伤药**，击杀精英/BOSS 固定掉落（普通怪 10% 概率） |
-| 技能 1-4 | `1 2 3 4` / 按钮 | 服务端权威 AoE 命中（半径 1.5 tile）。**C3 按钮显示中文名**（烈斩/剑气/震地/破军）+ 悬停 tooltip（描述/伤害/范围/CD）+ 冷却环（conic 扫角 = 剩余 CD 占比，数字保留）；客户端即时扇形技能光效（0.3s 淡出）；命中叠加扩散环/闪白 |
+| 技能 1-4 | `1 2 3 4` / 按钮 | 服务端权威范围命中（E11 差异化半径 1.5/2.5/2.0/1.8 格）。**C3 按钮显示中文名**（烈斩/剑气/震地/破军）+ 悬停 tooltip（描述/伤害/范围/CD）+ 冷却环（conic 扫角 = 剩余 CD 占比，数字保留）。**E23 技能光效差异化（按下即播，本地即时反馈）**：烈斩=短促白色挥砍弧（面前 90° 快弧 0.15s）、剑气=直线剑气波（青白金沿朝向飞 2.5 格 + 尾迹，波到终点消散）、震地=地面震荡圈（土褐圆环 + 裂纹扩散 2.0 格 0.3s）、破军=大范围斩闪（180° 红金巨弧 + 轻微屏幕震动 1.8 格 0.2s）；服务端命中后叠加命中闪光/飘字 |
 | 拾取 | 走近掉落自动拾取 | 靠近掉落（≤1.5 tile）显示「按 F 拾取」提示；服务端为**重叠自动拾取**（PICKUP_RADIUS=1 tile），走近即入包；按 F 发 SIGNAL（服务端忽略，占位）。**C3 掉落光柱内含物品剪影图标**（武器/护甲/饰品按 itemId 槽位） |
 | 背包 | `I` / HUD「背包 [I]」按钮 | 打开时拉 `character.inventory.get` 全量 + 拾取后实时推送刷新；格子显示稀有度色边框 + itemId 短号 + 词缀数 + 槽位；空背包显示「空」；游客也显示 |
 | **装备**（E7） | 背包物品点「装备」按钮 | 发 `character.equip {itemId}` → 物品从背包移入对应槽（武器/护甲/饰品）；服务端回推 `character.inventory`（含 `equipped`）；**攻击/生命/暴击立即提升**（服务端权威 `setPlayerEquipped` → world maxHp/attrs 即时生效） |
@@ -71,7 +72,7 @@ http://localhost:8080/index.html
 
 **HUD**：顶部 = 连接状态 / 房间（主世界·副本）/ tick / 实体数 / 本地 HP 条 / 格挡态 / 技能 CD / **队伍提示（E17：快照含队友时「队伍：N 人」）** / **背包按钮** / **音效开关（🔊/🔇）+ 音量滑块**（E12）；底部 = 技能栏 + **药水槽（E21：「Q 疗伤药 ×N」+ 数量 + CD 冷却环，无药水半透明）**；屏幕下方 = **拾取 toast**（「拾取 [稀有度色]品（词缀×N）」）。
 
-**打击感（纯客户端表现）**：实体 HP 下降 → **C3 飘字锚定实体**（头顶 -N，敌人受击黄 / 玩家受击红，1s 淡出上飘；**每帧按实体当前渲染位置换算屏幕坐标，实体移动/相机移动时跟随**）+ **150ms 受击闪白** + 扩散环；玩家放技能 → 朝向扇形光效；击杀 → 6-12 个小方块粒子四散淡出。
+**打击感（纯客户端表现）**：实体 HP 下降 → **C3 飘字锚定实体**（头顶 -N，敌人受击黄 / 玩家受击红，1s 淡出上飘；**每帧按实体当前渲染位置换算屏幕坐标，实体移动/相机移动时跟随**）+ **150ms 受击闪白** + 扩散环；玩家放技能 → **E23 差异化本地光效（按下即播，按槽位：烈斩白色挥砍弧 / 剑气直线波 / 震地土褐震荡圈 / 破军红金斩闪 + 屏幕震动）**，命中叠加扩散环/闪白；击杀 → 6-12 个小方块粒子四散淡出。
 
 **E12 音效（WebAudio 程序化合成，零外部资源 / 零网络请求）**：所有音效由 `SFX` 模块（`index.html` 内独立 IIFE，不耦合既有逻辑）实时合成——攻击/技能/命中/格挡/拾取/升级/倒地/复活/进出副本/断线重连/UI 点击/敌人死亡共 18 种。**浏览器自动播放策略**：首次用户手势（pointerdown/keydown）才惰性创建 `AudioContext` 并 resume；无手势 / 无音频环境 / 静音时 `play()` 直接 return（不创建 ctx、不抛错），E2E Z1-Z3 零报错。**音量控制**：HUD 顶部 🔊/🔇 按钮（点击静音/恢复）+ 音量滑块；默认开启，`localStorage`（`jianghu_sfx_vol` / `jianghu_sfx_muted`）记忆。技能音效按 slot 区分（`skill_1..4`）；普攻挥砍音 350ms 节流（input loop 12Hz 连发防机枪声）。
 
@@ -178,6 +179,7 @@ GAME.connected / state / seatId / roomId / reconnectToken / lastSnapshot / local
 GAME.snapshotCount / lastTick / skillCd / parryActive / localHp / localMaxHp / lastLocalPos
 GAME.predicted / localRenderPos / renderTick     // C2 本地预测渲染位置 / 远端插值 tick
 GAME.lastHits / lastKills / lastSkillAt          // C2 打击感：最近伤害飘字 / 击杀 / 技能时刻（C3 lastHits 含 entityId）
+GAME.lastSkillFx                                  // E23：最近一次技能光效 {slot, type}（slash/beam/quake/crush；E2E 断言钩子）
 GAME.inventory {items,cap,loaded} / GAME.equipped / pickupToasts / nearLootId / pickupHint / invOpen
 GAME.cam {cx,cy,scale,w,h} / GAME.playerScreenPos / GAME.floatTexts[] / GAME.rendered {enemies,lootSlots,entrance,player,party}   // C3 相机+飘字+贴图标志（E17：party=本帧渲染队友数）
 GAME.partyMembers    // E17：当前快照队友列表 [{id,ownerId,kind,hp,maxHp,pos,status}]（kind=PLAYER 且 id!==localEntityId）
@@ -216,7 +218,7 @@ E17 E2E 断言约定（加分）：`partyMembers` = 当前快照队友列表（k
 ## 6. 验证（真连真实服务端）
 
 - **服务端回归**：`cd apps/jianghu && npm test` → **全绿（135）**（C2 未动服务端代码）。
-- **C3 E2E**（`verify-e2e.mjs`，Puppeteer 真连真实 jianghu 服务端，puppeteer@24 + Chrome for Testing）：自管进程（起 jianghu 服务 + 静态服务 + Puppeteer）→ 断言链：连接→`session.ready`→`room.join`→收二进制快照→**移动预测（按键 60ms 内渲染位即变 + 松键收敛）**→**掉落可见性（LOOT_GROUND + 拾取提示）→ 拾取→`character.inventory` 入库→背包面板**→鼠标点击移动（M1，屏内 tile 守卫）→鼠标点敌人 + 普攻（M2，屏内敌人守卫）→**C3 客户端体验大修**：**C3-3 飘字跟随**（lastHits.entityId + floatTexts.screen 锚定实体）→**C3-1 相机锁定**（移动中 playerScreenPos 在屏内 + cam clamp）→**C3-2 点击定位**（点 tile 中心 → moveTo 世界坐标误差 < 20px）→**C3-4 禁平移**（拖拽 cam 不动 + 不触发点击）→**C3-5 技能名 HUD**（烈斩/剑气/震地/破军）→**C3-6 程序化贴图**（rendered.player/enemies/lootSlots/entrance）→SKILL1→**真实输入 walk+F 进副本**→副本内 SKILL1 命中敌人（HP 下降 + **伤害飘字 lastHits**）→出本→CDP 模拟断网→自动重连（`session.reconnect`）→**E17 双人同本（P1 进本 + P2 集合窗口加入 → 同 roomId / partyMembers / rendered.party）**；截图存 `verify/01-overworld.png` / `02-dungeon.png` / `03-after-exit.png` / `04-loot-pickup.png` / `05-inventory.png` / `06-equip.png` / `07-click-move.png` / `08-melee.png` / `09-camera-lock.png` / `10-click-accuracy.png` / `11-sprites.png` / `12-party-dungeon.png`。零 pageerror / GAME.errors / console.error。退出码 0=全绿（**37 项断言**：原 33 项 + E17 新 4 项）。
+- **C3 E2E**（`verify-e2e.mjs`，Puppeteer 真连真实 jianghu 服务端，puppeteer@24 + Chrome for Testing）：自管进程（起 jianghu 服务 + 静态服务 + Puppeteer）→ 断言链：连接→`session.ready`→`room.join`→收二进制快照→**移动预测（按键 60ms 内渲染位即变 + 松键收敛）**→**掉落可见性（LOOT_GROUND + 拾取提示）→ 拾取→`character.inventory` 入库→背包面板**→鼠标点击移动（M1，屏内 tile 守卫）→鼠标点敌人 + 普攻（M2，屏内敌人守卫）→**C3 客户端体验大修**：**C3-3 飘字跟随**（lastHits.entityId + floatTexts.screen 锚定实体）→**C3-1 相机锁定**（移动中 playerScreenPos 在屏内 + cam clamp）→**C3-2 点击定位**（点 tile 中心 → moveTo 世界坐标误差 < 20px）→**C3-4 禁平移**（拖拽 cam 不动 + 不触发点击）→**C3-5 技能名 HUD**（烈斩/剑气/震地/破军）→**C3-6 程序化贴图**（rendered.player/enemies/lootSlots/entrance）→SKILL1→**E23 技能光效差异化**（lastSkillFx 钩子：1-4 按下即播 → 槽位对应 slash/beam/quake/crush）→**真实输入 walk+F 进副本**→副本内 SKILL1 命中敌人（HP 下降 + **伤害飘字 lastHits**）→出本→CDP 模拟断网→自动重连（`session.reconnect`）→**E17 双人同本（P1 进本 + P2 集合窗口加入 → 同 roomId / partyMembers / rendered.party）**；截图存 `verify/01-overworld.png` / `02-dungeon.png` / `03-after-exit.png` / `04-loot-pickup.png` / `05-inventory.png` / `06-equip.png` / `07-click-move.png` / `08-melee.png` / `09-camera-lock.png` / `10-click-accuracy.png` / `11-sprites.png` / `12-party-dungeon.png`。零 pageerror / GAME.errors / console.error。退出码 0=全绿（**40 项断言**：原 39 项 + E23 新 1 项）。
 
   ```bash
   cd games/jianghu/apps/web-client

@@ -317,15 +317,22 @@ const SNAP_THRESHOLD = 250;             // 仅真实瞬移（重连/切房）硬
 const INTERP_TICKS = 3;                 // 远端实体渲染 = 最新 tick - 3（≈250ms @12Hz）
 const BUF_MAX = 10;                     // 快照环缓冲帧数
 const PICKUP_HINT_RADIUS = 1.5 * TILE;  // 拾取提示半径（服务端 PICKUP_RADIUS=1×TILE 自动拾取）
-const SKILL_FX_RADIUS = 76;             // 技能光效半径（≈1.5 tile）
-const SKILL_FX_TTL = 300;               // 技能光效时长（ms）
+// ── E23 技能光效差异化（纯客户端表现；按槽位区分，范围/时长对齐服务端 SKILL_RANGE_BY_SLOT=72/120/96/86px）──
+// type：slash=短促白色挥砍弧 / beam=直线剑气波 / quake=地面震荡圈 / crush=大范围斩闪（红金）
+// art-bible 技能色系：烈斩白 / 剑气青金 / 震地土褐 / 破军红金
+const SKILL_FX_CFG = [
+  { type: 'slash', color: '#ffffff', accent: 'rgba(255,255,255,0.9)', ttl: 150, radius: Math.round(1.5 * TILE), arc: Math.PI / 2 },
+  { type: 'beam',  color: '#9fe8ff', accent: '#ffd970', ttl: 250, dist: Math.round(2.5 * TILE), headR: 15, tail: 46 },
+  { type: 'quake', color: '#a0703c', accent: '#7a5230', ttl: 300, radius: Math.round(2.0 * TILE) },
+  { type: 'crush', color: '#d03030', accent: '#f2a03c', ttl: 200, radius: Math.round(1.8 * TILE), arc: Math.PI },
+];
 
 // ── C3 技能 HUD 本地表（服务端后续下发 SKILL_NAMES 前，先用本地表对齐；伤害/CD/范围镜像 sim-core constants）──
 const SKILL_INFO = [
-  { name: '烈斩', desc: '近战重击', dmg: 20, cd: 3.0, rangeTiles: 1.5 },
-  { name: '剑气', desc: '直线剑气波', dmg: 28, cd: 5.6, rangeTiles: 1.5 },
-  { name: '震地', desc: '范围震击', dmg: 16, cd: 6.8, rangeTiles: 1.5 },
-  { name: '破军', desc: '重击斩', dmg: 36, cd: 8.0, rangeTiles: 1.5 },
+  { name: '烈斩', desc: '近战重击·高伤', dmg: 20, cd: 3.0, rangeTiles: 1.5 },
+  { name: '剑气', desc: '直线剑气·中距', dmg: 28, cd: 5.0, rangeTiles: 2.5 },
+  { name: '震地', desc: '范围震击·群伤', dmg: 16, cd: 4.0, rangeTiles: 2.0 },
+  { name: '破军', desc: '破军斩·爆发', dmg: 36, cd: 8.0, rangeTiles: 1.8 },
 ];
 const SKILL_RANGE_TILES = 1.5;          // 技能范围（格，镜像 SKILL_RANGE=1.5×TILE）
 
@@ -667,6 +674,7 @@ const GAME = window.__game = {
   // C2：本地预测 / 打击感 / 掉落 / 背包（E2E 断言钩子）
   predicted: null, localRenderPos: null, renderTick: 0,
   lastHits: [], lastKills: [], lastHeals: [], pickupToasts: [], lastSkillAt: 0,
+  lastSkillFx: null, // E23：最近一次技能光效 {slot, type}（E2E 断言钩子；按下即播，不等服务端命中）
   inventory: { items: [], cap: 60, loaded: false },
   equipped: {}, // E7：3 槽已穿戴（character.inventory 消息）
   materials: 0, // E19：强化石计数（character.inventory.materials）
@@ -777,7 +785,8 @@ let prevHp = new Map();             // id → 上一帧 hp（伤害检测）
 let floatTexts = [];                // 伤害飘字 {x,y,text,color,born,ttl,vy}
 let hitFlashes = new Map();         // id → until(performance.now()) 受击闪白
 let rings = [];                     // 命中/格挡扩散环 {x,y,color,born,ttl,r0,r1}
-let skillFx = [];                   // 技能光效 {x,y,dir,color,born,ttl,radius}
+let skillFx = [];                   // 技能光效（E23 差异化：{type:'slash'|'beam'|'quake'|'crush', x,y,dir,born,ttl,...}）
+let screenShake = 0;                // E23：破军屏幕震动幅度（px，逐帧衰减）
 let killFx = [];                    // 击杀粒子 {x,y,parts,born,ttl}
 let parryFx = { until: 0 };         // 格挡成功盾闪
 let levelFx = { until: 0 };         // E9：升级金色闪光（until = performance.now() 截止）
@@ -990,7 +999,7 @@ function sendJson(obj) {
 function resetFxState() {
   snapBuffer = []; lastKnown.clear();
   prevHp = new Map(); floatTexts = []; hitFlashes = new Map();
-  rings = []; skillFx = []; killFx = []; parryFx.until = 0; meleeFx = [];
+  rings = []; skillFx = []; killFx = []; parryFx.until = 0; meleeFx = []; screenShake = 0; // E23：清屏幕震动（防跨房残留）
   levelFx.until = 0; // E9：清升级闪光（防跨房残留）
   reviveFx.until = 0; downed = false; downedSinceTick = null; // E10：清倒地/复活态（防跨房残留）
   GAME.downed = false; GAME.downedSinceTick = null; GAME.iframes = false;
@@ -1514,13 +1523,27 @@ function sendUsePotion() {
   renderPotionHud();
 }
 
-// C2：技能释放 → 立即本地技能光效（朝向扇形闪光 0.3s 淡出）+ E2E lastSkillAt
+// E23：技能释放 → 按下即播差异化本地光效（不等服务端命中确认；服务端命中后叠加命中闪光/飘字，见 C2 伤害检测）
 function sendSkill(slot) {
   sendCmd({ action: SKILL_ACTIONS[slot] ?? 2, skillSlot: slot, dir: lastMoveDir ?? 0 });
   const d = dirFromKeys() ?? lastMoveDir ?? 0;
   const base = predicted || (localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId).pos : { x: 0, y: 0 });
-  skillFx.push({ x: base.x, y: base.y, dir: d, color: 'rgba(255,179,71,1)', born: performance.now(), ttl: SKILL_FX_TTL, radius: SKILL_FX_RADIUS });
-  GAME.lastSkillAt = performance.now();
+  const cfg = SKILL_FX_CFG[slot] || SKILL_FX_CFG[0];
+  const now = performance.now();
+  const fx = { x: base.x, y: base.y, dir: d, born: now, ttl: cfg.ttl, color: cfg.color, accent: cfg.accent };
+  if (cfg.type === 'beam') {
+    fx.type = 'beam'; fx.dist = cfg.dist; fx.headR = cfg.headR; fx.tail = cfg.tail;      // 剑气：直线飞行波
+  } else if (cfg.type === 'quake') {
+    fx.type = 'quake'; fx.radius = cfg.radius; fx.seed = (Math.random() * 1000) | 0;     // 震地：震荡圈（裂纹确定性抖动）
+  } else if (cfg.type === 'crush') {
+    fx.type = 'crush'; fx.radius = cfg.radius; fx.arc = cfg.arc; fx.seed = (Math.random() * 1000) | 0;
+    screenShake = Math.max(screenShake, 6); // 破军：轻微屏幕震动
+  } else {
+    fx.type = 'slash'; fx.radius = cfg.radius; fx.arc = cfg.arc;                          // 烈斩：短促挥砍弧
+  }
+  skillFx.push(fx);
+  GAME.lastSkillAt = now;
+  GAME.lastSkillFx = { slot, type: cfg.type }; // E23 E2E 钩子：槽位→光效类型（slash/beam/quake/crush）
   SFX.play('skill_' + (slot + 1)); // E12：技能音效按 slot 区分（skill_1..4）
 }
 
@@ -2150,7 +2173,11 @@ function draw() {
   ctx.fillRect(0, 0, view.w, view.h);
 
   ctx.save();
-  ctx.translate(view.w / 2 - camX * view.scale, view.h / 2 - camY * view.scale);
+  // E23：破军屏幕震动（仅偏移世界层渲染；GAME.cam / worldToScreen 不受影响 → E2E 相机断言稳定）
+  const shx = screenShake > 0 ? (Math.random() * 2 - 1) * screenShake : 0;
+  const shy = screenShake > 0 ? (Math.random() * 2 - 1) * screenShake : 0;
+  if (screenShake > 0) screenShake = Math.max(0, screenShake - 40 * dt); // 6px → ~0.15s 衰减完
+  ctx.translate(view.w / 2 - camX * view.scale + shx * view.scale, view.h / 2 - camY * view.scale + shy * view.scale);
   ctx.scale(view.scale, view.scale);
 
   drawGrid();
@@ -2996,30 +3023,159 @@ function drawFx() {
     ctx.restore();
   }
 
-  // 技能光效（玩家放技能方向扇形闪光，0.3s 淡出）
+  // E23：技能光效差异化（按槽位：slash 烈斩短促挥砍弧 / beam 剑气直线波 / quake 震地震荡圈 / crush 破军斩闪）
   for (let i = skillFx.length - 1; i >= 0; i--) {
     const fx = skillFx[i];
     const age = t - fx.born;
     if (age > fx.ttl) { skillFx.splice(i, 1); continue; }
-    const k = age / fx.ttl;
-    const s = worldToScreen({ x: fx.x, y: fx.y });
-    const ang = fx.dir * Math.PI / 4;
-    ctx.save();
-    ctx.translate(s.x, s.y);
-    ctx.rotate(ang);
-    ctx.globalAlpha = (1 - k) * 0.55;
-    const grad = ctx.createRadialGradient(0, 0, 4, 0, 0, fx.radius);
-    grad.addColorStop(0, 'rgba(255,255,255,0.95)');
-    grad.addColorStop(0.4, fx.color);
-    grad.addColorStop(1, 'rgba(255,140,66,0)');
-    ctx.fillStyle = grad;
+    const k = Math.min(1, age / fx.ttl);
+    if (fx.type === 'beam') drawSkillBeam(fx, k);
+    else if (fx.type === 'quake') drawSkillQuake(fx, k);
+    else if (fx.type === 'crush') drawSkillCrush(fx, k);
+    else drawSkillSlash(fx, k);
+  }
+
+// E23：四技能差异化光效绘制（世界坐标→屏幕；k=0..1 生命周期进度）。纯几何，无随机每帧抖动（裂纹/斩线用 seed 确定性）。
+function fxEaseOut(k) { return 1 - (1 - k) * (1 - k); }
+
+// 烈斩：短促白色挥砍弧（玩家面前 90° 快弧，0.15s，近战感；前缘亮弧随进度扫过）
+function drawSkillSlash(fx, k) {
+  const s = worldToScreen({ x: fx.x, y: fx.y });
+  const ang = fx.dir * Math.PI / 4;
+  const a0 = -fx.arc / 2, a1 = fx.arc / 2;
+  ctx.save();
+  ctx.translate(s.x, s.y);
+  ctx.rotate(ang);
+  ctx.globalAlpha = (1 - k) * 0.95;
+  const grad = ctx.createRadialGradient(0, 0, 4, 0, 0, fx.radius);
+  grad.addColorStop(0, 'rgba(255,255,255,1)');
+  grad.addColorStop(0.55, 'rgba(255,255,255,0.78)');
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.arc(0, 0, fx.radius, a0, a1);
+  ctx.closePath();
+  ctx.fill();
+  const sweep = a0 + (a1 - a0) * k; // 前缘由左向右扫，斩击感
+  ctx.strokeStyle = 'rgba(255,255,255,' + ((1 - k) * 0.95).toFixed(3) + ')';
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  ctx.arc(0, 0, fx.radius * 0.82, sweep - 0.22, sweep);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// 剑气：直线剑气波（青白芯 + 金晕尾迹，沿 dir 飞 2.5×TILE=120px，0.25s，到终点消散）
+function drawSkillBeam(fx, k) {
+  const v = DIR_VECTORS[fx.dir];
+  const traveled = k * fx.dist;
+  const hx = fx.x + v.x * traveled, hy = fx.y + v.y * traveled;
+  const tailBack = Math.max(0, traveled - fx.tail);
+  const s = worldToScreen({ x: hx, y: hy });
+  const te = worldToScreen({ x: fx.x + v.x * tailBack, y: fx.y + v.y * tailBack });
+  ctx.save();
+  ctx.globalAlpha = 1 - k * 0.45;
+  ctx.lineCap = 'round';
+  const tg = ctx.createLinearGradient(s.x, s.y, te.x, te.y);
+  tg.addColorStop(0, 'rgba(159,232,255,0.95)');
+  tg.addColorStop(0.45, 'rgba(159,232,255,0.45)');
+  tg.addColorStop(1, 'rgba(255,217,112,0)');
+  ctx.strokeStyle = tg;
+  ctx.lineWidth = 7;
+  ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(te.x, te.y); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,217,112,0.5)';
+  ctx.lineWidth = 2.4;
+  ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(te.x, te.y); ctx.stroke();
+  const hg = ctx.createRadialGradient(s.x, s.y, 1, s.x, s.y, fx.headR * 2.2);
+  hg.addColorStop(0, 'rgba(255,255,255,1)');
+  hg.addColorStop(0.35, 'rgba(159,232,255,0.95)');
+  hg.addColorStop(0.7, 'rgba(255,217,112,0.5)');
+  hg.addColorStop(1, 'rgba(255,217,112,0)');
+  ctx.fillStyle = hg;
+  ctx.beginPath(); ctx.arc(s.x, s.y, fx.headR * 2.2, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  ctx.beginPath(); ctx.arc(s.x, s.y, fx.headR * 0.8, 0, Math.PI * 2); ctx.fill();
+  if (k > 0.85) { // 到位消散小爆闪（命中范围视觉对得上服务端 120px）
+    const pk = (k - 0.85) / 0.15;
+    ctx.globalAlpha = (1 - pk) * 0.8;
+    ctx.strokeStyle = 'rgba(159,232,255,0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(s.x, s.y, 8 + pk * 24, 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// 震地：地面震荡圈（土褐圆环扩散 + 放射裂纹，0.3s，2.0×TILE=96px）
+function drawSkillQuake(fx, k) {
+  const s = worldToScreen({ x: fx.x, y: fx.y });
+  const r = 8 + (fx.radius - 8) * fxEaseOut(k);
+  const alpha = (1 - k) * 0.85;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = fx.color;
+  ctx.lineWidth = 3.5;
+  ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = fx.accent;
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(s.x, s.y, r * 0.72, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = 'rgba(160,112,60,0.4)';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.arc(s.x, s.y, r * 1.1, 0, Math.PI * 2); ctx.stroke();
+  for (let i = 0; i < 8; i++) { // 8 条放射裂纹（seed 确定性抖动）
+    const baseA = (i / 8) * Math.PI * 2 + (fx.seed % 7) * 0.13;
+    const len = (0.5 + ((fx.seed + i * 37) % 10) / 20) * r;
+    const sp = 0.18 + 0.12 * Math.sin(i * 2.7 + fx.seed);
+    ctx.strokeStyle = 'rgba(122,82,48,' + (alpha * 0.9).toFixed(3) + ')';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(s.x + Math.cos(baseA - sp) * r * 0.5, s.y + Math.sin(baseA - sp) * r * 0.5);
+    ctx.lineTo(s.x + Math.cos(baseA + sp) * r * 0.5, s.y + Math.sin(baseA + sp) * r * 0.5);
+    ctx.lineTo(s.x + Math.cos(baseA) * len, s.y + Math.sin(baseA) * len);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = alpha * 0.22; // 中心尘土淡棕
+  ctx.fillStyle = '#a0703c';
+  ctx.beginPath(); ctx.arc(s.x, s.y, r * 0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// 破军：大范围斩闪（180° 红/金巨弧，0.2s 爆发感；屏幕震动在 sendSkill 触发）
+function drawSkillCrush(fx, k) {
+  const s = worldToScreen({ x: fx.x, y: fx.y });
+  const ang = fx.dir * Math.PI / 4;
+  const a0 = -fx.arc / 2, a1 = fx.arc / 2;
+  const r = fx.radius * (0.7 + 0.3 * k);
+  const alpha = (1 - k) * 0.9;
+  ctx.save();
+  ctx.translate(s.x, s.y);
+  ctx.rotate(ang);
+  ctx.globalAlpha = alpha;
+  const grad = ctx.createRadialGradient(0, 0, 6, 0, 0, r);
+  grad.addColorStop(0, 'rgba(255,240,200,0.95)');
+  grad.addColorStop(0.35, 'rgba(208,48,48,0.9)');
+  grad.addColorStop(0.75, 'rgba(242,160,60,0.5)');
+  grad.addColorStop(1, 'rgba(208,48,48,0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.arc(0, 0, r, a0, a1);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(242,160,60,' + alpha.toFixed(3) + ')'; // 金色前缘巨弧
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(0, 0, r * 0.92, a0, a1); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,214,120,' + (alpha * 0.8).toFixed(3) + ')'; // 4 道放射金斩线
+  ctx.lineWidth = 1.6;
+  for (let i = 0; i < 4; i++) {
+    const a = a0 + (a1 - a0) * ((i + 0.5) / 4) + Math.sin(i * 3.1 + fx.seed) * 0.08;
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.arc(0, 0, fx.radius, -0.62, 0.62);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
+    ctx.lineTo(Math.cos(a) * r * 0.96, Math.sin(a) * r * 0.96);
+    ctx.stroke();
   }
+  ctx.restore();
+}
 
   // E8 普攻挥砍弧线（白刃扇形短闪 0.22s，复用技能光效模式）
   for (let i = meleeFx.length - 1; i >= 0; i--) {
