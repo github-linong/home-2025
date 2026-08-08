@@ -69,3 +69,6 @@ docs/
 frontend/
 .qoder/
 games/jianghu/data/
+
+# jianghu verify screenshots (local-only E2E captures)
+games/jianghu/apps/web-client/verify/*.png
