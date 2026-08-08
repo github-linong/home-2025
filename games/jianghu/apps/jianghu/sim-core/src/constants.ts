@@ -493,6 +493,42 @@ export const CHEST_ITEM_COUNT_MAX = 5;
 export const CHEST_STONES = ENCHANT_STONES_BY_TIER.boss;
 
 // ─────────────────────────────────────────────────────────────
+// E21：药水 / 消耗品（potion；C7 单一来源）
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * 疗伤药回血比例（× 当前 maxHp）。E21 · 主理人拍板：回 30% maxHp。
+ * 生效公式（world.usePotion 服务端权威）：hp = min(maxHp, hp + round(maxHp × 本值))。
+ * 暗黑式「喝红瓶」生存核心：唯一玩家主动回血手段（无被动回血 / 无其它消耗品）。
+ */
+export const POTION_HEAL_RATIO = 0.3;
+
+/**
+ * 药水使用冷却（tick）= 5s @12Hz。
+ * world actor.lastPotionTick 记录上次使用 tick；`nowTick - lastPotionTick >= 本值` 才可再用。
+ * 客户端 CD 环/数字按本值推算（C7 单一来源镜像）。
+ */
+export const POTION_CD_TICKS = 5 * TICK_RATE;
+
+/**
+ * 普通怪击杀药水掉落概率（10%）。
+ * **独立 Rng 流**（`new Rng('potion:' + seed + ':' + tick + ':' + enemyId)`，每次击杀新建实例）——
+ * 零状态、不消耗 simRng → 不扰动掉落/暴击 Rng 流 → playtest golden 稳定（D9）。
+ */
+export const POTION_DROP_NORMAL_CHANCE = 0.1;
+
+/**
+ * 击杀药水数按敌人 tier（普通怪 0 → 走 POTION_DROP_NORMAL_CHANCE 概率；精英/BOSS 固定必得）。
+ * 复用 E19 ENCHANT_STONES_BY_TIER「材料计数」模式：固定必得、不依赖掉落 Rng 流、
+ * **不进 EntityState 快照**（C12）→ 不污染 playtest golden（journal 无药水字段，掉装不变）。
+ */
+export const POTIONS_BY_TIER: Readonly<Record<EnemyTier, number>> = {
+  normal: 0,
+  elite: 1,
+  boss: 2,
+} as const;
+
+// ─────────────────────────────────────────────────────────────
 // 敌人 AI（E6：敌人类别 + 仇恨；combat §⑥ / spawning §⑥）
 // ─────────────────────────────────────────────────────────────
 

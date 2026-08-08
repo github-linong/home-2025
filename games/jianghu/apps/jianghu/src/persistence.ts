@@ -58,6 +58,8 @@ export interface Character {
   equipped?: EquippedSlots;
   /** E19：强化石计数（材料；可缺省 = 0，旧角色兼容）。独立于背包（强化石不入包）。 */
   materials?: number;
+  /** E21：药水计数（消耗品；可缺省 = 0，旧角色兼容）。独立于背包（药水不入包）。MVP 开局 2 瓶（新手友好）。 */
+  potions?: number;
   /** 最近落库时间（ms）；仅服务端维护。 */
   updatedAt: number;
 }
@@ -174,7 +176,7 @@ export const DEFAULT_ATTRS: AttrSet = Object.freeze({ ...PLAYER_BASE_ATTRS });
 /** 主世界安全区出生点（tile 对齐，48px）。死亡回安全区（决策④）。 */
 export const SAFE_SPAWN: Vec2 = Object.freeze({ x: 16 * 48, y: 15 * 48 });
 
-/** 创建新角色快照（Lv1 / EXP0 / 基础属性 / 安全区 / 空装备 / 0 强化石）。 */
+/** 创建新角色快照（Lv1 / EXP0 / 基础属性 / 安全区 / 空装备 / 0 强化石 / 2 瓶疗伤药）。 */
 export function createNewCharacter(userId: string, now: number = Date.now()): CharacterSnapshot {
   return {
     character: {
@@ -185,6 +187,7 @@ export function createNewCharacter(userId: string, now: number = Date.now()): Ch
       pos: { ...SAFE_SPAWN },
       equipped: {}, // E7：空装备槽
       materials: 0, // E19：0 强化石
+      potions: 2, // E21：MVP 开局 2 瓶疗伤药（新手友好——当前无其它回血手段，红瓶是生存核心）
       updatedAt: now,
     },
     inventory: { items: [] },

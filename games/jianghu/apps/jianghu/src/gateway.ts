@@ -36,7 +36,7 @@ import {
   sendToConn,
   type Conn,
 } from "./connection-registry.ts";
-import { dispatch, setProtocolCharacterService, setProtocolSnapshotSyncer, resolveInventoryGet, resolveLevelGet, resolveEquip, resolveUnequip, resolveEnchant } from "./protocol.ts";
+import { dispatch, setProtocolCharacterService, setProtocolSnapshotSyncer, resolveInventoryGet, resolveLevelGet, resolveEquip, resolveUnequip, resolveEnchant, resolveUsePotion } from "./protocol.ts";
 import { enqueueInput, addPlayerToRoom, setSeatSnapshotSyncer, onSeatDisconnect } from "./run-manager.ts";
 import { TICK_MS, TICK_RATE } from "../sim-core/src/constants.ts"; // C1 单一来源
 import type { InputCmd } from "../sim-core/src/types.ts";
@@ -323,6 +323,16 @@ function handleRaw(conn: Conn, raw: Buffer): void {
     return;
   }
 
+  // E21 药水数据通道（控制面）：character.usePotion → 喝药（world actor 回血 + 落库 + 回推，async，同 equip 模式）。
+  if (msg.type === "character.usePotion") {
+    const s = liveSessions.get(conn.connId);
+    void resolveUsePotion(
+      { userId: conn.userId, connId: conn.connId, seatId: s?.seatId, roomId: conn.roomId },
+      msg,
+    ).then((reply) => sendToConn(conn.connId, reply));
+    return;
+  }
+
   const s = liveSessions.get(conn.connId);
   const result = dispatch(
     { userId: conn.userId, connId: conn.connId, seatId: s?.seatId, roomId: conn.roomId },
@@ -338,7 +348,8 @@ function handleRaw(conn: Conn, raw: Buffer): void {
       // E7：登录玩家携带持久化装备（equipped）→ 世界镜像 maxHp/attrs；游客 snapshot=null → undefined → 基础属性。
       // E9：登录玩家携带持久化等级（level）→ 世界镜像 attrs（str/dex/vit/atk/maxHp 反映真实等级）。
       // E19：登录玩家携带持久化强化石（materials）→ 世界镜像计数（击杀累计；游客 → undefined → 0）。
-      addPlayerToRoom(joinedRoomId, s2.seatId, s2.userId, s2.snapshot?.character.equipped, s2.snapshot?.character.level, s2.snapshot?.character.materials);
+      // E21：登录玩家携带持久化药水（potions）→ 世界镜像计数（击杀累计/使用递减；游客 → undefined → 0）。
+      addPlayerToRoom(joinedRoomId, s2.seatId, s2.userId, s2.snapshot?.character.equipped, s2.snapshot?.character.level, s2.snapshot?.character.materials, s2.snapshot?.character.potions);
       // 双模式关键事件：登录玩家加入房间 → last-wins 顶替（C-Per-4）+ 落库（架构 §7）。
       if (!s2.guest) {
         enforceLastWins(joinedRoomId, s2.userId);

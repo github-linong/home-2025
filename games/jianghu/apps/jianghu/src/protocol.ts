@@ -23,15 +23,17 @@ import {
 import {
   startRun,
   getSnapshot,
+  getWorld, // E21：usePotion 取当前 room world 权威 tick（副本用副本 world 的 tick）
   enterInstance,
   exitInstance,
   isInstanceRunning,
   setPlayerEquipped, // E7：equip/unequip → 世界镜像（maxHp/attrs 即时生效）
   pushInventoryToSeat, // E7：装备变更后推送背包（含 equipped）
+  setPotionBySeat, // E21：使用药水后同步 potionBySeat 缓存（换域播种）
   canEnterInstance, // E16：入口服务端坐标校验（进本前检查玩家与 ENTRANCE 距离）
 } from "./run-manager.ts";
 import { RoomPhase } from "../sim-core/src/types.ts";
-import { INVENTORY_CAP, xpForLevel, ENCHANT_STONE_ITEM_ID, MAX_ENCHANT_LEVEL, ENCHANT_COST } from "../sim-core/src/constants.ts"; // C7 单一来源（背包上限 / 升级经验需求 / E19 强化常量）
+import { INVENTORY_CAP, xpForLevel, ENCHANT_STONE_ITEM_ID, MAX_ENCHANT_LEVEL, ENCHANT_COST, POTION_CD_TICKS } from "../sim-core/src/constants.ts"; // C7 单一来源（背包上限 / 升级经验需求 / E19 强化常量 / E21 药水 CD）
 import { itemProto, type EquippedSlots } from "../sim-core/src/affixes.ts"; // E7：slot 推导 / 装备槽
 import { encodeSnapshot } from "./protocol-binary.ts";
 import { generateId } from "./ids.ts";
@@ -121,6 +123,8 @@ export interface InventoryMessage {
   readonly cap: number; // 背包上限（INVENTORY_CAP=60）
   /** E19：强化石计数（Character.materials；客户端背包面板顶部「强化石 ×N」）。 */
   readonly materials: number;
+  /** E21：药水计数（Character.potions；客户端 HUD 药水槽「Q 疗伤药 ×N」）。 */
+  readonly potions: number;
 }
 
 /** EquippedSlots → EquippedView（去 slot 键、展平 affixes；缺省空槽）。E19：保留 enchantLevel。 */
@@ -149,7 +153,7 @@ function itemsView(inventory: Inventory): InventoryItemView[] {
   }));
 }
 
-function inventoryMessage(requestId: string | undefined, inventory: Inventory, equipped: EquippedSlots | undefined, materials: number): InventoryMessage {
+function inventoryMessage(requestId: string | undefined, inventory: Inventory, equipped: EquippedSlots | undefined, materials: number, potions: number): InventoryMessage {
   return {
     type: "character.inventory",
     requestId,
@@ -157,6 +161,7 @@ function inventoryMessage(requestId: string | undefined, inventory: Inventory, e
     equipped: equippedView(equipped),
     cap: INVENTORY_CAP,
     materials,
+    potions,
   };
 }
 
@@ -166,7 +171,7 @@ function equipError(requestId: string | undefined, code: string, message: string
 
 /**
  * 处理 `character.inventory.get`（异步）：登录玩家返回持久化背包；游客/未知座位回空 items
- * （C-Per-1 零持久写不涉及：游客不 loadOrCreate，直接空背包）。E7：附带 equipped。E19：附带 materials。
+ * （C-Per-1 零持久写不涉及：游客不 loadOrCreate，直接空背包）。E7：附带 equipped。E19：附带 materials。E21：附带 potions。
  */
 export async function resolveInventoryGet(
   ctx: ProtocolContext,
@@ -179,6 +184,7 @@ export async function resolveInventoryGet(
     equipped: {},
     cap: INVENTORY_CAP,
     materials: 0,
+    potions: 0,
   });
   const cs = protocolCharacterService;
   const seatId = ctx.seatId;
@@ -186,7 +192,7 @@ export async function resolveInventoryGet(
   const info = cs.getSeatInfo(seatId);
   if (!info || info.guest) return empty(); // 游客 / 未知座位 → 空背包（C-Per-1）
   const { snapshot } = await cs.loadOrCreate(info.userId);
-  return inventoryMessage(msg.requestId, snapshot.inventory, snapshot.character.equipped, snapshot.character.materials ?? 0);
+  return inventoryMessage(msg.requestId, snapshot.inventory, snapshot.character.equipped, snapshot.character.materials ?? 0, snapshot.character.potions ?? 0);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -289,8 +295,8 @@ export async function resolveEquip(
   protocolSnapshotSyncer?.(ctx.connId, { character: { ...snapshot.character, equipped }, inventory });
   // 世界镜像：当前房间世界 actor 应用装备（maxHp/attrs 即时生效；未入房则仅缓存等 addPlayer）。
   setPlayerEquipped(ctx.roomId ?? undefined, seatId, equipped);
-  pushInventoryToSeat(seatId, inventory, equipped, snapshot.character.materials ?? 0);
-  return inventoryMessage(requestId, inventory, equipped, snapshot.character.materials ?? 0);
+  pushInventoryToSeat(seatId, inventory, equipped, snapshot.character.materials ?? 0, snapshot.character.potions ?? 0);
+  return inventoryMessage(requestId, inventory, equipped, snapshot.character.materials ?? 0, snapshot.character.potions ?? 0);
 }
 
 /**
@@ -324,8 +330,8 @@ export async function resolveUnequip(
   await loaded.cs.save(userId, { character: { ...snapshot.character, equipped }, inventory });
   protocolSnapshotSyncer?.(ctx.connId, { character: { ...snapshot.character, equipped }, inventory });
   setPlayerEquipped(ctx.roomId ?? undefined, seatId, equipped);
-  pushInventoryToSeat(seatId, inventory, equipped, snapshot.character.materials ?? 0);
-  return inventoryMessage(requestId, inventory, equipped, snapshot.character.materials ?? 0);
+  pushInventoryToSeat(seatId, inventory, equipped, snapshot.character.materials ?? 0, snapshot.character.potions ?? 0);
+  return inventoryMessage(requestId, inventory, equipped, snapshot.character.materials ?? 0, snapshot.character.potions ?? 0);
 }
 
 /**
@@ -401,8 +407,70 @@ export async function resolveEnchant(
   protocolSnapshotSyncer?.(ctx.connId, { character, inventory });
   // 已装备目标 → 世界 actor 属性重算（maxHp/attrs 即时生效；背包目标不触世界镜像）。
   if (targetSlot) setPlayerEquipped(ctx.roomId ?? undefined, seatId, equipped);
-  pushInventoryToSeat(seatId, inventory, equipped, newMaterials);
-  return inventoryMessage(requestId, inventory, equipped, newMaterials);
+  pushInventoryToSeat(seatId, inventory, equipped, newMaterials, snapshot.character.potions ?? 0);
+  return inventoryMessage(requestId, inventory, equipped, newMaterials, snapshot.character.potions ?? 0);
+}
+
+/** character.potion 消息体（使用药水成功回推；客户端刷新药水槽 + CD 环 + 回血飘字）。 */
+export interface PotionMessage {
+  readonly type: "character.potion";
+  readonly requestId?: string;
+  /** 使用后药水数（= 持久化 Character.potions，客户端一次拉全）。 */
+  readonly count: number;
+  /** 本轮 CD 剩余（tick）= POTION_CD_TICKS（使用瞬间为全量 5s；客户端按 msg.tick + 本值推算 CD 环）。 */
+  readonly cdTicksLeft: number;
+  /** 本次实际回血量（≤ round(maxHp×0.3)，clamp 到 maxHp；客户端绿字飘字）。 */
+  readonly healed: number;
+  /** 使用时的 world tick（客户端 CD 环截止点 = tick + cdTicksLeft）。 */
+  readonly tick: number;
+}
+
+/**
+ * E21：处理 `character.usePotion`（异步，仿 equip 模式）。
+ * - 校验（服务端权威，world.usePotion）：登录玩家（游客 → NOT_LOGGED_IN，C-Per-1）、
+ *   在房间内（NO_ROOM）、potionCount > 0（NO_POTIONS）、hp < maxHp（FULL_HP 满血不可用）、
+ *   CD 到（POTION_CD → world tick 判定，副本用副本 world 的 tick）；
+ * - 生效：world actor 回血（hp = min(maxHp, hp + round(maxHp×0.3))）、potionCount -= 1、
+ *   lastPotionTick = nowTick（下一快照自然下发回血后 hp）；
+ * - 落库 Character.potions（以 world actor 使用后计数为准，防并发双发竞态覆盖）+ P0 syncer；
+ * - 回推 character.potion（count/cdTicksLeft/healed/tick）+ character.inventory（potions 字段一次拉全）。
+ */
+export async function resolveUsePotion(
+  ctx: ProtocolContext,
+  msg: { type: string; requestId?: string },
+): Promise<PotionMessage | GameErrorReply> {
+  const requestId = msg.requestId;
+  const loaded = await loadLoginSnapshot(ctx, requestId);
+  if (!loaded.ok) return loaded.reply as never;
+  const { snapshot, userId, seatId } = loaded;
+
+  const world = ctx.roomId ? getWorld(ctx.roomId) : null;
+  if (!world) return err(requestId, "NOT_IN_ROOM", "use potion requires being in a room");
+  // 用 world tick 判定 CD（服务端权威；玩家在副本 → 副本 world 的 tick）。
+  const res = world.usePotion(seatId, world.tick);
+  if (!res.ok) {
+    if (res.reason === "NO_POTIONS") return err(requestId, "NO_POTIONS", "no potions left");
+    if (res.reason === "FULL_HP") return err(requestId, "FULL_HP", "hp already full");
+    if (res.reason === "ON_CD") return err(requestId, "POTION_CD", `potion on cooldown (${res.cdTicksLeft ?? 0} ticks left)`);
+    return err(requestId, "NO_ACTOR", "player not in world");
+  }
+
+  // 落库：以 world actor 使用后计数（res.count）为权威（与 world 镜像锁步，防并发双发竞态覆盖）。
+  const potions = res.count!;
+  const character = { ...snapshot.character, potions, updatedAt: Date.now() };
+  await loaded.cs.save(userId, { character, inventory: snapshot.inventory });
+  // P0 修复：同步 session.snapshot，防止 autosave/下线 save 覆盖药水使用结果。
+  protocolSnapshotSyncer?.(ctx.connId, { character, inventory: snapshot.inventory });
+  setPotionBySeat(seatId, potions);
+  pushInventoryToSeat(seatId, snapshot.inventory, snapshot.character.equipped, snapshot.character.materials ?? 0, potions);
+  return {
+    type: "character.potion",
+    requestId,
+    count: potions,
+    cdTicksLeft: res.cdTicksLeft ?? POTION_CD_TICKS,
+    healed: res.healed ?? 0,
+    tick: res.tick ?? world.tick,
+  };
 }
 
 export function dispatch(

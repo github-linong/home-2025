@@ -93,6 +93,13 @@
   .abtn.dungeon { width: auto; min-width: 92px; height: 44px; padding: 0 12px; flex-direction: row; gap: 8px; font-size: 13px;
     border-color: #7d5fa0; color: #cbb; }
   .abtn.dungeon:disabled { opacity: .4; cursor: not-allowed; }
+  /* ── E21 药水槽（Q 疗伤药；绿色主题 + 数量 + CD 环）── */
+  .abtn.potion { width: 66px; height: 66px; border-color: #4e8a5a; color: #d8f0d0; }
+  .abtn.potion:hover { border-color: #5fd08a; }
+  .abtn.potion.active { border-color: #5fd08a; box-shadow: 0 0 12px rgba(95,208,138,.7); }
+  .abtn.potion .sname { font-size: 12px; }
+  .abtn.potion .pcount { font-size: 11px; color: #8fd8a0; font-weight: 700; line-height: 1; margin-top: 1px; }
+  .abtn.potion.zero { opacity: .5; }
 
   /* ── Toast（顶部）── */
   #toast { position: absolute; top: 52px; left: 50%; transform: translateX(-50%); z-index: 20;
@@ -186,6 +193,8 @@
   <div class="abtn" id="btn-skill-2" data-skill="2" title="震地（键 3）"><span class="sname">震地</span><span class="key">3</span></div>
   <div class="abtn" id="btn-skill-3" data-skill="3" title="破军（键 4）"><span class="sname">破军</span><span class="key">4</span></div>
   <div class="abtn parry" id="btn-parry" title="格挡（空格）"><span>格挡</span><span class="key">SPACE</span></div>
+  <!-- E21：药水槽（Q 喝药；击杀精英/BOSS 掉落，普通怪概率；回血 30% maxHp + 5s CD） -->
+  <div class="abtn potion" id="btn-potion" title="疗伤药（Q）· 回血 30% 生命上限 · CD 5s"><span class="sname">疗伤药</span><span class="key">Q</span><span class="pcount" id="potion-count">×0</span></div>
   <div class="abtn dungeon" id="btn-dungeon" title="进副本 / 出本（F）"><span id="btn-dungeon-label">进副本</span><span class="key">F</span></div>
 </div>
 
@@ -228,7 +237,7 @@
 </div>
 
 <div id="help">
-  <b>左键点敌人</b> 自动走近普攻 · <b>左键点地面</b> 点击移动 · <b>WASD/方向键</b> 移动（8 向） · <b>空格</b> 格挡 · <b>1-4</b> 技能（<b>烈斩/剑气/震地/破军</b>） · <b>I</b> 背包<br>
+  <b>左键点敌人</b> 自动走近普攻 · <b>左键点地面</b> 点击移动 · <b>WASD/方向键</b> 移动（8 向） · <b>空格</b> 格挡 · <b>1-4</b> 技能（<b>烈斩/剑气/震地/破军</b>） · <b>Q</b> 喝药（回 30% 生命，5s CD） · <b>I</b> 背包<br>
   <b>F</b> 进副本/出本 · 靠近掉落自动拾取 · BOSS 死后按 <b>F</b> 开「战利品宝箱」 · <b>滚轮</b> 缩放（相机锁定跟随，拖拽不平移） · 技能悬停查看描述<br>
   <b>装备</b>：背包内点「装备」穿装（攻击/生命/暴击立即提升） · 点击装备栏槽位卸下<br>
   <b>死亡</b>：倒地 10s 后自动复活回城 · 死亡不掉永久装备
@@ -270,6 +279,7 @@ let sessionToken = (() => { try { return localStorage.getItem(SESSION_TOKEN_KEY)
 const TILE = 48;
 const TICK_RATE = 12;
 const TICK_MS = 1000 / TICK_RATE;
+const POTION_CD_TICKS = 5 * TICK_RATE; // E21：药水 CD = 5s @12Hz（sim-core POTION_CD_TICKS 镜像）
 const WORLD_W = 40 * TILE;              // 1920
 const WORLD_H = 30 * TILE;              // 1440
 const ENTRANCE_POS = { x: 20 * TILE, y: 15 * TILE }; // 主世界入口（tile 20,15）
@@ -528,6 +538,12 @@ const SFX = (() => {
       osc(c, 'sine', 400, 800, t0, 0.1, 0.3);
       osc(c, 'sine', 600, 1200, t0, 0.08, 0.12);
     },
+    potion(c, t0) {            // E21 喝药：咕嘟 —— 短促上滑（吞咽）+ 低频气泡（双音，液体感）
+      osc(c, 'sine', 300, 620, t0, 0.14, 0.4);          // 上滑吞咽音
+      osc(c, 'sine', 180, 90, t0 + 0.1, 0.16, 0.3);     // 低频气泡回落
+      noise(c, t0, 0.1, 0.12, 900, 'bandpass');         // 液体噪声薄片
+      osc(c, 'sine', 520, 420, t0 + 0.05, 0.08, 0.12);  // 小气泡上浮
+    },
     levelup(c, t0) {           // 升级：金色彩虹音，三连音上行 523/659/784Hz
       osc(c, 'sine', 523, 523, t0, 0.12, 0.35);
       osc(c, 'sine', 659, 659, t0 + 0.09, 0.12, 0.35);
@@ -643,10 +659,12 @@ const GAME = window.__game = {
   sessionToken: null,
   // C2：本地预测 / 打击感 / 掉落 / 背包（E2E 断言钩子）
   predicted: null, localRenderPos: null, renderTick: 0,
-  lastHits: [], lastKills: [], pickupToasts: [], lastSkillAt: 0,
+  lastHits: [], lastKills: [], lastHeals: [], pickupToasts: [], lastSkillAt: 0,
   inventory: { items: [], cap: 60, loaded: false },
   equipped: {}, // E7：3 槽已穿戴（character.inventory 消息）
   materials: 0, // E19：强化石计数（character.inventory.materials）
+  potions: 0, // E21：药水计数（character.inventory.potions / character.potion.count）
+  potionCdUntilTick: null, // E21：药水 CD 截止 tick（character.potion.tick + cdTicksLeft；客户端 CD 环）
   nearLootId: null, pickupHint: '', invOpen: false,
   // E8：鼠标交互（左键点敌人点选攻击 / 点地面点击移动；E2E 断言钩子）
   selectedEnemyId: null, combatTarget: null, moveTarget: null, lastAttackAt: 0,
@@ -767,6 +785,9 @@ let chestOpenPendingId = null;      // E20：开箱目标宝箱 id（消失判�
 let inventory = { items: [], cap: 60, loaded: false };
 let equipped = {};                  // E7：3 槽已穿戴（来自 character.inventory）
 let materials = 0;                  // E19：强化石计数（来自 character.inventory.materials）
+let potions = 0;                    // E21：药水计数（来自 character.inventory.potions / character.potion.count）
+let potionCdUntilTick = null;       // E21：药水 CD 截止 tick（character.potion.tick + cdTicksLeft；null=可用）
+let potSeq = 1;                     // E21：character.usePotion requestId 序号
 let lastEnchant = null;             // E19：最近一次强化请求 {itemId, prevLevel}（回复 toast 用）
 let pickupToasts = [];              // 最近拾取 toast（E2E 钩子）
 let invSeq = 1;
@@ -802,6 +823,10 @@ const ERROR_TEXT = {
   ENCHANT_MAX_LEVEL: '已达最大强化等级（+5）',
   NO_MATERIALS: '强化石不足（击杀精英/BOSS 获得）',
   ENCHANT_MATERIAL: '强化石不可强化',
+  NO_POTIONS: '没有疗伤药了（击杀精英/BOSS 掉落，普通怪有概率掉）',
+  FULL_HP: '生命已满，无需喝药',
+  POTION_CD: '疗伤药冷却中（5s）',
+  NOT_IN_ROOM: '需先进入游戏世界才能喝药',
   NOT_IN_RESIDENT: '需在主世界才能进副本',
   NOT_IN_INSTANCE: '需在副本内才能出本',
   COOLDOWN: '入口冷却中，稍后再试',
@@ -1003,6 +1028,8 @@ function handleControl(msg) {
       startInputLoop();
       // E9：进入房间拉取当前等级/经验（升级后持久化；游客经服务端忽略）。
       sendJson({ type: 'character.level.get', requestId: 'lv' + (lvSeq++) });
+      // E21：进入房间拉取背包全量（含 potions 药水计数；HUD 药水槽「开局 2 瓶」/ 历史药水数）。
+      sendJson({ type: 'character.inventory.get', requestId: 'inv' + (invSeq++) });
       break;
     }
     case 'dungeon.enter.ok': {
@@ -1039,6 +1066,8 @@ function handleControl(msg) {
       SFX.play('reconnect'); // E12：重连提示音（440→660Hz 上行）
       // E9：重连拉取当前等级/经验（断线期间升级以持久化为准）。
       sendJson({ type: 'character.level.get', requestId: 'lv' + (lvSeq++) });
+      // E21：重连拉取背包全量（含 potions；断线期间药水变化以持久化为准）。
+      sendJson({ type: 'character.inventory.get', requestId: 'inv' + (invSeq++) });
       break;
     }
     case 'room.snapshot': {
@@ -1059,8 +1088,9 @@ function handleControl(msg) {
       setState('closed');
       break;
     }
-    // ── E6 背包数据通道：拾取入库推送 / character.inventory.get 回复 / E7 equip/unequip 回复 / E19 enchant 回复（同一格式）──
+    // ── E6 背包数据通道：拾取入库推送 / character.inventory.get 回复 / E7 equip/unequip 回复 / E19 enchant 回复 / E21 potions（同一格式）──
     case 'character.inventory': {
+      const firstInvLoad = !inventory.loaded; // 首次拉取（背包 get）不算「获得」增量
       const items = (msg.items || []).map((i) => ({ itemId: i.itemId, rarity: i.rarity, affixes: (i.affixes || []).slice(), slot: i.slot, enchantLevel: i.enchantLevel || 0 }));
       const prevIds = new Set(inventory.items.map((i) => i.itemId));
       inventory.items = items;
@@ -1070,14 +1100,23 @@ function handleControl(msg) {
       // E19：强化石计数（材料独立于背包；击杀精英/BOSS 推送）
       const prevMaterials = materials;
       materials = msg.materials || 0;
-      // E20：强化石增量 toast（开箱×2 / 精英击杀×1 / BOSS 击杀×2；diff>0 才提示）
-      if (materials > prevMaterials) {
+      // E20：强化石增量 toast（开箱×2 / 精英击杀×1 / BOSS 击杀×2；diff>0 才提示；首次拉取不算增量）。
+      if (!firstInvLoad && materials > prevMaterials) {
         toast('强化石 +' + (materials - prevMaterials));
         SFX.play('ui');
       }
       GAME.inventory = { items: inventory.items.slice(), cap: inventory.cap, loaded: true };
       GAME.equipped = equipped;
       GAME.materials = materials;
+      // E21：药水计数（击杀给药水推送 / usePotion 回推一次拉全；首次拉取不算增量）。
+      const prevPotions = potions;
+      potions = msg.potions || 0;
+      if (!firstInvLoad && potions > prevPotions) {
+        toast('获得疗伤药 ×' + (potions - prevPotions));
+        SFX.play('ui');
+      }
+      GAME.potions = potions;
+      renderPotionHud();
       // 增量 toast：新入库物品 → 屏幕下方「拾取 [稀有度色]物品（词缀xN）」
       const added = items.filter((i) => !prevIds.has(i.itemId));
       for (const it of added) {
@@ -1096,6 +1135,28 @@ function handleControl(msg) {
       renderMaterials();
       renderInventory();
       renderEquip();
+      break;
+    }
+    // ── E21 药水数据通道：character.usePotion 成功回推（count/cdTicksLeft/healed/tick）──
+    case 'character.potion': {
+      if (msg.count != null) { potions = msg.count; GAME.potions = potions; }
+      if (msg.tick != null && msg.cdTicksLeft != null) {
+        potionCdUntilTick = msg.tick + msg.cdTicksLeft;
+        GAME.potionCdUntilTick = potionCdUntilTick;
+      }
+      renderPotionHud();
+      // 回血飘字（绿色 +N 本地玩家头顶）+ 扩散环 + E2E 钩子。
+      if (msg.healed > 0 && localEntityId != null && lastSnapshot) {
+        const me = lastSnapshot.entities.find((e) => e.id === localEntityId);
+        if (me) {
+          const t = performance.now();
+          floatTexts.push({ entityId: localEntityId, x: me.pos.x, y: me.pos.y, offY: -52, text: '+' + msg.healed, color: '#4ade80', born: t, ttl: 1100, vy: -34 });
+          rings.push({ x: me.pos.x, y: me.pos.y, color: '#4ade80', born: t, ttl: 320, r0: 10, r1: 42 });
+          GAME.lastHeals.push({ entityId: localEntityId, healed: msg.healed, t });
+          if (GAME.lastHeals.length > 30) GAME.lastHeals.shift();
+        }
+      }
+      SFX.play('potion'); // E21：咕嘟喝药声
       break;
     }
     // ── E9 等级数据通道：升级推送 / character.level.get 回复（同一格式）──
@@ -1309,6 +1370,19 @@ function updateHud() {
     } else if (cdEl) cdEl.remove();
   }
 
+  // E21：药水 CD 环（截止 tick = character.potion.tick + cdTicksLeft；本地预检同源）。
+  const potionBtn = document.getElementById('btn-potion');
+  if (potionBtn) {
+    const cdRemain = potionCdUntilTick != null ? Math.max(0, potionCdUntilTick - GAME.lastTick) : 0;
+    let pcdEl = potionBtn.querySelector('.cd');
+    if (cdRemain > 0) {
+      if (!pcdEl) { pcdEl = document.createElement('div'); pcdEl.className = 'cd'; potionBtn.appendChild(pcdEl); }
+      pcdEl.textContent = (cdRemain / TICK_RATE).toFixed(1) + 's';
+      const remain = Math.max(0, Math.min(1, cdRemain / POTION_CD_TICKS));
+      pcdEl.style.background = 'conic-gradient(rgba(95,208,138,0.5) ' + ((1 - remain) * 360).toFixed(1) + 'deg, rgba(8,10,14,0.78) 0deg)';
+    } else if (pcdEl) { pcdEl.remove(); potionCdUntilTick = null; GAME.potionCdUntilTick = null; }
+  }
+
   // 格挡
   const parryBtn = document.getElementById('btn-parry');
   parryBtn.classList.toggle('active', !!GAME.parryActive);
@@ -1404,6 +1478,22 @@ function sendStop() {
 }
 
 function sendParry() { sendCmd({ action: 1, dir: lastMoveDir ?? 0 }); SFX.play('parry'); }
+
+// E21：喝药（Q）→ character.usePotion（服务端权威回血 30% maxHp + 5s CD）。
+// 本地预检（服务端仍权威校验）：无药水 / CD 中 / 满血 → 不发命令（避免服务端错误 toast 噪音）。
+function sendUsePotion() {
+  if (potions <= 0) { toast('没有疗伤药了（击杀精英/BOSS 掉落，普通怪有概率掉）'); SFX.play('ui'); return; }
+  if (potionCdUntilTick != null && lastSnapshot && potionCdUntilTick > lastSnapshot.tick) return; // CD 中静默
+  const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+  if (me && me.hp >= me.maxHp) { toast('生命已满，无需喝药'); SFX.play('ui'); return; }
+  sendJson({ type: 'character.usePotion', requestId: 'pot' + (potSeq++) });
+  // 本地即时反馈：CD 环立即转起来（服务端回推 character.potion 会校正/确认）。
+  if (lastSnapshot) {
+    potionCdUntilTick = lastSnapshot.tick + POTION_CD_TICKS;
+    GAME.potionCdUntilTick = potionCdUntilTick;
+  }
+  renderPotionHud();
+}
 
 // C2：技能释放 → 立即本地技能光效（朝向扇形闪光 0.3s 淡出）+ E2E lastSkillAt
 function sendSkill(slot) {
@@ -1575,6 +1665,8 @@ window.addEventListener('keydown', (e) => {
   if (e.code === 'Digit3') fireAction(() => sendSkill(2));
   if (e.code === 'Digit4') fireAction(() => sendSkill(3));
   if (e.code === 'KeyI') { e.preventDefault(); toggleInventory(); }
+  // E21：Q 喝药（服务端权威回血；本地预检无药水/CD/满血不发命令）。
+  if (e.code === 'KeyQ') fireAction(sendUsePotion);
   // F：副本内 → 出本优先；主世界靠近宝箱 → 开箱（INTERACT，E20）；靠近掉落 → 拾取意图（SIGNAL，服务端忽略，走近重叠即自动拾取）；否则进/出本
   if (e.code === 'KeyF') fireAction(() => {
     if (state === 'dungeon') { exitDungeon(); return; }
@@ -1636,6 +1728,8 @@ for (let i = 0; i < 4; i++) {
   b.addEventListener('mouseleave', hideSkillTip);
 }
 document.getElementById('btn-parry').addEventListener('click', () => fireAction(sendParry));
+// E21：药水按钮（Q）
+document.getElementById('btn-potion').addEventListener('click', () => fireAction(sendUsePotion));
 dungeonBtn.addEventListener('click', toggleDungeon);
 invBtn.addEventListener('click', toggleInventory);
 document.getElementById('inv-close').addEventListener('click', closeInventory);
@@ -1792,6 +1886,14 @@ function toggleInventory() { invOpen ? closeInventory() : openInventory(); }
 function renderMaterials() {
   const el = document.getElementById('inv-materials-count');
   if (el) el.textContent = String(materials);
+}
+
+// E21：药水槽显示（「疗伤药 Q ×N」+ CD 环；无药水 → 半透明）。
+function renderPotionHud() {
+  const btn = document.getElementById('btn-potion');
+  const countEl = document.getElementById('potion-count');
+  if (countEl) countEl.textContent = '×' + Math.max(0, potions);
+  if (btn) btn.classList.toggle('zero', potions <= 0);
 }
 
 function renderInventory() {

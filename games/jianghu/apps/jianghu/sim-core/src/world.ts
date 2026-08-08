@@ -19,6 +19,11 @@
  *     不移动）→ 落刀/落空」。WINDUP status 位（1<<6）进快照供客户端画抬手；windupUntilTick /
  *     windupTargetId 仅 world 内部（C12：不进快照）。间隔语义：lastAttackTick 在决策 tick 记录，
  *     ENEMY_ATTACK_INTERVAL_TICKS 现为攻击动作周期（前摇 5 + 后摇 7）。玩家前摇期间走开 → 落空。
+ *   - E19：击杀强化石计数（材料计数独立于掉落 Rng 流，固定必得，不进快照 → golden 稳）。
+ *   - E20：BOSS 战利品宝箱（CHEST 实体 + INTERACT 开箱批量结算 + 强化石×2）。
+ *   - E21：击杀药水计数（材料模式）——精英/BOSS 固定必得，普通怪走**独立 Rng 流**
+ *     （`new Rng('potion:'+seed+':'+tick+':'+enemyId)`，不碰 simRng → golden 稳）+ 控制面
+ *     usePotion（回血 30% maxHp + 5s CD，world actor 服务端权威）。
  *   - parry 窗口清理 / skillCd 递减。
  *
  * 纪律（C6 / C9 / C11 / C12 / D9）：
@@ -83,6 +88,10 @@ import {
   CHEST_TTL_TICKS, // E20：宝箱存活时长（tick）= 5min @12Hz
   CHEST_OPEN_RADIUS, // E20：开箱交互半径（px）= 1.5×TILE
   CHEST_STONES, // E20：开箱强化石×2（E19 材料计数；C7 单一来源）
+  POTION_HEAL_RATIO, // E21：药水回血比例（× maxHp）= 0.3
+  POTION_CD_TICKS, // E21：药水使用冷却（tick）= 5s @12Hz
+  POTION_DROP_NORMAL_CHANCE, // E21：普通怪击杀药水掉落概率 = 0.10
+  POTIONS_BY_TIER, // E21：精英/BOSS 击杀药水数（材料计数，普通怪走概率）
 } from "./constants.ts"; // C7 单一来源
 import { Rng } from "./rng.ts";
 import { stepMovement } from "./movement.ts"; // E3 真移动（纯函数）
@@ -150,6 +159,21 @@ export interface MaterialGainEvent {
 }
 
 /**
+ * E21：药水获得事件（world → 编排层；击杀触发）。
+ * 材料计数模式（镜像 MaterialGainEvent）：
+ *   - 精英/BOSS **固定必得**（POTIONS_BY_TIER）——不消耗掉落 Rng 流（D9）；
+ *   - 普通怪走**独立 Rng 流**（`new Rng('potion:' + seed + ':' + tick + ':' + enemyId)`，
+ *     每次击杀新建实例，零状态、不碰 simRng）→ 不扰动掉落/暴击流 → playtest golden 稳定；
+ *   - 计数**不进 EntityState 快照**（C12：不落世界实体）→ journal 无药水字段。
+ * 编排层收到后落库 Character.potions + 推送 character.inventory（potions 字段）。
+ */
+export interface PotionGainEvent {
+  readonly seatId: number;
+  /** 本次击杀获得药水数（普通怪 0/1 概率、精英 1、BOSS 2）。 */
+  readonly potions: number;
+}
+
+/**
  * E20：宝箱开箱事件（world → 编排层；批量物品 + 强化石一次结算）。
  * - items：3-5 件装备（第 1 件必含暗金 rarity=3 + 其余金/蓝），确定性 Rng 流（D9）；
  * - stones：强化石×2（E19 材料计数；与物品同一事件结算，编排层单次落库防并发竞态）；
@@ -159,6 +183,21 @@ export interface ChestOpenEvent {
   readonly seatId: number;
   readonly items: LootResult[];
   readonly stones: number;
+}
+
+/**
+ * E21：world.usePotion 结果（控制面 resolveUsePotion 消费；服务端权威）。
+ * - ok=true：回血成功，healed=实际回血量（≤ round(maxHp×0.3)，clamp 到 maxHp）；
+ *   count=使用后药水数、cdTicksLeft=本轮 CD 剩余（=POTION_CD_TICKS 全量）、tick=使用时的 world tick。
+ * - ok=false：reason=NO_ACTOR / NO_POTIONS / FULL_HP / ON_CD；不改任何状态（幂等）。
+ */
+export interface UsePotionResult {
+  readonly ok: boolean;
+  readonly reason?: "NO_ACTOR" | "NO_POTIONS" | "FULL_HP" | "ON_CD";
+  readonly healed?: number;
+  readonly count?: number;
+  readonly cdTicksLeft?: number;
+  readonly tick?: number;
 }
 
 interface Actor {
@@ -209,6 +248,9 @@ interface Actor {
   windupTargetId?: number; // 前摇锁定目标 actor id（落刀时判定是否仍在接触范围；仅 world 内部）
   // E19 新增（强化石计数；**不进 EntityState 快照**，C12 纪律——材料为控制面计数，非世界实体）
   materials?: number; // 玩家当前强化石数（击杀累计；会话内权威，击杀时与持久化同步；仅 world 内部镜像）
+  // E21 新增（药水计数 + CD；**不进 EntityState 快照**，C12 纪律——药水为控制面计数，非世界实体）
+  potionCount?: number; // 玩家当前药水数（击杀累计/使用递减；会话内权威，使用/击杀时与持久化同步；仅 world 内部镜像）
+  lastPotionTick?: number; // 上次使用药水的 world tick（CD 判定：nowTick - lastPotionTick >= POTION_CD_TICKS；仅 world 内部）
   // E20：宝箱无新增字段 —— EntityKind.CHEST=6 复用 loot（显示暗金 + ttlTicks）承载；kind 分支即语义。
 }
 
@@ -235,8 +277,8 @@ export interface World {
   readonly seed: string;
   tick: number;
   phase: RoomPhaseValue;
-  /** 在权威世界 spawn 一个玩家实体（幂等：重复 seatId 不叠加）。E7：equipped 可选（持久化镜像）。E9：level 可选（持久化镜像）。E19：materials 可选（持久化镜像）。 */
-  addPlayer(seatId: number, userId: string, spawn?: Vec2, equipped?: EquippedSlots, level?: number, materials?: number): void;
+  /** 在权威世界 spawn 一个玩家实体（幂等：重复 seatId 不叠加）。E7：equipped 可选（持久化镜像）。E9：level 可选（持久化镜像）。E19：materials 可选（持久化镜像）。E21：potions 可选（持久化镜像）。 */
+  addPlayer(seatId: number, userId: string, spawn?: Vec2, equipped?: EquippedSlots, level?: number, materials?: number, potions?: number): void;
   /** 从权威世界移除一个玩家实体（进本时出主世界 / 测试清理；幂等：不存在则忽略）。 */
   removePlayer(seatId: number): void;
   /**
@@ -267,6 +309,8 @@ export interface World {
   consumeLevelUps(): LevelUpEvent[];
   /** E19：取出并清空强化石获得事件缓冲（服务端落库 + 推送 character.inventory materials 用）。 */
   consumeMaterialGains(): MaterialGainEvent[];
+  /** E21：取出并清空药水获得事件缓冲（服务端落库 + 推送 character.inventory potions 用）。 */
+  consumePotionGains(): PotionGainEvent[];
   /** E20：取出并清空宝箱开箱事件缓冲（服务端批量入库 + 材料推送用）。 */
   consumeChestOpens(): ChestOpenEvent[];
   /** 在指定 seat 玩家脚下生成地面掉落实体（背包满溢出回落，C-Per-3）。 */
@@ -284,8 +328,18 @@ export interface World {
   onLevelUp?: (seatId: number, level: number, xp: number, xpNext: number) => void;
   /** E19：可选：每次强化石获得即时回调（run-manager 可设，替代轮询 consumeMaterialGains）。 */
   onMaterialGain?: (seatId: number, stones: number) => void;
+  /** E21：可选：每次药水获得即时回调（run-manager 可设，替代轮询 consumePotionGains）。 */
+  onPotionGain?: (seatId: number, potions: number) => void;
   /** E20：可选：每次宝箱开箱即时回调（run-manager 可设，替代轮询 consumeChestOpens）。 */
   onChestOpen?: (seatId: number, items: LootResult[], stones: number) => void;
+  /**
+   * E21：使用药水（控制面 `character.usePotion` 调用；服务端权威回血）。
+   * - 校验：potionCount > 0、hp < maxHp（满血不可用）、CD 到（nowTick - lastPotionTick >= POTION_CD_TICKS）；
+   * - 生效：hp = min(maxHp, hp + round(maxHp × POTION_HEAL_RATIO))；potionCount -= 1；lastPotionTick = nowTick；
+   * - 直接改写 world actor（服务端权威），下一快照自然下发回血后的 hp；
+   * - 未注册 seat / 无 actor → NO_ACTOR；校验失败不改任何状态（幂等）。
+   */
+  usePotion(seatId: number, nowTick: number): UsePotionResult;
 }
 
 /**
@@ -423,6 +477,8 @@ function makePlayerActor(opts: {
   level?: number;
   /** E19：玩家强化石数（缺省 0；重连/换域时经持久化镜像播种，击杀累计）。 */
   materials?: number;
+  /** E21：玩家药水数（缺省 0；重连/换域时经持久化镜像播种，击杀累计/使用递减）。 */
+  potions?: number;
   /** 缺省出生点 x 是否做 %40 防越界（addPlayer 用；构造时占位玩家传 false 保持 E1 原值）。 */
   wrapX?: boolean;
 }): Actor {
@@ -451,6 +507,7 @@ function makePlayerActor(opts: {
     xp: 0,
     levelStats,
     materials: opts.materials ?? 0, // E19：强化石计数（持久化镜像；仅 world 内部，不进快照）
+    potionCount: opts.potions ?? 0, // E21：药水计数（持久化镜像；仅 world 内部，不进快照）
   };
 }
 
@@ -504,6 +561,8 @@ export function createWorld(opts: CreateWorldOpts): World {
   const levelUpBuffer: LevelUpEvent[] = [];
   // E19：强化石获得事件缓冲（精英/BOSS 击杀时 push，consumeMaterialGains 取走）
   const materialGainBuffer: MaterialGainEvent[] = [];
+  // E21：药水获得事件缓冲（击杀时 push，consumePotionGains 取走）
+  const potionGainBuffer: PotionGainEvent[] = [];
   // E20：宝箱开箱事件缓冲（INTERACT 开箱时 push，consumeChestOpens 取走）
   const chestOpenBuffer: ChestOpenEvent[] = [];
 
@@ -595,14 +654,15 @@ export function createWorld(opts: CreateWorldOpts): World {
     phase: opts.phase,
     actors: () => actors.slice(),
 
-    addPlayer(seatId: number, _userId: string, spawn?: Vec2, equipped?: EquippedSlots, level?: number, materials?: number) {
+    addPlayer(seatId: number, _userId: string, spawn?: Vec2, equipped?: EquippedSlots, level?: number, materials?: number, potions?: number) {
       // 幂等：重复加入不叠加实体（重连/重复 room.join 安全）。
       if (players.has(seatId)) return;
       const id = nextId++;
       // E7：equipped 可选（持久化镜像）；缺省 → 基础属性（maxHp=100，golden 锚点）。
       // E9：level 可选（持久化镜像）；缺省 → L1（全零加成，golden 锚点）。
       // E19：materials 可选（持久化镜像）；缺省 → 0（击杀累计；仅 world 内部，不进快照）。
-      actors.push(makePlayerActor({ id, seatId, spawn, equipped, level, materials, wrapX: true }));
+      // E21：potions 可选（持久化镜像）；缺省 → 0（击杀累计/使用递减；仅 world 内部，不进快照）。
+      actors.push(makePlayerActor({ id, seatId, spawn, equipped, level, materials, potions, wrapX: true }));
       players.set(seatId, id);
     },
 
@@ -630,6 +690,26 @@ export function createWorld(opts: CreateWorldOpts): World {
       a.maxHp = newMax;
       // 装 +maxHp 装备 → hp 同步抬升（不亏血）；卸下 → clamp 到新上限。
       a.hp = Math.max(1, Math.min(a.hp + (newMax - oldMax), newMax));
+    },
+
+    usePotion(seatId: number, nowTick: number): UsePotionResult {
+      const actorId = players.get(seatId);
+      if (actorId === undefined) return { ok: false, reason: "NO_ACTOR" };
+      const a = actors.find((x) => x.id === actorId);
+      if (!a) return { ok: false, reason: "NO_ACTOR" };
+      const count = a.potionCount ?? 0;
+      if (count <= 0) return { ok: false, reason: "NO_POTIONS" };
+      if (a.hp >= a.maxHp) return { ok: false, reason: "FULL_HP" }; // 满血不可用（主理人拍板：不浪费）
+      const last = a.lastPotionTick ?? -POTION_CD_TICKS;
+      if (nowTick - last < POTION_CD_TICKS) {
+        return { ok: false, reason: "ON_CD", cdTicksLeft: POTION_CD_TICKS - (nowTick - last) };
+      }
+      // 生效（服务端权威）：hp = min(maxHp, hp + round(maxHp × 0.3))。
+      const healed = Math.min(a.maxHp - a.hp, Math.round(a.maxHp * POTION_HEAL_RATIO));
+      a.hp += healed;
+      a.potionCount = count - 1;
+      a.lastPotionTick = nowTick;
+      return { ok: true, healed, count: a.potionCount, cdTicksLeft: POTION_CD_TICKS, tick: nowTick };
     },
 
     tryEnterEntrance(nowTick: number): boolean {
@@ -1115,6 +1195,22 @@ export function createWorld(opts: CreateWorldOpts): World {
                 materialGainBuffer.push(mev);
                 if (world.onMaterialGain) world.onMaterialGain(mev.seatId, mev.stones);
               }
+              // E21：击杀药水（材料计数模式，镜像 E19 强化石）。
+              //   精英/BOSS 固定必得（POTIONS_BY_TIER）；普通怪走**独立 Rng 流**——每次击杀新建
+              //   `new Rng('potion:' + seed + ':' + tick + ':' + enemyId)`，零状态、**不消耗 simRng**
+              //   → 不扰动掉落/暴击流 → playtest golden 稳定（D9）；同 seed+同 tick+同 enemyId ⇒ 同结果。
+              //   计数仅 world 内部（不进快照，C12）→ journal 无药水字段，掉装不变。
+              let potions = POTIONS_BY_TIER[tierName];
+              if (tierName === "normal" && potions === 0) {
+                const potionRng = new Rng(`potion:${world.seed}:${t}:${e.id}`);
+                if (potionRng.nextFloat() < POTION_DROP_NORMAL_CHANCE) potions = 1;
+              }
+              if (potions > 0) {
+                killer.potionCount = (killer.potionCount ?? 0) + potions;
+                const pev: PotionGainEvent = { seatId: killerSeat, potions };
+                potionGainBuffer.push(pev);
+                if (world.onPotionGain) world.onPotionGain(pev.seatId, pev.potions);
+              }
             }
           }
           // 掉装：rollLoot（确定性 Rng 流）；命中 → spawn LOOT_GROUND 于敌人 pos。
@@ -1342,6 +1438,12 @@ export function createWorld(opts: CreateWorldOpts): World {
     consumeMaterialGains(): MaterialGainEvent[] {
       const out = materialGainBuffer.slice();
       materialGainBuffer.length = 0;
+      return out;
+    },
+
+    consumePotionGains(): PotionGainEvent[] {
+      const out = potionGainBuffer.slice();
+      potionGainBuffer.length = 0;
       return out;
     },
 
