@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swagger to TypeScript Pro — 企业级代码生成器</title>
+<style>
+:root {
+  --bg: #0f1117; --panel: #161822; --border: #2a2d3a; --text: #c9d1d9;
+  --text2: #8b949e; --accent: #58a6ff; --green: #3fb950; --orange: #d29922;
+  --red: #f85149; --purple: #a371f7; --input-bg: #1c1e2e; --hover: #1f2233;
+  --tag-bg: #1c2a3a; --tag-text: #79c0ff;
+  --radius: 8px; --font: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+a { color: var(--accent); }
+/* --- Layout --- */
+.app { display: flex; height: 100vh; overflow: hidden; }
+.sidebar { width: 440px; min-width: 440px; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; }
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.preview { flex: 1; display: flex; flex-direction: column; background: var(--bg); overflow: hidden; }
+/* --- Header --- */
+.header { padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.header h1 { font-size: 16px; font-weight: 700; color: #fff; white-space: nowrap; }
+.header .badge { font-size: 10px; background: var(--purple); color: #fff; padding: 2px 8px; border-radius: 10px; }
+.header .stat { font-size: 11px; color: var(--text2); margin-left: auto; }
+/* --- Sections --- */
+.section { padding: 0 16px; }
+.section-title { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; padding: 12px 0 6px; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+.section-title .arrow { transition: transform .2s; font-size: 10px; }
+.section-title.collapsed .arrow { transform: rotate(-90deg); }
+.section-body { padding-bottom: 10px; }
+.section-body.hidden { display: none; }
+/* --- Input --- */
+textarea, input[type="text"], select { width: 100%; background: var(--input-bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-size: 13px; font-family: var(--font); resize: vertical; outline: none; }
+textarea:focus, input:focus, select:focus { border-color: var(--accent); }
+textarea { min-height: 160px; max-height: 320px; font-size: 12px; line-height: 1.5; }
+select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 32px; }
+label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; }
+/* --- Load/sample buttons --- */
+.toolbar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.toolbar button { font-size: 11px; background: var(--input-bg); color: var(--accent); border: 1px solid var(--border); border-radius: 4px; padding: 4px 10px; cursor: pointer; white-space: nowrap; }
+.toolbar button:hover { background: var(--hover); border-color: var(--accent); }
+.toolbar .sep { color: var(--border); margin: 0 2px; }
+/* --- URL fetch row --- */
+.url-row { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 8px; }
+.url-row input { flex: 1; }
+.url-row select { width: 110px; }
+.url-row button { height: 36px; font-size: 11px; background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 0 14px; cursor: pointer; white-space: nowrap; }
+.url-row button:hover { opacity: .85; }
+.url-config { background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px; margin-bottom: 8px; display: none; }
+.url-config.show { display: block; }
+.url-config textarea { min-height: 60px; max-height: 100px; font-size: 11px; }
+/* --- Validation --- */
+.validation { background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; margin: 8px 0; max-height: 160px; overflow-y: auto; }
+.validation .issue { font-size: 11px; padding: 3px 0; display: flex; gap: 6px; }
+.validation .issue .sev { font-weight: 700; width: 36px; flex-shrink: 0; }
+.validation .issue .sev.error { color: var(--red); }
+.validation .issue .sev.warn { color: var(--orange); }
+.validation .issue .sev.info { color: var(--accent); }
+/* --- Filter tags --- */
+.tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.tag-chip { font-size: 11px; padding: 3px 10px; border-radius: 12px; border: 1px solid var(--border); cursor: pointer; transition: all .15s; user-select: none; }
+.tag-chip.on { background: var(--tag-bg); color: var(--tag-text); border-color: var(--accent); }
+.tag-chip.off { background: transparent; color: var(--text2); }
+.tag-chip.exclude { background: rgba(248,81,73,.1); color: var(--red); border-color: var(--red); }
+/* --- Config grid --- */
+.config-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-end; }
+.config-row .field { flex: 1; }
+.config-row .field.half { flex: 0 0 calc(50% - 4px); }
+.config-row .field.third { flex: 0 0 calc(33.33% - 5px); }
+.check-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
+.check-row input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; }
+/* --- Prettier section --- */
+.prettier-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+/* --- Generate button --- */
+.btn-gen { width: 100%; padding: 10px; background: linear-gradient(135deg, var(--accent), var(--purple)); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin: 12px 0; }
+.btn-gen:hover { opacity: .9; }
+.btn-gen:disabled { opacity: .5; cursor: not-allowed; }
+/* --- Status --- */
+.status { font-size: 11px; color: var(--text2); text-align: center; padding: 4px; }
+.status.ok { color: var(--green); }
+.status.err { color: var(--red); }
+/* --- Preview area --- */
+.preview-header { padding: 8px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.preview-tabs { display: flex; gap: 2px; flex-wrap: wrap; }
+.preview-tab { font-size: 11px; padding: 4px 12px; border-radius: 4px 4px 0 0; border: 1px solid transparent; cursor: pointer; color: var(--text2); background: transparent; }
+.preview-tab.active { color: #fff; background: var(--input-bg); border-color: var(--border); border-bottom-color: var(--input-bg); }
+.preview-tab:hover { color: var(--accent); }
+.preview-content { flex: 1; overflow: auto; padding: 0; position: relative; }
+.preview-content pre { margin: 0; padding: 16px; font-family: var(--font); font-size: 12px; line-height: 1.6; color: var(--text); white-space: pre; tab-size: 2; }
+.preview-content code { font-family: var(--font); }
+.copy-btn { margin-left: auto; font-size: 11px; background: var(--input-bg); color: var(--text2); border: 1px solid var(--border); border-radius: 4px; padding: 4px 10px; cursor: pointer; }
+.copy-btn:hover { color: #fff; }
+/* --- File tree summary --- */
+.file-tree { padding: 8px 0; }
+.file-tree .dir { font-size: 12px; font-weight: 600; color: var(--text2); padding: 2px 0; }
+.file-tree .file { font-size: 12px; padding: 2px 0 2px 20px; color: var(--accent); cursor: pointer; }
+.file-tree .file:hover { text-decoration: underline; }
+/* Empty state */
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text2); }
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; opacity: .3; }
+/* Toast */
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--green); color: #000; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; z-index: 999; animation: fadeIn .2s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* tabs for sidebar config */
+.sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); }
+.sidebar-tab { flex: 1; text-align: center; padding: 8px; font-size: 11px; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; }
+.sidebar-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.sidebar-tab:hover { color: #fff; }
+.sidebar-scroll { flex: 1; overflow-y: auto; padding-bottom: 16px; }
+/* JSON input specific */
+.json-hint { font-size: 10px; color: var(--orange); margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ========== SIDEBAR ========== -->
+  <div class="sidebar">
+    <div class="header">
+      <h1>Swagger → TS Pro</h1>
+      <span class="badge">v2+v3</span>
+      <span class="stat" id="statsText">就绪</span>
+    </div>
+
+    <div class="section">
+      <!-- Source tabs -->
+      <div class="toolbar" style="margin-bottom:6px;">
+        <button onclick="switchSourceTab('json')" id="tabBtnJson" style="background:var(--hover);border-color:var(--accent);">📋 JSON 文本</button>
+        <button onclick="switchSourceTab('url')" id="tabBtnUrl">🔗 URL 拉取</button>
+        <span style="flex:1;"></span>
+        <button onclick="loadSample('v3')">V3 示例</button>
+        <button onclick="loadSample('v2')">V2 示例</button>
+      </div>
+
+      <!-- JSON input -->
+      <div id="sourceJson">
+        <textarea id="specInput" placeholder="在此粘贴 Swagger 2.0 或 OpenAPI 3.x 的 JSON 规范..."></textarea>
+      </div>
+
+      <!-- URL fetch input -->
+      <div id="sourceUrl" style="display:none;">
+        <div class="url-row">
+          <input type="text" id="urlInput" placeholder="https://petstore3.swagger.io/api/v3/openapi.json" />
+          <select id="urlMethod">
+            <option value="GET">GET</option><option value="POST">POST</option>
+            <option value="PUT">PUT</option><option value="PATCH">PATCH</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+          <button onclick="fetchFromUrl()">拉取</button>
+        </div>
+        <details id="urlConfigDetails" style="margin-bottom:8px;">
+          <summary style="font-size:11px;color:var(--text2);cursor:pointer;">配置 Headers / Body</summary>
+          <div style="margin-top:6px;">
+            <label>Headers (JSON 对象)</label>
+            <textarea id="urlHeaders" rows="2">{
+  "Accept": "application/json"
+}</textarea>
+            <label style="margin-top:4px;">Body (POST/PUT/PATCH 时发送)</label>
+            <textarea id="urlBody" rows="3"></textarea>
+          </div>
+        </details>
+      </div>
+
+      <div id="validationBox" class="validation" style="display:none;"></div>
+      <div class="status" id="statusText"></div>
+    </div>
+
+    <!-- 过滤器 -->
+    <div class="section">
+      <div class="section-title" onclick="toggleSection(this)">
+        <span class="arrow">▼</span> 🔍 过滤 (Tags / Paths / Methods)
+      </div>
+      <div class="section-body">
+        <label>Tags（点击切换：✓包含 · ✗排除 · ○忽略）</label>
+        <div class="tag-list" id="tagFilterList"><span style="font-size:11px;color:var(--text2);">解析规范后将自动显示</span></div>
+
+        <div class="config-row">
+          <div class="field half">
+            <label>Controller 白名单（逗号/正则/命名空间）</label>
+            <input type="text" id="controllerIncludes" placeholder="pet, store 或 /^pet/" />
+          </div>
+          <div class="field half">
+            <label>Controller 黑名单</label>
+            <input type="text" id="controllerExcludes" placeholder="internal" />
+          </div>
+        </div>
+
+        <div class="config-row">
+          <div class="field">
+            <label>Path 包含（逗号分隔，支持 * 通配）</label>
+            <input type="text" id="includePaths" placeholder="/pet/*, /store/*" />
+          </div>
+        </div>
+        <div class="config-row">
+          <div class="field">
+            <label>Path 排除</label>
+            <input type="text" id="excludePaths" placeholder="/internal/*" />
+          </div>
+        </div>
+        <div class="config-row">
+          <div class="field">
+            <label>Methods</label>
+            <div class="check-row" style="flex-wrap:wrap;gap:4px 12px;">
+              <label style="display:inline-flex;align-items:center;gap:3px;margin:0;"><input type="checkbox" checked onchange="syncMethods()" class="methodChk" value="GET">GET</label>
+              <label style="display:inline-flex;align-items:center;gap:3px;margin:0;"><input type="checkbox" checked onchange="syncMethods()" class="methodChk" value="POST">POST</label>
+              <label style="display:inline-flex;align-items:center;gap:3px;margin:0;"><input type="checkbox" checked onchange="syncMethods()" class="methodChk" value="PUT">PUT</label>
+              <label style="display:inline-flex;align-items:center;gap:3px;margin:0;"><input type="checkbox" checked onchange="syncMethods()" class="methodChk" value="DELETE">DELETE</label>
+              <label style="display:inline-flex;align-items:center;gap:3px;margin:0;"><input type="checkbox" checked onchange="syncMethods()" class="methodChk" value="PATCH">PATCH</label>
+              <label style="display:inline-flex;align-items:center;gap:3px;margin:0;"><input type="checkbox" onchange="syncMethods()" class="methodChk" value="OPTIONS">OPTIONS</label>
+              <label style="display:inline-flex;align-items:center;gap:3px;margin:0;"><input type="checkbox" onchange="syncMethods()" class="methodChk" value="HEAD">HEAD</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 配置面板 -->
+    <div class="sidebar-tabs">
+      <div class="sidebar-tab active" onclick="switchConfigTab('output')">输出</div>
+      <div class="sidebar-tab" onclick="switchConfigTab('client')">客户端</div>
+      <div class="sidebar-tab" onclick="switchConfigTab('naming')">命名</div>
+      <div class="sidebar-tab" onclick="switchConfigTab('prettier')">美化</div>
+      <div class="sidebar-tab" onclick="switchConfigTab('mock')">Mock</div>
+      <div class="sidebar-tab" onclick="switchConfigTab('advanced')">高级</div>
+    </div>
+    <div class="sidebar-scroll">
+
+      <!-- Output Config -->
+      <div id="configTabOutput" class="section" style="padding-top:8px;">
+        <div class="config-row">
+          <div class="field half">
+            <label>输出模式</label>
+            <select id="outputMode">
+              <option value="tree">文件树 (tree)</option>
+              <option value="single">单文件 (single)</option>
+            </select>
+          </div>
+          <div class="field half">
+            <label>生成范围</label>
+            <select id="outputScope">
+              <option value="full">完整 (API + 类型 + Mock)</option>
+              <option value="apiOnly">仅 API</option>
+              <option value="typesOnly">仅类型</option>
+              <option value="mocksOnly">仅 Mock</option>
+            </select>
+          </div>
+        </div>
+        <div class="config-row">
+          <div class="field half">
+            <label>拆分方式</label>
+            <select id="splitBy">
+              <option value="tag">按 Tag 拆分</option>
+              <option value="controller">按 Controller 拆分</option>
+              <option value="path">按 Path 拆分</option>
+            </select>
+          </div>
+          <div class="field half">
+            <label>TS 生成器</label>
+            <select id="generatorType">
+              <option value="builtin">自研引擎 (builtin)</option>
+              <option value="openapi-typescript">openapi-typescript</option>
+            </select>
+          </div>
+        </div>
+        <div class="config-row">
+          <div class="field half">
+            <label>类型文件名</label>
+            <input type="text" id="typesFile" value="types.ts" />
+          </div>
+          <div class="field half">
+            <label>API 目录名</label>
+            <input type="text" id="apiDir" value="api" />
+          </div>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="generateTypes" checked /> <label style="margin:0;">生成类型文件</label>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="dtsMode" /> <label style="margin:0;">类型输出为 .d.ts</label>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="filterUnusedTypes" checked /> <label style="margin:0;">过滤未使用的类型</label>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="generateMocks" /> <label style="margin:0;">生成 Mock 文件</label>
+        </div>
+        <div class="config-row" style="margin-top:8px;">
+          <div class="field half">
+            <label>Enum 风格</label>
+            <select id="enumStyle">
+              <option value="union">联合类型 (union)</option>
+              <option value="enum">TS Enum</option>
+            </select>
+          </div>
+          <div class="field half">
+            <label>自定义 Mock 文件名</label>
+            <input type="text" id="mocksFile" value="mocks.ts" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Client Config -->
+      <div id="configTabClient" class="section" style="display:none;padding-top:8px;">
+        <div class="config-row">
+          <div class="field">
+            <label>HTTP 客户端</label>
+            <select id="httpClient" onchange="onHttpClientChange()">
+              <option value="axios">Axios</option>
+              <option value="fetch">Fetch API</option>
+              <option value="custom">Custom 自定义</option>
+            </select>
+          </div>
+        </div>
+        <div id="customHttpGroup" style="display:none;">
+          <div class="config-row">
+            <div class="field">
+              <label>自定义模块路径</label>
+              <input type="text" id="customHttpModule" value="@/utils/request" />
+            </div>
+          </div>
+        </div>
+        <div class="config-row">
+          <div class="field half">
+            <label>Axios 调用风格 (Feature 16)</label>
+            <select id="axiosStyle">
+              <option value="config">axios({method,url}) 配置对象</option>
+              <option value="method">axios.get/post(url) 方法调用</option>
+            </select>
+          </div>
+          <div class="field half">
+            <label>Base URL</label>
+            <input type="text" id="baseURL" placeholder="http://localhost:8080" />
+          </div>
+        </div>
+        <div class="config-row">
+          <div class="field">
+            <label>扩展配置 extendConfig (Feature 17，JSON 对象)</label>
+            <textarea id="extendConfig" rows="2" placeholder='{"timeout":30000,"withCredentials":true}' style="min-height:44px;max-height:80px;"></textarea>
+            <div style="font-size:10px;color:var(--text2);">会覆盖 axios.create() 的默认配置，如 timeout / withCredentials / headers 等</div>
+          </div>
+        </div>
+        <div class="config-row">
+          <div class="field half">
+            <label>API 前缀</label>
+            <input type="text" id="apiPrefix" placeholder="/api/v1" />
+          </div>
+          <div class="field half">
+            <label>默认 Content-Type</label>
+            <select id="defaultContentType">
+              <option value="application/json">application/json</option>
+              <option value="multipart/form-data">multipart/form-data</option>
+              <option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded</option>
+              <option value="application/octet-stream">application/octet-stream</option>
+              <option value="text/plain">text/plain</option>
+              <option value="text/xml">text/xml</option>
+            </select>
+          </div>
+        </div>
+        <div class="config-row">
+          <div class="field half">
+            <label>请求体可选</label>
+            <select id="requestBodyOptional">
+              <option value="false">按 Schema required</option>
+              <option value="true">始终可选 (?)</option>
+            </select>
+          </div>
+          <div class="field half"></div>
+        </div>
+        <details style="margin-bottom:8px;">
+          <summary style="font-size:11px;color:var(--text2);cursor:pointer;">Content-Type 逐接口覆盖 (Map)</summary>
+          <div style="margin-top:6px;">
+            <label>格式: /path:GET=multipart/form-data（每行一个）</label>
+            <textarea id="contentTypeMap" rows="3" placeholder="/upload:POST=multipart/form-data
+/files:PUT=application/octet-stream"></textarea>
+          </div>
+        </details>
+        <div class="config-row" style="margin-top:8px;">
+          <div class="field">
+            <label>返回值包装</label>
+            <select id="responseWrapper" onchange="onResponseWrapChange()">
+              <option value="none">无包装 (direct)</option>
+              <option value="standard">标准 { code, data, message }</option>
+              <option value="custom">自定义泛型</option>
+            </select>
+          </div>
+        </div>
+        <div id="customWrapGroup" style="display:none;">
+          <div class="config-row">
+            <div class="field">
+              <label>包装类型 (&lt;T&gt; 为占位)</label>
+              <input type="text" id="responseWrapperType" value="ApiResponse<T>" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Naming Config -->
+      <div id="configTabNaming" class="section" style="display:none;padding-top:8px;">
+        <div class="config-row">
+          <div class="field">
+            <label>函数命名方式</label>
+            <select id="functionNaming">
+              <option value="path">基于 Path 自动生成</option>
+              <option value="operationId">使用 operationId</option>
+              <option value="custom">自定义模板</option>
+            </select>
+          </div>
+        </div>
+        <div class="config-row" id="nameTemplateGroup" style="display:none;">
+          <div class="field">
+            <label>函数名模板</label>
+            <input type="text" id="functionNameTemplate" value="{method}{path}" />
+            <div style="font-size:10px;color:var(--text2);margin-top:2px;">可用: {method} {Method} {METHOD} {path} {tag} {operationId} {summary}</div>
+          </div>
+        </div>
+        <div class="config-row">
+          <div class="field half">
+            <label>函数风格</label>
+            <select id="functionStyle">
+              <option value="function">function 声明</option>
+              <option value="arrow">箭头函数 const</option>
+            </select>
+          </div>
+          <div class="field half">
+            <label>文件名模板</label>
+            <input type="text" id="fileNameTemplate" value="{tag}.ts" />
+          </div>
+        </div>
+        <div class="config-row" style="margin-top:8px;">
+          <div class="field half">
+            <label>命名风格 (Feature 19)</label>
+            <select id="nameCaseStyle">
+              <option value="camelCase">camelCase (小驼峰)</option>
+              <option value="PascalCase">PascalCase (大驼峰)</option>
+            </select>
+          </div>
+          <div class="field half" style="display:flex;align-items:flex-end;padding-bottom:4px;">
+            <label style="display:inline-flex;align-items:center;gap:4px;margin:0;">
+              <input type="checkbox" id="uniqueName" /> 强制唯一名
+            </label>
+          </div>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="sanitizeName" checked /> <label style="margin:0;">清理特殊字符 (:;/{} 等)</label>
+        </div>
+      </div>
+
+      <!-- Prettier Config -->
+      <div id="configTabPrettier" class="section" style="display:none;padding-top:8px;">
+        <div class="check-row">
+          <input type="checkbox" id="prettierEnabled" />
+          <label style="margin:0;">启用 Prettier 格式化输出</label>
+        </div>
+        <div class="prettier-grid" style="margin-top:8px;">
+          <div class="field">
+            <label>Tab Width</label>
+            <select id="prettierTabWidth">
+              <option value="2">2</option><option value="4" selected>4</option><option value="8">8</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Print Width</label>
+            <input type="number" id="prettierPrintWidth" value="80" min="40" max="200" />
+          </div>
+          <div class="field">
+            <label>Trailing Comma</label>
+            <select id="prettierTrailingComma">
+              <option value="all">all</option><option value="es5">es5</option><option value="none">none</option>
+            </select>
+          </div>
+          <div class="field" style="display:flex;align-items:flex-end;gap:16px;padding-bottom:4px;">
+            <label style="display:inline-flex;align-items:center;gap:4px;margin:0;">
+              <input type="checkbox" id="prettierSemi" checked /> Semicolon
+            </label>
+            <label style="display:inline-flex;align-items:center;gap:4px;margin:0;">
+              <input type="checkbox" id="prettierSingleQuote" checked /> Single Quote
+            </label>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-top:6px;">
+          需要 CDN: unpkg.com/prettier/standalone + typescript plugin
+        </div>
+      </div>
+
+      <!-- Mock Config (Feature 23) -->
+      <div id="configTabMock" class="section" style="display:none;padding-top:8px;">
+        <div class="config-row">
+          <div class="field">
+            <label>Mock 引擎 (Feature 23)</label>
+            <select id="mockEngine">
+              <option value="builtin">基础类型 Mock (builtin)</option>
+              <option value="mockjs">Mock.js 语法模板</option>
+              <option value="heuristic">启发式生成 (根据字段名)</option>
+            </select>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:8px;">
+          builtin: 根据 schema 类型生成静态值<br/>
+          mockjs: 生成 @string/@integer/@boolean 等模板<br/>
+          heuristic: name→名字, email→邮箱, url→网址等
+        </div>
+      </div>
+
+      <!-- Advanced Config -->
+      <div id="configTabAdvanced" class="section" style="display:none;padding-top:8px;">
+        <div class="config-row">
+          <div class="field half">
+            <label>HTTP 库名称 (httpLibraryName)</label>
+            <input type="text" id="httpLibraryName" value="httpClient" placeholder="axios / request" />
+          </div>
+          <div class="field half">
+            <label>URL 统一前缀 (contentPath)</label>
+            <input type="text" id="contentPath" placeholder="/v2/api" />
+          </div>
+        </div>
+        <div class="config-row">
+          <div class="field half">
+            <label>响应字段提取 (returnKey)</label>
+            <input type="text" id="returnKey" placeholder="data 或 result.list" />
+            <div style="font-size:10px;color:var(--text2);">点号分隔的字段路径，从响应中提取</div>
+          </div>
+          <div class="field half">
+            <label>函数名后缀</label>
+            <input type="text" id="funNameSuffix" placeholder="Api / Service" />
+          </div>
+        </div>
+
+        <!-- Feature 18: URL 改写 -->
+        <details style="margin-bottom:8px;">
+          <summary style="font-size:11px;color:var(--text2);cursor:pointer;">URL 改写规则 (Feature 18)</summary>
+          <div style="margin-top:6px;">
+            <label>JSON 数组格式，每项支持 from/to/flags</label>
+            <textarea id="urlRewriteRules" rows="3" placeholder='[{"from":"inner","to":"priapi","flags":"g"}, {"from":"/beta","to":"","flags":"g"}]' style="min-height:60px;max-height:100px;"></textarea>
+            <div style="font-size:10px;color:var(--text2);margin-top:2px;">
+              支持: 字符串映射 / 正则替换 / 函数 (function(url) => newUrl)
+            </div>
+          </div>
+        </details>
+
+        <div class="config-row">
+          <div class="field">
+            <label>文件头注入代码 (leadingCode)</label>
+            <textarea id="leadingCode" rows="3" placeholder="/* eslint-disable */
+// @ts-nocheck
+import type { AxiosResponse } from 'axios';" style="min-height:70px;max-height:120px;"></textarea>
+          </div>
+        </div>
+
+        <!-- Feature 24: strictValidation -->
+        <div class="check-row">
+          <input type="checkbox" id="strictValidation" />
+          <label style="margin:0;">严格 Schema 校验 (Feature 24)</label>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:8px;">
+          检查类型完整性、空对象定义、2xx schema 缺失等
+        </div>
+
+        <details style="margin-bottom:8px;">
+          <summary style="font-size:11px;color:var(--text2);cursor:pointer;">过滤器高级语法说明</summary>
+          <div style="font-size:10px;color:var(--text2);margin-top:4px;line-height:1.6;">
+            支持格式：<br/>
+            1. 字符串: <code>pet</code> — 精确匹配<br/>
+            2. Glob: <code>/pet/*</code> — 通配符匹配<br/>
+            3. 正则: <code>/^pet/i</code> — 正则表达式<br/>
+            4. 命名空间: <code>ns:/pet</code> — 限定命名空间<br/>
+            5. JSON 对象: <code>{"pattern":"pet","namespace":"api"}</code>
+          </div>
+        </details>
+      </div>
+
+    </div><!-- /.sidebar-scroll -->
+
+    <div class="section" style="padding-bottom:16px;">
+      <button class="btn-gen" id="genBtn" onclick="doGenerate()">⚡ 生成 TypeScript 代码</button>
+    </div>
+  </div>
+
+  <!-- ========== PREVIEW ========== -->
+  <div class="preview">
+    <div class="preview-header">
+      <div class="preview-tabs" id="previewTabs"></div>
+      <button class="copy-btn" id="copyAllBtn" onclick="copyAll()" style="display:none;">📋 复制全部</button>
+      <button class="copy-btn" id="copyCurBtn" onclick="copyCurrent()" style="display:none;">📋 复制当前</button>
+    </div>
+    <div class="preview-content" id="previewContent">
+      <div class="empty-state">
+        <div class="icon">📦</div>
+        <div>粘贴 Swagger JSON 规范，配置参数，点击「生成」</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Prettier CDN -->
+<script src="https://unpkg.com/prettier@3/standalone.js"></script>
+<script src="https://unpkg.com/prettier@3/plugins/typescript.js"></script>
+<script src="https://unpkg.com/prettier@3/plugins/estree.js"></script>
+
+<!-- Engine -->
+<script src="./assets/swagger-ts-pro-engine.js"></script>
+
+<script>
+// ============ 全局状态 ============
+const engine = new SwaggerTSEngine();
+let generatedFiles = [];
+let activeFileTab = null;
+let tagFilterStates = {};  // true=included, false=excluded, undefined=neutral
+let sourceTab = 'json';
+
+// ============ Source Tab Switching ============
+function switchSourceTab(tab) {
+  sourceTab = tab;
+  document.getElementById('sourceJson').style.display = tab === 'json' ? 'block' : 'none';
+  document.getElementById('sourceUrl').style.display = tab === 'url' ? 'block' : 'none';
+  document.getElementById('tabBtnJson').style.background = tab === 'json' ? 'var(--hover)' : '';
+  document.getElementById('tabBtnJson').style.borderColor = tab === 'json' ? 'var(--accent)' : '';
+  document.getElementById('tabBtnUrl').style.background = tab === 'url' ? 'var(--hover)' : '';
+  document.getElementById('tabBtnUrl').style.borderColor = tab === 'url' ? 'var(--accent)' : '';
+}
+
+// ============ Config Tab Switching ============
+function switchConfigTab(tab) {
+  const tabs = ['output','client','naming','prettier','mock','advanced'];
+  tabs.forEach(t => {
+    document.getElementById('configTab'+t[0].toUpperCase()+t.slice(1)).style.display = t === tab ? '' : 'none';
+  });
+  document.querySelectorAll('.sidebar-tab').forEach((el, i) => {
+    el.classList.toggle('active', tabs[i] === tab);
+  });
+}
+
+// ============ Collapsible Sections ============
+function toggleSection(el) {
+  el.classList.toggle('collapsed');
+  const body = el.nextElementSibling;
+  body.classList.toggle('hidden');
+}
+
+// ============ HTTP Client Change ============
+function onHttpClientChange() {
+  const v = document.getElementById('httpClient').value;
+  document.getElementById('customHttpGroup').style.display = v === 'custom' ? '' : 'none';
+}
+function onResponseWrapChange() {
+  const v = document.getElementById('responseWrapper').value;
+  document.getElementById('customWrapGroup').style.display = v === 'custom' ? '' : 'none';
+}
+
+// ============ Methods Checkboxes → Array ============
+function syncMethods() {
+  // tracked via collectConfig() but we also set config live
+  const methods = [];
+  document.querySelectorAll('.methodChk:checked').forEach(cb => methods.push(cb.value));
+  engine.setConfig({ includeMethods: methods });
+}
+
+// ============ Collect Config from DOM ============
+function collectConfig() {
+  const ctMapText = document.getElementById('contentTypeMap').value.trim();
+  const ctMap = {};
+  if (ctMapText) {
+    ctMapText.split('\n').filter(Boolean).forEach(line => {
+      const idx = line.indexOf('=');
+      if (idx > 0) ctMap[line.slice(0, idx).trim()] = line.slice(idx+1).trim();
+    });
+  }
+  const methods = [];
+  document.querySelectorAll('.methodChk:checked').forEach(cb => methods.push(cb.value));
+
+  // 解析高级过滤器输入（支持 JSON 对象或逗号分隔的字符串）
+  const parseFilterInput = (val) => {
+    if (!val || !val.trim()) return [];
+    const trimmed = val.trim();
+    // JSON array
+    if (trimmed.startsWith('[')) {
+      try { return JSON.parse(trimmed); } catch {}
+    }
+    // JSON object line
+    if (trimmed.startsWith('{')) {
+      try { return [JSON.parse(trimmed)]; } catch {}
+    }
+    // 逗号分隔
+    return trimmed.split(',').map(s => s.trim()).filter(Boolean);
+  };
+
+  return {
+    // Output
+    outputMode: document.getElementById('outputMode').value,
+    outputScope: document.getElementById('outputScope').value,
+    splitBy: document.getElementById('splitBy').value,
+    generatorType: document.getElementById('generatorType').value,
+    generateTypes: document.getElementById('generateTypes').checked,
+    dtsMode: document.getElementById('dtsMode').checked,
+    typesFile: document.getElementById('typesFile').value,
+    apiDir: document.getElementById('apiDir').value || 'api',
+    enumStyle: document.getElementById('enumStyle').value,
+    filterUnusedTypes: document.getElementById('filterUnusedTypes').checked,
+    // Client
+    httpClient: document.getElementById('httpClient').value,
+    httpLibraryName: document.getElementById('httpLibraryName').value || document.getElementById('httpClient').value,
+    axiosStyle: document.getElementById('axiosStyle').value,
+    extendConfig: document.getElementById('extendConfig').value,
+    customHttpModule: document.getElementById('customHttpModule').value || '@/utils/request',
+    baseURL: document.getElementById('baseURL').value,
+    apiPrefix: document.getElementById('apiPrefix').value,
+    contentPath: document.getElementById('contentPath').value,
+    responseWrapper: document.getElementById('responseWrapper').value,
+    responseWrapperType: document.getElementById('responseWrapperType').value || 'ApiResponse<T>',
+    returnKey: document.getElementById('returnKey').value,
+    // Naming
+    functionNaming: document.getElementById('functionNaming').value,
+    functionNameTemplate: document.getElementById('functionNameTemplate').value || '{method}{path}',
+    fileNameTemplate: document.getElementById('fileNameTemplate').value || '{tag}.ts',
+    functionStyle: document.getElementById('functionStyle').value,
+    funNameSuffix: document.getElementById('funNameSuffix').value,
+    uniqueName: document.getElementById('uniqueName').checked,
+    nameCaseStyle: document.getElementById('nameCaseStyle').value,
+    sanitizeName: document.getElementById('sanitizeName').checked,
+    // Mock
+    generateMocks: document.getElementById('generateMocks').checked,
+    mocksFile: document.getElementById('mocksFile').value || 'mocks.ts',
+    mockEngine: document.getElementById('mockEngine').value,
+    // Advanced
+    requestBodyOptional: document.getElementById('requestBodyOptional').value === 'true',
+    defaultContentType: document.getElementById('defaultContentType').value,
+    contentTypeMap: ctMap,
+    leadingCode: document.getElementById('leadingCode').value,
+    urlRewriteRules: (() => {
+      const raw = document.getElementById('urlRewriteRules').value.trim();
+      if (!raw) return [];
+      try { return JSON.parse(raw); } catch { return []; }
+    })(),
+    strictValidation: document.getElementById('strictValidation').checked,
+    // Prettier
+    prettierEnabled: document.getElementById('prettierEnabled').checked,
+    prettierTabWidth: parseInt(document.getElementById('prettierTabWidth').value) || 4,
+    prettierSemi: document.getElementById('prettierSemi').checked,
+    prettierSingleQuote: document.getElementById('prettierSingleQuote').checked,
+    prettierTrailingComma: document.getElementById('prettierTrailingComma').value,
+    prettierPrintWidth: parseInt(document.getElementById('prettierPrintWidth').value) || 80,
+    // Filters
+    filterMethods: methods,
+    includeMethods: methods,
+    controllerIncludes: parseFilterInput(document.getElementById('controllerIncludes').value),
+    controllerExcludes: parseFilterInput(document.getElementById('controllerExcludes').value),
+    pathIncludes: parseFilterInput(document.getElementById('includePaths').value),
+    pathExcludes: parseFilterInput(document.getElementById('excludePaths').value),
+    // Legacy compat
+    includeTags: Object.entries(tagFilterStates).filter(([,v]) => v === true).map(([k]) => k),
+    excludeTags: Object.entries(tagFilterStates).filter(([,v]) => v === false).map(([k]) => k),
+    includePaths: document.getElementById('includePaths').value.split(',').map(s => s.trim()).filter(Boolean),
+    excludePaths: document.getElementById('excludePaths').value.split(',').map(s => s.trim()).filter(Boolean),
+  };
+}
+
+// ============ Tag Filter UI ============
+function renderTagFilters() {
+  const tags = engine.getTags();
+  const container = document.getElementById('tagFilterList');
+  // Preserve existing states
+  const newStates = {};
+  tags.forEach(t => { newStates[t] = tagFilterStates[t]; });
+  tagFilterStates = newStates;
+  if (tags.length === 0) {
+    container.innerHTML = '<span style="font-size:11px;color:var(--text2);">无 Tags</span>';
+    return;
+  }
+  container.innerHTML = tags.map(t => {
+    const state = tagFilterStates[t];
+    const cls = state === true ? 'on' : state === false ? 'exclude' : 'off';
+    const sym = state === true ? '✓' : state === false ? '✗' : '○';
+    return `<span class="tag-chip ${cls}" onclick="cycleTag('${t.replace(/'/g, "\\'")}')" title="点击切换：包含 → 排除 → 忽略">${sym} ${t}</span>`;
+  }).join('');
+}
+
+function cycleTag(tag) {
+  const cur = tagFilterStates[tag];
+  if (cur === true) tagFilterStates[tag] = false;
+  else if (cur === false) delete tagFilterStates[tag];
+  else tagFilterStates[tag] = true;
+  renderTagFilters();
+  engine.setConfig(collectConfig());
+  updateStats();
+}
+
+// ============ Update Stats ============
+function updateStats() {
+  const st = engine.getStats();
+  if (!st) { document.getElementById('statsText').textContent = '就绪'; return; }
+  document.getElementById('statsText').textContent = `${st.filteredOps}/${st.totalOps} ops · ${st.schemas} schemas · ${st.tags} tags`;
+}
+
+// ============ Parse & Validate ============
+function doParse(showValidation) {
+  const input = sourceTab === 'url'
+    ? document.getElementById('specInput').value
+    : document.getElementById('specInput').value;
+  if (!input.trim()) return false;
+  try {
+    engine.parse(input);
+    engine.setConfig(collectConfig());
+    syncMethods(); // update methods in config
+    renderTagFilters();
+    updateStats();
+
+    // Show validation
+    if (showValidation) {
+      const v = engine.validate();
+      const box = document.getElementById('validationBox');
+      if (v.issues.length === 0) {
+        box.style.display = 'none';
+      } else {
+        box.style.display = 'block';
+        box.innerHTML = v.issues.map(i => {
+          const emoji = i.severity === 'error' ? '❌' : i.severity === 'warn' ? '⚠️' : 'ℹ️';
+          return `<div class="issue">` +
+            `<span class="sev ${i.severity}">${emoji} ${i.severity}</span>` +
+            `<span>${i.path}: ${i.message}</span></div>`;
+        }).join('');
+      }
+      const statusEl = document.getElementById('statusText');
+      statusEl.className = 'status ' + (v.valid ? 'ok' : 'err');
+      statusEl.textContent = v.valid
+        ? '✅ 校验通过' + (v.issues.length ? ` (${v.issues.length} 个提示)` : '')
+        : `❌ 校验失败: ${v.issues.filter(i=>i.severity==='error').length} 个错误, ${v.issues.filter(i=>i.severity==='warn').length} 个警告`;
+    }
+    return true;
+  } catch (e) {
+    document.getElementById('statusText').className = 'status err';
+    document.getElementById('statusText').textContent = '❌ ' + e.message;
+    return false;
+  }
+}
+
+// ============ Auto-parse on input ============
+let parseTimer;
+document.getElementById('specInput').addEventListener('input', () => {
+  clearTimeout(parseTimer);
+  parseTimer = setTimeout(() => {
+    const input = document.getElementById('specInput').value.trim();
+    if (input && (input.startsWith('{') || input.startsWith('['))) {
+      doParse(false);
+    }
+  }, 600);
+});
+
+// ============ Fetch from URL ============
+async function fetchFromUrl() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) return alert('请输入 URL');
+  const method = document.getElementById('urlMethod').value;
+  const headersText = document.getElementById('urlHeaders').value.trim();
+  const bodyText = document.getElementById('urlBody').value.trim();
+
+  document.getElementById('statusText').className = 'status';
+  document.getElementById('statusText').textContent = '⏳ 正在拉取...';
+
+  try {
+    let headers = {};
+    try { headers = JSON.parse(headersText || '{}'); } catch { throw new Error('Headers JSON 格式错误'); }
+
+    const fetchOpts = { method, headers };
+    if (['POST','PUT','PATCH'].includes(method) && bodyText) {
+      fetchOpts.body = bodyText;
+    }
+
+    const resp = await fetch(url, fetchOpts);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+    const text = await resp.text();
+
+    // Place result in json textarea and switch to json tab
+    document.getElementById('specInput').value = text;
+    switchSourceTab('json');
+
+    document.getElementById('statusText').className = 'status ok';
+    document.getElementById('statusText').textContent = '✅ 拉取成功，已自动解析';
+    doParse(true);
+  } catch (e) {
+    document.getElementById('statusText').className = 'status err';
+    document.getElementById('statusText').textContent = '❌ 拉取失败: ' + e.message;
+  }
+}
+
+// ============ Load Sample ============
+function loadSample(version) {
+  if (version === 'v3') {
+    document.getElementById('specInput').value = JSON.stringify(V3_SAMPLE);
+  } else {
+    document.getElementById('specInput').value = JSON.stringify(V2_SAMPLE);
+  }
+  switchSourceTab('json');
+  doParse(true);
+}
+
+// ============ Generate ============
+async function doGenerate() {
+  const input = document.getElementById('specInput').value.trim();
+  if (!input) { alert('请先输入 Swagger 规范'); return; }
+
+  if (!doParse(false)) return;
+
+  const cfg = collectConfig();
+  engine.setConfig(cfg);
+
+  document.getElementById('genBtn').disabled = true;
+  document.getElementById('genBtn').textContent = '⏳ 生成中...';
+
+  try {
+    let result = engine.generate();
+    generatedFiles = result.files;
+
+    // Apply prettier formatting if enabled
+    if (cfg.prettierEnabled) {
+      document.getElementById('genBtn').textContent = '⏳ 格式化中 (Prettier)...';
+      generatedFiles = await engine.formatFiles(generatedFiles);
+    }
+
+    document.getElementById('statusText').className = 'status ok';
+    document.getElementById('statusText').textContent =
+      `✅ 已生成 ${result.operationCount} 个接口, ${result.typeCount} 个类型, ${generatedFiles.length} 个文件`;
+
+    renderPreview(generatedFiles);
+  } catch (e) {
+    document.getElementById('statusText').className = 'status err';
+    document.getElementById('statusText').textContent = '❌ 生成失败: ' + e.message;
+    console.error(e);
+  } finally {
+    document.getElementById('genBtn').disabled = false;
+    document.getElementById('genBtn').textContent = '⚡ 生成 TypeScript 代码';
+  }
+}
+
+// ============ Render Preview ============
+function renderPreview(files) {
+  const tabsEl = document.getElementById('previewTabs');
+  const contentEl = document.getElementById('previewContent');
+  const copyAllBtn = document.getElementById('copyAllBtn');
+  const copyCurBtn = document.getElementById('copyCurBtn');
+
+  copyAllBtn.style.display = 'inline-block';
+  copyCurBtn.style.display = 'inline-block';
+
+  // File tree + tabs
+  tabsEl.innerHTML = files.map((f, i) =>
+    `<button class="preview-tab ${i === 0 ? 'active' : ''}" onclick="switchFileTab(${i})">${f.name}</button>`
+  ).join('');
+
+  activeFileTab = 0;
+  showFileContent(files[0]);
+  contentEl.style.overflow = 'auto';
+}
+
+function switchFileTab(idx) {
+  activeFileTab = idx;
+  document.querySelectorAll('.preview-tab').forEach((el, i) => el.classList.toggle('active', i === idx));
+  showFileContent(generatedFiles[idx]);
+}
+
+function showFileContent(file) {
+  const el = document.getElementById('previewContent');
+  const lang = file.name.endsWith('.ts') ? 'typescript' : file.name.endsWith('.json') ? 'json' : 'text';
+  const escaped = file.content
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  el.innerHTML = `<pre><code class="language-${lang}">${escaped}</code></pre>`;
+}
+
+// ============ Copy ============
+function copyCurrent() {
+  if (!generatedFiles[activeFileTab]) return;
+  copyText(generatedFiles[activeFileTab].content);
+  showToast('已复制 ' + generatedFiles[activeFileTab].name);
+}
+
+function copyAll() {
+  const all = generatedFiles.map(f =>
+    `// ====== ${f.name} ======\n` + f.content
+  ).join('\n\n');
+  copyText(all);
+  showToast('已复制全部 ' + generatedFiles.length + ' 个文件');
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2000);
+}
+
+// ============ Samples ============
+const V3_SAMPLE = {
+  openapi: "3.0.3",
+  info: { title: "Petstore", version: "1.0.0" },
+  servers: [{ url: "/api/v3" }],
+  tags: [{ name: "pet", description: "Everything about Pets" }, { name: "store", description: "Access to Orders" }],
+  paths: {
+    "/pet": {
+      post: {
+        tags: ["pet"], summary: "Add a new pet", operationId: "addPet",
+        requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/Pet" } } } },
+        responses: { "200": { description: "OK", content: { "application/json": { schema: { $ref: "#/components/schemas/Pet" } } } } }
+      }
+    },
+    "/pet/{petId}": {
+      get: {
+        tags: ["pet"], summary: "Find pet by ID", operationId: "getPetById",
+        parameters: [{ name: "petId", in: "path", required: true, schema: { type: "integer" } }],
+        responses: { "200": { description: "OK", content: { "application/json": { schema: { $ref: "#/components/schemas/Pet" } } } } }
+      },
+      delete: {
+        tags: ["pet"], summary: "Delete a pet", operationId: "deletePet",
+        parameters: [{ name: "petId", in: "path", required: true, schema: { type: "integer" } }],
+        responses: { "200": { description: "OK" } }
+      }
+    },
+    "/pet/findByStatus": {
+      get: {
+        tags: ["pet"], summary: "Find pets by status", operationId: "findPetsByStatus",
+        parameters: [{ name: "status", in: "query", required: true, schema: { type: "string", enum: ["available","pending","sold"] } }],
+        responses: { "200": { description: "OK", content: { "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/Pet" } } } } } }
+      }
+    },
+    "/store/order": {
+      post: {
+        tags: ["store"], summary: "Place order", operationId: "placeOrder",
+        requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/Order" } } } },
+        responses: { "200": { description: "OK", content: { "application/json": { schema: { $ref: "#/components/schemas/Order" } } } } }
+      }
+    },
+    "/store/order/{orderId}": {
+      get: {
+        tags: ["store"], summary: "Get order by ID", operationId: "getOrderById",
+        parameters: [{ name: "orderId", in: "path", required: true, schema: { type: "integer" } }],
+        responses: { "200": { description: "OK", content: { "application/json": { schema: { $ref: "#/components/schemas/Order" } } } } }
+      }
+    }
+  },
+  components: {
+    schemas: {
+      Pet: {
+        type: "object", required: ["id", "name"],
+        properties: {
+          id: { type: "integer" }, name: { type: "string" },
+          status: { type: "string", enum: ["available", "pending", "sold"] },
+          category: { $ref: "#/components/schemas/Category" },
+          tags: { type: "array", items: { $ref: "#/components/schemas/Tag" } }
+        }
+      },
+      Category: { type: "object", properties: { id: { type: "integer" }, name: { type: "string" } } },
+      Tag: { type: "object", properties: { id: { type: "integer" }, name: { type: "string" } } },
+      Order: {
+        type: "object",
+        properties: {
+          id: { type: "integer" }, petId: { type: "integer" },
+          quantity: { type: "integer" }, shipDate: { type: "string", format: "date-time" },
+          status: { type: "string", enum: ["placed", "approved", "delivered"] }
+        }
+      }
+    }
+  }
+};
+
+const V2_SAMPLE = {
+  swagger: "2.0",
+  info: { title: "Petstore (Swagger 2.0)", version: "1.0.0" },
+  host: "petstore.swagger.io",
+  basePath: "/v2",
+  schemes: ["https"],
+  consumes: ["application/json"],
+  produces: ["application/json"],
+  tags: [{ name: "pet" }, { name: "store" }],
+  paths: {
+    "/pet": {
+      post: {
+        tags: ["pet"], summary: "Add a new pet", operationId: "addPet",
+        parameters: [{ in: "body", name: "body", required: true, schema: { $ref: "#/definitions/Pet" } }],
+        responses: { "200": { description: "OK", schema: { $ref: "#/definitions/Pet" } } }
+      }
+    },
+    "/pet/{petId}": {
+      get: {
+        tags: ["pet"], summary: "Find pet by ID", operationId: "getPetById",
+        parameters: [{ name: "petId", in: "path", required: true, type: "integer" }],
+        responses: { "200": { description: "OK", schema: { $ref: "#/definitions/Pet" } }, "404": { description: "Not found" } }
+      },
+      delete: {
+        tags: ["pet"], summary: "Delete a pet", operationId: "deletePet",
+        parameters: [{ name: "petId", in: "path", required: true, type: "integer" }],
+        responses: { "200": { description: "OK" } }
+      }
+    },
+    "/pet/findByStatus": {
+      get: {
+        tags: ["pet"], summary: "Find pets by status",
+        parameters: [{ name: "status", in: "query", required: true, type: "array", items: { type: "string", enum: ["available","pending","sold"] } }],
+        responses: { "200": { description: "OK", schema: { type: "array", items: { $ref: "#/definitions/Pet" } } } }
+      }
+    },
+    "/pet/{petId}/uploadImage": {
+      post: {
+        tags: ["pet"], summary: "Upload image", operationId: "uploadFile",
+        consumes: ["multipart/form-data"],
+        parameters: [
+          { name: "petId", in: "path", required: true, type: "integer" },
+          { name: "file", in: "formData", required: true, type: "file" },
+          { name: "additionalMetadata", in: "formData", type: "string" }
+        ],
+        responses: { "200": { description: "OK" } }
+      }
+    },
+    "/store/order": {
+      post: {
+        tags: ["store"], summary: "Place order", operationId: "placeOrder",
+        parameters: [{ in: "body", name: "body", required: true, schema: { $ref: "#/definitions/Order" } }],
+        responses: { "200": { description: "OK", schema: { $ref: "#/definitions/Order" } } }
+      }
+    },
+    "/store/order/{orderId}": {
+      get: {
+        tags: ["store"], summary: "Get order by ID", operationId: "getOrderById",
+        parameters: [{ name: "orderId", in: "path", required: true, type: "integer" }],
+        responses: { "200": { description: "OK", schema: { $ref: "#/definitions/Order" } } }
+      }
+    }
+  },
+  definitions: {
+    Pet: {
+      type: "object", required: ["id", "name"],
+      properties: {
+        id: { type: "integer" }, name: { type: "string" },
+        status: { type: "string", enum: ["available", "pending", "sold"] },
+        category: { $ref: "#/definitions/Category" },
+        tags: { type: "array", items: { $ref: "#/definitions/Tag" } }
+      }
+    },
+    Category: { type: "object", properties: { id: { type: "integer" }, name: { type: "string" } } },
+    Tag: { type: "object", properties: { id: { type: "integer" }, name: { type: "string" } } },
+    Order: {
+      type: "object",
+      properties: {
+        id: { type: "integer" }, petId: { type: "integer" },
+        quantity: { type: "integer" }, shipDate: { type: "string", format: "date-time" },
+        status: { type: "string", enum: ["placed", "approved", "delivered"] },
+        complete: { type: "boolean", default: false }
+      }
+    }
+  }
+};
+
+// ============ Keyboard shortcut ============
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    doGenerate();
+  }
+});
+
+// Init
+document.getElementById('specInput').value = JSON.stringify(V3_SAMPLE);
+doParse(true);
+</script>
+</body>
+</html>

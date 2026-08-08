@@ -49,7 +49,257 @@
         { "en": "spontaneous", "zh": "自发的；即兴的", "hint": "not planned in advance", "sort_order": 42 },
         { "en": "inevitable", "zh": "不可避免的", "hint": "sure to happen", "sort_order": 43 },
         { "en": "distinguish", "zh": "区分；辨别", "hint": "tell apart", "sort_order": 44 },
-        { "en": "perspective", "zh": "视角；观点", "hint": "a way of viewing things", "sort_order": 45 }
+        { "en": "perspective", "zh": "视角；观点", "hint": "a way of viewing things", "sort_order": 45 },
+        { "en": "resolve", "zh": "解决；下定决心", "hint": "settle a problem", "sort_order": 46 },
+        { "en": "adjust", "zh": "调整；适应", "hint": "change to fit", "sort_order": 47 },
+        { "en": "accomplish", "zh": "完成；实现", "hint": "achieve a goal", "sort_order": 48 },
+        { "en": "arrange", "zh": "安排；布置", "hint": "organize or plan", "sort_order": 49 },
+        { "en": "snack", "zh": "零食；点心", "hint": "small food between meals", "sort_order": 50 },
+        { "en": "adapt", "zh": "适应；改编", "hint": "get used to something new", "sort_order": 51 },
+        { "en": "complaint", "zh": "投诉；抱怨", "hint": "expressing dissatisfaction", "sort_order": 52 },
+        { "en": "sufficient", "zh": "足够的；充足的", "hint": "enough for the purpose", "sort_order": 53 },
+        { "en": "attempt", "zh": "尝试；企图", "hint": "try to do something", "sort_order": 54 },
+        { "en": "essential", "zh": "必不可少的", "hint": "absolutely needed", "sort_order": 55 },
+        { "en": "thorough", "zh": "彻底的；周密的", "hint": "complete and careful", "sort_order": 56 },
+        { "en": "coordinate", "zh": "协调；配合", "hint": "organize activities together", "sort_order": 57 },
+        { "en": "outcome", "zh": "结果；成果", "hint": "final result", "sort_order": 58 },
+        { "en": "acknowledge", "zh": "承认；确认收到", "hint": "confirm you received something", "sort_order": 59 },
+        { "en": "renovate", "zh": "翻新；装修", "hint": "make new again", "sort_order": 60 },
+        { "en": "ingredient", "zh": "原料；配料", "hint": "a food component", "sort_order": 61 },
+        { "en": "expense", "zh": "开支；花费", "hint": "money spent", "sort_order": 62 },
+        { "en": "dilemma", "zh": "困境；两难", "hint": "a hard choice", "sort_order": 63 },
+        { "en": "abandon", "zh": "放弃；抛弃", "hint": "give up completely", "sort_order": 64 },
+        { "en": "illustrate", "zh": "说明；阐明", "hint": "explain with examples", "sort_order": 65 },
+        { "en": "escalate", "zh": "升级；使…升级", "hint": "raise an issue to a higher level", "sort_order": 66 },
+        { "en": "onboarding", "zh": "入职引导；新手培训", "hint": "process for integrating new hires", "sort_order": 67 },
+        { "en": "benchmark", "zh": "基准；标杆；对标", "hint": "a standard for comparison", "sort_order": 68 },
+        { "en": "consensus", "zh": "共识；一致意见", "hint": "general agreement", "sort_order": 69 },
+        { "en": "coupon", "zh": "优惠券；折扣券", "hint": "a discount voucher", "sort_order": 70 },
+        { "en": "reservation", "zh": "预订；预约", "hint": "booking a table or room", "sort_order": 71 },
+        { "en": "mileage", "zh": "里程；英里数", "hint": "distance traveled in miles", "sort_order": 72 },
+        { "en": "notion", "zh": "概念；观念", "hint": "an idea or concept", "sort_order": 73 },
+        { "en": "reluctant", "zh": "不情愿的；勉强的", "hint": "unwilling to do something", "sort_order": 74 },
+        { "en": "criteria", "zh": "标准；准则", "hint": "standards for judging", "sort_order": 75 },
+        { "en": "facilitate", "zh": "促进；使便利", "hint": "make easier or smoother", "sort_order": 76 },
+        { "en": "scrutinize", "zh": "仔细审查", "hint": "examine very carefully", "sort_order": 77 },
+        { "en": "reimburse", "zh": "报销；偿还", "hint": "pay back money spent", "sort_order": 78 },
+        { "en": "comply", "zh": "遵守；服从", "hint": "follow rules or requirements", "sort_order": 79 },
+        { "en": "chore", "zh": "家务杂事", "hint": "a small routine task", "sort_order": 80 },
+        { "en": "detour", "zh": "绕路；迂回", "hint": "a longer alternative route", "sort_order": 81 },
+        { "en": "wardrobe", "zh": "衣柜；衣物", "hint": "closet or clothing collection", "sort_order": 82 },
+        { "en": "vague", "zh": "模糊的；含糊的", "hint": "not clear or specific", "sort_order": 83 },
+        { "en": "optimistic", "zh": "乐观的", "hint": "expecting good outcomes", "sort_order": 84 },
+        { "en": "skeptical", "zh": "怀疑的", "hint": "doubtful but open to evidence", "sort_order": 85 },
+        { "en": "agenda", "zh": "议程；待办事项", "hint": "list of items to discuss", "sort_order": 86 },
+        { "en": "allocate", "zh": "分配；拨给", "hint": "distribute resources or budget", "sort_order": 87 },
+        { "en": "diligent", "zh": "勤奋的；认真的", "hint": "hardworking and careful", "sort_order": 88 },
+        { "en": "incentive", "zh": "激励；动力", "hint": "something that motivates you", "sort_order": 89 },
+        { "en": "frugal", "zh": "节俭的；朴素的", "hint": "careful with money", "sort_order": 90 },
+        { "en": "handy", "zh": "方便的；有用的", "hint": "useful and convenient", "sort_order": 91 },
+        { "en": "reminisce", "zh": "回忆；追忆", "hint": "talk about past memories", "sort_order": 92 },
+        { "en": "procrastinate", "zh": "拖延；耽搁", "hint": "keep putting things off", "sort_order": 93 },
+        { "en": "tedious", "zh": "乏味的；单调的", "hint": "boring and repetitive", "sort_order": 94 },
+        { "en": "courteous", "zh": "有礼貌的；谦恭的", "hint": "polite and respectful", "sort_order": 95 },
+        { "en": "counterpart", "zh": "对应的人；职务相当的人", "hint": "an equivalent person at another organization", "sort_order": 96 },
+        { "en": "leverage", "zh": "利用；杠杆作用", "hint": "use something to maximum advantage", "sort_order": 97 },
+        { "en": "turnover", "zh": "人员流失率；营业额", "hint": "rate of staff leaving or total sales", "sort_order": 98 },
+        { "en": "tangible", "zh": "有形的；切实的", "hint": "real and can be measured", "sort_order": 99 },
+        { "en": "commotion", "zh": "骚动；喧闹", "hint": "a noisy disturbance", "sort_order": 100 },
+        { "en": "acquaintance", "zh": "熟人；泛泛之交", "hint": "someone you know but not well", "sort_order": 101 },
+        { "en": "tactic", "zh": "策略；手段", "hint": "a specific action to achieve a goal", "sort_order": 102 },
+        { "en": "relevant", "zh": "相关的；切题的", "hint": "connected to the matter at hand", "sort_order": 103 },
+        { "en": "deteriorate", "zh": "恶化；变坏", "hint": "gradually become worse", "sort_order": 104 },
+        { "en": "withhold", "zh": "扣留；保留；隐瞒", "hint": "hold back or refuse to give", "sort_order": 105 },
+        { "en": "endorse", "zh": "支持；认可；背书", "hint": "give official support to", "sort_order": 106 },
+        { "en": "viable", "zh": "可行的；能存活的", "hint": "capable of working successfully", "sort_order": 107 },
+        { "en": "amend", "zh": "修改；修正", "hint": "make minor changes to a document", "sort_order": 108 },
+        { "en": "disclose", "zh": "披露；公开", "hint": "make information known", "sort_order": 109 },
+        { "en": "mortgage", "zh": "抵押贷款；按揭", "hint": "loan secured by property", "sort_order": 110 },
+        { "en": "gadget", "zh": "小器具；小玩意", "hint": "a small useful device", "sort_order": 111 },
+        { "en": "itinerary", "zh": "行程表；旅行路线", "hint": "a planned travel route", "sort_order": 112 },
+        { "en": "perceive", "zh": "察觉；感知；认为", "hint": "become aware of something", "sort_order": 113 },
+        { "en": "concise", "zh": "简洁的；简明的", "hint": "brief but comprehensive", "sort_order": 114 },
+        { "en": "plausible", "zh": "貌似合理的；可信的", "hint": "seeming reasonable or probable", "sort_order": 115 },
+        { "en": "devise", "zh": "设计；想出", "hint": "plan or invent a method", "sort_order": 116 },
+        { "en": "retain", "zh": "保留；留住", "hint": "keep or hold onto", "sort_order": 117 },
+        { "en": "constrain", "zh": "限制；约束", "hint": "limit or restrict", "sort_order": 118 },
+        { "en": "feasible", "zh": "可行的", "hint": "possible to do", "sort_order": 119 },
+        { "en": "indulge", "zh": "沉溺于；放纵", "hint": "allow yourself to enjoy", "sort_order": 120 },
+        { "en": "scenery", "zh": "风景；景色", "hint": "natural views around you", "sort_order": 121 },
+        { "en": "furnish", "zh": "配备家具；提供", "hint": "equip a room with furniture", "sort_order": 122 },
+        { "en": "assure", "zh": "向…保证", "hint": "tell someone confidently", "sort_order": 123 },
+        { "en": "prevail", "zh": "盛行；获胜", "hint": "win or be most common", "sort_order": 124 },
+        { "en": "manifest", "zh": "显现；明显的", "hint": "show or become evident", "sort_order": 125 },
+        { "en": "substitute", "zh": "替代；代替", "hint": "replace one thing with another", "sort_order": 126 },
+        { "en": "tentative", "zh": "试探性的；暂定的", "hint": "not yet final or certain", "sort_order": 127 },
+        { "en": "tackle", "zh": "着手处理；应付", "hint": "start dealing with a problem", "sort_order": 128 },
+        { "en": "friction", "zh": "摩擦；冲突", "hint": "tension between people or groups", "sort_order": 129 },
+        { "en": "compliment", "zh": "赞美；称赞", "hint": "a flattering remark", "sort_order": 130 },
+        { "en": "glance", "zh": "一瞥；扫视", "hint": "a quick brief look", "sort_order": 131 },
+        { "en": "perishable", "zh": "易腐烂的；易变质的", "hint": "likely to decay or spoil", "sort_order": 132 },
+        { "en": "trivial", "zh": "琐碎的；不重要的", "hint": "of little significance", "sort_order": 133 },
+        { "en": "resilient", "zh": "有韧性的；能恢复的", "hint": "able to recover quickly", "sort_order": 134 },
+        { "en": "coincide", "zh": "同时发生；巧合", "hint": "happen at the same time", "sort_order": 135 },
+        { "en": "synergy", "zh": "协同效应；协作", "hint": "combined energy from teamwork", "sort_order": 136 },
+        { "en": "explicit", "zh": "明确的；直截了当的", "hint": "clearly stated", "sort_order": 137 },
+        { "en": "concession", "zh": "让步；妥协", "hint": "giving up something in a negotiation", "sort_order": 138 },
+        { "en": "mitigate", "zh": "缓解；减轻", "hint": "reduce the severity of", "sort_order": 139 },
+        { "en": "nostalgic", "zh": "怀旧的；恋旧的", "hint": "feeling longing for the past", "sort_order": 140 },
+        { "en": "thrive", "zh": "茁壮成长；蓬勃发展", "hint": "grow and do well", "sort_order": 141 },
+        { "en": "immerse", "zh": "沉浸于；使沉浸", "hint": "involve deeply in an activity", "sort_order": 142 },
+        { "en": "contemplate", "zh": "深思；考虑", "hint": "think carefully about something", "sort_order": 143 },
+        { "en": "fluctuate", "zh": "波动；起伏", "hint": "rise and fall irregularly", "sort_order": 144 },
+        { "en": "prevalent", "zh": "普遍的；盛行的", "hint": "widespread and common", "sort_order": 145 },
+        { "en": "compile", "zh": "汇编；编纂", "hint": "gather and combine data", "sort_order": 146 },
+        { "en": "articulate", "zh": "清晰表达；善于表达的", "hint": "express ideas clearly", "sort_order": 147 },
+        { "en": "terminate", "zh": "终止；结束", "hint": "bring to an end", "sort_order": 148 },
+        { "en": "designate", "zh": "指定；委派", "hint": "officially assign a role", "sort_order": 149 },
+        { "en": "landlord", "zh": "房东；业主", "hint": "owner who rents property", "sort_order": 150 },
+        { "en": "souvenir", "zh": "纪念品", "hint": "a keepsake from a trip", "sort_order": 151 },
+        { "en": "cuisine", "zh": "菜肴；烹饪风格", "hint": "a style of cooking", "sort_order": 152 },
+        { "en": "pragmatic", "zh": "务实的", "hint": "practical rather than theoretical", "sort_order": 153 },
+        { "en": "obsolete", "zh": "过时的；废弃的", "hint": "no longer in use", "sort_order": 154 },
+        { "en": "complacent", "zh": "自满的", "hint": "smugly self-satisfied", "sort_order": 155 },
+        { "en": "reconcile", "zh": "调和；对账", "hint": "find agreement between two sides", "sort_order": 156 },
+        { "en": "appraise", "zh": "评估；估价", "hint": "evaluate value or quality", "sort_order": 157 },
+        { "en": "nominate", "zh": "提名；任命", "hint": "officially suggest for a role", "sort_order": 158 },
+        { "en": "stipulate", "zh": "规定；明确要求", "hint": "state as a clear requirement", "sort_order": 159 },
+        { "en": "savor", "zh": "品味；享受", "hint": "enjoy slowly and fully", "sort_order": 160 },
+        { "en": "replenish", "zh": "补充；装满", "hint": "fill up again", "sort_order": 161 },
+        { "en": "grudge", "zh": "怨恨；积怨", "hint": "a feeling of resentment", "sort_order": 162 },
+        { "en": "blunt", "zh": "直率的；钝的", "hint": "direct and straightforward", "sort_order": 163 },
+        { "en": "stall", "zh": "拖延；熄火", "hint": "delay or put off", "sort_order": 164 },
+        { "en": "discard", "zh": "丢弃；抛弃", "hint": "throw away as useless", "sort_order": 165 },
+        { "en": "discrepancy", "zh": "差异；不一致", "hint": "a difference between things", "sort_order": 166 },
+        { "en": "foster", "zh": "培养；促进", "hint": "encourage or nurture", "sort_order": 167 },
+        { "en": "bolster", "zh": "支持；加强", "hint": "support or strengthen", "sort_order": 168 },
+        { "en": "entail", "zh": "需要；涉及", "hint": "involve or require", "sort_order": 169 },
+        { "en": "upheaval", "zh": "剧变；动荡", "hint": "a big disruption or change", "sort_order": 170 },
+        { "en": "dwindle", "zh": "减少；缩小", "hint": "gradually diminish", "sort_order": 171 },
+        { "en": "rekindle", "zh": "重新点燃；唤起", "hint": "ignite again", "sort_order": 172 },
+        { "en": "heed", "zh": "注意；留心", "hint": "pay attention to", "sort_order": 173 },
+        { "en": "wary", "zh": "警惕的；小心的", "hint": "cautious and watchful", "sort_order": 174 },
+        { "en": "spur", "zh": "激励；刺激", "hint": "urge or motivate", "sort_order": 175 },
+        { "en": "envision", "zh": "展望；想象", "hint": "picture a future scenario", "sort_order": 176 },
+        { "en": "caliber", "zh": "水准；才干", "hint": "level of quality or ability", "sort_order": 177 },
+        { "en": "procure", "zh": "采购；获取", "hint": "obtain or buy something", "sort_order": 178 },
+        { "en": "merit", "zh": "优点；值得", "hint": "a good quality or value", "sort_order": 179 },
+        { "en": "monotonous", "zh": "单调的；乏味的", "hint": "boringly repetitive", "sort_order": 180 },
+        { "en": "clutter", "zh": "杂乱；堆满", "hint": "a messy collection of things", "sort_order": 181 },
+        { "en": "appetite", "zh": "胃口；食欲", "hint": "desire for food", "sort_order": 182 },
+        { "en": "intriguing", "zh": "引人入胜的", "hint": "arousing curiosity", "sort_order": 183 },
+        { "en": "convey", "zh": "传达；表达", "hint": "communicate or express", "sort_order": 184 },
+        { "en": "averse", "zh": "反感的；不愿的", "hint": "reluctant or opposed", "sort_order": 185 },
+        { "en": "mandate", "zh": "授权；强制要求", "hint": "official authority to act", "sort_order": 186 },
+        { "en": "surge", "zh": "激增；猛增", "hint": "a sudden large increase", "sort_order": 187 },
+        { "en": "lucrative", "zh": "获利丰厚的", "hint": "producing a lot of profit", "sort_order": 188 },
+        { "en": "overhaul", "zh": "彻底改革；大修", "hint": "thoroughly repair or rebuild", "sort_order": 189 },
+        { "en": "quaint", "zh": "古雅的；别致的", "hint": "attractively old-fashioned", "sort_order": 190 },
+        { "en": "etiquette", "zh": "礼节；规矩", "hint": "rules of polite behavior", "sort_order": 191 },
+        { "en": "bargain", "zh": "便宜货；讨价还价", "hint": "a good deal or negotiate price", "sort_order": 192 },
+        { "en": "intermittent", "zh": "间歇的；断断续续的", "hint": "stopping and starting at intervals", "sort_order": 193 },
+        { "en": "deprive", "zh": "剥夺；使丧失", "hint": "take something away from someone", "sort_order": 194 },
+        { "en": "discern", "zh": "辨别；看出", "hint": "recognize or distinguish something", "sort_order": 195 },
+        { "en": "refine", "zh": "改进；精炼", "hint": "improve or make finer", "sort_order": 196 },
+        { "en": "adhere", "zh": "遵守；坚持", "hint": "stick to a rule or standard", "sort_order": 197 },
+        { "en": "converge", "zh": "汇聚；趋同", "hint": "come together from different directions", "sort_order": 198 },
+        { "en": "manipulate", "zh": "操纵；操作", "hint": "handle or control something", "sort_order": 199 },
+        { "en": "remedy", "zh": "补救；治疗", "hint": "a way to fix a problem", "sort_order": 200 },
+        { "en": "crave", "zh": "渴望；贪求", "hint": "strongly desire something", "sort_order": 201 },
+        { "en": "scramble", "zh": "争夺；匆忙行动", "hint": "move quickly and urgently", "sort_order": 202 },
+        { "en": "aspire", "zh": "渴望；追求", "hint": "direct ambitions toward", "sort_order": 203 },
+        { "en": "indifferent", "zh": "冷漠的；不关心的", "hint": "having no interest or concern", "sort_order": 204 },
+        { "en": "deter", "zh": "阻止；威慑", "hint": "discourage from doing something", "sort_order": 205 },
+        { "en": "accommodate", "zh": "容纳；迁就", "hint": "provide space or adapt to needs", "sort_order": 206 },
+        { "en": "compensate", "zh": "补偿；赔偿", "hint": "make up for loss or pay back", "sort_order": 207 },
+        { "en": "transition", "zh": "过渡；转变", "hint": "process of changing from one state", "sort_order": 208 },
+        { "en": "utilize", "zh": "利用；使用", "hint": "make practical use of", "sort_order": 209 },
+        { "en": "gesture", "zh": "手势；姿态", "hint": "a movement expressing meaning", "sort_order": 210 },
+        { "en": "bundle", "zh": "捆；束；打包", "hint": "tie things together", "sort_order": 211 },
+        { "en": "temper", "zh": "脾气；情绪", "hint": "state of mind or mood", "sort_order": 212 },
+        { "en": "infer", "zh": "推断；推论", "hint": "deduce from evidence", "sort_order": 213 },
+        { "en": "subsequent", "zh": "随后的；后来的", "hint": "following after something", "sort_order": 214 },
+        { "en": "breach", "zh": "违反；破坏", "hint": "break a rule or agreement", "sort_order": 215 },
+        { "en": "comprehensive", "zh": "全面的；综合的", "hint": "covering all aspects thoroughly", "sort_order": 216 },
+        { "en": "consolidate", "zh": "巩固；合并", "hint": "combine into a stronger whole", "sort_order": 217 },
+        { "en": "preliminary", "zh": "初步的；预备的", "hint": "coming before the main part", "sort_order": 218 },
+        { "en": "subsidy", "zh": "补贴；津贴", "hint": "government financial support", "sort_order": 219 },
+        { "en": "vibrant", "zh": "充满活力的", "hint": "full of energy and life", "sort_order": 220 },
+        { "en": "accustomed", "zh": "习惯的", "hint": "being used to something", "sort_order": 221 },
+        { "en": "commemorate", "zh": "纪念", "hint": "honor the memory of", "sort_order": 222 },
+        { "en": "underlying", "zh": "潜在的；根本的", "hint": "beneath the surface", "sort_order": 223 },
+        { "en": "intervene", "zh": "干预；介入", "hint": "step in between parties", "sort_order": 224 },
+        { "en": "phenomenon", "zh": "现象", "hint": "an observable event or fact", "sort_order": 225 },
+        { "en": "spearhead", "zh": "牵头；领头", "hint": "lead an initiative from the front", "sort_order": 226 },
+        { "en": "liaise", "zh": "联络；沟通协调", "hint": "communicate between two parties", "sort_order": 227 },
+        { "en": "vet", "zh": "审查；核实", "hint": "examine carefully before approval", "sort_order": 228 },
+        { "en": "empower", "zh": "赋权；使能够", "hint": "give someone authority or confidence", "sort_order": 229 },
+        { "en": "knack", "zh": "诀窍；技巧", "hint": "a special skill or natural ability", "sort_order": 230 },
+        { "en": "stroll", "zh": "散步；溜达", "hint": "a slow relaxed walk", "sort_order": 231 },
+        { "en": "rummage", "zh": "翻找；搜找", "hint": "search through things carelessly", "sort_order": 232 },
+        { "en": "paradigm", "zh": "范式；典范", "hint": "a model or pattern of something", "sort_order": 233 },
+        { "en": "stigma", "zh": "耻辱；污名", "hint": "a mark of social disgrace", "sort_order": 234 },
+        { "en": "coherent", "zh": "连贯的；条理清楚的", "hint": "logical and consistent throughout", "sort_order": 235 },
+        { "en": "alleviate", "zh": "缓解；减轻", "hint": "make less severe", "sort_order": 236 },
+        { "en": "defer", "zh": "推迟；遵从", "hint": "postpone or yield to someone", "sort_order": 237 },
+        { "en": "exempt", "zh": "被免除的；豁免", "hint": "freed from an obligation", "sort_order": 238 },
+        { "en": "blatant", "zh": "公然的；明目张胆的", "hint": "obviously and shamelessly", "sort_order": 239 },
+        { "en": "imminent", "zh": "迫近的；即将发生的", "hint": "about to happen very soon", "sort_order": 240 },
+        { "en": "penalize", "zh": "处罚；不利对待", "hint": "punish or impose a penalty", "sort_order": 241 },
+        { "en": "pertain", "zh": "与…有关", "hint": "relate to or be relevant to", "sort_order": 242 },
+        { "en": "garnish", "zh": "装饰（食物）", "hint": "decorate food for presentation", "sort_order": 243 },
+        { "en": "cohort", "zh": "一群人；同辈群体", "hint": "a group with a shared characteristic", "sort_order": 244 },
+        { "en": "livelihood", "zh": "生计", "hint": "means of earning a living", "sort_order": 245 },
+        { "en": "pristine", "zh": "崭新的；洁净的", "hint": "in original perfect condition", "sort_order": 246 },
+        { "en": "propel", "zh": "推进；驱使", "hint": "push or drive forward", "sort_order": 247 },
+        { "en": "insight", "zh": "洞察力；见解", "hint": "deep understanding of something", "sort_order": 248 },
+        { "en": "encounter", "zh": "遭遇；偶然遇到", "hint": "come across unexpectedly", "sort_order": 249 },
+        { "en": "wield", "zh": "行使；运用（权力）", "hint": "hold and use power or influence", "sort_order": 250 },
+        { "en": "scrub", "zh": "用力擦洗；取消", "hint": "clean by rubbing hard", "sort_order": 251 },
+        { "en": "hefty", "zh": "大量的；沉重的", "hint": "big and heavy in amount", "sort_order": 252 },
+        { "en": "lucid", "zh": "清晰的；易懂的", "hint": "clear and easy to understand", "sort_order": 253 },
+        { "en": "avalanche", "zh": "雪崩；蜂拥而至", "hint": "a mass of snow rushing down", "sort_order": 254 },
+        { "en": "agile", "zh": "敏捷的；灵活的", "hint": "quick and adaptable", "sort_order": 255 },
+        { "en": "intricate", "zh": "复杂的；精细的", "hint": "complexly detailed", "sort_order": 256 },
+        { "en": "conform", "zh": "顺从；符合", "hint": "comply with standards", "sort_order": 257 },
+        { "en": "tenure", "zh": "任期；终身教职", "hint": "period of holding a position", "sort_order": 258 },
+        { "en": "vivid", "zh": "生动的；鲜明的", "hint": "bright and clear in memory", "sort_order": 259 },
+        { "en": "endure", "zh": "忍受；持久", "hint": "last through hardship", "sort_order": 260 },
+        { "en": "commodity", "zh": "商品；日用品", "hint": "a tradable raw material", "sort_order": 261 },
+        { "en": "waver", "zh": "动摇；犹豫", "hint": "hesitate between choices", "sort_order": 262 },
+        { "en": "embrace", "zh": "拥抱；欣然接受", "hint": "accept eagerly", "sort_order": 263 },
+        { "en": "authorize", "zh": "授权；批准", "hint": "give official permission", "sort_order": 264 },
+        { "en": "quandary", "zh": "困惑；窘境", "hint": "a state of uncertainty", "sort_order": 265 },
+        { "en": "compel", "zh": "迫使；驱使", "hint": "force or drive someone to act", "sort_order": 266 },
+        { "en": "cumbersome", "zh": "笨重的；麻烦的", "hint": "heavy and difficult to handle", "sort_order": 267 },
+        { "en": "meticulous", "zh": "一丝不苟的", "hint": "very careful about details", "sort_order": 268 },
+        { "en": "plunge", "zh": "投入；暴跌", "hint": "fall or drop sharply", "sort_order": 269 },
+        { "en": "linger", "zh": "逗留；徘徊", "hint": "stay longer than necessary", "sort_order": 270 },
+        { "en": "spacious", "zh": "宽敞的", "hint": "having ample space", "sort_order": 271 },
+        { "en": "uplift", "zh": "振奋；提升", "hint": "raise spirits or morale", "sort_order": 272 },
+        { "en": "disposition", "zh": "性情；倾向", "hint": "a person's inherent temperament", "sort_order": 273 },
+        { "en": "recede", "zh": "后退；消退", "hint": "move back or fade away", "sort_order": 274 },
+        { "en": "sentiment", "zh": "情绪；观点", "hint": "a feeling or opinion", "sort_order": 275 },
+        { "en": "candid", "zh": "坦率的；直言不讳的", "hint": "honest and direct", "sort_order": 276 },
+        { "en": "expedite", "zh": "加速；加急处理", "hint": "speed up a process", "sort_order": 277 },
+        { "en": "deliberate", "zh": "蓄意的；慎重思考", "hint": "done on purpose or carefully", "sort_order": 278 },
+        { "en": "morale", "zh": "士气；斗志", "hint": "team spirit and confidence", "sort_order": 279 },
+        { "en": "nostalgia", "zh": "怀旧；乡愁", "hint": "longing for the past", "sort_order": 280 },
+        { "en": "pantry", "zh": "食品储藏室", "hint": "a small food storage room", "sort_order": 281 },
+        { "en": "recline", "zh": "斜倚；后仰", "hint": "lean back in a seat", "sort_order": 282 },
+        { "en": "eloquent", "zh": "雄辩的；有说服力的", "hint": "articulate and persuasive", "sort_order": 283 },
+        { "en": "pervasive", "zh": "弥漫的；无处不在的", "hint": "spread throughout everything", "sort_order": 284 },
+        { "en": "subtle", "zh": "微妙的；不易察觉的", "hint": "so slight as to be hard to notice", "sort_order": 285 },
+        { "en": "anticipate", "zh": "预期；预料", "hint": "expect something to happen", "sort_order": 286 },
+        { "en": "harness", "zh": "利用；驾驭", "hint": "use something to gain advantage", "sort_order": 287 },
+        { "en": "incorporate", "zh": "纳入；包含", "hint": "include as part of a whole", "sort_order": 288 },
+        { "en": "endeavor", "zh": "努力；尝试", "hint": "try hard to achieve something", "sort_order": 289 },
+        { "en": "soothe", "zh": "安慰；缓解", "hint": "calm or relieve pain", "sort_order": 290 },
+        { "en": "quench", "zh": "解渴；熄灭", "hint": "satisfy thirst or put out fire", "sort_order": 291 },
+        { "en": "sluggish", "zh": "迟缓的；无精打采的", "hint": "slow and lacking energy", "sort_order": 292 },
+        { "en": "advocate", "zh": "提倡；拥护者", "hint": "publicly support a cause", "sort_order": 293 },
+        { "en": "diminish", "zh": "减少；削弱", "hint": "make or become less", "sort_order": 294 },
+        { "en": "ponder", "zh": "沉思；考虑", "hint": "think carefully about something", "sort_order": 295 }
       ]
     }
   ],
@@ -361,6 +611,1756 @@
       "zh": "视角；观点",
       "pos": "n.",
       "example": "From my perspective, this is actually a good thing."
+    },
+    {
+      "lemma": "resolve",
+      "phonetic": "/rɪˈzɒlv/",
+      "zh": "解决；下定决心",
+      "pos": "v.",
+      "example": "We need to resolve this issue before the deadline."
+    },
+    {
+      "lemma": "adjust",
+      "phonetic": "/əˈdʒʌst/",
+      "zh": "调整；适应",
+      "pos": "v.",
+      "example": "I need to adjust my schedule to fit the new meeting."
+    },
+    {
+      "lemma": "accomplish",
+      "phonetic": "/əˈkʌmplɪʃ/",
+      "zh": "完成；实现",
+      "pos": "v.",
+      "example": "We accomplished all our goals for this quarter."
+    },
+    {
+      "lemma": "arrange",
+      "phonetic": "/əˈreɪndʒ/",
+      "zh": "安排；布置",
+      "pos": "v.",
+      "example": "Can you arrange a meeting with the client for next Tuesday?"
+    },
+    {
+      "lemma": "snack",
+      "phonetic": "/snæk/",
+      "zh": "零食；点心",
+      "pos": "n.",
+      "example": "I always keep some snacks in my desk drawer."
+    },
+    {
+      "lemma": "adapt",
+      "phonetic": "/əˈdæpt/",
+      "zh": "适应；改编",
+      "pos": "v.",
+      "example": "It took me a month to adapt to the new workflow."
+    },
+    {
+      "lemma": "complaint",
+      "phonetic": "/kəmˈpleɪnt/",
+      "zh": "投诉；抱怨",
+      "pos": "n.",
+      "example": "We received three complaints about the delivery delay."
+    },
+    {
+      "lemma": "sufficient",
+      "phonetic": "/səˈfɪʃnt/",
+      "zh": "足够的；充足的",
+      "pos": "adj.",
+      "example": "Do we have sufficient data to make a decision?"
+    },
+    {
+      "lemma": "attempt",
+      "phonetic": "/əˈtempt/",
+      "zh": "尝试；企图",
+      "pos": "n./v.",
+      "example": "She made an attempt to fix the bug but couldn't."
+    },
+    {
+      "lemma": "essential",
+      "phonetic": "/ɪˈsenʃl/",
+      "zh": "必不可少的",
+      "pos": "adj.",
+      "example": "Good communication is essential for remote teams."
+    },
+    {
+      "lemma": "thorough",
+      "phonetic": "/ˈθɜːroʊ/",
+      "zh": "彻底的；周密的",
+      "pos": "adj.",
+      "example": "She did a thorough review of the contract before signing."
+    },
+    {
+      "lemma": "coordinate",
+      "phonetic": "/koʊˈɔːrdɪneɪt/",
+      "zh": "协调；配合",
+      "pos": "v.",
+      "example": "I'll coordinate with the design team to align on the timeline."
+    },
+    {
+      "lemma": "outcome",
+      "phonetic": "/ˈaʊtkʌm/",
+      "zh": "结果；成果",
+      "pos": "n.",
+      "example": "We're happy with the outcome of the project."
+    },
+    {
+      "lemma": "acknowledge",
+      "phonetic": "/əkˈnɑːlɪdʒ/",
+      "zh": "承认；确认收到",
+      "pos": "v.",
+      "example": "Please acknowledge that you've received this email."
+    },
+    {
+      "lemma": "renovate",
+      "phonetic": "/ˈrenəveɪt/",
+      "zh": "翻新；装修",
+      "pos": "v.",
+      "example": "They're renovating the kitchen next month."
+    },
+    {
+      "lemma": "ingredient",
+      "phonetic": "/ɪnˈɡriːdiənt/",
+      "zh": "原料；配料；要素",
+      "pos": "n.",
+      "example": "Fresh ingredients make a huge difference in cooking."
+    },
+    {
+      "lemma": "expense",
+      "phonetic": "/ɪkˈspens/",
+      "zh": "开支；花费",
+      "pos": "n.",
+      "example": "We need to keep track of all business expenses."
+    },
+    {
+      "lemma": "dilemma",
+      "phonetic": "/dɪˈlemə/",
+      "zh": "困境；两难",
+      "pos": "n.",
+      "example": "I'm in a dilemma — should I take the offer or stay?"
+    },
+    {
+      "lemma": "abandon",
+      "phonetic": "/əˈbændən/",
+      "zh": "放弃；抛弃",
+      "pos": "v.",
+      "example": "They had to abandon the plan due to budget cuts."
+    },
+    {
+      "lemma": "illustrate",
+      "phonetic": "/ˈɪləstreɪt/",
+      "zh": "说明；阐明；图解",
+      "pos": "v.",
+      "example": "Let me illustrate my point with a real example."
+    },
+    {
+      "lemma": "escalate",
+      "phonetic": "/ˈeskəleɪt/",
+      "zh": "升级；使…升级",
+      "pos": "v.",
+      "example": "If the issue isn't resolved in 48 hours, please escalate it to the manager."
+    },
+    {
+      "lemma": "onboarding",
+      "phonetic": "/ˈɒnbɔːrdɪŋ/",
+      "zh": "入职引导；新手培训",
+      "pos": "n.",
+      "example": "The onboarding process for new hires takes about two weeks."
+    },
+    {
+      "lemma": "benchmark",
+      "phonetic": "/ˈbentʃmɑːrk/",
+      "zh": "基准；标杆；对标",
+      "pos": "n./v.",
+      "example": "We use industry benchmarks to evaluate our performance."
+    },
+    {
+      "lemma": "consensus",
+      "phonetic": "/kənˈsensəs/",
+      "zh": "共识；一致意见",
+      "pos": "n.",
+      "example": "After a long discussion, we reached a consensus on the plan."
+    },
+    {
+      "lemma": "coupon",
+      "phonetic": "/ˈkuːpɒn/",
+      "zh": "优惠券；折扣券",
+      "pos": "n.",
+      "example": "I have a coupon for 20 percent off at that restaurant."
+    },
+    {
+      "lemma": "reservation",
+      "phonetic": "/ˌrezərˈveɪʃn/",
+      "zh": "预订；预约",
+      "pos": "n.",
+      "example": "I'd like to make a reservation for two at seven o'clock."
+    },
+    {
+      "lemma": "mileage",
+      "phonetic": "/ˈmaɪlɪdʒ/",
+      "zh": "里程；英里数",
+      "pos": "n.",
+      "example": "My car has over 100,000 miles on the mileage."
+    },
+    {
+      "lemma": "notion",
+      "phonetic": "/ˈnəʊʃn/",
+      "zh": "概念；观念",
+      "pos": "n.",
+      "example": "He has no notion of how much work this involves."
+    },
+    {
+      "lemma": "reluctant",
+      "phonetic": "/rɪˈlʌktənt/",
+      "zh": "不情愿的；勉强的",
+      "pos": "adj.",
+      "example": "She was reluctant to share her phone number with a stranger."
+    },
+    {
+      "lemma": "criteria",
+      "phonetic": "/kraɪˈtɪəriə/",
+      "zh": "标准；准则（criterion 的复数）",
+      "pos": "n.",
+      "example": "What are the criteria for selecting the winner?"
+    },
+    {
+      "lemma": "facilitate",
+      "phonetic": "/fəˈsɪlɪteɪt/",
+      "zh": "促进；使便利",
+      "pos": "v.",
+      "example": "The new tool will facilitate collaboration between teams."
+    },
+    {
+      "lemma": "scrutinize",
+      "phonetic": "/ˈskruːtənaɪz/",
+      "zh": "仔细审查；细查",
+      "pos": "v.",
+      "example": "The auditor scrutinized every line of the financial report."
+    },
+    {
+      "lemma": "reimburse",
+      "phonetic": "/ˌriːɪmˈbɜːrs/",
+      "zh": "报销；偿还",
+      "pos": "v.",
+      "example": "The company will reimburse your travel expenses."
+    },
+    {
+      "lemma": "comply",
+      "phonetic": "/kəmˈplaɪ/",
+      "zh": "遵守；服从",
+      "pos": "v.",
+      "example": "All employees must comply with the safety regulations."
+    },
+    {
+      "lemma": "chore",
+      "phonetic": "/tʃɔːr/",
+      "zh": "家务杂事；日常琐事",
+      "pos": "n.",
+      "example": "I do household chores every Saturday morning."
+    },
+    {
+      "lemma": "detour",
+      "phonetic": "/ˈdiːtʊr/",
+      "zh": "绕路；迂回",
+      "pos": "n./v.",
+      "example": "We had to take a detour because of road construction."
+    },
+    {
+      "lemma": "wardrobe",
+      "phonetic": "/ˈwɔːrdrəʊb/",
+      "zh": "衣柜；衣物",
+      "pos": "n.",
+      "example": "I need to update my wardrobe for the new season."
+    },
+    {
+      "lemma": "vague",
+      "phonetic": "/veɪɡ/",
+      "zh": "模糊的；含糊的",
+      "pos": "adj.",
+      "example": "His instructions were too vague to follow."
+    },
+    {
+      "lemma": "optimistic",
+      "phonetic": "/ˌɒptɪˈmɪstɪk/",
+      "zh": "乐观的",
+      "pos": "adj.",
+      "example": "I'm optimistic about the company's growth next year."
+    },
+    {
+      "lemma": "skeptical",
+      "phonetic": "/ˈskeptɪkl/",
+      "zh": "怀疑的；持怀疑态度的",
+      "pos": "adj.",
+      "example": "I'm skeptical about the new policy's effectiveness."
+    },
+    {
+      "lemma": "agenda",
+      "phonetic": "/əˈdʒendə/",
+      "zh": "议程；待办事项",
+      "pos": "n.",
+      "example": "Let's go over the agenda before the meeting starts."
+    },
+    {
+      "lemma": "allocate",
+      "phonetic": "/ˈæləkeɪt/",
+      "zh": "分配；拨给",
+      "pos": "v.",
+      "example": "We need to allocate more resources to the marketing team."
+    },
+    {
+      "lemma": "diligent",
+      "phonetic": "/ˈdɪlɪdʒənt/",
+      "zh": "勤奋的；认真的",
+      "pos": "adj.",
+      "example": "She is a diligent student who never misses a deadline."
+    },
+    {
+      "lemma": "incentive",
+      "phonetic": "/ɪnˈsentɪv/",
+      "zh": "激励；动力",
+      "pos": "n.",
+      "example": "The bonus is an incentive for the team to work harder."
+    },
+    {
+      "lemma": "frugal",
+      "phonetic": "/ˈfruːɡəl/",
+      "zh": "节俭的；朴素的",
+      "pos": "adj.",
+      "example": "My grandparents live a frugal but happy life."
+    },
+    {
+      "lemma": "handy",
+      "phonetic": "/ˈhændi/",
+      "zh": "方便的；有用的；手巧的",
+      "pos": "adj.",
+      "example": "This pocket knife is really handy when you're camping."
+    },
+    {
+      "lemma": "reminisce",
+      "phonetic": "/ˌremɪˈnɪs/",
+      "zh": "回忆；追忆",
+      "pos": "v.",
+      "example": "We sat by the fire, reminiscing about our college days."
+    },
+    {
+      "lemma": "procrastinate",
+      "phonetic": "/proʊˈkræstɪneɪt/",
+      "zh": "拖延；耽搁",
+      "pos": "v.",
+      "example": "I tend to procrastinate when the task feels overwhelming."
+    },
+    {
+      "lemma": "tedious",
+      "phonetic": "/ˈtiːdiəs/",
+      "zh": "乏味的；单调的",
+      "pos": "adj.",
+      "example": "Data entry can be tedious, but it has to be done."
+    },
+    {
+      "lemma": "courteous",
+      "phonetic": "/ˈkɜːrtiəs/",
+      "zh": "有礼貌的；谦恭的",
+      "pos": "adj.",
+      "example": "The hotel staff were courteous and professional."
+    },
+    {
+      "lemma": "counterpart",
+      "phonetic": "/ˈkaʊntərpɑːrt/",
+      "zh": "对应的人；职务相当的人",
+      "pos": "n.",
+      "example": "I'll introduce you to my counterpart at the partner company."
+    },
+    {
+      "lemma": "leverage",
+      "phonetic": "/ˈlevərɪdʒ/",
+      "zh": "利用；杠杆作用",
+      "pos": "v./n.",
+      "example": "We should leverage our existing user base to promote the new feature."
+    },
+    {
+      "lemma": "turnover",
+      "phonetic": "/ˈtɜːrnəʊvər/",
+      "zh": "人员流失率；营业额",
+      "pos": "n.",
+      "example": "The company has a high turnover rate this quarter."
+    },
+    {
+      "lemma": "tangible",
+      "phonetic": "/ˈtændʒəbl/",
+      "zh": "有形的；切实的",
+      "pos": "adj.",
+      "example": "We need tangible results before asking for more budget."
+    },
+    {
+      "lemma": "commotion",
+      "phonetic": "/kəˈməʊʃn/",
+      "zh": "骚动；喧闹",
+      "pos": "n.",
+      "example": "I heard a commotion outside and went to check."
+    },
+    {
+      "lemma": "acquaintance",
+      "phonetic": "/əˈkweɪntəns/",
+      "zh": "熟人；泛泛之交",
+      "pos": "n.",
+      "example": "He's not a close friend, just a business acquaintance."
+    },
+    {
+      "lemma": "tactic",
+      "phonetic": "/ˈtæktɪk/",
+      "zh": "策略；手段",
+      "pos": "n.",
+      "example": "Using coupons is a good tactic to save on groceries."
+    },
+    {
+      "lemma": "relevant",
+      "phonetic": "/ˈreləvənt/",
+      "zh": "相关的；切题的",
+      "pos": "adj.",
+      "example": "Please only include relevant information in your report."
+    },
+    {
+      "lemma": "deteriorate",
+      "phonetic": "/dɪˈtɪəriəreɪt/",
+      "zh": "恶化；变坏",
+      "pos": "v.",
+      "example": "His health deteriorated after he stopped exercising."
+    },
+    {
+      "lemma": "withhold",
+      "phonetic": "/wɪðˈhəʊld/",
+      "zh": "扣留；保留；隐瞒",
+      "pos": "v.",
+      "example": "The company withheld the bonus until the project was done."
+    },
+    {
+      "lemma": "endorse",
+      "phonetic": "/ɪnˈdɔːrs/",
+      "zh": "支持；认可；背书",
+      "pos": "v.",
+      "example": "The CEO endorsed the new strategy at the all-hands meeting."
+    },
+    {
+      "lemma": "viable",
+      "phonetic": "/ˈvaɪəbl/",
+      "zh": "可行的；能存活的",
+      "pos": "adj.",
+      "example": "We need to find a viable solution before Friday."
+    },
+    {
+      "lemma": "amend",
+      "phonetic": "/əˈmend/",
+      "zh": "修改；修正",
+      "pos": "v.",
+      "example": "We need to amend the contract before signing."
+    },
+    {
+      "lemma": "disclose",
+      "phonetic": "/dɪsˈkloʊz/",
+      "zh": "披露；公开",
+      "pos": "v.",
+      "example": "The company must disclose its financial status to investors."
+    },
+    {
+      "lemma": "mortgage",
+      "phonetic": "/ˈmɔːrɡɪdʒ/",
+      "zh": "抵押贷款；按揭",
+      "pos": "n./v.",
+      "example": "They took out a mortgage to buy their first home."
+    },
+    {
+      "lemma": "gadget",
+      "phonetic": "/ˈɡædʒɪt/",
+      "zh": "小器具；小玩意",
+      "pos": "n.",
+      "example": "He's always buying the latest tech gadgets."
+    },
+    {
+      "lemma": "itinerary",
+      "phonetic": "/aɪˈtɪnərəri/",
+      "zh": "行程表；旅行路线",
+      "pos": "n.",
+      "example": "I'll send you the itinerary for our trip tonight."
+    },
+    {
+      "lemma": "perceive",
+      "phonetic": "/pərˈsiːv/",
+      "zh": "察觉；感知；认为",
+      "pos": "v.",
+      "example": "People often perceive criticism as a personal attack."
+    },
+    {
+      "lemma": "concise",
+      "phonetic": "/kənˈsaɪs/",
+      "zh": "简洁的；简明的",
+      "pos": "adj.",
+      "example": "Your presentation should be clear and concise."
+    },
+    {
+      "lemma": "plausible",
+      "phonetic": "/ˈplɔːzəbl/",
+      "zh": "貌似合理的；可信的",
+      "pos": "adj.",
+      "example": "That's a plausible explanation, but we need more evidence."
+    },
+    {
+      "lemma": "devise",
+      "phonetic": "/dɪˈvaɪz/",
+      "zh": "设计；想出（方案）",
+      "pos": "v.",
+      "example": "We need to devise a plan to increase user engagement."
+    },
+    {
+      "lemma": "retain",
+      "phonetic": "/rɪˈteɪn/",
+      "zh": "保留；留住",
+      "pos": "v.",
+      "example": "It's harder to retain talent than to hire them."
+    },
+    {
+      "lemma": "constrain",
+      "phonetic": "/kənˈstreɪn/",
+      "zh": "限制；约束",
+      "pos": "v.",
+      "example": "Budget constraints constrain our options for the campaign."
+    },
+    {
+      "lemma": "feasible",
+      "phonetic": "/ˈfiːzəbl/",
+      "zh": "可行的；行得通的",
+      "pos": "adj.",
+      "example": "Is it feasible to launch the feature by next Monday?"
+    },
+    {
+      "lemma": "indulge",
+      "phonetic": "/ɪnˈdʌldʒ/",
+      "zh": "沉溺于；放纵享受",
+      "pos": "v.",
+      "example": "I indulged in a big slice of chocolate cake after dinner."
+    },
+    {
+      "lemma": "scenery",
+      "phonetic": "/ˈsiːnəri/",
+      "zh": "风景；景色",
+      "pos": "n.",
+      "example": "The scenery along the coast road is breathtaking."
+    },
+    {
+      "lemma": "furnish",
+      "phonetic": "/ˈfɜːrnɪʃ/",
+      "zh": "为…配备家具；提供",
+      "pos": "v.",
+      "example": "We just furnished the new apartment with IKEA stuff."
+    },
+    {
+      "lemma": "assure",
+      "phonetic": "/əˈʃʊr/",
+      "zh": "向…保证；使确信",
+      "pos": "v.",
+      "example": "I assure you that the data is completely safe."
+    },
+    {
+      "lemma": "prevail",
+      "phonetic": "/prɪˈveɪl/",
+      "zh": "盛行；获胜；占上风",
+      "pos": "v.",
+      "example": "Common sense should prevail over panic."
+    },
+    {
+      "lemma": "manifest",
+      "phonetic": "/ˈmænɪfest/",
+      "zh": "显现；明显的",
+      "pos": "v./adj.",
+      "example": "The bug manifests itself when the user clicks too fast."
+    },
+    {
+      "lemma": "substitute",
+      "phonetic": "/ˈsʌbstɪtuːt/",
+      "zh": "替代；代替",
+      "pos": "v./n.",
+      "example": "We can substitute vegetable oil for butter in this recipe."
+    },
+    {
+      "lemma": "tentative",
+      "phonetic": "/ˈtentətɪv/",
+      "zh": "试探性的；暂定的",
+      "pos": "adj.",
+      "example": "Let's set a tentative date for the meeting and confirm later."
+    },
+    {
+      "lemma": "tackle",
+      "phonetic": "/ˈtækl/",
+      "zh": "着手处理；应付",
+      "pos": "v.",
+      "example": "We need to tackle the problem before it gets worse."
+    },
+    {
+      "lemma": "friction",
+      "phonetic": "/ˈfrɪkʃn/",
+      "zh": "摩擦；冲突",
+      "pos": "n.",
+      "example": "There's been some friction between the two departments."
+    },
+    {
+      "lemma": "compliment",
+      "phonetic": "/ˈkɒmplɪmənt/",
+      "zh": "赞美；称赞",
+      "pos": "n./v.",
+      "example": "She gave me a nice compliment on my presentation."
+    },
+    {
+      "lemma": "glance",
+      "phonetic": "/ɡlæns/",
+      "zh": "一瞥；扫视",
+      "pos": "v./n.",
+      "example": "I glanced at my phone to check the time."
+    },
+    {
+      "lemma": "perishable",
+      "phonetic": "/ˈperɪʃəbl/",
+      "zh": "易腐烂的；易变质的",
+      "pos": "adj.",
+      "example": "Perishable items should be stored in the fridge."
+    },
+    {
+      "lemma": "trivial",
+      "phonetic": "/ˈtrɪviəl/",
+      "zh": "琐碎的；不重要的",
+      "pos": "adj.",
+      "example": "Don't worry about such trivial details."
+    },
+    {
+      "lemma": "resilient",
+      "phonetic": "/rɪˈzɪliənt/",
+      "zh": "有韧性的；能恢复的",
+      "pos": "adj.",
+      "example": "She's remarkably resilient — she bounces back from setbacks quickly."
+    },
+    {
+      "lemma": "coincide",
+      "phonetic": "/ˌkəʊɪnˈsaɪd/",
+      "zh": "同时发生；巧合",
+      "pos": "v.",
+      "example": "My vacation coincides with the team's busiest week."
+    },
+    {
+      "lemma": "synergy",
+      "phonetic": "/ˈsɪnərdʒi/",
+      "zh": "协同效应；协作",
+      "pos": "n.",
+      "example": "The synergy between the two teams led to a successful product launch."
+    },
+    {
+      "lemma": "explicit",
+      "phonetic": "/ɪkˈsplɪsɪt/",
+      "zh": "明确的；直截了当的",
+      "pos": "adj.",
+      "example": "Please be explicit about your expectations from day one."
+    },
+    {
+      "lemma": "concession",
+      "phonetic": "/kənˈseʃn/",
+      "zh": "让步；妥协",
+      "pos": "n.",
+      "example": "We made a concession on the price to close the deal."
+    },
+    {
+      "lemma": "mitigate",
+      "phonetic": "/ˈmɪtɪɡeɪt/",
+      "zh": "缓解；减轻",
+      "pos": "v.",
+      "example": "We need to mitigate the risks before going live."
+    },
+    {
+      "lemma": "nostalgic",
+      "phonetic": "/nɑːˈstældʒɪk/",
+      "zh": "怀旧的；恋旧的",
+      "pos": "adj.",
+      "example": "Seeing old photos made me feel nostalgic about college."
+    },
+    {
+      "lemma": "thrive",
+      "phonetic": "/θraɪv/",
+      "zh": "茁壮成长；蓬勃发展",
+      "pos": "v.",
+      "example": "Small businesses can thrive with the right strategy."
+    },
+    {
+      "lemma": "immerse",
+      "phonetic": "/ɪˈmɜːrs/",
+      "zh": "沉浸于；使沉浸",
+      "pos": "v.",
+      "example": "She immersed herself in learning the new language."
+    },
+    {
+      "lemma": "contemplate",
+      "phonetic": "/ˈkɑːntəmpleɪt/",
+      "zh": "深思；考虑",
+      "pos": "v.",
+      "example": "I need some time to contemplate the offer before deciding."
+    },
+    {
+      "lemma": "fluctuate",
+      "phonetic": "/ˈflʌktʃueɪt/",
+      "zh": "波动；起伏",
+      "pos": "v.",
+      "example": "Oil prices fluctuate wildly throughout the year."
+    },
+    {
+      "lemma": "prevalent",
+      "phonetic": "/ˈprevələnt/",
+      "zh": "普遍的；盛行的",
+      "pos": "adj.",
+      "example": "Remote work has become prevalent since the pandemic."
+    },
+    {
+      "lemma": "compile",
+      "phonetic": "/kəmˈpaɪl/",
+      "zh": "汇编；编纂；收集",
+      "pos": "v.",
+      "example": "I need to compile the data from all three teams before Friday."
+    },
+    {
+      "lemma": "articulate",
+      "phonetic": "/ɑːrˈtɪkjələt/",
+      "zh": "清晰表达；善于表达的",
+      "pos": "v./adj.",
+      "example": "She can articulate her ideas clearly even under pressure."
+    },
+    {
+      "lemma": "terminate",
+      "phonetic": "/ˈtɜːrmɪneɪt/",
+      "zh": "终止；结束",
+      "pos": "v.",
+      "example": "The company decided to terminate the contract early."
+    },
+    {
+      "lemma": "designate",
+      "phonetic": "/ˈdezɪɡneɪt/",
+      "zh": "指定；委派",
+      "pos": "v.",
+      "example": "She was designated as the project lead for the new initiative."
+    },
+    {
+      "lemma": "landlord",
+      "phonetic": "/ˈlændlɔːrd/",
+      "zh": "房东；业主",
+      "pos": "n.",
+      "example": "I need to call my landlord about the broken heater."
+    },
+    {
+      "lemma": "souvenir",
+      "phonetic": "/ˌsuːvəˈnɪr/",
+      "zh": "纪念品；纪念物",
+      "pos": "n.",
+      "example": "I bought a small souvenir for my mom from the trip."
+    },
+    {
+      "lemma": "cuisine",
+      "phonetic": "/kwɪˈziːn/",
+      "zh": "菜肴；烹饪风格",
+      "pos": "n.",
+      "example": "Italian cuisine is known for its pasta and pizza."
+    },
+    {
+      "lemma": "pragmatic",
+      "phonetic": "/præɡˈmætɪk/",
+      "zh": "务实的；实用主义的",
+      "pos": "adj.",
+      "example": "We need a pragmatic approach, not just theories."
+    },
+    {
+      "lemma": "obsolete",
+      "phonetic": "/ˌɒbsəˈliːt/",
+      "zh": "过时的；废弃的",
+      "pos": "adj.",
+      "example": "This software will be obsolete by next year."
+    },
+    {
+      "lemma": "complacent",
+      "phonetic": "/kəmˈpleɪsnt/",
+      "zh": "自满的；得意的",
+      "pos": "adj.",
+      "example": "We can't become complacent after one success."
+    },
+    {
+      "lemma": "reconcile",
+      "phonetic": "/ˈrekənsaɪl/",
+      "zh": "调和；对账；使和解",
+      "pos": "v.",
+      "example": "It took a while to reconcile the differences between the two teams."
+    },
+    {
+      "lemma": "appraise",
+      "phonetic": "/əˈpreɪz/",
+      "zh": "评估；估价",
+      "pos": "v.",
+      "example": "My manager will appraise my performance at the end of the quarter."
+    },
+    {
+      "lemma": "nominate",
+      "phonetic": "/ˈnɑːmɪneɪt/",
+      "zh": "提名；任命",
+      "pos": "v.",
+      "example": "She was nominated for the Employee of the Year award."
+    },
+    {
+      "lemma": "stipulate",
+      "phonetic": "/ˈstɪpjəleɪt/",
+      "zh": "规定；明确要求",
+      "pos": "v.",
+      "example": "The contract stipulates that payment is due within 30 days."
+    },
+    {
+      "lemma": "savor",
+      "phonetic": "/ˈseɪvər/",
+      "zh": "品味；细细享受",
+      "pos": "v./n.",
+      "example": "I like to savor my coffee on a quiet Sunday morning."
+    },
+    {
+      "lemma": "replenish",
+      "phonetic": "/rɪˈplenɪʃ/",
+      "zh": "补充；重新装满",
+      "pos": "v.",
+      "example": "We need to replenish our supply of coffee and snacks."
+    },
+    {
+      "lemma": "grudge",
+      "phonetic": "/ɡrʌdʒ/",
+      "zh": "怨恨；积怨",
+      "pos": "n./v.",
+      "example": "He still holds a grudge against his former boss."
+    },
+    {
+      "lemma": "blunt",
+      "phonetic": "/blʌnt/",
+      "zh": "直率的；钝的",
+      "pos": "adj./v.",
+      "example": "To be blunt, I don't think this plan will work."
+    },
+    {
+      "lemma": "stall",
+      "phonetic": "/stɔːl/",
+      "zh": "拖延；熄火",
+      "pos": "v./n.",
+      "example": "Stop stalling and just tell me what happened."
+    },
+    {
+      "lemma": "discard",
+      "phonetic": "/dɪˈskɑːrd/",
+      "zh": "丢弃；抛弃",
+      "pos": "v./n.",
+      "example": "You can discard the draft — we're starting over."
+    },
+    {
+      "lemma": "discrepancy",
+      "phonetic": "/dɪˈskrepənsi/",
+      "zh": "差异；不一致",
+      "pos": "n.",
+      "example": "There's a discrepancy between the invoice and the actual amount."
+    },
+    {
+      "lemma": "foster",
+      "phonetic": "/ˈfɑːstər/",
+      "zh": "培养；促进",
+      "pos": "v.",
+      "example": "The company aims to foster a culture of innovation."
+    },
+    {
+      "lemma": "bolster",
+      "phonetic": "/ˈboʊlstər/",
+      "zh": "支持；加强",
+      "pos": "v.",
+      "example": "The new data bolsters our argument for more budget."
+    },
+    {
+      "lemma": "entail",
+      "phonetic": "/ɪnˈteɪl/",
+      "zh": "需要；涉及",
+      "pos": "v.",
+      "example": "The project entails working closely with the design team."
+    },
+    {
+      "lemma": "upheaval",
+      "phonetic": "/ʌpˈhiːvl/",
+      "zh": "剧变；动荡",
+      "pos": "n.",
+      "example": "The restructuring caused a lot of upheaval in the department."
+    },
+    {
+      "lemma": "dwindle",
+      "phonetic": "/ˈdwɪndl/",
+      "zh": "减少；缩小",
+      "pos": "v.",
+      "example": "Our budget has dwindled to almost nothing."
+    },
+    {
+      "lemma": "rekindle",
+      "phonetic": "/ˌriːˈkɪndl/",
+      "zh": "重新点燃；唤起",
+      "pos": "v.",
+      "example": "The trip rekindled my passion for photography."
+    },
+    {
+      "lemma": "heed",
+      "phonetic": "/hiːd/",
+      "zh": "注意；留心",
+      "pos": "v.",
+      "example": "You should heed the warning on the label."
+    },
+    {
+      "lemma": "wary",
+      "phonetic": "/ˈweri/",
+      "zh": "警惕的；小心的",
+      "pos": "adj.",
+      "example": "I'm wary of deals that sound too good to be true."
+    },
+    {
+      "lemma": "spur",
+      "phonetic": "/spɜːr/",
+      "zh": "激励；刺激",
+      "pos": "v./n.",
+      "example": "The bonus spurred the team to finish ahead of schedule."
+    },
+    {
+      "lemma": "envision",
+      "phonetic": "/ɪnˈvɪʒn/",
+      "zh": "展望；想象",
+      "pos": "v.",
+      "example": "We envision a future where every team works seamlessly across time zones."
+    },
+    {
+      "lemma": "caliber",
+      "phonetic": "/ˈkælɪbər/",
+      "zh": "水准；才干；规格",
+      "pos": "n.",
+      "example": "We need to hire candidates of the highest caliber."
+    },
+    {
+      "lemma": "procure",
+      "phonetic": "/prəˈkjʊr/",
+      "zh": "采购；获取",
+      "pos": "v.",
+      "example": "The IT department needs to procure new laptops for the team."
+    },
+    {
+      "lemma": "merit",
+      "phonetic": "/ˈmerɪt/",
+      "zh": "优点；值得",
+      "pos": "n./v.",
+      "example": "Each proposal will be evaluated on its own merits."
+    },
+    {
+      "lemma": "monotonous",
+      "phonetic": "/məˈnɒtənəs/",
+      "zh": "单调的；乏味的",
+      "pos": "adj.",
+      "example": "The drive through the desert was long and monotonous."
+    },
+    {
+      "lemma": "clutter",
+      "phonetic": "/ˈklʌtər/",
+      "zh": "杂乱；堆满",
+      "pos": "n./v.",
+      "example": "I spent the weekend clearing the clutter from my desk."
+    },
+    {
+      "lemma": "appetite",
+      "phonetic": "/ˈæpɪtaɪt/",
+      "zh": "胃口；食欲",
+      "pos": "n.",
+      "example": "The fresh air gave me a huge appetite for lunch."
+    },
+    {
+      "lemma": "intriguing",
+      "phonetic": "/ɪnˈtriːɡɪŋ/",
+      "zh": "引人入胜的；有趣的",
+      "pos": "adj.",
+      "example": "The plot of the novel is really intriguing."
+    },
+    {
+      "lemma": "convey",
+      "phonetic": "/kənˈveɪ/",
+      "zh": "传达；表达",
+      "pos": "v.",
+      "example": "Words alone can't convey how grateful I am."
+    },
+    {
+      "lemma": "averse",
+      "phonetic": "/əˈvɜːrs/",
+      "zh": "反感的；不愿的",
+      "pos": "adj.",
+      "example": "I'm not averse to trying new things."
+    },
+    {
+      "lemma": "mandate",
+      "phonetic": "/ˈmændeɪt/",
+      "zh": "授权；强制要求",
+      "pos": "n./v.",
+      "example": "The committee has a mandate to investigate the issue."
+    },
+    {
+      "lemma": "surge",
+      "phonetic": "/sɜːrdʒ/",
+      "zh": "激增；猛增",
+      "pos": "v./n.",
+      "example": "There was a surge in demand after the product launch."
+    },
+    {
+      "lemma": "lucrative",
+      "phonetic": "/ˈluːkrətɪv/",
+      "zh": "获利丰厚的；赚钱的",
+      "pos": "adj.",
+      "example": "Freelancing can be a very lucrative career path."
+    },
+    {
+      "lemma": "overhaul",
+      "phonetic": "/ˈoʊvərhɔːl/",
+      "zh": "彻底改革；大修",
+      "pos": "v./n.",
+      "example": "The company needs to overhaul its entire IT infrastructure."
+    },
+    {
+      "lemma": "quaint",
+      "phonetic": "/kweɪnt/",
+      "zh": "古雅的；别致的",
+      "pos": "adj.",
+      "example": "We stayed at a quaint little bed and breakfast in the countryside."
+    },
+    {
+      "lemma": "etiquette",
+      "phonetic": "/ˈetɪkət/",
+      "zh": "礼节；规矩",
+      "pos": "n.",
+      "example": "Business etiquette varies from culture to culture."
+    },
+    {
+      "lemma": "bargain",
+      "phonetic": "/ˈbɑːrɡən/",
+      "zh": "便宜货；讨价还价",
+      "pos": "n./v.",
+      "example": "I got a great bargain on this jacket at the sale."
+    },
+    {
+      "lemma": "intermittent",
+      "phonetic": "/ˌɪntərˈmɪtənt/",
+      "zh": "间歇的；断断续续的",
+      "pos": "adj.",
+      "example": "The internet connection was intermittent during the storm."
+    },
+    {
+      "lemma": "deprive",
+      "phonetic": "/dɪˈpraɪv/",
+      "zh": "剥夺；使丧失",
+      "pos": "v.",
+      "example": "Lack of sleep deprives your brain of much-needed rest."
+    },
+    {
+      "lemma": "discern",
+      "phonetic": "/dɪˈsɜːrn/",
+      "zh": "辨别；看出",
+      "pos": "v.",
+      "example": "It's hard to discern the truth from all the rumors."
+    },
+    {
+      "lemma": "refine",
+      "phonetic": "/rɪˈfaɪn/",
+      "zh": "改进；精炼；提纯",
+      "pos": "v.",
+      "example": "We need to refine the design based on user feedback."
+    },
+    {
+      "lemma": "adhere",
+      "phonetic": "/ədˈhɪr/",
+      "zh": "遵守；坚持；附着",
+      "pos": "v.",
+      "example": "All team members must adhere to the coding standards."
+    },
+    {
+      "lemma": "converge",
+      "phonetic": "/kənˈvɜːrdʒ/",
+      "zh": "汇聚；趋同",
+      "pos": "v.",
+      "example": "Our goals converge on delivering value to the customer."
+    },
+    {
+      "lemma": "manipulate",
+      "phonetic": "/məˈnɪpjəleɪt/",
+      "zh": "操纵；操作；处理",
+      "pos": "v.",
+      "example": "The software allows you to manipulate data with a few clicks."
+    },
+    {
+      "lemma": "remedy",
+      "phonetic": "/ˈremədi/",
+      "zh": "补救；治疗；疗法",
+      "pos": "n./v.",
+      "example": "Ginger tea is a good remedy for a sore throat."
+    },
+    {
+      "lemma": "crave",
+      "phonetic": "/kreɪv/",
+      "zh": "渴望；贪求",
+      "pos": "v.",
+      "example": "After the hike, I craved a cold drink and a hot meal."
+    },
+    {
+      "lemma": "scramble",
+      "phonetic": "/ˈskræmbl/",
+      "zh": "争夺；匆忙行动",
+      "pos": "v.",
+      "example": "We scrambled to finish the decorations before the guests arrived."
+    },
+    {
+      "lemma": "aspire",
+      "phonetic": "/əˈspaɪər/",
+      "zh": "渴望；追求",
+      "pos": "v.",
+      "example": "She aspires to become a leading expert in AI."
+    },
+    {
+      "lemma": "indifferent",
+      "phonetic": "/ɪnˈdɪfrənt/",
+      "zh": "冷漠的；不关心的",
+      "pos": "adj.",
+      "example": "He seemed indifferent to whether the project succeeded or failed."
+    },
+    {
+      "lemma": "deter",
+      "phonetic": "/dɪˈtɜːr/",
+      "zh": "阻止；威慑",
+      "pos": "v.",
+      "example": "High prices didn't deter customers from buying the new phone."
+    },
+    {
+      "lemma": "accommodate",
+      "phonetic": "/əˈkɑːmədeɪt/",
+      "zh": "容纳；迁就；为…提供便利",
+      "pos": "v.",
+      "example": "Can the new office accommodate all fifty employees?"
+    },
+    {
+      "lemma": "compensate",
+      "phonetic": "/ˈkɑːmpenseɪt/",
+      "zh": "补偿；赔偿；薪酬",
+      "pos": "v.",
+      "example": "The company compensated us for the overtime with extra days off."
+    },
+    {
+      "lemma": "transition",
+      "phonetic": "/trænˈzɪʃn/",
+      "zh": "过渡；转变",
+      "pos": "n./v.",
+      "example": "The transition to remote work was smoother than expected."
+    },
+    {
+      "lemma": "utilize",
+      "phonetic": "/ˈjuːtəlaɪz/",
+      "zh": "利用；使用",
+      "pos": "v.",
+      "example": "We should utilize the existing data to improve our predictions."
+    },
+    {
+      "lemma": "gesture",
+      "phonetic": "/ˈdʒestʃər/",
+      "zh": "手势；姿态",
+      "pos": "n./v.",
+      "example": "She made a gesture to ask for the bill at the restaurant."
+    },
+    {
+      "lemma": "bundle",
+      "phonetic": "/ˈbʌndl/",
+      "zh": "捆；束；打包",
+      "pos": "n./v.",
+      "example": "I bundled the old magazines and put them in the closet."
+    },
+    {
+      "lemma": "temper",
+      "phonetic": "/ˈtempər/",
+      "zh": "脾气；情绪；使缓和",
+      "pos": "n./v.",
+      "example": "Don't lose your temper over a small mistake."
+    },
+    {
+      "lemma": "infer",
+      "phonetic": "/ɪnˈfɜːr/",
+      "zh": "推断；推论",
+      "pos": "v.",
+      "example": "From the data, we can infer that sales will drop next quarter."
+    },
+    {
+      "lemma": "subsequent",
+      "phonetic": "/ˈsʌbsɪkwənt/",
+      "zh": "随后的；后来的",
+      "pos": "adj.",
+      "example": "The initial launch was delayed, and subsequent updates fixed the bugs."
+    },
+    {
+      "lemma": "breach",
+      "phonetic": "/briːtʃ/",
+      "zh": "违反；破坏；缺口",
+      "pos": "n./v.",
+      "example": "Sharing confidential data is a serious breach of company policy."
+    },
+    {
+      "lemma": "comprehensive",
+      "phonetic": "/ˌkɑːmprɪˈhensɪv/",
+      "zh": "全面的；综合的",
+      "pos": "adj.",
+      "example": "We need a comprehensive review of the entire system before launch."
+    },
+    {
+      "lemma": "consolidate",
+      "phonetic": "/kənˈsɑːlɪdeɪt/",
+      "zh": "巩固；合并",
+      "pos": "v.",
+      "example": "We consolidated three teams into one to improve efficiency."
+    },
+    {
+      "lemma": "preliminary",
+      "phonetic": "/prɪˈlɪmɪneri/",
+      "zh": "初步的；预备的",
+      "pos": "adj.",
+      "example": "These are preliminary results — the final report comes next week."
+    },
+    {
+      "lemma": "subsidy",
+      "phonetic": "/ˈsʌbsɪdi/",
+      "zh": "补贴；津贴",
+      "pos": "n.",
+      "example": "The government offers subsidies to small tech companies."
+    },
+    {
+      "lemma": "vibrant",
+      "phonetic": "/ˈvaɪbrənt/",
+      "zh": "充满活力的；鲜艳的",
+      "pos": "adj.",
+      "example": "The night market has a vibrant atmosphere."
+    },
+    {
+      "lemma": "accustomed",
+      "phonetic": "/əˈkʌstəmd/",
+      "zh": "习惯的",
+      "pos": "adj.",
+      "example": "I'm not yet accustomed to the spicy food here."
+    },
+    {
+      "lemma": "commemorate",
+      "phonetic": "/kəˈmeməreɪt/",
+      "zh": "纪念",
+      "pos": "v.",
+      "example": "We planted a tree to commemorate our tenth anniversary."
+    },
+    {
+      "lemma": "underlying",
+      "phonetic": "/ˌʌndərˈlaɪɪŋ/",
+      "zh": "潜在的；根本的",
+      "pos": "adj.",
+      "example": "The underlying cause of the bug was a typo in the config."
+    },
+    {
+      "lemma": "intervene",
+      "phonetic": "/ˌɪntərˈviːn/",
+      "zh": "干预；介入",
+      "pos": "v.",
+      "example": "The manager had to intervene when the two colleagues started arguing."
+    },
+    {
+      "lemma": "phenomenon",
+      "phonetic": "/fɪˈnɑːmɪnɑːn/",
+      "zh": "现象",
+      "pos": "n.",
+      "example": "The viral video became a cultural phenomenon overnight."
+    },
+    {
+      "lemma": "spearhead",
+      "phonetic": "/ˈspɪrhed/",
+      "zh": "牵头；领头",
+      "pos": "v./n.",
+      "example": "She spearheaded the initiative to go fully remote."
+    },
+    {
+      "lemma": "liaise",
+      "phonetic": "/liˈeɪz/",
+      "zh": "联络；沟通协调",
+      "pos": "v.",
+      "example": "I'll liaise with the legal team to get the contract reviewed."
+    },
+    {
+      "lemma": "vet",
+      "phonetic": "/vet/",
+      "zh": "审查；核实",
+      "pos": "v.",
+      "example": "We need to vet all candidates before scheduling interviews."
+    },
+    {
+      "lemma": "empower",
+      "phonetic": "/ɪmˈpaʊər/",
+      "zh": "赋权；使能够",
+      "pos": "v.",
+      "example": "The new policy empowers employees to make their own decisions."
+    },
+    {
+      "lemma": "knack",
+      "phonetic": "/næk/",
+      "zh": "诀窍；技巧",
+      "pos": "n.",
+      "example": "She has a knack for explaining complex ideas simply."
+    },
+    {
+      "lemma": "stroll",
+      "phonetic": "/stroʊl/",
+      "zh": "散步；溜达",
+      "pos": "n./v.",
+      "example": "We took a leisurely stroll through the park after dinner."
+    },
+    {
+      "lemma": "rummage",
+      "phonetic": "/ˈrʌmɪdʒ/",
+      "zh": "翻找；搜找",
+      "pos": "v.",
+      "example": "I rummaged through my bag to find the keys."
+    },
+    {
+      "lemma": "paradigm",
+      "phonetic": "/ˈpærədaɪm/",
+      "zh": "范式；典范",
+      "pos": "n.",
+      "example": "AI is creating a new paradigm for software development."
+    },
+    {
+      "lemma": "stigma",
+      "phonetic": "/ˈstɪɡmə/",
+      "zh": "耻辱；污名",
+      "pos": "n.",
+      "example": "There's still a stigma around discussing mental health at work."
+    },
+    {
+      "lemma": "coherent",
+      "phonetic": "/koʊˈhɪrənt/",
+      "zh": "连贯的；条理清楚的",
+      "pos": "adj.",
+      "example": "Your argument needs to be coherent and well-structured."
+    },
+    {
+      "lemma": "alleviate",
+      "phonetic": "/əˈliːvieɪt/",
+      "zh": "缓解；减轻",
+      "pos": "v.",
+      "example": "The new policy will alleviate the financial burden on small businesses."
+    },
+    {
+      "lemma": "defer",
+      "phonetic": "/dɪˈfɜːr/",
+      "zh": "推迟；遵从",
+      "pos": "v.",
+      "example": "We decided to defer the decision until we have more data."
+    },
+    {
+      "lemma": "exempt",
+      "phonetic": "/ɪɡˈzempt/",
+      "zh": "被免除的；豁免",
+      "pos": "adj./v.",
+      "example": "Non-profit organizations are exempt from paying corporate tax."
+    },
+    {
+      "lemma": "blatant",
+      "phonetic": "/ˈbleɪtnt/",
+      "zh": "公然的；明目张胆的",
+      "pos": "adj.",
+      "example": "That was a blatant lie — everyone knew the truth."
+    },
+    {
+      "lemma": "imminent",
+      "phonetic": "/ˈɪmɪnənt/",
+      "zh": "迫近的；即将发生的",
+      "pos": "adj.",
+      "example": "The storm is imminent — we need to head home now."
+    },
+    {
+      "lemma": "penalize",
+      "phonetic": "/ˈpiːnəlaɪz/",
+      "zh": "处罚；不利对待",
+      "pos": "v.",
+      "example": "The new rules penalize companies that don't meet the carbon targets."
+    },
+    {
+      "lemma": "pertain",
+      "phonetic": "/pərˈteɪn/",
+      "zh": "与…有关",
+      "pos": "v.",
+      "example": "Please only share information that pertains to this project."
+    },
+    {
+      "lemma": "garnish",
+      "phonetic": "/ˈɡɑːrnɪʃ/",
+      "zh": "装饰（食物）",
+      "pos": "v.",
+      "example": "She garnished the soup with fresh parsley before serving."
+    },
+    {
+      "lemma": "cohort",
+      "phonetic": "/ˈkoʊhɔːrt/",
+      "zh": "一群人；同辈群体",
+      "pos": "n.",
+      "example": "This year's freshman cohort is the largest in the university's history."
+    },
+    {
+      "lemma": "livelihood",
+      "phonetic": "/ˈlaɪvlihʊd/",
+      "zh": "生计",
+      "pos": "n.",
+      "example": "Many farmers lost their livelihood due to the drought."
+    },
+    {
+      "lemma": "pristine",
+      "phonetic": "/ˈprɪstiːn/",
+      "zh": "崭新的；原始洁净的",
+      "pos": "adj.",
+      "example": "The rented car was in pristine condition when I picked it up."
+    },
+    {
+      "lemma": "propel",
+      "phonetic": "/prəˈpel/",
+      "zh": "推进；驱使",
+      "pos": "v.",
+      "example": "A clear vision can propel a team through tough times."
+    },
+    {
+      "lemma": "insight",
+      "phonetic": "/ˈɪnsaɪt/",
+      "zh": "洞察力；见解",
+      "pos": "n.",
+      "example": "Her presentation gave us fresh insights into customer behavior."
+    },
+    {
+      "lemma": "encounter",
+      "phonetic": "/ɪnˈkaʊntər/",
+      "zh": "遭遇；偶然遇到",
+      "pos": "v./n.",
+      "example": "We encountered a few bugs during testing, but nothing major."
+    },
+    {
+      "lemma": "wield",
+      "phonetic": "/wiːld/",
+      "zh": "行使；运用（权力等）",
+      "pos": "v.",
+      "example": "As department head, she wields considerable influence over the roadmap."
+    },
+    {
+      "lemma": "scrub",
+      "phonetic": "/skrʌb/",
+      "zh": "用力擦洗；取消",
+      "pos": "v.",
+      "example": "I spent the morning scrubbing the kitchen floor."
+    },
+    {
+      "lemma": "hefty",
+      "phonetic": "/ˈhefti/",
+      "zh": "大量的；沉重的",
+      "pos": "adj.",
+      "example": "The phone bill was a hefty surprise this month."
+    },
+    {
+      "lemma": "lucid",
+      "phonetic": "/ˈluːsɪd/",
+      "zh": "清晰的；易懂的",
+      "pos": "adj.",
+      "example": "His explanation was so lucid that even a beginner could follow."
+    },
+    {
+      "lemma": "avalanche",
+      "phonetic": "/ˈævəlæntʃ/",
+      "zh": "雪崩；蜂拥而至",
+      "pos": "n./v.",
+      "example": "We received an avalanche of emails after the announcement."
+    },
+    {
+      "lemma": "agile",
+      "phonetic": "/ˈædʒaɪl/",
+      "zh": "敏捷的；灵活的",
+      "pos": "adj.",
+      "example": "An agile team can pivot quickly when priorities change."
+    },
+    {
+      "lemma": "intricate",
+      "phonetic": "/ˈɪntrɪkət/",
+      "zh": "复杂的；精细的",
+      "pos": "adj.",
+      "example": "The wiring of the old house is intricate and hard to trace."
+    },
+    {
+      "lemma": "conform",
+      "phonetic": "/kənˈfɔːrm/",
+      "zh": "顺从；遵从；符合",
+      "pos": "v.",
+      "example": "All products must conform to international safety standards."
+    },
+    {
+      "lemma": "tenure",
+      "phonetic": "/ˈtenjər/",
+      "zh": "任期；终身教职",
+      "pos": "n.",
+      "example": "She was granted tenure after six years of teaching."
+    },
+    {
+      "lemma": "vivid",
+      "phonetic": "/ˈvɪvɪd/",
+      "zh": "生动的；鲜明的",
+      "pos": "adj.",
+      "example": "I still have a vivid memory of that summer."
+    },
+    {
+      "lemma": "endure",
+      "phonetic": "/ɪnˈdʊr/",
+      "zh": "忍受；持久",
+      "pos": "v.",
+      "example": "She endured the long commute for three years before moving closer."
+    },
+    {
+      "lemma": "commodity",
+      "phonetic": "/kəˈmɑːdəti/",
+      "zh": "商品；日用品",
+      "pos": "n.",
+      "example": "Coffee is a globally traded commodity."
+    },
+    {
+      "lemma": "waver",
+      "phonetic": "/ˈweɪvər/",
+      "zh": "动摇；犹豫",
+      "pos": "v.",
+      "example": "Don't waver in your decision — trust your instinct."
+    },
+    {
+      "lemma": "embrace",
+      "phonetic": "/ɪmˈbreɪs/",
+      "zh": "拥抱；欣然接受",
+      "pos": "v.",
+      "example": "We should embrace new technology rather than fear it."
+    },
+    {
+      "lemma": "authorize",
+      "phonetic": "/ˈɔːθəraɪz/",
+      "zh": "授权；批准",
+      "pos": "v.",
+      "example": "Only the manager can authorize a refund over $100."
+    },
+    {
+      "lemma": "quandary",
+      "phonetic": "/ˈkwɑːndəri/",
+      "zh": "困惑；窘境",
+      "pos": "n.",
+      "example": "I'm in a quandary about whether to accept the job offer."
+    },
+    {
+      "lemma": "compel",
+      "phonetic": "/kəmˈpel/",
+      "zh": "迫使；驱使",
+      "pos": "v.",
+      "example": "The urgent deadline compelled us to work through the weekend."
+    },
+    {
+      "lemma": "cumbersome",
+      "phonetic": "/ˈkʌmbərsəm/",
+      "zh": "笨重的；麻烦的",
+      "pos": "adj.",
+      "example": "The old approval process was too cumbersome and slow."
+    },
+    {
+      "lemma": "meticulous",
+      "phonetic": "/məˈtɪkjələs/",
+      "zh": "一丝不苟的；细致的",
+      "pos": "adj.",
+      "example": "She kept meticulous records of every transaction."
+    },
+    {
+      "lemma": "plunge",
+      "phonetic": "/plʌndʒ/",
+      "zh": "投入；暴跌",
+      "pos": "v./n.",
+      "example": "Sales plunged by 40 percent after the price increase."
+    },
+    {
+      "lemma": "linger",
+      "phonetic": "/ˈlɪŋɡər/",
+      "zh": "逗留；徘徊",
+      "pos": "v.",
+      "example": "We lingered at the cafe long after finishing our coffee."
+    },
+    {
+      "lemma": "spacious",
+      "phonetic": "/ˈspeɪʃəs/",
+      "zh": "宽敞的",
+      "pos": "adj.",
+      "example": "The new apartment has a spacious living room."
+    },
+    {
+      "lemma": "uplift",
+      "phonetic": "/ʌpˈlɪft/",
+      "zh": "振奋；提升",
+      "pos": "v./n.",
+      "example": "Her speech uplifted the entire team after a tough quarter."
+    },
+    {
+      "lemma": "disposition",
+      "phonetic": "/ˌdɪspəˈzɪʃn/",
+      "zh": "性情；倾向",
+      "pos": "n.",
+      "example": "He has a calm disposition that helps in crises."
+    },
+    {
+      "lemma": "recede",
+      "phonetic": "/rɪˈsiːd/",
+      "zh": "后退；消退",
+      "pos": "v.",
+      "example": "The floodwaters slowly receded after the rain stopped."
+    },
+    {
+      "lemma": "sentiment",
+      "phonetic": "/ˈsentɪmənt/",
+      "zh": "情绪；观点",
+      "pos": "n.",
+      "example": "Customer sentiment has improved since the update."
+    },
+    {
+      "lemma": "candid",
+      "phonetic": "/ˈkændɪd/",
+      "zh": "坦率的；直言不讳的",
+      "pos": "adj.",
+      "example": "I appreciate your candid feedback on the proposal."
+    },
+    {
+      "lemma": "expedite",
+      "phonetic": "/ˈekspədaɪt/",
+      "zh": "加速；加急处理",
+      "pos": "v.",
+      "example": "Can you expedite the shipping for this urgent order?"
+    },
+    {
+      "lemma": "deliberate",
+      "phonetic": "/dɪˈlɪbərət/",
+      "zh": "蓄意的；慎重思考",
+      "pos": "adj./v.",
+      "example": "She made a deliberate effort to include everyone in the discussion."
+    },
+    {
+      "lemma": "morale",
+      "phonetic": "/məˈræl/",
+      "zh": "士气；斗志",
+      "pos": "n.",
+      "example": "The team's morale dropped after the project was cancelled."
+    },
+    {
+      "lemma": "nostalgia",
+      "phonetic": "/nɑːˈstældʒə/",
+      "zh": "怀旧；乡愁",
+      "pos": "n.",
+      "example": "Listening to old songs fills me with nostalgia for my college days."
+    },
+    {
+      "lemma": "pantry",
+      "phonetic": "/ˈpæntri/",
+      "zh": "食品储藏室",
+      "pos": "n.",
+      "example": "I found a bag of flour hidden in the back of the pantry."
+    },
+    {
+      "lemma": "recline",
+      "phonetic": "/rɪˈklaɪn/",
+      "zh": "斜倚；后仰",
+      "pos": "v.",
+      "example": "She reclined the seat and closed her eyes for a nap."
+    },
+    {
+      "lemma": "eloquent",
+      "phonetic": "/ˈeləkwənt/",
+      "zh": "雄辩的；有说服力的",
+      "pos": "adj.",
+      "example": "Her eloquent speech moved the entire audience to tears."
+    },
+    {
+      "lemma": "pervasive",
+      "phonetic": "/pərˈveɪsɪv/",
+      "zh": "弥漫的；无处不在的",
+      "pos": "adj.",
+      "example": "Social media has a pervasive influence on young people's lives."
+    },
+    {
+      "lemma": "subtle",
+      "phonetic": "/ˈsʌtl/",
+      "zh": "微妙的；不易察觉的",
+      "pos": "adj.",
+      "example": "There's a subtle difference between the two versions that's hard to spot."
+    },
+    {
+      "lemma": "anticipate",
+      "phonetic": "/ænˈtɪsɪpeɪt/",
+      "zh": "预期；预料",
+      "pos": "v.",
+      "example": "We anticipate a higher demand during the holiday season."
+    },
+    {
+      "lemma": "harness",
+      "phonetic": "/ˈhɑːrnɪs/",
+      "zh": "利用；驾驭",
+      "pos": "v./n.",
+      "example": "We need to harness the power of data to drive growth."
+    },
+    {
+      "lemma": "incorporate",
+      "phonetic": "/ɪnˈkɔːrpəreɪt/",
+      "zh": "纳入；包含",
+      "pos": "v.",
+      "example": "We'll incorporate your suggestions into the final design."
+    },
+    {
+      "lemma": "endeavor",
+      "phonetic": "/ɪnˈdevər/",
+      "zh": "努力；尝试",
+      "pos": "n./v.",
+      "example": "We will endeavor to deliver the project on time."
+    },
+    {
+      "lemma": "soothe",
+      "phonetic": "/suːð/",
+      "zh": "安慰；缓解",
+      "pos": "v.",
+      "example": "A warm cup of tea can soothe your nerves after a long day."
+    },
+    {
+      "lemma": "quench",
+      "phonetic": "/kwentʃ/",
+      "zh": "解渴；熄灭",
+      "pos": "v.",
+      "example": "Nothing quenches your thirst like cold water on a hot day."
+    },
+    {
+      "lemma": "sluggish",
+      "phonetic": "/ˈslʌɡɪʃ/",
+      "zh": "迟缓的；无精打采的",
+      "pos": "adj.",
+      "example": "The economy has been sluggish for the past two quarters."
+    },
+    {
+      "lemma": "advocate",
+      "phonetic": "/ˈædvəkeɪt/",
+      "zh": "提倡；拥护者",
+      "pos": "v./n.",
+      "example": "She advocates for better work-life balance in the company."
+    },
+    {
+      "lemma": "diminish",
+      "phonetic": "/dɪˈmɪnɪʃ/",
+      "zh": "减少；削弱",
+      "pos": "v.",
+      "example": "The risks diminish once we add proper testing."
+    },
+    {
+      "lemma": "ponder",
+      "phonetic": "/ˈpɑːndər/",
+      "zh": "沉思；考虑",
+      "pos": "v.",
+      "example": "I need to ponder the implications before making a decision."
     }
   ],
   "passages": [
