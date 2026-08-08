@@ -24,6 +24,9 @@
  *   - E21：击杀药水计数（材料模式）——精英/BOSS 固定必得，普通怪走**独立 Rng 流**
  *     （`new Rng('potion:'+seed+':'+tick+':'+enemyId)`，不碰 simRng → golden 稳）+ 控制面
  *     usePotion（回血 30% maxHp + 5s CD，world actor 服务端权威）。
+ *   - E24：敌人巡逻（默认关）——SpawnZone.patrolTiles > 0 时敌人 IDLE（无仇恨目标）沿 x 轴
+ *     确定性 ping-pong 往返（patrolOffsetX 纯函数，位置函数化 D9；1 格/s）。CHASE/反击停巡逻，
+ *     脱战回归到达出生点后恢复；**现有配置一律不加 patrolTiles → 主世界/副本/playtest 行为字节级不变**。
  *   - parry 窗口清理 / skillCd 递减。
  *
  * 纪律（C6 / C9 / C11 / C12 / D9）：
@@ -73,6 +76,7 @@ import {
   ENEMY_BASE_ATK,
   ENTRANCE_COOLDOWN_TICKS, // E5：入口冷却（C-Dgn-4）
   ENEMY_MOVE_SPEED, // E6：敌人 CHASE 追击速度（格/tick）
+  ENEMY_PATROL_MOVE_SPEED, // E24：敌人巡逻速度（格/tick）= 1 格/s @12Hz（C7）
   AGGRO_RADIUS, // E6：敌人仇恨半径（px）
   PROVOKE_DURATION_TICKS, // E6：被动怪被打后的反击窗口（tick）
   ENEMY_RETURN_ARRIVE_TOL, // E16：敌人脱战回归到达容差（px）= 0.5×TILE
@@ -226,6 +230,14 @@ interface Actor {
   lastDamageTick?: number; // 被动怪被打的最后 tick（反击窗口判定）
   // E16 新增（脱战回归）：敌人出生点（spawnWave/复活时记录的实例化 pos，含散布；E16 脱战后回归用）
   spawnOrigin?: Vec2;
+  // E24 新增（巡逻）：敌人巡逻半径（格；zone.patrolTiles 透传；缺省 undefined = 不巡逻）。
+  // **不进 EntityState 快照**（C12：客户端不感知，巡逻位置经快照 pos 自然下发）。
+  patrolTiles?: number;
+  // E24 新增（巡逻相位）：巡逻相位起点 tick（首次巡逻 / 脱战回归到达时置 t；CHASE / 反击时清）。
+  // 巡逻位置 = spawnOrigin + patrolOffsetX(t - patrolStartTick)——保证脱战回归到达后从原点平滑出发，
+  // 且巡逻期间不被「回归拉回」竞争（玩家持续超半径时持续巡逻，不回原点）。
+  // **不进 EntityState 快照**（C12：仅 world 内部 AI 状态）。
+  patrolStartTick?: number;
   // E7 新增（玩家装备）
   equipped?: EquippedSlots; // 3 槽装备（持久化镜像；仅玩家实体持有）
   equipStats?: EquipmentStats; // 装备汇总属性缓存（computeEquipStats；仅在 addPlayer/setPlayerEquipped 时计算，热路径零分配）
@@ -378,6 +390,68 @@ function dirToward(ax: number, ay: number, bx: number, by: number): number {
   const deg = (Math.atan2(by - ay, bx - ax) * 180) / Math.PI; // -180..180
   const k = Math.round(deg / 45);
   return ((k % 8) + 8) % 8;
+}
+
+// ─────────────────────────────────────────────────────────────
+// E24：敌人确定性 ping-pong 巡逻（D9 纯函数，位置函数化）
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * E24：巡逻 x 偏移（px）= 三角波，以 spawnOrigin 为中心沿 x 轴往返。
+ * 纯函数：pos = origin.x + patrolOffsetX(tick, patrolTiles)。无随机、无 Date.now、无状态累积
+ * （任意 tick 直接由函数得出位置，可复现可测试 D9）。
+ * - 幅度：|offset| ≤ patrolTiles×TILE；
+ * - 单程时长 half = patrolTiles / ENEMY_PATROL_MOVE_SPEED（tick），完整往返周期 = 4×half；
+ * - tick=0 → 0；half → +amp；2half → 0；3half → -amp；4half → 0（循环）。
+ * - patrolTiles ≤ 0 → 恒 0（不巡逻，回归 E6 IDLE 静止）。
+ */
+export function patrolOffsetX(tick: number, patrolTiles: number): number {
+  const tiles = Math.max(0, patrolTiles);
+  if (tiles <= 0) return 0;
+  const amp = tiles * TILE; // px
+  const half = tiles / ENEMY_PATROL_MOVE_SPEED; // 单程 tick（原点→端点）
+  const full = 4 * half; // 完整往返 tick
+  const phase = ((tick % full) + full) % full; // [0, full)
+  const u = phase / half; // [0, 4)
+  // 三角波：u∈[0,1) 0→+amp；[1,2) +amp→0；[2,3) 0→-amp；[3,4) -amp→0
+  // 注意折返点（u=2 → 0）可能算出 -0，统一归零（assert.equal(-0,0) strict 失败）。
+  let off: number;
+  if (u < 1) off = amp * u;
+  else if (u < 2) off = amp * (2 - u);
+  else if (u < 3) off = -amp * (u - 2);
+  else off = -amp * (4 - u);
+  return off === 0 ? 0 : off;
+}
+
+/**
+ * E24：巡逻朝向（0=E 向右 / 4=W 向左），与 patrolOffsetX 同相位推导（D9 纯函数）。
+ * 向右（+x）：u∈[0,1)∪[3,4)；向左（-x）：u∈[1,3)。折返点用区间左闭右开一致处理。
+ */
+function patrolDir(tick: number, patrolTiles: number): number {
+  const tiles = Math.max(0, patrolTiles);
+  if (tiles <= 0) return 0;
+  const half = tiles / ENEMY_PATROL_MOVE_SPEED;
+  const full = 4 * half;
+  const phase = ((tick % full) + full) % full;
+  const u = phase / half; // [0, 4)
+  return u < 1 || u >= 3 ? 0 : 4;
+}
+
+/**
+ * E24：应用巡逻位置到敌人（world.step 内调用）。
+ * - 位置 = spawnOrigin + patrolOffsetX(tick)（沿 x 轴，y 固定 spawnOrigin.y）；
+ * - 朝向按巡逻方向（E/W）；
+ * - 未配置巡逻（patrolTiles 缺省/≤0）或无 spawnOrigin → 幂等 no-op（不扰动现有行为）。
+ * 纯函数式改写 e 状态（无随机无 Date.now，D9）。
+ */
+function applyPatrol(e: Actor, t: number): void {
+  const tiles = e.patrolTiles ?? 0; // 局部收窄（TS strict；缺省 0 = 不巡逻）
+  if (!e.spawnOrigin || tiles <= 0) return;
+  const start = e.patrolStartTick ?? t; // 相位起点（缺省当前 tick → 从原点出发，不跳变）
+  if (e.patrolStartTick === undefined) e.patrolStartTick = start;
+  e.x = e.spawnOrigin.x + patrolOffsetX(t - start, tiles);
+  e.y = e.spawnOrigin.y;
+  e.dir = patrolDir(t - start, tiles);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -638,6 +712,8 @@ export function createWorld(opts: CreateWorldOpts): World {
           zoneIndex: spawnStates.length,
           // E16：出生点（spawnWave 实例化 pos，含散布；脱战后回归用）。
           spawnOrigin: { x: spec.pos.x, y: spec.pos.y },
+          // E24：巡逻半径（zone.patrolTiles 透传；缺省 undefined = 不巡逻，不进快照 C12）。
+          patrolTiles: spec.patrolTiles,
           lastAttackTick: -ENEMY_ATTACK_INTERVAL_TICKS,
         });
         aliveIds.push(id);
@@ -1025,7 +1101,15 @@ export function createWorld(opts: CreateWorldOpts): World {
             target = p;
           }
         }
-        if (!target) continue; // 无存活玩家 → IDLE（完全静止）
+        if (!target) {
+          // E24：无存活玩家 → IDLE。配置巡逻 → 确定性 ping-pong（位置函数化，D9）；
+          //   否则完全静止（回归 E6 行为，golden 不扰动）。
+          if ((e.patrolTiles ?? 0) > 0) {
+            if (e.patrolStartTick === undefined) e.patrolStartTick = t; // 首次巡逻相位起点
+            applyPatrol(e, t);
+          }
+          continue;
+        }
 
         const aggression = e.aggression ?? (e.tier === 0 ? "passive" : "aggressive");
         const inContact = best <= ENEMY_CONTACT_RANGE;
@@ -1065,29 +1149,42 @@ export function createWorld(opts: CreateWorldOpts): World {
 
         if (aggression === "aggressive") {
           // aggressive：仇恨半径内索敌追击；接触内不移动（攻击）；半径外 → 脱战回归出生点（E16）。
-          if (best <= AGGRO_RADIUS && !inContact) {
-            const dir = dirToward(e.x, e.y, target.x, target.y);
-            const np = stepMovement({ x: e.x, y: e.y }, dir, {
-              speedPerTick: ENEMY_MOVE_SPEED, // E6：2 格/s = 0.1667 格/tick
-              isBlocked,
-            });
-            e.x = np.x;
-            e.y = np.y;
-            e.dir = dir;
-          } else if (best > AGGRO_RADIUS && e.spawnOrigin) {
-            // E16：脱战回归 —— 目标离开仇恨半径 → 朝出生点移动；到达（≤ ENEMY_RETURN_ARRIVE_TOL）→ 停。
-            // 确定性：纯 stepMovement 积分（D9，无随机/无 Date.now）；玩家不存在时 target=null → best=∞ → 同路径。
-            const dx = e.spawnOrigin.x - e.x;
-            const dy = e.spawnOrigin.y - e.y;
-            if (Math.hypot(dx, dy) > ENEMY_RETURN_ARRIVE_TOL) {
-              const dir = dirToward(e.x, e.y, e.spawnOrigin.x, e.spawnOrigin.y);
+          if (best <= AGGRO_RADIUS) {
+            // 仇恨内（CHASE / 接触攻击）：停巡逻（清相位起点）。
+            e.patrolStartTick = undefined;
+            if (!inContact) {
+              const dir = dirToward(e.x, e.y, target.x, target.y);
               const np = stepMovement({ x: e.x, y: e.y }, dir, {
-                speedPerTick: ENEMY_MOVE_SPEED,
+                speedPerTick: ENEMY_MOVE_SPEED, // E6：2 格/s = 0.1667 格/tick
                 isBlocked,
               });
               e.x = np.x;
               e.y = np.y;
               e.dir = dir;
+            }
+          } else if (e.spawnOrigin) {
+            // 脱战：目标离开仇恨半径 → 先回归出生点（E16），到达后恢复巡逻（E24）。
+            // 确定性：纯 stepMovement 积分 / patrolOffsetX 纯函数（D9，无随机/无 Date.now）。
+            if (e.patrolStartTick !== undefined) {
+              // E24：已在巡逻（脱战已完成）→ 继续巡逻，不回归（避免位置函数化与回归拉回打架）。
+              applyPatrol(e, t);
+            } else {
+              const dx = e.spawnOrigin.x - e.x;
+              const dy = e.spawnOrigin.y - e.y;
+              if (Math.hypot(dx, dy) > ENEMY_RETURN_ARRIVE_TOL) {
+                const dir = dirToward(e.x, e.y, e.spawnOrigin.x, e.spawnOrigin.y);
+                const np = stepMovement({ x: e.x, y: e.y }, dir, {
+                  speedPerTick: ENEMY_MOVE_SPEED,
+                  isBlocked,
+                });
+                e.x = np.x;
+                e.y = np.y;
+                e.dir = dir;
+              } else {
+                // E24：回归到达出生点（≤ TOL）→ 开始/恢复巡逻（相位从 0 起，不跳变）。
+                e.patrolStartTick = t;
+                applyPatrol(e, t);
+              }
             }
           }
           if (inContact) maybeEnemyWindup(e, target, t); // 接触内周期性攻击（E18：进入前摇，伤害延后结算）
@@ -1095,7 +1192,14 @@ export function createWorld(opts: CreateWorldOpts): World {
           // passive：不主动攻击、不追击（完全静止）；仅被打后的反击窗口内对接触内玩家反击。
           const provoked =
             e.lastDamageTick !== undefined && t - e.lastDamageTick <= PROVOKE_DURATION_TICKS;
-          if (provoked && inContact) maybeEnemyWindup(e, target, t);
+          if (provoked && inContact) {
+            e.patrolStartTick = undefined; // 反击（windup）停巡逻；前摇期间不移动
+            maybeEnemyWindup(e, target, t);
+          } else if ((e.patrolTiles ?? 0) > 0) {
+            // E24：passive 未处于反击（未被打 / 不在接触内）→ 若配置巡逻 → 巡逻（相位连续）。
+            if (e.patrolStartTick === undefined) e.patrolStartTick = t;
+            applyPatrol(e, t);
+          }
         }
       }
 
@@ -1311,6 +1415,8 @@ export function createWorld(opts: CreateWorldOpts): World {
               zoneIndex: zi,
               // E16：出生点（复活实例化 pos，含散布；脱战后回归用）。
               spawnOrigin: { x: spec.pos.x, y: spec.pos.y },
+              // E24：巡逻半径（zone.patrolTiles 透传；缺省 undefined = 不巡逻，不进快照 C12）。
+              patrolTiles: spec.patrolTiles,
               lastAttackTick: t - ENEMY_ATTACK_INTERVAL_TICKS,
             });
             st.aliveIds.push(id);

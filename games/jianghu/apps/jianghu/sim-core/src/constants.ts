@@ -576,3 +576,19 @@ export const PROVOKE_DURATION_TICKS = 5 * TICK_RATE;
  * 与 TARGET_ARRIVE_TOL（玩家点击移动到达容差）同量纲；独立常量承载「敌人回归」语义（C7）。
  */
 export const ENEMY_RETURN_ARRIVE_TOL = Math.round(0.5 * TILE);
+
+// ─────────────────────────────────────────────────────────────
+// E24：敌人巡逻（patrol；C7 单一来源）
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * 敌人巡逻速度（格/s）= 1 格/s（E24 · 主理人拍板：比 CHASE 的 BASE_ENEMY_SPEED=2 更慢，
+ * 巡逻漫步感，与追击区分）。
+ */
+export const ENEMY_PATROL_SPEED = 1;
+
+/**
+ * 敌人每 tick 巡逻位移（格）= 1/12 ≈ 0.0833（= 4px/tick @48px tile）。
+ * 巡逻为「位置函数化」ping-pong（patrolOffsetX），本常量是三角波单程时长推导的单一来源。
+ */
+export const ENEMY_PATROL_MOVE_SPEED = ENEMY_PATROL_SPEED / TICK_RATE;

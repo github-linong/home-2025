@@ -46,6 +46,14 @@ export interface SpawnZone {
   readonly respawnTicks?: number;
   /** E6 敌人类别：aggressive 追击/接触攻击；passive 被打才反击。缺省按 tier 缺省规则。 */
   readonly aggression?: Aggression;
+  /**
+   * E24：巡逻半径（格）。缺省 0 = 不巡逻（IDLE 完全静止，回归 E6 行为）。
+   * 启用后敌人 IDLE（无仇恨目标）时以 spawnOrigin 为中心沿 x 轴在
+   * [origin.x - patrolTiles×TILE, origin.x + patrolTiles×TILE] 确定性 ping-pong 往返
+   * （patrolOffsetX 纯函数；D9 无随机）。**纪律：现有配置（主世界/副本/playtest）一律不加**，
+   * 巡逻是纯新增能力，未启用不触达 → golden/E2E 不变。
+   */
+  readonly patrolTiles?: number;
 }
 
 /** 单个被实例化敌人的规格（id 由 world 统一分配，避免 spawning 触碰世界状态）。 */
@@ -57,6 +65,8 @@ export interface SpawnedEnemySpec {
   readonly tier: number; // 0/1/2
   readonly atk: number; // 接触伤害基础
   readonly aggression: Aggression; // E6 敌人类别（world 据此跑 AI 状态机）
+  /** E24：巡逻半径（格）；缺省 undefined = 不巡逻（world AI 段据此跑 IDLE 巡逻）。 */
+  readonly patrolTiles?: number;
 }
 
 /** 刷怪波次实例结果。 */
@@ -83,6 +93,8 @@ export function spawnWave(zones: readonly SpawnZone[], rng: Rng): SpawnResult {
     const atk = ENEMY_BASE_ATK * mult;
     const kind = z.tier === 2 ? EntityKind.BOSS : EntityKind.ENEMY;
     const aggression = z.aggression ?? defaultAggression(z.tier); // E6：显式覆盖或按 tier 缺省
+    // E24：巡逻半径透传（缺省 undefined = 不巡逻；world AI 段据此跑 IDLE 巡逻）。
+    const patrolTiles = z.patrolTiles;
     for (let i = 0; i < z.count; i++) {
       const ox = rng.nextInt(-SPAWN_SCATTER_PX, SPAWN_SCATTER_PX);
       const oy = rng.nextInt(-SPAWN_SCATTER_PX, SPAWN_SCATTER_PX);
@@ -94,6 +106,7 @@ export function spawnWave(zones: readonly SpawnZone[], rng: Rng): SpawnResult {
         tier: z.tier,
         atk,
         aggression,
+        patrolTiles,
       });
     }
   }
