@@ -31,6 +31,8 @@ import {
   pushInventoryToSeat, // E7：装备变更后推送背包（含 equipped）
   setPotionBySeat, // E21：使用药水后同步 potionBySeat 缓存（换域播种）
   canEnterInstance, // E16：入口服务端坐标校验（进本前检查玩家与 ENTRANCE 距离）
+  enqueueSeatSave, // E22：分解落库经串行队列（与击杀材料/药水/升级并发安全）
+  applyDisassembleToCharacter, // E22：分解落库 + 世界镜像同步（队列内执行）
 } from "./run-manager.ts";
 import { RoomPhase } from "../sim-core/src/types.ts";
 import { INVENTORY_CAP, xpForLevel, ENCHANT_STONE_ITEM_ID, MAX_ENCHANT_LEVEL, ENCHANT_COST, POTION_CD_TICKS } from "../sim-core/src/constants.ts"; // C7 单一来源（背包上限 / 升级经验需求 / E19 强化常量 / E21 药水 CD）
@@ -409,6 +411,44 @@ export async function resolveEnchant(
   if (targetSlot) setPlayerEquipped(ctx.roomId ?? undefined, seatId, equipped);
   pushInventoryToSeat(seatId, inventory, equipped, newMaterials, snapshot.character.potions ?? 0);
   return inventoryMessage(requestId, inventory, equipped, newMaterials, snapshot.character.potions ?? 0);
+}
+
+/**
+ * E22：处理 `character.disassemble { itemId }`（异步，仿 resolveEnchant）。
+ * - 校验：登录玩家（游客 → NOT_LOGGED_IN，C-Per-1）/ itemId 合法整数 /
+ *   在背包（ITEM_NOT_FOUND）/ 不在已装备槽（EQUIPPED_ITEM，已装备先卸下）/
+ *   非材料物品（ENCHANT_STONE_ITEM_ID → NOT_DISASSEMBLABLE，强化石不入包防御）；
+ * - 产出：DISASSEMBLE_STONES_BY_RARITY[rarity] 强化石 + DISASSEMBLE_POTIONS 药水（固定 1 瓶保底）；
+ * - 从背包移除该物品 → Character.materials += 石、Character.potions += 药水；
+ * - **落库经 enqueueSeatSave 串行队列**（与击杀材料/药水/升级落库同队列——分解也改计数，
+ *   并发不串行会写回旧计数丢材料/药水，P1/E21 竞态模式）+ P0 syncer（applyDisassembleToCharacter
+ *   内 seatSnapshotSyncer 同步 session.snapshot，防 autosave/下线覆盖）；
+ * - 世界镜像：applyDisassembleToCharacter 内 setPlayerCounters 同步缓存 + world actor（有 actor 时）；
+ * - 回推 character.inventory（items 减 + materials/potions 增量，客户端一次拉全）。
+ */
+export async function resolveDisassemble(
+  ctx: ProtocolContext,
+  msg: { type: string; requestId?: string; payload?: Record<string, unknown> },
+): Promise<InventoryMessage | GameErrorReply> {
+  const requestId = msg.requestId;
+  const loaded = await loadLoginSnapshot(ctx, requestId);
+  if (!loaded.ok) return loaded.reply as never;
+  const { cs, userId, seatId } = loaded;
+
+  const itemId = Number(msg.payload?.itemId);
+  if (!Number.isInteger(itemId) || itemId <= 0) {
+    return equipError(requestId, "BAD_ITEM_ID", `invalid itemId: ${itemId}`);
+  }
+
+  // 队列内执行完整「load → 校验 → 移除 → 计数累加 → save → syncer → 世界镜像 → 推送」，
+  // 与击杀材料/药水落库串行（防并发竞态覆盖）；applyDisassembleToCharacter 内部做权威重查。
+  const result = await enqueueSeatSave(seatId, () =>
+    applyDisassembleToCharacter(cs, userId, seatId, itemId, { roomId: ctx.roomId }),
+  );
+  if (!result.ok) {
+    return equipError(requestId, result.code, result.message);
+  }
+  return inventoryMessage(requestId, result.inventory, result.equipped, result.materials, result.potions);
 }
 
 /** character.potion 消息体（使用药水成功回推；客户端刷新药水槽 + CD 环 + 回血飘字）。 */

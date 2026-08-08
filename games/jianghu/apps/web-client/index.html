@@ -152,6 +152,10 @@
     color: #e8d8b0; border-radius: 5px; padding: 1px 8px; cursor: pointer; }
   .enchant-btn:hover:not(:disabled) { border-color: #f2a03c; color: #f2a03c; }
   .enchant-btn:disabled { opacity: .45; cursor: not-allowed; border-color: #3a4250; color: #7a8699; }
+  /* ── E22 分解：分解按钮（与装备/强化并列）── */
+  .disassemble-btn { margin-top: 3px; font-size: 10px; border: 1px solid #5a3a5e; background: rgba(56,32,52,.9);
+    color: #e8d8d8; border-radius: 5px; padding: 1px 8px; cursor: pointer; }
+  .disassemble-btn:hover { border-color: #e07ab8; color: #e07ab8; }
   #inv-materials { margin-bottom: 6px; font-size: 11px; color: #e8d8b0; border: 1px solid #3a4250;
     border-radius: 6px; padding: 3px 8px; background: rgba(30,26,18,.55); }
   #inv-materials b { color: #f2a03c; }
@@ -240,6 +244,7 @@
   <b>左键点敌人</b> 自动走近普攻 · <b>左键点地面</b> 点击移动 · <b>WASD/方向键</b> 移动（8 向） · <b>空格</b> 格挡 · <b>1-4</b> 技能（<b>烈斩/剑气/震地/破军</b>） · <b>Q</b> 喝药（回 30% 生命，5s CD） · <b>I</b> 背包<br>
   <b>F</b> 进副本/出本 · 靠近掉落自动拾取 · BOSS 死后按 <b>F</b> 开「战利品宝箱」 · <b>滚轮</b> 缩放（相机锁定跟随，拖拽不平移） · 技能悬停查看描述<br>
   <b>装备</b>：背包内点「装备」穿装（攻击/生命/暴击立即提升） · 点击装备栏槽位卸下<br>
+  <b>分解</b>：背包内点「分解」清垃圾装（不可撤销）→ 强化石按稀有度（白0/蓝1/金2/暗金3）+ 疗伤药 ×1（白装保底）<br>
   <b>死亡</b>：倒地 10s 后自动复活回城 · 死亡不掉永久装备
 </div>
 
@@ -280,6 +285,8 @@ const TILE = 48;
 const TICK_RATE = 12;
 const TICK_MS = 1000 / TICK_RATE;
 const POTION_CD_TICKS = 5 * TICK_RATE; // E21：药水 CD = 5s @12Hz（sim-core POTION_CD_TICKS 镜像）
+const DISASSEMBLE_STONES_BY_RARITY = { 0: 0, 1: 1, 2: 2, 3: 3 }; // E22：分解产出石数按稀有度（C7 镜像）
+const DISASSEMBLE_POTIONS = 1; // E22：分解固定产出药水数（C7 镜像；白装保底 1 瓶）
 const WORLD_W = 40 * TILE;              // 1920
 const WORLD_H = 30 * TILE;              // 1440
 const ENTRANCE_POS = { x: 20 * TILE, y: 15 * TILE }; // 主世界入口（tile 20,15）
@@ -789,6 +796,7 @@ let potions = 0;                    // E21：药水计数（来自 character.inv
 let potionCdUntilTick = null;       // E21：药水 CD 截止 tick（character.potion.tick + cdTicksLeft；null=可用）
 let potSeq = 1;                     // E21：character.usePotion requestId 序号
 let lastEnchant = null;             // E19：最近一次强化请求 {itemId, prevLevel}（回复 toast 用）
+let lastDisassemble = null;         // E22：最近一次分解请求 {itemId}（回复 toast + 抑制通用增量 toast 用）
 let pickupToasts = [];              // 最近拾取 toast（E2E 钩子）
 let invSeq = 1;
 let levelInfo = { level: 1, xp: 0, xpNext: 50 }; // E9：等级/经验（character.level 消息）
@@ -823,6 +831,8 @@ const ERROR_TEXT = {
   ENCHANT_MAX_LEVEL: '已达最大强化等级（+5）',
   NO_MATERIALS: '强化石不足（击杀精英/BOSS 获得）',
   ENCHANT_MATERIAL: '强化石不可强化',
+  EQUIPPED_ITEM: '已装备的物品：请先卸下再分解',
+  NOT_DISASSEMBLABLE: '材料物品不可分解',
   NO_POTIONS: '没有疗伤药了（击杀精英/BOSS 掉落，普通怪有概率掉）',
   FULL_HP: '生命已满，无需喝药',
   POTION_CD: '疗伤药冷却中（5s）',
@@ -1100,8 +1110,11 @@ function handleControl(msg) {
       // E19：强化石计数（材料独立于背包；击杀精英/BOSS 推送）
       const prevMaterials = materials;
       materials = msg.materials || 0;
+      // E22：分解回复判定（character.disassemble 回复 requestId 以 'dis' 开头且 lastDisassemble 未清）。
+      const isDisassembleReply = !!lastDisassemble && msg.requestId && String(msg.requestId).indexOf('dis') === 0;
       // E20：强化石增量 toast（开箱×2 / 精英击杀×1 / BOSS 击杀×2；diff>0 才提示；首次拉取不算增量）。
-      if (!firstInvLoad && materials > prevMaterials) {
+      // E22：分解回复时**抑制**通用增量 toast（由下方「分解成功」统一提示，避免双 toast 噪音）。
+      if (!firstInvLoad && materials > prevMaterials && !isDisassembleReply) {
         toast('强化石 +' + (materials - prevMaterials));
         SFX.play('ui');
       }
@@ -1111,12 +1124,18 @@ function handleControl(msg) {
       // E21：药水计数（击杀给药水推送 / usePotion 回推一次拉全；首次拉取不算增量）。
       const prevPotions = potions;
       potions = msg.potions || 0;
-      if (!firstInvLoad && potions > prevPotions) {
+      if (!firstInvLoad && potions > prevPotions && !isDisassembleReply) {
         toast('获得疗伤药 ×' + (potions - prevPotions));
         SFX.play('ui');
       }
       GAME.potions = potions;
       renderPotionHud();
+      // E22：分解成功 toast「分解成功：强化石+N 药水+1」（差分 = 本次分解产出，服务端回推同一格式）。
+      if (isDisassembleReply) {
+        toast('分解成功：强化石 +' + (materials - prevMaterials) + ' 药水 +' + (potions - prevPotions));
+        SFX.play('ui'); // E12：UI 点击（分解成功）
+        lastDisassemble = null;
+      }
       // 增量 toast：新入库物品 → 屏幕下方「拾取 [稀有度色]物品（词缀xN）」
       const added = items.filter((i) => !prevIds.has(i.itemId));
       for (const it of added) {
@@ -1928,6 +1947,12 @@ function renderInventory() {
     enchBtn.disabled = lv >= 5 || materials < 1;
     enchBtn.addEventListener('click', () => { SFX.play('ui'); sendEnchant(it.itemId); });
     cell.appendChild(enchBtn);
+    // E22：分解按钮（任何背包装备可分解 → 强化石按稀有度 + 药水 1；确认弹窗）。class=disassemble-btn 供 E2E DOM 断言。
+    const disBtn = document.createElement('button');
+    disBtn.className = 'disassemble-btn';
+    disBtn.textContent = '分解';
+    disBtn.addEventListener('click', () => { SFX.play('ui'); sendDisassemble(it.itemId); });
+    cell.appendChild(disBtn);
     invGridEl.appendChild(cell);
   }
 }
@@ -1974,6 +1999,20 @@ function sendEnchant(itemId) {
   sendJson({ type: 'character.enchant', requestId: 'ench' + (invSeq++), payload: { itemId } });
 }
 
+// E22：分解（确认弹窗「分解 [物品]？得 强化石×N 药水×1」→ 服务端移除物品 + 材料/药水累加；
+// 不做撤销；MVP 直接分解 + toast「分解成功：强化石+N 药水+1」，可撤销说明见 help）。
+function sendDisassemble(itemId) {
+  const it = inventory.items.find((i) => i.itemId === itemId);
+  if (!it) return;
+  const stones = DISASSEMBLE_STONES_BY_RARITY[it.rarity] || 0;
+  const rarityName = RARITY_NAMES[it.rarity] || '?';
+  const short = '#' + (itemId % 0x10000).toString(16).toUpperCase().padStart(4, '0');
+  const ok = window.confirm(`分解 ${rarityName}品 ${short}？得 强化石×${stones} 药水×${DISASSEMBLE_POTIONS}（不可撤销）`);
+  if (!ok) return;
+  lastDisassemble = { itemId };
+  sendJson({ type: 'character.disassemble', requestId: 'dis' + (invSeq++), payload: { itemId } });
+}
+
 // 调试钩子（?debug=1 时暴露给 E2E）
 if (DEBUG) {
   GAME.debugEnterDungeon = enterDungeon;
@@ -1988,6 +2027,7 @@ if (DEBUG) {
   GAME.sendEquip = sendEquip; // E7
   GAME.sendUnequip = sendUnequip; // E7
   GAME.sendEnchant = sendEnchant; // E19
+  GAME.sendDisassemble = sendDisassemble; // E22
   GAME.sendAttack = sendAttack; // E8 普攻
   GAME.sendMoveToTile = sendMoveToTile; // E8 点击移动
   GAME.clickWorld = (wx, wy) => handleClick(wx, wy); // E8 世界坐标点击（E2E 兜底/调试）

@@ -378,6 +378,18 @@ const main = async () => {
       } else {
         record("L5b E19 强化按钮存在", true, "SKIPPED（背包无物品，游客场景不测）");
       }
+      // L5c E22 分解（加分断言）：背包物品格存在「分解」按钮（DOM；完整分解流程含 confirm 弹窗，
+      //   Puppeteer headless 默认自动驳回对话框，故仅断言按钮就位 + GAME.sendDisassemble 钩子暴露）。
+      if (!invDom.empty) {
+        const disBtn = await page.evaluate(() => ({
+          exists: !!document.querySelector("#inv-grid .disassemble-btn"),
+          count: document.querySelectorAll("#inv-grid .disassemble-btn").length,
+          hook: typeof (window.__game && window.__game.sendDisassemble) === "function",
+        }));
+        record("L5c E22 分解按钮存在(背包格子 DOM)", disBtn.exists && disBtn.count >= 1 && disBtn.hook, JSON.stringify(disBtn));
+      } else {
+        record("L5c E22 分解按钮存在", true, "SKIPPED（背包无物品，游客场景不测）");
+      }
       // L6 装备穿戴（E7.2）：点第一个物品的「装备」→ equipped 槽位变化（服务端回推；登录态才有效）。
       if (!invDom.empty) {
         const clicked = await page.evaluate(() => {

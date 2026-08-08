@@ -25,6 +25,9 @@ import {
   PARTY_GATHER_WINDOW_TICKS, // E13：入口集合窗口（tick）= 5s @12Hz
   PARTY_MAX_MEMBERS, // E13：同本成员上限（MVP）= 4
   ENTRANCE_INTERACT_RADIUS, // E16：进本交互半径（px）= 1.5×TILE（C7）
+  ENCHANT_STONE_ITEM_ID, // E19：强化石物品 id（材料计数；分解防御校验）
+  DISASSEMBLE_STONES_BY_RARITY, // E22：分解产出石数按稀有度（C7 单一来源）
+  DISASSEMBLE_POTIONS, // E22：分解固定产出药水数（C7 单一来源）
 } from "../sim-core/src/constants.ts"; // C7 单一来源
 import type { SpawnZone } from "../sim-core/src/spawning.ts";
 import { computeInstanceSeed, buildDungeonSpec } from "../sim-core/src/dungeonGen.ts"; // C7/D9/C-Dgn-1
@@ -78,13 +81,17 @@ export function setSeatSnapshotSyncer(fn: ((seatId: number, snap: CharacterSnaps
  * 同一击杀 tick 可能**同时**触发升级（onLevelUp）+ 强化石（onMaterialGain）+ 药水（onPotionGain），
  * 若各自 `loadOrCreate + save` 并发执行，后保存者会把前者的计数写回旧值（丢材料/丢药水，数据竞态）。
  * 本队列把「同 seat 的 async 落库」串行化：后一 handler 在 load 时一定能看到前一 handler 已保存的最新值。
- * 注：E20 宝箱开箱用「单次原子 save」（items+stones 同一落库）规避同类竞态；本队列覆盖 kill 三连事件。
+ * E22：装备分解（character.disassemble）**同样走本队列**——纯背包操作也会改材料/药水计数，
+ * 与击杀三连事件并发时若不串行，后保存者会写回旧计数（丢材料/丢药水/丢分解结果）。
+ * 注：E20 宝箱开箱用「单次原子 save」（items+stones 同一落库）规避同类竞态；本队列覆盖 kill 三连事件 + 分解。
+ * @returns 队列任务的 Promise（分解等需等待结果的调用方可 await；击杀事件 handler 忽略返回值，fire-and-forget）。
  */
 const seatSaveQueues = new Map<number, Promise<void>>();
-function enqueueSeatSave(seatId: number, fn: () => Promise<void>): void {
+export function enqueueSeatSave<T>(seatId: number, fn: () => Promise<T>): Promise<T> {
   const prev = seatSaveQueues.get(seatId) ?? Promise.resolve();
   const next = prev.then(fn, fn); // 前序失败不阻断后续
-  seatSaveQueues.set(seatId, next.catch(() => {}));
+  seatSaveQueues.set(seatId, next.then(() => undefined, () => undefined));
+  return next;
 }
 
 /**
@@ -398,6 +405,26 @@ export function setPlayerEquipped(roomId: string | null | undefined, seatId: num
  */
 export function setPotionBySeat(seatId: number, potions: number): void {
   potionBySeat.set(seatId, potions);
+}
+
+/**
+ * E22：分解后同步材料/药水计数（protocol.resolveDisassemble 经 applyDisassembleToCharacter 调用）。
+ * - 更新 materialBySeat / potionBySeat 缓存（供换域 addPlayer 播种世界镜像计数）；
+ * - roomId 存在 → 同步该房间世界 actor（materials/potionCount，world.setPlayerCounters）；
+ *   未入房（roomId 空/无 actor）→ 仅缓存，等 addPlayer 播种（仿 E19 材料路径）。
+ */
+export function setPlayerCounters(
+  roomId: string | null | undefined,
+  seatId: number,
+  materials: number,
+  potions: number,
+): void {
+  materialBySeat.set(seatId, materials);
+  potionBySeat.set(seatId, potions);
+  if (roomId) {
+    const entry = runs.get(roomId);
+    entry?.world.setPlayerCounters(seatId, materials, potions);
+  }
 }
 
 /** 取某 room 权威 World（测试 / 编排用；room 未运行返回 null）。 */
@@ -908,6 +935,69 @@ function handlePotionGain(seatId: number, potions: number): void {
   if (!info || info.guest) return; // 游客 → 零持久写 + 不推送（C-Per-1）
   // P1（E21）：与材料/升级落库串行（同 kill 三连事件防竞态，避免后保存者写回旧计数）。
   enqueueSeatSave(seatId, () => applyPotionGainToCharacter(cs, info.userId, seatId, potions));
+}
+
+// ─────────────────────────────────────────────────────────────
+// E22：装备分解数据通道（控制面 character.disassemble）
+// ─────────────────────────────────────────────────────────────
+// 纯背包控制面操作（不涉掉落 Rng 流 / 世界实体）→ 不污染 playtest golden（D9）。
+// 分解产出：DISASSEMBLE_STONES_BY_RARITY[rarity] 强化石 + DISASSEMBLE_POTIONS 药水（固定 1 瓶保底）。
+// 落库经 enqueueSeatSave 串行（与击杀材料/药水/升级同队列）——分解也改材料/药水计数，
+// 若与 kill 三连事件并发，后保存者会写回旧计数（丢材料/丢药水，P1/E21 数据竞态）。
+
+/** E22：分解结果（ok 时含新背包/已穿戴/材料/药水；失败含错误码，供 protocol 回推）。 */
+export type DisassembleApplyResult =
+  | { ok: true; inventory: Inventory; equipped: EquippedSlots; materials: number; potions: number }
+  | { ok: false; code: string; message: string };
+
+/**
+ * E22：分解落库 + 世界镜像同步（登录玩家；character.disassemble 由 protocol 调用，**必须在
+ * enqueueSeatSave 队列内执行**——本函数自身不做队列封装，队列由调用方保证串行）。
+ * - 校验（队列内权威重查，防请求间并发竞态）：itemId 在背包（不在已装备槽——已装备先卸下，
+ *   EQUIPPED_ITEM）、非材料物品（ENCHANT_STONE_ITEM_ID → NOT_DISASSEMBLABLE，强化石不入包防御）；
+ * - 产出：DISASSEMBLE_STONES_BY_RARITY[item.rarity] 石 + DISASSEMBLE_POTIONS 药水（C7 单一来源）；
+ * - 从背包移除 → Character.materials += 石、Character.potions += 药水 → save + P0 syncer；
+ * - 世界镜像：materialBySeat/potionBySeat 缓存 + 世界 actor 计数同步（setPlayerCounters，有 actor 时）；
+ * - 推送 character.inventory（items/materials/potions 一次拉全）。
+ * @param opts.roomId 当前房间（缺省 → 仅缓存等 addPlayer 播种；有 roomId 才同步 world actor）。
+ */
+export async function applyDisassembleToCharacter(
+  cs: CharacterService,
+  userId: string,
+  seatId: number,
+  itemId: number,
+  opts: { roomId?: string | null } = {},
+): Promise<DisassembleApplyResult> {
+  const { snapshot } = await cs.loadOrCreate(userId);
+  // 材料物品不可分解（强化石为计数，非背包物品；防御 crafted/旧存档注入）。
+  if (itemId === ENCHANT_STONE_ITEM_ID) {
+    return { ok: false, code: "NOT_DISASSEMBLABLE", message: "enchant stone is a material, not a bag item" };
+  }
+  // 已装备物品不可分解（已装备先卸下）——**先于背包查找**：itemId 命中已装备槽即拒，
+  // 否则已装备（不在背包）会被误报 ITEM_NOT_FOUND（EQUIPPED_ITEM 语义更准确）。
+  const equipped: EquippedSlots = { ...(snapshot.character.equipped ?? {}) };
+  for (const slot of ["weapon", "armor", "trinket"] as const) {
+    if (equipped[slot]?.itemId === itemId) {
+      return { ok: false, code: "EQUIPPED_ITEM", message: `item ${itemId} is equipped, unequip first` };
+    }
+  }
+  const idx = snapshot.inventory.items.findIndex((i) => i.itemId === itemId);
+  if (idx < 0) {
+    return { ok: false, code: "ITEM_NOT_FOUND", message: `item ${itemId} not in inventory` };
+  }
+  const item = snapshot.inventory.items[idx];
+  const stones = DISASSEMBLE_STONES_BY_RARITY[item.rarity] ?? 0; // rarity 越界防御 → 0 石（白装语义）
+  const potions = (snapshot.character.potions ?? 0) + DISASSEMBLE_POTIONS;
+  const materials = (snapshot.character.materials ?? 0) + stones;
+  const inventory: Inventory = { items: snapshot.inventory.items.filter((_, i) => i !== idx) };
+  const character = { ...snapshot.character, materials, potions, updatedAt: Date.now() };
+  await cs.save(userId, { character, inventory });
+  // P0 修复：同步 session.snapshot，防止 autosave/下线 save 覆盖分解结果。
+  seatSnapshotSyncer?.(seatId, { character, inventory });
+  // 世界镜像：缓存 + actor 计数同步（有 actor 时；无则等 addPlayer 播种）。
+  setPlayerCounters(opts.roomId ?? undefined, seatId, materials, potions);
+  pushInventoryToSeat(seatId, inventory, equipped, materials, potions);
+  return { ok: true, inventory, equipped, materials, potions };
 }
 
 /**

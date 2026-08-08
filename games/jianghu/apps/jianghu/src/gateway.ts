@@ -36,7 +36,7 @@ import {
   sendToConn,
   type Conn,
 } from "./connection-registry.ts";
-import { dispatch, setProtocolCharacterService, setProtocolSnapshotSyncer, resolveInventoryGet, resolveLevelGet, resolveEquip, resolveUnequip, resolveEnchant, resolveUsePotion } from "./protocol.ts";
+import { dispatch, setProtocolCharacterService, setProtocolSnapshotSyncer, resolveInventoryGet, resolveLevelGet, resolveEquip, resolveUnequip, resolveEnchant, resolveUsePotion, resolveDisassemble } from "./protocol.ts";
 import { enqueueInput, addPlayerToRoom, setSeatSnapshotSyncer, onSeatDisconnect } from "./run-manager.ts";
 import { TICK_MS, TICK_RATE } from "../sim-core/src/constants.ts"; // C1 单一来源
 import type { InputCmd } from "../sim-core/src/types.ts";
@@ -327,6 +327,16 @@ function handleRaw(conn: Conn, raw: Buffer): void {
   if (msg.type === "character.usePotion") {
     const s = liveSessions.get(conn.connId);
     void resolveUsePotion(
+      { userId: conn.userId, connId: conn.connId, seatId: s?.seatId, roomId: conn.roomId },
+      msg,
+    ).then((reply) => sendToConn(conn.connId, reply));
+    return;
+  }
+
+  // E22 分解数据通道（控制面）：character.disassemble → 分解（移除背包物品 + 材料/药水累加，async，同 equip 模式）。
+  if (msg.type === "character.disassemble") {
+    const s = liveSessions.get(conn.connId);
+    void resolveDisassemble(
       { userId: conn.userId, connId: conn.connId, seatId: s?.seatId, roomId: conn.roomId },
       msg,
     ).then((reply) => sendToConn(conn.connId, reply));

@@ -322,6 +322,13 @@ export interface World {
    * - 未注册 seat / 无 actor → 幂等忽略。
    */
   setPlayerEquipped(seatId: number, equipped: EquippedSlots): void;
+  /**
+   * E22：同步玩家材料/药水计数到世界 actor（分解后由服务端调用，镜像 E19/E21 击杀累计镜像）。
+   * - 更新 actor.materials / actor.potionCount（**不进快照** C12；与击杀累计同一内部镜像，
+   *   供 world 内部一致性 / 换域 addPlayer 播种时以 run-manager 缓存为准）；
+   * - 未注册 seat / 无 actor → 幂等忽略（无则等 addPlayer 经持久化镜像播种）。
+   */
+  setPlayerCounters(seatId: number, materials: number, potions: number): void;
   /** 可选：每次拾取即时回调（run-manager 可设，替代轮询 consumePickups）。 */
   onPickup?: (seatId: number, loot: LootResult) => void;
   /** E9：可选：每次升级即时回调（run-manager 可设，替代轮询 consumeLevelUps）。 */
@@ -690,6 +697,15 @@ export function createWorld(opts: CreateWorldOpts): World {
       a.maxHp = newMax;
       // 装 +maxHp 装备 → hp 同步抬升（不亏血）；卸下 → clamp 到新上限。
       a.hp = Math.max(1, Math.min(a.hp + (newMax - oldMax), newMax));
+    },
+
+    setPlayerCounters(seatId: number, materials: number, potions: number) {
+      const actorId = players.get(seatId);
+      if (actorId === undefined) return; // 幂等：未注册 seat 忽略
+      const a = actors.find((x) => x.id === actorId);
+      if (!a) return;
+      a.materials = materials;
+      a.potionCount = potions;
     },
 
     usePotion(seatId: number, nowTick: number): UsePotionResult {
