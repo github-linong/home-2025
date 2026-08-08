@@ -253,6 +253,12 @@ const main = async () => {
     })) : null;
     record("A2 二进制快照(主世界实体≥5)", okSnap, okSnap ? `tick=${snapInfo.tick} entities=${snapInfo.count} kinds=${snapInfo.kinds.join(",")} seatId=${snapInfo.seatId}` : undefined);
 
+    // ── E26 小地图增强（加分断言①）：minimapMarkers 钩子存在（drawMinimap 每帧刷新，主世界即可断言形状）──
+    const mmHookOk = await waitFor(page, "window.__game && window.__game.minimapMarkers && typeof window.__game.minimapMarkers.boss === 'number' && typeof window.__game.minimapMarkers.chest === 'number' && typeof window.__game.minimapMarkers.entrance === 'number' && typeof window.__game.minimapMarkers.loot === 'number'", 6000, "E26 minimapMarkers hook");
+    const mmOver = mmHookOk ? await page.evaluate(() => ({ ...window.__game.minimapMarkers })) : null;
+    record("E26-1 minimap标记钩子(minimapMarkers 形状)", mmHookOk,
+      mmOver ? `boss=${mmOver.boss} chest=${mmOver.chest} entrance=${mmOver.entrance} loot=${mmOver.loot}（主世界）` : "no minimapMarkers hook");
+
     // ── E14 真实登录（加分断言，不跑完整登录流程）：HUD 登录按钮 + 面板 DOM 存在 ──
     // 完整登录需真实 api2（本回归 DEV_SKIP_AUTH=true，未起 api2），仅断言 UI 元素已就位。
     const loginDom = await page.evaluate(() => {
@@ -779,6 +785,12 @@ const main = async () => {
     record("D1 进副本(dungeon.enter)", okEnter, okEnter ? `via=${enteredVia} roomId=${dungeonInfo.roomId} kinds=${dungeonInfo.kinds.join(",")} entities=${dungeonInfo.count}` : undefined);
     const okEnemy = okEnter ? await waitFor(page, "window.__game.lastSnapshot.entities.some(e => e.kind===1 || e.kind===2)", 6000, "dungeon enemies") : false;
     record("D2 副本快照含敌人/BOSS", okEnemy);
+    // ── E26 小地图增强（加分断言②）：副本内 BOSS/入口标记存在（BOSS kind=2 / ENTRANCE kind=5 进本即有，时序可控）──
+    // 宝箱（CHEST=6）须先击杀 BOSS 才生成，时序不可控 → 仅断言 boss/entrance 存在（chest/loot 计数钩子已在 E26-1 验证形状）。
+    const mmDun = okEnter ? await waitFor(page, "window.__game && window.__game.minimapMarkers && window.__game.minimapMarkers.boss >= 1 && window.__game.minimapMarkers.entrance >= 1", 6000, "E26 dungeon markers") : false;
+    const mmDunInfo = mmDun ? await page.evaluate(() => ({ ...window.__game.minimapMarkers })) : null;
+    record("E26-2 副本内 BOSS/入口标记存在", mmDun,
+      mmDunInfo ? `boss=${mmDunInfo.boss} chest=${mmDunInfo.chest} entrance=${mmDunInfo.entrance} loot=${mmDunInfo.loot}` : (okEnter ? "no minimapMarkers（渲染未触发）" : "SKIPPED（未进副本）"));
     await page.screenshot({ path: path.join(OUT_DIR, "02-dungeon.png") });
 
     // ── E + H1 + H2. 技能命中敌人（副本内）：HP 下降（权威） + 伤害飘字（lastHits）+ 击杀（信息）──
@@ -1066,6 +1078,7 @@ const main = async () => {
       "C3 客户端体验大修：①相机锁定跟随本地玩家（clamp 到世界 40×30 格内，不露空白），拖拽不平移（仍抑制点击动作）②点击定位用 mouseup 时刻相机重算 + 命中检测用渲染位置与屏幕空间半径（缩放无关）③伤害飘字锚定实体当前渲染位置（世界空间，随实体/相机移动）④技能 HUD 本地名表（烈斩/剑气/震地/破军，服务端 E11 后对齐 SKILL_NAMES）⑤程序化武侠剪影（斗笠侠客/山贼/野兽/暗影刺客/巨魔 + 掉落物品图标 + 入口漩涡增强，零外部资源）。",
       "E17 客户端多人渲染（加分）：双页面（不同 devUserId）→ P1 先进本（E13 创建 waiting 实例）→ P2 在 5s 集合窗口内加入同一 instance → 断言同 roomId、副本快照含 ≥2 个 kind=0、partyMembers（id!==localEntityId 判定队友）、rendered.party≥1（名牌为 Canvas 绘制无 DOM，用渲染标志代）。主世界段断言 P1/P2 同在 RESIDENT 即互相识别为队友（通用逻辑）。服务端零改动。",
       "E23 技能光效差异化（纯客户端）：四技能按下即播本地光效（不等服务端命中；命中后叠加命中闪光/飘字）。按槽位区分：烈斩=短促白色挥砍弧(90°/0.15s)、剑气=直线剑气波(青白金/2.5×TILE 飞行+尾迹/到终点消散)、震地=地面震荡圈(土褐圆环+裂纹/2.0×TILE/0.3s)、破军=大范围斩闪(180°红金巨弧+轻微屏幕震动/1.8×TILE/0.2s)。范围对齐服务端 SKILL_RANGE_BY_SLOT=72/120/96/86px。E2E 断言 GAME.lastSkillFx={slot,type}（时序可控：sendSkill 同步写入）。同时修正客户端 SKILL_INFO 镜像（cd 3/5/4/8s、范围 1.5/2.5/2.0/1.8 格），HUD tooltip 与 CD 环随之对齐。服务端零改动。",
+      "E26 小地图增强（纯客户端）：minimap 按 kind 区分形状/颜色 —— 玩家金点/队友暖橙点/敌人红点/BOSS 大红菱形(呼吸)/宝箱金方块(脉动)/入口紫色漩涡/掉落按稀有度 白·蓝·金·暗金 小点。比例修正：minimap 盒 150×112 → 152×114（=世界 1920×1440 4:3 等比，格子在图上为正方形；原略扁）。E2E 断言 GAME.minimapMarkers：主世界形状钩子 + 副本内 boss≥1/entrance≥1（BOSS/ENTRANCE 进本即有，时序可控）；宝箱(CHEST=6)需击杀 BOSS 才生成，时序不可控 → 仅断言钩子形状不断言计数。服务端零改动。",
     ],
   }, null, 2));
   process.exit(failed.length > 0 ? 1 : 0);

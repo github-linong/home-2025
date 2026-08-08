@@ -690,6 +690,8 @@ const GAME = window.__game = {
   // C3：相机锁定 + 渲染标志（E2E 断言钩子）
   cam: { cx: 0, cy: 0, scale: 1, w: 0, h: 0 },
   playerScreenPos: null, floatTexts: [], rendered: { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0, windup: 0 },
+  // E26：小地图标记计数钩子（drawMinimap 每帧刷新 {boss, chest, entrance, loot}；E2E 断言钩子）
+  minimapMarkers: { boss: 0, chest: 0, entrance: 0, loot: 0 },
   // E17：队友列表（当前快照中 kind=PLAYER 且 id!==localEntityId；含 ownerId/hp/pos/status，E2E 断言钩子）
   partyMembers: [],
   // 调试钩子（仅 ?debug=1 生效；E2E 用）
@@ -3333,33 +3335,70 @@ function drawSkillCrush(fx, k) {
   }
 }
 
+// E26：小地图增强 —— 按 kind 区分形状/颜色（BOSS 大红菱形 / 宝箱金方块脉动 / 入口紫色漩涡 / 掉落按稀有度小点），
+// 世界 40×30 格等比映射（副本 world 同 40×30 → 同比例；kx===ky，格子在图上为正方形）。
 function drawMinimap(camX, camY) {
-  const mw = 150, mh = 112, mx = view.w - mw - 12, my = 52;
-  const kx = mw / WORLD_W, ky = mh / WORLD_H;
+  // E26 比例修正：minimap 盒 152×114 = 世界 1920×1440 = 4:3（原 150×112 非等比，格子在图上略扁）
+  const mw = 152, mh = 114, mx = view.w - mw - 12, my = 52;
+  const k = mw / WORLD_W; // = mh / WORLD_H（40×30 格 TILE 对齐：一格在图上 = 48*k px 正方形）
   ctx.save();
   ctx.globalAlpha = 0.85;
   ctx.fillStyle = 'rgba(10,12,16,0.85)';
   ctx.fillRect(mx - 2, my - 2, mw + 4, mh + 4);
   ctx.strokeStyle = 'rgba(90,100,120,0.5)';
   ctx.strokeRect(mx - 2, my - 2, mw + 4, mh + 4);
+  const counts = { boss: 0, chest: 0, entrance: 0, loot: 0 };
   if (lastSnapshot) {
+    const t = performance.now() / 1000;
     for (const e of lastSnapshot.entities) {
-      let col = null;
-      if (e.kind === KIND.PLAYER) col = e.id === localEntityId ? '#ffd200' : '#f2a03c'; // E17：队友暖橙（与名牌一致）
-      else if (e.kind === KIND.ENEMY) col = '#e5484d';
-      else if (e.kind === KIND.BOSS) col = '#e5b25d';
-      else if (e.kind === KIND.LOOT_GROUND) col = RARITY_COLORS[e.loot ? e.loot.rarity : 0];
-      else if (e.kind === KIND.ENTRANCE) col = '#9b5fd6';
-      if (!col) continue;
-      ctx.fillStyle = col;
-      const r = e.kind === KIND.BOSS ? 4 : (e.kind === KIND.PLAYER ? 3 : 2);
-      ctx.fillRect(mx + e.pos.x * kx - r / 2, my + e.pos.y * ky - r / 2, r, r);
+      const px = mx + e.pos.x * k, py = my + e.pos.y * k;
+      if (e.kind === KIND.PLAYER) { // 玩家金点 / 队友暖橙点（E17，与名牌一致）
+        ctx.fillStyle = e.id === localEntityId ? '#ffd200' : '#f2a03c';
+        ctx.fillRect(px - 1.5, py - 1.5, 3, 3);
+      } else if (e.kind === KIND.ENEMY) { // 敌人小红点
+        ctx.fillStyle = '#e5484d';
+        ctx.fillRect(px - 1, py - 1, 2, 2);
+      } else if (e.kind === KIND.BOSS) { // BOSS：大红菱形 + 呼吸（副本内一眼可见）
+        counts.boss++;
+        ctx.save();
+        ctx.globalAlpha = 0.75 + 0.25 * Math.sin(t * 4.2);
+        ctx.fillStyle = '#d92632';
+        ctx.shadowColor = '#ff5560'; ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.moveTo(px, py - 6.5); ctx.lineTo(px + 6.5, py); ctx.lineTo(px, py + 6.5); ctx.lineTo(px - 6.5, py);
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      } else if (e.kind === KIND.CHEST) { // 宝箱：金方块 + 脉动（打完 BOSS 找箱）
+        counts.chest++;
+        const s = 4.4 + 1.1 * Math.sin(t * 5);
+        ctx.save();
+        ctx.fillStyle = '#f2a03c';
+        ctx.shadowColor = '#f2a03c'; ctx.shadowBlur = 5;
+        ctx.fillRect(px - s / 2, py - s / 2, s, s);
+        ctx.fillStyle = '#fff3d0';
+        ctx.fillRect(px - s * 0.16, py - s * 0.16, s * 0.32, s * 0.32);
+        ctx.restore();
+      } else if (e.kind === KIND.ENTRANCE) { // 入口：紫色漩涡点（出本/进本方向）
+        counts.entrance++;
+        ctx.save();
+        ctx.globalAlpha = 0.8 + 0.2 * Math.sin(t * 3);
+        ctx.strokeStyle = '#9b5fd6'; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.arc(px, py, 4.4, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = '#c9a0f0';
+        ctx.beginPath(); ctx.arc(px, py, 1.8, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      } else if (e.kind === KIND.LOOT_GROUND) { // 地面掉落：按稀有度 白/蓝/金/暗金 小点（稀有掉落一眼可见）
+        counts.loot++;
+        ctx.fillStyle = RARITY_COLORS[e.loot ? e.loot.rarity : 0] || '#D8D2C4';
+        ctx.fillRect(px - 1.2, py - 1.2, 2.4, 2.4);
+      }
     }
   }
+  GAME.minimapMarkers = counts; // E26 E2E 钩子：本帧 minimap 标记计数（boss/chest/entrance/loot）
   // 视野框
-  const vw = view.w / view.scale * kx, vh = view.h / view.scale * ky;
+  const vw = view.w / view.scale * k, vh = view.h / view.scale * k;
   ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-  ctx.strokeRect(mx + camX * kx - vw / 2, my + camY * ky - vh / 2, vw, vh);
+  ctx.strokeRect(mx + camX * k - vw / 2, my + camY * k - vh / 2, vw, vh);
   ctx.restore();
 }
 

@@ -8,6 +8,7 @@
 > E21 新增（服务端 E21 药水实装）：**Q 喝药** —— 击杀精英/BOSS 掉疗伤药（普通怪概率），喝药回 30% 生命 + 5s CD；HUD 药水槽 + 回血绿字 + 咕嘟音效。
 > C3 新增（用户试玩反馈 · 纯客户端）：**①相机锁定跟随**（人物不超屏，世界 40×30 格 clamp 不露空白）**②点击定位修正**（mouseup 重算 + 命中用渲染位置 + 屏幕空间半径）**③飘字跟随实体**（锚定 entityId，每帧按实体渲染位置换算）**④技能 HUD**（烈斩/剑气/震地/破军 + 悬停描述 + 冷却环）**⑤程序化武侠剪影**（斗笠侠客 / 山贼 / 野兽 / 暗影刺客 / 巨魔 + 掉落物品图标 + 入口漩涡增强，零外部资源）。
 > E23 新增（纯客户端 · 技能光效差异化）：四技能**按下即播**本地差异化光效（不等服务端命中，命中后叠加命中闪光/飘字），视觉与 E11 定位/数值匹配 —— **烈斩=短促白色挥砍弧（90°/0.15s 近战感）、剑气=直线剑气波（青白金，飞 2.5×TILE+尾迹，到终点消散）、震地=地面震荡圈（土褐圆环+裂纹，2.0×TILE/0.3s）、破军=大范围斩闪（180° 红金巨弧+轻微屏幕震动，1.8×TILE/0.2s）**；范围对齐服务端 `SKILL_RANGE_BY_SLOT=72/120/96/86px`。同时修正客户端 SKILL_INFO 镜像（CD 3/5/4/8s、范围 1.5/2.5/2.0/1.8 格），HUD tooltip 与 CD 环对齐。服务端零改动。
+> E26 新增（纯客户端 · 小地图增强）：右上角 minimap 按 kind 区分**形状/颜色** —— **玩家金点 / 队友暖橙点 / 敌人小红点 / BOSS 大红菱形（呼吸）/ 宝箱金方块（脉动）/ 入口紫色漩涡 / 地面掉落按稀有度 白·蓝·金·暗金 小点**（副本内打完 BOSS 找宝箱、找入口出本一眼可见）；minimap 盒改为世界 40×30 格**等比映射**（152×114 = 1920×1440 = 4:3，格子在图上为正方形，原 150×112 略扁已修正）；副本 world 同主世界 40×30 → 同一比例。服务端零改动。
 
 ---
 
@@ -68,7 +69,7 @@ http://localhost:8080/index.html
 | 进副本 | 走到裂隙入口附近 → `F` 或「进副本」按钮 | 发 `dungeon.enter`；服务端校验主世界 + 入口 10s 冷却（`tryEnterEntrance`） |
 | 出本 | 副本内按 `F` 或「出本」按钮 | 发 `dungeon.exit`，回主世界安全区 |
 | 缩放 | 滚轮 | **C3 相机锁定跟随本地玩家**（预测位置 → 按键即时动），缩放区间 0.45×~2.5×；**拖拽不再平移相机**（仅抑制点击动作），相机 clamp 到世界 40×30 格内（不露出世界外空白）。双击重置 follow 标志 |
-| 小地图 | 右上角 | 玩家/敌人/BOSS/掉落/入口着色点位 + 视野框 |
+| 小地图 | 右上角 | **E26 按 kind 区分形状/颜色**：玩家金点 / 队友暖橙点 / 敌人小红点 / **BOSS 大红菱形（呼吸）** / **宝箱金方块（脉动）** / **入口紫色漩涡** / **地面掉落按稀有度 白·蓝·金·暗金 小点** + 视野框（世界 40×30 格**等比映射**，副本同比例） |
 
 **HUD**：顶部 = 连接状态 / 房间（主世界·副本）/ tick / 实体数 / 本地 HP 条 / 格挡态 / 技能 CD / **队伍提示（E17：快照含队友时「队伍：N 人」）** / **背包按钮** / **音效开关（🔊/🔇）+ 音量滑块**（E12）；底部 = 技能栏 + **药水槽（E21：「Q 疗伤药 ×N」+ 数量 + CD 冷却环，无药水半透明）**；屏幕下方 = **拾取 toast**（「拾取 [稀有度色]品（词缀×N）」）。
 
@@ -182,6 +183,7 @@ GAME.lastHits / lastKills / lastSkillAt          // C2 打击感：最近伤害�
 GAME.lastSkillFx                                  // E23：最近一次技能光效 {slot, type}（slash/beam/quake/crush；E2E 断言钩子）
 GAME.inventory {items,cap,loaded} / GAME.equipped / pickupToasts / nearLootId / pickupHint / invOpen
 GAME.cam {cx,cy,scale,w,h} / GAME.playerScreenPos / GAME.floatTexts[] / GAME.rendered {enemies,lootSlots,entrance,player,party}   // C3 相机+飘字+贴图标志（E17：party=本帧渲染队友数）
+GAME.minimapMarkers {boss, chest, entrance, loot}   // E26：小地图标记计数（drawMinimap 每帧刷新；副本内 BOSS/入口存在）
 GAME.partyMembers    // E17：当前快照队友列表 [{id,ownerId,kind,hp,maxHp,pos,status}]（kind=PLAYER 且 id!==localEntityId）
 GAME.errors          // 收集的运行时/解码错误
 GAME.debugEnterDungeon() / GAME.debugExitDungeon()   // 强制进出本（绕过「靠近入口」UI 门槛）
@@ -218,7 +220,7 @@ E17 E2E 断言约定（加分）：`partyMembers` = 当前快照队友列表（k
 ## 6. 验证（真连真实服务端）
 
 - **服务端回归**：`cd apps/jianghu && npm test` → **全绿（135）**（C2 未动服务端代码）。
-- **C3 E2E**（`verify-e2e.mjs`，Puppeteer 真连真实 jianghu 服务端，puppeteer@24 + Chrome for Testing）：自管进程（起 jianghu 服务 + 静态服务 + Puppeteer）→ 断言链：连接→`session.ready`→`room.join`→收二进制快照→**移动预测（按键 60ms 内渲染位即变 + 松键收敛）**→**掉落可见性（LOOT_GROUND + 拾取提示）→ 拾取→`character.inventory` 入库→背包面板**→鼠标点击移动（M1，屏内 tile 守卫）→鼠标点敌人 + 普攻（M2，屏内敌人守卫）→**C3 客户端体验大修**：**C3-3 飘字跟随**（lastHits.entityId + floatTexts.screen 锚定实体）→**C3-1 相机锁定**（移动中 playerScreenPos 在屏内 + cam clamp）→**C3-2 点击定位**（点 tile 中心 → moveTo 世界坐标误差 < 20px）→**C3-4 禁平移**（拖拽 cam 不动 + 不触发点击）→**C3-5 技能名 HUD**（烈斩/剑气/震地/破军）→**C3-6 程序化贴图**（rendered.player/enemies/lootSlots/entrance）→SKILL1→**E23 技能光效差异化**（lastSkillFx 钩子：1-4 按下即播 → 槽位对应 slash/beam/quake/crush）→**真实输入 walk+F 进副本**→副本内 SKILL1 命中敌人（HP 下降 + **伤害飘字 lastHits**）→出本→CDP 模拟断网→自动重连（`session.reconnect`）→**E17 双人同本（P1 进本 + P2 集合窗口加入 → 同 roomId / partyMembers / rendered.party）**；截图存 `verify/01-overworld.png` / `02-dungeon.png` / `03-after-exit.png` / `04-loot-pickup.png` / `05-inventory.png` / `06-equip.png` / `07-click-move.png` / `08-melee.png` / `09-camera-lock.png` / `10-click-accuracy.png` / `11-sprites.png` / `12-party-dungeon.png`。零 pageerror / GAME.errors / console.error。退出码 0=全绿（**40 项断言**：原 39 项 + E23 新 1 项）。
+- **C3 E2E**（`verify-e2e.mjs`，Puppeteer 真连真实 jianghu 服务端，puppeteer@24 + Chrome for Testing）：自管进程（起 jianghu 服务 + 静态服务 + Puppeteer）→ 断言链：连接→`session.ready`→`room.join`→收二进制快照→**E26 minimap 标记钩子（minimapMarkers 形状）**→**移动预测（按键 60ms 内渲染位即变 + 松键收敛）**→**掉落可见性（LOOT_GROUND + 拾取提示）→ 拾取→`character.inventory` 入库→背包面板**→鼠标点击移动（M1，屏内 tile 守卫）→鼠标点敌人 + 普攻（M2，屏内敌人守卫）→**C3 客户端体验大修**：**C3-3 飘字跟随**（lastHits.entityId + floatTexts.screen 锚定实体）→**C3-1 相机锁定**（移动中 playerScreenPos 在屏内 + cam clamp）→**C3-2 点击定位**（点 tile 中心 → moveTo 世界坐标误差 < 20px）→**C3-4 禁平移**（拖拽 cam 不动 + 不触发点击）→**C3-5 技能名 HUD**（烈斩/剑气/震地/破军）→**C3-6 程序化贴图**（rendered.player/enemies/lootSlots/entrance）→SKILL1→**E23 技能光效差异化**（lastSkillFx 钩子：1-4 按下即播 → 槽位对应 slash/beam/quake/crush）→**真实输入 walk+F 进副本**→副本内 SKILL1 命中敌人（HP 下降 + **伤害飘字 lastHits**）→**E26 副本内 BOSS/入口 minimap 标记存在（minimapMarkers.boss/entrance ≥1）**→出本→CDP 模拟断网→自动重连（`session.reconnect`）→**E17 双人同本（P1 进本 + P2 集合窗口加入 → 同 roomId / partyMembers / rendered.party）**；截图存 `verify/01-overworld.png` / `02-dungeon.png` / `03-after-exit.png` / `04-loot-pickup.png` / `05-inventory.png` / `06-equip.png` / `07-click-move.png` / `08-melee.png` / `09-camera-lock.png` / `10-click-accuracy.png` / `11-sprites.png` / `12-party-dungeon.png`。零 pageerror / GAME.errors / console.error。退出码 0=全绿（**42 项断言**：原 40 项 + E26 新 2 项）。
 
   ```bash
   cd games/jianghu/apps/web-client
