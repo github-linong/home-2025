@@ -82,6 +82,21 @@ export function generateLayout(seed: string, biomeId: number): LayoutSnapshot {
     }
   }
 
+  // ── 波次推进（progression）：保证 wave 1 至少含一个 grunt_swarm ──
+  // 确定性（无新增随机源）：仅当 wave 1 无 grunt_swarm 时，把「首个 wave-1 刷怪点」的
+  // enemyTypeId 改写为 grunt_swarm（保留其 pos/wave/count），确保 opener 是温和杂兵波，
+  // 且满足 playtest-core-loop 的 mkWorld 对 grunt 的硬依赖。不引入随机性。
+  const firstWave1 = spawnPoints.find((sp) => sp.wave === 1);
+  if (
+    firstWave1 &&
+    !spawnPoints.some((sp) => sp.wave === 1 && sp.enemyTypeId === "grunt_swarm")
+  ) {
+    spawnPoints[spawnPoints.indexOf(firstWave1)] = {
+      ...firstWave1,
+      enemyTypeId: "grunt_swarm",
+    };
+  }
+
   const resourceIds = Object.keys(RESOURCE_PROTOTYPES);
   const resourceNodes: ResourceNode[] = [];
   const resCount = rng.nextInt(2, 5);

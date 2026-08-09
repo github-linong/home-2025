@@ -16,6 +16,7 @@ import {
   EntityKind,
   EntityStatus,
   RoomPhase,
+  WAVE_INTERMISSION_TICKS,
   CLASS_BASE,
   ENEMY_PROTOTYPES,
   InputAction,
@@ -183,6 +184,23 @@ export function createWorld(opts: CreateWorldOpts): World {
   const actors: Actor[] = [];
   let nextId = 0;
 
+  // 是否生成敌人（默认 true）。false 时完全跳过波次推进（progression）与清场清理，
+  // 用于隔离 ⑪ 倒地/救援/超时 与 ⑧ 协作技的单元测试（避免敌人碰撞噪声污染判定）。
+  const spawnEnemiesEnabled = opts.spawnEnemies !== false;
+
+  // ── 波次推进（progression）闭包状态（确定性；所有随机经现有 Rng(seed) 派生）──
+  let currentWave = 1;
+  let maxWave = Math.max(1, ...layout.spawnPoints.map((s) => s.wave));
+  let intermissionUntilTick = 0;
+  let currentRoomPhase: RoomPhaseValue = RoomPhase.ACTIVE;
+  // waveHasBoss[n] = wave n 是否含 boss（用于 BOSS 阶段路由）；仅索引 1..maxWave 有效。
+  const waveHasBoss: boolean[] = [];
+  for (let n = 1; n <= maxWave; n += 1) {
+    waveHasBoss[n] = layout.spawnPoints.some(
+      (sp) => sp.wave === n && ENEMY_PROTOTYPES[sp.enemyTypeId].tier === "boss",
+    );
+  }
+
   // ── 掉落 / Boss 生怪 确定性工厂（闭合 createWorld 闭包，访问 actors/nextId）──
   /** 敌人死亡 → 确定性生成掉落（seed 由 敌 id + tick；无 Math.random/Date）。上限保护防 runaway。 */
   function trySpawnLoot(dead: Actor, tick: number): void {
@@ -251,6 +269,38 @@ export function createWorld(opts: CreateWorldOpts): World {
     }
   }
 
+  /** 波次推进（progression）：生成本 wave n 的敌人/Boss（确定性 Rng，seed 含 wave 号）。
+   * 复用现有 Rng(hashString64(...))，不引入 Date/Math.random；字段集与既有敌人 spawn 完全一致
+   * （含 rescueTicks/downedTicks/disconnected/personalState:null），保证其它系统不受影响。 */
+  function spawnWave(n: number): void {
+    const wrng = new Rng(hashString64(`${opts.seed}:${opts.biomeId}:wave:${n}:enemies`));
+    for (const sp of layout.spawnPoints) {
+      if (sp.wave !== n) continue;
+      const proto = ENEMY_PROTOTYPES[sp.enemyTypeId];
+      for (let i = 0; i < sp.count; i += 1) {
+        const hp = wrng.nextInt(proto.hpMin, proto.hpMax);
+        const kind = proto.tier === "boss" ? EntityKind.BOSS : EntityKind.ENEMY;
+        actors.push({
+          id: nextId++,
+          kind,
+          x: sp.pos.x + wrng.nextInt(-32, 32),
+          y: sp.pos.y + wrng.nextInt(-32, 32),
+          dir: wrng.nextInt(0, 7),
+          hp,
+          maxHp: hp,
+          status: EntityStatus.ALIVE,
+          enemyTypeId: sp.enemyTypeId,
+          rescueTicks: 0,
+          downedTicks: 0,
+          disconnected: false,
+          personalState: null,
+        });
+      }
+    }
+    currentWave = n;
+    currentRoomPhase = waveHasBoss[n] ? RoomPhase.BOSS : RoomPhase.ACTIVE;
+  }
+
   // 玩家：按座位环绕分布在地图中心附近。
   const centerX = 32 * 32;
   const centerY = 20 * 32;
@@ -281,33 +331,11 @@ export function createWorld(opts: CreateWorldOpts): World {
       });
   }
 
-  // 敌人：从 E3 SpawnPoint[] 实例生成（只读），用确定性 Rng 做位置抖动/血量。
-  // spawnEnemies===false 时跳过（单元测试隔离 ⑪ 机制，避免敌人碰撞噪声污染判定）。
-  if (opts.spawnEnemies !== false) {
-    const erng = new Rng(hashString64(`${opts.seed}:${opts.biomeId}:enemies`));
-    for (const sp of layout.spawnPoints) {
-      const proto = ENEMY_PROTOTYPES[sp.enemyTypeId];
-      for (let i = 0; i < sp.count; i += 1) {
-        const hp = erng.nextInt(proto.hpMin, proto.hpMax);
-        const kind =
-          proto.tier === "boss" ? EntityKind.BOSS : EntityKind.ENEMY;
-        actors.push({
-          id: nextId++,
-          kind,
-          x: sp.pos.x + erng.nextInt(-32, 32),
-          y: sp.pos.y + erng.nextInt(-32, 32),
-          dir: erng.nextInt(0, 7),
-          hp,
-          maxHp: hp,
-          status: EntityStatus.ALIVE,
-          enemyTypeId: sp.enemyTypeId,
-          rescueTicks: 0,
-          downedTicks: 0,
-          disconnected: false,
-          personalState: null,
-        });
-      }
-    }
+  // 敌人：波次推进（progression）—— 初始只生 wave 1；后续 wave 在 step 末尾清场后按间隔派生。
+  // spawnEnemies===false 时跳过（单元测试隔离 ⑪ 机制，避免敌人碰撞噪声污染判定）；此时不调
+  // spawnWave，world 无敌人，且 step 末尾的波次推进整体关闭。
+  if (spawnEnemiesEnabled) {
+    spawnWave(1);
   }
 
   const inputs = new PerPlayerInputQueue();
@@ -318,7 +346,9 @@ export function createWorld(opts: CreateWorldOpts): World {
     seed: opts.seed,
     biomeId: opts.biomeId,
     tick: 0,
-    roomPhase: RoomPhase.ACTIVE,
+    get roomPhase() {
+      return currentRoomPhase;
+    },
     actors: () => actors.slice(),
     enqueueInput(playerId: number, cmd: InputCmd) {
       return inputs.enqueue(playerId, cmd);
@@ -589,6 +619,39 @@ export function createWorld(opts: CreateWorldOpts): World {
         }
       }
 
+      // ── 清理 + 波次推进（progression）── 仅在生成敌人时启用；
+      // spawnEnemies===false（隔离 ⑪/⑧ 单元测试）时整体关闭，world 保持无敌人、roomPhase 不变。
+      if (spawnEnemiesEnabled) {
+        // 清理：移除已倒地(死亡)的敌人/Boss 实体（progression 前置；掉落已在结算时生成）。
+        // 确定性：仅按 status 位过滤，无随机源。死亡敌人清出 actors 后，aliceEnemies 才归零以推进波次。
+        for (let i = actors.length - 1; i >= 0; i--) {
+          const a = actors[i];
+          if (
+            (a.kind === EntityKind.ENEMY || a.kind === EntityKind.BOSS) &&
+            (a.status & EntityStatus.DOWNED) !== 0
+          ) {
+            actors.splice(i, 1);
+          }
+        }
+
+        // ── 波次推进（progression；确定性）──
+        const aliveEnemies = actors.filter(
+          (a) => a.kind === EntityKind.ENEMY || a.kind === EntityKind.BOSS,
+        ).length;
+        if (intermissionUntilTick > 0) {
+          if (world.tick >= intermissionUntilTick) {
+            intermissionUntilTick = 0;
+            spawnWave(currentWave + 1);
+          }
+        } else if (aliveEnemies === 0) {
+          if (currentWave < maxWave) {
+            intermissionUntilTick = world.tick + WAVE_INTERMISSION_TICKS;
+          } else {
+            currentRoomPhase = RoomPhase.SETTLE; // 通关
+          }
+        }
+      }
+
       world.tick += 1;
     },
     snapshot(): WorldSnapshot {
@@ -660,11 +723,18 @@ export function createWorld(opts: CreateWorldOpts): World {
         value: a.value,
         };
       });
+      const enemiesRemaining = entities.filter(
+        (e) => e.kind === EntityKind.ENEMY || e.kind === EntityKind.BOSS,
+      ).length;
       return {
         type: "snapshot", // C2：数据面路由标记，客户端据 type 区分快照/控制/房间消息（纯新增，旧字段不变）。
         tick: world.tick,
         runId: world.runId,
         roomPhase: world.roomPhase,
+        wave: currentWave,
+        totalWaves: maxWave,
+        intermissionTicks: Math.max(0, intermissionUntilTick - world.tick),
+        enemiesRemaining,
         entities,
         lastProcessedSeq: inputs.lastProcessedSeq(),
       };

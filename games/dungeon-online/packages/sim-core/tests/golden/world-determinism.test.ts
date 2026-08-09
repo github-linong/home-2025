@@ -32,8 +32,12 @@ import { InputAction, PLAYER_CLASSES, EntityKind, EntityStatus } from "../../src
 // caster_ember 重锁说明：dungeon-gen 注入 caster_ember 后，固定序列下首只 ENEMY 可能为 caster_ember
 //   （hp 40–80 / speed 55 / attackRange 175 / shape LINE），且与玩家相对坐标因 rng 抽流漂移而变 →
 //   世界快照哈希改变；确定性未破坏（三次运行字节相等），故重锁本值。
+// wave-progression 重锁说明：world.createWorld 改为「初始只生 wave 1」（原一次性生全部 wave），
+//   固定序列下 snapshot().entities 仅含 wave-1 实体 → 实体集改变 → 哈希改变；确定性未破坏
+//   （三次运行字节相等）。新增的 wave/totalWaves/intermissionTicks/enemiesRemaining 为快照顶层字段，
+//   不参与 entities 哈希，故不影响本锚点；仅实体集变化导致重锁。
 const GOLDEN_WORLD_HASH =
-  "8da40be23688f9acd09ab68c55563f5685eb25e9eb82249035f231f453547a46";
+  "137da014bb218489d8db08fe8e67325572e46ac6c5f36cdb190b93eaa432e3a9";
 
 function hashEntities(entities: readonly unknown[]): string {
   return createHash("sha256").update(JSON.stringify(entities)).digest("hex");

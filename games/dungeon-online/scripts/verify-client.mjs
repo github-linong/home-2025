@@ -131,6 +131,21 @@ async function main() {
     results.errors = errors;
     results.spritesLoaded = await page.evaluate(() => window.__game.spritesLoaded);
 
+    // ── M7 wave-progression contract fields present on wired snapshot ──
+    // 验证服务端新增的 wave/totalWaves/roomPhase/enemiesRemaining 已随快照下发到客户端。
+    results.waveFields = await page.evaluate(() => {
+      const s = window.__game.lastSnapshot;
+      if (!s) return null;
+      return {
+        wave: s.wave, totalWaves: s.totalWaves, roomPhase: s.roomPhase,
+        enemiesRemaining: s.enemiesRemaining, intermissionTicks: s.intermissionTicks,
+      };
+    });
+    results.waveGame = await page.evaluate(() => ({
+      wave: window.__game.wave, totalWaves: window.__game.totalWaves,
+      roomPhase: window.__game.roomPhase, bannerShown: window.__game.bannerShown,
+    }));
+
     await page.screenshot({ path: path.join(CLIENT_DIR, 'assets', 'verify-client.png') });
     log('screenshot → assets/verify-client.png');
   } finally {
@@ -147,6 +162,10 @@ async function main() {
   gates.push(['smooth CoV < 0.4', results.smoothCov < 0.4]);
   gates.push(['no page/console errors', (results.errors || []).length === 0]);
   gates.push(['sprites loaded', results.spritesLoaded === true]);
+  const wf = results.waveFields;
+  gates.push(['wave fields on snapshot (M7)', !!wf && typeof wf.wave === 'number' && typeof wf.totalWaves === 'number' && typeof wf.roomPhase === 'number' && typeof wf.enemiesRemaining === 'number']);
+  const wg = results.waveGame;
+  gates.push(['client parsed wave/totalWaves (M7)', !!wg && typeof wg.wave === 'number' && typeof wg.totalWaves === 'number']);
   let pass = true;
   log('\n=== GATES ===');
   for (const [name, ok] of gates) {

@@ -87,6 +87,9 @@ export const RoomPhase = {
 } as const;
 export type RoomPhaseValue = (typeof RoomPhase)[keyof typeof RoomPhase];
 
+/** 波次推进间隔 tick（≈3s @30Hz；progression 清场后进入下一波的缓冲倒计时）。 */
+export const WAVE_INTERMISSION_TICKS = 90;
+
 /** 状态效果（剩余 tick 计数）。 */
 export interface StatusEffect {
   readonly type: number; // 0=眩晕 1=减速 2=增益 …（与 EntityStatus 对应语义）
@@ -158,6 +161,14 @@ export interface WorldSnapshot {
   readonly tick: number;
   readonly runId: string;
   readonly roomPhase: RoomPhaseValue;
+  /** 波次进度（progression；客户端 HUD 渲染当前波次）。 */
+  readonly wave: number;
+  /** 总波次（progression；= 布局中 spawnPoints 的最大 wave）。 */
+  readonly totalWaves: number;
+  /** 过场倒计时剩余 tick（progression；非过场时为 0）。 */
+  readonly intermissionTicks: number;
+  /** 剩余存活敌人/Boss 数（progression；客户端 HUD 渲染）。 */
+  readonly enemiesRemaining: number;
   /** 数据面路由标记（C2）：客户端据 `type` 区分快照与控制/房间消息，避免脆弱的形状探测。 */
   readonly type: "snapshot";
   readonly entities: readonly EntityState[];

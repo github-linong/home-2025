@@ -52,8 +52,12 @@ const MAX_TICKS = 220; // 约 200+ tick 脚本化序列
 // caster_ember 重锁说明：dungeon-gen 注入 caster_ember → 首只 ENEMY 可能为 caster_ember
 //   （hp 40–80/speed 55/attackRange 175/shape LINE），且 rng 抽流漂移使 enemy 坐标变化
 //   → 快照哈希改变；三次运行字节级相等（确定性 intact），故重锁本值。
+// wave-progression 重锁说明：world.createWorld 改为「初始只生 wave 1」（原一次性生全部 wave），
+//   且 dungeon-gen 保证 wave 1 含 grunt_swarm、敌人 rng 种子改为 `:wave:1:enemies`；固定序列下
+//   快照 entities 仅含 wave-1 实体（击杀 grunt 后确定性移除 → 实体集改变）→ 哈希改变；
+//   三次运行字节级相等（确定性 intact），故重锁本值。
 const GOLDEN_PLAYTEST_HASH =
-  "87e1a7aba486f3b3081ca410b4411efdb82f9daf2c344ceb9336f719f89eb16f";
+  "635572e0ee6ee05db02fff5d1ffecf240916f5a1d4332e0219d3b9cdcf8dcdd5";
 
 // ---------------------------------------------------------------- 结果收集
 const checks = [];

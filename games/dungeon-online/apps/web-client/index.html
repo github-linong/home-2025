@@ -32,6 +32,16 @@
     #stick-area, #touch-attack { display: flex; }
     #skillbar { bottom: 100px; }
   }
+  /* ── wave progression HUD (M7) ── */
+  #wavebanner { position: absolute; top: 16px; left: 50%; transform: translate(-50%, -8px); width: min(72%, 520px); text-align: center; color: #fff; font-size: 15px; font-weight: bold; text-shadow: 0 2px 4px #000; background: rgba(20,10,0,0.55); border: 1px solid rgba(230,140,60,0.7); border-radius: 10px; padding: 8px 14px; z-index: 12; opacity: 0; transition: opacity 0.25s, transform 0.25s; pointer-events: none; }
+  #wavebanner.show { opacity: 1; transform: translate(-50%, 0); }
+  #wavebanner.boss { border-color: #f55; color: #ffd6c8; }
+  #wavebanner.win { border-color: #6fd68a; color: #bfffd0; }
+  #wavebanner .sub { display: block; font-size: 12px; font-weight: normal; opacity: 0.85; margin-top: 3px; }
+  #wavechip { position: absolute; top: 8px; right: 14px; color: #fdb; font-size: 12px; text-shadow: 0 1px 2px #000; z-index: 10; pointer-events: none; }
+  @media (hover: none) and (pointer: coarse) {
+    #wavebanner { top: 10px; font-size: 13px; }
+  }
 </style>
 </head>
 <body>
@@ -42,6 +52,8 @@
   <span id="ents">entities:0</span>
 </div>
 <canvas id="game"></canvas>
+<div id="wavebanner"></div>
+<div id="wavechip"></div>
 <div id="bossbar"><div id="bossfill"></div><span id="bossname"></span></div>
 <div id="skillbar">
   <div class="skill" id="sk0"><span class="k">1</span><span class="n">护盾链接</span><div class="cd" id="cd0"></div></div>
@@ -62,6 +74,9 @@ const entsEl = document.getElementById('ents');
 const bossbar = document.getElementById('bossbar');
 const bossfill = document.getElementById('bossfill');
 const bossname = document.getElementById('bossname');
+const waveBanner = document.getElementById('wavebanner');
+const waveChip = document.getElementById('wavechip');
+let lastSeenWave = 0, lastSeenPhase = 1, bannerTimer = null, bannerHideAt = 0;
 
 function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 window.addEventListener('resize', resize);
@@ -802,6 +817,51 @@ function draw() {
   } else {
     bossbar.style.display = 'none';
   }
+
+  // ── wave progression HUD (M7) ──
+  const wave = snap.wave ?? 1;
+  const totalWaves = snap.totalWaves ?? 1;
+  const intermission = snap.intermissionTicks ?? 0;
+  const roomPhase = snap.roomPhase ?? 1;
+  waveChip.textContent = `波次 ${wave}/${totalWaves} · 剩余 ${snap.enemiesRemaining ?? '-'}`;
+
+  // 通关结算（roomPhase SETTLE=3）：持续显示胜利横幅。
+  if (roomPhase === 3) {
+    waveBanner.className = 'win show';
+    waveBanner.innerHTML = '🏆 通关！余烬小队肃清地牢';
+    bannerHideAt = Infinity; // 不再自动隐藏
+  } else {
+    // 仅在「波次推进」或「进入 Boss 波」瞬间触发一次性横幅 + 音效（避免每帧重触）。
+    const advanced = wave > lastSeenWave;
+    const bossStarted = roomPhase === 2 && lastSeenPhase !== 2;
+    if (advanced) {
+      if (roomPhase === 2) {
+        waveBanner.className = 'boss show';
+        waveBanner.innerHTML = `⚔ 第 ${wave}/${totalWaves} 波 · BOSS 战`;
+      } else {
+        waveBanner.className = 'show';
+        waveBanner.innerHTML = `第 ${wave}/${totalWaves} 波`;
+      }
+      if (intermission > 0) {
+        waveBanner.innerHTML += `<span class="sub">下一波将在 ${(intermission / 30).toFixed(1)}s 后抵达</span>`;
+      }
+      sfxSkill(); // 复用协作技音效作「波次推进」提示（上行音阶）
+      bannerHideAt = performance.now() + 1800;
+    } else if (bossStarted && !advanced) {
+      waveBanner.className = 'boss show';
+      waveBanner.innerHTML = '⚔ BOSS 战';
+      sfxDeath(); // 复用死亡音效作「Boss 登场」低沉提示
+      bannerHideAt = performance.now() + 2000;
+    }
+  }
+  // 横幅自动隐藏（无横幅或已超时则收起；通关横幅 bannerHideAt=Infinity 保持）。
+  if (bannerHideAt !== Infinity && performance.now() > bannerHideAt && waveBanner.classList.contains('show')) {
+    waveBanner.classList.remove('show');
+  }
+  lastSeenWave = wave; lastSeenPhase = roomPhase;
+  GAME.wave = wave; GAME.totalWaves = totalWaves; GAME.roomPhase = roomPhase;
+  GAME.enemiesRemaining = snap.enemiesRemaining ?? null;
+  GAME.bannerShown = waveBanner.classList.contains('show');
   // ── skill cooldown HUD ──
   const nowMs = performance.now();
   for (let i = 0; i < 3; i++) {
