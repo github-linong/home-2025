@@ -93,7 +93,10 @@ ws.binaryType = 'arraybuffer';
 const GAME = window.__game = {
   connected: false, lastSnapshot: null, localEntityId: null, gameState: 'connecting',
   fps: 0, errors: [], spritesLoaded: false, localRender: null, predicted: null, authPos: null,
+  particleCount: 0, // M11: live death/hit particle count (for automation gate)
 };
+// M11: expose spawnBurst so automation can deterministically trigger/verify the death-burst path.
+GAME.spawnBurst = spawnBurst;
 
 let state = 'connecting';
 let roomId = null, seatIndex = null, reconnectToken = null, runId = null;
@@ -139,6 +142,8 @@ const lastActiveSkill = new Map(); // actorId → {skillId, tick}
 const SKILL_LABEL = ['护盾链接', '急救链', '嘲讽战吼'];
 const SKILL_FX_COLOR = ['#6fd68a', '#f8d24a', '#f5a24a']; // 绿(护盾)/金(急救)/橙(嘲讽)，对齐 art-bible 阵营色/EMBER
 const castRings = [];         // co-op cast ground rings {id, skillId, x, y, born, color} (M8)
+const particles = [];         // death/hit particle bursts {x, y, vx, vy, born, life, color, r} (M11)
+const lastPos = new Map();    // actorId → {x, y} last known position (for death burst spawn) (M11)
 
 // ── sprite / art assets ──
 const SPRITE_SRC = {
@@ -423,12 +428,17 @@ function handleSnapshot(msg) {
       floaters.push({ x: e.pos.x, y: e.pos.y - 12, text: '+' + (e.hp - prev), color: '#5dff8a', born: performance.now(), life: 750 });
     }
     hpPrev.set(e.id, e.hp);
+    lastPos.set(e.id, { x: e.pos.x, y: e.pos.y }); // M11: remember last spot for death burst
   }
   let deathHappened = false, lootGone = false;
   for (const [id, kind] of knownIds) {
     if (!msg.entities.some(en => en.id === id)) {
       if (kind === 6) lootGone = true;
-      else if (kind === 1 || kind === 2) deathHappened = true;
+      else if (kind === 1 || kind === 2) {
+        deathHappened = true;
+        const p = lastPos.get(id) || { x: 0, y: 0 }; // M11: burst at last known position
+        spawnBurst(p.x, p.y, kind === 2 ? '#f93' : '#f86', kind === 2 ? 20 : 12);
+      }
     }
   }
   if (deathHappened) {
@@ -734,6 +744,44 @@ function drawCastRings() {
   ctx.restore();
 }
 
+// M11: death / hit particle bursts. Lightweight (max ~240 live), world-space, decay + gravity.
+function spawnBurst(x, y, color, count) {
+  for (let i = 0; i < count; i++) {
+    if (particles.length > 240) break;
+    const a = Math.random() * Math.PI * 2;
+    const sp = 40 + Math.random() * 110; // px/s
+    particles.push({
+      x, y,
+      vx: Math.cos(a) * sp,
+      vy: Math.sin(a) * sp - 40, // slight upward bias
+      born: performance.now(),
+      life: 420 + Math.random() * 280,
+      color,
+      r: 2 + Math.random() * 2.5,
+    });
+  }
+}
+
+function drawParticles() {
+  const now = performance.now();
+  ctx.save();
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    const t = (now - p.born) / p.life;
+    if (t >= 1) { particles.splice(i, 1); continue; }
+    const dt = 0.016; // ~60fps step for motion
+    p.vy += 220 * dt; // gravity
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    ctx.globalAlpha = 1 - t;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r * (1 - 0.5 * t), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawCircleFallback(e, x, y, snap) {
   const isLocal = e.id === localEntityId;
   const isPlayer = e.kind === 0;
@@ -942,6 +990,8 @@ function draw() {
   GAME.bannerShown = waveBanner.classList.contains('show');
   // M8: expose any ally's activeSkill (co-op cast feedback source) for automation gate.
   GAME.anyActiveSkill = (snap.entities || []).some((e) => e.kind === 0 && e.activeSkill != null);
+  // M11: expose live particle count (death/hit juice) for automation gate.
+  GAME.particleCount = particles.length;
   // ── skill cooldown HUD ──
   const nowMs = performance.now();
   for (let i = 0; i < 3; i++) {
@@ -998,6 +1048,7 @@ function draw() {
   for (const e of snap.entities) {
     if (e.kind === 6) { const p = renderPosFor(e); drawLoot(e, p.x, p.y, snap); }
   }
+  drawParticles();   // M11: death/hit bursts (world space, under rings/floaters)
   drawCastRings();   // M8: co-op cast ground rings (under floaters, world space)
   drawFloaters();
 

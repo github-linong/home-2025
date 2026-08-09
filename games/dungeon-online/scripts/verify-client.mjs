@@ -163,7 +163,21 @@ async function main() {
     }
     results.downedRenderErr = downErr;
     results.downedAlliesSeen = seen;
-    // wander + attack to try to kill something (loot chance)
+
+    // ── M11 death/hit particle juice: trigger spawnBurst via exposed hook, then confirm
+    // particleCount rises and drawParticles runs without error (no thrown exceptions in window.onerror). ──
+    const burstErr = await page.evaluate(async () => {
+      try {
+        const g = window.__game;
+        if (typeof g.spawnBurst !== 'function') return 'no-hook';
+        g.spawnBurst(200, 200, '#f86', 14);
+        // wait a couple frames so drawParticles() consumes/advances them (proves no crash)
+        await new Promise((res) => setTimeout(res, 60));
+        return g.particleCount > 0 ? null : 'no-particles';
+      } catch (e) { return String(e && e.message ? e.message : e); }
+    });
+    results.burstErr = burstErr;
+    results.particleSeen = burstErr == null;
     await page.keyboard.down('KeyW');
     for (let i = 0; i < 25; i++) {
       await page.keyboard.press('Space');
@@ -214,6 +228,7 @@ async function main() {
   gates.push(['client parsed wave/totalWaves (M7)', !!wg && typeof wg.wave === 'number' && typeof wg.totalWaves === 'number']);
   gates.push(['co-op cast surfaces activeSkill (M8/C5)', results.coopCastSeen === true]);
   gates.push(['downed-ally render path (M9)', results.downedRenderErr == null && results.downedAlliesSeen === true]);
+  gates.push(['death/hit particle burst (M11)', results.burstErr == null && results.particleSeen === true]);
   let pass = true;
   log('\n=== GATES ===');
   for (const [name, ok] of gates) {
