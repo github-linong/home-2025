@@ -156,24 +156,34 @@ async function main() {
             id: 900002, kind: 1, enemyTypeId: 'brute_charger', pos: { x: (me.pos?.x || 0) - 30, y: (me.pos?.y || 0) - 30 },
             dir: 0, hp: 20, maxHp: 120, status: 1, statusEffects: [], enraged: true,
           };
-          return { ...base, entities: [...base.entities, fakeDowned, fakeEnraged] };
+          // M13: synthetic bomber with an ACTIVE telegraph → exercises the imminent-detonation
+          // cue render path (pulsing danger outline) + AOE_FILL telegraph draw + 『自爆』 label.
+          const fakeBomber = {
+            id: 900003, kind: 1, enemyTypeId: 'bomber_imp', pos: { x: (me.pos?.x || 0) + 40, y: (me.pos?.y || 0) + 10 },
+            dir: 0, hp: 16, maxHp: 18, status: 1, statusEffects: [],
+            telegraph: { shape: 1, color: '#ff3b2f', startTick: 0, applyTick: 12, radius: 36, dir: undefined },
+          };
+          return { ...base, entities: [...base.entities, fakeDowned, fakeEnraged, fakeBomber] };
         },
         set(v) { _snap = v; },
       });
       return null;
     });
-    let seen = false, enragedSeen = false;
+    let seen = false, enragedSeen = false, bomberSeen = false;
     for (let i = 0; i < 40; i++) {
       await sleep(15);
       const c = await page.evaluate(() => window.__game.downedAllies);
       if (c >= 1) seen = true;
       const er = await page.evaluate(() => window.__game.anyEnraged === true);
       if (er) enragedSeen = true;
-      if (seen && enragedSeen) break;
+      const bm = await page.evaluate(() => window.__game.bomberCount);
+      if (bm >= 1) bomberSeen = true;
+      if (seen && enragedSeen && bomberSeen) break;
     }
     results.downedRenderErr = downErr;
     results.downedAlliesSeen = seen;
     results.enragedSeen = enragedSeen;
+    results.bomberSeen = bomberSeen;
 
     // ── M11 death/hit particle juice: trigger spawnBurst via exposed hook, then confirm
     // particleCount rises and drawParticles runs without error (no thrown exceptions in window.onerror). ──
@@ -240,6 +250,7 @@ async function main() {
   gates.push(['co-op cast surfaces activeSkill (M8/C5)', results.coopCastSeen === true]);
   gates.push(['downed-ally render path (M9)', results.downedRenderErr == null && results.downedAlliesSeen === true]);
   gates.push(['enrage feedback renders (M12)', results.enragedSeen === true]);
+  gates.push(['bomber variant renders (M13)', results.bomberSeen === true]);
   gates.push(['death/hit particle burst (M11)', results.burstErr == null && results.particleSeen === true]);
   let pass = true;
   log('\n=== GATES ===');

@@ -531,6 +531,7 @@ function enemySpriteKey(tid) {
   if (tid.startsWith('elite')) return 'elite';
   if (tid.startsWith('caster')) return 'caster';
   if (tid.startsWith('brute')) return 'grunt'; // brute_charger 复用 grunt 精灵（无专属资产）
+  if (tid.startsWith('bomber')) return 'grunt'; // M13 自爆兵 复用 grunt 精灵（无专属资产）
   if (tid.startsWith('boss')) return 'boss';
   return 'grunt';
 }
@@ -550,7 +551,7 @@ function spriteSizeFor(e) {
 }
 
 const CLASS_LABEL = { tank: '守卫士', ranger: '游侠', mage: '术士', healer: '医者' };
-const ENEMY_LABEL = { grunt_swarm: '', elite_warden: '精英', caster_ember: '法师', brute_charger: '冲锋', boss_emberlord: '余烬领主' };
+const ENEMY_LABEL = { grunt_swarm: '', elite_warden: '精英', caster_ember: '法师', brute_charger: '冲锋', bomber_imp: '自爆', boss_emberlord: '余烬领主' };
 
 // ── interpolation of remote entities ──
 function interpPos(id, t) {
@@ -631,6 +632,7 @@ function drawLabel(e, x, y, size) {
     text = ENEMY_LABEL[e.enemyTypeId];
     color = e.enemyTypeId.startsWith('caster') ? '#d8f'
           : e.enemyTypeId.startsWith('brute') ? '#ff7a4a'
+          : e.enemyTypeId.startsWith('bomber') ? '#ff5a3c'
           : '#fc8';
   }
   if (!text) return;
@@ -880,6 +882,20 @@ function drawSpriteAndOverlays(e, x, y, snap) {
       ctx.fillText('狂暴', x, y - size / 2 - 26);
       ctx.restore();
     }
+    // M13: bomber imminent-detonation cue — when a bomber holds an active telegraph (about to
+    // blow), pulse a fast danger outline so players read "back off" beyond the ground AOE fill.
+    if (e.kind === 1 && e.enemyTypeId === 'bomber_imp' && e.telegraph != null) {
+      const pulse = 0.55 + 0.45 * Math.abs(Math.sin(performance.now() / 70));
+      ctx.save();
+      ctx.globalAlpha = pulse;
+      ctx.strokeStyle = '#ff2a1a';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#ff2a1a'; ctx.shadowBlur = 14;
+      ctx.beginPath();
+      ctx.arc(x, y, size / 2 + 5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
   } else {
     drawCircleFallback(e, x, y, snap);
   }
@@ -1016,6 +1032,8 @@ function draw() {
   // Read from GAME.lastSnapshot (getter-consistent, like GAME.downedAllies) so injected-synthetic
   // enrage entities in automation are also detected deterministically.
   GAME.anyEnraged = (GAME.lastSnapshot?.entities || []).some((e) => (e.kind === 1 || e.kind === 2) && e.enraged === true);
+  // M13: expose bomber_imp count (server-authoritative) for automation gate.
+  GAME.bomberCount = (GAME.lastSnapshot?.entities || []).filter((e) => e.kind === 1 && e.enemyTypeId === 'bomber_imp').length;
   // M11: expose live particle count (death/hit juice) for automation gate.
   GAME.particleCount = particles.length;
   // ── skill cooldown HUD ──

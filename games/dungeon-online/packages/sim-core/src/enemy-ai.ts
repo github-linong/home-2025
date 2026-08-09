@@ -89,6 +89,23 @@ export function stepEnemyAi(self: EnemyAiSelf, ctx: EnemyAiContext): EnemyIntent
   }
 
   const dist = Math.sqrt(bestSq);
+
+  // ── bomber_imp（自爆兵）：激进 rush 者，无普攻冷却门控 ──
+  // 进入 attackRange 即发起 ATTACK 意图（world 经 ⑦ 启动 AOE_FILL telegraph；applyTick 时
+  // world.step 结算 AOE 伤害并自毁）。永不 kite、直冲最近玩家——本分支完整处理其 rush/attack 行为，
+  // 与 brute_charger 先例一致（无额外特殊逻辑，确定性 intact；纪律 B：仅产出意图，不改状态）。
+  if (self.enemyTypeId === "bomber_imp") {
+    if (dist <= proto.attackRange) {
+      // 范围内 → 必起 telegraph（无冷却门控，直冲+自爆）。
+      return { type: "ATTACK", targetId: nearest.id, damage: proto.attackDamage };
+    }
+    // 否则朝最近玩家 MOVE（归一化单位方向；位移由 world 按 speed/30 施加）。
+    const dx = nearest.x - self.x;
+    const dy = nearest.y - self.y;
+    const len = Math.hypot(dx, dy) || 1;
+    return { type: "MOVE", dir: { x: dx / len, y: dy / len } };
+  }
+
   if (dist <= proto.attackRange) {
     // 在攻击范围内 → 发起攻击意图（伤害取原型平衡初稿值，非玩家 18）。
     return { type: "ATTACK", targetId: nearest.id, damage: proto.attackDamage };

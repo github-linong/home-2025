@@ -542,29 +542,57 @@ export function createWorld(opts: CreateWorldOpts): World {
       // 前摇结算（D12）：applyTick <= 当前 tick 的攻击经 ⑦ 权威结算（C11 服务端伤害）。
       for (const a of actors) {
         if (a.telegraph && a.telegraph.applyTick <= world.tick) {
-          const target = actors.find(
-            (t) => t.id === a.telegraph!.targetId && (t.status & EntityStatus.ALIVE) !== 0,
-          );
-          if (target) {
-            // E6：敌人来源 → 伤害取 ENEMY_PROTOTYPES 平衡初稿（world 经意图提交的 enemyDamage）；
-            //     玩家来源 → PLAYER_ATTACK_DAMAGE（resolveDamage 内裁决，C11 忽略 amount）。
-            const enemyDamage =
-              a.enemyTypeId != null ? ENEMY_PROTOTYPES[a.enemyTypeId].attackDamage : undefined;
-            resolveDamage(combatState, {
-              sourceId: a.id,
-              targetId: target.id,
-              amount: 0,
-              tick: world.tick,
-              kind: a.telegraph.kind,
-              enemyDamage,
-            });
-            // 死亡掉落（仅敌人/boss；玩家倒地不掉落）：hp≤0 且刚置 DOWNED → 确定性生 loot。
-            if (
-              (target.kind === EntityKind.ENEMY || target.kind === EntityKind.BOSS) &&
-              target.hp <= 0 &&
-              (target.status & EntityStatus.DOWNED) !== 0
-            ) {
-              trySpawnLoot(target, world.tick);
+          const proto = a.enemyTypeId != null ? ENEMY_PROTOTYPES[a.enemyTypeId] : null;
+          if (a.enemyTypeId === "bomber_imp" && proto) {
+            // 自爆兵 AOE（M13）：applyTick 抵达 → 对 bomber 半径（=attackRange）内所有 ALIVE 玩家，
+            // 经 ⑦ resolveDamage 各结算 attackDamage（AOE，非仅原目标 telegraph.targetId）；随后自毁。
+            // 纪律 B：AOE 伤害走 resolveDamage（唯一 hp 结算出口）；自毁（set hp=0 + DOWNED）发生在
+            // 本 world.step 内（授权自改路径），由本 tick 末尾 dead-enemy 清理移除（M7）。自杀单位
+            // 非被玩家击杀的目标，不在此触发 trySpawnLoot（不掉 loot）。
+            const r2 = proto.attackRange * proto.attackRange;
+            for (const t of actors) {
+              if (t.kind !== EntityKind.PLAYER) continue;
+              if ((t.status & EntityStatus.ALIVE) === 0) continue;
+              const dx = t.x - a.x;
+              const dy = t.y - a.y;
+              if (dx * dx + dy * dy <= r2) {
+                resolveDamage(combatState, {
+                  sourceId: a.id,
+                  targetId: t.id,
+                  amount: 0,
+                  tick: world.tick,
+                  kind: a.telegraph.kind,
+                  enemyDamage: proto.attackDamage,
+                });
+              }
+            }
+            a.hp = 0;
+            a.status |= EntityStatus.DOWNED;
+          } else {
+            const target = actors.find(
+              (t) => t.id === a.telegraph!.targetId && (t.status & EntityStatus.ALIVE) !== 0,
+            );
+            if (target) {
+              // E6：敌人来源 → 伤害取 ENEMY_PROTOTYPES 平衡初稿（world 经意图提交的 enemyDamage）；
+              //     玩家来源 → PLAYER_ATTACK_DAMAGE（resolveDamage 内裁决，C11 忽略 amount）。
+              const enemyDamage =
+                a.enemyTypeId != null ? ENEMY_PROTOTYPES[a.enemyTypeId].attackDamage : undefined;
+              resolveDamage(combatState, {
+                sourceId: a.id,
+                targetId: target.id,
+                amount: 0,
+                tick: world.tick,
+                kind: a.telegraph.kind,
+                enemyDamage,
+              });
+              // 死亡掉落（仅敌人/boss；玩家倒地不掉落）：hp≤0 且刚置 DOWNED → 确定性生 loot。
+              if (
+                (target.kind === EntityKind.ENEMY || target.kind === EntityKind.BOSS) &&
+                target.hp <= 0 &&
+                (target.status & EntityStatus.DOWNED) !== 0
+              ) {
+                trySpawnLoot(target, world.tick);
+              }
             }
           }
           a.telegraph = null; // 一次性结算后清除前摇

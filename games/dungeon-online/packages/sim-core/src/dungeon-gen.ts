@@ -59,12 +59,11 @@ export function generateLayout(seed: string, biomeId: number): LayoutSnapshot {
     floorSequence.push(rng.nextInt(0, biomeId + 2));
   }
 
-  // 基础刷怪池（排除 caster_ember 与 brute_charger）：维持 grunt/elite/boss 三类的相对分布不变。
-  // caster_ember 仅以「确定性低密度」方式注入（见下方 elite 槽 ~20% 替换），不计入随机池，
-  // 避免其占比过高（≈25%）破坏「远程施法者低频出现」的设计意图。
-  // brute_charger 同理（见下方 grunt 槽 ~20% 替换），不计入随机池，控制其出现频率。
+  // 基础刷怪池（排除 caster_ember、brute_charger、bomber_imp）：维持 grunt/elite/boss 三类的相对分布不变。
+  // caster_ember / brute_charger / bomber_imp 均仅以「确定性低密度」方式注入（见下方各自槽位替换），
+  // 不计入随机池，控制其出现频率，避免破坏各原型的设计占比意图。
   const enemyTypeIds = Object.keys(ENEMY_PROTOTYPES).filter(
-    (id) => id !== "caster_ember" && id !== "brute_charger",
+    (id) => id !== "caster_ember" && id !== "brute_charger" && id !== "bomber_imp",
   );
   const spawnPoints: SpawnPoint[] = [];
   let wave = 0;
@@ -77,10 +76,26 @@ export function generateLayout(seed: string, biomeId: number): LayoutSnapshot {
       // 不替代 boss_emberlord / grunt_swarm；不新增精英总数；rng 由 seed 派生，无 Date/Math.random。
       // brute_charger：确定性低密度注入 —— 仅当本槽为 grunt_swarm 时，以 20% 概率替换为激进冲锋者。
       // 不替代 elite_warden / boss_emberlord；rng 由 seed 派生，无 Date/Math.random；保持可控频率。
-      const enemyTypeId =
-        (rolled === "elite_warden" && rng.nextBool(0.2) ? "caster_ember"
-          : rolled === "grunt_swarm" && rng.nextBool(0.2) ? "brute_charger"
-          : rolled);
+      // bomber_imp（自爆兵）：确定性低密度注入 —— 仅当本槽为 grunt_swarm 且 wave>1 时，以 15% 概率
+      //   替换为自爆兵。rng 抽流与「仅 brute」先例逐位一致（复用 grunt 槽那单次 nextFloat）：
+      //   r<0.2 → brute_charger；0.2≤r<0.35 → bomber_imp（=15% of grunt rolls）；否则 grunt_swarm。
+      //   仅 wave≥2 注入 bomber，wave 1 绝不注入（保留「wave 1 至少含一 grunt_swarm」保证，见下方）。
+      //   无 Date/Math.random；整体确定性 intact。
+      let enemyTypeId: string;
+      if (rolled === "elite_warden") {
+        enemyTypeId = rng.nextBool(0.2) ? "caster_ember" : rolled;
+      } else if (rolled === "grunt_swarm") {
+        const r = rng.nextFloat();
+        if (r < 0.2) {
+          enemyTypeId = "brute_charger";
+        } else if (wave > 1 && r < 0.35) {
+          enemyTypeId = "bomber_imp";
+        } else {
+          enemyTypeId = "grunt_swarm";
+        }
+      } else {
+        enemyTypeId = rolled;
+      }
       const count = rng.nextInt(2, 6);
       const pos: Vec2 = {
         x: rng.nextInt(0, GRID_W - 1) * 32,
