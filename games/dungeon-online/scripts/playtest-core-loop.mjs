@@ -53,7 +53,7 @@ const MAX_TICKS = 220; // 约 200+ tick 脚本化序列
 //   （hp 40–80/speed 55/attackRange 175/shape LINE），且 rng 抽流漂移使 enemy 坐标变化
 //   → 快照哈希改变；三次运行字节级相等（确定性 intact），故重锁本值。
 const GOLDEN_PLAYTEST_HASH =
-  "05cc343550f0b589178337d1efaac518e3a44e558c840dd9491c4d0bc2770146";
+  "87e1a7aba486f3b3081ca410b4411efdb82f9daf2c344ceb9336f719f89eb16f";
 
 // ---------------------------------------------------------------- 结果收集
 const checks = [];

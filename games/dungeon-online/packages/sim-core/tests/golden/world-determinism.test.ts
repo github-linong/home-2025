@@ -33,7 +33,7 @@ import { InputAction, PLAYER_CLASSES, EntityKind, EntityStatus } from "../../src
 //   （hp 40–80 / speed 55 / attackRange 175 / shape LINE），且与玩家相对坐标因 rng 抽流漂移而变 →
 //   世界快照哈希改变；确定性未破坏（三次运行字节相等），故重锁本值。
 const GOLDEN_WORLD_HASH =
-  "22d08984ea50ef625e13e51700dba47bcb60a52e248e68d0b030de486eb131d4";
+  "8da40be23688f9acd09ab68c55563f5685eb25e9eb82249035f231f453547a46";
 
 function hashEntities(entities: readonly unknown[]): string {
   return createHash("sha256").update(JSON.stringify(entities)).digest("hex");

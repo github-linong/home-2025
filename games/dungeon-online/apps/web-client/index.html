@@ -432,6 +432,9 @@ function spriteSizeFor(e) {
   return 30;                      // grunt / elite
 }
 
+const CLASS_LABEL = { tank: '守卫士', ranger: '游侠', mage: '术士', healer: '医者' };
+const ENEMY_LABEL = { grunt_swarm: '', elite_warden: '精英', caster_ember: '法师', boss_emberlord: '余烬领主' };
+
 // ── interpolation of remote entities ──
 function interpPos(id, t) {
   let a = null, b = null;
@@ -496,6 +499,28 @@ function drawTelegraph(e, snap, x, y) {
     ctx.globalAlpha = 0.15;
     ctx.fill();
   }
+  ctx.restore();
+}
+
+function drawLabel(e, x, y, size) {
+  let text = null, color = '#fff';
+  if (e.kind === 0 && e.classId && CLASS_LABEL[e.classId]) {
+    text = CLASS_LABEL[e.classId];
+    color = '#bdf';
+  } else if (e.kind === 2) {
+    text = ENEMY_LABEL.boss_emberlord;
+    color = '#f88';
+  } else if (e.kind === 1 && e.enemyTypeId && ENEMY_LABEL[e.enemyTypeId]) {
+    text = ENEMY_LABEL[e.enemyTypeId];
+    color = e.enemyTypeId.startsWith('caster') ? '#d8f' : '#fc8';
+  }
+  if (!text) return;
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.font = 'bold 11px system-ui';
+  ctx.textAlign = 'center';
+  ctx.shadowColor = '#000'; ctx.shadowBlur = 3;
+  ctx.fillText(text, x, y - size / 2 - 14);
   ctx.restore();
 }
 
@@ -674,6 +699,7 @@ function drawSpriteAndOverlays(e, x, y, snap) {
     ctx.fill();
     ctx.restore();
   }
+  drawLabel(e, x, y, size);
 }
 
 function draw() {
