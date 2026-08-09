@@ -126,6 +126,43 @@ async function main() {
       await sleep(80);
     }
     results.coopCastSeen = anyActive;
+
+    // ── M9 downed-ally rescue clarity: make lastSnapshot a getter that ALWAYS appends a
+    // synthetic downed ally, so draw() deterministically sees it (server @30Hz would otherwise
+    // overwrite between frames). Then poll downedAllies — confirms the new downed render +
+    // rescue-arc code path runs without error and counts the ally. ──
+    const downErr = await page.evaluate(() => {
+      const g = window.__game;
+      const real = g.lastSnapshot;
+      if (!real) return 'no-snapshot';
+      if (!real.entities.find((e) => e.kind === 0)) return 'no-player';
+      let _snap = real;
+      Object.defineProperty(g, 'lastSnapshot', {
+        configurable: true,
+        get() {
+          const base = _snap;
+          if (!base || !base.entities) return base;
+          const me = base.entities.find((e) => e.kind === 0);
+          if (!me) return base;
+          const fake = {
+            id: 900001, kind: 0, pos: { x: (me.pos?.x || 0) + 20, y: (me.pos?.y || 0) + 20 },
+            dir: 0, hp: 1, maxHp: 100, status: 3, statusEffects: [],
+            classId: 'healer', ownerId: 99, rescue: { targetId: 900001, progressTicks: 30, totalTicks: 90 },
+          };
+          return { ...base, entities: [...base.entities, fake] };
+        },
+        set(v) { _snap = v; },
+      });
+      return null;
+    });
+    let seen = false;
+    for (let i = 0; i < 40; i++) {
+      await sleep(15);
+      const c = await page.evaluate(() => window.__game.downedAllies);
+      if (c >= 1) { seen = true; break; }
+    }
+    results.downedRenderErr = downErr;
+    results.downedAlliesSeen = seen;
     // wander + attack to try to kill something (loot chance)
     await page.keyboard.down('KeyW');
     for (let i = 0; i < 25; i++) {
@@ -176,6 +213,7 @@ async function main() {
   const wg = results.waveGame;
   gates.push(['client parsed wave/totalWaves (M7)', !!wg && typeof wg.wave === 'number' && typeof wg.totalWaves === 'number']);
   gates.push(['co-op cast surfaces activeSkill (M8/C5)', results.coopCastSeen === true]);
+  gates.push(['downed-ally render path (M9)', results.downedRenderErr == null && results.downedAlliesSeen === true]);
   let pass = true;
   log('\n=== GATES ===');
   for (const [name, ok] of gates) {

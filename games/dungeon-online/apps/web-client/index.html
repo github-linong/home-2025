@@ -465,6 +465,11 @@ function handleSnapshot(msg) {
   }
 
   GAME.lastSnapshot = lastSnapshot;
+  // M9: expose live downed-ally count (rescue clarity). Read via GAME.lastSnapshot (getter-consistent)
+  // so automation that injects a synthetic downed entity still sees it counted deterministically.
+  GAME.downedAllies = (GAME.lastSnapshot?.entities || []).filter(
+    (e) => e.kind === 0 && e.status && (e.status & 2) && (e.status & 1),
+  ).length;
   GAME.localEntityId = localEntityId;
   GAME.gameState = state;
 }
@@ -763,10 +768,32 @@ function drawSpriteAndOverlays(e, x, y, snap) {
     ctx.restore();
 
     if (downed) {
+      // M9: 倒地更醒目——脉动暗红罩 + 「倒地」标签，并据 rescue 进度画救援环（队友靠近自动累积）。
+      const pulse = 0.45 + 0.25 * Math.sin(performance.now() / 220);
       ctx.save();
-      ctx.globalAlpha = 0.5;
-      ctx.fillStyle = '#000';
+      ctx.globalAlpha = pulse;
+      ctx.fillStyle = '#600';
       ctx.fillRect(x - size / 2, y - size / 2, size, size);
+      ctx.restore();
+      // 救援进度环（world-space，绘制于 sprite 之上）
+      if (e.rescue && e.rescue.totalTicks > 0) {
+        const ratio = Math.max(0, Math.min(1, e.rescue.progressTicks / e.rescue.totalTicks));
+        ctx.save();
+        ctx.strokeStyle = '#6fd68a'; ctx.lineWidth = 3;
+        ctx.shadowColor = '#6fd68a'; ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(x, y, size / 2 + 8, -Math.PI / 2, -Math.PI / 2 + ratio * Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+      // 「倒地·救我」标签
+      ctx.save();
+      ctx.globalAlpha = 0.6 + 0.4 * Math.abs(Math.sin(performance.now() / 300));
+      ctx.fillStyle = '#ff6b6b';
+      ctx.font = 'bold 11px system-ui';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = '#000'; ctx.shadowBlur = 3;
+      ctx.fillText('倒地·救我', x, y - size / 2 - 14);
       ctx.restore();
     }
     if (isLocal) {
