@@ -220,9 +220,11 @@ function castSkill(id) {
 
 // ── WebAudio SFX (procedural, no asset files) ──
 let actx = null;
+let droneOsc = null, droneGain = null;
 function ensureAudio() {
   if (actx) { if (actx.state === 'suspended') actx.resume(); return; }
   try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch { actx = null; }
+  if (actx) startAmbient();
 }
 function tone(freq, dur, type, gain, when, slideTo) {
   if (!actx) return;
@@ -244,6 +246,17 @@ function sfxDeath() { tone(300, 0.30, 'sawtooth', 0.09, 0, 70); }
 function sfxPickup() { tone(660, 0.08, 'triangle', 0.10); tone(900, 0.11, 'triangle', 0.08, 0.07); }
 function sfxSkill() { tone(520, 0.12, 'triangle', 0.10, 0, 780); tone(780, 0.14, 'triangle', 0.08, 0.06); }
 function sfxDenied() { tone(150, 0.10, 'square', 0.05); }
+function startAmbient() {
+  if (!actx || droneOsc) return;
+  droneOsc = actx.createOscillator(); droneOsc.type = 'sine'; droneOsc.frequency.value = 52;
+  droneGain = actx.createGain(); droneGain.gain.value = 0.018;
+  droneOsc.connect(droneGain); droneGain.connect(actx.destination);
+  droneOsc.start();
+  const lfo = actx.createOscillator(); lfo.frequency.value = 0.12;
+  const lfoGain = actx.createGain(); lfoGain.gain.value = 0.010;
+  lfo.connect(lfoGain); lfoGain.connect(droneGain.gain);
+  lfo.start();
+}
 
 ws.onopen = () => {
   state = 'auth';
@@ -765,6 +778,17 @@ function draw() {
   drawFloaters();
 
   ctx.restore();
+
+  // ── screen-space vignette (dungeon atmosphere) ──
+  ctx.save();
+  const vr = Math.max(canvas.width, canvas.height) * 0.55;
+  const vg = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 60, canvas.width / 2, canvas.height / 2, vr);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(0.6, 'rgba(0,0,0,0.18)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.55)');
+  ctx.fillStyle = vg; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
+
   // WEB-FEEL：每帧上报移动输入（≈60Hz），确保权威模拟每个 tick 都收到 MOVE →
   // 玩家以真实 CLASS_BASE.moveSpeed（tank=210px/s）移动，而非被旧 100ms 轮询饿成 ~70px/s。
   // 保留 sendInput / sendJson 的 input.cmd 包装与攻击自动选敌（Space/J 在 keydown 中发送，未改动）。
