@@ -24,9 +24,13 @@ import { InputAction, PLAYER_CLASSES, EntityKind, EntityStatus } from "../../src
  * 字节相等（确定性 intact），故重锁本值。GOLDEN_LAYOUT_HASH（E3 布局）不受影响。
  * WEB-FEEL 重锁说明：调宽玩家/怪物速度差（玩家 ×1.5、敌人 ×0.63，仅 speed/moveSpeed 字段），
  * 玩家与敌人坐标变化 → 哈希随之改变；确定性未破坏（三次运行字节相等），故再次重锁本值。
+ * N2 重锁说明：敌人/玩家移动时更新 Actor.dir（朝向 0-7，vecToDir8 反向映射 DIR_UNIT_VECTORS），
+ *   方向性 telegraph（CONE/LINE）的 dir 单位向量随实时移动而变 → 快照哈希改变；确定性未破坏
+ *   （三次运行字节相等），故重锁本值。golden 固定序列仅 1 次 ATTACK（18 伤）→ 杂兵存活，
+ *   不触发掉落/生怪，故哈希变化仅来自 N2 朝向。
  */
 const GOLDEN_WORLD_HASH =
-  "3a63ab9be49dcf6baf8e8ee7cac0550d283b4c4b4c34cc4a03042c98b827f836";
+  "9d59d3fce3c7ddba19fb1217185d43d069be18aba480825f098af43a1147eac1";
 
 function hashEntities(entities: readonly unknown[]): string {
   return createHash("sha256").update(JSON.stringify(entities)).digest("hex");

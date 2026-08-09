@@ -15,6 +15,15 @@
   #status.err { color: #f44; }
   canvas { display: block; width: 100%; height: 100%; background: #111; }
   #help { position: absolute; bottom: 12px; left: 14px; color: #aaa; font-size: 12px; z-index: 10; pointer-events: none; }
+  #bossbar { position: absolute; top: 46px; left: 50%; transform: translateX(-50%); width: min(60%, 560px); height: 16px; background: rgba(40,0,0,0.75); border: 1px solid #f55; border-radius: 8px; overflow: hidden; display: none; z-index: 10; }
+  #bossfill { height: 100%; width: 100%; background: linear-gradient(90deg,#f55,#f93); transition: width 0.12s linear; }
+  #bossname { position: absolute; top: -1px; left: 8px; font-size: 11px; color: #fff; text-shadow: 0 1px 2px #000; line-height: 16px; }
+  #skillbar { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 10; pointer-events: none; }
+  .skill { width: 52px; height: 52px; border-radius: 10px; background: rgba(0,0,0,0.55); border: 1px solid #4cb5f5; color: #cfe; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+  .skill .k { font-size: 16px; font-weight: bold; color: #fff; }
+  .skill .n { font-size: 10px; opacity: 0.85; }
+  .skill .cd { position: absolute; left: 0; bottom: 0; width: 100%; background: rgba(0,0,0,0.65); }
+  .skill.ready { border-color: #6fd68a; }
 </style>
 </head>
 <body>
@@ -25,7 +34,13 @@
   <span id="ents">entities:0</span>
 </div>
 <canvas id="game"></canvas>
-<div id="help">WASD / 方向键 移动 · 空格 / J 攻击</div>
+<div id="bossbar"><div id="bossfill"></div><span id="bossname"></span></div>
+<div id="skillbar">
+  <div class="skill" id="sk0"><span class="k">1</span><span class="n">护盾链接</span><div class="cd" id="cd0"></div></div>
+  <div class="skill" id="sk1"><span class="k">2</span><span class="n">急救链</span><div class="cd" id="cd1"></div></div>
+  <div class="skill" id="sk2"><span class="k">3</span><span class="n">嘲讽战吼</span><div class="cd" id="cd2"></div></div>
+</div>
+<div id="help">WASD / 方向键 移动 · 空格 / J 攻击 · Shift 闪避 · 1/2/3 协作技</div>
 
 <script>
 const canvas = document.getElementById('game');
@@ -34,6 +49,9 @@ const statusEl = document.getElementById('status');
 const tickEl = document.getElementById('tick');
 const hpEl = document.getElementById('hp');
 const entsEl = document.getElementById('ents');
+const bossbar = document.getElementById('bossbar');
+const bossfill = document.getElementById('bossfill');
+const bossname = document.getElementById('bossname');
 
 function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 window.addEventListener('resize', resize);
@@ -78,6 +96,17 @@ let snapBuffer = [];             // [{tick, entities}]
 let renderTime = 0;              // current interpolated render tick
 let lastFrameT = performance.now();
 
+// ── damage / death / pickup event tracking (flash + SFX) ──
+let hpPrev = new Map();        // id -> last hp (for damage-flash detection)
+let knownIds = new Map();      // id -> kind (for death / loot-pickup detection)
+let flash = new Map();         // id -> flash expiry ms
+let lastHitSfx = 0, lastDeathSfx = 0;
+// camera smoothing
+let camX = 0, camY = 0;
+// co-op skill cooldown UI state (client-only estimate; authoritative gating is server-side)
+const SKILL_CD_MS = [12000, 10000, 14000];
+const skillCdUntil = [0, 0, 0];
+
 // ── sprite / art assets ──
 const SPRITE_SRC = {
   hero: 'assets/hero.png',
@@ -118,9 +147,19 @@ const KEY_DIR = {
 
 window.addEventListener('keydown', e => {
   keys.add(e.code);
+  ensureAudio();
   if (e.code === 'Space' || e.code === 'KeyJ') {
     e.preventDefault();
     sendInput(1, lastMoveDir || {x:0,y:0}, nearestEnemyId());
+    sfxAttack();
+  } else if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+    sendInput(2, lastMoveDir || {x:0,y:0}, 0); // DODGE
+  } else if (e.code === 'Digit1' || e.code === 'Numpad1') {
+    castSkill(0);
+  } else if (e.code === 'Digit2' || e.code === 'Numpad2') {
+    castSkill(1);
+  } else if (e.code === 'Digit3' || e.code === 'Numpad3') {
+    castSkill(2);
   }
 });
 window.addEventListener('keyup', e => keys.delete(e.code));
@@ -147,13 +186,61 @@ function nearestEnemyId() {
 }
 
 function sendJson(obj) { ws.send(JSON.stringify(obj)); }
-function sendInput(action, dir, target) {
+function sendInput(action, dir, target, param) {
   if (!lastSnapshot || state !== 'playing') return;
   sendJson({
     type: 'input.cmd',
-    payload: { cmd: { seq: seq++, tick: lastSnapshot.tick, action, dir: { x: dir.x || 0, y: dir.y || 0 }, target: target || 0 } }
+    payload: { cmd: { seq: seq++, tick: lastSnapshot.tick, action, dir: { x: dir.x || 0, y: dir.y || 0 }, target: target || 0, param: param ?? 0 } }
   });
 }
+
+// ── co-op skill targeting + casting ──
+function nearestAllyId() {
+  if (!lastSnapshot || localEntityId == null) return 0;
+  const me = lastSnapshot.entities.find(e => e.id === localEntityId);
+  if (!me) return 0;
+  let best = null, bd = 1e9;
+  for (const e of lastSnapshot.entities) {
+    if (e.kind !== 0 || e.id === localEntityId) continue;
+    const d = Math.hypot(e.pos.x - me.pos.x, e.pos.y - me.pos.y);
+    if (d < bd) { bd = d; best = e; }
+  }
+  return best ? best.id : 0;
+}
+function castSkill(id) {
+  const now = performance.now();
+  if (now < skillCdUntil[id]) { sfxDenied(); return; }
+  sendInput(3, { x: 0, y: 0 }, nearestAllyId(), id);
+  skillCdUntil[id] = now + SKILL_CD_MS[id];
+  sfxSkill();
+}
+
+// ── WebAudio SFX (procedural, no asset files) ──
+let actx = null;
+function ensureAudio() {
+  if (actx) { if (actx.state === 'suspended') actx.resume(); return; }
+  try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch { actx = null; }
+}
+function tone(freq, dur, type, gain, when, slideTo) {
+  if (!actx) return;
+  const t0 = actx.currentTime + (when || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'square';
+  o.frequency.setValueAtTime(freq, t0);
+  if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(gain || 0.12, t0 + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t0); o.stop(t0 + dur + 0.03);
+}
+function sfxAttack() { tone(420, 0.09, 'square', 0.07, 0, 720); }
+function sfxHit() { tone(190, 0.08, 'sawtooth', 0.10, 0, 90); }
+function sfxDeath() { tone(300, 0.30, 'sawtooth', 0.09, 0, 70); }
+function sfxPickup() { tone(660, 0.08, 'triangle', 0.10); tone(900, 0.11, 'triangle', 0.08, 0.07); }
+function sfxSkill() { tone(520, 0.12, 'triangle', 0.10, 0, 780); tone(780, 0.14, 'triangle', 0.08, 0.06); }
+function sfxDenied() { tone(150, 0.10, 'square', 0.05); }
 
 ws.onopen = () => {
   state = 'auth';
@@ -230,6 +317,31 @@ function handleSnapshot(msg) {
     }
   }
 
+  // ── damage / death / pickup event tracking (drives flash + SFX) ──
+  for (const e of msg.entities) {
+    const prev = hpPrev.get(e.id);
+    if (prev != null && e.hp < prev) {
+      flash.set(e.id, performance.now() + 130);
+      const n = performance.now();
+      if (n - lastHitSfx > 60) { sfxHit(); lastHitSfx = n; }
+    }
+    hpPrev.set(e.id, e.hp);
+  }
+  let deathHappened = false, lootGone = false;
+  for (const [id, kind] of knownIds) {
+    if (!msg.entities.some(en => en.id === id)) {
+      if (kind === 6) lootGone = true;
+      else if (kind === 1 || kind === 2) deathHappened = true;
+    }
+  }
+  if (deathHappened) {
+    const n = performance.now();
+    if (n - lastDeathSfx > 120) { sfxDeath(); lastDeathSfx = n; }
+  }
+  if (lootGone) sfxPickup();
+  knownIds.clear();
+  for (const e of msg.entities) knownIds.set(e.id, e.kind);
+
   GAME.lastSnapshot = lastSnapshot;
   GAME.localEntityId = localEntityId;
   GAME.gameState = state;
@@ -240,12 +352,14 @@ ws.onmessage = (ev) => {
   if (typeof ev.data === 'string') {
     try { msg = JSON.parse(ev.data); } catch { return; }
     handleControl(msg);
-    if (msg.tick !== undefined && Array.isArray(msg.entities)) handleSnapshot(msg);
+    const isSnap = msg.type === 'snapshot' || (msg.tick !== undefined && Array.isArray(msg.entities));
+  if (isSnap && Array.isArray(msg.entities)) handleSnapshot(msg);
   } else if (ev.data instanceof ArrayBuffer) {
     try {
       msg = JSON.parse(new TextDecoder().decode(ev.data));
     } catch { return; }
-    if (msg.tick !== undefined && Array.isArray(msg.entities)) handleSnapshot(msg);
+    const isSnap = msg.type === 'snapshot' || (msg.tick !== undefined && Array.isArray(msg.entities));
+  if (isSnap && Array.isArray(msg.entities)) handleSnapshot(msg);
   }
 };
 
@@ -373,6 +487,29 @@ function drawHpBar(e, x, y, size) {
   ctx.fillRect(bx, by, w * Math.max(0, hp / max), h);
 }
 
+function drawLoot(e, x, y, snap) {
+  const t = e.lootType || 0;
+  const colors = ['#3f3', '#4cb5f5', '#fa0']; // medkit / ammo / buff
+  const c = colors[t] || '#fff';
+  const pulse = 0.6 + 0.4 * Math.sin(performance.now() / 200);
+  ctx.save();
+  ctx.globalAlpha = 0.35 * pulse;
+  ctx.fillStyle = c;
+  ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = c;
+  ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#021'; ctx.lineWidth = 2;
+  if (t === 0) { // medkit cross
+    ctx.beginPath(); ctx.moveTo(x, y - 5); ctx.lineTo(x, y + 5); ctx.moveTo(x - 5, y); ctx.lineTo(x + 5, y); ctx.stroke();
+  } else if (t === 2) { // buff up-arrow
+    ctx.beginPath(); ctx.moveTo(x, y - 5); ctx.lineTo(x, y + 5); ctx.moveTo(x - 4, y + 1); ctx.lineTo(x, y - 3); ctx.lineTo(x + 4, y + 1); ctx.stroke();
+  } else { // ammo dot
+    ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawCircleFallback(e, x, y, snap) {
   const isLocal = e.id === localEntityId;
   const isPlayer = e.kind === 0;
@@ -431,6 +568,22 @@ function drawSpriteAndOverlays(e, x, y, snap) {
     drawCircleFallback(e, x, y, snap);
   }
 
+  // hit flash (damage feedback)
+  const f = flash.get(e.id);
+  if (f != null) {
+    if (performance.now() < f) {
+      ctx.save();
+      ctx.globalAlpha = 0.5 * ((f - performance.now()) / 130);
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(x, y, size / 2 + 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    } else {
+      flash.delete(e.id);
+    }
+  }
+
   // data-driven overlays (always on top of sprite)
   drawHpBar(e, x, y, size);
   if (e.shieldUntilTick != null && e.shieldUntilTick > snap.tick) {
@@ -486,9 +639,29 @@ function draw() {
   tickEl.textContent = `tick:${snap.tick}`;
   entsEl.textContent = `entities:${snap.entities.length}`;
 
-  let camX = 0, camY = 0;
-  if (predicted) { camX = predicted.x; camY = predicted.y; }
-  else if (authEnt) { camX = authEnt.pos.x; camY = authEnt.pos.y; }
+  // ── boss HUD ──
+  const boss = snap.entities.find(e => e.kind === 2);
+  if (boss) {
+    bossbar.style.display = 'block';
+    bossfill.style.width = Math.max(0, (boss.hp / boss.maxHp) * 100) + '%';
+    bossname.textContent = '余烬领主' + ((boss.phase && boss.phase > 1) ? (' · 阶段' + boss.phase) : '');
+  } else {
+    bossbar.style.display = 'none';
+  }
+  // ── skill cooldown HUD ──
+  const nowMs = performance.now();
+  for (let i = 0; i < 3; i++) {
+    const remain = Math.max(0, skillCdUntil[i] - nowMs);
+    const cdEl = document.getElementById('cd' + i);
+    if (cdEl) cdEl.style.height = (remain > 0 ? (remain / SKILL_CD_MS[i]) * 100 : 0) + '%';
+    const skEl = document.getElementById('sk' + i);
+    if (skEl) skEl.classList.toggle('ready', remain <= 0);
+  }
+
+  const targetCamX = predicted ? predicted.x : (authEnt ? authEnt.pos.x : camX);
+  const targetCamY = predicted ? predicted.y : (authEnt ? authEnt.pos.y : camY);
+  camX += (targetCamX - camX) * 0.18;
+  camY += (targetCamY - camY) * 0.18;
 
   const localHp = authEnt ? `${authEnt.hp ?? 0}/${authEnt.maxHp ?? 0}` : '-';
   hpEl.textContent = `HP:${localHp}`;
@@ -520,6 +693,10 @@ function draw() {
   for (const e of snap.entities) {
     const p = renderPosFor(e);
     drawSpriteAndOverlays(e, p.x, p.y, snap);
+  }
+  // loot (drawn on top so it's always visible on the floor)
+  for (const e of snap.entities) {
+    if (e.kind === 6) { const p = renderPosFor(e); drawLoot(e, p.x, p.y, snap); }
   }
 
   ctx.restore();

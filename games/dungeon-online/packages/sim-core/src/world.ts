@@ -22,6 +22,13 @@ import {
   SKILL_IDS,
   TelegraphShape,
   DANGER_COLOR,
+  PICKUP_RADIUS,
+  LOOT_DROP_CHANCE,
+  LOOT_MEDKIT_HEAL,
+  LOOT_BUFF_MULT,
+  LOOT_BUFF_PERCENT,
+  LOOT_BUFF_TICKS,
+  MAX_LOOT_ENTITIES,
   type EntityState,
   type WorldSnapshot,
   type InputCmd,
@@ -100,6 +107,14 @@ interface Actor {
   disconnected: boolean; // 断线托管标记（S7.6）：跳过 tick + 暂停计时
   /** 断线瞬间抓拍的冻结态（D8 / P4 保底），单次持有，重连前不被覆盖。 */
   personalState?: PersonalState | null;
+  // ── 掉落（progression/feedback；仅 loot 实体持有）──
+  lootType?: number; // 0=medkit | 1=ammo | 2=buff
+  value?: number; // 掉落数值（medkit 治疗量 / buff 百分比；ammo=0）
+  // ── 拾取 buff（server-side 消费，不入快照；resolveDamage 单点落地）──
+  buffUntilTick?: number; // 临时攻击 buff 窗口截止 tick
+  buffMult?: number; // 临时攻击 buff 倍率（resolveDamage 消费，1+LOOT_BUFF_MULT）
+  // ── Boss 多阶段（engagement；阶段只升不降，守卫一次性生怪）──
+  phase?: number; // 1=常态 2=<50%hp 3=<25%hp；达到后保持
 }
 
 export interface World {
@@ -150,10 +165,91 @@ function dirToVector(dir: number): Vec2 {
   return DIR_UNIT_VECTORS[k];
 }
 
+/**
+ * 单位向量 → 朝向 0-7（N2）：与 DIR_UNIT_VECTORS 反向映射。
+ * 约定 0=E(→+x) 顺时针（屏幕 y 下）：1=SE 2=S 3=SW 4=W 5=NW 6=N 7=NE。
+ * 用 Math.atan2(y,x)/(π/4) 四舍五入后 & 7；JS 位运算对负数正确回绕（如 -1&7=7、-2&7=6）。
+ * 零向量（静止）直接返回 0；调用方仅在实体非静止移动时调用本函数（保持静止朝向）。
+ */
+function vecToDir8(v: Vec2): number {
+  const len = Math.hypot(v.x, v.y);
+  if (len < 1e-6) return 0; // 静止保护
+  const k = Math.round(Math.atan2(v.y, v.x) / (Math.PI / 4)) & 7;
+  return k;
+}
+
 export function createWorld(opts: CreateWorldOpts): World {
   const layout: LayoutSnapshot = generateLayout(opts.seed, opts.biomeId);
   const actors: Actor[] = [];
   let nextId = 0;
+
+  // ── 掉落 / Boss 生怪 确定性工厂（闭合 createWorld 闭包，访问 actors/nextId）──
+  /** 敌人死亡 → 确定性生成掉落（seed 由 敌 id + tick；无 Math.random/Date）。上限保护防 runaway。 */
+  function trySpawnLoot(dead: Actor, tick: number): void {
+    const lootCount = () =>
+      actors.reduce((n, a) => n + (a.kind === EntityKind.LOOT ? 1 : 0), 0);
+    if (lootCount() >= MAX_LOOT_ENTITIES) return;
+    let drops: Array<{ lootType: number; value: number }> = [];
+    if (dead.enemyTypeId === "boss_emberlord") {
+      // boss 必掉：1 medkit + 1 buff（确定性，不掷骰）。
+      drops.push({ lootType: 0, value: LOOT_MEDKIT_HEAL });
+      drops.push({ lootType: 2, value: LOOT_BUFF_PERCENT });
+    } else {
+      // grunt/elite：drop chance ~0.5（seed 由 敌 id + tick，确定）。
+      const rng = new Rng(hashString64(`${dead.id}:${tick}:loot`));
+      if (!rng.nextBool(LOOT_DROP_CHANCE)) return;
+      const r = rng.nextFloat();
+      if (r < 0.5) drops.push({ lootType: 0, value: LOOT_MEDKIT_HEAL });
+      else if (r < 0.8) drops.push({ lootType: 1, value: 0 });
+      else drops.push({ lootType: 2, value: LOOT_BUFF_PERCENT });
+    }
+    for (const d of drops) {
+      if (lootCount() >= MAX_LOOT_ENTITIES) break;
+      const rng = new Rng(hashString64(`${dead.id}:${tick}:loot:${d.lootType}`));
+      actors.push({
+        id: nextId++,
+        kind: EntityKind.LOOT,
+        x: dead.x + rng.nextInt(-8, 8),
+        y: dead.y + rng.nextInt(-8, 8),
+        dir: 0,
+        hp: 0,
+        maxHp: 0,
+        status: 0,
+        lootType: d.lootType,
+        value: d.value,
+        rescueTicks: 0,
+        downedTicks: 0,
+        disconnected: false,
+        personalState: null,
+      });
+    }
+  }
+
+  /** Boss 阶段 3 一次性生 2 只 grunt_swarm 近怪（seed 由 boss id + tick，确定）。 */
+  function spawnBossAdds(boss: Actor, tick: number): void {
+    const proto = ENEMY_PROTOTYPES.grunt_swarm;
+    const rng = new Rng(hashString64(`${boss.id}:${tick}:adds`));
+    for (let i = 0; i < 2; i++) {
+      const ox = rng.nextInt(-48, 48);
+      const oy = rng.nextInt(-48, 48);
+      const hp = rng.nextInt(proto.hpMin, proto.hpMax);
+      actors.push({
+        id: nextId++,
+        kind: EntityKind.ENEMY,
+        x: boss.x + ox,
+        y: boss.y + oy,
+        dir: rng.nextInt(0, 7),
+        hp,
+        maxHp: hp,
+        status: EntityStatus.ALIVE,
+        enemyTypeId: "grunt_swarm",
+        rescueTicks: 0,
+        downedTicks: 0,
+        disconnected: false,
+        personalState: null,
+      });
+    }
+  }
 
   // 玩家：按座位环绕分布在地图中心附近。
   const centerX = 32 * 32;
@@ -271,6 +367,8 @@ export function createWorld(opts: CreateWorldOpts): World {
             const ms = moveSpeedPerTick(a.classId!);
             a.x += cmd.dir.x * ms;
             a.y += cmd.dir.y * ms;
+            // N2：仅当真正移动（位移非 0）才更新朝向，保持静止时的上次朝向（不重置）。
+            if (cmd.dir.x !== 0 || cmd.dir.y !== 0) a.dir = vecToDir8(cmd.dir);
           } else if (cmd.action === InputAction.ATTACK) {
             // 战斗意图：启动前摇（D12）。若已有进行中前摇则忽略（防覆盖/刷新）。
             if (!a.telegraph) {
@@ -342,19 +440,38 @@ export function createWorld(opts: CreateWorldOpts): World {
               taunt: t.tauntUntilTick != null && t.tauntUntilTick > 0 && t.tauntUntilTick > world.tick,
             }));
           const intent = stepEnemyAi(self, { tick: world.tick, players });
+
+          // ── Boss 多阶段（engagement；确定性，seed 由 boss id+tick）──
+          // 阶段随 hp 比例下降（1→2 @<50% →3 @<25%），只升不降（a.phase 守卫一次性生怪）。
+          // 阶段 2+：移速 ×1.4、telegraphTicks ×0.8；阶段 3：移速 ×1.6 + 一次性生 2 只 grunt_swarm。
+          let speedMult = 1;
+          let telMult = 1;
+          if (a.kind === EntityKind.BOSS) {
+            const ratio = a.maxHp > 0 ? a.hp / a.maxHp : 0;
+            const phase = ratio < 0.25 ? 3 : ratio < 0.5 ? 2 : 1;
+            if (phase > (a.phase ?? 1)) {
+              a.phase = phase; // 阶段只升不降
+              if (phase === 3) spawnBossAdds(a, world.tick); // 一次性生怪（守卫防重复）
+            }
+            speedMult = phase >= 3 ? 1.6 : phase >= 2 ? 1.4 : 1.0;
+            telMult = phase >= 2 ? 0.8 : 1.0;
+          }
+
           if (intent.type === "MOVE") {
-            // 敌人移速按 ENEMY_PROTOTYPES.speed / 30（每 tick 位移，平衡初稿）。
+            // 敌人移速按 ENEMY_PROTOTYPES.speed / 30（每 tick 位移，平衡初稿）；Boss 阶段叠加倍率。
             const proto = ENEMY_PROTOTYPES[a.enemyTypeId!];
-            const ms = proto.speed / 30;
+            const ms = (proto.speed / 30) * speedMult;
             a.x += intent.dir.x * ms;
             a.y += intent.dir.y * ms;
+            // N2：敌人移动即更新朝向（静止时保持上次朝向）。
+            if (intent.dir.x !== 0 || intent.dir.y !== 0) a.dir = vecToDir8(intent.dir);
           } else if (intent.type === "ATTACK") {
-            // 攻击前摇：tier 分层 telegraphTicks（≥18，D12）；已有前摇则忽略（防覆盖/刷新）。
+            // 攻击前摇：tier 分层 telegraphTicks（≥18，D12）；Boss 阶段 -20%；已有前摇则忽略。
             if (!a.telegraph) {
               const proto = ENEMY_PROTOTYPES[a.enemyTypeId!];
               a.telegraph = {
                 startTick: world.tick,
-                applyTick: world.tick + proto.telegraphTicks,
+                applyTick: world.tick + Math.round(proto.telegraphTicks * telMult),
                 targetId: intent.targetId,
                 kind: CombatKind.ATTACK,
               };
@@ -382,6 +499,14 @@ export function createWorld(opts: CreateWorldOpts): World {
               kind: a.telegraph.kind,
               enemyDamage,
             });
+            // 死亡掉落（仅敌人/boss；玩家倒地不掉落）：hp≤0 且刚置 DOWNED → 确定性生 loot。
+            if (
+              (target.kind === EntityKind.ENEMY || target.kind === EntityKind.BOSS) &&
+              target.hp <= 0 &&
+              (target.status & EntityStatus.DOWNED) !== 0
+            ) {
+              trySpawnLoot(target, world.tick);
+            }
           }
           a.telegraph = null; // 一次性结算后清除前摇
         }
@@ -427,6 +552,39 @@ export function createWorld(opts: CreateWorldOpts): World {
             a.hp = 1; // 降级：最低可行动血量
             a.rescueTicks = 0;
             a.downedTicks = 0;
+          }
+        }
+      }
+
+      // ── 掉落拾取（progression/feedback；仅 ALIVE 玩家消费 loot）──
+      // 确定性：仅几何邻近判定 + 固定效果，无随机源；已消费的 loot 从 actors 移除。
+      {
+        const r2 = PICKUP_RADIUS * PICKUP_RADIUS;
+        const consumed = new Set<number>();
+        for (const a of actors) {
+          if (a.kind !== EntityKind.PLAYER) continue;
+          if ((a.status & EntityStatus.ALIVE) === 0) continue; // 仅存活玩家可拾取
+          for (const l of actors) {
+            if (l.kind !== EntityKind.LOOT) continue;
+            if (consumed.has(l.id)) continue;
+            const dx = l.x - a.x;
+            const dy = l.y - a.y;
+            if (dx * dx + dy * dy > r2) continue;
+            // 按 lootType 结算：medkit 治疗（钳 maxHp）；buff 临时攻击增幅；ammo no-op。
+            if (l.lootType === 0) {
+              a.hp = Math.min(a.maxHp, a.hp + (l.value ?? 0));
+            } else if (l.lootType === 2) {
+              a.buffUntilTick = world.tick + LOOT_BUFF_TICKS;
+              a.buffMult = 1 + LOOT_BUFF_MULT;
+            }
+            // lootType===1 (ammo)：no-op（仅移除）
+            consumed.add(l.id);
+          }
+        }
+        if (consumed.size > 0) {
+          // 倒序 splice 移除已消费 loot，避免索引错位。
+          for (let i = actors.length - 1; i >= 0; i--) {
+            if (consumed.has(actors[i].id)) actors.splice(i, 1);
           }
         }
       }
@@ -495,9 +653,13 @@ export function createWorld(opts: CreateWorldOpts): World {
             : undefined,
         // 当前/最近施放协作技 id（E8 HUD 提示）。玩家初值 null → undefined → 不下发。
         activeSkill: a.activeSkill ?? undefined,
+        // 掉落（progression/feedback）：仅 loot 实体携带 lootType/value；其他实体为 undefined → 不下发。
+        lootType: a.lootType,
+        value: a.value,
         };
       });
       return {
+        type: "snapshot", // C2：数据面路由标记，客户端据 type 区分快照/控制/房间消息（纯新增，旧字段不变）。
         tick: world.tick,
         runId: world.runId,
         roomPhase: world.roomPhase,

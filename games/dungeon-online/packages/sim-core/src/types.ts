@@ -72,6 +72,8 @@ export const EntityKind = {
   RESOURCE: 3,
   PROJECTILE: 4,
   TELEGRAPH: 5,
+  // 掉落实体（progression/feedback；3/4/5 已被资源/弹幕/telegraph 占用，故取 6）。
+  LOOT: 6,
 } as const;
 export type EntityKindValue = (typeof EntityKind)[keyof typeof EntityKind];
 
@@ -120,6 +122,9 @@ export interface EntityState {
   readonly shieldUntilTick?: number; // ⑨ SHIELD_ALLY 减伤护盾窗口截止 tick（>world.tick 才下发）
   readonly shieldReduction?: number; // ⑨ SHIELD_ALLY 减伤比例 0..1
   readonly tauntUntilTick?: number; // ⑨ TAUNT 施法者吸引敌火窗口截止 tick（>world.tick 才下发）
+  // ── 掉落（progression/feedback；仅 loot 实体携带，world.snapshot 公开）──
+  readonly lootType?: number; // 0=medkit | 1=ammo | 2=buff
+  readonly value?: number; // 掉落数值：medkit=治疗量 / buff=百分比(如 20) / ammo=0
 }
 
 /** telegraph 静态可读预警（P3 硬约束，art-bible §7）。 */
@@ -153,6 +158,8 @@ export interface WorldSnapshot {
   readonly tick: number;
   readonly runId: string;
   readonly roomPhase: RoomPhaseValue;
+  /** 数据面路由标记（C2）：客户端据 `type` 区分快照与控制/房间消息，避免脆弱的形状探测。 */
+  readonly type: "snapshot";
   readonly entities: readonly EntityState[];
   /**
    * 各玩家已服务端消费的最大 seq（S4.3 reconciliation / S4.5 延迟指示）。
@@ -280,6 +287,31 @@ export const RESOURCE_PROTOTYPES: Record<string, ResourcePrototype> = {
   ammo_pack: { id: "ammo_pack", category: "ammo", magnitude: 1, durationTicks: 0 },
   buff_rage: { id: "buff_rage", category: "buff", magnitude: 20, durationTicks: 90 }, // +20% 攻 / 3s @30Hz
 };
+
+// ============================================================
+// S2.4 掉落（progression/feedback；E? 拾取闭环，平衡初稿）
+// ============================================================
+
+/** 玩家拾取掉落物的邻近半径（px）。中心距 ≤ 此值即消费。 */
+export const PICKUP_RADIUS = 28;
+
+/** grunt/elite 掉落概率（boss 必掉，见 world.ts trySpawnLoot）。 */
+export const LOOT_DROP_CHANCE = 0.5;
+
+/** medkit 治疗量（与 RESOURCE_PROTOTYPES.medkit_small.magnitude 对齐）。 */
+export const LOOT_MEDKIT_HEAL = 40;
+
+/** buff 攻击增幅比例（小数；拾取时 buffMult = 1 + 此值 = 1.2 → +20%）。 */
+export const LOOT_BUFF_MULT = 0.2;
+
+/** buff loot `value` 字段（百分比，供客户端渲染 +20%；服务端用 LOOT_BUFF_MULT 计算 buffMult）。 */
+export const LOOT_BUFF_PERCENT = 20;
+
+/** buff 持续时间 tick（~3s @30Hz）。 */
+export const LOOT_BUFF_TICKS = 90;
+
+/** 掉落实体上限（防 runaway；见 world.ts trySpawnLoot）。 */
+export const MAX_LOOT_ENTITIES = 40;
 
 // ============================================================
 // 跨系统共享传输类型（① format-owner 定义，ADR-ENG-03 §B）

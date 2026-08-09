@@ -306,6 +306,18 @@ export function clearSeat(room: Room, seatIndex: number): void {
     clearTimeout(prev.disconnectTimer);
     prev.disconnectTimer = null;
   }
+  // ── player-left 不变式（epic "player-left" / design-review-d8 §3.2）──
+  // 清空座位（断线宽限超时 或 主动离开）时，【绝不】调用 world.setDisconnected(seatIndex, false)
+  // —— 那会把一个仍处于断线托管（disconnected=true）的权威实体「复活」为可行动幽灵
+  // （world.step 的 `if (a.disconnected) continue` 被清除，计时恢复推进，重连还原态丢失）。
+  // 若玩家此前已断线（seat.status === "disconnected"），world 实体应继续保持 disconnected
+  // （跳过 tick、冻结计时）；仅重连流程（validateReconnect）才允许 setDisconnected(false)。
+  // 此处显式保持权威实体当前托管状态不变（不重启用）；运行时无 run/resolver 时静默跳过（防御）。
+  if (prev?.status === "disconnected") {
+    // 幂等再置位：确保权威实体保持「跳过 tick」状态，绝不反向 setDisconnected(false)。
+    // world.setDisconnected(true) 在 a.disconnected 已为 true 时不重抓 personalState（D8 单次持有不受损）。
+    applyWorldDisconnect(room, seatIndex, true);
+  }
   room.seats[seatIndex] = emptySeat(seatIndex);
 }
 
