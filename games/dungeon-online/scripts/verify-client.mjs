@@ -163,13 +163,25 @@ async function main() {
             dir: 0, hp: 16, maxHp: 18, status: 1, statusEffects: [],
             telegraph: { shape: 1, color: '#ff3b2f', startTick: 0, applyTick: 12, radius: 36, dir: undefined },
           };
-          return { ...base, entities: [...base.entities, fakeDowned, fakeEnraged, fakeBomber] };
+          // M14 (C5): synthetic shielded + taunting allies → exercises persistent skill-effect
+          // overlays (shield ring / taunt aura) render paths without waiting for real co-op casts.
+          const fakeShielded = {
+            id: 900004, kind: 0, enemyTypeId: null, pos: { x: (me.pos?.x || 0) - 40, y: (me.pos?.y || 0) + 40 },
+            dir: 0, hp: 80, maxHp: 100, status: 1, statusEffects: [],
+            classId: 'tank', ownerId: 91, shieldUntilTick: 99999, shieldReduction: 0.6,
+          };
+          const fakeTaunting = {
+            id: 900005, kind: 0, enemyTypeId: null, pos: { x: (me.pos?.x || 0) + 60, y: (me.pos?.y || 0) - 20 },
+            dir: 0, hp: 70, maxHp: 100, status: 1, statusEffects: [],
+            classId: 'tank', ownerId: 92, tauntUntilTick: 99999,
+          };
+          return { ...base, entities: [...base.entities, fakeDowned, fakeEnraged, fakeBomber, fakeShielded, fakeTaunting] };
         },
         set(v) { _snap = v; },
       });
       return null;
     });
-    let seen = false, enragedSeen = false, bomberSeen = false;
+    let seen = false, enragedSeen = false, bomberSeen = false, shieldSeen = false, tauntSeen = false;
     for (let i = 0; i < 40; i++) {
       await sleep(15);
       const c = await page.evaluate(() => window.__game.downedAllies);
@@ -178,12 +190,18 @@ async function main() {
       if (er) enragedSeen = true;
       const bm = await page.evaluate(() => window.__game.bomberCount);
       if (bm >= 1) bomberSeen = true;
-      if (seen && enragedSeen && bomberSeen) break;
+      const sh = await page.evaluate(() => window.__game.anyShielded === true);
+      if (sh) shieldSeen = true;
+      const tn = await page.evaluate(() => window.__game.anyTaunting === true);
+      if (tn) tauntSeen = true;
+      if (seen && enragedSeen && bomberSeen && shieldSeen && tauntSeen) break;
     }
     results.downedRenderErr = downErr;
     results.downedAlliesSeen = seen;
     results.enragedSeen = enragedSeen;
     results.bomberSeen = bomberSeen;
+    results.shieldSeen = shieldSeen;
+    results.tauntSeen = tauntSeen;
 
     // ── M11 death/hit particle juice: trigger spawnBurst via exposed hook, then confirm
     // particleCount rises and drawParticles runs without error (no thrown exceptions in window.onerror). ──
@@ -251,6 +269,7 @@ async function main() {
   gates.push(['downed-ally render path (M9)', results.downedRenderErr == null && results.downedAlliesSeen === true]);
   gates.push(['enrage feedback renders (M12)', results.enragedSeen === true]);
   gates.push(['bomber variant renders (M13)', results.bomberSeen === true]);
+  gates.push(['skill-effect overlays render (M14/C5)', results.shieldSeen === true && results.tauntSeen === true]);
   gates.push(['death/hit particle burst (M11)', results.burstErr == null && results.particleSeen === true]);
   let pass = true;
   log('\n=== GATES ===');

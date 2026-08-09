@@ -860,6 +860,42 @@ function drawSpriteAndOverlays(e, x, y, snap) {
       ctx.stroke();
       ctx.restore();
     }
+    // M14 (C5 收口): persistent skill-effect overlays on players (server-authoritative, already
+    // serialized). shieldUntilTick present → cyan team-color shield ring (opacity ∝ reduction);
+    // tauntUntilTick present → orange aggro aura ring. Cast-time ring/floater is M8; this shows
+    // the sustained state so allies read "who's shielded / who's tanking" at a glance.
+    if (e.kind === 0) {
+      if (e.shieldUntilTick != null && e.shieldUntilTick > 0) {
+        const red = e.shieldReduction != null ? e.shieldReduction : 0.5;
+        const pulse = 0.6 + 0.25 * Math.sin(performance.now() / 200);
+        ctx.save();
+        ctx.globalAlpha = (0.35 + 0.45 * red) * pulse;
+        ctx.strokeStyle = '#5fd6ff'; // 阵营/EMBER 冷色护盾（art-bible §3 对齐）
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#5fd6ff'; ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(x, y, size / 2 + 9, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+      if (e.tauntUntilTick != null && e.tauntUntilTick > 0) {
+        const pulse = 0.55 + 0.3 * Math.sin(performance.now() / 150);
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        ctx.strokeStyle = '#f5a24a'; // 嘲讽暖橙（art-bible §3）
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#f5a24a'; ctx.shadowBlur = 12;
+        // 双环（外虚内实）强调「吸火」状态
+        ctx.beginPath();
+        ctx.arc(x, y, size / 2 + 12, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = pulse * 0.5;
+        ctx.beginPath();
+        ctx.arc(x, y, size / 2 + 16, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
     // M12: enrage feedback (brute_charger 破50% → 服务端下发 enraged=true)。脉动红环 + 「狂暴」标记，
     // 仅敌人且服务端权威标记时点亮（不伪造状态）。复用 downed 的脉动节奏但用危险红。
     if ((e.kind === 1 || e.kind === 2) && e.enraged === true) {
@@ -1034,6 +1070,9 @@ function draw() {
   GAME.anyEnraged = (GAME.lastSnapshot?.entities || []).some((e) => (e.kind === 1 || e.kind === 2) && e.enraged === true);
   // M13: expose bomber_imp count (server-authoritative) for automation gate.
   GAME.bomberCount = (GAME.lastSnapshot?.entities || []).filter((e) => e.kind === 1 && e.enemyTypeId === 'bomber_imp').length;
+  // M14 (C5): expose whether any ally is currently shielded / taunting (server-auth) for gate.
+  GAME.anyShielded = (GAME.lastSnapshot?.entities || []).some((e) => e.kind === 0 && e.shieldUntilTick != null && e.shieldUntilTick > 0);
+  GAME.anyTaunting = (GAME.lastSnapshot?.entities || []).some((e) => e.kind === 0 && e.tauntUntilTick != null && e.tauntUntilTick > 0);
   // M11: expose live particle count (death/hit juice) for automation gate.
   GAME.particleCount = particles.length;
   // ── skill cooldown HUD ──
