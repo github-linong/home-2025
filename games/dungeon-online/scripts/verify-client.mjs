@@ -117,6 +117,15 @@ async function main() {
     await sleep(200);
     await page.keyboard.press('Digit3'); // co-op skill 2
     await sleep(200);
+    // M8: a co-op cast should surface activeSkill on the local ally snapshot (authoritative).
+    // re-fetch a fresh snapshot shortly after the Digit1 cast.
+    let anyActive = false;
+    for (let i = 0; i < 20; i++) {
+      const v = await page.evaluate(() => window.__game.anyActiveSkill === true);
+      if (v) { anyActive = true; break; }
+      await sleep(80);
+    }
+    results.coopCastSeen = anyActive;
     // wander + attack to try to kill something (loot chance)
     await page.keyboard.down('KeyW');
     for (let i = 0; i < 25; i++) {
@@ -166,6 +175,7 @@ async function main() {
   gates.push(['wave fields on snapshot (M7)', !!wf && typeof wf.wave === 'number' && typeof wf.totalWaves === 'number' && typeof wf.roomPhase === 'number' && typeof wf.enemiesRemaining === 'number']);
   const wg = results.waveGame;
   gates.push(['client parsed wave/totalWaves (M7)', !!wg && typeof wg.wave === 'number' && typeof wg.totalWaves === 'number']);
+  gates.push(['co-op cast surfaces activeSkill (M8/C5)', results.coopCastSeen === true]);
   let pass = true;
   log('\n=== GATES ===');
   for (const [name, ok] of gates) {

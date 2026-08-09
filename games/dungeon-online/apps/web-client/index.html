@@ -134,6 +134,11 @@ const SKILL_CD_MS = [12000, 10000, 14000];
 const skillCdUntil = [0, 0, 0];
 let shakeMag = 0;             // screen-shake magnitude (decays each frame)
 const floaters = [];          // floating damage/heal numbers {x,y,text,color,born,life}
+// co-op cast feedback (M8): track last seen activeSkill per ally so a NEW cast fires a one-shot ring + label.
+const lastActiveSkill = new Map(); // actorId → {skillId, tick}
+const SKILL_LABEL = ['护盾链接', '急救链', '嘲讽战吼'];
+const SKILL_FX_COLOR = ['#6fd68a', '#f8d24a', '#f5a24a']; // 绿(护盾)/金(急救)/橙(嘲讽)，对齐 art-bible 阵营色/EMBER
+const castRings = [];         // co-op cast ground rings {id, skillId, x, y, born, color} (M8)
 
 // ── sprite / art assets ──
 const SPRITE_SRC = {
@@ -435,6 +440,30 @@ function handleSnapshot(msg) {
   knownIds.clear();
   for (const e of msg.entities) knownIds.set(e.id, e.kind);
 
+  // ── M8 co-op cast feedback (C5 收口)：盟友「新施放」协作技 → 一次性光环 + 头顶标签飘字 ──
+  // 仅对玩家盟友触发（e.kind===0）；activeSkill 由服务端权威下发（world.snapshot 公开），非客户端伪造。
+  // 判定「新施放」：本 tick 有 activeSkill 且 (上次无 或 上次 skillId 不同 或 上次 tick 较远 → 视为新一次)。
+  for (const e of msg.entities) {
+    if (e.kind !== 0) continue;
+    const cur = e.activeSkill ?? null;
+    const prev = lastActiveSkill.get(e.id);
+    const isNewCast =
+      cur != null &&
+      (prev == null || prev.skillId !== cur || prev.tick == null || msg.tick - prev.tick > 12);
+    if (isNewCast) {
+      const label = SKILL_LABEL[cur] || '协作技';
+      const col = SKILL_FX_COLOR[cur] || '#fff';
+      // 头顶协作技标签飘字
+      floaters.push({ x: e.pos.x, y: e.pos.y - 20, text: '✦ ' + label, color: col, born: performance.now(), life: 950, big: true });
+      // 施法者脚下扩散光环标记（render 时按 born 渐隐，drawCastRings 消费）
+      castRings.push({ id: e.id, skillId: cur, x: e.pos.x, y: e.pos.y, born: performance.now(), color: col });
+      // 若施法者就是本地玩家，额外给点屏内确认（音效已在 castSkill 内 sfxSkill 触发）
+      if (e.id === localEntityId) { shakeMag = Math.max(shakeMag, 2.5); }
+    }
+    if (cur != null) lastActiveSkill.set(e.id, { skillId: cur, tick: msg.tick });
+    else lastActiveSkill.delete(e.id);
+  }
+
   GAME.lastSnapshot = lastSnapshot;
   GAME.localEntityId = localEntityId;
   GAME.gameState = state;
@@ -678,6 +707,25 @@ function drawFloaters() {
   ctx.restore();
 }
 
+// co-op cast ground rings (M8): expanding ring at cast origin, fades over ~900ms.
+function drawCastRings() {
+  const now = performance.now();
+  ctx.save();
+  ctx.lineWidth = 3;
+  for (let i = castRings.length - 1; i >= 0; i--) {
+    const r = castRings[i];
+    const t = (now - r.born) / 900;
+    if (t >= 1) { castRings.splice(i, 1); continue; }
+    ctx.globalAlpha = (1 - t) * 0.9;
+    ctx.strokeStyle = r.color;
+    ctx.shadowColor = r.color; ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(r.x, r.y, 14 + t * 26, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function drawCircleFallback(e, x, y, snap) {
   const isLocal = e.id === localEntityId;
   const isPlayer = e.kind === 0;
@@ -862,6 +910,8 @@ function draw() {
   GAME.wave = wave; GAME.totalWaves = totalWaves; GAME.roomPhase = roomPhase;
   GAME.enemiesRemaining = snap.enemiesRemaining ?? null;
   GAME.bannerShown = waveBanner.classList.contains('show');
+  // M8: expose any ally's activeSkill (co-op cast feedback source) for automation gate.
+  GAME.anyActiveSkill = (snap.entities || []).some((e) => e.kind === 0 && e.activeSkill != null);
   // ── skill cooldown HUD ──
   const nowMs = performance.now();
   for (let i = 0; i < 3; i++) {
@@ -918,6 +968,7 @@ function draw() {
   for (const e of snap.entities) {
     if (e.kind === 6) { const p = renderPosFor(e); drawLoot(e, p.x, p.y, snap); }
   }
+  drawCastRings();   // M8: co-op cast ground rings (under floaters, world space)
   drawFloaters();
 
   ctx.restore();
