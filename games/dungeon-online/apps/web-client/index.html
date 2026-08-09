@@ -24,6 +24,14 @@
   .skill .n { font-size: 10px; opacity: 0.85; }
   .skill .cd { position: absolute; left: 0; bottom: 0; width: 100%; background: rgba(0,0,0,0.65); }
   .skill.ready { border-color: #6fd68a; }
+  #stick-area { position: fixed; bottom: 24px; left: 24px; width: 120px; height: 120px; z-index: 20; display: none; }
+  #stick-base { position: absolute; left: 10px; top: 10px; width: 100px; height: 100px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); }
+  #stick-nub { position: absolute; left: 35px; top: 35px; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.35); transform: scale(0); transition: transform 0.08s; }
+  #touch-attack { position: fixed; bottom: 34px; right: 24px; width: 76px; height: 76px; border-radius: 50%; background: rgba(255,80,80,0.25); border: 1px solid rgba(255,120,120,0.5); color: #fcc; display: none; align-items: center; justify-content: center; font-size: 26px; z-index: 20; user-select: none; -webkit-user-select: none; }
+  @media (hover: none) and (pointer: coarse) {
+    #stick-area, #touch-attack { display: flex; }
+    #skillbar { bottom: 100px; }
+  }
 </style>
 </head>
 <body>
@@ -40,6 +48,8 @@
   <div class="skill" id="sk1"><span class="k">2</span><span class="n">急救链</span><div class="cd" id="cd1"></div></div>
   <div class="skill" id="sk2"><span class="k">3</span><span class="n">嘲讽战吼</span><div class="cd" id="cd2"></div></div>
 </div>
+<div id="stick-area"><div id="stick-base"><div id="stick-nub"></div></div></div>
+<div id="touch-attack">⚔</div>
 <div id="help">WASD / 方向键 移动 · 空格 / J 攻击 · Shift 闪避 · 1/2/3 协作技</div>
 
 <script>
@@ -76,6 +86,7 @@ let lastSnapshot = null;
 let localEntityId = null;
 let seq = 1;
 let lastMoveDir = null;
+let touchDir = null;          // virtual joystick vector for touch devices
 
 // ── smoothing / interpolation tunables ──
 // WEB-FEEL anti-stutter: frame-rate-independent local prediction + gentle server reconciliation.
@@ -167,12 +178,58 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => keys.delete(e.code));
 
+// ── touch controls (mobile) ──
+const stickArea = document.getElementById('stick-area');
+const stickBase = document.getElementById('stick-base');
+const stickNub = document.getElementById('stick-nub');
+const touchAttack = document.getElementById('touch-attack');
+let stickActive = false, stickCx = 0, stickCy = 0;
+function updateStick(tx, ty) {
+  const dx = tx - stickCx, dy = ty - stickCy;
+  const len = Math.hypot(dx, dy);
+  const max = 45;
+  const f = len > max ? max / len : 1;
+  touchDir = { x: (dx * f) / max, y: (dy * f) / max };
+  if (stickNub) { stickNub.style.left = (50 + dx * f - 15) + 'px'; stickNub.style.top = (50 + dy * f - 15) + 'px'; }
+}
+if (stickArea) {
+  stickArea.addEventListener('touchstart', e => {
+    e.preventDefault();
+    if (e.touches.length === 0) return;
+    const t = e.touches[0];
+    stickCx = t.clientX; stickCy = t.clientY;
+    if (stickBase) { stickBase.style.left = (stickCx - 50) + 'px'; stickBase.style.top = (stickCy - 50) + 'px'; }
+    if (stickNub) stickNub.style.transform = 'scale(1)';
+    stickActive = true; updateStick(t.clientX, t.clientY);
+  }, { passive: false });
+  stickArea.addEventListener('touchmove', e => {
+    if (!stickActive) return; e.preventDefault();
+    const t = e.touches[0]; updateStick(t.clientX, t.clientY);
+  }, { passive: false });
+  stickArea.addEventListener('touchend', e => { e.preventDefault(); stickActive = false; touchDir = null; if (stickNub) stickNub.style.transform = 'scale(0)'; }, { passive: false });
+  stickArea.addEventListener('touchcancel', () => { stickActive = false; touchDir = null; if (stickNub) stickNub.style.transform = 'scale(0)'; });
+}
+if (touchAttack) {
+  touchAttack.addEventListener('touchstart', e => {
+    e.preventDefault(); ensureAudio(); sendInput(1, touchDir || { x: 0, y: 0 }, nearestEnemyId()); sfxAttack();
+    touchAttack.style.background = 'rgba(255,80,80,0.45)';
+  }, { passive: false });
+  touchAttack.addEventListener('touchend', e => { e.preventDefault(); touchAttack.style.background = 'rgba(255,80,80,0.25)'; }, { passive: false });
+}
+for (let i = 0; i < 3; i++) {
+  const el = document.getElementById('sk' + i);
+  if (el) {
+    el.style.pointerEvents = 'auto';
+    el.addEventListener('touchstart', (e) => { e.preventDefault(); castSkill(i); }, { passive: false });
+    el.addEventListener('click', () => castSkill(i));
+  }
+}
+
 function currentInputDir() {
   let dx = 0, dy = 0;
   for (const code of keys) { const v = KEY_DIR[code]; if (v) { dx += v.x; dy += v.y; } }
-  if (dx === 0 && dy === 0) return null;
-  const len = Math.hypot(dx, dy);
-  return { x: dx / len, y: dy / len };
+  if (dx !== 0 || dy !== 0) { const len = Math.hypot(dx, dy); return { x: dx / len, y: dy / len }; }
+  return touchDir;
 }
 
 function nearestEnemyId() {
