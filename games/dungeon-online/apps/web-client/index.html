@@ -106,6 +106,8 @@ let camX = 0, camY = 0;
 // co-op skill cooldown UI state (client-only estimate; authoritative gating is server-side)
 const SKILL_CD_MS = [12000, 10000, 14000];
 const skillCdUntil = [0, 0, 0];
+let shakeMag = 0;             // screen-shake magnitude (decays each frame)
+const floaters = [];          // floating damage/heal numbers {x,y,text,color,born,life}
 
 // ── sprite / art assets ──
 const SPRITE_SRC = {
@@ -317,13 +319,17 @@ function handleSnapshot(msg) {
     }
   }
 
-  // ── damage / death / pickup event tracking (drives flash + SFX) ──
+  // ── damage / death / pickup event tracking (drives flash + SFX + juice) ──
   for (const e of msg.entities) {
     const prev = hpPrev.get(e.id);
     if (prev != null && e.hp < prev) {
+      const dmg = prev - e.hp;
       flash.set(e.id, performance.now() + 130);
-      const n = performance.now();
-      if (n - lastHitSfx > 60) { sfxHit(); lastHitSfx = n; }
+      floaters.push({ x: e.pos.x, y: e.pos.y - 12, text: '-' + dmg, color: '#ff5a5a', born: performance.now(), life: 750 });
+      if (e.id === localEntityId) { shakeMag = Math.max(shakeMag, 7); sfxHit(); }
+      else { const n = performance.now(); if (n - lastHitSfx > 60) { sfxHit(); lastHitSfx = n; } }
+    } else if (prev != null && e.hp > prev) {
+      floaters.push({ x: e.pos.x, y: e.pos.y - 12, text: '+' + (e.hp - prev), color: '#5dff8a', born: performance.now(), life: 750 });
     }
     hpPrev.set(e.id, e.hp);
   }
@@ -336,6 +342,7 @@ function handleSnapshot(msg) {
   }
   if (deathHappened) {
     const n = performance.now();
+    shakeMag = Math.max(shakeMag, 5);
     if (n - lastDeathSfx > 120) { sfxDeath(); lastDeathSfx = n; }
   }
   if (lootGone) sfxPickup();
@@ -510,6 +517,54 @@ function drawLoot(e, x, y, snap) {
   ctx.restore();
 }
 
+// ── deterministic decorative world props (cosmetic; no sim dependency) ──
+function hash2(x, y) {
+  let h = (Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263)) ^ 0x9e3779b9;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return (h ^ (h >>> 16)) >>> 0;
+}
+function drawDecor(camX, camY) {
+  const T = 256;
+  const x0 = Math.floor((camX - canvas.width / 2) / T) * T;
+  const y0 = Math.floor((camY - canvas.height / 2) / T) * T;
+  for (let gx = x0; gx < camX + canvas.width / 2 + T; gx += T) {
+    for (let gy = y0; gy < camY + canvas.height / 2 + T; gy += T) {
+      const h = hash2(gx, gy);
+      if (h % 7 === 0) {
+        const fx2 = gx + 40, fy2 = gy + 40;
+        const flick = 0.6 + 0.4 * Math.sin(performance.now() / 120 + h);
+        ctx.save();
+        ctx.fillStyle = '#5a3a1a'; ctx.fillRect(fx2 - 2, fy2, 4, 12);
+        const grd = ctx.createRadialGradient(fx2, fy2 - 4, 2, fx2, fy2 - 4, 28);
+        grd.addColorStop(0, 'rgba(255,174,66,0.5)');
+        grd.addColorStop(1, 'rgba(255,120,40,0)');
+        ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(fx2, fy2 - 4, 28, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffcf6e'; ctx.beginPath(); ctx.arc(fx2, fy2 - 4, 3 + flick, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      } else if (h % 11 === 0) {
+        ctx.save(); ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(gx + 24, gy + 24); ctx.lineTo(gx + 48, gy + 56); ctx.lineTo(gx + 36, gy + 88); ctx.stroke(); ctx.restore();
+      }
+    }
+  }
+}
+
+function drawFloaters() {
+  const now = performance.now();
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 14px system-ui';
+  for (let i = floaters.length - 1; i >= 0; i--) {
+    const f = floaters[i];
+    const t = (now - f.born) / f.life;
+    if (t >= 1) { floaters.splice(i, 1); continue; }
+    ctx.globalAlpha = 1 - t;
+    ctx.fillStyle = f.color;
+    ctx.fillText(f.text, f.x, f.y - t * 26);
+  }
+  ctx.restore();
+}
+
 function drawCircleFallback(e, x, y, snap) {
   const isLocal = e.id === localEntityId;
   const isPlayer = e.kind === 0;
@@ -662,14 +717,19 @@ function draw() {
   const targetCamY = predicted ? predicted.y : (authEnt ? authEnt.pos.y : camY);
   camX += (targetCamX - camX) * 0.18;
   camY += (targetCamY - camY) * 0.18;
+  // screen shake (juice)
+  const sx = (Math.random() * 2 - 1) * shakeMag;
+  const sy = (Math.random() * 2 - 1) * shakeMag;
+  shakeMag *= 0.88; if (shakeMag < 0.2) shakeMag = 0;
+  const rcx = camX + sx, rcy = camY + sy;
 
   const localHp = authEnt ? `${authEnt.hp ?? 0}/${authEnt.maxHp ?? 0}` : '-';
   hpEl.textContent = `HP:${localHp}`;
 
   // ── floor (world-space tiled pattern, scrolls with camera) ──
   ctx.save();
-  ctx.translate(canvas.width / 2 - camX, canvas.height / 2 - camY);
-  const fx = camX - canvas.width / 2 - 64, fy = camY - canvas.height / 2 - 64;
+  ctx.translate(canvas.width / 2 - rcx, canvas.height / 2 - rcy);
+  const fx = rcx - canvas.width / 2 - 64, fy = rcy - canvas.height / 2 - 64;
   const fw = canvas.width + 128, fh = canvas.height + 128;
   if (floorPattern) {
     ctx.fillStyle = floorPattern;
@@ -678,11 +738,12 @@ function draw() {
     ctx.fillStyle = '#1a1a1a';
     ctx.fillRect(fx, fy, fw, fh);
   }
+  drawDecor(rcx, rcy);
   ctx.restore();
 
   // ── entities (camera-centered world space) ──
   ctx.save();
-  ctx.translate(canvas.width / 2 - camX, canvas.height / 2 - camY);
+  ctx.translate(canvas.width / 2 - rcx, canvas.height / 2 - rcy);
 
   // telegraphs under sprites
   for (const e of snap.entities) {
@@ -698,6 +759,7 @@ function draw() {
   for (const e of snap.entities) {
     if (e.kind === 6) { const p = renderPosFor(e); drawLoot(e, p.x, p.y, snap); }
   }
+  drawFloaters();
 
   ctx.restore();
   // WEB-FEEL：每帧上报移动输入（≈60Hz），确保权威模拟每个 tick 都收到 MOVE →
