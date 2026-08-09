@@ -858,6 +858,28 @@ function drawSpriteAndOverlays(e, x, y, snap) {
       ctx.stroke();
       ctx.restore();
     }
+    // M12: enrage feedback (brute_charger 破50% → 服务端下发 enraged=true)。脉动红环 + 「狂暴」标记，
+    // 仅敌人且服务端权威标记时点亮（不伪造状态）。复用 downed 的脉动节奏但用危险红。
+    if ((e.kind === 1 || e.kind === 2) && e.enraged === true) {
+      const pulse = 0.5 + 0.3 * Math.sin(performance.now() / 130);
+      ctx.save();
+      ctx.globalAlpha = pulse;
+      ctx.strokeStyle = '#ff3b2f';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#ff3b2f'; ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(x, y, size / 2 + 7, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+      ctx.save();
+      ctx.globalAlpha = 0.7 + 0.3 * Math.abs(Math.sin(performance.now() / 160));
+      ctx.fillStyle = '#ff5a4a';
+      ctx.font = 'bold 11px system-ui';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = '#000'; ctx.shadowBlur = 3;
+      ctx.fillText('狂暴', x, y - size / 2 - 26);
+      ctx.restore();
+    }
   } else {
     drawCircleFallback(e, x, y, snap);
   }
@@ -990,6 +1012,10 @@ function draw() {
   GAME.bannerShown = waveBanner.classList.contains('show');
   // M8: expose any ally's activeSkill (co-op cast feedback source) for automation gate.
   GAME.anyActiveSkill = (snap.entities || []).some((e) => e.kind === 0 && e.activeSkill != null);
+  // M12: expose whether any enemy is enraged (server-authoritative flag) for automation gate.
+  // Read from GAME.lastSnapshot (getter-consistent, like GAME.downedAllies) so injected-synthetic
+  // enrage entities in automation are also detected deterministically.
+  GAME.anyEnraged = (GAME.lastSnapshot?.entities || []).some((e) => (e.kind === 1 || e.kind === 2) && e.enraged === true);
   // M11: expose live particle count (death/hit juice) for automation gate.
   GAME.particleCount = particles.length;
   // ── skill cooldown HUD ──

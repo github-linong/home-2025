@@ -125,6 +125,10 @@ export interface EntityState {
   readonly shieldUntilTick?: number; // ⑨ SHIELD_ALLY 减伤护盾窗口截止 tick（>world.tick 才下发）
   readonly shieldReduction?: number; // ⑨ SHIELD_ALLY 减伤比例 0..1
   readonly tauntUntilTick?: number; // ⑨ TAUNT 施法者吸引敌火窗口截止 tick（>world.tick 才下发）
+  // ── M12 狂暴标记（world.snapshot 公开，供客户端 HUD/特效渲染）──
+  // 仅当实体真实狂暴（a.enraged===true）才下发 true；否则 undefined → JSON 丢弃键，
+  // 不影响「未狂暴实体」的确定性快照哈希（与 rescue/telegraph/shield 先例一致）。
+  readonly enraged?: boolean;
   // ── 掉落（progression/feedback；仅 loot 实体携带，world.snapshot 公开）──
   readonly lootType?: number; // 0=medkit | 1=ammo | 2=buff
   readonly value?: number; // 掉落数值：medkit=治疗量 / buff=百分比(如 20) / ammo=0

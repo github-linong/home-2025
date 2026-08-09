@@ -765,6 +765,9 @@ export function createWorld(opts: CreateWorldOpts): World {
             : undefined,
         // 当前/最近施放协作技 id（E8 HUD 提示）。玩家初值 null → undefined → 不下发。
         activeSkill: a.activeSkill ?? undefined,
+        // M12：狂暴标记（与 rescue/telegraph 先例一致）。仅当 a.enraged===true 才下发 true，
+        // 否则 undefined → JSON.stringify 丢弃键；「未狂暴实体」字节表示不变，确定性哈希不受影响。
+        enraged: a.enraged === true ? true : undefined,
         // 掉落（progression/feedback）：仅 loot 实体携带 lootType/value；其他实体为 undefined → 不下发。
         lootType: a.lootType,
         value: a.value,

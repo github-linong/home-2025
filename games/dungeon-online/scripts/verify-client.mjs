@@ -130,7 +130,10 @@ async function main() {
     // ── M9 downed-ally rescue clarity: make lastSnapshot a getter that ALWAYS appends a
     // synthetic downed ally, so draw() deterministically sees it (server @30Hz would otherwise
     // overwrite between frames). Then poll downedAllies — confirms the new downed render +
-    // rescue-arc code path runs without error and counts the ally. ──
+    // rescue-arc code path runs without error and counts the ally.
+    // ── M12 enrage feedback: the same getter ALSO appends a synthetic ENRAGED brute_charger
+    // (enraged:true) so the M12 pulsing-red-ring + 「狂暴」 label code path is exercised and
+    // GAME.anyEnraged flips true. (Real brute enrage is hard to reach in the short verify window.) ──
     const downErr = await page.evaluate(() => {
       const g = window.__game;
       const real = g.lastSnapshot;
@@ -144,25 +147,33 @@ async function main() {
           if (!base || !base.entities) return base;
           const me = base.entities.find((e) => e.kind === 0);
           if (!me) return base;
-          const fake = {
+          const fakeDowned = {
             id: 900001, kind: 0, pos: { x: (me.pos?.x || 0) + 20, y: (me.pos?.y || 0) + 20 },
             dir: 0, hp: 1, maxHp: 100, status: 3, statusEffects: [],
             classId: 'healer', ownerId: 99, rescue: { targetId: 900001, progressTicks: 30, totalTicks: 90 },
           };
-          return { ...base, entities: [...base.entities, fake] };
+          const fakeEnraged = {
+            id: 900002, kind: 1, enemyTypeId: 'brute_charger', pos: { x: (me.pos?.x || 0) - 30, y: (me.pos?.y || 0) - 30 },
+            dir: 0, hp: 20, maxHp: 120, status: 1, statusEffects: [], enraged: true,
+          };
+          return { ...base, entities: [...base.entities, fakeDowned, fakeEnraged] };
         },
         set(v) { _snap = v; },
       });
       return null;
     });
-    let seen = false;
+    let seen = false, enragedSeen = false;
     for (let i = 0; i < 40; i++) {
       await sleep(15);
       const c = await page.evaluate(() => window.__game.downedAllies);
-      if (c >= 1) { seen = true; break; }
+      if (c >= 1) seen = true;
+      const er = await page.evaluate(() => window.__game.anyEnraged === true);
+      if (er) enragedSeen = true;
+      if (seen && enragedSeen) break;
     }
     results.downedRenderErr = downErr;
     results.downedAlliesSeen = seen;
+    results.enragedSeen = enragedSeen;
 
     // ── M11 death/hit particle juice: trigger spawnBurst via exposed hook, then confirm
     // particleCount rises and drawParticles runs without error (no thrown exceptions in window.onerror). ──
@@ -228,6 +239,7 @@ async function main() {
   gates.push(['client parsed wave/totalWaves (M7)', !!wg && typeof wg.wave === 'number' && typeof wg.totalWaves === 'number']);
   gates.push(['co-op cast surfaces activeSkill (M8/C5)', results.coopCastSeen === true]);
   gates.push(['downed-ally render path (M9)', results.downedRenderErr == null && results.downedAlliesSeen === true]);
+  gates.push(['enrage feedback renders (M12)', results.enragedSeen === true]);
   gates.push(['death/hit particle burst (M11)', results.burstErr == null && results.particleSeen === true]);
   let pass = true;
   log('\n=== GATES ===');
