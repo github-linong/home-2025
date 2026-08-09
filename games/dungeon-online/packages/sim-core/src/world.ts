@@ -611,6 +611,7 @@ export function createWorld(opts: CreateWorldOpts): World {
         status: a.status,
         statusEffects: [],
         ownerId: a.ownerId,
+        enemyTypeId: a.enemyTypeId,
         // S7.2 救援读条：仅倒地「玩家」附带（敌人倒地不进救援系统；undefined 不影响确定性快照哈希）。
         rescue:
           a.kind === EntityKind.PLAYER && (a.status & EntityStatus.DOWNED) !== 0

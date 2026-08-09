@@ -114,6 +114,7 @@ const SPRITE_SRC = {
   hero: 'assets/hero.png',
   grunt: 'assets/grunt.png',
   elite: 'assets/elite.png',
+  caster: 'assets/caster.png',
   boss: 'assets/boss.png',
   floor: 'assets/floor.png',
 };
@@ -399,6 +400,7 @@ function facingAngle(e) {
 function enemySpriteKey(tid) {
   if (!tid) return 'grunt';
   if (tid.startsWith('elite')) return 'elite';
+  if (tid.startsWith('caster')) return 'caster';
   if (tid.startsWith('boss')) return 'boss';
   return 'grunt';
 }
@@ -413,6 +415,7 @@ function spriteKeyFor(e) {
 function spriteSizeFor(e) {
   if (e.kind === 2) return 76;   // boss: massive
   if (e.kind === 0) return 34;   // hero
+  if (e.enemyTypeId && e.enemyTypeId.startsWith('caster')) return 34; // caster
   return 30;                      // grunt / elite
 }
 

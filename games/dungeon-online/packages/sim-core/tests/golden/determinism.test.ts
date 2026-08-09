@@ -18,7 +18,10 @@ import { ENEMY_PROTOTYPES } from "../../src/types.ts";
 
 // 锁定 golden 锚点（由 `node --experimental-strip-types` 跑 generateLayout 实测得到，
 // 后续任何破坏确定性的改动都会让本断言失败 → 强制 golden 对齐）。
-const GOLDEN_LAYOUT_HASH = "bf4893ba35b9e85bfd1ec6e8542480e97be8bd87f7bbbebf4a01b4335bf296c4";
+// caster_ember 重锁说明：dungeon-gen 新增 caster_ember 注入（elite_warden 槽 ~20% 确定性替换），
+//   随机池排除该 id 但 elite 命中后额外 nextBool 抽流 → 后续 spawn 坐标/资源点随之漂移 →
+//   布局哈希改变；确定性未破坏（同 seed+biome 三次运行字节相等），故重锁本值。
+const GOLDEN_LAYOUT_HASH = "b47e819fe09235cc4649283a608b0b7754801ef6f4f6600101a3e088a6fbe157";
 // E5 战斗管线接入后填充（同 seed + 同输入序列 → 同世界哈希；见 world-determinism.test.ts）。
 const GOLDEN_WORLD_HASH =
   "823863c6b4927719b78d28f4e4de1867e4da281141191b58b303d3888017ed27";

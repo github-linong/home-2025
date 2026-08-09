@@ -94,6 +94,19 @@ export function stepEnemyAi(self: EnemyAiSelf, ctx: EnemyAiContext): EnemyIntent
     return { type: "ATTACK", targetId: nearest.id, damage: proto.attackDamage };
   }
 
+  // caster_ember 远程风筝：太近则后撤拉开射程，否则靠近维持射程（确定性，无随机源）。
+  // 其余敌人（grunt/elite_warden/boss）维持原「朝最近玩家移动」行为，绝不变更。
+  if (self.enemyTypeId === "caster_ember") {
+    const retreatThreshold = proto.attackRange * 0.55; // 贴脸阈值：< 此距离后撤
+    if (dist < retreatThreshold) {
+      // 远离目标：单位方向 = (self − target) 归一化（后撤，位移由 world 按 speed/30 施加）。
+      const dx = self.x - nearest.x;
+      const dy = self.y - nearest.y;
+      const len = Math.hypot(dx, dy) || 1;
+      return { type: "MOVE", dir: { x: dx / len, y: dy / len } };
+    }
+  }
+
   // 否则朝最近玩家移动（归一化单位方向；位移由 world 按 speed/30 施加）。
   const dx = nearest.x - self.x;
   const dy = nearest.y - self.y;

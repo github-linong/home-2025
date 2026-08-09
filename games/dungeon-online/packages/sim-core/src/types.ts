@@ -251,6 +251,19 @@ export const ENEMY_PROTOTYPES: Record<string, EnemyPrototype> = {
     telegraphTicks: 24, // 0.8s @30Hz
     shape: TelegraphShape.AOE_FILL,
   },
+  caster_ember: {
+    id: "caster_ember",
+    tier: "elite",
+    hpMin: 40,
+    hpMax: 80,
+    attackDamageMin: 8,
+    attackDamageMax: 12,
+    attackDamage: 10, // 平衡初稿（远程法术，单体 LINE）
+    speed: 55, // 平衡初稿 px/s（远程风筝者，略慢于近战精英）
+    attackRange: 175, // 平衡初稿 px（远程射程，远大于近战）
+    telegraphTicks: 24, // 0.8s @30Hz（精英下限）
+    shape: TelegraphShape.LINE, // 线性法术弹道（N2 方向性 telegraph）
+  },
   boss_emberlord: {
     id: "boss_emberlord",
     tier: "boss",

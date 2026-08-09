@@ -49,8 +49,11 @@ const MAX_TICKS = 220; // 约 200+ tick 脚本化序列
 // N2+掉落 重锁说明：N2 使敌人/玩家移动时更新 Actor.dir（朝向 0-7），方向性 telegraph 的 dir
 //   单位向量随实时移动而变；且本场景击杀杂兵 → 确定性生成掉落实体（loot kind=6）进入快照 entities
 //   → 哈希改变；确定性未破坏（三次运行字节相等），故重锁本值。
+// caster_ember 重锁说明：dungeon-gen 注入 caster_ember → 首只 ENEMY 可能为 caster_ember
+//   （hp 40–80/speed 55/attackRange 175/shape LINE），且 rng 抽流漂移使 enemy 坐标变化
+//   → 快照哈希改变；三次运行字节级相等（确定性 intact），故重锁本值。
 const GOLDEN_PLAYTEST_HASH =
-  "176d2dadb58d9fc33ac48f3956fa4afb5b4c41f1914b5d040da76cccf351cffb";
+  "05cc343550f0b589178337d1efaac518e3a44e558c840dd9491c4d0bc2770146";
 
 // ---------------------------------------------------------------- 结果收集
 const checks = [];

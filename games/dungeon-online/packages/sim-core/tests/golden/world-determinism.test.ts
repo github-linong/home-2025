@@ -29,8 +29,11 @@ import { InputAction, PLAYER_CLASSES, EntityKind, EntityStatus } from "../../src
  *   （三次运行字节相等），故重锁本值。golden 固定序列仅 1 次 ATTACK（18 伤）→ 杂兵存活，
  *   不触发掉落/生怪，故哈希变化仅来自 N2 朝向。
  */
+// caster_ember 重锁说明：dungeon-gen 注入 caster_ember 后，固定序列下首只 ENEMY 可能为 caster_ember
+//   （hp 40–80 / speed 55 / attackRange 175 / shape LINE），且与玩家相对坐标因 rng 抽流漂移而变 →
+//   世界快照哈希改变；确定性未破坏（三次运行字节相等），故重锁本值。
 const GOLDEN_WORLD_HASH =
-  "9d59d3fce3c7ddba19fb1217185d43d069be18aba480825f098af43a1147eac1";
+  "22d08984ea50ef625e13e51700dba47bcb60a52e248e68d0b030de486eb131d4";
 
 function hashEntities(entities: readonly unknown[]): string {
   return createHash("sha256").update(JSON.stringify(entities)).digest("hex");
