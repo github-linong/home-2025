@@ -59,10 +59,13 @@ export function generateLayout(seed: string, biomeId: number): LayoutSnapshot {
     floorSequence.push(rng.nextInt(0, biomeId + 2));
   }
 
-  // 基础刷怪池（排除 caster_ember）：维持 grunt/elite/boss 三类的相对分布不变。
+  // 基础刷怪池（排除 caster_ember 与 brute_charger）：维持 grunt/elite/boss 三类的相对分布不变。
   // caster_ember 仅以「确定性低密度」方式注入（见下方 elite 槽 ~20% 替换），不计入随机池，
   // 避免其占比过高（≈25%）破坏「远程施法者低频出现」的设计意图。
-  const enemyTypeIds = Object.keys(ENEMY_PROTOTYPES).filter((id) => id !== "caster_ember");
+  // brute_charger 同理（见下方 grunt 槽 ~20% 替换），不计入随机池，控制其出现频率。
+  const enemyTypeIds = Object.keys(ENEMY_PROTOTYPES).filter(
+    (id) => id !== "caster_ember" && id !== "brute_charger",
+  );
   const spawnPoints: SpawnPoint[] = [];
   let wave = 0;
   for (let f = 0; f < floorCount; f += 1) {
@@ -72,7 +75,12 @@ export function generateLayout(seed: string, biomeId: number): LayoutSnapshot {
       const rolled = enemyTypeIds[rng.nextInt(0, enemyTypeIds.length - 1)];
       // caster_ember：确定性低密度注入 —— 仅当本槽为 elite_warden 时，以 20% 概率替换为远程施法者。
       // 不替代 boss_emberlord / grunt_swarm；不新增精英总数；rng 由 seed 派生，无 Date/Math.random。
-      const enemyTypeId = rolled === "elite_warden" && rng.nextBool(0.2) ? "caster_ember" : rolled;
+      // brute_charger：确定性低密度注入 —— 仅当本槽为 grunt_swarm 时，以 20% 概率替换为激进冲锋者。
+      // 不替代 elite_warden / boss_emberlord；rng 由 seed 派生，无 Date/Math.random；保持可控频率。
+      const enemyTypeId =
+        (rolled === "elite_warden" && rng.nextBool(0.2) ? "caster_ember"
+          : rolled === "grunt_swarm" && rng.nextBool(0.2) ? "brute_charger"
+          : rolled);
       const count = rng.nextInt(2, 6);
       const pos: Vec2 = {
         x: rng.nextInt(0, GRID_W - 1) * 32,

@@ -116,6 +116,8 @@ interface Actor {
   buffMult?: number; // 临时攻击 buff 倍率（resolveDamage 消费，1+LOOT_BUFF_MULT）
   // ── Boss 多阶段（engagement；阶段只升不降，守卫一次性生怪）──
   phase?: number; // 1=常态 2=<50%hp 3=<25%hp；达到后保持
+  // ── brute_charger 狂暴（enrage；血量破 50% 一次性生 1 只 grunt add，guard 防重复）──
+  enraged?: boolean; // 触发狂暴后置 true（undefined → JSON 丢弃，不影响确定性快照哈希，与 phase 同先例）
 }
 
 export interface World {
@@ -261,12 +263,38 @@ export function createWorld(opts: CreateWorldOpts): World {
         maxHp: hp,
         status: EntityStatus.ALIVE,
         enemyTypeId: "grunt_swarm",
+        enraged: undefined,
         rescueTicks: 0,
         downedTicks: 0,
         disconnected: false,
         personalState: null,
       });
     }
+  }
+
+  /** brute_charger 狂暴：血量破 50% 时确定性一次性生 1 只 grunt_swarm 近怪（seed 由 charger id + tick）。 */
+  function spawnChargerAdd(charger: Actor, tick: number): void {
+    const proto = ENEMY_PROTOTYPES.grunt_swarm;
+    const rng = new Rng(hashString64(`${charger.id}:${tick}:chargerAdd`));
+    const ox = rng.nextInt(-40, 40);
+    const oy = rng.nextInt(-40, 40);
+    const hp = rng.nextInt(proto.hpMin, proto.hpMax);
+    actors.push({
+      id: nextId++,
+      kind: EntityKind.ENEMY,
+      x: charger.x + ox,
+      y: charger.y + oy,
+      dir: rng.nextInt(0, 7),
+      hp,
+      maxHp: hp,
+      status: EntityStatus.ALIVE,
+      enemyTypeId: "grunt_swarm",
+      enraged: undefined,
+      rescueTicks: 0,
+      downedTicks: 0,
+      disconnected: false,
+      personalState: null,
+    });
   }
 
   /** 波次推进（progression）：生成本 wave n 的敌人/Boss（确定性 Rng，seed 含 wave 号）。
@@ -290,6 +318,7 @@ export function createWorld(opts: CreateWorldOpts): World {
           maxHp: hp,
           status: EntityStatus.ALIVE,
           enemyTypeId: sp.enemyTypeId,
+          enraged: undefined,
           rescueTicks: 0,
           downedTicks: 0,
           disconnected: false,
@@ -539,6 +568,24 @@ export function createWorld(opts: CreateWorldOpts): World {
             }
           }
           a.telegraph = null; // 一次性结算后清除前摇
+        }
+      }
+
+      // ── brute_charger 狂暴生怪（enrage；确定性，seed 由 charger id + tick）──
+      // 每 tick 扫描：brute_charger 血量跌破 50% maxHp 且尚未 enraged → 置 enraged=true
+      // 并经 spawnChargerAdd 确定性生成恰好 1 只 grunt_swarm 近怪。guard（enraged）确保每个
+      // charger 仅触发一次，完全确定性（无 Date/Math.random）。新增实体落入 actors 尾部，
+      // 本 tick 不再被上方移动/AI 循环处理，下一 tick 才参与模拟。
+      for (const a of actors) {
+        if (
+          a.enemyTypeId === "brute_charger" &&
+          !a.enraged &&
+          a.maxHp > 0 &&
+          a.hp > 0 &&
+          a.hp < a.maxHp * 0.5
+        ) {
+          a.enraged = true;
+          spawnChargerAdd(a, world.tick);
         }
       }
 

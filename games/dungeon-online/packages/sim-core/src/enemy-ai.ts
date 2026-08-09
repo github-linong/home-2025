@@ -96,6 +96,9 @@ export function stepEnemyAi(self: EnemyAiSelf, ctx: EnemyAiContext): EnemyIntent
 
   // caster_ember 远程风筝：太近则后撤拉开射程，否则靠近维持射程（确定性，无随机源）。
   // 其余敌人（grunt/elite_warden/boss）维持原「朝最近玩家移动」行为，绝不变更。
+  // brute_charger（新原型）：激进近战冲锋者 —— 永不风筝，直冲最近玩家。它**不**进入下方
+  //   kite 特例（kite 仅 caster_ember），直接落入默认「朝最近玩家移动」路径即 rush：
+  //   距离 > attackRange → MOVE 朝最近玩家；≤ attackRange → ATTACK。无额外分支逻辑，确定性 intact。
   if (self.enemyTypeId === "caster_ember") {
     const retreatThreshold = proto.attackRange * 0.55; // 贴脸阈值：< 此距离后撤
     if (dist < retreatThreshold) {

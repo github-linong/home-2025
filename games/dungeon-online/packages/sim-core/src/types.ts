@@ -288,6 +288,19 @@ export const ENEMY_PROTOTYPES: Record<string, EnemyPrototype> = {
     telegraphTicks: 30, // 1.0s @30Hz
     shape: TelegraphShape.CONE,
   },
+  brute_charger: {
+    id: "brute_charger",
+    tier: "grunt",
+    hpMin: 35,
+    hpMax: 55,
+    attackDamageMin: 10,
+    attackDamageMax: 14,
+    attackDamage: 12, // 平衡初稿（比 grunt 高，玻璃大炮冲锋者）
+    speed: 95, // 平衡初稿 px/s（明显快于 grunt 70 / elite 60 / boss 50）
+    attackRange: 38, // 平衡初稿 px
+    telegraphTicks: 18, // 0.6s @30Hz（最短下限 MIN_TELEGRAPH_TICKS，更激进的前摇）
+    shape: TelegraphShape.RING,
+  },
 };
 
 // ============================================================
