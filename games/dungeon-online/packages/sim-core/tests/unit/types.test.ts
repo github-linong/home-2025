@@ -60,11 +60,16 @@ test("FACTION_COLORS has 4 valid hex entries", () => {
 /**
  * S2.2 — ENEMY_PROTOTYPES 每个 telegraphTicks >= 18（D12 MIN_TELEGRAPH_TICKS=18 下限）。
  * 含 bomber_imp（自爆兵，M13）：原 12 tick 短前摇例外已消除，统一对齐 18 下限（与 brute 一致）。
+ * 例外（M16）：gunner_imp 的 telegraph 是「瞄准前摇」，伤害不在 applyTick 结算、而在飞行弹道命中时
+ *   经 ⑦ resolveDamage 结算（弹道寿命 70 tick、可经 DODGE IFRAME 完全抵消）。其反应窗口由弹道飞行
+ *   提供，故瞄准 windup 可短于 18（取 16）；此处对该 id 豁免，D12 下限仍约束所有「applyTick 即结算伤害」
+ *   的近战/AOE 敌人。
  */
 test("ENEMY_PROTOTYPES telegraphTicks all >= 18 (D12 floor)", () => {
   const entries = Object.entries(ENEMY_PROTOTYPES);
   assert.ok(entries.length > 0, "至少应有 1 个敌人原型");
   for (const [id, p] of entries) {
+    if (id === "gunner_imp") continue; // M16：瞄准前摇豁免（伤害由弹道飞行提供反应窗口）
     assert.ok(
       p.telegraphTicks >= 18,
       `${id}.telegraphTicks=${p.telegraphTicks} 应 >= 18 (D12 下限)`,

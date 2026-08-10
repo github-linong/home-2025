@@ -120,6 +120,23 @@ interface Actor {
   enraged?: boolean; // 触发狂暴后置 true（undefined → JSON 丢弃，不影响确定性快照哈希，与 phase 同先例）
 }
 
+/**
+ * 飞行弹道实体（M16，瞬态；仅 world.step 内步进+碰撞，不入快照 entities）。
+ * 确定性：固定速度（vx/vy px/tick）步进；born/expire 由 spawn tick + 固定寿命推算。
+ */
+export interface Projectile {
+  id: number;
+  x: number;
+  y: number;
+  vx: number; // px/tick（确定性固定速度）
+  vy: number;
+  ownerId: number; // 发射者敌 id
+  damage: number; // 命中伤害（扁平，取原型 attackDamage）
+  bornTick: number;
+  expireTick: number; // <= world.tick 或 ==-1（命中标记移除）则本 tick 清理
+  radius: number; // 碰撞半径 px
+}
+
 export interface World {
   readonly runId: string;
   readonly seed: string;
@@ -134,6 +151,8 @@ export interface World {
   snapshot(): WorldSnapshot;
   /** 只读 actor 视图（测试/调试用）。 */
   actors(): readonly Actor[];
+  /** M16 只读飞行弹道视图（测试/调试用；瞬态实体，不入 entities）。 */
+  projectiles(): readonly Projectile[];
   /** S7.6/S7.7 断线托管：置位/清除玩家 disconnected 标记，并在断开瞬间抓拍 PersonalState（D8 单次持有）。 */
   setDisconnected(playerId: number, disconnected: boolean): void;
 }
@@ -185,6 +204,11 @@ export function createWorld(opts: CreateWorldOpts): World {
   const layout: LayoutSnapshot = generateLayout(opts.seed, opts.biomeId);
   const actors: Actor[] = [];
   let nextId = 0;
+
+  // ── M16 飞行弹道瞬态实体（确定性；每次 createWorld 独立重置）──
+  // projectiles：本 run 活跃弹道列表；projSeq：弹道自增 id（闭包局部，与 nextId 同序确定）。
+  let projectiles: Projectile[] = [];
+  let projSeq = 1;
 
   // 是否生成敌人（默认 true）。false 时完全跳过波次推进（progression）与清场清理，
   // 用于隔离 ⑪ 倒地/救援/超时 与 ⑧ 协作技的单元测试（避免敌人碰撞噪声污染判定）。
@@ -330,6 +354,46 @@ export function createWorld(opts: CreateWorldOpts): World {
     currentRoomPhase = waveHasBoss[n] ? RoomPhase.BOSS : RoomPhase.ACTIVE;
   }
 
+  /** M16 飞行弹道步进（确定性；固定速度位移 + 碰撞 + 过期/越界清理）。
+   * 碰撞经 ⑦ resolveDamage（唯一 hp 出口，自动尊重 IFRAME/DODGE 免伤）；绝不直改 pl.hp（纪律 B）。
+   * bounds 包含整张地牢（64*32 x 40*32 = 2048 x 1280）+ 256 余量，仅影响弹道寿命，不影响确定性。 */
+  function stepProjectiles(state: CombatState): void {
+    // (1) 步进：固定速度位移。
+    for (const p of projectiles) {
+      p.x += p.vx;
+      p.y += p.vy;
+    }
+    // (2) 碰撞：仅对 ALIVE 且非 DOWNED/OUT 的 PLAYER 结算（PLAYER kind，非 DOWNED/OUT）。
+    const pr = 14; // PLAYER 碰撞半径（与移动判定一致）
+    for (const p of projectiles) {
+      if (p.expireTick === -1) continue; // 已命中标记移除，跳过
+      for (const pl of actors) {
+        if (pl.kind !== EntityKind.PLAYER) continue;
+        if (!isOutEligibleTarget(pl.status)) continue; // 已倒地/出局不结算
+        if (Math.hypot(p.x - pl.x, p.y - pl.y) <= p.radius + pr) {
+          // 纪律 B：伤害经唯一出口 combat.resolveDamage（自动尊重 IFRAME/DODGE 免伤）。
+          resolveDamage(state, {
+            sourceId: p.ownerId,
+            targetId: pl.id,
+            amount: 0,
+            tick: world.tick,
+            kind: CombatKind.PROJECTILE,
+            enemyDamage: p.damage,
+          });
+          p.expireTick = -1; // 标记移除（本 tick 末尾过滤）
+          break;
+        }
+      }
+    }
+    // (3) 过期/越界移除（bounds 含整张地牢 + 余量，仅影响弹道寿命，不影响确定性）。
+    projectiles = projectiles.filter(
+      (p) =>
+        p.expireTick > world.tick &&
+        p.expireTick !== -1 &&
+        p.x > -256 && p.x < 2304 && p.y > -256 && p.y < 1536,
+    );
+  }
+
   // 玩家：按座位环绕分布在地图中心附近。
   const centerX = 32 * 32;
   const centerY = 20 * 32;
@@ -379,6 +443,7 @@ export function createWorld(opts: CreateWorldOpts): World {
       return currentRoomPhase;
     },
     actors: () => actors.slice(),
+    projectiles: () => projectiles.slice(),
     enqueueInput(playerId: number, cmd: InputCmd) {
       return inputs.enqueue(playerId, cmd);
     },
@@ -571,6 +636,43 @@ export function createWorld(opts: CreateWorldOpts): World {
             }
             a.hp = 0;
             a.status |= EntityStatus.DOWNED;
+          } else if (a.enemyTypeId === "gunner_imp" && proto) {
+            // 枪手弹道（M16）：applyTick 抵达 → 生成飞行弹道实体（朝最近存活玩家），
+            // 不直接结算近战伤害。纪律 B：弹道命中经 ⑦ resolveDamage（唯一 hp 出口，
+            // 自动尊重 IFRAME/DODGE 免伤，C11 服务端裁决）。
+            // 确定性：最近玩家取「首个最小欧氏距离平方」（与敌 AI 一致，无 Math.random）。
+            // 若无存活玩家（全部 DOWNED/OUT）则跳过生成，弹道不凭空出现。
+            let target: Actor | null = null;
+            let bestSq = Infinity;
+            for (const t of actors) {
+              if (t.kind !== EntityKind.PLAYER) continue;
+              if (!isOutEligibleTarget(t.status)) continue; // 已倒地/出局不锁定
+              const dx = t.x - a.x;
+              const dy = t.y - a.y;
+              const dSq = dx * dx + dy * dy;
+              if (dSq < bestSq) {
+                bestSq = dSq;
+                target = t;
+              }
+            }
+            if (target) {
+              const dx = target.x - a.x;
+              const dy = target.y - a.y;
+              const len = Math.hypot(dx, dy) || 1;
+              const PROJ_SPEED = 320 / 30; // px/tick（~320px/s 飞行速度）
+              projectiles.push({
+                id: projSeq++,
+                x: a.x,
+                y: a.y,
+                vx: (dx / len) * PROJ_SPEED,
+                vy: (dy / len) * PROJ_SPEED,
+                ownerId: a.id,
+                damage: proto.attackDamage, // 扁平弹道伤害（取原型 attackDamage）
+                bornTick: world.tick,
+                expireTick: world.tick + 70, // ~2.33s @30Hz 寿命（含穿场地牢余量）
+                radius: 9,
+              });
+            }
           } else {
             const target = actors.find(
               (t) => t.id === a.telegraph!.targetId && (t.status & EntityStatus.ALIVE) !== 0,
@@ -601,6 +703,11 @@ export function createWorld(opts: CreateWorldOpts): World {
           a.telegraph = null; // 一次性结算后清除前摇
         }
       }
+
+      // ── M16 飞行弹道步进（确定性；固定速度位移 + 碰撞 + 过期清理）──
+      // 置于实体移动（上方首循环）之后、brute 狂暴扫描之前；applyTick 本 tick 新生成的弹道
+      // 当 tick 即步进一次（确定性，无随机源）。碰撞经 ⑦ resolveDamage（纪律 B）。
+      stepProjectiles(combatState);
 
       // ── brute_charger 狂暴生怪（enrage；确定性，seed 由 charger id + tick）──
       // 每 tick 扫描：brute_charger 血量跌破 50% maxHp 且尚未 enraged → 置 enraged=true
@@ -817,6 +924,17 @@ export function createWorld(opts: CreateWorldOpts): World {
         intermissionTicks: Math.max(0, intermissionUntilTick - world.tick),
         enemiesRemaining,
         entities,
+        // M16：飞行弹道瞬态实体（顶层字段，独立于 entities；golden 仅哈希 entities，故 golden 安全）。
+        projectiles: projectiles.map((p) => ({
+          id: p.id,
+          x: p.x,
+          y: p.y,
+          vx: p.vx,
+          vy: p.vy,
+          ownerId: p.ownerId,
+          damage: p.damage,
+          radius: p.radius,
+        })),
         lastProcessedSeq: inputs.lastProcessedSeq(),
       };
     },

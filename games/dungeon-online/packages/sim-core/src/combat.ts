@@ -36,11 +36,14 @@ export const PLAYER_ATTACK_DAMAGE = 18;
 /** DODGE 授予的 IFRAME 免伤窗口（tick，~0.4s @30Hz）。 */
 export const DODGE_IFRAME_TICKS = 12;
 
-/** 战斗意图种类（对齐 InputAction.ATTACK/DODGE/SKILL；MOVE/SIGNAL 不进结算）。 */
+/** 战斗意图种类（对齐 InputAction.ATTACK/DODGE/SKILL；MOVE/SIGNAL 不进结算）。
+ *  PROJECTILE(4)：M16 飞行弹道命中结算（经 world.step 弹道碰撞调用 ⑦）；非 DODGE，
+ *  走普通伤害路径（自动尊重 IFRAME/DODGE 免伤，C11 服务端裁决）。仅 M16 新增弹道使用。 */
 export const CombatKind = {
   ATTACK: 1,
   DODGE: 2,
   SKILL: 3,
+  PROJECTILE: 4,
 } as const;
 export type CombatKindValue = (typeof CombatKind)[keyof typeof CombatKind];
 
@@ -113,7 +116,15 @@ export function resolveDamage(state: CombatState, req: DamageRequest): DamageEve
   }
 
   // D12 windup 未完成 → no-op（伤害尚未前摇完成）。
-  if (source?.telegraph && source.telegraph.applyTick > state.tick) {
+  // 例外（M16）：PROJECTILE(4) 为已发射、独立飞行的弹道伤害——伤害在「命中时」才经 ⑦ 结算，
+  //   其前摇已于发射者 applyTick 完成，不受发射者「下一次攻击」前摇门控；否则飞行弹道会被发射者
+  //   立即重启的前摇误杀（gunner 在 applyTick 后立刻起新 telegraph → 弹道命中时 source.telegraph
+  //   仍存在 → 被误判为 windup 未完成 → no-op）。PROJECTILE 绕过此门，ATTACK/SKILL 仍受其约束。
+  if (
+    req.kind !== CombatKind.PROJECTILE &&
+    source?.telegraph &&
+    source.telegraph.applyTick > state.tick
+  ) {
     return { targetId: req.targetId, deltaHp: 0, statusChange: target.status, tick: state.tick };
   }
 

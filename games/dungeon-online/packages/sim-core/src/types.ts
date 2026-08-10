@@ -176,6 +176,19 @@ export interface RescueState {
   readonly totalTicks: number;
 }
 
+/** 飞行弹道快照（M16；world.snapshot 公开，供客户端渲染 + 命中判定可视化）。
+ * 瞬态实体，不入 entities（避免改动 golden 的 entities 哈希）；确定性可复现（固定速度步进）。 */
+export interface ProjectileSnapshot {
+  readonly id: number;
+  readonly x: number;
+  readonly y: number;
+  readonly vx: number; // px/tick（确定性固定速度）
+  readonly vy: number;
+  readonly ownerId: number; // 发射者敌 id
+  readonly damage: number; // 命中伤害（扁平，取原型 attackDamage）
+  readonly radius: number; // 碰撞半径 px
+}
+
 /**
  * 权威世界快照（ADR-ENG-03 §A）。diff 仅含变化实体（由 ① 广播）。
  */
@@ -194,6 +207,11 @@ export interface WorldSnapshot {
   /** 数据面路由标记（C2）：客户端据 `type` 区分快照与控制/房间消息，避免脆弱的形状探测。 */
   readonly type: "snapshot";
   readonly entities: readonly EntityState[];
+  /**
+   * 飞行弹道实体（M16 新机制，瞬态；world.step 内步进+碰撞）。独立于 entities：
+   * golden 哈希仅取 entities，本顶层字段不影响 entity 字节（golden 安全）；确定性 intact。
+   */
+  readonly projectiles: readonly ProjectileSnapshot[];
   /**
    * 各玩家已服务端消费的最大 seq（S4.3 reconciliation / S4.5 延迟指示）。
    * key=playerId(=seatId=实体 ownerId)；随快照下发，供客户端 100ms 插值/回正。
@@ -335,6 +353,19 @@ export const ENEMY_PROTOTYPES: Record<string, EnemyPrototype> = {
     attackRange: 36, // 平衡初稿 px（= blast 半径：进入即起 telegraph，applyTick 时 AOE 结算）
     telegraphTicks: 18, // 0.6s @30Hz（D12 MIN_TELEGRAPH_TICKS 下限；消除 M13 刻意短前摇例外，与 brute 一致）
     shape: TelegraphShape.AOE_FILL, // AOE 填充预警（已接线的客户端 telegraph 渲染路径）
+  },
+  gunner_imp: {
+    id: "gunner_imp",
+    tier: "grunt",
+    hpMin: 18,
+    hpMax: 26,
+    attackDamageMin: 0, // 弹道命中伤害为扁平定值（非区间随机），Min/Max 置 0 与③原型表字段一致
+    attackDamageMax: 0,
+    attackDamage: 10, // 弹道命中伤害（扁平，单一值；经 ⑦ resolveDamage 落地，enemyDamage=p.damage）
+    speed: 90, // 平衡初稿 px/s（介于 grunt 70 与 bomber 135 之间，远程风筝者）
+    attackRange: 160, // 平衡初稿 px（远程风筝射程，远大于近战；gunner 保持距离开火）
+    telegraphTicks: 16, // 瞄准前摇 tick（抵达 applyTick 时 world 生成飞行弹道实体，非近战结算）
+    shape: TelegraphShape.LINE, // 线性瞄准预警（N2 方向性 telegraph，沿 facing 拉伸瞄准线）
   },
 };
 

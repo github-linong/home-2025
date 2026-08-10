@@ -175,13 +175,23 @@ async function main() {
             dir: 0, hp: 70, maxHp: 100, status: 1, statusEffects: [],
             classId: 'tank', ownerId: 92, tauntUntilTick: 99999,
           };
-          return { ...base, entities: [...base.entities, fakeDowned, fakeEnraged, fakeBomber, fakeShielded, fakeTaunting] };
+          // M16: synthetic flying projectile (enemy-owned) → exercises drawProjectiles() path.
+          const fakeProjectile = {
+            id: 900010, x: (me.pos?.x || 0) + 50, y: (me.pos?.y || 0),
+            vx: -70, vy: 0, ownerId: 900002, damage: 10,
+            bornTick: 0, expireTick: 99999, radius: 6,
+          };
+          return {
+            ...base,
+            entities: [...base.entities, fakeDowned, fakeEnraged, fakeBomber, fakeShielded, fakeTaunting],
+            projectiles: [fakeProjectile, ...(base.projectiles || [])],
+          };
         },
         set(v) { _snap = v; },
       });
       return null;
     });
-    let seen = false, enragedSeen = false, bomberSeen = false, shieldSeen = false, tauntSeen = false;
+    let seen = false, enragedSeen = false, bomberSeen = false, shieldSeen = false, tauntSeen = false, projectileSeen = false;
     for (let i = 0; i < 40; i++) {
       await sleep(15);
       const c = await page.evaluate(() => window.__game.downedAllies);
@@ -194,8 +204,11 @@ async function main() {
       if (sh) shieldSeen = true;
       const tn = await page.evaluate(() => window.__game.anyTaunting === true);
       if (tn) tauntSeen = true;
-      if (seen && enragedSeen && bomberSeen && shieldSeen && tauntSeen) break;
+      const pr = await page.evaluate(() => window.__game.projectileCount || 0);
+      if (pr >= 1) projectileSeen = true;
+      if (seen && enragedSeen && bomberSeen && shieldSeen && tauntSeen && projectileSeen) break;
     }
+    results.projectileSeen = projectileSeen;
     results.downedRenderErr = downErr;
     results.downedAlliesSeen = seen;
     results.enragedSeen = enragedSeen;
@@ -300,6 +313,7 @@ async function main() {
   gates.push(['per-class skill set (C4/M15)', results.classSkillOk === true]);
   gates.push(['skill bar shows 2 skills (C4/M15)', results.skillBarOk === true]);
   gates.push(['key1 casts class-first skill (C4/M15)', results.classCastOk === true]);
+  gates.push(['projectile renders (M16)', results.projectileSeen === true]);
   let pass = true;
   log('\n=== GATES ===');
   for (const [name, ok] of gates) {

@@ -106,6 +106,30 @@ export function stepEnemyAi(self: EnemyAiSelf, ctx: EnemyAiContext): EnemyIntent
     return { type: "MOVE", dir: { x: dx / len, y: dy / len } };
   }
 
+  // ── gunner_imp（M16 枪手）：完整实现远程风筝（与 caster_ember 同思路，但 retreat 真正生效）。
+  //   caster_ember 的 kite 分支因上方 `dist <= attackRange → ATTACK` 早返，retreat 分支实际不可达；
+  //   此处 gunner 分支置于早返之前，三态齐全：贴脸(<attackRange*0.55)→后撤拉开；射程内→ATTACK；
+  //   太远→靠近维持射程。确定性，无随机源；纪律 B：仅产出意图，不改状态。
+  if (self.enemyTypeId === "gunner_imp") {
+    const retreatThreshold = proto.attackRange * 0.55; // 贴脸阈值：< 此距离后撤
+    if (dist < retreatThreshold) {
+      // 远离目标：单位方向 = (self − target) 归一化（后撤，位移由 world 按 speed/30 施加）。
+      const dx = self.x - nearest.x;
+      const dy = self.y - nearest.y;
+      const len = Math.hypot(dx, dy) || 1;
+      return { type: "MOVE", dir: { x: dx / len, y: dy / len } };
+    }
+    if (dist <= proto.attackRange) {
+      // 射程内 → 发起攻击意图（world 经 ⑦ 启动 LINE telegraph；applyTick 时生成飞行弹道）。
+      return { type: "ATTACK", targetId: nearest.id, damage: proto.attackDamage };
+    }
+    // 太远 → 朝最近玩家靠近以维持射程（归一化单位方向）。
+    const dx = nearest.x - self.x;
+    const dy = nearest.y - self.y;
+    const len = Math.hypot(dx, dy) || 1;
+    return { type: "MOVE", dir: { x: dx / len, y: dy / len } };
+  }
+
   if (dist <= proto.attackRange) {
     // 在攻击范围内 → 发起攻击意图（伤害取原型平衡初稿值，非玩家 18）。
     return { type: "ATTACK", targetId: nearest.id, damage: proto.attackDamage };

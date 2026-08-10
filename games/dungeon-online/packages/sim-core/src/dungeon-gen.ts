@@ -59,11 +59,11 @@ export function generateLayout(seed: string, biomeId: number): LayoutSnapshot {
     floorSequence.push(rng.nextInt(0, biomeId + 2));
   }
 
-  // 基础刷怪池（排除 caster_ember、brute_charger、bomber_imp）：维持 grunt/elite/boss 三类的相对分布不变。
-  // caster_ember / brute_charger / bomber_imp 均仅以「确定性低密度」方式注入（见下方各自槽位替换），
+  // 基础刷怪池（排除 caster_ember、brute_charger、bomber_imp、gunner_imp）：维持 grunt/elite/boss 三类的相对分布不变。
+  // caster_ember / brute_charger / bomber_imp / gunner_imp 均仅以「确定性低密度」方式注入（见下方各自槽位替换），
   // 不计入随机池，控制其出现频率，避免破坏各原型的设计占比意图。
   const enemyTypeIds = Object.keys(ENEMY_PROTOTYPES).filter(
-    (id) => id !== "caster_ember" && id !== "brute_charger" && id !== "bomber_imp",
+    (id) => id !== "caster_ember" && id !== "brute_charger" && id !== "bomber_imp" && id !== "gunner_imp",
   );
   const spawnPoints: SpawnPoint[] = [];
   let wave = 0;
@@ -81,6 +81,13 @@ export function generateLayout(seed: string, biomeId: number): LayoutSnapshot {
       //   r<0.2 → brute_charger；0.2≤r<0.35 → bomber_imp（=15% of grunt rolls）；否则 grunt_swarm。
       //   仅 wave≥2 注入 bomber，wave 1 绝不注入（保留「wave 1 至少含一 grunt_swarm」保证，见下方）。
       //   无 Date/Math.random；整体确定性 intact。
+      // gunner_imp（M16 枪手）：确定性低密度注入 —— 仅当本槽为 grunt_swarm 且 wave>1 时，以 ~12% 概率
+      //   （0.35≤r<0.47）替换为飞行弹道枪手。复用 grunt 槽那单次 nextFloat（不新增 rng 抽流，rng 序列
+      //   与「仅 brute/bomber」先例逐位一致）：r<0.2→brute；0.2≤r<0.35→bomber；0.35≤r<0.47→gunner；
+      //   否则 grunt。仅 wave≥2 注入 gunner，wave 1 绝不注入（保留 wave-1 grunt 保证，见下方）；
+      //   故 playtest-core-loop 220-tick 窗口（未抵达含 gunner 的 wave≥2）实体集不变，GOLDEN_PLAYTEST_HASH
+      //   稳定；但其改变了部分 wave≥2 grunt 的 enemyTypeId → 布局哈希随之改变（确定性 intact，重锁见
+      //   determinism.test.ts）。无 Date/Math.random。
       let enemyTypeId: string;
       if (rolled === "elite_warden") {
         enemyTypeId = rng.nextBool(0.2) ? "caster_ember" : rolled;
@@ -90,6 +97,8 @@ export function generateLayout(seed: string, biomeId: number): LayoutSnapshot {
           enemyTypeId = "brute_charger";
         } else if (wave > 1 && r < 0.35) {
           enemyTypeId = "bomber_imp";
+        } else if (wave > 1 && r < 0.47) {
+          enemyTypeId = "gunner_imp";
         } else {
           enemyTypeId = "grunt_swarm";
         }

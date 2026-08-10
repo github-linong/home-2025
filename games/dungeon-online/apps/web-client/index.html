@@ -805,6 +805,35 @@ function drawParticles() {
   ctx.restore();
 }
 
+// M16: flying projectiles (enemy/player ranged attacks in flight, dodgeable).
+// World-space, reads GAME.lastSnapshot so the automation synthetic-injection path
+// is also exercised. Drawn above rings, below floaters.
+function drawProjectiles() {
+  const projs = (GAME.lastSnapshot?.projectiles || []);
+  if (!projs.length) return;
+  ctx.save();
+  for (const p of projs) {
+    const x = p.x, y = p.y, r = p.radius || 6;
+    const vx = p.vx || 0, vy = p.vy || 0;
+    const sp = Math.hypot(vx, vy) || 1;
+    const tl = 16; // trail length (world px)
+    const tx = (vx / sp) * tl, ty = (vy / sp) * tl;
+    // motion trail (opposite to velocity)
+    const grad = ctx.createLinearGradient(x, y, x - tx, y - ty);
+    grad.addColorStop(0, 'rgba(255,120,50,0.85)');
+    grad.addColorStop(1, 'rgba(255,120,50,0)');
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = r * 1.3; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - tx, y - ty); ctx.stroke();
+    // glowing core
+    ctx.shadowColor = '#ff5a2a'; ctx.shadowBlur = 12;
+    ctx.fillStyle = '#ffd9a0';
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+  ctx.restore();
+}
+
 function drawCircleFallback(e, x, y, snap) {
   const isLocal = e.id === localEntityId;
   const isPlayer = e.kind === 0;
@@ -1096,6 +1125,8 @@ function draw() {
   GAME.anyTaunting = (GAME.lastSnapshot?.entities || []).some((e) => e.kind === 0 && e.tauntUntilTick != null && e.tauntUntilTick > 0);
   // M11: expose live particle count (death/hit juice) for automation gate.
   GAME.particleCount = particles.length;
+  // M16: expose live projectile count (dodgeable ranged attacks) for automation gate.
+  GAME.projectileCount = (GAME.lastSnapshot?.projectiles || []).length;
   // C4：本地职业解析 → 动态构建分职业技能栏 + 暴露职业信息供自动化闸门。
   const meEnt = (GAME.lastSnapshot?.entities || []).find((e) => e.kind === 0 && e.id === GAME.localEntityId);
   const lc = meEnt?.classId || null;
@@ -1164,6 +1195,7 @@ function draw() {
   }
   drawParticles();   // M11: death/hit bursts (world space, under rings/floaters)
   drawCastRings();   // M8: co-op cast ground rings (under floaters, world space)
+  drawProjectiles(); // M16: flying projectiles (world space, above rings, below floaters)
   drawFloaters();
 
   ctx.restore();
