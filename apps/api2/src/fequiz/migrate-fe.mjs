@@ -13,7 +13,14 @@ import { fequizConnect } from "./db.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const schemaSql = readFileSync(join(__dirname, "schema.sql"), "utf8");
-const seed = JSON.parse(readFileSync(join(__dirname, "seed-fe.json"), "utf8"));
+// 合并所有 seed-*.json（seed-fe 前端内置 + seed-ai AI/大模型与高频补充）
+const seeds = ["seed-fe.json", "seed-ai.json"].map((f) =>
+  JSON.parse(readFileSync(join(__dirname, f), "utf8")),
+);
+const seed = {
+  categories: seeds.flatMap((s) => s.categories),
+  questions: seeds.flatMap((s) => s.questions),
+};
 
 const conn = await fequizConnect();
 

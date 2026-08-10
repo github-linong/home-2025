@@ -253,14 +253,24 @@ const norm = (s) =>
 /** 客观题规则判分。 */
 function gradeObjective(qtype, payload, userAnswer) {
   if (qtype === "choice") {
+    // 未作答（null/undefined/空字符串）一律判错，
+    // 防止 Number(null)===0 误匹配 answerIndex=0 而被判对的漏洞。
+    if (userAnswer === null || userAnswer === undefined || userAnswer === "") return { correct: false };
     const idx = Number(userAnswer);
-    return { correct: Number.isInteger(idx) && idx === payload.answerIndex };
+    return {
+      correct:
+        Number.isInteger(idx) &&
+        idx >= 0 &&
+        idx < (payload.options?.length || 0) &&
+        idx === payload.answerIndex,
+    };
   }
   if (qtype === "judge") {
-    const b = userAnswer === true || userAnswer === "true" || userAnswer === 1 || userAnswer === "1";
-    return { correct: b === payload.answer };
+    if (userAnswer !== true && userAnswer !== false) return { correct: false };
+    return { correct: userAnswer === payload.answer };
   }
   if (qtype === "fill") {
+    if (userAnswer === null || userAnswer === undefined) return { correct: false };
     const given = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
     let ok = true;
     for (let i = 0; i < payload.blanks.length; i++) {
