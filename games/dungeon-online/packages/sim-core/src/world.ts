@@ -446,7 +446,10 @@ export function createWorld(opts: CreateWorldOpts): World {
               const target =
                 cmd.target != null ? actors.find((t) => t.id === cmd.target) ?? null : null;
               const skillId = cmd.param ?? SKILL_IDS.SHIELD_ALLY;
-              const app = resolveSkillApplication(a, target, skillId, world.tick);
+              const app = resolveSkillApplication(
+                { id: a.id, kind: a.kind, status: a.status, disconnected: a.disconnected, classId: a.classId },
+                target, skillId, world.tick,
+              );
               if (app) {
                 // ① SHIELD_ALLY：给目标盟友设减伤护盾窗口（combat.resolveDamage 消费）。
                 if (app.shieldTicks > 0) {

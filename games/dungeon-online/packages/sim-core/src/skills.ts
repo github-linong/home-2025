@@ -20,7 +20,9 @@ import {
   EntityKind,
   EntityStatus,
   getSkillPrototype,
+  CLASS_SKILLS,
   type SkillPrototype,
+  type PlayerClass,
 } from "./types.ts";
 
 /** skills.ts 看到的「施法者 / 目标」只读视图（由 world 从 Actor 投影，避免运行时依赖 world）。 */
@@ -31,6 +33,8 @@ export interface SkillActorView {
   readonly status: number; // EntityStatus bitmask
   /** 是否处于断线托管（world 置位；托管期间不可施法）。 */
   readonly disconnected?: boolean;
+  /** 施法者职业（C4 白名单校验用；legacy/未知 caster 为 undefined → 跳过白名单）。 */
+  readonly classId?: PlayerClass;
 }
 
 /**
@@ -92,6 +96,11 @@ export function resolveSkillApplication(
 ): SkillApplication | null {
   const proto = getSkillPrototype(skillId);
   if (!proto) return null; // 未知技能 id
+  // C4：职业无权施放该技 → 拒绝（world.step 收到 null 会忽略，不进冷却、不落地）。
+  if (caster.classId != null) {
+    const allowed = CLASS_SKILLS[caster.classId];
+    if (!allowed || !allowed.includes(skillId)) return null;
+  }
   // tick 入参预留（未来 castTicks>0 的前摇窗口判定）；当前即时落地，未使用。
   void tick;
   if (caster.disconnected) return null; // 托管中不可施法

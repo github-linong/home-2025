@@ -29,11 +29,29 @@ export interface ClassBase {
   readonly label: string;
 }
 
+/** 协作技 ID（E8 三技能；预留扩展位）。前置定义以便 CLASS_SKILLS 白名单引用（无 TDZ）。 */
+export const SKILL_IDS = {
+  SHIELD_ALLY: 0, // 护盾链接：给目标盟友施加减伤护盾窗口
+  REVIVE_BOOST: 1, // 急救链：给倒地盟友救援读条直接加成（加速归队）
+  TAUNT: 2, // 嘲讽战吼：施法者吸引敌火（敌人 AI 优先锁定）
+} as const;
+export type SkillIdValue = (typeof SKILL_IDS)[keyof typeof SKILL_IDS];
+
 export const CLASS_BASE: Record<PlayerClass, ClassBase> = {
   tank: { hp: 140, moveSpeed: 210, attackCooldownMs: 400, label: "守卫士" },
   ranger: { hp: 80, moveSpeed: 278, attackCooldownMs: 400, label: "游侠" },
   mage: { hp: 90, moveSpeed: 248, attackCooldownMs: 400, label: "术士" },
   healer: { hp: 100, moveSpeed: 255, attackCooldownMs: 400, label: "医者" },
+};
+
+/** C4：每职业可用的协作技白名单（权威校验用）。SHIELD_ALLY 为通用技，各职业配一个招牌技。
+ *  注：3 技选 2 仅 3 种组合，tank/mage 同款——差异化由 CLASS_BASE 数值承担；
+ *  ranger/mage 的专属进攻技（标记/弹幕）留 C4b（需新增第 4 技）。 */
+export const CLASS_SKILLS: Record<PlayerClass, number[]> = {
+  tank:   [SKILL_IDS.TAUNT, SKILL_IDS.SHIELD_ALLY],
+  ranger: [SKILL_IDS.REVIVE_BOOST, SKILL_IDS.SHIELD_ALLY],
+  mage:   [SKILL_IDS.TAUNT, SKILL_IDS.SHIELD_ALLY],
+  healer: [SKILL_IDS.REVIVE_BOOST, SKILL_IDS.SHIELD_ALLY],
 };
 
 /**
@@ -465,14 +483,6 @@ export const SkillTargetMode = {
   ENEMY: 2, // 预留（未来进攻型协作技；本 Epic 未启用）
 } as const;
 export type SkillTargetModeValue = (typeof SkillTargetMode)[keyof typeof SkillTargetMode];
-
-/** 协作技 ID（E8 三技能；预留扩展位）。 */
-export const SKILL_IDS = {
-  SHIELD_ALLY: 0, // 护盾链接：给目标盟友施加减伤护盾窗口
-  REVIVE_BOOST: 1, // 急救链：给倒地盟友救援读条直接加成（加速归队）
-  TAUNT: 2, // 嘲讽战吼：施法者吸引敌火（敌人 AI 优先锁定）
-} as const;
-export type SkillIdValue = (typeof SKILL_IDS)[keyof typeof SKILL_IDS];
 
 /** 协作技效果参数（由 SKILL_PROTOTYPES 持有；skills.ts 读取，world.step 落地）。 */
 export interface SkillEffect {

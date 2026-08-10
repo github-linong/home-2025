@@ -62,7 +62,7 @@
 </div>
 <div id="stick-area"><div id="stick-base"><div id="stick-nub"></div></div></div>
 <div id="touch-attack">⚔</div>
-<div id="help">WASD / 方向键 移动 · 空格 / J 攻击 · Shift 闪避 · 1/2/3 协作技</div>
+<div id="help">WASD / 方向键 移动 · 空格 / J 攻击 · Shift 闪避 · 1·2 协作技</div>
 
 <script>
 const canvas = document.getElementById('game');
@@ -94,6 +94,7 @@ const GAME = window.__game = {
   connected: false, lastSnapshot: null, localEntityId: null, gameState: 'connecting',
   fps: 0, errors: [], spritesLoaded: false, localRender: null, predicted: null, authPos: null,
   particleCount: 0, // M11: live death/hit particle count (for automation gate)
+  localClass: null, classSkills: [], lastCastParam: null, // M15/C4: per-class skill set (for automation gate)
 };
 // M11: expose spawnBurst so automation can deterministically trigger/verify the death-burst path.
 GAME.spawnBurst = spawnBurst;
@@ -134,7 +135,13 @@ let lastHitSfx = 0, lastDeathSfx = 0;
 let camX = 0, camY = 0;
 // co-op skill cooldown UI state (client-only estimate; authoritative gating is server-side)
 const SKILL_CD_MS = [12000, 10000, 14000];
-const skillCdUntil = [0, 0, 0];
+// C4：职业技能白名单（mirror sim CLASS_SKILLS；客户端仅用于渲染/拦截，权威校验在 sim）。
+const CLASS_SKILLS_CLIENT = { tank: [2, 0], ranger: [1, 0], mage: [2, 0], healer: [1, 0] };
+const SKILL_TARGET_MODE = ['ally', 'ally', 'self']; // 按全局 skillId：0护盾/1急救=指向盟友，2嘲讽=自身
+const skillCdUntil = [0, 0]; // 按本地技能序号 0/1（每职业 2 技）
+let mySkills = [];
+let lastCastParam = null;
+let skillBarBuiltFor = null;
 let shakeMag = 0;             // screen-shake magnitude (decays each frame)
 const floaters = [];          // floating damage/heal numbers {x,y,text,color,born,life}
 // co-op cast feedback (M8): track last seen activeSkill per ally so a NEW cast fires a one-shot ring + label.
@@ -241,14 +248,7 @@ if (touchAttack) {
   }, { passive: false });
   touchAttack.addEventListener('touchend', e => { e.preventDefault(); touchAttack.style.background = 'rgba(255,80,80,0.25)'; }, { passive: false });
 }
-for (let i = 0; i < 3; i++) {
-  const el = document.getElementById('sk' + i);
-  if (el) {
-    el.style.pointerEvents = 'auto';
-    el.addEventListener('touchstart', (e) => { e.preventDefault(); castSkill(i); }, { passive: false });
-    el.addEventListener('click', () => castSkill(i));
-  }
-}
+// C4：技能栏改为按职业动态构建（renderSkillBar），监听器在其中挂载，移除静态 3 技能循环。
 
 function currentInputDir() {
   let dx = 0, dy = 0;
@@ -292,12 +292,33 @@ function nearestAllyId() {
   }
   return best ? best.id : 0;
 }
-function castSkill(id) {
+function castSkill(localIdx) {
+  if (localIdx >= mySkills.length) { sfxDenied(); return; } // C4：职业无此技 → 拦截（不发送）
+  const skillId = mySkills[localIdx];
   const now = performance.now();
-  if (now < skillCdUntil[id]) { sfxDenied(); return; }
-  sendInput(3, { x: 0, y: 0 }, nearestAllyId(), id);
-  skillCdUntil[id] = now + SKILL_CD_MS[id];
+  if (now < skillCdUntil[localIdx]) { sfxDenied(); return; }
+  const target = SKILL_TARGET_MODE[skillId] === 'self' ? 0 : nearestAllyId();
+  sendInput(3, { x: 0, y: 0 }, target, skillId);
+  skillCdUntil[localIdx] = now + SKILL_CD_MS[skillId];
+  lastCastParam = skillId;
+  GAME.lastCastParam = skillId;
   sfxSkill();
+}
+// C4：按本地职业动态构建技能栏（监听器随构建挂载；移除原静态 3 技能循环）。
+function renderSkillBar() {
+  const bar = document.getElementById('skillbar');
+  if (!bar) return;
+  bar.innerHTML = '';
+  mySkills.forEach((sid, idx) => {
+    const el = document.createElement('div');
+    el.className = 'skill';
+    el.id = 'sk' + idx;
+    el.innerHTML = '<span class="k">' + (idx + 1) + '</span><span class="n">' + SKILL_LABEL[sid] + '</span><div class="cd" id="cd' + idx + '"></div>';
+    el.style.pointerEvents = 'auto';
+    el.addEventListener('touchstart', (e) => { e.preventDefault(); castSkill(idx); }, { passive: false });
+    el.addEventListener('click', () => castSkill(idx));
+    bar.appendChild(el);
+  });
 }
 
 // ── WebAudio SFX (procedural, no asset files) ──
@@ -1075,12 +1096,22 @@ function draw() {
   GAME.anyTaunting = (GAME.lastSnapshot?.entities || []).some((e) => e.kind === 0 && e.tauntUntilTick != null && e.tauntUntilTick > 0);
   // M11: expose live particle count (death/hit juice) for automation gate.
   GAME.particleCount = particles.length;
+  // C4：本地职业解析 → 动态构建分职业技能栏 + 暴露职业信息供自动化闸门。
+  const meEnt = (GAME.lastSnapshot?.entities || []).find((e) => e.kind === 0 && e.id === GAME.localEntityId);
+  const lc = meEnt?.classId || null;
+  if (lc && lc !== skillBarBuiltFor && CLASS_SKILLS_CLIENT[lc]) {
+    mySkills = CLASS_SKILLS_CLIENT[lc];
+    renderSkillBar();
+    skillBarBuiltFor = lc;
+  }
+  GAME.localClass = lc;
+  GAME.classSkills = mySkills;
   // ── skill cooldown HUD ──
   const nowMs = performance.now();
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < mySkills.length; i++) {
     const remain = Math.max(0, skillCdUntil[i] - nowMs);
     const cdEl = document.getElementById('cd' + i);
-    if (cdEl) cdEl.style.height = (remain > 0 ? (remain / SKILL_CD_MS[i]) * 100 : 0) + '%';
+    if (cdEl) cdEl.style.height = (remain > 0 ? (remain / SKILL_CD_MS[mySkills[i]]) * 100 : 0) + '%';
     const skEl = document.getElementById('sk' + i);
     if (skEl) skEl.classList.toggle('ready', remain <= 0);
   }

@@ -119,43 +119,44 @@ test("SHIELD_ALLY: mitigation actually reduces incoming damage via combat.resolv
 // ---------------------------------------------------------------------------
 test("REVIVE_BOOST: accelerates a DOWNED ally's rescue readbar; no-op on healthy ally", () => {
   const { w, bySeat } = mkWorld(3);
-  const p0 = bySeat(0);
-  const p1 = bySeat(1); // 将被击倒
-  const p2 = bySeat(2); // 健康盟友，用作 no-op 控制
+  // C4：REVIVE_BOOST 仅 ranger/healer 可施；本测试用 ranger(seat1) 作施法者。
+  const casterP = bySeat(1); // ranger（白名单允许 REVIVE_BOOST）
+  const downed = bySeat(2); // mage，将被击倒
+  const healthy = bySeat(0); // tank，健康盟友，用作 no-op 控制
 
-  // 击倒 p1（保留 ALIVE 位，符合 world 约定）。
-  p1.hp = 0;
-  p1.status = EntityStatus.ALIVE | EntityStatus.DOWNED;
-  p1.downedTicks = 0;
-  p1.rescueTicks = 0;
+  // 击倒 downed（保留 ALIVE 位，符合 world 约定）。
+  downed.hp = 0;
+  downed.status = EntityStatus.ALIVE | EntityStatus.DOWNED;
+  downed.downedTicks = 0;
+  downed.rescueTicks = 0;
 
-  const before = p1.rescueTicks;
-  w.enqueueInput(0, {
+  const before = downed.rescueTicks;
+  w.enqueueInput(1, {
     seq: 1,
     tick: 0,
     action: InputAction.SKILL,
     dir: { x: 0, y: 0 },
-    target: p1.id,
+    target: downed.id,
     param: SKILL_IDS.REVIVE_BOOST,
   });
   w.step();
   // 急救链直接 +rescueBoostTicks（玩家间距 > RESCUE_RADIUS，rescue 循环不再累加）。
-  assert.equal(p1.rescueTicks, before + REVIVE_BOOST, "DOWNED ally rescue readbar boosted");
-  assert.equal(p0.cooldownUntilTick, REVIVE_COOLDOWN, "caster enters REVIVE_BOOST cooldown");
+  assert.equal(downed.rescueTicks, before + REVIVE_BOOST, "DOWNED ally rescue readbar boosted");
+  assert.equal(casterP.cooldownUntilTick, REVIVE_COOLDOWN, "caster enters REVIVE_BOOST cooldown");
 
-  // no-op 控制：p2 用 REVIVE_BOOST 施于健康盟友 p0 → 应被拒（不进入冷却、不加成）。
-  const r0before = p0.rescueTicks;
-  w.enqueueInput(2, {
+  // no-op 控制：tank(seat0) 用 REVIVE_BOOST 施于健康 caster → 越权被拒（白名单 + DOWNED 双重拦截）。
+  const r0before = casterP.rescueTicks;
+  w.enqueueInput(0, {
     seq: 1,
     tick: 1,
     action: InputAction.SKILL,
     dir: { x: 0, y: 0 },
-    target: p0.id,
+    target: casterP.id,
     param: SKILL_IDS.REVIVE_BOOST,
   });
   w.step();
-  assert.equal(p0.rescueTicks, r0before, "healthy ally gets no rescue boost");
-  assert.equal(p2.cooldownUntilTick ?? 0, 0, "invalid REVIVE_BOOST target → no cooldown consumed");
+  assert.equal(casterP.rescueTicks, r0before, "healthy ally gets no rescue boost");
+  assert.equal(healthy.cooldownUntilTick ?? 0, 0, "invalid REVIVE_BOOST cast → no cooldown consumed");
 });
 
 // ---------------------------------------------------------------------------

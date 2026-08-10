@@ -245,6 +245,32 @@ async function main() {
       roomPhase: window.__game.roomPhase, bannerShown: window.__game.bannerShown,
     }));
 
+    // ── M15 / C4: per-class skill bar + class-aware cast mapping ──
+    const CLASS_SKILLS_MIRROR = { tank: [2, 0], ranger: [1, 0], mage: [2, 0], healer: [1, 0] };
+    let lc = null, cs = null;
+    for (let i = 0; i < 50; i++) {
+      await sleep(15);
+      lc = await page.evaluate(() => window.__game.localClass);
+      cs = await page.evaluate(() => window.__game.classSkills);
+      if (lc && Array.isArray(cs) && cs.length === 2) break;
+    }
+    const classOk = !!(lc && CLASS_SKILLS_MIRROR[lc] && Array.isArray(cs) && cs.length === 2 &&
+      cs[0] === CLASS_SKILLS_MIRROR[lc][0] && cs[1] === CLASS_SKILLS_MIRROR[lc][1]);
+    const barCount = await page.evaluate(() => document.querySelectorAll('#skillbar .skill').length);
+    const barOk = barCount === 2;
+    // 按 1 键 → 应施放「本职业第 1 技」（证明映射按职业而非硬编码 0/1/2）。
+    await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit1', bubbles: true })));
+    await sleep(40);
+    const param = await page.evaluate(() => window.__game.lastCastParam);
+    const castOk = param != null && Array.isArray(cs) && param === cs[0];
+    results.localClass = lc;
+    results.classSkills = cs;
+    results.skillBarCount = barCount;
+    results.lastCastParam = param;
+    results.classSkillOk = classOk;
+    results.skillBarOk = barOk;
+    results.classCastOk = castOk;
+
     await page.screenshot({ path: path.join(CLIENT_DIR, 'assets', 'verify-client.png') });
     log('screenshot → assets/verify-client.png');
   } finally {
@@ -271,6 +297,9 @@ async function main() {
   gates.push(['bomber variant renders (M13)', results.bomberSeen === true]);
   gates.push(['skill-effect overlays render (M14/C5)', results.shieldSeen === true && results.tauntSeen === true]);
   gates.push(['death/hit particle burst (M11)', results.burstErr == null && results.particleSeen === true]);
+  gates.push(['per-class skill set (C4/M15)', results.classSkillOk === true]);
+  gates.push(['skill bar shows 2 skills (C4/M15)', results.skillBarOk === true]);
+  gates.push(['key1 casts class-first skill (C4/M15)', results.classCastOk === true]);
   let pass = true;
   log('\n=== GATES ===');
   for (const [name, ok] of gates) {

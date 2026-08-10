@@ -82,8 +82,21 @@ test("TAUNT: tank gains taunt window (tauntUntilTick > tick)", () => {
 });
 
 test("REVIVE_BOOST: downed healer's rescueTicks increased", () => {
-  const { w, bySeat } = makeWorld();
-  const healer = bySeat(1);
+  // C4：REVIVE_BOOST 仅 ranger/healer 可施；healer 已倒地，故由 ranger(seat0) 施放。
+  const players = [
+    { seatId: 0, userId: "ranger", classId: "ranger" as PlayerClass },
+    { seatId: 1, userId: "healer", classId: "healer" as PlayerClass },
+  ];
+  const w = createWorld({
+    runId: "COOP-SKILLS",
+    seed: "EMBER-S1",
+    biomeId: 0,
+    players,
+    spawnEnemies: false,
+  });
+  const actors = w.actors();
+  const ranger = actors.find((a) => a.ownerId === 0)!;
+  const healer = actors.find((a) => a.ownerId === 1)!;
   // 击倒 healer（保留 ALIVE 位，符合 world 约定）。
   healer.hp = 0;
   healer.status = EntityStatus.ALIVE | EntityStatus.DOWNED;
@@ -98,6 +111,7 @@ test("REVIVE_BOOST: downed healer's rescueTicks increased", () => {
   });
   w.step();
   assert.ok(healer.rescueTicks > before, "downed healer rescue readbar increased by REVIVE_BOOST");
+  void ranger;
 });
 
 test("cooldown gating: second SHIELD_ALLY within cooldown is ignored", () => {
