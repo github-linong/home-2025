@@ -7,6 +7,7 @@ demoUrl: "/demos/html/tencent-map-scene-overlay.html"
 category: "地图"
 badge: "实验"
 tags: ["地图", "腾讯地图", "ImageGroundLayer", "场景覆盖", "实验"]
+heroImage: "/heroes/demo/tencent-map-scene-overlay.webp"
 ---
 
 ## 简介

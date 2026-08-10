@@ -12,6 +12,9 @@
     "start": "node --env-file=.env src/server.js",
     "auth:migrate": "node --env-file=.env src/migrate.js",
     "learn:migrate": "node --env-file=.env src/learn/migrate.js",
+    "fe:migrate": "node --env-file=.env src/fequiz/migrate-fe.mjs",
+    "fe:import": "node --env-file=.env src/fequiz/importer.mjs",
+    "fe:preprocess": "node --env-file=.env src/fequiz/preprocess.mjs",
     "test": "node --test tests/*.test.js"
   },
   "dependencies": {
@@ -28,6 +31,7 @@
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "kubb": "^2.18.51",
+    "mysql2": "^3.23.2",
     "openapi-typescript": "^6.7.6",
     "openapi-typescript-codegen": "^0.31.0",
     "orval": "^8.23.0",

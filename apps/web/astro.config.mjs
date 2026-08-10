@@ -55,6 +55,10 @@ export default defineConfig({
           target: 'http://127.0.0.1:3002',
           changeOrigin: true,
         },
+        '/api/fequiz': {
+          target: 'http://127.0.0.1:3002',
+          changeOrigin: true,
+        },
         // Game & chat (poker/wander/chat) + AI chat demo.
         // Default: proxy straight to the PRODUCTION server so local dev only
         // needs `astro dev` running — no local poker/wander/chat/api2 needed.

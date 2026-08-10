@@ -3486,6 +3486,15 @@
       "migratedAt": "2026-08-06T13:13:44.601Z"
     },
     {
+      "file": "swagger-ts-pro.html",
+      "slug": "swagger-ts-pro",
+      "title": "Swagger TS Pro — 专业版 OpenAPI 转 TypeScript 全栈代码生成器",
+      "description": "25+ 可配置项的专业级工具，支持 9 种输出风格、axios/fetch 双客户端、3 种 Mock 引擎、URL 改写、命名定制、.d.ts 拆分、Schema 严格校验、启发式 Mock 等。",
+      "url": "/demos/html/swagger-ts-pro.html",
+      "size": 55300,
+      "migratedAt": "2026-08-10T00:00:00.000Z"
+    },
+    {
       "file": "swfobject_chimee.html",
       "slug": "swfobject_chimee",
       "title": "Swfobject_chimee",

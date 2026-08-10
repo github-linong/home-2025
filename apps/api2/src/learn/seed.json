@@ -2554,6 +2554,66 @@
           "zh": "类似的；同类的",
           "hint": "similar in nature",
           "sort_order": 425
+        },
+        {
+          "en": "protocol",
+          "zh": "协议；规程；礼仪",
+          "hint": "standard procedure or set of rules",
+          "sort_order": 426
+        },
+        {
+          "en": "prompt",
+          "zh": "促使；提示；及时的",
+          "hint": "cause to act or done without delay",
+          "sort_order": 427
+        },
+        {
+          "en": "slot",
+          "zh": "时间段；空位",
+          "hint": "a time period or open position",
+          "sort_order": 428
+        },
+        {
+          "en": "trigger",
+          "zh": "触发；引起",
+          "hint": "cause something to start",
+          "sort_order": 429
+        },
+        {
+          "en": "thrifty",
+          "zh": "节俭的；节约的",
+          "hint": "careful with money",
+          "sort_order": 430
+        },
+        {
+          "en": "cling",
+          "zh": "紧紧抓住；依附",
+          "hint": "hold on tightly to",
+          "sort_order": 431
+        },
+        {
+          "en": "hazard",
+          "zh": "危险；危害",
+          "hint": "a source of danger",
+          "sort_order": 432
+        },
+        {
+          "en": "eligible",
+          "zh": "符合条件的；有资格的",
+          "hint": "qualified to be chosen",
+          "sort_order": 433
+        },
+        {
+          "en": "flourish",
+          "zh": "繁荣；茁壮成长",
+          "hint": "grow and do well",
+          "sort_order": 434
+        },
+        {
+          "en": "profound",
+          "zh": "深刻的；深远的",
+          "hint": "very deep or significant",
+          "sort_order": 435
         }
       ]
     }
@@ -5526,6 +5586,76 @@
       "zh": "类似的；同种的",
       "pos": "adj.",
       "example": "Their approach is akin to what we tried last year."
+    },
+    {
+      "lemma": "protocol",
+      "phonetic": "/ˈproʊtəkɔːl/",
+      "zh": "协议；规程；礼仪",
+      "pos": "n.",
+      "example": "Before you email the client, follow the company's communication protocol."
+    },
+    {
+      "lemma": "prompt",
+      "phonetic": "/prɑːmpt/",
+      "zh": "促使；提示；及时的",
+      "pos": "v./adj.",
+      "example": "The manager prompted the team to submit their feedback by Friday."
+    },
+    {
+      "lemma": "slot",
+      "phonetic": "/slɑːt/",
+      "zh": "时间段；空位",
+      "pos": "n./v.",
+      "example": "I booked a 30-minute slot for the call tomorrow."
+    },
+    {
+      "lemma": "trigger",
+      "phonetic": "/ˈtrɪɡər/",
+      "zh": "触发；引起",
+      "pos": "v./n.",
+      "example": "The error message triggered an alert to the admin."
+    },
+    {
+      "lemma": "thrifty",
+      "phonetic": "/ˈθrɪfti/",
+      "zh": "节俭的；节约的",
+      "pos": "adj.",
+      "example": "Being thrifty helped them save for a house down payment."
+    },
+    {
+      "lemma": "cling",
+      "phonetic": "/klɪŋ/",
+      "zh": "紧紧抓住；依附",
+      "pos": "v.",
+      "example": "The child clung to her mother at the airport."
+    },
+    {
+      "lemma": "hazard",
+      "phonetic": "/ˈhæzərd/",
+      "zh": "危险；危害",
+      "pos": "n.",
+      "example": "Watch out for slipping hazards near the pool."
+    },
+    {
+      "lemma": "eligible",
+      "phonetic": "/ˈelɪdʒəbl/",
+      "zh": "符合条件的；有资格的",
+      "pos": "adj.",
+      "example": "Are you eligible for the employee discount?"
+    },
+    {
+      "lemma": "flourish",
+      "phonetic": "/ˈflɜːrɪʃ/",
+      "zh": "繁荣；茁壮成长",
+      "pos": "v.",
+      "example": "Small cafés flourish in this neighborhood."
+    },
+    {
+      "lemma": "profound",
+      "phonetic": "/prəˈfaʊnd/",
+      "zh": "深刻的；深远的",
+      "pos": "adj.",
+      "example": "The book had a profound impact on how I see work."
     }
   ],
   "passages": [

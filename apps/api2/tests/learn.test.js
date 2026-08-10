@@ -16,8 +16,8 @@ describe("normalizeLemma", () => {
 });
 
 describe("createLearnRouter", () => {
-  it("registers expected GET paths", () => {
-    const router = createLearnRouter({ query: async () => ({ rows: [] }) });
+  it("registers expected paths", () => {
+    const router = createLearnRouter();
     const paths = router.stack
       .filter((layer) => layer.route)
       .map((layer) => ({
@@ -35,6 +35,8 @@ describe("createLearnRouter", () => {
       { path: "/audio/status", methods: ["get"] },
       { path: "/audio/ipa", methods: ["get"] },
       { path: "/audio/word", methods: ["get"] },
+      { path: "/generate", methods: ["post"] },
+      { path: "/generate", methods: ["get"] },
     ]);
   });
 });

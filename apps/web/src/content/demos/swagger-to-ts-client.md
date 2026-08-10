@@ -8,6 +8,7 @@ legacyUrl: "/static/html/swagger-to-ts-client.html"
 category: "实验"
 badge: "实验"
 tags: ["legacy", "实验"]
+heroImage: "/heroes/demo/swagger-to-ts-client.webp"
 ---
 
 在线把 Swagger 2.0 / OpenAPI 3.x 规范转换成 TypeScript 接口与 fetch / axios 请求函数。

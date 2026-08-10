@@ -64,6 +64,38 @@ pip install piper-tts
 
 真人音频与合成结果会缓存到 `data/learn-audio/`（已 gitignore）。可用环境变量覆盖：`ESPEAK_BIN`、`PIPER_BIN`、`PIPER_MODEL`、`LEARN_AUDIO_UA`。
 
+## 前端面试题库（学前端）
+
+题库来自 [febobo/web-interview](https://github.com/febobo/web-interview)，按技术栈分类（JavaScript / es6 / TypeScript / Vue / Vue3 / React / NodeJS / css / http / algorithm / Webpack / Git / Linux / applet / design）。
+
+存储：**独立 MySQL 库**（连接见 `src/fequiz/db.js`，环境变量 `FEQUIZ_MYSQL_*`，也可用 `FEQUIZ_MYSQL_URL`）。
+
+```bash
+# 1) 建表 + 内置精选种子题（离线可用）
+npm run fe:migrate
+
+# 2) 导入 web-interview 全量题库 + 全量预处理（生成 6 类题型）
+#    克隆到 data/web-interview，幂等，可重复跑；导入完成后自动预处理
+npm run fe:import
+
+# 若导入时跳过了预处理（FE_SKIP_PREPROCESS=1），可单独补跑：
+npm run fe:preprocess
+```
+
+AI 二次加工（把原题加工为 填空/选择/判断/问答/计算/应用 6 类题型）在**导入时全量预处理**完成（`fe:import` / `fe:preprocess`，分批、断点续传、失败降级离线模板）。出卷时直接读取预处理好的题型，不再按需调 LLM。
+
+主观题自动判分复用 `DASHSCOPE_API_KEY`（qwen-flash）；未配置时客观题规则判分，主观题标记「待人工复核」。
+
+接口：
+
+- `GET  /api/fequiz/overview` — 分类 / 题数 / 难度分布
+- `GET  /api/fequiz/stats` — 全库统计（含 6 种题型覆盖、AI 生成状态）
+- `POST /api/fequiz/quiz` — 出卷：`{ categories: string[], types: string[], count: number }`
+- `POST /api/fequiz/quiz/:id/score` — 交卷自动判分
+- `GET  /api/fequiz/sessions` — 最近考试记录
+
+前端页面：`apps/web/src/pages/learn-fe.astro`（`/learn-fe`）。
+
 ## GitHub OAuth
 
 在 GitHub OAuth App 回调 URL 填：
@@ -88,4 +120,7 @@ pip install piper-tts
 | `npm start` | 生产启动 |
 | `npm run auth:migrate` | 连通性检查（建表仍用 CLI migrate） |
 | `npm run learn:migrate` | 英语学习表 + 种子数据 |
+| `npm run fe:migrate` | 前端面试题库表 + 种子题 |
+| `npm run fe:import` | 导入 web-interview 全量题库 + 全量预处理 |
+| `npm run fe:preprocess` | 全量预处理（生成 6 类题型，断点续传） |
 | `npm test` | 单元测试 |

@@ -1,0 +1,43 @@
+{
+  "categories": [
+    { "slug": "javascript", "title": "JavaScript", "description": "JavaScript 核心：闭包、原型、事件循环、this 指向等", "order": 1 },
+    { "slug": "es6", "title": "es6", "description": "ES6+ 新特性与语法（Promise、解构、模块等）", "order": 2 },
+    { "slug": "typescript", "title": "TypeScript", "description": "TypeScript 类型系统与进阶", "order": 3 },
+    { "slug": "vue", "title": "Vue", "description": "Vue 2.x 框架面试题", "order": 4 },
+    { "slug": "react", "title": "React", "description": "React 框架与生态", "order": 5 },
+    { "slug": "css", "title": "css", "description": "CSS 样式与布局", "order": 6 },
+    { "slug": "http", "title": "http", "description": "HTTP/HTTPS 网络协议", "order": 7 }
+  ],
+  "questions": [
+    { "category": "javascript", "slug": "closure", "difficulty": "hard", "title": "面试官：说说你对闭包的理解？闭包使用场景",
+      "body": "## 一、是什么\n闭包是指有权访问另一个函数作用域中变量的函数。创建闭包的常见方式是在一个函数内部创建另一个函数，内部函数可以访问外部函数的变量。\n\n## 二、使用场景\n- 创建私有变量：通过闭包模拟私有方法，防止外部直接访问。\n- 延长变量生命周期：变量在函数执行完后仍被引用，不会被回收。\n- 柯里化函数与模块模式：利用闭包保存参数与状态。\n\n## 三、注意事项\n闭包会占用更多内存，因为变量常驻内存，使用后若不及时释放可能造成内存泄漏，需注意及时解除引用。" },
+    { "category": "javascript", "slug": "event_loop", "difficulty": "hard", "title": "面试官：说说你对事件循环（Event Loop）的理解",
+      "body": "## 一、是什么\nJavaScript 是单线程语言，事件循环是其处理异步任务的机制。\n\n## 二、执行流程\n1. 执行同步代码（宏任务），遇到微任务加入微任务队列，遇到宏任务（如 setTimeout、I/O）加入宏任务队列。\n2. 当前宏任务执行完毕后，清空微任务队列（微任务优先于下一个宏任务）。\n3. 浏览器渲染（requestAnimationFrame 等），然后取出下一个宏任务执行，如此循环。\n\n## 三、顺序示例\n同步代码 → 微任务（Promise.then、queueMicrotask、async/await 后续）→ 宏任务（setTimeout、setInterval、I/O）。" },
+    { "category": "javascript", "slug": "this", "difficulty": "medium", "title": "面试官：说说 this 的指向规则",
+      "body": "this 的指向取决于函数的调用方式：\n- 普通函数调用：this 指向全局对象（严格模式下为 undefined）。\n- 方法调用：指向调用该方法的对象。\n- 构造函数（new）：指向新创建的实例。\n- 箭头函数：不绑定 this，继承外层词法作用域的 this。\n- call/apply/bind：显式指定 this。\n\n注意：在严格模式下，普通函数中的 this 为 undefined。" },
+    { "category": "es6", "slug": "promise_vs_async", "difficulty": "medium", "title": "面试官：说说 Promise 与 async/await 的区别",
+      "body": "## 一、语法层面\n- Promise 是 ES6 引入的异步方案，通过 then/catch 链式调用。\n- async/await 是 ES2017 的语法糖，基于 Promise，用同步写法写异步代码，可读性更好。\n\n## 二、错误处理\n- Promise 通过 .catch 捕获。\n- async/await 通过 try/catch 捕获。\n\n## 三、本质\nasync 函数返回 Promise，await 只能在 async 函数中使用，await 会阻塞后续代码直到 Promise 落定。" },
+    { "category": "es6", "slug": "let_const_var", "difficulty": "easy", "title": "面试官：说说 let、const、var 的区别",
+      "body": "- var：函数作用域，存在变量提升，可重复声明，全局声明挂在 window 上。\n- let：块级作用域，不存在提升的“暂存死区”，不可重复声明。\n- const：与 let 相同作用域规则，声明后必须初始化，且绑定不可重新赋值（对象内部属性可修改）。" },
+    { "category": "typescript", "slug": "interface_vs_type", "difficulty": "medium", "title": "面试官：说说 interface 与 type 的区别",
+      "body": "## 一、相同点\n都可以描述对象类型与函数类型。\n\n## 二、不同点\n- interface 支持声明合并（同名自动合并），更偏向面向对象。\n- type 可定义联合类型、交叉类型、元组、字面量类型等类型别名，更灵活。\n- interface 可以被 class implements / extends；type 不能。\n- 一般描述对象/类的结构优先用 interface，组合复杂类型用 type。" },
+    { "category": "typescript", "slug": "generic", "difficulty": "hard", "title": "面试官：说说 TypeScript 泛型的作用与使用场景",
+      "body": "泛型允许在定义函数、接口或类时不预先指定具体类型，而在使用时再指定，用于创建可复用的类型安全组件。\n\n使用场景：\n- 通用工具函数（如数组 first/last）。\n- 类型安全的集合与映射（如 Promise<T>）。\n- 约束泛型参数（extends 约束），实现 keyof 组合的键值映射。\n\n示例：function identity<T>(arg: T): T { return arg; }" },
+    { "category": "vue", "slug": "vue2_reactive", "difficulty": "hard", "title": "面试官：说说 Vue 2 的响应式原理",
+      "body": "Vue 2 通过 Object.defineProperty 对 data 的每个属性进行 getter/setter 劫持，在 getter 中收集依赖（Dep + Watcher），在 setter 中触发依赖更新，进而驱动视图更新。\n\n局限：\n- 无法监听对象新增/删除属性（需 Vue.set / Vue.delete）。\n- 无法直接监听数组下标变化与 length 变化，需要重写数组方法。\n\nVue 3 改用 Proxy，可完整监听对象与数组的增删改。" },
+    { "category": "vue", "slug": "vue_lifecycle", "difficulty": "easy", "title": "面试官：Vue 的生命周期有哪些",
+      "body": "Vue 2 生命周期钩子：\n- 创建：beforeCreate、created。\n- 挂载：beforeMount、mounted。\n- 更新：beforeUpdate、updated。\n- 销毁：beforeDestroy、destroyed。\n- 还有 keep-alive 的 activated / deactivated。\n\ncreated 中可请求数据，mounted 中可操作 DOM。" },
+    { "category": "react", "slug": "virtual_dom", "difficulty": "hard", "title": "面试官：说说 React 中虚拟 DOM 与 diff 算法",
+      "body": "虚拟 DOM 是用 JS 对象描述真实 DOM 结构。数据变化时，React 先重新生成虚拟 DOM，与上一次的虚拟 DOM 做 diff，计算出最小更新集合，再批量更新真实 DOM，避免频繁操作真实 DOM 带来的性能开销。\n\ndiff 优化策略：\n- 同层比较，不跨层级移动节点。\n- 通过 key 识别可复用节点，key 应稳定唯一。\n- 仅对比 type 相同的组件。" },
+    { "category": "react", "slug": "hooks_diff", "difficulty": "medium", "title": "面试官：说说 useEffect 与 useLayoutEffect 的区别",
+      "body": "- useEffect：异步执行，在浏览器完成绘制后执行，适合大部分副作用（请求、订阅、日志）。\n- useLayoutEffect：同步执行，在 DOM 变更后、浏览器绘制前执行，适合需要读取/修改布局的场景（如测量 DOM、避免闪烁）。\n- 使用 useLayoutEffect 会阻塞渲染，应谨慎使用，服务端渲染时会有警告。" },
+    { "category": "css", "slug": "box_model", "difficulty": "easy", "title": "面试官：说说你对 CSS 盒模型的理解",
+      "body": "CSS 盒模型由 content、padding、border、margin 组成。\n\n两种模式：\n- 标准盒模型（content-box）：宽高只包含 content，padding/border 向外扩展。\n- 怪异盒模型（border-box）：宽高包含 content + padding + border。\n\n通过 box-sizing 切换，一般推荐全局使用 border-box，方便布局计算。" },
+    { "category": "css", "slug": "center", "difficulty": "medium", "title": "面试官：如何实现元素水平垂直居中",
+      "body": "常见方案：\n- flex：父容器 display:flex; justify-content:center; align-items:center。\n- grid：place-items:center。\n- 绝对定位 + transform：position:absolute; top/left:50%; transform:translate(-50%,-50%)。\n- 绝对定位 + margin:auto（需已知尺寸或使用 auto 对子元素）。\n- 文本/行内元素：text-align:center + line-height。" },
+    { "category": "http", "slug": "http_cache", "difficulty": "hard", "title": "面试官：说说 HTTP 缓存机制",
+      "body": "HTTP 缓存分为强缓存与协商缓存。\n\n## 强缓存\n通过 Cache-Control（max-age）与 Expires 控制，命中则直接使用本地缓存，不发请求。\n\n## 协商缓存\n缓存过期后向服务器校验：\n- Last-Modified / If-Modified-Since（时间维度）。\n- ETag / If-None-Match（内容哈希，更精确）。\n服务器返回 304 则复用缓存，否则返回 200 与新资源。\n\n优先级：Cache-Control > Expires；ETag 比 Last-Modified 更可靠。" },
+    { "category": "http", "slug": "https", "difficulty": "hard", "title": "面试官：HTTPS 是如何保证安全的",
+      "body": "HTTPS = HTTP + TLS/SSL，通过三种机制保证安全：\n\n- 加密：使用对称加密（如 AES）加密传输内容，性能高。\n- 密钥协商：通过非对称加密（RSA/ECDHE）安全地协商对称密钥，防止被窃听。\n- 身份认证：通过 CA 签发的数字证书验证服务器身份，防止中间人伪造。\n\n完整握手：客户端 → 服务端证书 → 验证 CA → 协商密钥 → 加密通信。" }
+  ]
+}

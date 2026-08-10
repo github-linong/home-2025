@@ -170,6 +170,7 @@ export function buildBreadcrumbJsonLd(pathname, title, siteBase) {
     about: "关于",
     "texas-holdem": "德州扑克",
     "learn-english": "学英语",
+    "learn-fe": "学前端",
     archive: "归档",
     search: "搜索",
   };

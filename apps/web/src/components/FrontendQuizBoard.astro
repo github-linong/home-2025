@@ -1,0 +1,1055 @@
+---
+/**
+ * 学前端 · 前端面试题库练习板
+ * 数据源：github.com/febobo/web-interview（docs/<技术栈>/*.md）
+ *
+ * 三步走：
+ *   1. 配置 —— 选技术栈 + 选 6 类题型 + 题目数量
+ *   2. 答题 —— 按题型作答（填空/选择/判断/问答/计算/应用）
+ *   3. 交卷 —— 自动判分（客观题规则判分，主观题 AI 判分，失败降级人工复核）
+ */
+---
+
+<div class="fq-board not-prose" data-fe-quiz>
+  <!-- Hero -->
+  <header class="fq-hero">
+    <div class="fq-hero-copy">
+      <p class="fq-eyebrow"><span aria-hidden="true">&lt;/&gt;</span>FRONTEND · INTERVIEW GYM</p>
+      <h1 class="fq-title">学前端 <span class="fq-title-en">Interview Question Bank</span></h1>
+      <p class="fq-sub">题库来自 febobo/web-interview · 选择技术栈自动抽题 · AI 二次加工 6 类题型 · 交卷自动打分</p>
+    </div>
+    <div class="fq-stats" data-stats hidden>
+      <div class="fq-stat"><b data-stat-categories>0</b><span>技术栈</span></div>
+      <div class="fq-stat"><b data-stat-questions>0</b><span>原题</span></div>
+      <div class="fq-stat"><b data-stat-variants>0</b><span>已加工题型</span></div>
+      <div class="fq-stat fq-stat-ai" data-ai-badge hidden><b>AI</b><span>出题/判分</span></div>
+    </div>
+  </header>
+
+  <p class="fq-status" data-fq-status role="status">正在加载题库…</p>
+
+  <!-- 错误 -->
+  <div class="fq-error" data-fq-error hidden>
+    <p>⚠️ <span data-error-msg>无法连接出题接口。</span></p>
+    <button type="button" class="btn btn-outline btn-sm" data-retry>↻ 重试</button>
+  </div>
+
+  <!-- AI 不可用提示 -->
+  <div class="fq-warn" data-fq-warn hidden>
+    💡 AI 出题 / 主观题判分暂不可用（未配置 DASHSCOPE_API_KEY）。当前使用离线模板出题，客观题自动判分，主观题需人工复核。
+  </div>
+
+  <!-- ── Step 1 配置 ─────────────────────────────────────────── -->
+  <section class="fq-panel" data-fq-panel="config">
+    <div class="fq-step-head">
+      <div>
+        <h2 class="fq-step-title">① 选择技术栈</h2>
+        <p class="fq-step-sub">可多选，不选则从全部技术栈抽题</p>
+      </div>
+      <div class="fq-quick" data-cat-quick hidden>
+        <button type="button" class="btn btn-ghost btn-xs" data-cat-all>全选</button>
+        <button type="button" class="btn btn-ghost btn-xs" data-cat-none>全不选</button>
+      </div>
+    </div>
+    <div class="fq-chips" data-cat-chips></div>
+
+    <div class="fq-step-head">
+      <div>
+        <h2 class="fq-step-title">② 选择题型</h2>
+        <p class="fq-step-sub">AI 把原题二次加工为这 6 类题型</p>
+      </div>
+    </div>
+    <div class="fq-chips" data-type-chips></div>
+
+    <div class="fq-step-head">
+      <div>
+        <h2 class="fq-step-title">③ 题目数量</h2>
+        <p class="fq-step-sub">每题含若干题型小题，总分为全部小题之和</p>
+      </div>
+    </div>
+    <div class="fq-count-row">
+      <select class="select select-bordered select-sm" data-count-select>
+        <option value="5">5 题</option>
+        <option value="10" selected>10 题</option>
+        <option value="15">15 题</option>
+        <option value="20">20 题</option>
+      </select>
+      <button type="button" class="btn btn-primary" data-generate disabled>⚡ 生成试卷</button>
+    </div>
+  </section>
+
+  <!-- ── Step 2 答题 ─────────────────────────────────────────── -->
+  <section class="fq-panel" data-fq-panel="quiz" hidden>
+    <div class="fq-quiz-head">
+      <div>
+        <p class="fq-quiz-meta" data-quiz-meta></p>
+        <p class="fq-quiz-hint">所有小题答完后点击下方「交卷并打分」</p>
+      </div>
+      <button type="button" class="btn btn-outline btn-sm" data-reconfig>↩ 重新配置</button>
+    </div>
+    <ol class="fq-list" data-question-list></ol>
+    <div class="fq-actions">
+      <button type="button" class="btn btn-primary btn-lg" data-submit disabled>🏁 交卷并打分</button>
+    </div>
+  </section>
+
+  <!-- ── Step 3 结果 ─────────────────────────────────────────── -->
+  <section class="fq-panel" data-fq-panel="result" hidden>
+    <div class="fq-result-summary" data-result-summary></div>
+    <ol class="fq-list" data-result-list></ol>
+    <div class="fq-actions">
+      <button type="button" class="btn btn-primary btn-lg" data-again>🔁 再练一组</button>
+      <button type="button" class="btn btn-outline btn-lg" data-reconfig-2>↩ 重新配置</button>
+    </div>
+  </section>
+
+  <!-- 加载遮罩 -->
+  <div class="fq-loading" data-fq-loading hidden>
+    <div class="fq-loading-box">
+      <span class="loading loading-spinner loading-lg"></span>
+      <p data-loading-text>正在生成试卷…</p>
+      <p class="fq-loading-sub">首次出卷时 AI 会实时加工题型，可能需要十几秒</p>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  .fq-board {
+    --fq-brand: #2563eb;
+    --fq-brand-soft: #eff6ff;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+  .fq-board .fq-hero {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 28px 30px 24px;
+    border-radius: 20px;
+    background:
+      radial-gradient(1200px 300px at 85% -60%, rgba(37, 99, 235, 0.16), transparent 60%),
+      linear-gradient(135deg, #f8fafc, #eef4ff);
+    border: 1px solid #e2e8f0;
+    margin-bottom: 18px;
+  }
+  [data-theme="dark"] .fq-hero {
+    background:
+      radial-gradient(1200px 300px at 85% -60%, rgba(37, 99, 235, 0.28), transparent 60%),
+      linear-gradient(135deg, #111827, #0f172a);
+    border-color: #1e293b;
+  }
+  .fq-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--fq-brand);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .fq-eyebrow span {
+    background: var(--fq-brand);
+    color: #fff;
+    border-radius: 6px;
+    padding: 2px 7px;
+    margin-right: 8px;
+    letter-spacing: 0;
+  }
+  .fq-title {
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.25;
+    margin: 0 0 6px;
+  }
+  .fq-title-en {
+    font-size: 15px;
+    font-weight: 600;
+    color: #64748b;
+    margin-left: 10px;
+  }
+  .fq-sub {
+    color: #64748b;
+    font-size: 13.5px;
+    margin: 0;
+  }
+  .fq-stats {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .fq-stat {
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 10px 16px;
+    min-width: 84px;
+    text-align: center;
+    backdrop-filter: blur(4px);
+  }
+  .fq-stat b {
+    display: block;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--fq-brand);
+  }
+  .fq-stat span {
+    font-size: 11.5px;
+    color: #64748b;
+  }
+  .fq-stat-ai b {
+    color: #059669;
+  }
+  .fq-status {
+    color: #64748b;
+    font-size: 13px;
+    margin: 0 0 14px 4px;
+    min-height: 18px;
+  }
+  .fq-error,
+  .fq-warn {
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+  }
+  .fq-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+  }
+  .fq-warn {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+  }
+  .fq-panel {
+    margin-top: 18px;
+  }
+  .fq-step-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin: 26px 2px 12px;
+  }
+  .fq-step-head:first-child {
+    margin-top: 4px;
+  }
+  .fq-step-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .fq-step-sub {
+    font-size: 12.5px;
+    color: #94a3b8;
+    margin: 2px 0 0;
+  }
+  .fq-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .fq-chip {
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 999px;
+    padding: 7px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #334155;
+  }
+  .fq-chip:hover {
+    border-color: var(--fq-brand);
+    color: var(--fq-brand);
+  }
+  .fq-chip.is-on {
+    background: var(--fq-brand);
+    border-color: var(--fq-brand);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.28);
+  }
+  .fq-chip .fq-chip-n {
+    font-size: 11px;
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 999px;
+    padding: 1px 8px;
+  }
+  .fq-chip.is-on .fq-chip-n {
+    background: rgba(255, 255, 255, 0.22);
+  }
+  .fq-chip .fq-chip-score {
+    font-size: 11px;
+    opacity: 0.75;
+  }
+  .fq-count-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 4px;
+  }
+  .fq-quiz-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .fq-quiz-meta {
+    font-weight: 700;
+    font-size: 15px;
+    margin: 0;
+  }
+  .fq-quiz-hint {
+    font-size: 12.5px;
+    color: #94a3b8;
+    margin: 2px 0 0;
+  }
+  .fq-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 16px;
+  }
+  .fq-q {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  }
+  [data-theme="dark"] .fq-q {
+    background: #111827;
+    border-color: #1e293b;
+  }
+  .fq-q-head {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .fq-q-index {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    background: var(--fq-brand-soft);
+    color: var(--fq-brand);
+    font-weight: 800;
+    font-size: 14px;
+    display: grid;
+    place-items: center;
+    margin-top: 2px;
+  }
+  .fq-q-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    line-height: 1.5;
+  }
+  .fq-q-tags {
+    margin: 0;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .fq-variants {
+    margin-top: 14px;
+    display: grid;
+    gap: 12px;
+  }
+  .fq-v {
+    border-left: 3px solid var(--fq-brand);
+    background: #f8fafc;
+    border-radius: 0 12px 12px 0;
+    padding: 14px 16px;
+  }
+  [data-theme="dark"] .fq-v {
+    background: #0f172a;
+  }
+  .fq-v-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--fq-brand);
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .fq-v-score {
+    background: var(--fq-brand-soft);
+    color: var(--fq-brand);
+    border-radius: 999px;
+    padding: 1px 8px;
+    font-weight: 600;
+  }
+  .fq-v-stem {
+    margin: 0 0 12px;
+    font-size: 14.5px;
+    white-space: pre-wrap;
+  }
+  .fq-opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 7px;
+    cursor: pointer;
+    background: #fff;
+    transition: border-color 0.12s ease, background 0.12s ease;
+  }
+  .fq-opt:hover {
+    border-color: var(--fq-brand);
+  }
+  .fq-opt:has(input:checked) {
+    border-color: var(--fq-brand);
+    background: var(--fq-brand-soft);
+  }
+  .fq-opt input {
+    margin-top: 3px;
+  }
+  .fq-opt-letter {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    background: #f1f5f9;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+  }
+  .fq-opt-text {
+    font-size: 14px;
+  }
+  .fq-fill {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .fq-fill-input {
+    flex: 1 1 200px;
+  }
+  .fq-textarea {
+    width: 100%;
+    min-height: 92px;
+    font-size: 14px;
+  }
+  .fq-actions {
+    margin: 22px 0 8px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .fq-result-summary {
+    text-align: center;
+    border-radius: 16px;
+    padding: 22px;
+    margin-bottom: 18px;
+    background: linear-gradient(135deg, #f8fafc, #eef4ff);
+    border: 1px solid #e2e8f0;
+  }
+  .fq-rs-score {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--fq-brand);
+    margin: 4px 0 10px;
+  }
+  .fq-rs-score small {
+    font-size: 18px;
+    color: #94a3b8;
+    font-weight: 600;
+  }
+  .fq-rs-bar {
+    height: 10px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    overflow: hidden;
+    max-width: 420px;
+    margin: 0 auto 10px;
+  }
+  .fq-rs-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+    transition: width 0.5s ease;
+  }
+  .fq-rs-meta {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0;
+  }
+  .fq-r {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-left-width: 4px;
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+  .fq-r.is-right {
+    border-left-color: #22c55e;
+  }
+  .fq-r.is-wrong {
+    border-left-color: #ef4444;
+  }
+  .fq-r.is-pending {
+    border-left-color: #f59e0b;
+  }
+  .fq-r-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .fq-r-mark {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 13px;
+    color: #fff;
+  }
+  .fq-r.is-right .fq-r-mark { background: #22c55e; }
+  .fq-r.is-wrong .fq-r-mark { background: #ef4444; }
+  .fq-r.is-pending .fq-r-mark { background: #f59e0b; }
+  .fq-r-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 0 5px;
+    flex: 1;
+  }
+  .fq-r-score {
+    font-weight: 800;
+    font-size: 15px;
+    color: #334155;
+    white-space: nowrap;
+  }
+  .fq-r-body {
+    margin-top: 10px;
+    font-size: 14px;
+  }
+  .fq-r-stem {
+    margin: 0 0 8px;
+    color: #475569;
+    white-space: pre-wrap;
+  }
+  .fq-r-line {
+    margin: 4px 0;
+    font-size: 13.5px;
+  }
+  .fq-r-line b {
+    font-weight: 700;
+  }
+  .fq-r-line.is-correct b { color: #16a34a; }
+  .fq-r-line.is-wrong b { color: #dc2626; }
+  .fq-r-comment {
+    margin: 8px 0 0;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .fq-r-exp {
+    margin: 8px 0 0;
+    color: #64748b;
+    font-size: 13px;
+  }
+  .fq-r-ref {
+    margin-top: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .fq-r-ref-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--fq-brand);
+    margin: 0 0 6px;
+  }
+  .fq-pre {
+    white-space: pre-wrap;
+    font-family: inherit;
+    font-size: 13.5px;
+    margin: 0;
+    color: #334155;
+  }
+  .fq-r-list {
+    margin: 6px 0 0;
+    padding-left: 18px;
+    font-size: 13px;
+    color: #475569;
+  }
+  .fq-loading {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(3px);
+    display: grid;
+    place-items: center;
+    z-index: 60;
+  }
+  .fq-loading-box {
+    background: #fff;
+    border-radius: 18px;
+    padding: 30px 38px;
+    text-align: center;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.25);
+  }
+  .fq-loading-box p {
+    margin: 12px 0 0;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .fq-loading-sub {
+    font-weight: 400 !important;
+    font-size: 12.5px !important;
+    color: #94a3b8;
+  }
+  @media (max-width: 640px) {
+    .fq-title {
+      font-size: 24px;
+    }
+    .fq-hero {
+      padding: 20px 18px;
+    }
+    .fq-q {
+      padding: 14px 14px;
+    }
+  }
+</style>
+
+<script>
+  // ── DOM ──
+  const root = document.querySelector("[data-fe-quiz]");
+  const status = root.querySelector("[data-fq-status]");
+  const errorBox = root.querySelector("[data-fq-error]");
+  const errorMsg = root.querySelector("[data-error-msg]");
+  const retryBtn = root.querySelector("[data-retry]");
+  const warnBox = root.querySelector("[data-fq-warn]");
+  const loading = root.querySelector("[data-fq-loading]");
+  const loadingText = root.querySelector("[data-loading-text]");
+  const panels = {
+    config: root.querySelector('[data-fq-panel="config"]'),
+    quiz: root.querySelector('[data-fq-panel="quiz"]'),
+    result: root.querySelector('[data-fq-panel="result"]'),
+  };
+  const catChipsEl = root.querySelector("[data-cat-chips]");
+  const typeChipsEl = root.querySelector("[data-type-chips]");
+  const catQuick = root.querySelector("[data-cat-quick]");
+  const countSelect = root.querySelector("[data-count-select]");
+  const generateBtn = root.querySelector("[data-generate]");
+  const submitBtn = root.querySelector("[data-submit]");
+  const questionList = root.querySelector("[data-question-list]");
+  const quizMeta = root.querySelector("[data-quiz-meta]");
+  const resultSummary = root.querySelector("[data-result-summary]");
+  const resultList = root.querySelector("[data-result-list]");
+
+  const DIFF_LABEL = { easy: "简单", medium: "中等", hard: "困难" };
+  const DIFF_BADGE = { easy: "badge-success", medium: "badge-warning", hard: "badge-error" };
+  const GRADED_LABEL = { rule: "客观题自动判分", llm: "AI 判分", manual: "待人工复核" };
+  const LETTERS = "ABCDEFGH";
+
+  const state = {
+    overview: null,
+    selectedCats: new Set(),
+    selectedTypes: new Set(),
+    quiz: null,
+    answers: new Map(),
+  };
+
+  const esc = (s) =>
+    String(s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+  const setStatus = (msg, isError = false) => {
+    status.textContent = msg;
+    status.style.color = isError ? "#dc2626" : "";
+  };
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorBox.hidden = false;
+    status.textContent = "";
+  }
+
+  function switchPanel(name) {
+    for (const key of Object.keys(panels)) panels[key].hidden = key !== name;
+  }
+
+  async function boot() {
+    errorBox.hidden = true;
+    setStatus("正在加载题库…");
+    try {
+      const { fequizApi } = await import("../lib/fequiz/api");
+      window.__fequizApi = fequizApi;
+      state.overview = await fequizApi.overview();
+      renderStats();
+      renderChips();
+      setStatus(`题库已加载：${state.overview.totalQuestions} 道原题 / ${state.overview.categories.length} 个技术栈`);
+      if (!state.overview.llmEnabled) warnBox.hidden = false;
+      generateBtn.disabled = false;
+    } catch (err) {
+      console.error("[fequiz] boot failed:", err);
+      showError(`无法连接出题接口：${err.message}`);
+    }
+  }
+
+  function renderStats() {
+    const s = state.overview;
+    root.querySelector("[data-stat-categories]").textContent = s.categories.length;
+    root.querySelector("[data-stat-questions]").textContent = s.totalQuestions;
+    root.querySelector("[data-stat-variants]").textContent = s.totalVariants;
+    root.querySelector("[data-stats]").hidden = false;
+    root.querySelector("[data-ai-badge]").hidden = false;
+  }
+
+  function renderChips() {
+    const cats = state.overview.categories;
+    if (cats.length) {
+      for (const c of cats) state.selectedCats.add(c.slug); // 默认全选
+    }
+    catChipsEl.innerHTML = cats
+      .map(
+        (c) => `
+        <button type="button" class="fq-chip is-on" data-cat="${esc(c.slug)}">
+          ${esc(c.title)}
+          <span class="fq-chip-n">${c.question_count}</span>
+        </button>`,
+      )
+      .join("");
+    catQuick.hidden = cats.length === 0;
+
+    state.selectedTypes = new Set(state.overview.qtypes.map((t) => t.type));
+    typeChipsEl.innerHTML = state.overview.qtypes
+      .map(
+        (t) => `
+        <button type="button" class="fq-chip is-on" data-type="${t.type}">
+          ${esc(t.label)}
+          <span class="fq-chip-score">${t.baseScore}分</span>
+        </button>`,
+      )
+      .join("");
+  }
+
+  function toggleChip(list, set, on) {
+    const was = set.has(list);
+    if (on) set.add(list);
+    else set.delete(list);
+    return was;
+  }
+
+  catChipsEl.addEventListener("click", (e) => {
+    const chip = e.target.closest("[data-cat]");
+    if (!chip) return;
+    const slug = chip.dataset.cat;
+    const on = !state.selectedCats.has(slug);
+    toggleChip(slug, state.selectedCats, on);
+    chip.classList.toggle("is-on", on);
+  });
+
+  typeChipsEl.addEventListener("click", (e) => {
+    const chip = e.target.closest("[data-type]");
+    if (!chip) return;
+    const t = chip.dataset.type;
+    const on = !state.selectedTypes.has(t);
+    toggleChip(t, state.selectedTypes, on);
+    chip.classList.toggle("is-on", on);
+  });
+
+  root.querySelector("[data-cat-all]").addEventListener("click", () => {
+    for (const c of state.overview.categories) state.selectedCats.add(c.slug);
+    catChipsEl.querySelectorAll("[data-cat]").forEach((chip) => chip.classList.add("is-on"));
+  });
+  root.querySelector("[data-cat-none]").addEventListener("click", () => {
+    state.selectedCats.clear();
+    catChipsEl.querySelectorAll("[data-cat]").forEach((chip) => chip.classList.remove("is-on"));
+  });
+
+  async function generateQuiz() {
+    if (!state.selectedTypes.size) {
+      setStatus("请至少选择一种题型", true);
+      return;
+    }
+    const count = Number(countSelect.value || 10);
+    loading.hidden = false;
+    loadingText.textContent = `正在出卷（${count} 题，${state.selectedTypes.size} 种题型）…`;
+    setStatus("AI 正在将原题二次加工为所选题型…");
+    try {
+      const api = window.__fequizApi;
+      state.quiz = await api.createQuiz(
+        [...state.selectedCats],
+        [...state.selectedTypes],
+        count,
+      );
+      state.answers = new Map();
+      renderQuestions();
+      quizMeta.textContent = `试卷 · 共 ${state.quiz.questions.length} 题 / ${state.quiz.generatedTypes.length} 种题型 · 满分 ${state.quiz.totalScore} 分`;
+      submitBtn.disabled = false;
+      switchPanel("quiz");
+      setStatus("");
+    } catch (err) {
+      console.error("[fequiz] generate failed:", err);
+      showError(`出卷失败：${err.message}`);
+    } finally {
+      loading.hidden = true;
+    }
+  }
+
+  // ── 渲染题目 ──
+  function renderQuestions() {
+    let html = "";
+    state.quiz.questions.forEach((q, qi) => {
+      html += `
+      <li class="fq-q" data-question="${q.questionId}">
+        <div class="fq-q-head">
+          <span class="fq-q-index">${qi + 1}</span>
+          <div style="flex:1">
+            <h3 class="fq-q-title">${esc(q.title)}</h3>
+            <p class="fq-q-tags">
+              <span class="badge badge-ghost badge-sm">${esc(q.categoryTitle)}</span>
+              <span class="badge badge-sm ${DIFF_BADGE[q.difficulty] || "badge-ghost"}">${DIFF_LABEL[q.difficulty] || q.difficulty}</span>
+            </p>
+          </div>
+        </div>
+        <div class="fq-variants">
+          ${q.variants.map(renderVariant).join("")}
+        </div>
+      </li>`;
+    });
+    questionList.innerHTML = html;
+  }
+
+  function renderVariant(v) {
+    const p = v.payload;
+    let control = "";
+    if (v.qtype === "choice") {
+      control = (p.options || [])
+        .map(
+          (opt, i) => `
+          <label class="fq-opt">
+            <input type="radio" name="fv${v.id}" value="${i}" data-choice />
+            <span class="fq-opt-letter">${LETTERS[i]}</span>
+            <span class="fq-opt-text">${esc(opt)}</span>
+          </label>`,
+        )
+        .join("");
+    } else if (v.qtype === "judge") {
+      control = `
+        <label class="fq-opt">
+          <input type="radio" name="fv${v.id}" value="true" data-judge />
+          <span class="fq-opt-text">✅ 正确</span>
+        </label>
+        <label class="fq-opt">
+          <input type="radio" name="fv${v.id}" value="false" data-judge />
+          <span class="fq-opt-text">❌ 错误</span>
+        </label>`;
+    } else if (v.qtype === "fill") {
+      const n = p.blankCount || 1;
+      control = `<div class="fq-fill">
+        ${Array.from(
+          { length: n },
+          (_, i) =>
+            `<input class="input input-bordered input-sm fq-fill-input" data-fill data-blank="${i}" placeholder="填空 ${i + 1}" autocomplete="off" />`,
+        ).join("")}
+      </div>`;
+    } else {
+      control = `<textarea class="textarea textarea-bordered fq-textarea" data-subj placeholder="写下你的答案（可含代码）…" rows="4"></textarea>`;
+    }
+    return `
+    <div class="fq-v" data-variant="${v.id}" data-qtype="${v.qtype}">
+      <p class="fq-v-label">
+        <span>${esc(v.label)}</span>
+        <span class="fq-v-score">${v.baseScore} 分</span>
+      </p>
+      <p class="fq-v-stem">${esc(p.stem)}</p>
+      <div data-v-control>${control}</div>
+    </div>`;
+  }
+
+  // ── 收集答案（事件委托） ──
+  questionList.addEventListener("change", (e) => {
+    const target = e.target;
+    const variantEl = target.closest("[data-variant]");
+    if (!variantEl) return;
+    const vid = Number(variantEl.dataset.variant);
+    const qtype = variantEl.dataset.qtype;
+    if (qtype === "choice") {
+      state.answers.set(vid, target.value);
+    } else if (qtype === "judge") {
+      state.answers.set(vid, target.value === "true");
+    }
+  });
+  questionList.addEventListener("input", (e) => {
+    const target = e.target;
+    const variantEl = target.closest("[data-variant]");
+    if (!variantEl) return;
+    const vid = Number(variantEl.dataset.variant);
+    const qtype = variantEl.dataset.qtype;
+    if (qtype === "fill") {
+      const values = [];
+      variantEl.querySelectorAll("[data-fill]").forEach((el) => values.push(el.value));
+      state.answers.set(vid, values);
+    } else if (qtype === "essay" || qtype === "calc" || qtype === "application") {
+      state.answers.set(vid, target.value);
+    }
+  });
+
+  async function submitQuiz() {
+    const answers = [];
+    state.quiz.questions.forEach((q) =>
+      q.variants.forEach((v) => {
+        const has = state.answers.has(v.id);
+        answers.push({ variantId: v.id, answer: has ? state.answers.get(v.id) : null });
+      }),
+    );
+    loading.hidden = false;
+    loadingText.textContent = "正在判分…";
+    try {
+      const result = await window.__fequizApi.score(state.quiz.sessionId, answers);
+      renderResults(result);
+      switchPanel("result");
+    } catch (err) {
+      console.error("[fequiz] score failed:", err);
+      showError(`判分失败：${err.message}`);
+    } finally {
+      loading.hidden = true;
+    }
+  }
+
+  // ── 渲染结果 ──
+  function userAnswerText(r) {
+    const raw = state.answers.get(r.variantId);
+    if (r.qtype === "choice") {
+      if (raw === undefined || raw === null || raw === "") return "未作答";
+      const idx = Number(raw);
+      const opt = r.payload.options?.[idx];
+      return `${LETTERS[idx]}${opt ? " · " + opt : ""}`;
+    }
+    if (r.qtype === "judge") {
+      if (raw === undefined || raw === null || raw === "") return "未作答";
+      return raw === true || raw === "true" ? "正确" : "错误";
+    }
+    if (r.qtype === "fill") {
+      if (!raw || !raw.length) return "未作答";
+      return raw.map((v) => (v ? v : "（空）")).join("、");
+    }
+    if (!raw) return "未作答";
+    return String(raw);
+  }
+
+  function correctAnswerText(r) {
+    const p = r.payload;
+    if (r.qtype === "choice") {
+      const opt = p.options?.[p.answerIndex];
+      return `${LETTERS[p.answerIndex]}${opt ? " · " + opt : ""}`;
+    }
+    if (r.qtype === "judge") return p.answer ? "正确" : "错误";
+    if (r.qtype === "fill") {
+      return (p.blanks || [])
+        .map((b) => (b.answers || []).join(" / "))
+        .join("；");
+    }
+    return "";
+  }
+
+  function renderResults(result) {
+    const pct = Math.min(100, Math.round(result.rate || 0));
+    const right = result.results.filter((r) => r.correct === true).length;
+    const wrong = result.results.filter((r) => r.correct === false).length;
+    const pending = result.results.filter((r) => r.correct === null).length;
+    resultSummary.innerHTML = `
+      <p class="fq-step-sub">本次得分</p>
+      <p class="fq-rs-score">${result.earnedScore}<small> / ${result.totalScore} 分</small></p>
+      <div class="fq-rs-bar"><div class="fq-rs-fill" style="width:${pct}%"></div></div>
+      <p class="fq-rs-meta">正确 ${right} · 错误 ${wrong}${pending ? ` · 待复核 ${pending}` : ""} · 得分率 ${pct}%</p>`;
+
+    resultList.innerHTML = result.results
+      .map((r) => {
+        const cls = r.correct === true ? "is-right" : r.correct === false ? "is-wrong" : "is-pending";
+        const mark = r.correct === true ? "✓" : r.correct === false ? "✗" : "△";
+        const userLine = userAnswerText(r);
+        const isUserWrong = r.correct === false;
+        let correctLine = "";
+        if (["choice", "judge", "fill"].includes(r.qtype)) {
+          correctLine = `<p class="fq-r-line ${isUserWrong ? "is-wrong" : "is-correct"}"><b>正确答案：</b>${esc(correctAnswerText(r))}</p>`;
+        }
+        const lists = [];
+        for (const key of ["keyPoints", "steps", "criteria"]) {
+          const arr = r.payload[key];
+          if (Array.isArray(arr) && arr.length) {
+            const label = key === "keyPoints" ? "评分要点" : key === "steps" ? "推导步骤" : "评分点";
+            lists.push(`<p class="fq-r-ref-title">${label}</p><ul class="fq-r-list">${arr.map((s) => `<li>${esc(s)}</li>`).join("")}</ul>`);
+          }
+        }
+        return `
+        <li class="fq-r ${cls}">
+          <div class="fq-r-head">
+            <span class="fq-r-mark">${mark}</span>
+            <div style="flex:1">
+              <p class="fq-r-title">${esc(r.questionTitle)}</p>
+              <p class="fq-q-tags">
+                <span class="badge badge-ghost badge-sm">${esc(r.qtypeLabel)}</span>
+                <span class="badge badge-sm ${DIFF_BADGE[r.difficulty] || "badge-ghost"}">${DIFF_LABEL[r.difficulty] || r.difficulty}</span>
+                <span class="badge badge-ghost badge-sm">${GRADED_LABEL[r.gradedBy] || r.gradedBy}</span>
+              </p>
+            </div>
+            <span class="fq-r-score">${r.earned}/${r.baseScore}</span>
+          </div>
+          <div class="fq-r-body">
+            <p class="fq-r-stem">${esc(r.payload.stem)}</p>
+            <p class="fq-r-line"><b>你的答案：</b>${esc(userLine)}</p>
+            ${correctLine}
+            ${r.comment ? `<p class="fq-r-comment">💬 ${esc(r.comment)}</p>` : ""}
+            ${r.payload.modelAnswer ? `<div class="fq-r-ref"><p class="fq-r-ref-title">参考答案</p><pre class="fq-pre">${esc(r.payload.modelAnswer)}</pre></div>` : ""}
+            ${lists.join("")}
+            ${r.payload.explanation ? `<p class="fq-r-exp">📖 解析：${esc(r.payload.explanation)}</p>` : ""}
+          </div>
+        </li>`;
+      })
+      .join("");
+  }
+
+  // ── 事件 ──
+  generateBtn.addEventListener("click", () => void generateQuiz());
+  submitBtn.addEventListener("click", () => void submitQuiz());
+  retryBtn.addEventListener("click", () => void boot());
+  root.querySelector("[data-reconfig]").addEventListener("click", () => {
+    switchPanel("config");
+    setStatus("");
+  });
+  root.querySelector("[data-reconfig-2]").addEventListener("click", () => {
+    switchPanel("config");
+    setStatus("");
+  });
+  root.querySelector("[data-again]").addEventListener("click", () => {
+    state.quiz = null;
+    state.answers = new Map();
+    switchPanel("config");
+    setStatus("");
+  });
+
+  const start = () => void boot();
+  window.addEventListener("astro:page-load", start);
+  start();
+</script>
