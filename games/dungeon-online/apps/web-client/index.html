@@ -62,7 +62,7 @@
 </div>
 <div id="stick-area"><div id="stick-base"><div id="stick-nub"></div></div></div>
 <div id="touch-attack">⚔</div>
-<div id="help">WASD / 方向键 移动 · 空格 / J 攻击 · Shift 闪避 · 1·2 协作技</div>
+<div id="help">WASD / 方向键 移动 · 空格 / J 攻击 · Shift 闪避 · 1·2·3 协作技（按职业）</div>
 
 <script>
 const canvas = document.getElementById('game');
@@ -134,11 +134,16 @@ let lastHitSfx = 0, lastDeathSfx = 0;
 // camera smoothing
 let camX = 0, camY = 0;
 // co-op skill cooldown UI state (client-only estimate; authoritative gating is server-side)
-const SKILL_CD_MS = [12000, 10000, 14000];
-// C4：职业技能白名单（mirror sim CLASS_SKILLS；客户端仅用于渲染/拦截，权威校验在 sim）。
-const CLASS_SKILLS_CLIENT = { tank: [2, 0], ranger: [1, 0], mage: [2, 0], healer: [1, 0] };
-const SKILL_TARGET_MODE = ['ally', 'ally', 'self']; // 按全局 skillId：0护盾/1急救=指向盟友，2嘲讽=自身
-const skillCdUntil = [0, 0]; // 按本地技能序号 0/1（每职业 2 技）
+// C4b：扩展到 5 项（与 SKILL_IDS 对齐）。skillId 索引：0护盾/1急救/2嘲讽/3标记/4弹幕。
+const SKILL_CD_MS = [12000, 10000, 14000, 14000, 16000];
+// C4/C4b：职业技能白名单（mirror sim CLASS_SKILLS；客户端仅用于渲染/拦截，权威校验在 sim）。
+// C4b：ranger 加 MARK(3)、mage 加 BARRAGE(4)，故这俩职业 3 技；tank/healer 维持 2 技。
+const CLASS_SKILLS_CLIENT = { tank: [2, 0], ranger: [1, 0, 3], mage: [2, 0, 4], healer: [1, 0] };
+const SKILL_TARGET_MODE = ['ally', 'ally', 'self', 'enemy', 'enemy']; // 按全局 skillId：0/1=盟友，2=自身，3/4=敌人（C4b MARK/BARRAGE 进攻技指向敌人）
+const skillCdUntil = [0, 0, 0]; // 按本地技能序号 0/1/2（每职业最多 3 技）
+// 自动化钩子（与 GAME.spawnBurst 同模式）：清技能 CD，便于验证脚本在「早期已施放占用 slot0」后
+// 仍能确定性触发本职业第 1 技的映射校验（避免冷却 bleed 误判）。仅调试用，不影响正常游戏。
+GAME.clearSkillCd = () => { for (let i = 0; i < skillCdUntil.length; i++) skillCdUntil[i] = 0; };
 let mySkills = [];
 let lastCastParam = null;
 let skillBarBuiltFor = null;
@@ -146,8 +151,8 @@ let shakeMag = 0;             // screen-shake magnitude (decays each frame)
 const floaters = [];          // floating damage/heal numbers {x,y,text,color,born,life}
 // co-op cast feedback (M8): track last seen activeSkill per ally so a NEW cast fires a one-shot ring + label.
 const lastActiveSkill = new Map(); // actorId → {skillId, tick}
-const SKILL_LABEL = ['护盾链接', '急救链', '嘲讽战吼'];
-const SKILL_FX_COLOR = ['#6fd68a', '#f8d24a', '#f5a24a']; // 绿(护盾)/金(急救)/橙(嘲讽)，对齐 art-bible 阵营色/EMBER
+const SKILL_LABEL = ['护盾链接', '急救链', '嘲讽战吼', '猎手标记', '术法弹幕']; // 索引对齐 SKILL_IDS（C4b +MARK/BARRAGE）
+const SKILL_FX_COLOR = ['#6fd68a', '#f8d24a', '#f5a24a', '#e86fb0', '#9b7be8']; // 绿(护盾)/金(急救)/橙(嘲讽)/品红(标记)/紫(弹幕)，对齐 art-bible 阵营色/EMBER
 const castRings = [];         // co-op cast ground rings {id, skillId, x, y, born, color} (M8)
 const particles = [];         // death/hit particle bursts {x, y, vx, vy, born, life, color, r} (M11)
 const lastPos = new Map();    // actorId → {x, y} last known position (for death burst spawn) (M11)
@@ -297,7 +302,9 @@ function castSkill(localIdx) {
   const skillId = mySkills[localIdx];
   const now = performance.now();
   if (now < skillCdUntil[localIdx]) { sfxDenied(); return; }
-  const target = SKILL_TARGET_MODE[skillId] === 'self' ? 0 : nearestAllyId();
+  // C4b：目标模式按 skillId 路由——self 自身 / enemy 最近敌人（MARK/BARRAGE）/ ally 最近盟友。
+  const mode = SKILL_TARGET_MODE[skillId];
+  const target = mode === 'self' ? 0 : (mode === 'enemy' ? nearestEnemyId() : nearestAllyId());
   sendInput(3, { x: 0, y: 0 }, target, skillId);
   skillCdUntil[localIdx] = now + SKILL_CD_MS[skillId];
   lastCastParam = skillId;
@@ -982,6 +989,28 @@ function drawSpriteAndOverlays(e, x, y, snap) {
       ctx.stroke();
       ctx.restore();
     }
+    // C4b: marked-enemy 「易伤」cue — 敌人携带服务端权威 markedUntilTick → 脉动品红环 + 「易伤」
+    // 标签，提示玩家「优先集火 / 对其伤害 ×1.25」（combat.resolveDamage 消费 markedUntilTick）。
+    if ((e.kind === 1 || e.kind === 2) && e.markedUntilTick != null && e.markedUntilTick > 0) {
+      const pulse = 0.5 + 0.3 * Math.sin(performance.now() / 110);
+      ctx.save();
+      ctx.globalAlpha = pulse;
+      ctx.strokeStyle = '#e86fb0'; // 品红（art-bible §3 P3 阵营色，易伤标记）
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#e86fb0'; ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(x, y, size / 2 + 10, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+      ctx.save();
+      ctx.globalAlpha = 0.8 + 0.2 * Math.abs(Math.sin(performance.now() / 140));
+      ctx.fillStyle = '#ffb3e6';
+      ctx.font = 'bold 11px system-ui';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = '#000'; ctx.shadowBlur = 3;
+      ctx.fillText('易伤', x, y - size / 2 - 38);
+      ctx.restore();
+    }
   } else {
     drawCircleFallback(e, x, y, snap);
   }
@@ -1127,6 +1156,9 @@ function draw() {
   GAME.particleCount = particles.length;
   // M16: expose live projectile count (dodgeable ranged attacks) for automation gate.
   GAME.projectileCount = (GAME.lastSnapshot?.projectiles || []).length;
+  // C4b: expose marked-enemy count (server-authoritative markedUntilTick, cond-serialized) for gate.
+  // Read from GAME.lastSnapshot so injected-synthetic marked entities are also detected deterministically.
+  GAME.markedEnemyCount = (GAME.lastSnapshot?.entities || []).filter((e) => e.kind === 1 && e.markedUntilTick != null && e.markedUntilTick > 0).length;
   // C4：本地职业解析 → 动态构建分职业技能栏 + 暴露职业信息供自动化闸门。
   const meEnt = (GAME.lastSnapshot?.entities || []).find((e) => e.kind === 0 && e.id === GAME.localEntityId);
   const lc = meEnt?.classId || null;

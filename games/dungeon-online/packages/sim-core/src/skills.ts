@@ -54,6 +54,10 @@ export interface SkillApplication {
   readonly rescueBoostTicks: number;
   /** >0 → world.step 给 caster 设 tauntUntilTick（敌人 AI 经 taunt 池优先锁定）。 */
   readonly tauntTicks: number;
+  /** C4b >0 → world.step 给 target 敌人设 markedUntilTick = world.tick + 此值（combat 消费 ×1.25 易伤）。 */
+  readonly markTicks: number;
+  /** C4b >0 → world.step 经 resolveDamage 对 target 敌人造成此扁平伤害（SKILL 类，受 D12 门控）。 */
+  readonly flatDamage: number;
 }
 
 /** 将原型效果映射为意图结构体（纯函数）。 */
@@ -67,6 +71,8 @@ function toApplication(proto: SkillPrototype, casterId: number, targetId: number
     shieldReduction: proto.effect.shieldReduction,
     rescueBoostTicks: proto.effect.rescueBoostTicks,
     tauntTicks: proto.effect.tauntTicks,
+    markTicks: proto.effect.markTicks,
+    flatDamage: proto.effect.flatDamage,
   };
 }
 
@@ -108,6 +114,14 @@ export function resolveSkillApplication(
   if (proto.targetMode === SkillTargetMode.SELF) {
     // TAUNT：只作用于施法者自身（吸引敌火保护队友，本质是「影响盟友」的协同技）。
     return toApplication(proto, caster.id, caster.id);
+  }
+
+  // ENEMY 模式（C4b 进攻技 MARK/BARRAGE）：目标必须是「敌人」（ENEMY 或 BOSS），
+  // 不可指向玩家/资源/弹幕/自己；纯状态/伤害效果由 world.step / combat 落地（discipline B）。
+  if (proto.targetMode === SkillTargetMode.ENEMY) {
+    if (!target) return null;
+    if (target.kind !== EntityKind.ENEMY && target.kind !== EntityKind.BOSS) return null;
+    return toApplication(proto, caster.id, target.id);
   }
 
   // ALLY 模式：必须指向「其他玩家盟友」。

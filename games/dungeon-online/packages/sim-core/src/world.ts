@@ -102,6 +102,8 @@ interface Actor {
   shieldUntilTick?: number; // ⑨ SHIELD_ALLY 减伤护盾窗口截止 tick（combat 消费）
   shieldReduction?: number; // ⑨ SHIELD_ALLY 减伤比例 0..1
   tauntUntilTick?: number; // ⑨ TAUNT 施法者吸引敌火窗口截止 tick（敌人 AI 消费）
+  // ── C4b 猎手标记易伤窗口（仅 world.step 维护；纪律 B：落地只经 world.step / combat）──
+  markedUntilTick?: number; // 敌人被 MARK 后易伤窗口截止 tick（combat.resolveDamage 消费 ×1.25）
   // ── E7 倒地/救援/超时/托管状态（仅 world.step 维护；纪律 B）──
   rescueTicks: number; // 倒地后累积的救援读条 tick（S7.2）
   downedTicks: number; // 倒地后经过的 tick（S7.5 超时判定）
@@ -533,6 +535,25 @@ export function createWorld(opts: CreateWorldOpts): World {
                 if (app.tauntTicks > 0) {
                   a.tauntUntilTick = world.tick + app.tauntTicks;
                 }
+                // ④ MARK（C4b 游侠专属进攻技）：给目标敌人施加易伤窗口（combat.resolveDamage 消费 ×1.25）。
+                //   纯状态 set，无 hp 改变（discipline B：仅 world.step 改状态）。
+                if (app.markTicks > 0) {
+                  const tgt = actors.find((t) => t.id === app.targetId);
+                  if (tgt) tgt.markedUntilTick = world.tick + app.markTicks;
+                }
+                // ⑤ BARRAGE（C4b 术士专属进攻技）：对目标敌人造成扁平伤害（SKILL 类，受 D12 前摇门控）。
+                //   经 ⑦ resolveDamage（唯一 hp 结算出口）落地，discipline B；kind=SKILL 不 bypass windup
+                //   （仅 PROJECTILE 绕过），故若施法者仍有未完成的攻击前摇则本弹幕结算为 no-op。
+                if (app.flatDamage > 0) {
+                  resolveDamage(combatState, {
+                    sourceId: app.casterId,
+                    targetId: app.targetId,
+                    amount: 0,
+                    tick: world.tick,
+                    kind: CombatKind.SKILL,
+                    enemyDamage: app.flatDamage,
+                  });
+                }
                 a.cooldownUntilTick = world.tick + app.cooldownTicks;
                 a.activeSkill = app.skillId;
               }
@@ -900,6 +921,12 @@ export function createWorld(opts: CreateWorldOpts): World {
         tauntUntilTick:
           a.tauntUntilTick != null && a.tauntUntilTick > world.tick
             ? a.tauntUntilTick
+            : undefined,
+        // C4b 猎手标记易伤窗口：仅窗口仍活跃（> world.tick）才下发，过期/未标记则 undefined（JSON 丢弃，
+        // 不影响「未标记实体」的确定性快照哈希——与 rescue/telegraph/shield/taunt/enraged 先例一致）。
+        markedUntilTick:
+          a.markedUntilTick != null && a.markedUntilTick > world.tick
+            ? a.markedUntilTick
             : undefined,
         // 当前/最近施放协作技 id（E8 HUD 提示）。玩家初值 null → undefined → 不下发。
         activeSkill: a.activeSkill ?? undefined,

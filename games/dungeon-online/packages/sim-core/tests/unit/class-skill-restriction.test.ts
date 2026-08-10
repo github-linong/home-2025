@@ -37,13 +37,14 @@ const downedAlly: SkillActorView = {
 };
 
 // ---------------------------------------------------------------------------
-// 1) CLASS_SKILLS 数据契约：4 职业，各 2 个可用技
+// 1) CLASS_SKILLS 数据契约：4 职业，tank/healer 各 2 个可用技，ranger/mage (C4b 进攻技) 各 3 个
 // ---------------------------------------------------------------------------
-test("CLASS_SKILLS: exactly 4 classes, each with 2 allowed skills", () => {
+test("CLASS_SKILLS: exactly 4 classes with expected whitelist sizes (C4b: ranger/mage = 3)", () => {
   assert.equal(Object.keys(CLASS_SKILLS).length, 4, "4 class entries");
+  const EXPECTED: Record<string, number> = { tank: 2, ranger: 3, mage: 3, healer: 2 };
   for (const cls of PLAYER_CLASSES) {
     assert.ok(cls in CLASS_SKILLS, `${cls} present in CLASS_SKILLS`);
-    assert.equal(CLASS_SKILLS[cls].length, 2, `${cls} has exactly 2 allowed skills`);
+    assert.equal(CLASS_SKILLS[cls].length, EXPECTED[cls], `${cls} has ${EXPECTED[cls]} allowed skills`);
   }
   // SHIELD_ALLY 为通用技：每职业都拥有。
   for (const cls of PLAYER_CLASSES) {
@@ -52,6 +53,14 @@ test("CLASS_SKILLS: exactly 4 classes, each with 2 allowed skills", () => {
       `${cls} includes universal SHIELD_ALLY`,
     );
   }
+  // C4b：ranger 持有专属进攻技 MARK，mage 持有专属进攻技 BARRAGE。
+  assert.ok(CLASS_SKILLS.ranger.includes(SKILL_IDS.MARK), "ranger whitelist includes MARK");
+  assert.ok(CLASS_SKILLS.mage.includes(SKILL_IDS.BARRAGE), "mage whitelist includes BARRAGE");
+  // tank/healer 不持有任何进攻技（保持 2 技）。
+  assert.ok(!CLASS_SKILLS.tank.includes(SKILL_IDS.MARK), "tank whitelist excludes MARK");
+  assert.ok(!CLASS_SKILLS.tank.includes(SKILL_IDS.BARRAGE), "tank whitelist excludes BARRAGE");
+  assert.ok(!CLASS_SKILLS.healer.includes(SKILL_IDS.MARK), "healer whitelist excludes MARK");
+  assert.ok(!CLASS_SKILLS.healer.includes(SKILL_IDS.BARRAGE), "healer whitelist excludes BARRAGE");
 });
 
 // ---------------------------------------------------------------------------

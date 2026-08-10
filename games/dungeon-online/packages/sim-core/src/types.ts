@@ -34,6 +34,8 @@ export const SKILL_IDS = {
   SHIELD_ALLY: 0, // 护盾链接：给目标盟友施加减伤护盾窗口
   REVIVE_BOOST: 1, // 急救链：给倒地盟友救援读条直接加成（加速归队）
   TAUNT: 2, // 嘲讽战吼：施法者吸引敌火（敌人 AI 优先锁定）
+  MARK: 3, // 猎手标记（C4b 游侠专属进攻技）：对敌人施加易伤窗口，标记期间受其伤害 ×1.25
+  BARRAGE: 4, // 术法弹幕（C4b 术士专属进攻技）：对敌人造成 22 点扁平伤害（SKILL 类，受 D12 前摇门控）
 } as const;
 export type SkillIdValue = (typeof SKILL_IDS)[keyof typeof SKILL_IDS];
 
@@ -46,11 +48,15 @@ export const CLASS_BASE: Record<PlayerClass, ClassBase> = {
 
 /** C4：每职业可用的协作技白名单（权威校验用）。SHIELD_ALLY 为通用技，各职业配一个招牌技。
  *  注：3 技选 2 仅 3 种组合，tank/mage 同款——差异化由 CLASS_BASE 数值承担；
- *  ranger/mage 的专属进攻技（标记/弹幕）留 C4b（需新增第 4 技）。 */
+ *  C4b 新增 ranger 专属进攻技 MARK（标记）、mage 专属进攻技 BARRAGE（弹幕）：
+ *    ranger = [REVIVE_BOOST, SHIELD_ALLY, MARK] = [1,0,3]（3 技）
+ *    mage   = [TAUNT, SHIELD_ALLY, BARRAGE] = [2,0,4]（3 技）
+ *    tank / healer 维持 2 技（无进攻技）。whitelist 由 skills.resolveSkillApplication 经
+ *    CLASS_SKILLS[caster.classId] 校验：ranger 可 MARK、mage 可 BARRAGE，tank/healer 二者皆拒。 */
 export const CLASS_SKILLS: Record<PlayerClass, number[]> = {
   tank:   [SKILL_IDS.TAUNT, SKILL_IDS.SHIELD_ALLY],
-  ranger: [SKILL_IDS.REVIVE_BOOST, SKILL_IDS.SHIELD_ALLY],
-  mage:   [SKILL_IDS.TAUNT, SKILL_IDS.SHIELD_ALLY],
+  ranger: [SKILL_IDS.REVIVE_BOOST, SKILL_IDS.SHIELD_ALLY, SKILL_IDS.MARK],
+  mage:   [SKILL_IDS.TAUNT, SKILL_IDS.SHIELD_ALLY, SKILL_IDS.BARRAGE],
   healer: [SKILL_IDS.REVIVE_BOOST, SKILL_IDS.SHIELD_ALLY],
 };
 
@@ -143,6 +149,11 @@ export interface EntityState {
   readonly shieldUntilTick?: number; // ⑨ SHIELD_ALLY 减伤护盾窗口截止 tick（>world.tick 才下发）
   readonly shieldReduction?: number; // ⑨ SHIELD_ALLY 减伤比例 0..1
   readonly tauntUntilTick?: number; // ⑨ TAUNT 施法者吸引敌火窗口截止 tick（>world.tick 才下发）
+  // ── C4b 猎手标记（世界快照公开，供客户端 HUD/特效渲染）──
+  // 仅当实体被标记（a.markedUntilTick===truthy 且未过期）才下发该窗口截止 tick，
+  // 否则 undefined → JSON 丢弃键，不影响「未标记实体」的确定性快照哈希（与 rescue/telegraph/
+  // shield/taunt/enraged 先例一致）。golden 场景无标记 → 该键恒不存在 → 哈希不变。
+  readonly markedUntilTick?: number; // 敌人被 MARK 后易伤窗口截止 tick（>world.tick 才下发）
   // ── M12 狂暴标记（world.snapshot 公开，供客户端 HUD/特效渲染）──
   // 仅当实体真实狂暴（a.enraged===true）才下发 true；否则 undefined → JSON 丢弃键，
   // 不影响「未狂暴实体」的确定性快照哈希（与 rescue/telegraph/shield 先例一致）。
@@ -525,6 +536,12 @@ export interface SkillEffect {
   readonly rescueBoostTicks: number;
   /** 施法者吸引敌火的 tick（TAUNT）；0 = 无。 */
   readonly tauntTicks: number;
+  /** C4b 猎手标记易伤窗口 tick（MARK）；0 = 无标记。world.step 设 target.markedUntilTick，
+   *  combat.resolveDamage 消费（标记期间对该敌伤害 ×1.25）。 */
+  readonly markTicks: number;
+  /** C4b 术法弹幕扁平伤害（BARRAGE）；0 = 无直接伤害。world.step 经 resolveDamage 落地（SKILL 类，
+   *  受 D12 前摇门控，不 bypass windup；discipline B：唯一 hp 结算出口）。 */
+  readonly flatDamage: number;
 }
 
 /** 协作技原型（纯数据；30Hz → tick 换算见各字段注释）。 */
@@ -543,6 +560,10 @@ export interface SkillPrototype {
  *   - SHIELD_ALLY：减伤 50%（shieldReduction=0.5）持续 3s(90tick)，CD 12s(360tick)。
  *   - REVIVE_BOOST：倒地盟友救援读条 +1.5s(45tick)，CD 10s(300tick)。
  *   - TAUNT：施法者吸引敌火 4s(120tick)，CD 14s(420tick)。
+ *   - MARK（C4b 游侠专属进攻技）：对敌人施加易伤窗口 6s(180tick)，CD 14s(420tick)；
+ *     标记期间该敌所受伤害 ×1.25（combat.resolveDamage 消费 markedUntilTick）。
+ *   - BARRAGE（C4b 术士专属进攻技）：对敌人造成 22 点扁平伤害，CD 16s(480tick)；
+ *     SKILL 类结算（受 D12 前摇门控，不 bypass windup；discipline B：经 resolveDamage 落地）。
  */
 export const SKILL_PROTOTYPES: Record<string, SkillPrototype> = {
   SHIELD_ALLY: {
@@ -551,7 +572,7 @@ export const SKILL_PROTOTYPES: Record<string, SkillPrototype> = {
     cooldownTicks: 360,
     castTicks: 0,
     targetMode: SkillTargetMode.ALLY,
-    effect: { shieldTicks: 90, shieldReduction: 0.5, rescueBoostTicks: 0, tauntTicks: 0 },
+    effect: { shieldTicks: 90, shieldReduction: 0.5, rescueBoostTicks: 0, tauntTicks: 0, markTicks: 0, flatDamage: 0 },
   },
   REVIVE_BOOST: {
     id: SKILL_IDS.REVIVE_BOOST,
@@ -559,7 +580,7 @@ export const SKILL_PROTOTYPES: Record<string, SkillPrototype> = {
     cooldownTicks: 300,
     castTicks: 0,
     targetMode: SkillTargetMode.ALLY,
-    effect: { shieldTicks: 0, shieldReduction: 0, rescueBoostTicks: 45, tauntTicks: 0 },
+    effect: { shieldTicks: 0, shieldReduction: 0, rescueBoostTicks: 45, tauntTicks: 0, markTicks: 0, flatDamage: 0 },
   },
   TAUNT: {
     id: SKILL_IDS.TAUNT,
@@ -567,7 +588,23 @@ export const SKILL_PROTOTYPES: Record<string, SkillPrototype> = {
     cooldownTicks: 420,
     castTicks: 0,
     targetMode: SkillTargetMode.SELF,
-    effect: { shieldTicks: 0, shieldReduction: 0, rescueBoostTicks: 0, tauntTicks: 120 },
+    effect: { shieldTicks: 0, shieldReduction: 0, rescueBoostTicks: 0, tauntTicks: 120, markTicks: 0, flatDamage: 0 },
+  },
+  MARK: {
+    id: SKILL_IDS.MARK,
+    name: "猎手标记",
+    cooldownTicks: 420, // 14s @30Hz（MARK_CD=14000ms）
+    castTicks: 0,
+    targetMode: SkillTargetMode.ENEMY,
+    effect: { shieldTicks: 0, shieldReduction: 0, rescueBoostTicks: 0, tauntTicks: 0, markTicks: 180, flatDamage: 0 },
+  },
+  BARRAGE: {
+    id: SKILL_IDS.BARRAGE,
+    name: "术法弹幕",
+    cooldownTicks: 480, // 16s @30Hz（BARRAGE_CD=16000ms）
+    castTicks: 0,
+    targetMode: SkillTargetMode.ENEMY,
+    effect: { shieldTicks: 0, shieldReduction: 0, rescueBoostTicks: 0, tauntTicks: 0, markTicks: 0, flatDamage: 22 },
   },
 };
 

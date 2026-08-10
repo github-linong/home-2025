@@ -80,6 +80,12 @@ export interface CombatEntity {
   buffUntilTick?: number;
   /** 临时攻击 buff 倍率（>1，如 1.2=+20%；由 world.step 设置；combat 单一出口消费）。 */
   buffMult?: number;
+  /**
+   * C4b 猎手标记易伤窗口截止 tick（由 world.step 经 MARK 技能意图设置，仅敌人持有）。
+   * state.tick <= 此值（即 markedUntilTick > state.tick，二者等价）时，本次对该敌伤害 ×1.25。
+   * 未设置 / 已过期 → 不影响结算（确定性 intact，golden 场景永不触发本分支）。
+   */
+  markedUntilTick?: number;
 }
 
 /** resolveDamage 的权威战斗态快照（每 tick 由 world 组装传入）。 */
@@ -169,6 +175,12 @@ export function resolveDamage(state: CombatState, req: DamageRequest): DamageEve
     target.shieldReduction > 0
   ) {
     dmg = Math.max(0, Math.round(dmgBase * (1 - target.shieldReduction)));
+  }
+  // C4b 猎手标记易伤：目标被 MARK（markedUntilTick 仍活跃）时，对其造成的伤害 ×1.25。
+  // 仍由本函数（唯一 hp 结算出口）落地，skills 模块绝不直改 hp（discipline B）。
+  // 未标记 / 已过期 → dmg 原样结算（golden 场景此分支恒不触发，哈希不受影响）。
+  if (target.markedUntilTick != null && target.markedUntilTick > state.tick) {
+    dmg = Math.round(dmg * 1.25);
   }
   const before = target.hp;
   target.hp = Math.max(0, target.hp - dmg);

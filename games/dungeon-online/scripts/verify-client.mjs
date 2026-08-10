@@ -145,8 +145,12 @@ async function main() {
         get() {
           const base = _snap;
           if (!base || !base.entities) return base;
-          const me = base.entities.find((e) => e.kind === 0);
+          const localId = g.localEntityId;
+          const me = base.entities.find((e) => e.kind === 0 && e.id === localId);
           if (!me) return base;
+          // C4b：强制本地玩家为 ranger（3 技：急救链/护盾链接/猎手标记），使客户端渲染 3 技栏
+          // + 按 3 键 → MARK 路径得到真实验证（solo 玩家默认 seat0=tank=2 技，天然无第 3 技）。
+          const entities = base.entities.map((e) => (e === me ? { ...e, classId: 'ranger' } : e));
           const fakeDowned = {
             id: 900001, kind: 0, pos: { x: (me.pos?.x || 0) + 20, y: (me.pos?.y || 0) + 20 },
             dir: 0, hp: 1, maxHp: 100, status: 3, statusEffects: [],
@@ -175,6 +179,12 @@ async function main() {
             dir: 0, hp: 70, maxHp: 100, status: 1, statusEffects: [],
             classId: 'tank', ownerId: 92, tauntUntilTick: 99999,
           };
+          // C4b: synthetic MARKED enemy (server-authorized markedUntilTick) → exercises the
+          // 「易伤」 pulsing ring + label render path + GAME.markedEnemyCount gate.
+          const fakeMarked = {
+            id: 900011, kind: 1, enemyTypeId: 'grunt_swarm', pos: { x: (me.pos?.x || 0) + 80, y: (me.pos?.y || 0) + 80 },
+            dir: 0, hp: 30, maxHp: 40, status: 1, statusEffects: [], markedUntilTick: 99999,
+          };
           // M16: synthetic flying projectile (enemy-owned) → exercises drawProjectiles() path.
           const fakeProjectile = {
             id: 900010, x: (me.pos?.x || 0) + 50, y: (me.pos?.y || 0),
@@ -183,7 +193,7 @@ async function main() {
           };
           return {
             ...base,
-            entities: [...base.entities, fakeDowned, fakeEnraged, fakeBomber, fakeShielded, fakeTaunting],
+            entities: [...entities, fakeDowned, fakeEnraged, fakeBomber, fakeShielded, fakeTaunting, fakeMarked],
             projectiles: [fakeProjectile, ...(base.projectiles || [])],
           };
         },
@@ -191,7 +201,7 @@ async function main() {
       });
       return null;
     });
-    let seen = false, enragedSeen = false, bomberSeen = false, shieldSeen = false, tauntSeen = false, projectileSeen = false;
+    let seen = false, enragedSeen = false, bomberSeen = false, shieldSeen = false, tauntSeen = false, projectileSeen = false, markedSeen = false;
     for (let i = 0; i < 40; i++) {
       await sleep(15);
       const c = await page.evaluate(() => window.__game.downedAllies);
@@ -206,9 +216,12 @@ async function main() {
       if (tn) tauntSeen = true;
       const pr = await page.evaluate(() => window.__game.projectileCount || 0);
       if (pr >= 1) projectileSeen = true;
-      if (seen && enragedSeen && bomberSeen && shieldSeen && tauntSeen && projectileSeen) break;
+      const mk = await page.evaluate(() => window.__game.markedEnemyCount || 0);
+      if (mk >= 1) markedSeen = true;
+      if (seen && enragedSeen && bomberSeen && shieldSeen && tauntSeen && projectileSeen && markedSeen) break;
     }
     results.projectileSeen = projectileSeen;
+    results.markedSeen = markedSeen;
     results.downedRenderErr = downErr;
     results.downedAlliesSeen = seen;
     results.enragedSeen = enragedSeen;
@@ -258,31 +271,48 @@ async function main() {
       roomPhase: window.__game.roomPhase, bannerShown: window.__game.bannerShown,
     }));
 
-    // ── M15 / C4: per-class skill bar + class-aware cast mapping ──
-    const CLASS_SKILLS_MIRROR = { tank: [2, 0], ranger: [1, 0], mage: [2, 0], healer: [1, 0] };
+    // ── M15 / C4 / C4b: per-class skill bar + class-aware cast mapping (长度无关) ──
+    // C4b：ranger/mage 现 3 技（含 MARK/BARRAGE 进攻技），tank/healer 仍 2 技；
+    // 验证改为长度无关：barCount === cs.length，且各元素与白名单一致。
+    const CLASS_SKILLS_MIRROR = { tank: [2, 0], ranger: [1, 0, 3], mage: [2, 0, 4], healer: [1, 0] };
     let lc = null, cs = null;
     for (let i = 0; i < 50; i++) {
       await sleep(15);
       lc = await page.evaluate(() => window.__game.localClass);
       cs = await page.evaluate(() => window.__game.classSkills);
-      if (lc && Array.isArray(cs) && cs.length === 2) break;
+      const want = (CLASS_SKILLS_MIRROR[lc] && CLASS_SKILLS_MIRROR[lc].length) || -1;
+      if (lc && Array.isArray(cs) && cs.length === want && want > 0) break;
     }
-    const classOk = !!(lc && CLASS_SKILLS_MIRROR[lc] && Array.isArray(cs) && cs.length === 2 &&
-      cs[0] === CLASS_SKILLS_MIRROR[lc][0] && cs[1] === CLASS_SKILLS_MIRROR[lc][1]);
+    const mirror = CLASS_SKILLS_MIRROR[lc] || [];
+    const classOk = !!(lc && mirror.length > 0 && Array.isArray(cs) && cs.length === mirror.length &&
+      cs.every((v, i) => v === mirror[i]));
     const barCount = await page.evaluate(() => document.querySelectorAll('#skillbar .skill').length);
-    const barOk = barCount === 2;
+    const barOk = barCount === cs.length; // 长度无关：2 或 3 技按职业渲染
+    // 清技能 CD（早期 tank Digit1 已占用 slot0 冷却），确保本职业第 1 技映射校验不被冷却 bleed 误判。
+    await page.evaluate(() => { if (window.__game.clearSkillCd) window.__game.clearSkillCd(); });
     // 按 1 键 → 应施放「本职业第 1 技」（证明映射按职业而非硬编码 0/1/2）。
     await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit1', bubbles: true })));
     await sleep(40);
     const param = await page.evaluate(() => window.__game.lastCastParam);
     const castOk = param != null && Array.isArray(cs) && param === cs[0];
+    // C4b：3 技职业（ranger/mage）按 3 键 → 应施放第 3 技（MARK=3 / BARRAGE=4），
+    // 证明进攻技映射 + ENEMY 目标路由到位（solo 默认 tank 无第 3 技，已在 getter 强制 ranger）。
+    let markCastParam = null;
+    if (cs.length >= 3) {
+      await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit3', bubbles: true })));
+      await sleep(40);
+      markCastParam = await page.evaluate(() => window.__game.lastCastParam);
+    }
+    const markCastOk = cs.length < 3 ? true : (markCastParam === cs[2]);
     results.localClass = lc;
     results.classSkills = cs;
     results.skillBarCount = barCount;
     results.lastCastParam = param;
+    results.markCastParam = markCastParam;
     results.classSkillOk = classOk;
     results.skillBarOk = barOk;
     results.classCastOk = castOk;
+    results.markCastOk = markCastOk;
 
     await page.screenshot({ path: path.join(CLIENT_DIR, 'assets', 'verify-client.png') });
     log('screenshot → assets/verify-client.png');
@@ -310,9 +340,11 @@ async function main() {
   gates.push(['bomber variant renders (M13)', results.bomberSeen === true]);
   gates.push(['skill-effect overlays render (M14/C5)', results.shieldSeen === true && results.tauntSeen === true]);
   gates.push(['death/hit particle burst (M11)', results.burstErr == null && results.particleSeen === true]);
-  gates.push(['per-class skill set (C4/M15)', results.classSkillOk === true]);
-  gates.push(['skill bar shows 2 skills (C4/M15)', results.skillBarOk === true]);
+  gates.push(['per-class skill set (C4/M15/C4b)', results.classSkillOk === true]);
+  gates.push(['skill bar matches class (C4/M15/C4b)', results.skillBarOk === true]);
   gates.push(['key1 casts class-first skill (C4/M15)', results.classCastOk === true]);
+  gates.push(['3rd-skill MARK/BARRAGE key3 cast (C4b)', results.markCastOk === true]);
+  gates.push(['marked enemy HUD renders (C4b)', results.markedSeen === true]);
   gates.push(['projectile renders (M16)', results.projectileSeen === true]);
   let pass = true;
   log('\n=== GATES ===');
