@@ -58,20 +58,13 @@ test("FACTION_COLORS has 4 valid hex entries", () => {
 });
 
 /**
- * S2.2 — ENEMY_PROTOTYPES 每个 telegraphTicks >= 18（D12 MIN_TELEGRAPH_TICKS=18 下限），
- * 但 bomber_imp（自爆兵，M13）是刻意的短前摇例外（12 tick ≈0.4s）：给玩家「开始发光就后撤」
- * 的清晰威胁窗口，自爆即结算。其余所有敌人（含 brute_charger 的 18 下限）仍受 18 下限约束。
+ * S2.2 — ENEMY_PROTOTYPES 每个 telegraphTicks >= 18（D12 MIN_TELEGRAPH_TICKS=18 下限）。
+ * 含 bomber_imp（自爆兵，M13）：原 12 tick 短前摇例外已消除，统一对齐 18 下限（与 brute 一致）。
  */
-test("ENEMY_PROTOTYPES telegraphTicks all >= 18 (bomber_imp exempt as deliberate short telegraph)", () => {
+test("ENEMY_PROTOTYPES telegraphTicks all >= 18 (D12 floor)", () => {
   const entries = Object.entries(ENEMY_PROTOTYPES);
   assert.ok(entries.length > 0, "至少应有 1 个敌人原型");
   for (const [id, p] of entries) {
-    if (id === "bomber_imp") {
-      // 自爆兵：短前摇例外，但仍须为合理下限（>0 且 < 18 以体现「短」）。
-      assert.ok(p.telegraphTicks > 0 && p.telegraphTicks < 18,
-        `bomber_imp.telegraphTicks=${p.telegraphTicks} 应为刻意短前摇 (0 < ticks < 18)`);
-      continue;
-    }
     assert.ok(
       p.telegraphTicks >= 18,
       `${id}.telegraphTicks=${p.telegraphTicks} 应 >= 18 (D12 下限)`,

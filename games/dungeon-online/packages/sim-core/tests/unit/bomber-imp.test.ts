@@ -2,7 +2,7 @@
  * bomber-imp.test.ts — bomber_imp（自爆兵）敌宗测试（系统③/⑧，M13，sim-core 单测）
  *
  * 覆盖（M13 自爆兵）：
- *  - (A) 原型数据（③）：bomber_imp 存在、shape === AOE_FILL、speed > grunt_swarm、telegraphTicks ≤ 14。
+ *  - (A) 原型数据（③）：bomber_imp 存在、shape === AOE_FILL、speed > grunt_swarm、telegraphTicks >= 18（D12 下限）。
  *  - (B) 敌人 AI（⑧）：玩家进入 attackRange 时，bomber 在 next step 起 telegraph（AOE_FILL）。
  *  - (C) 自爆（world.step 编排）：telegraph 抵达 applyTick → 半径内玩家受 AOE 伤害 + 自爆兵自毁移除。
  *
@@ -67,8 +67,8 @@ test("(A) bomber_imp prototype sanity", () => {
     `bomber speed ${ENEMY_PROTOTYPES.bomber_imp.speed} > grunt ${ENEMY_PROTOTYPES.grunt_swarm.speed}`,
   );
   assert.ok(
-    ENEMY_PROTOTYPES.bomber_imp.telegraphTicks <= 14,
-    `short telegraph ticks ${ENEMY_PROTOTYPES.bomber_imp.telegraphTicks} <= 14`,
+    ENEMY_PROTOTYPES.bomber_imp.telegraphTicks >= 18,
+    `telegraph ticks ${ENEMY_PROTOTYPES.bomber_imp.telegraphTicks} >= 18 (D12 floor)`,
   );
   assert.equal(ENEMY_PROTOTYPES.bomber_imp.tier, "grunt", "bomber is a grunt-tier rusher");
 });
@@ -110,7 +110,7 @@ test("(C) bomber_imp detonates: AOE damage to nearby players + self-removal", ()
   const p0hp0 = p0.hp;
   const p1hp0 = p1.hp;
 
-  // 推进超过 telegraphTicks(12)：applyTick 抵达时结算 AOE 并自毁。
+  // 推进超过 telegraphTicks(18)：applyTick 抵达时结算 AOE 并自毁。
   for (let i = 0; i < 30; i++) world.step();
 
   // (i) 至少一名邻近玩家受 AOE 伤害。

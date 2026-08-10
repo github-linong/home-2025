@@ -333,7 +333,7 @@ export const ENEMY_PROTOTYPES: Record<string, EnemyPrototype> = {
     attackDamage: 14, // AOE 扁平伤害（对 blast 半径内每名玩家各结算 14）
     speed: 135, // 平衡初稿 px/s（远超 grunt 70 / elite 60 / boss 50 / brute 95；高速脆皮冲锋）
     attackRange: 36, // 平衡初稿 px（= blast 半径：进入即起 telegraph，applyTick 时 AOE 结算）
-    telegraphTicks: 12, // 0.4s @30Hz（短前摇：给玩家「开始发光就后撤」的清晰威胁窗口）
+    telegraphTicks: 18, // 0.6s @30Hz（D12 MIN_TELEGRAPH_TICKS 下限；消除 M13 刻意短前摇例外，与 brute 一致）
     shape: TelegraphShape.AOE_FILL, // AOE 填充预警（已接线的客户端 telegraph 渲染路径）
   },
 };
