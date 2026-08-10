@@ -48,6 +48,8 @@
     "test:api": "npm test --prefix apps/api",
     "dev:chat": "npm run dev --prefix apps/chat",
     "dev:wander": "npm run dev --prefix apps/wander",
+    "dev:jianghu": "bash games/jianghu/scripts/start-jianghu.sh",
+    "stop:jianghu": "kill $(lsof -t -iTCP:3011 -sTCP:LISTEN) 2>/dev/null; kill $(lsof -t -iTCP:8081 -sTCP:LISTEN) 2>/dev/null; echo 'jianghu 服务已停止 (:3011 游戏服务端 / :8081 客户端静态)'",
     "dev": ". .nvm-dev.sh && concurrently -n web,api,api2,poker,chat,wander -c blue,yellow,magenta,green,cyan,red \"npm:dev:web\" \"npm:dev:api\" \"npm:dev:api2\" \"npm:dev:poker-realtime\" \"npm:dev:chat\" \"npm:dev:wander\"",
     "dev:lite": ". .nvm-dev.sh && concurrently -n web,api2 -c blue,magenta \"npm:dev:web\" \"npm:dev:api2\"",
     "dev:tmux": "zsh scripts/dev.sh"

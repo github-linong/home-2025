@@ -8,7 +8,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SERVER_PORT="${JIANGHU_PORT:-3011}"
 CLIENT_PORT="${JIANGHU_CLIENT_PORT:-8081}"
 STORE_DIR="${JIANGHU_JSON_STORE_DIR:-$ROOT/data}"
-NODE_BIN="${NODE_BIN:-node}"
+NODE_BIN="${NODE_BIN:-$(command -v node || echo /Users/lnmacmini/.workbuddy/binaries/node/versions/22.22.2/bin/node)}"
 PY_BIN="${PY_BIN:-python3}"
 
 # 角色存档目录（装备/等级落盘，重启不丢档）。默认 $ROOT/data，可用 JIANGHU_JSON_STORE_DIR 覆盖。
