@@ -19,12 +19,14 @@ CREATE TABLE IF NOT EXISTS fe_questions (
   title VARCHAR(500) NOT NULL,
   body MEDIUMTEXT NOT NULL,
   difficulty VARCHAR(16) NOT NULL DEFAULT 'medium',
+  difficulty_level TINYINT NOT NULL DEFAULT 5 COMMENT '难度 1-10',
   source_file VARCHAR(255) DEFAULT NULL,
   processed TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (id),
   UNIQUE KEY uk_fe_questions_cat_slug (category_id, slug),
   KEY idx_fe_questions_category (category_id),
   KEY idx_fe_questions_processed (processed),
+  KEY idx_fe_questions_level (difficulty_level),
   CONSTRAINT fk_fe_questions_category FOREIGN KEY (category_id)
     REFERENCES fe_categories (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -70,5 +72,46 @@ CREATE TABLE IF NOT EXISTS fe_answers (
   CONSTRAINT fk_fe_answers_session FOREIGN KEY (session_id)
     REFERENCES fe_sessions (id) ON DELETE CASCADE,
   CONSTRAINT fk_fe_answers_variant FOREIGN KEY (variant_id)
+    REFERENCES fe_variants (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 题目评分（1-5 星）：用于定期 review 低分题
+CREATE TABLE IF NOT EXISTS fe_ratings (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  question_id INT UNSIGNED NOT NULL,
+  rating TINYINT NOT NULL,
+  comment VARCHAR(500) DEFAULT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_fe_ratings_question (question_id),
+  CONSTRAINT fk_fe_ratings_question FOREIGN KEY (question_id)
+    REFERENCES fe_questions (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 收藏题目（个人站单用户，全局一份；多用户再加 user 维度）
+CREATE TABLE IF NOT EXISTS fe_favorites (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  question_id INT UNSIGNED NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_fe_fav_question (question_id),
+  CONSTRAINT fk_fe_fav_question FOREIGN KEY (question_id)
+    REFERENCES fe_questions (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 错题本：答错的题自动记录（按 variant 累计），学会后可移除
+CREATE TABLE IF NOT EXISTS fe_mistakes (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  question_id INT UNSIGNED NOT NULL,
+  variant_id INT UNSIGNED NOT NULL,
+  wrong_count INT NOT NULL DEFAULT 1,
+  last_answer JSON,
+  last_wrong_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_fe_mistakes_variant (variant_id),
+  KEY idx_fe_mistakes_question (question_id),
+  CONSTRAINT fk_fe_mistakes_question FOREIGN KEY (question_id)
+    REFERENCES fe_questions (id) ON DELETE CASCADE,
+  CONSTRAINT fk_fe_mistakes_variant FOREIGN KEY (variant_id)
     REFERENCES fe_variants (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

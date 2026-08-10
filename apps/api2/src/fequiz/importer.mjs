@@ -83,16 +83,26 @@ export function parseMdFile(filePath, fileName) {
   return { title, body };
 }
 
-/** 难度打分：关键词启发式 → easy / medium / hard。 */
+/**
+ * 难度打分（1-10 级）：
+ *  - 基准 5 分
+ *  - 命中困难关键词最多 +4；命中简单关键词最多 -2
+ *  - 解析超长（>4000/8000 字符）各 +1
+ *  - 收敛到 1..10，并派生 easy/medium/hard 三档（用于旧字段与徽标兜底）
+ * @returns {{level: number, difficulty: "easy"|"medium"|"hard"}}
+ */
 export function difficultyFor(title, body) {
   const text = `${title} ${body}`.toLowerCase();
   let hard = 0;
   let easy = 0;
   for (const k of HARD_HINTS) if (text.includes(k)) hard += 1;
   for (const k of EASY_HINTS) if (text.includes(k)) easy += 1;
-  if (hard >= 2 || body.length > 4000) return "hard";
-  if (easy > hard && hard === 0) return "easy";
-  return "medium";
+  let level = 5 + Math.min(4, hard) - Math.min(2, easy);
+  if (body.length > 4000) level += 1;
+  if (body.length > 8000) level += 1;
+  level = Math.max(1, Math.min(10, level));
+  const difficulty = level >= 7 ? "hard" : level >= 4 ? "medium" : "easy";
+  return { level, difficulty };
 }
 
 function ensureRepo() {
@@ -164,15 +174,16 @@ async function main() {
           continue;
         }
         if (!parsed.title) continue;
-        const difficulty = difficultyFor(parsed.title, parsed.body);
+        const { level, difficulty } = difficultyFor(parsed.title, parsed.body);
         const fileSlug = file.slice(0, -3);
         await conn.query(
-          `INSERT INTO fe_questions (category_id, slug, title, body, difficulty, source_file, processed)
-           VALUES (?, ?, ?, ?, ?, ?, 0)
+          `INSERT INTO fe_questions (category_id, slug, title, body, difficulty, difficulty_level, source_file, processed)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 0)
            ON DUPLICATE KEY UPDATE
              title = VALUES(title), body = VALUES(body),
-             difficulty = VALUES(difficulty), source_file = VALUES(source_file)`,
-          [categoryId, fileSlug, parsed.title.slice(0, 500), parsed.body, difficulty, file],
+             difficulty = VALUES(difficulty), difficulty_level = VALUES(difficulty_level),
+             source_file = VALUES(source_file)`,
+          [categoryId, fileSlug, parsed.title.slice(0, 500), parsed.body, difficulty, level, file],
         );
         questionCount += 1;
         diffCount[difficulty] += 1;

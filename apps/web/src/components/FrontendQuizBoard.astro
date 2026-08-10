@@ -39,6 +39,14 @@
     💡 AI 出题 / 主观题判分暂不可用（未配置 DASHSCOPE_API_KEY）。当前使用离线模板出题，客观题自动判分，主观题需人工复核。
   </div>
 
+  <!-- 顶部导航：练习 / 收藏 / 错题本 / 低分Review -->
+  <nav class="fq-tabs" data-tabs>
+    <button type="button" class="fq-tab is-active" data-tab="practice">🎯 练习</button>
+    <button type="button" class="fq-tab" data-tab="favorites">⭐ 收藏 <span class="fq-tab-badge" data-fav-count>0</span></button>
+    <button type="button" class="fq-tab" data-tab="mistakes">📕 错题本 <span class="fq-tab-badge" data-mistake-count>0</span></button>
+    <button type="button" class="fq-tab" data-tab="reviews">🔍 低分 Review</button>
+  </nav>
+
   <!-- ── Step 1 配置 ─────────────────────────────────────────── -->
   <section class="fq-panel" data-fq-panel="config">
     <div class="fq-step-head">
@@ -64,17 +72,39 @@
     <div class="fq-step-head">
       <div>
         <h2 class="fq-step-title">③ 题目数量</h2>
-        <p class="fq-step-sub">每题含若干题型小题，总分为全部小题之和</p>
+        <p class="fq-step-sub">试卷共出 N 道小题，每题随机分配一种题型</p>
       </div>
     </div>
     <div class="fq-count-row">
       <select class="select select-bordered select-sm" data-count-select>
-        <option value="5">5 题</option>
         <option value="10" selected>10 题</option>
         <option value="15">15 题</option>
         <option value="20">20 题</option>
       </select>
       <button type="button" class="btn btn-primary" data-generate disabled>⚡ 生成试卷</button>
+    </div>
+
+    <div class="fq-step-head">
+      <div>
+        <h2 class="fq-step-title">④ 岗位难度 <span class="fq-step-tag">1-10 级</span></h2>
+        <p class="fq-step-sub">按岗位级别预设难度区间，也可手动微调</p>
+      </div>
+    </div>
+    <div class="fq-count-row">
+      <label class="fq-field">
+        <span>岗位级别</span>
+        <select class="select select-bordered select-sm" data-level-preset></select>
+      </label>
+      <span class="fq-sep">→</span>
+      <label class="fq-field">
+        <span>难度</span>
+        <select class="select select-bordered select-sm" data-level-min></select>
+      </label>
+      <span class="fq-sep">—</span>
+      <label class="fq-field">
+        <span>最高</span>
+        <select class="select select-bordered select-sm" data-level-max></select>
+      </label>
     </div>
   </section>
 
@@ -101,6 +131,44 @@
       <button type="button" class="btn btn-primary btn-lg" data-again>🔁 再练一组</button>
       <button type="button" class="btn btn-outline btn-lg" data-reconfig-2>↩ 重新配置</button>
     </div>
+  </section>
+
+  <!-- ── 收藏夹 ─────────────────────────────────────────────── -->
+  <section class="fq-panel" data-fq-panel="favorites" hidden>
+    <div class="fq-quiz-head">
+      <div>
+        <h2 class="fq-step-title">⭐ 收藏夹</h2>
+        <p class="fq-step-sub">收藏的原题，可一键再练</p>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" data-practice-source="favorites">📝 用收藏出卷</button>
+    </div>
+    <div class="fq-list" data-fav-list></div>
+    <p class="fq-empty" data-fav-empty hidden>还没有收藏题目，答题时点 ⭐ 即可收藏。</p>
+  </section>
+
+  <!-- ── 错题本 ─────────────────────────────────────────────── -->
+  <section class="fq-panel" data-fq-panel="mistakes" hidden>
+    <div class="fq-quiz-head">
+      <div>
+        <h2 class="fq-step-title">📕 错题本</h2>
+        <p class="fq-step-sub">交卷自动记录答错的题，学会后可移除</p>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" data-practice-source="mistakes">📝 用错题出卷</button>
+    </div>
+    <div class="fq-list" data-mistake-list></div>
+    <p class="fq-empty" data-mistake-empty hidden>暂无错题，继续保持！</p>
+  </section>
+
+  <!-- ── 低分 Review ─────────────────────────────────────────── -->
+  <section class="fq-panel" data-fq-panel="reviews" hidden>
+    <div class="fq-quiz-head">
+      <div>
+        <h2 class="fq-step-title">🔍 低分题 Review</h2>
+        <p class="fq-step-sub">平均分 ≤ 3 的题目，定期人工排查是否有问题</p>
+      </div>
+    </div>
+    <div class="fq-list" data-review-list></div>
+    <p class="fq-empty" data-review-empty hidden>暂无低分题，题库质量不错 👍</p>
   </section>
 
   <!-- 加载遮罩 -->
@@ -215,6 +283,12 @@
     gap: 12px;
     font-size: 14px;
   }
+  /* 修复：作者样式 display 会覆盖 HTML [hidden] 的 display:none，
+     显式在 hidden 时强制隐藏，避免弹层默认一直显示。 */
+  .fq-error[hidden],
+  .fq-warn[hidden] {
+    display: none;
+  }
   .fq-error {
     background: #fef2f2;
     border: 1px solid #fecaca;
@@ -293,6 +367,29 @@
     align-items: center;
     gap: 14px;
     margin-top: 4px;
+  }
+  .fq-step-tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--fq-brand);
+    background: var(--fq-brand-soft);
+    border-radius: 999px;
+    padding: 2px 9px;
+    vertical-align: 2px;
+  }
+  .fq-field {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #64748b;
+  }
+  .fq-field .select {
+    min-width: 88px;
+  }
+  .fq-sep {
+    color: #94a3b8;
+    font-weight: 700;
   }
   .fq-quiz-head {
     display: flex;
@@ -490,6 +587,139 @@
     color: #64748b;
     margin: 0;
   }
+  /* ── 顶部导航 tab ── */
+  .fq-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 16px;
+  }
+  .fq-tab {
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 999px;
+    padding: 7px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #475569;
+    transition: all 0.15s ease;
+  }
+  [data-theme="dark"] .fq-tab {
+    background: #111827;
+    border-color: #1e293b;
+    color: #cbd5e1;
+  }
+  .fq-tab:hover {
+    border-color: var(--fq-brand);
+    color: var(--fq-brand);
+  }
+  .fq-tab.is-active {
+    background: var(--fq-brand);
+    border-color: var(--fq-brand);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.25);
+  }
+  .fq-tab-badge {
+    display: inline-block;
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.08);
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .fq-tab.is-active .fq-tab-badge {
+    background: rgba(255, 255, 255, 0.25);
+  }
+  /* ── 收藏按钮 ── */
+  .fq-fav-btn {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #94a3b8;
+    font-size: 17px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .fq-fav-btn:hover {
+    border-color: #f59e0b;
+    color: #f59e0b;
+  }
+  .fq-fav-btn.is-on {
+    color: #f59e0b;
+    border-color: #fde68a;
+    background: #fffbeb;
+  }
+  /* ── 评分星星 ── */
+  .fq-rate {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 10px;
+  }
+  .fq-rate-label {
+    font-size: 12.5px;
+    color: #94a3b8;
+    margin-right: 4px;
+  }
+  .fq-star {
+    border: none;
+    background: none;
+    font-size: 20px;
+    color: #d1d5db;
+    cursor: pointer;
+    padding: 0 2px;
+    transition: transform 0.1s ease, color 0.1s ease;
+  }
+  .fq-star:hover {
+    transform: scale(1.25);
+    color: #f59e0b;
+  }
+  .fq-star.is-on {
+    color: #f59e0b;
+  }
+  .fq-rate-msg {
+    font-size: 12px;
+    color: #16a34a;
+    margin-left: 6px;
+  }
+  /* ── 空态 / review 展开 ── */
+  .fq-empty {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 14px;
+    padding: 36px 12px;
+    border: 1px dashed #e2e8f0;
+    border-radius: 14px;
+  }
+  .fq-review-detail {
+    margin-top: 10px;
+  }
+  .fq-review-detail summary {
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--fq-brand);
+    user-select: none;
+  }
+  .fq-review-detail pre {
+    margin-top: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    white-space: pre-wrap;
+    max-height: 320px;
+    overflow: auto;
+  }
   .fq-r {
     background: #fff;
     border: 1px solid #e2e8f0;
@@ -604,6 +834,11 @@
     place-items: center;
     z-index: 60;
   }
+  /* 修复：作者样式 display:grid 会覆盖 HTML [hidden] 的 display:none，
+     显式在 hidden 时强制隐藏，避免加载弹层默认一直盖在页面上。 */
+  .fq-loading[hidden] {
+    display: none;
+  }
   .fq-loading-box {
     background: #fff;
     border-radius: 18px;
@@ -649,11 +884,25 @@
     config: root.querySelector('[data-fq-panel="config"]'),
     quiz: root.querySelector('[data-fq-panel="quiz"]'),
     result: root.querySelector('[data-fq-panel="result"]'),
+    favorites: root.querySelector('[data-fq-panel="favorites"]'),
+    mistakes: root.querySelector('[data-fq-panel="mistakes"]'),
+    reviews: root.querySelector('[data-fq-panel="reviews"]'),
   };
+  const favCountEl = root.querySelector("[data-fav-count]");
+  const mistakeCountEl = root.querySelector("[data-mistake-count]");
+  const favListEl = root.querySelector("[data-fav-list]");
+  const favEmptyEl = root.querySelector("[data-fav-empty]");
+  const mistakeListEl = root.querySelector("[data-mistake-list]");
+  const mistakeEmptyEl = root.querySelector("[data-mistake-empty]");
+  const reviewListEl = root.querySelector("[data-review-list]");
+  const reviewEmptyEl = root.querySelector("[data-review-empty]");
   const catChipsEl = root.querySelector("[data-cat-chips]");
   const typeChipsEl = root.querySelector("[data-type-chips]");
   const catQuick = root.querySelector("[data-cat-quick]");
   const countSelect = root.querySelector("[data-count-select]");
+  const levelPresetSelect = root.querySelector("[data-level-preset]");
+  const levelMinSelect = root.querySelector("[data-level-min]");
+  const levelMaxSelect = root.querySelector("[data-level-max]");
   const generateBtn = root.querySelector("[data-generate]");
   const submitBtn = root.querySelector("[data-submit]");
   const questionList = root.querySelector("[data-question-list]");
@@ -666,12 +915,37 @@
   const GRADED_LABEL = { rule: "客观题自动判分", llm: "AI 判分", manual: "待人工复核" };
   const LETTERS = "ABCDEFGH";
 
+  /** 1-10 难度对应的徽标颜色。 */
+  const levelBadge = (level) => {
+    const n = Number(level);
+    if (!Number.isFinite(n)) return "badge-ghost";
+    if (n <= 3) return "badge-success";
+    if (n <= 5) return "badge-info";
+    if (n <= 7) return "badge-warning";
+    return "badge-error";
+  };
+
+  /** 岗位级别 → 难度区间（1-10）。 */
+  const LEVEL_PRESETS = [
+    { id: "all", label: "全部难度", min: 1, max: 10 },
+    { id: "fresher", label: "应届生", min: 1, max: 3 },
+    { id: "junior", label: "初级工程师", min: 2, max: 5 },
+    { id: "mid", label: "中级工程师", min: 4, max: 7 },
+    { id: "senior", label: "高级工程师", min: 6, max: 8 },
+    { id: "staff", label: "资深", min: 7, max: 9 },
+    { id: "expert", label: "专家", min: 8, max: 10 },
+    { id: "principal", label: "资深专家", min: 9, max: 10 },
+  ];
+  const DEFAULT_PRESET_ID = "junior"; // 默认：初级工程师
+
   const state = {
     overview: null,
     selectedCats: new Set(),
     selectedTypes: new Set(),
     quiz: null,
     answers: new Map(),
+    view: "practice",
+    practicePanel: "config",
   };
 
   const esc = (s) =>
@@ -687,6 +961,77 @@
     status.style.color = isError ? "#dc2626" : "";
   };
 
+  /** 调试日志：统一前缀 [fequiz]，浏览器 Console 过滤即可。 */
+  const log = (...args) => console.log("[fequiz]", new Date().toLocaleTimeString(), ...args);
+
+  // ── 出卷配置本地持久化（localStorage） ────────────────────────────
+  const CONFIG_KEY = "fequiz:config:v1";
+
+  function saveConfig() {
+    try {
+      localStorage.setItem(
+        CONFIG_KEY,
+        JSON.stringify({
+          cats: [...state.selectedCats],
+          types: [...state.selectedTypes],
+          count: countSelect.value,
+          min: levelMinSelect.value,
+          max: levelMaxSelect.value,
+        }),
+      );
+    } catch (err) {
+      log("保存配置失败:", err?.message || err);
+    }
+  }
+
+  function loadConfig() {
+    try {
+      const raw = localStorage.getItem(CONFIG_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** 用保存的配置覆盖当前选择（在 renderChips / initLevelSelects 之后调用）。 */
+  function applySavedConfig() {
+    const saved = loadConfig();
+    if (!saved) return;
+    // 技术栈（含空数组 = 全部不选，由用户决定）
+    if (Array.isArray(saved.cats) && state.overview) {
+      const valid = new Set(state.overview.categories.map((c) => c.slug));
+      const cats = saved.cats.filter((slug) => valid.has(slug));
+      state.selectedCats = new Set(cats);
+      catChipsEl.querySelectorAll("[data-cat]").forEach((chip) => {
+        chip.classList.toggle("is-on", cats.includes(chip.dataset.cat));
+      });
+    }
+    // 题型（非空才恢复，避免“至少选一种题型”的坑）
+    if (Array.isArray(saved.types) && saved.types.length && state.overview) {
+      const validTypes = new Set(state.overview.qtypes.map((t) => t.type));
+      const types = saved.types.filter((t) => validTypes.has(t));
+      if (types.length) {
+        state.selectedTypes = new Set(types);
+        typeChipsEl.querySelectorAll("[data-type]").forEach((chip) => {
+          chip.classList.toggle("is-on", types.includes(chip.dataset.type));
+        });
+      }
+    }
+    // 题量
+    if (saved.count && [...countSelect.options].some((o) => o.value === String(saved.count))) {
+      countSelect.value = String(saved.count);
+    }
+    // 难度/岗位级别（由 min/max 推导 preset）
+    const min = Number(saved.min);
+    const max = Number(saved.max);
+    if (Number.isFinite(min) && Number.isFinite(max) && min >= 1 && max <= 10 && min <= max) {
+      levelMinSelect.value = String(min);
+      levelMaxSelect.value = String(max);
+      syncPresetSelect();
+    }
+    log("已恢复上次的出卷配置:", JSON.stringify(saved));
+  }
+
   function showError(msg) {
     errorMsg.textContent = msg;
     errorBox.hidden = false;
@@ -694,23 +1039,198 @@
   }
 
   function switchPanel(name) {
+    state.practicePanel = name;
+    state.view = "practice";
     for (const key of Object.keys(panels)) panels[key].hidden = key !== name;
+    root.querySelectorAll("[data-tab]").forEach((t) => t.classList.toggle("is-active", t.dataset.tab === "practice"));
+  }
+
+  /** 切换顶部导航视图：practice / favorites / mistakes / reviews */
+  function setView(view) {
+    state.view = view;
+    root.querySelectorAll("[data-tab]").forEach((t) => t.classList.toggle("is-active", t.dataset.tab === view));
+    if (view === "practice") {
+      for (const key of Object.keys(panels)) panels[key].hidden = key !== state.practicePanel;
+    } else {
+      for (const key of Object.keys(panels)) panels[key].hidden = key !== view;
+      if (view === "favorites") loadFavorites();
+      else if (view === "mistakes") loadMistakes();
+      else if (view === "reviews") loadReviews();
+    }
+  }
+
+  root.querySelector("[data-tabs]").addEventListener("click", (e) => {
+    const tab = e.target.closest("[data-tab]");
+    if (tab) setView(tab.dataset.tab);
+  });
+
+  async function updateCounts() {
+    try {
+      const api = window.__fequizApi;
+      if (!api) return;
+      const [f, m] = await Promise.all([api.favorites(), api.mistakes()]);
+      favCountEl.textContent = String(f.favorites.length);
+      mistakeCountEl.textContent = String(m.mistakes.length);
+    } catch {
+      /* 计数失败不影响主流程 */
+    }
+  }
+
+  // ── 收藏 / 错题 / 低分 Review 列表 ───────────────────────────────
+  async function loadFavorites() {
+    try {
+      const { favorites } = await window.__fequizApi.favorites();
+      favEmptyEl.hidden = favorites.length > 0;
+      favListEl.innerHTML = favorites
+        .map(
+          (f) => `
+        <li class="fq-q">
+          <div class="fq-q-head">
+            <div style="flex:1">
+              <h3 class="fq-q-title">${esc(f.title)}</h3>
+              <p class="fq-q-tags">
+                <span class="badge badge-ghost badge-sm">${esc(f.categoryTitle)}</span>
+                <span class="badge badge-sm ${levelBadge(f.difficultyLevel)}">难度 ${f.difficultyLevel ?? "-"}/10</span>
+                <span class="badge badge-ghost badge-sm">${esc(String(f.created_at).slice(0, 19))}</span>
+              </p>
+            </div>
+            <button type="button" class="fq-fav-btn is-on" data-unfav="${f.question_id}" title="取消收藏">★</button>
+          </div>
+        </li>`,
+        )
+        .join("");
+    } catch (err) {
+      log("loadFavorites 失败:", err?.message || err);
+    }
+  }
+
+  async function loadMistakes() {
+    try {
+      const { mistakes } = await window.__fequizApi.mistakes();
+      mistakeEmptyEl.hidden = mistakes.length > 0;
+      mistakeListEl.innerHTML = mistakes
+        .map((m) => `
+        <li class="fq-q">
+          <div class="fq-q-head">
+            <div style="flex:1">
+              <h3 class="fq-q-title">${esc(m.title)}</h3>
+              <p class="fq-q-tags">
+                <span class="badge badge-ghost badge-sm">${esc(m.categoryTitle)}</span>
+                <span class="badge badge-sm ${levelBadge(m.difficultyLevel)}">难度 ${m.difficultyLevel ?? "-"}/10</span>
+                <span class="badge badge-error badge-sm">答错 ${m.wrong_count} 次</span>
+                <span class="badge badge-ghost badge-sm">${esc(QTYPE_LABELS[m.qtype] || m.qtype)}</span>
+                <span class="badge badge-ghost badge-sm">${esc(String(m.last_wrong_at).slice(0, 19))}</span>
+              </p>
+            </div>
+            <button type="button" class="btn btn-outline btn-xs" data-rm-mistake="${m.variant_id}">✓ 学会移除</button>
+          </div>
+          <p class="fq-r-stem">${esc(m.payload.stem)}</p>
+          ${m.payload.modelAnswer ? `<div class="fq-r-ref"><p class="fq-r-ref-title">参考答案</p><pre class="fq-pre">${esc(m.payload.modelAnswer)}</pre></div>` : ""}
+        </li>`,
+        )
+        .join("");
+    } catch (err) {
+      log("loadMistakes 失败:", err?.message || err);
+    }
+  }
+
+  async function loadReviews() {
+    try {
+      const { reviews } = await window.__fequizApi.reviews(3);
+      reviewEmptyEl.hidden = reviews.length > 0;
+      reviewListEl.innerHTML = reviews
+        .map(
+          (r) => `
+        <li class="fq-q">
+          <div class="fq-q-head">
+            <div style="flex:1">
+              <h3 class="fq-q-title">${esc(r.title)}</h3>
+              <p class="fq-q-tags">
+                <span class="badge badge-ghost badge-sm">${esc(r.categoryTitle)}</span>
+                <span class="badge badge-sm ${levelBadge(r.difficultyLevel)}">难度 ${r.difficultyLevel ?? "-"}/10</span>
+                <span class="badge badge-warning badge-sm">平均 ${r.avg_rating} 星 · ${r.rating_count} 人评</span>
+              </p>
+            </div>
+          </div>
+          <details class="fq-review-detail">
+            <summary>查看原题解析（人工排查）</summary>
+            <pre>${esc(r.body)}</pre>
+          </details>
+        </li>`,
+        )
+        .join("");
+    } catch (err) {
+      log("loadReviews 失败:", err?.message || err);
+    }
+  }
+
+  async function toggleFavoriteUI(questionId, btn) {
+    const api = window.__fequizApi;
+    const wasOn = btn.classList.contains("is-on");
+    try {
+      if (wasOn) await api.removeFavorite(questionId);
+      else await api.addFavorite(questionId);
+      btn.classList.toggle("is-on", !wasOn);
+      btn.title = !wasOn ? "取消收藏" : "收藏";
+      updateCounts();
+    } catch (err) {
+      log("收藏操作失败:", err?.message || err);
+    }
+  }
+
+  async function rateQuestionUI(questionId, rating, boxEl) {
+    try {
+      const { avg } = await window.__fequizApi.rate(questionId, rating);
+      boxEl.querySelectorAll(".fq-star").forEach((s) => s.classList.toggle("is-on", Number(s.dataset.rate) <= rating));
+      const msg = boxEl.querySelector(".fq-rate-msg");
+      if (msg) msg.textContent = `已评分，当前平均 ${avg} 星`;
+    } catch (err) {
+      log("评分失败:", err?.message || err);
+    }
+  }
+
+  async function practiceFrom(source) {
+    loading.hidden = false;
+    loadingText.textContent = `正在从${source === "favorites" ? "收藏" : "错题"}中抽题…`;
+    setStatus(`从${source === "favorites" ? "收藏" : "错题"}抽题…`);
+    try {
+      const api = window.__fequizApi;
+      const types = state.overview.qtypes.map((t) => t.type);
+      state.quiz = await api.createQuiz([], types, 10, null, source);
+      state.answers = new Map();
+      renderQuestions();
+      quizMeta.textContent = `试卷 · 共 ${state.quiz.questions.length} 道小题（来自${source === "favorites" ? "收藏" : "错题"}）· 满分 ${state.quiz.totalScore} 分`;
+      submitBtn.disabled = false;
+      switchPanel("quiz");
+    } catch (err) {
+      console.error("[fequiz] practiceFrom failed:", err);
+      showError(`从${source === "favorites" ? "收藏" : "错题"}出卷失败：${err.message}`);
+    } finally {
+      loading.hidden = true;
+    }
   }
 
   async function boot() {
+    const t0 = performance.now();
     errorBox.hidden = true;
     setStatus("正在加载题库…");
+    log("boot 开始");
     try {
       const { fequizApi } = await import("../lib/fequiz/api");
       window.__fequizApi = fequizApi;
       state.overview = await fequizApi.overview();
+      log(`boot 完成: ${state.overview.totalQuestions} 题 / ${state.overview.categories.length} 分类 / 题型变体 ${state.overview.totalVariants} / llmEnabled=${state.overview.llmEnabled} (${Math.round(performance.now() - t0)}ms)`);
       renderStats();
       renderChips();
+      initLevelSelects();
+      applySavedConfig();
+      updateCounts();
       setStatus(`题库已加载：${state.overview.totalQuestions} 道原题 / ${state.overview.categories.length} 个技术栈`);
       if (!state.overview.llmEnabled) warnBox.hidden = false;
       generateBtn.disabled = false;
     } catch (err) {
       console.error("[fequiz] boot failed:", err);
+      log("boot 失败:", err?.message || err, "耗时", Math.round(performance.now() - t0) + "ms");
       showError(`无法连接出题接口：${err.message}`);
     }
   }
@@ -752,6 +1272,67 @@
       .join("");
   }
 
+  function setLevelRange(min, max) {
+    levelMinSelect.value = String(min);
+    levelMaxSelect.value = String(max);
+    syncPresetSelect();
+  }
+
+  /** 根据当前 min/max 判断对应预设；不匹配则显示「自定义」。 */
+  function syncPresetSelect() {
+    const min = Number(levelMinSelect.value);
+    const max = Number(levelMaxSelect.value);
+    const matched = LEVEL_PRESETS.find((p) => p.min === min && p.max === max);
+    levelPresetSelect.value = matched ? matched.id : "custom";
+  }
+
+  function initLevelSelects() {
+    const levelOpts = Array.from({ length: 10 }, (_, i) => {
+      const v = i + 1;
+      return `<option value="${v}">${v} 级</option>`;
+    }).join("");
+    levelMinSelect.innerHTML = levelOpts;
+    levelMaxSelect.innerHTML = levelOpts;
+
+    // 岗位级别预设下拉（末尾追加「自定义」选项）
+    levelPresetSelect.innerHTML =
+      LEVEL_PRESETS.map((p) => `<option value="${p.id}">${p.label}（${p.min}-${p.max} 级）</option>`).join("") +
+      `<option value="custom">自定义</option>`;
+
+    // 默认岗位级别（初级工程师）
+    const def = LEVEL_PRESETS.find((p) => p.id === DEFAULT_PRESET_ID) || LEVEL_PRESETS[2];
+    levelPresetSelect.value = def.id;
+    setLevelRange(def.min, def.max);
+
+    // 选择岗位级别 → 应用对应难度区间
+    levelPresetSelect.addEventListener("change", () => {
+      const p = LEVEL_PRESETS.find((x) => x.id === levelPresetSelect.value);
+      if (p) setLevelRange(p.min, p.max);
+      saveConfig();
+    });
+    // 手动微调难度 → 自动更新岗位级别（不匹配则显示「自定义」）
+    levelMinSelect.addEventListener("change", () => {
+      if (Number(levelMinSelect.value) > Number(levelMaxSelect.value)) levelMaxSelect.value = levelMinSelect.value;
+      syncPresetSelect();
+      saveConfig();
+    });
+    levelMaxSelect.addEventListener("change", () => {
+      if (Number(levelMaxSelect.value) < Number(levelMinSelect.value)) levelMinSelect.value = levelMaxSelect.value;
+      syncPresetSelect();
+      saveConfig();
+    });
+  }
+
+  // 题量选择变化 → 持久化
+  countSelect.addEventListener("change", () => saveConfig());
+
+  function getDifficultyRange() {
+    const min = Number(levelMinSelect.value || 1);
+    const max = Number(levelMaxSelect.value || 10);
+    if (min === 1 && max === 10) return null; // 全难度
+    return { min, max };
+  }
+
   function toggleChip(list, set, on) {
     const was = set.has(list);
     if (on) set.add(list);
@@ -766,6 +1347,7 @@
     const on = !state.selectedCats.has(slug);
     toggleChip(slug, state.selectedCats, on);
     chip.classList.toggle("is-on", on);
+    saveConfig();
   });
 
   typeChipsEl.addEventListener("click", (e) => {
@@ -775,15 +1357,18 @@
     const on = !state.selectedTypes.has(t);
     toggleChip(t, state.selectedTypes, on);
     chip.classList.toggle("is-on", on);
+    saveConfig();
   });
 
   root.querySelector("[data-cat-all]").addEventListener("click", () => {
     for (const c of state.overview.categories) state.selectedCats.add(c.slug);
     catChipsEl.querySelectorAll("[data-cat]").forEach((chip) => chip.classList.add("is-on"));
+    saveConfig();
   });
   root.querySelector("[data-cat-none]").addEventListener("click", () => {
     state.selectedCats.clear();
     catChipsEl.querySelectorAll("[data-cat]").forEach((chip) => chip.classList.remove("is-on"));
+    saveConfig();
   });
 
   async function generateQuiz() {
@@ -792,24 +1377,28 @@
       return;
     }
     const count = Number(countSelect.value || 10);
+    const cats = [...state.selectedCats];
+    const types = [...state.selectedTypes];
+    const diff = getDifficultyRange();
+    saveConfig();
+    const t0 = performance.now();
     loading.hidden = false;
-    loadingText.textContent = `正在出卷（${count} 题，${state.selectedTypes.size} 种题型）…`;
+    loadingText.textContent = `正在出卷（${count} 题，${types.length} 种题型）…`;
     setStatus("AI 正在将原题二次加工为所选题型…");
+    log(`generateQuiz 开始: categories=${cats.length}个 types=${types.join(",")} count=${count} difficulty=${JSON.stringify(diff)}`);
     try {
       const api = window.__fequizApi;
-      state.quiz = await api.createQuiz(
-        [...state.selectedCats],
-        [...state.selectedTypes],
-        count,
-      );
+      state.quiz = await api.createQuiz(cats, types, count, diff);
+      log(`generateQuiz 成功: ${state.quiz.questions.length} 题 / 满分 ${state.quiz.totalScore} (${Math.round(performance.now() - t0)}ms)`);
       state.answers = new Map();
       renderQuestions();
-      quizMeta.textContent = `试卷 · 共 ${state.quiz.questions.length} 题 / ${state.quiz.generatedTypes.length} 种题型 · 满分 ${state.quiz.totalScore} 分`;
+      quizMeta.textContent = `试卷 · 共 ${state.quiz.questions.length} 道小题 · 满分 ${state.quiz.totalScore} 分`;
       submitBtn.disabled = false;
       switchPanel("quiz");
       setStatus("");
     } catch (err) {
       console.error("[fequiz] generate failed:", err);
+      log(`generateQuiz 失败: ${err?.message || err} (${Math.round(performance.now() - t0)}ms)`);
       showError(`出卷失败：${err.message}`);
     } finally {
       loading.hidden = true;
@@ -828,9 +1417,10 @@
             <h3 class="fq-q-title">${esc(q.title)}</h3>
             <p class="fq-q-tags">
               <span class="badge badge-ghost badge-sm">${esc(q.categoryTitle)}</span>
-              <span class="badge badge-sm ${DIFF_BADGE[q.difficulty] || "badge-ghost"}">${DIFF_LABEL[q.difficulty] || q.difficulty}</span>
+              <span class="badge badge-sm ${levelBadge(q.difficultyLevel)}">难度 ${q.difficultyLevel ?? "-"}/10</span>
             </p>
           </div>
+          <button type="button" class="fq-fav-btn ${q.favorited ? "is-on" : ""}" data-fav-question="${q.questionId}" title="${q.favorited ? "取消收藏" : "收藏"}">★</button>
         </div>
         <div class="fq-variants">
           ${q.variants.map(renderVariant).join("")}
@@ -916,6 +1506,7 @@
   });
 
   async function submitQuiz() {
+    const t0 = performance.now();
     const answers = [];
     state.quiz.questions.forEach((q) =>
       q.variants.forEach((v) => {
@@ -925,12 +1516,22 @@
     );
     loading.hidden = false;
     loadingText.textContent = "正在判分…";
+    log(`submitQuiz 开始: session=${state.quiz.sessionId} 作答数=${answers.length}`);
     try {
       const result = await window.__fequizApi.score(state.quiz.sessionId, answers);
-      renderResults(result);
+      log(`submitQuiz 完成: ${result.earnedScore}/${result.totalScore}分 得分率${result.rate}% (${Math.round(performance.now() - t0)}ms) 主观题AI判分=${result.results.filter(r=>r.gradedBy==="llm").length}条`);
+      // 同步收藏状态 + 刷新计数（答错的题已自动进错题本）
+      let favSet = new Set();
+      try {
+        const { favorites } = await window.__fequizApi.favorites();
+        favSet = new Set(favorites.map((f) => f.question_id));
+      } catch { /* 忽略 */ }
+      renderResults(result, favSet);
+      updateCounts();
       switchPanel("result");
     } catch (err) {
       console.error("[fequiz] score failed:", err);
+      log(`submitQuiz 失败: ${err?.message || err} (${Math.round(performance.now() - t0)}ms)`);
       showError(`判分失败：${err.message}`);
     } finally {
       loading.hidden = true;
@@ -973,7 +1574,7 @@
     return "";
   }
 
-  function renderResults(result) {
+  function renderResults(result, favSet = new Set()) {
     const pct = Math.min(100, Math.round(result.rate || 0));
     const right = result.results.filter((r) => r.correct === true).length;
     const wrong = result.results.filter((r) => r.correct === false).length;
@@ -990,6 +1591,7 @@
         const mark = r.correct === true ? "✓" : r.correct === false ? "✗" : "△";
         const userLine = userAnswerText(r);
         const isUserWrong = r.correct === false;
+        const favOn = favSet.has(r.questionId);
         let correctLine = "";
         if (["choice", "judge", "fill"].includes(r.qtype)) {
           correctLine = `<p class="fq-r-line ${isUserWrong ? "is-wrong" : "is-correct"}"><b>正确答案：</b>${esc(correctAnswerText(r))}</p>`;
@@ -1010,10 +1612,11 @@
               <p class="fq-r-title">${esc(r.questionTitle)}</p>
               <p class="fq-q-tags">
                 <span class="badge badge-ghost badge-sm">${esc(r.qtypeLabel)}</span>
-                <span class="badge badge-sm ${DIFF_BADGE[r.difficulty] || "badge-ghost"}">${DIFF_LABEL[r.difficulty] || r.difficulty}</span>
+                <span class="badge badge-sm ${levelBadge(r.difficultyLevel)}">难度 ${r.difficultyLevel ?? "-"}/10</span>
                 <span class="badge badge-ghost badge-sm">${GRADED_LABEL[r.gradedBy] || r.gradedBy}</span>
               </p>
             </div>
+            <button type="button" class="fq-fav-btn ${favOn ? "is-on" : ""}" data-fav-question="${r.questionId}" title="${favOn ? "取消收藏" : "收藏"}">★</button>
             <span class="fq-r-score">${r.earned}/${r.baseScore}</span>
           </div>
           <div class="fq-r-body">
@@ -1024,6 +1627,11 @@
             ${r.payload.modelAnswer ? `<div class="fq-r-ref"><p class="fq-r-ref-title">参考答案</p><pre class="fq-pre">${esc(r.payload.modelAnswer)}</pre></div>` : ""}
             ${lists.join("")}
             ${r.payload.explanation ? `<p class="fq-r-exp">📖 解析：${esc(r.payload.explanation)}</p>` : ""}
+            <div class="fq-rate" data-rate-box="${r.questionId}">
+              <span class="fq-rate-label">给这道题评分：</span>
+              ${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="fq-star" data-qid="${r.questionId}" data-rate="${n}" title="${n} 星">★</button>`).join("")}
+              <span class="fq-rate-msg"></span>
+            </div>
           </div>
         </li>`;
       })
@@ -1047,6 +1655,53 @@
     state.answers = new Map();
     switchPanel("config");
     setStatus("");
+  });
+
+  // ── 动态元素事件委托（收藏/评分/移除错题/用收藏或错题出卷） ──
+  root.addEventListener("click", async (e) => {
+    const fav = e.target.closest("[data-fav-question]");
+    if (fav) {
+      e.preventDefault();
+      toggleFavoriteUI(Number(fav.dataset.favQuestion), fav);
+      return;
+    }
+    const unfav = e.target.closest("[data-unfav]");
+    if (unfav) {
+      e.preventDefault();
+      try {
+        await window.__fequizApi.removeFavorite(Number(unfav.dataset.unfav));
+        loadFavorites();
+        updateCounts();
+      } catch (err) {
+        log("取消收藏失败:", err?.message || err);
+      }
+      return;
+    }
+    const rm = e.target.closest("[data-rm-mistake]");
+    if (rm) {
+      e.preventDefault();
+      try {
+        await window.__fequizApi.removeMistake(Number(rm.dataset.rmMistake));
+        loadMistakes();
+        updateCounts();
+      } catch (err) {
+        log("移除错题失败:", err?.message || err);
+      }
+      return;
+    }
+    const rate = e.target.closest("[data-rate]");
+    if (rate) {
+      e.preventDefault();
+      const box = rate.closest("[data-rate-box]");
+      rateQuestionUI(Number(rate.dataset.qid), Number(rate.dataset.rate), box);
+      return;
+    }
+    const ps = e.target.closest("[data-practice-source]");
+    if (ps) {
+      e.preventDefault();
+      practiceFrom(ps.dataset.practiceSource);
+      return;
+    }
   });
 
   const start = () => void boot();

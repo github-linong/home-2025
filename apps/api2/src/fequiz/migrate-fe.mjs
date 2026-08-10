@@ -27,6 +27,18 @@ try {
     await conn.query(stmt);
   }
 
+  // 兼容旧库：为已存在的 fe_questions 补充 difficulty_level 列（MySQL 8 无 ADD COLUMN IF NOT EXISTS）。
+  const [cols] = await conn.query(
+    `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'fe_questions' AND COLUMN_NAME = 'difficulty_level'`,
+  );
+  if (!cols.length) {
+    await conn.query(
+      `ALTER TABLE fe_questions ADD COLUMN difficulty_level TINYINT NOT NULL DEFAULT 5 COMMENT '难度 1-10' AFTER difficulty`,
+    );
+    console.log("[fequiz:migrate] 已为 fe_questions 补充 difficulty_level 列");
+  }
+
   const categoryIdBySlug = new Map();
   for (const cat of seed.categories) {
     await conn.query(
@@ -42,15 +54,19 @@ try {
   }
 
   let inserted = 0;
+  const LEVEL_FROM_DIFF = { easy: 3, medium: 5, hard: 8 };
   for (const q of seed.questions) {
     const categoryId = categoryIdBySlug.get(q.category);
     if (!categoryId) continue;
+    const diff = q.difficulty || "medium";
+    const level = q.difficulty_level ?? LEVEL_FROM_DIFF[diff] ?? 5;
     const [res] = await conn.query(
-      `INSERT INTO fe_questions (category_id, slug, title, body, difficulty, source_file, processed)
-       VALUES (?, ?, ?, ?, ?, ?, 0)
+      `INSERT INTO fe_questions (category_id, slug, title, body, difficulty, difficulty_level, source_file, processed)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0)
        ON DUPLICATE KEY UPDATE
-         title = VALUES(title), body = VALUES(body), difficulty = VALUES(difficulty)`,
-      [categoryId, q.slug, q.title, q.body, q.difficulty || "medium", `seed:${q.slug}.md`],
+         title = VALUES(title), body = VALUES(body),
+         difficulty = VALUES(difficulty), difficulty_level = VALUES(difficulty_level)`,
+      [categoryId, q.slug, q.title, q.body, diff, level, `seed:${q.slug}.md`],
     );
     inserted += res.affectedRows;
   }

@@ -15,6 +15,7 @@
     "fe:migrate": "node --env-file=.env src/fequiz/migrate-fe.mjs",
     "fe:import": "node --env-file=.env src/fequiz/importer.mjs",
     "fe:preprocess": "node --env-file=.env src/fequiz/preprocess.mjs",
+    "fe:regen": "node --env-file=.env src/fequiz/regen.mjs",
     "test": "node --test tests/*.test.js"
   },
   "dependencies": {

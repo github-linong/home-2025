@@ -101,25 +101,34 @@ export function fallbackVariant(question, qtype) {
     .filter((l) => l.length > 2 && !l.startsWith("```") && !l.startsWith("!["))
     .slice(0, 5);
   const modelAnswer = truncate(body, 1200) || `参考答案：请参考原题解析。`;
+  // 从正文中提取要点句子（去代码块、标题前缀、列表符号）
+  const sentences = body
+    .replace(/```[\s\S]*?```/g, " ")
+    .split(/\n+/)
+    .map((l) => l.replace(/^#{1,6}\s*/, "").replace(/^[-*•]\s*/, "").replace(/^\d+[.、)]\s*/, "").trim())
+    .filter((l) => l.length >= 12 && l.length <= 90);
   switch (qtype) {
-    case "fill":
+    case "fill": {
+      const first = sentences[0] || title;
+      const idx = first.indexOf(term);
+      const stem = idx >= 0 ? `${first.slice(0, idx)}____${first.slice(idx + term.length)}` : `${title}，请填空：____`;
+      return { stem, blanks: [{ answers: [term] }], explanation: `要点：${term}。详见原题解析。` };
+    }
+    case "choice": {
+      // 正确答案取自正文真实要点，干扰项为明显错误说法（基于题目主题）
+      const correct = sentences[0] || `“${term}”是前端面试核心考点，需掌握其原理与使用场景`;
       return {
-        stem: title.replace(term, "____"),
-        blanks: [{ answers: [term] }],
-        explanation: `要点：${term}。详见原题解析。`,
-      };
-    case "choice":
-      return {
-        stem: `关于“${term}”，下列说法最准确的是？`,
+        stem: `${title}（选择最准确的说法）`,
         options: [
-          `“${term}”是前端面试高频考点，需掌握其原理与使用场景`,
-          `“${term}”与前端开发无关，仅存在于后端领域`,
-          `“${term}”已经被废弃，不再需要学习`,
-          `“${term}”只能用于浏览器环境，其它场景无效`,
+          correct,
+          `“${term}”与前端开发无关，仅存在于其它领域`,
+          `“${term}”是一个已被废弃的旧特性，现代前端不需要掌握`,
+          `“${term}”只能在浏览器中使用，Node.js 等其它环境完全用不到`,
         ],
         answerIndex: 0,
-        explanation: `“${term}”是前端核心知识点，参见原题解析。`,
+        explanation: `依据原题解析：${truncate(body, 300)}`,
       };
+    }
     case "judge":
       return {
         stem: `“${term}”是前端面试的重要考点，需要理解其原理与适用场景。`,
@@ -154,17 +163,34 @@ export function fallbackVariant(question, qtype) {
 
 // ── AI 生成 ───────────────────────────────────────────────────────────────
 
+/**
+ * LLM 生成题型变体。
+ * 分批调用：客观题（fill/choice/judge）与主观题（essay/calc/application）分开，
+ * 控制单次输出长度，避免一次生成 6 类 JSON 超出模型 max_tokens 导致整题失败。
+ */
+const LLM_BATCHES = [
+  { types: ["fill", "choice", "judge"], maxTokens: 1600 },
+  { types: ["essay"], maxTokens: 2200 },
+  { types: ["calc"], maxTokens: 2000 },
+  { types: ["application"], maxTokens: 2200 },
+];
+
 export async function generateLlmVariants(question, types) {
+  const want = Array.from(new Set(types.filter(isValidType)));
   const system =
     "你是资深前端面试官与在线出题专家。你会把一道面试问答二次加工为多种题型，" +
     "题干严谨、答案准确、难度适配，只输出 JSON。";
-  const user = `【原始题目】
+  const result = {};
+  for (const batch of LLM_BATCHES) {
+    const need = want.filter((t) => batch.types.includes(t));
+    if (!need.length) continue;
+    const user = `【原始题目】
 ${question.title}
 
 【参考解析】
 ${truncate(question.body, 2500)}
 
-请把这道题二次加工成以下题型（只输出一个 JSON 对象，键为题型，未要求的题型不要输出）：
+请把这道题二次加工成以下题型（只输出一个 JSON 对象，键为题型，只输出要求中的题型）：
 {
   "fill": {"stem":"含 ____ 空格的题干（空位用 ____ 表示）","blanks":[{"answers":["可接受的答案1","别名2"]}],"explanation":"简要解析"},
   "choice": {"stem":"题干","options":["选项A","选项B","选项C","选项D"],"answerIndex":0,"explanation":"简要解析"},
@@ -174,12 +200,14 @@ ${truncate(question.body, 2500)}
   "application": {"stem":"场景化应用题题干（如“请实现XX / 如何优化XX”）","modelAnswer":"参考答案","criteria":["评分点1"],"explanation":"解析"}
 }
 要求：
-- 本次需要生成的题型：${types.join("、")}
+- 本次需要生成的题型：${need.join("、")}
 - choice 恰好 4 个选项、答案唯一；judge 必须是可判对错的判断句；fill 的空位数量与 blanks 一一对应；
 - 题干必须基于原始题目改写，不得编造新考点；答案与解析严格依据参考解析；
 - 全部使用中文；题目难度适中，贴近前端面试。`;
-  const res = await callLlm(system, user, { temperature: 0.7, maxTokens: 4096 });
-  return res?.obj || null;
+    const res = await callLlm(system, user, { temperature: 0.7, maxTokens: batch.maxTokens });
+    if (res?.obj && typeof res.obj === "object") Object.assign(result, res.obj);
+  }
+  return result;
 }
 
 export async function mapLimit(items, limit, fn) {

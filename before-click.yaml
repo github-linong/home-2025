@@ -1,0 +1,292 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - generic [ref=f1e3]:
+      - main [ref=f1e5]:
+        - generic [ref=f1e8]:
+          - link "8/4 腾讯地图能力测试台与语言检测 Demo 新增腾讯地图能力测试台（10 项常用能力）与 Chrome 内置 AI 语言检测 Demo。" [ref=f1e9] [cursor=pointer]:
+            - /url: /blog/notice-2026-08-04
+            - generic [ref=f1e10]: 8/4 腾讯地图能力测试台与语言检测 Demo
+            - generic [ref=f1e11]: 新增腾讯地图能力测试台（10 项常用能力）与 Chrome 内置 AI 语言检测 Demo。
+          - button "关闭公告" [ref=f1e12] [cursor=pointer]: 关闭
+        - generic [ref=f1e13]:
+          - generic [ref=f1e14]:
+            - generic [ref=f1e15]:
+              - paragraph [ref=f1e16]: </>FRONTEND · INTERVIEW GYM
+              - heading "学前端 Interview Question Bank" [level=1] [ref=f1e17]
+              - paragraph [ref=f1e18]: 题库来自 febobo/web-interview · 选择技术栈自动抽题 · AI 二次加工 6 类题型 · 交卷自动打分
+            - generic [ref=f1e19]:
+              - generic [ref=f1e20]:
+                - generic [ref=f1e21]: "15"
+                - text: 技术栈
+              - generic [ref=f1e22]:
+                - generic [ref=f1e23]: "244"
+                - text: 原题
+              - generic [ref=f1e24]:
+                - generic [ref=f1e25]: "1464"
+                - text: 已加工题型
+              - generic [ref=f1e26]:
+                - generic [ref=f1e27]: AI
+                - text: 出题/判分
+          - status [ref=f1e28]: 题库已加载：244 道原题 / 15 个技术栈
+          - generic [ref=f1e29]:
+            - paragraph [ref=f1e30]: ⚠️ 无法连接出题接口。
+            - button "↻ 重试" [ref=f1e31] [cursor=pointer]
+          - generic [ref=f1e32]: 💡 AI 出题 / 主观题判分暂不可用（未配置 DASHSCOPE_API_KEY）。当前使用离线模板出题，客观题自动判分，主观题需人工复核。
+          - generic [ref=f1e33]:
+            - generic [ref=f1e34]:
+              - generic [ref=f1e35]:
+                - heading "① 选择技术栈" [level=2] [ref=f1e36]
+                - paragraph [ref=f1e37]: 可多选，不选则从全部技术栈抽题
+              - generic [ref=f1e38]:
+                - button "全选" [ref=f1e39] [cursor=pointer]
+                - button "全不选" [ref=f1e40] [cursor=pointer]
+            - generic [ref=f1e41]:
+              - button "JavaScript 35" [ref=f1e42] [cursor=pointer]:
+                - text: JavaScript
+                - generic [ref=f1e43]: "35"
+              - button "es6 12" [ref=f1e44] [cursor=pointer]:
+                - text: es6
+                - generic [ref=f1e45]: "12"
+              - button "React 35" [ref=f1e46] [cursor=pointer]:
+                - text: React
+                - generic [ref=f1e47]: "35"
+              - button "NodeJS 14" [ref=f1e48] [cursor=pointer]:
+                - text: NodeJS
+                - generic [ref=f1e49]: "14"
+              - button "css 21" [ref=f1e50] [cursor=pointer]:
+                - text: css
+                - generic [ref=f1e51]: "21"
+              - button "http 15" [ref=f1e52] [cursor=pointer]:
+                - text: http
+                - generic [ref=f1e53]: "15"
+              - button "algorithm 18" [ref=f1e54] [cursor=pointer]:
+                - text: algorithm
+                - generic [ref=f1e55]: "18"
+              - button "applet 8" [ref=f1e56] [cursor=pointer]:
+                - text: applet
+                - generic [ref=f1e57]: "8"
+              - button "design 6" [ref=f1e58] [cursor=pointer]:
+                - text: design
+                - generic [ref=f1e59]: "6"
+              - button "git 10" [ref=f1e60] [cursor=pointer]:
+                - text: git
+                - generic [ref=f1e61]: "10"
+              - button "linux 7" [ref=f1e62] [cursor=pointer]:
+                - text: linux
+                - generic [ref=f1e63]: "7"
+              - button "typescript 13" [ref=f1e64] [cursor=pointer]:
+                - text: typescript
+                - generic [ref=f1e65]: "13"
+              - button "vue 34" [ref=f1e66] [cursor=pointer]:
+                - text: vue
+                - generic [ref=f1e67]: "34"
+              - button "vue3 6" [ref=f1e68] [cursor=pointer]:
+                - text: vue3
+                - generic [ref=f1e69]: "6"
+              - button "webpack 10" [ref=f1e70] [cursor=pointer]:
+                - text: webpack
+                - generic [ref=f1e71]: "10"
+            - generic [ref=f1e73]:
+              - heading "② 选择题型" [level=2] [ref=f1e74]
+              - paragraph [ref=f1e75]: AI 把原题二次加工为这 6 类题型
+            - generic [ref=f1e76]:
+              - button "填空题 6分" [ref=f1e77] [cursor=pointer]:
+                - text: 填空题
+                - generic [ref=f1e78]: 6分
+              - button "选择题 5分" [ref=f1e79] [cursor=pointer]:
+                - text: 选择题
+                - generic [ref=f1e80]: 5分
+              - button "判断题 3分" [ref=f1e81] [cursor=pointer]:
+                - text: 判断题
+                - generic [ref=f1e82]: 3分
+              - button "问答题 15分" [ref=f1e83] [cursor=pointer]:
+                - text: 问答题
+                - generic [ref=f1e84]: 15分
+              - button "计算题 12分" [ref=f1e85] [cursor=pointer]:
+                - text: 计算题
+                - generic [ref=f1e86]: 12分
+              - button "应用题 20分" [ref=f1e87] [cursor=pointer]:
+                - text: 应用题
+                - generic [ref=f1e88]: 20分
+            - generic [ref=f1e90]:
+              - heading "③ 题目数量" [level=2] [ref=f1e91]
+              - paragraph [ref=f1e92]: 每题含若干题型小题，总分为全部小题之和
+            - generic [ref=f1e93]:
+              - combobox [ref=f1e94] [cursor=pointer]:
+                - option "5 题"
+                - option "10 题" [selected]
+                - option "15 题"
+                - option "20 题"
+              - button "⚡ 生成试卷" [ref=f1e95] [cursor=pointer]
+          - generic [ref=f1e97]:
+            - paragraph [ref=f1e98]: 正在生成试卷…
+            - paragraph [ref=f1e99]: 首次出卷时 AI 会实时加工题型，可能需要十几秒
+      - contentinfo [ref=f1e100]:
+        - generic [ref=f1e101]: © 2026 linong
+        - link "lilnong1@126.com" [ref=f1e103] [cursor=pointer]:
+          - /url: mailto:lilnong1@126.com
+        - link "京ICP备18045145号" [ref=f1e105] [cursor=pointer]:
+          - /url: https://beian.miit.gov.cn/
+    - complementary [ref=f1e107]:
+      - link [ref=f1e109] [cursor=pointer]:
+        - /url: /
+        - img "linong 头像" [ref=f1e112]
+      - list [ref=f1e113]:
+        - listitem [ref=f1e114]:
+          - link "首页" [ref=f1e115] [cursor=pointer]:
+            - /url: /
+        - listitem [ref=f1e116]:
+          - link "博客" [ref=f1e117] [cursor=pointer]:
+            - /url: /blog/
+        - listitem [ref=f1e118]:
+          - link "搜索" [ref=f1e119] [cursor=pointer]:
+            - /url: /search/
+        - listitem [ref=f1e120]:
+          - link "项目" [ref=f1e121] [cursor=pointer]:
+            - /url: /demos
+        - listitem [ref=f1e122]:
+          - link "学英语" [ref=f1e123] [cursor=pointer]:
+            - /url: /learn-english
+        - listitem [ref=f1e124]:
+          - link "学前端" [ref=f1e125] [cursor=pointer]:
+            - /url: /learn-fe
+        - listitem [ref=f1e126]:
+          - link "关于" [ref=f1e127] [cursor=pointer]:
+            - /url: /about
+        - listitem [ref=f1e128]:
+          - link "思否归档" [ref=f1e129] [cursor=pointer]:
+            - /url: /archive/segmentfault
+      - generic [ref=f1e130]:
+        - button "查看系统公告" [ref=f1e132] [cursor=pointer]:
+          - generic [ref=f1e133]:
+            - generic [ref=f1e134]: 9+
+            - generic [ref=f1e138]: 系统公告
+          - generic [ref=f1e139]: 全部 →
+        - dialog:
+          - generic:
+            - heading "系统公告" [level=3]
+            - paragraph: 点击标题可查看完整内容
+            - list:
+              - listitem:
+                - link "8/4 腾讯地图能力测试台与语言检测 Demo 新增腾讯地图能力测试台（10 项常用能力）与 Chrome 内置 AI 语言检测 Demo。 未读 2026-08-04":
+                  - /url: /blog/notice-2026-08-04
+                  - generic:
+                    - generic:
+                      - generic: 8/4 腾讯地图能力测试台与语言检测 Demo
+                      - generic: 新增腾讯地图能力测试台（10 项常用能力）与 Chrome 内置 AI 语言检测 Demo。
+                    - generic: 未读
+                  - time: 2026-08-04
+              - listitem:
+                - link "8/3 聊天页与 AI 助手、漫游移动修复、腾讯地图定位 完整聊天页（含 AI 助手与消息持久化）、修复漫游移动卡顿、新增腾讯地图定位 Demo、统一访客身份。 未读 2026-08-03":
+                  - /url: /blog/notice-2026-08-03
+                  - generic:
+                    - generic:
+                      - generic: 8/3 聊天页与 AI 助手、漫游移动修复、腾讯地图定位
+                      - generic: 完整聊天页（含 AI 助手与消息持久化）、修复漫游移动卡顿、新增腾讯地图定位 Demo、统一访客身份。
+                    - generic: 未读
+                  - time: 2026-08-03
+              - listitem:
+                - link "7/31 全站实时聊天、漫游联机与每日单词 全站聊天挂件与独立聊天页、漫游联机玩法、学英语新增每日单词上线。 未读 2026-07-31":
+                  - /url: /blog/notice-2026-07-31
+                  - generic:
+                    - generic:
+                      - generic: 7/31 全站实时聊天、漫游联机与每日单词
+                      - generic: 全站聊天挂件与独立聊天页、漫游联机玩法、学英语新增每日单词上线。
+                    - generic: 未读
+                  - time: 2026-07-31
+              - listitem:
+                - link "7/29 指向实验室、文生图与请求对比 数字人指向研究 Demo、DashScope 文生图、多请求方式对比页上线。 未读 2026-07-29":
+                  - /url: /blog/notice-2026-07-29
+                  - generic:
+                    - generic:
+                      - generic: 7/29 指向实验室、文生图与请求对比
+                      - generic: 数字人指向研究 Demo、DashScope 文生图、多请求方式对比页上线。
+                    - generic: 未读
+                  - time: 2026-07-29
+              - listitem:
+                - link "7/28 民生大屏数字人导览 民生数据大屏叠加 3D 数字人讲解员，支持看向面板、旁侧讲解与语音提问。 未读 2026-07-28":
+                  - /url: /blog/notice-2026-07-28
+                  - generic:
+                    - generic:
+                      - generic: 7/28 民生大屏数字人导览
+                      - generic: 民生数据大屏叠加 3D 数字人讲解员，支持看向面板、旁侧讲解与语音提问。
+                    - generic: 未读
+                  - time: 2026-07-28
+              - listitem:
+                - link "7/17 数字人对话与图鉴卡片实验 数字人实时对话 Demo 上线，小说图鉴 23 种卡片效果实验，扑克体验与安全加固。 未读 2026-07-17":
+                  - /url: /blog/notice-2026-07-17
+                  - generic:
+                    - generic:
+                      - generic: 7/17 数字人对话与图鉴卡片实验
+                      - generic: 数字人实时对话 Demo 上线，小说图鉴 23 种卡片效果实验，扑克体验与安全加固。
+                    - generic: 未读
+                  - time: 2026-07-17
+              - listitem:
+                - link "7/16 学英语、德州扑克与系统公告 学英语模块、六人桌德州扑克上线，并新增系统公告收件箱。 未读 2026-07-16":
+                  - /url: /blog/notice-2026-07-16
+                  - generic:
+                    - generic:
+                      - generic: 7/16 学英语、德州扑克与系统公告
+                      - generic: 学英语模块、六人桌德州扑克上线，并新增系统公告收件箱。
+                    - generic: 未读
+                  - time: 2026-07-16
+              - listitem:
+                - link "7/15 登录、封面与互动内容 GitHub 登录上线，博客/项目封面补齐，末日设定互动图上线。 未读 2026-07-15":
+                  - /url: /blog/notice-2026-07-15
+                  - generic:
+                    - generic:
+                      - generic: 7/15 登录、封面与互动内容
+                      - generic: GitHub 登录上线，博客/项目封面补齐，末日设定互动图上线。
+                    - generic: 未读
+                  - time: 2026-07-15
+              - listitem:
+                - link "7/14 JSRUN 实验精选 导入 jsrun 实验并精选展示，搜索标签统一，避免重复分裂。 未读 2026-07-14":
+                  - /url: /blog/notice-2026-07-14
+                  - generic:
+                    - generic:
+                      - generic: 7/14 JSRUN 实验精选
+                      - generic: 导入 jsrun 实验并精选展示，搜索标签统一，避免重复分裂。
+                    - generic: 未读
+                  - time: 2026-07-14
+              - listitem:
+                - link "7/13 历史 Demo 大迁入 旧站数百个交互 Demo 迁入项目页，目录与分页体验更新。 未读 2026-07-13":
+                  - /url: /blog/notice-2026-07-13
+                  - generic:
+                    - generic:
+                      - generic: 7/13 历史 Demo 大迁入
+                      - generic: 旧站数百个交互 Demo 迁入项目页，目录与分页体验更新。
+                    - generic: 未读
+                  - time: 2026-07-13
+              - listitem:
+                - link "7/10 站点全面焕新 个人站切换到新架构，思否问答归档与全文搜索上线。 未读 2026-07-10":
+                  - /url: /blog/notice-2026-07-10
+                  - generic:
+                    - generic:
+                      - generic: 7/10 站点全面焕新
+                      - generic: 个人站切换到新架构，思否问答归档与全文搜索上线。
+                    - generic: 未读
+                  - time: 2026-07-10
+            - generic:
+              - generic:
+                - button "关闭"
+          - generic:
+            - button "关闭": close
+        - link "登录 GitHub →" [ref=f1e142] [cursor=pointer]:
+          - /url: /login/
+          - generic [ref=f1e143]: 登录
+          - generic [ref=f1e144]: GitHub →
+        - generic [ref=f1e145]:
+          - link "GitHub" [ref=f1e146] [cursor=pointer]:
+            - /url: https://github.com/github-linong
+          - link "微信 LN4518" [ref=f1e149] [cursor=pointer]:
+            - /url: /about#contact
+          - link "RSS Feed" [ref=f1e153] [cursor=pointer]:
+            - /url: /rss.xml
+  - button "打开聊天" [ref=f1e159] [cursor=pointer]:
+    - text: 💬
+    - generic [ref=f1e160]: "0"
+  - generic [ref=f1e163]:
+    - button [ref=f1e164]
+    - button [ref=f1e170]
+    - button [ref=f1e174]
+    - button [ref=f1e182]
