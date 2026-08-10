@@ -165,6 +165,8 @@ const SPRITE_SRC = {
   caster: 'assets/caster.png',
   boss: 'assets/boss.png',
   floor: 'assets/floor.png',
+  brute: 'assets/brute.png',   // ④ brute_charger 专属精灵（原复用 grunt）
+  bomber: 'assets/bomber.png', // ④ bomber_imp 专属精灵（原复用 grunt）
 };
 const SPRITES = {};
 let floorPattern = null;
@@ -558,8 +560,8 @@ function enemySpriteKey(tid) {
   if (!tid) return 'grunt';
   if (tid.startsWith('elite')) return 'elite';
   if (tid.startsWith('caster')) return 'caster';
-  if (tid.startsWith('brute')) return 'grunt'; // brute_charger 复用 grunt 精灵（无专属资产）
-  if (tid.startsWith('bomber')) return 'grunt'; // M13 自爆兵 复用 grunt 精灵（无专属资产）
+  if (tid.startsWith('brute')) return 'brute'; // ④ brute_charger 专属精灵
+  if (tid.startsWith('bomber')) return 'bomber'; // ④ bomber_imp 专属精灵
   if (tid.startsWith('boss')) return 'boss';
   return 'grunt';
 }
@@ -574,6 +576,8 @@ function spriteKeyFor(e) {
 function spriteSizeFor(e) {
   if (e.kind === 2) return 76;   // boss: massive
   if (e.kind === 0) return 34;   // hero
+  if (e.enemyTypeId && e.enemyTypeId.startsWith('brute')) return 36; // ④ brute 更壮硕
+  if (e.enemyTypeId && e.enemyTypeId.startsWith('bomber')) return 28; // ④ bomber 更小巧
   if (e.enemyTypeId && e.enemyTypeId.startsWith('caster')) return 34; // caster
   return 30;                      // grunt / elite
 }
