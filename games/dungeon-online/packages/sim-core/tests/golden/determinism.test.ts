@@ -27,10 +27,14 @@ import { ENEMY_PROTOTYPES } from "../../src/types.ts";
 // brute_charger 重锁说明：dungeon-gen 新增 brute_charger 注入（grunt_swarm 槽 ~20% 确定性替换），
 //   随机池排除该 id 但 grunt 命中后额外 nextBool 抽流 → 后续 spawn 坐标/资源点随之漂移 →
 //   布局哈希改变；确定性未破坏（同 seed+biome 三次运行字节相等），故重锁本值。
+// bomber_imp 重锁说明：dungeon-gen 新增 bomber_imp 注入（grunt_swarm 槽 wave>1 时 15% 确定性替换，
+//   复用 grunt 槽那单次 nextFloat 抽流：r<0.2→brute，0.2≤r<0.35→bomber，否则 grunt；rng 抽流与
+//   「仅 brute」先例逐位一致，仅 wave≥2 grunt 结果分布改变 → 布局中部分 grunt_swarm 变为 bomber_imp
+//   → 布局哈希改变；确定性未破坏（同 seed+biome 三次运行字节相等，见下方校验），故重锁本值。
 //   注：world 哈希（GOLDEN_WORLD_HASH，E5）与 playtest 哈希（GOLDEN_PLAYTEST_HASH）未变——
 //   二者仅涉及 wave-1（恒为 grunt_swarm，首刷怪点 rng 抽流未漂移）与 220-tick 窗口（未抵达含
-//   brute_charger 的后续波次），故实体集不变、哈希稳定。
-const GOLDEN_LAYOUT_HASH = "0b77a6d596b8f202f52f6191037a7e7c22c5efc7d55d54a55b59fc5f2b4a2797";
+//   bomber_imp 的 wave≥2），故实体集不变、哈希稳定。
+const GOLDEN_LAYOUT_HASH = "c1b4c7abfeef4cc6f90fd492930a5acc8f5522373314fa168994195e9eccce64";
 // E5 战斗管线接入后填充（同 seed + 同输入序列 → 同世界哈希；见 world-determinism.test.ts）。
 const GOLDEN_WORLD_HASH =
   "823863c6b4927719b78d28f4e4de1867e4da281141191b58b303d3888017ed27";

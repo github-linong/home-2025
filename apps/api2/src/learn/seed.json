@@ -5,301 +5,2556 @@
       "title": "Daily Basics",
       "description": "Everyday words for commute, work, and small talk.",
       "cards": [
-        { "en": "commute", "zh": "通勤", "hint": "daily travel to work", "sort_order": 1 },
-        { "en": "deadline", "zh": "截止日期", "hint": "time limit for work", "sort_order": 2 },
-        { "en": "schedule", "zh": "日程；安排", "hint": "plan of activities", "sort_order": 3 },
-        { "en": "priority", "zh": "优先事项", "hint": "what matters most", "sort_order": 4 },
-        { "en": "habit", "zh": "习惯", "hint": "regular practice", "sort_order": 5 },
-        { "en": "focus", "zh": "专注", "hint": "pay close attention", "sort_order": 6 },
-        { "en": "distraction", "zh": "干扰；分心的事物", "hint": "something that breaks attention", "sort_order": 7 },
-        { "en": "break", "zh": "休息", "hint": "short pause", "sort_order": 8 },
-        { "en": "reminder", "zh": "提醒", "hint": "note to remember", "sort_order": 9 },
-        { "en": "appointment", "zh": "预约；约会", "hint": "planned meeting", "sort_order": 10 },
-        { "en": "errand", "zh": "差事；跑腿", "hint": "small task outside", "sort_order": 11 },
-        { "en": "grocery", "zh": "食品杂货", "hint": "food shopping", "sort_order": 12 },
-        { "en": "receipt", "zh": "收据", "hint": "proof of purchase", "sort_order": 13 },
-        { "en": "budget", "zh": "预算", "hint": "money plan", "sort_order": 14 },
-        { "en": "save", "zh": "节省；存钱", "hint": "keep money aside", "sort_order": 15 },
-        { "en": "waste", "zh": "浪费", "hint": "use poorly", "sort_order": 16 },
-        { "en": "convenient", "zh": "方便的", "hint": "easy to use", "sort_order": 17 },
-        { "en": "reliable", "zh": "可靠的", "hint": "can be trusted", "sort_order": 18 },
-        { "en": "polite", "zh": "礼貌的", "hint": "good manners", "sort_order": 19 },
-        { "en": "patient", "zh": "有耐心的", "hint": "calm while waiting", "sort_order": 20 },
-        { "en": "confident", "zh": "自信的", "hint": "sure of yourself", "sort_order": 21 },
-        { "en": "curious", "zh": "好奇的", "hint": "want to know more", "sort_order": 22 },
-        { "en": "grateful", "zh": "感激的", "hint": "thankful", "sort_order": 23 },
-        { "en": "honest", "zh": "诚实的", "hint": "tell the truth", "sort_order": 24 },
-        { "en": "improve", "zh": "改进；提高", "hint": "make better", "sort_order": 25 },
-        { "en": "negotiate", "zh": "谈判；协商", "hint": "discuss to reach a deal", "sort_order": 26 },
-        { "en": "recipe", "zh": "食谱；秘诀", "hint": "cooking instructions", "sort_order": 27 },
-        { "en": "feedback", "zh": "反馈", "hint": "response to your work", "sort_order": 28 },
-        { "en": "laundry", "zh": "待洗的衣服", "hint": "clothes to wash", "sort_order": 29 },
-        { "en": "empathy", "zh": "共情；同理心", "hint": "feeling what others feel", "sort_order": 30 },
-        { "en": "streamline", "zh": "精简；使更高效", "hint": "simplify a process", "sort_order": 31 },
-        { "en": "checkout", "zh": "结账；退房", "hint": "pay and leave", "sort_order": 32 },
-        { "en": "versatile", "zh": "多功能的", "hint": "usable in many ways", "sort_order": 33 },
-        { "en": "implement", "zh": "实施；落实", "hint": "put into action", "sort_order": 34 },
-        { "en": "subscription", "zh": "订阅", "hint": "recurring payment plan", "sort_order": 35 },
-        { "en": "delegate", "zh": "授权；委派", "hint": "assign a task to someone", "sort_order": 36 },
-        { "en": "collaborate", "zh": "合作；协作", "hint": "work together closely", "sort_order": 37 },
-        { "en": "brief", "zh": "简短的；做简报", "hint": "short or give a quick update", "sort_order": 38 },
-        { "en": "compromise", "zh": "妥协；折中", "hint": "each side gives up something", "sort_order": 39 },
-        { "en": "occasion", "zh": "场合；时机", "hint": "a particular time or event", "sort_order": 40 },
-        { "en": "portion", "zh": "一份；部分", "hint": "a served amount of food", "sort_order": 41 },
-        { "en": "spontaneous", "zh": "自发的；即兴的", "hint": "not planned in advance", "sort_order": 42 },
-        { "en": "inevitable", "zh": "不可避免的", "hint": "sure to happen", "sort_order": 43 },
-        { "en": "distinguish", "zh": "区分；辨别", "hint": "tell apart", "sort_order": 44 },
-        { "en": "perspective", "zh": "视角；观点", "hint": "a way of viewing things", "sort_order": 45 },
-        { "en": "resolve", "zh": "解决；下定决心", "hint": "settle a problem", "sort_order": 46 },
-        { "en": "adjust", "zh": "调整；适应", "hint": "change to fit", "sort_order": 47 },
-        { "en": "accomplish", "zh": "完成；实现", "hint": "achieve a goal", "sort_order": 48 },
-        { "en": "arrange", "zh": "安排；布置", "hint": "organize or plan", "sort_order": 49 },
-        { "en": "snack", "zh": "零食；点心", "hint": "small food between meals", "sort_order": 50 },
-        { "en": "adapt", "zh": "适应；改编", "hint": "get used to something new", "sort_order": 51 },
-        { "en": "complaint", "zh": "投诉；抱怨", "hint": "expressing dissatisfaction", "sort_order": 52 },
-        { "en": "sufficient", "zh": "足够的；充足的", "hint": "enough for the purpose", "sort_order": 53 },
-        { "en": "attempt", "zh": "尝试；企图", "hint": "try to do something", "sort_order": 54 },
-        { "en": "essential", "zh": "必不可少的", "hint": "absolutely needed", "sort_order": 55 },
-        { "en": "thorough", "zh": "彻底的；周密的", "hint": "complete and careful", "sort_order": 56 },
-        { "en": "coordinate", "zh": "协调；配合", "hint": "organize activities together", "sort_order": 57 },
-        { "en": "outcome", "zh": "结果；成果", "hint": "final result", "sort_order": 58 },
-        { "en": "acknowledge", "zh": "承认；确认收到", "hint": "confirm you received something", "sort_order": 59 },
-        { "en": "renovate", "zh": "翻新；装修", "hint": "make new again", "sort_order": 60 },
-        { "en": "ingredient", "zh": "原料；配料", "hint": "a food component", "sort_order": 61 },
-        { "en": "expense", "zh": "开支；花费", "hint": "money spent", "sort_order": 62 },
-        { "en": "dilemma", "zh": "困境；两难", "hint": "a hard choice", "sort_order": 63 },
-        { "en": "abandon", "zh": "放弃；抛弃", "hint": "give up completely", "sort_order": 64 },
-        { "en": "illustrate", "zh": "说明；阐明", "hint": "explain with examples", "sort_order": 65 },
-        { "en": "escalate", "zh": "升级；使…升级", "hint": "raise an issue to a higher level", "sort_order": 66 },
-        { "en": "onboarding", "zh": "入职引导；新手培训", "hint": "process for integrating new hires", "sort_order": 67 },
-        { "en": "benchmark", "zh": "基准；标杆；对标", "hint": "a standard for comparison", "sort_order": 68 },
-        { "en": "consensus", "zh": "共识；一致意见", "hint": "general agreement", "sort_order": 69 },
-        { "en": "coupon", "zh": "优惠券；折扣券", "hint": "a discount voucher", "sort_order": 70 },
-        { "en": "reservation", "zh": "预订；预约", "hint": "booking a table or room", "sort_order": 71 },
-        { "en": "mileage", "zh": "里程；英里数", "hint": "distance traveled in miles", "sort_order": 72 },
-        { "en": "notion", "zh": "概念；观念", "hint": "an idea or concept", "sort_order": 73 },
-        { "en": "reluctant", "zh": "不情愿的；勉强的", "hint": "unwilling to do something", "sort_order": 74 },
-        { "en": "criteria", "zh": "标准；准则", "hint": "standards for judging", "sort_order": 75 },
-        { "en": "facilitate", "zh": "促进；使便利", "hint": "make easier or smoother", "sort_order": 76 },
-        { "en": "scrutinize", "zh": "仔细审查", "hint": "examine very carefully", "sort_order": 77 },
-        { "en": "reimburse", "zh": "报销；偿还", "hint": "pay back money spent", "sort_order": 78 },
-        { "en": "comply", "zh": "遵守；服从", "hint": "follow rules or requirements", "sort_order": 79 },
-        { "en": "chore", "zh": "家务杂事", "hint": "a small routine task", "sort_order": 80 },
-        { "en": "detour", "zh": "绕路；迂回", "hint": "a longer alternative route", "sort_order": 81 },
-        { "en": "wardrobe", "zh": "衣柜；衣物", "hint": "closet or clothing collection", "sort_order": 82 },
-        { "en": "vague", "zh": "模糊的；含糊的", "hint": "not clear or specific", "sort_order": 83 },
-        { "en": "optimistic", "zh": "乐观的", "hint": "expecting good outcomes", "sort_order": 84 },
-        { "en": "skeptical", "zh": "怀疑的", "hint": "doubtful but open to evidence", "sort_order": 85 },
-        { "en": "agenda", "zh": "议程；待办事项", "hint": "list of items to discuss", "sort_order": 86 },
-        { "en": "allocate", "zh": "分配；拨给", "hint": "distribute resources or budget", "sort_order": 87 },
-        { "en": "diligent", "zh": "勤奋的；认真的", "hint": "hardworking and careful", "sort_order": 88 },
-        { "en": "incentive", "zh": "激励；动力", "hint": "something that motivates you", "sort_order": 89 },
-        { "en": "frugal", "zh": "节俭的；朴素的", "hint": "careful with money", "sort_order": 90 },
-        { "en": "handy", "zh": "方便的；有用的", "hint": "useful and convenient", "sort_order": 91 },
-        { "en": "reminisce", "zh": "回忆；追忆", "hint": "talk about past memories", "sort_order": 92 },
-        { "en": "procrastinate", "zh": "拖延；耽搁", "hint": "keep putting things off", "sort_order": 93 },
-        { "en": "tedious", "zh": "乏味的；单调的", "hint": "boring and repetitive", "sort_order": 94 },
-        { "en": "courteous", "zh": "有礼貌的；谦恭的", "hint": "polite and respectful", "sort_order": 95 },
-        { "en": "counterpart", "zh": "对应的人；职务相当的人", "hint": "an equivalent person at another organization", "sort_order": 96 },
-        { "en": "leverage", "zh": "利用；杠杆作用", "hint": "use something to maximum advantage", "sort_order": 97 },
-        { "en": "turnover", "zh": "人员流失率；营业额", "hint": "rate of staff leaving or total sales", "sort_order": 98 },
-        { "en": "tangible", "zh": "有形的；切实的", "hint": "real and can be measured", "sort_order": 99 },
-        { "en": "commotion", "zh": "骚动；喧闹", "hint": "a noisy disturbance", "sort_order": 100 },
-        { "en": "acquaintance", "zh": "熟人；泛泛之交", "hint": "someone you know but not well", "sort_order": 101 },
-        { "en": "tactic", "zh": "策略；手段", "hint": "a specific action to achieve a goal", "sort_order": 102 },
-        { "en": "relevant", "zh": "相关的；切题的", "hint": "connected to the matter at hand", "sort_order": 103 },
-        { "en": "deteriorate", "zh": "恶化；变坏", "hint": "gradually become worse", "sort_order": 104 },
-        { "en": "withhold", "zh": "扣留；保留；隐瞒", "hint": "hold back or refuse to give", "sort_order": 105 },
-        { "en": "endorse", "zh": "支持；认可；背书", "hint": "give official support to", "sort_order": 106 },
-        { "en": "viable", "zh": "可行的；能存活的", "hint": "capable of working successfully", "sort_order": 107 },
-        { "en": "amend", "zh": "修改；修正", "hint": "make minor changes to a document", "sort_order": 108 },
-        { "en": "disclose", "zh": "披露；公开", "hint": "make information known", "sort_order": 109 },
-        { "en": "mortgage", "zh": "抵押贷款；按揭", "hint": "loan secured by property", "sort_order": 110 },
-        { "en": "gadget", "zh": "小器具；小玩意", "hint": "a small useful device", "sort_order": 111 },
-        { "en": "itinerary", "zh": "行程表；旅行路线", "hint": "a planned travel route", "sort_order": 112 },
-        { "en": "perceive", "zh": "察觉；感知；认为", "hint": "become aware of something", "sort_order": 113 },
-        { "en": "concise", "zh": "简洁的；简明的", "hint": "brief but comprehensive", "sort_order": 114 },
-        { "en": "plausible", "zh": "貌似合理的；可信的", "hint": "seeming reasonable or probable", "sort_order": 115 },
-        { "en": "devise", "zh": "设计；想出", "hint": "plan or invent a method", "sort_order": 116 },
-        { "en": "retain", "zh": "保留；留住", "hint": "keep or hold onto", "sort_order": 117 },
-        { "en": "constrain", "zh": "限制；约束", "hint": "limit or restrict", "sort_order": 118 },
-        { "en": "feasible", "zh": "可行的", "hint": "possible to do", "sort_order": 119 },
-        { "en": "indulge", "zh": "沉溺于；放纵", "hint": "allow yourself to enjoy", "sort_order": 120 },
-        { "en": "scenery", "zh": "风景；景色", "hint": "natural views around you", "sort_order": 121 },
-        { "en": "furnish", "zh": "配备家具；提供", "hint": "equip a room with furniture", "sort_order": 122 },
-        { "en": "assure", "zh": "向…保证", "hint": "tell someone confidently", "sort_order": 123 },
-        { "en": "prevail", "zh": "盛行；获胜", "hint": "win or be most common", "sort_order": 124 },
-        { "en": "manifest", "zh": "显现；明显的", "hint": "show or become evident", "sort_order": 125 },
-        { "en": "substitute", "zh": "替代；代替", "hint": "replace one thing with another", "sort_order": 126 },
-        { "en": "tentative", "zh": "试探性的；暂定的", "hint": "not yet final or certain", "sort_order": 127 },
-        { "en": "tackle", "zh": "着手处理；应付", "hint": "start dealing with a problem", "sort_order": 128 },
-        { "en": "friction", "zh": "摩擦；冲突", "hint": "tension between people or groups", "sort_order": 129 },
-        { "en": "compliment", "zh": "赞美；称赞", "hint": "a flattering remark", "sort_order": 130 },
-        { "en": "glance", "zh": "一瞥；扫视", "hint": "a quick brief look", "sort_order": 131 },
-        { "en": "perishable", "zh": "易腐烂的；易变质的", "hint": "likely to decay or spoil", "sort_order": 132 },
-        { "en": "trivial", "zh": "琐碎的；不重要的", "hint": "of little significance", "sort_order": 133 },
-        { "en": "resilient", "zh": "有韧性的；能恢复的", "hint": "able to recover quickly", "sort_order": 134 },
-        { "en": "coincide", "zh": "同时发生；巧合", "hint": "happen at the same time", "sort_order": 135 },
-        { "en": "synergy", "zh": "协同效应；协作", "hint": "combined energy from teamwork", "sort_order": 136 },
-        { "en": "explicit", "zh": "明确的；直截了当的", "hint": "clearly stated", "sort_order": 137 },
-        { "en": "concession", "zh": "让步；妥协", "hint": "giving up something in a negotiation", "sort_order": 138 },
-        { "en": "mitigate", "zh": "缓解；减轻", "hint": "reduce the severity of", "sort_order": 139 },
-        { "en": "nostalgic", "zh": "怀旧的；恋旧的", "hint": "feeling longing for the past", "sort_order": 140 },
-        { "en": "thrive", "zh": "茁壮成长；蓬勃发展", "hint": "grow and do well", "sort_order": 141 },
-        { "en": "immerse", "zh": "沉浸于；使沉浸", "hint": "involve deeply in an activity", "sort_order": 142 },
-        { "en": "contemplate", "zh": "深思；考虑", "hint": "think carefully about something", "sort_order": 143 },
-        { "en": "fluctuate", "zh": "波动；起伏", "hint": "rise and fall irregularly", "sort_order": 144 },
-        { "en": "prevalent", "zh": "普遍的；盛行的", "hint": "widespread and common", "sort_order": 145 },
-        { "en": "compile", "zh": "汇编；编纂", "hint": "gather and combine data", "sort_order": 146 },
-        { "en": "articulate", "zh": "清晰表达；善于表达的", "hint": "express ideas clearly", "sort_order": 147 },
-        { "en": "terminate", "zh": "终止；结束", "hint": "bring to an end", "sort_order": 148 },
-        { "en": "designate", "zh": "指定；委派", "hint": "officially assign a role", "sort_order": 149 },
-        { "en": "landlord", "zh": "房东；业主", "hint": "owner who rents property", "sort_order": 150 },
-        { "en": "souvenir", "zh": "纪念品", "hint": "a keepsake from a trip", "sort_order": 151 },
-        { "en": "cuisine", "zh": "菜肴；烹饪风格", "hint": "a style of cooking", "sort_order": 152 },
-        { "en": "pragmatic", "zh": "务实的", "hint": "practical rather than theoretical", "sort_order": 153 },
-        { "en": "obsolete", "zh": "过时的；废弃的", "hint": "no longer in use", "sort_order": 154 },
-        { "en": "complacent", "zh": "自满的", "hint": "smugly self-satisfied", "sort_order": 155 },
-        { "en": "reconcile", "zh": "调和；对账", "hint": "find agreement between two sides", "sort_order": 156 },
-        { "en": "appraise", "zh": "评估；估价", "hint": "evaluate value or quality", "sort_order": 157 },
-        { "en": "nominate", "zh": "提名；任命", "hint": "officially suggest for a role", "sort_order": 158 },
-        { "en": "stipulate", "zh": "规定；明确要求", "hint": "state as a clear requirement", "sort_order": 159 },
-        { "en": "savor", "zh": "品味；享受", "hint": "enjoy slowly and fully", "sort_order": 160 },
-        { "en": "replenish", "zh": "补充；装满", "hint": "fill up again", "sort_order": 161 },
-        { "en": "grudge", "zh": "怨恨；积怨", "hint": "a feeling of resentment", "sort_order": 162 },
-        { "en": "blunt", "zh": "直率的；钝的", "hint": "direct and straightforward", "sort_order": 163 },
-        { "en": "stall", "zh": "拖延；熄火", "hint": "delay or put off", "sort_order": 164 },
-        { "en": "discard", "zh": "丢弃；抛弃", "hint": "throw away as useless", "sort_order": 165 },
-        { "en": "discrepancy", "zh": "差异；不一致", "hint": "a difference between things", "sort_order": 166 },
-        { "en": "foster", "zh": "培养；促进", "hint": "encourage or nurture", "sort_order": 167 },
-        { "en": "bolster", "zh": "支持；加强", "hint": "support or strengthen", "sort_order": 168 },
-        { "en": "entail", "zh": "需要；涉及", "hint": "involve or require", "sort_order": 169 },
-        { "en": "upheaval", "zh": "剧变；动荡", "hint": "a big disruption or change", "sort_order": 170 },
-        { "en": "dwindle", "zh": "减少；缩小", "hint": "gradually diminish", "sort_order": 171 },
-        { "en": "rekindle", "zh": "重新点燃；唤起", "hint": "ignite again", "sort_order": 172 },
-        { "en": "heed", "zh": "注意；留心", "hint": "pay attention to", "sort_order": 173 },
-        { "en": "wary", "zh": "警惕的；小心的", "hint": "cautious and watchful", "sort_order": 174 },
-        { "en": "spur", "zh": "激励；刺激", "hint": "urge or motivate", "sort_order": 175 },
-        { "en": "envision", "zh": "展望；想象", "hint": "picture a future scenario", "sort_order": 176 },
-        { "en": "caliber", "zh": "水准；才干", "hint": "level of quality or ability", "sort_order": 177 },
-        { "en": "procure", "zh": "采购；获取", "hint": "obtain or buy something", "sort_order": 178 },
-        { "en": "merit", "zh": "优点；值得", "hint": "a good quality or value", "sort_order": 179 },
-        { "en": "monotonous", "zh": "单调的；乏味的", "hint": "boringly repetitive", "sort_order": 180 },
-        { "en": "clutter", "zh": "杂乱；堆满", "hint": "a messy collection of things", "sort_order": 181 },
-        { "en": "appetite", "zh": "胃口；食欲", "hint": "desire for food", "sort_order": 182 },
-        { "en": "intriguing", "zh": "引人入胜的", "hint": "arousing curiosity", "sort_order": 183 },
-        { "en": "convey", "zh": "传达；表达", "hint": "communicate or express", "sort_order": 184 },
-        { "en": "averse", "zh": "反感的；不愿的", "hint": "reluctant or opposed", "sort_order": 185 },
-        { "en": "mandate", "zh": "授权；强制要求", "hint": "official authority to act", "sort_order": 186 },
-        { "en": "surge", "zh": "激增；猛增", "hint": "a sudden large increase", "sort_order": 187 },
-        { "en": "lucrative", "zh": "获利丰厚的", "hint": "producing a lot of profit", "sort_order": 188 },
-        { "en": "overhaul", "zh": "彻底改革；大修", "hint": "thoroughly repair or rebuild", "sort_order": 189 },
-        { "en": "quaint", "zh": "古雅的；别致的", "hint": "attractively old-fashioned", "sort_order": 190 },
-        { "en": "etiquette", "zh": "礼节；规矩", "hint": "rules of polite behavior", "sort_order": 191 },
-        { "en": "bargain", "zh": "便宜货；讨价还价", "hint": "a good deal or negotiate price", "sort_order": 192 },
-        { "en": "intermittent", "zh": "间歇的；断断续续的", "hint": "stopping and starting at intervals", "sort_order": 193 },
-        { "en": "deprive", "zh": "剥夺；使丧失", "hint": "take something away from someone", "sort_order": 194 },
-        { "en": "discern", "zh": "辨别；看出", "hint": "recognize or distinguish something", "sort_order": 195 },
-        { "en": "refine", "zh": "改进；精炼", "hint": "improve or make finer", "sort_order": 196 },
-        { "en": "adhere", "zh": "遵守；坚持", "hint": "stick to a rule or standard", "sort_order": 197 },
-        { "en": "converge", "zh": "汇聚；趋同", "hint": "come together from different directions", "sort_order": 198 },
-        { "en": "manipulate", "zh": "操纵；操作", "hint": "handle or control something", "sort_order": 199 },
-        { "en": "remedy", "zh": "补救；治疗", "hint": "a way to fix a problem", "sort_order": 200 },
-        { "en": "crave", "zh": "渴望；贪求", "hint": "strongly desire something", "sort_order": 201 },
-        { "en": "scramble", "zh": "争夺；匆忙行动", "hint": "move quickly and urgently", "sort_order": 202 },
-        { "en": "aspire", "zh": "渴望；追求", "hint": "direct ambitions toward", "sort_order": 203 },
-        { "en": "indifferent", "zh": "冷漠的；不关心的", "hint": "having no interest or concern", "sort_order": 204 },
-        { "en": "deter", "zh": "阻止；威慑", "hint": "discourage from doing something", "sort_order": 205 },
-        { "en": "accommodate", "zh": "容纳；迁就", "hint": "provide space or adapt to needs", "sort_order": 206 },
-        { "en": "compensate", "zh": "补偿；赔偿", "hint": "make up for loss or pay back", "sort_order": 207 },
-        { "en": "transition", "zh": "过渡；转变", "hint": "process of changing from one state", "sort_order": 208 },
-        { "en": "utilize", "zh": "利用；使用", "hint": "make practical use of", "sort_order": 209 },
-        { "en": "gesture", "zh": "手势；姿态", "hint": "a movement expressing meaning", "sort_order": 210 },
-        { "en": "bundle", "zh": "捆；束；打包", "hint": "tie things together", "sort_order": 211 },
-        { "en": "temper", "zh": "脾气；情绪", "hint": "state of mind or mood", "sort_order": 212 },
-        { "en": "infer", "zh": "推断；推论", "hint": "deduce from evidence", "sort_order": 213 },
-        { "en": "subsequent", "zh": "随后的；后来的", "hint": "following after something", "sort_order": 214 },
-        { "en": "breach", "zh": "违反；破坏", "hint": "break a rule or agreement", "sort_order": 215 },
-        { "en": "comprehensive", "zh": "全面的；综合的", "hint": "covering all aspects thoroughly", "sort_order": 216 },
-        { "en": "consolidate", "zh": "巩固；合并", "hint": "combine into a stronger whole", "sort_order": 217 },
-        { "en": "preliminary", "zh": "初步的；预备的", "hint": "coming before the main part", "sort_order": 218 },
-        { "en": "subsidy", "zh": "补贴；津贴", "hint": "government financial support", "sort_order": 219 },
-        { "en": "vibrant", "zh": "充满活力的", "hint": "full of energy and life", "sort_order": 220 },
-        { "en": "accustomed", "zh": "习惯的", "hint": "being used to something", "sort_order": 221 },
-        { "en": "commemorate", "zh": "纪念", "hint": "honor the memory of", "sort_order": 222 },
-        { "en": "underlying", "zh": "潜在的；根本的", "hint": "beneath the surface", "sort_order": 223 },
-        { "en": "intervene", "zh": "干预；介入", "hint": "step in between parties", "sort_order": 224 },
-        { "en": "phenomenon", "zh": "现象", "hint": "an observable event or fact", "sort_order": 225 },
-        { "en": "spearhead", "zh": "牵头；领头", "hint": "lead an initiative from the front", "sort_order": 226 },
-        { "en": "liaise", "zh": "联络；沟通协调", "hint": "communicate between two parties", "sort_order": 227 },
-        { "en": "vet", "zh": "审查；核实", "hint": "examine carefully before approval", "sort_order": 228 },
-        { "en": "empower", "zh": "赋权；使能够", "hint": "give someone authority or confidence", "sort_order": 229 },
-        { "en": "knack", "zh": "诀窍；技巧", "hint": "a special skill or natural ability", "sort_order": 230 },
-        { "en": "stroll", "zh": "散步；溜达", "hint": "a slow relaxed walk", "sort_order": 231 },
-        { "en": "rummage", "zh": "翻找；搜找", "hint": "search through things carelessly", "sort_order": 232 },
-        { "en": "paradigm", "zh": "范式；典范", "hint": "a model or pattern of something", "sort_order": 233 },
-        { "en": "stigma", "zh": "耻辱；污名", "hint": "a mark of social disgrace", "sort_order": 234 },
-        { "en": "coherent", "zh": "连贯的；条理清楚的", "hint": "logical and consistent throughout", "sort_order": 235 },
-        { "en": "alleviate", "zh": "缓解；减轻", "hint": "make less severe", "sort_order": 236 },
-        { "en": "defer", "zh": "推迟；遵从", "hint": "postpone or yield to someone", "sort_order": 237 },
-        { "en": "exempt", "zh": "被免除的；豁免", "hint": "freed from an obligation", "sort_order": 238 },
-        { "en": "blatant", "zh": "公然的；明目张胆的", "hint": "obviously and shamelessly", "sort_order": 239 },
-        { "en": "imminent", "zh": "迫近的；即将发生的", "hint": "about to happen very soon", "sort_order": 240 },
-        { "en": "penalize", "zh": "处罚；不利对待", "hint": "punish or impose a penalty", "sort_order": 241 },
-        { "en": "pertain", "zh": "与…有关", "hint": "relate to or be relevant to", "sort_order": 242 },
-        { "en": "garnish", "zh": "装饰（食物）", "hint": "decorate food for presentation", "sort_order": 243 },
-        { "en": "cohort", "zh": "一群人；同辈群体", "hint": "a group with a shared characteristic", "sort_order": 244 },
-        { "en": "livelihood", "zh": "生计", "hint": "means of earning a living", "sort_order": 245 },
-        { "en": "pristine", "zh": "崭新的；洁净的", "hint": "in original perfect condition", "sort_order": 246 },
-        { "en": "propel", "zh": "推进；驱使", "hint": "push or drive forward", "sort_order": 247 },
-        { "en": "insight", "zh": "洞察力；见解", "hint": "deep understanding of something", "sort_order": 248 },
-        { "en": "encounter", "zh": "遭遇；偶然遇到", "hint": "come across unexpectedly", "sort_order": 249 },
-        { "en": "wield", "zh": "行使；运用（权力）", "hint": "hold and use power or influence", "sort_order": 250 },
-        { "en": "scrub", "zh": "用力擦洗；取消", "hint": "clean by rubbing hard", "sort_order": 251 },
-        { "en": "hefty", "zh": "大量的；沉重的", "hint": "big and heavy in amount", "sort_order": 252 },
-        { "en": "lucid", "zh": "清晰的；易懂的", "hint": "clear and easy to understand", "sort_order": 253 },
-        { "en": "avalanche", "zh": "雪崩；蜂拥而至", "hint": "a mass of snow rushing down", "sort_order": 254 },
-        { "en": "agile", "zh": "敏捷的；灵活的", "hint": "quick and adaptable", "sort_order": 255 },
-        { "en": "intricate", "zh": "复杂的；精细的", "hint": "complexly detailed", "sort_order": 256 },
-        { "en": "conform", "zh": "顺从；符合", "hint": "comply with standards", "sort_order": 257 },
-        { "en": "tenure", "zh": "任期；终身教职", "hint": "period of holding a position", "sort_order": 258 },
-        { "en": "vivid", "zh": "生动的；鲜明的", "hint": "bright and clear in memory", "sort_order": 259 },
-        { "en": "endure", "zh": "忍受；持久", "hint": "last through hardship", "sort_order": 260 },
-        { "en": "commodity", "zh": "商品；日用品", "hint": "a tradable raw material", "sort_order": 261 },
-        { "en": "waver", "zh": "动摇；犹豫", "hint": "hesitate between choices", "sort_order": 262 },
-        { "en": "embrace", "zh": "拥抱；欣然接受", "hint": "accept eagerly", "sort_order": 263 },
-        { "en": "authorize", "zh": "授权；批准", "hint": "give official permission", "sort_order": 264 },
-        { "en": "quandary", "zh": "困惑；窘境", "hint": "a state of uncertainty", "sort_order": 265 },
-        { "en": "compel", "zh": "迫使；驱使", "hint": "force or drive someone to act", "sort_order": 266 },
-        { "en": "cumbersome", "zh": "笨重的；麻烦的", "hint": "heavy and difficult to handle", "sort_order": 267 },
-        { "en": "meticulous", "zh": "一丝不苟的", "hint": "very careful about details", "sort_order": 268 },
-        { "en": "plunge", "zh": "投入；暴跌", "hint": "fall or drop sharply", "sort_order": 269 },
-        { "en": "linger", "zh": "逗留；徘徊", "hint": "stay longer than necessary", "sort_order": 270 },
-        { "en": "spacious", "zh": "宽敞的", "hint": "having ample space", "sort_order": 271 },
-        { "en": "uplift", "zh": "振奋；提升", "hint": "raise spirits or morale", "sort_order": 272 },
-        { "en": "disposition", "zh": "性情；倾向", "hint": "a person's inherent temperament", "sort_order": 273 },
-        { "en": "recede", "zh": "后退；消退", "hint": "move back or fade away", "sort_order": 274 },
-        { "en": "sentiment", "zh": "情绪；观点", "hint": "a feeling or opinion", "sort_order": 275 },
-        { "en": "candid", "zh": "坦率的；直言不讳的", "hint": "honest and direct", "sort_order": 276 },
-        { "en": "expedite", "zh": "加速；加急处理", "hint": "speed up a process", "sort_order": 277 },
-        { "en": "deliberate", "zh": "蓄意的；慎重思考", "hint": "done on purpose or carefully", "sort_order": 278 },
-        { "en": "morale", "zh": "士气；斗志", "hint": "team spirit and confidence", "sort_order": 279 },
-        { "en": "nostalgia", "zh": "怀旧；乡愁", "hint": "longing for the past", "sort_order": 280 },
-        { "en": "pantry", "zh": "食品储藏室", "hint": "a small food storage room", "sort_order": 281 },
-        { "en": "recline", "zh": "斜倚；后仰", "hint": "lean back in a seat", "sort_order": 282 },
-        { "en": "eloquent", "zh": "雄辩的；有说服力的", "hint": "articulate and persuasive", "sort_order": 283 },
-        { "en": "pervasive", "zh": "弥漫的；无处不在的", "hint": "spread throughout everything", "sort_order": 284 },
-        { "en": "subtle", "zh": "微妙的；不易察觉的", "hint": "so slight as to be hard to notice", "sort_order": 285 },
-        { "en": "anticipate", "zh": "预期；预料", "hint": "expect something to happen", "sort_order": 286 },
-        { "en": "harness", "zh": "利用；驾驭", "hint": "use something to gain advantage", "sort_order": 287 },
-        { "en": "incorporate", "zh": "纳入；包含", "hint": "include as part of a whole", "sort_order": 288 },
-        { "en": "endeavor", "zh": "努力；尝试", "hint": "try hard to achieve something", "sort_order": 289 },
-        { "en": "soothe", "zh": "安慰；缓解", "hint": "calm or relieve pain", "sort_order": 290 },
-        { "en": "quench", "zh": "解渴；熄灭", "hint": "satisfy thirst or put out fire", "sort_order": 291 },
-        { "en": "sluggish", "zh": "迟缓的；无精打采的", "hint": "slow and lacking energy", "sort_order": 292 },
-        { "en": "advocate", "zh": "提倡；拥护者", "hint": "publicly support a cause", "sort_order": 293 },
-        { "en": "diminish", "zh": "减少；削弱", "hint": "make or become less", "sort_order": 294 },
-        { "en": "ponder", "zh": "沉思；考虑", "hint": "think carefully about something", "sort_order": 295 }
+        {
+          "en": "commute",
+          "zh": "通勤",
+          "hint": "daily travel to work",
+          "sort_order": 1
+        },
+        {
+          "en": "deadline",
+          "zh": "截止日期",
+          "hint": "time limit for work",
+          "sort_order": 2
+        },
+        {
+          "en": "schedule",
+          "zh": "日程；安排",
+          "hint": "plan of activities",
+          "sort_order": 3
+        },
+        {
+          "en": "priority",
+          "zh": "优先事项",
+          "hint": "what matters most",
+          "sort_order": 4
+        },
+        {
+          "en": "habit",
+          "zh": "习惯",
+          "hint": "regular practice",
+          "sort_order": 5
+        },
+        {
+          "en": "focus",
+          "zh": "专注",
+          "hint": "pay close attention",
+          "sort_order": 6
+        },
+        {
+          "en": "distraction",
+          "zh": "干扰；分心的事物",
+          "hint": "something that breaks attention",
+          "sort_order": 7
+        },
+        {
+          "en": "break",
+          "zh": "休息",
+          "hint": "short pause",
+          "sort_order": 8
+        },
+        {
+          "en": "reminder",
+          "zh": "提醒",
+          "hint": "note to remember",
+          "sort_order": 9
+        },
+        {
+          "en": "appointment",
+          "zh": "预约；约会",
+          "hint": "planned meeting",
+          "sort_order": 10
+        },
+        {
+          "en": "errand",
+          "zh": "差事；跑腿",
+          "hint": "small task outside",
+          "sort_order": 11
+        },
+        {
+          "en": "grocery",
+          "zh": "食品杂货",
+          "hint": "food shopping",
+          "sort_order": 12
+        },
+        {
+          "en": "receipt",
+          "zh": "收据",
+          "hint": "proof of purchase",
+          "sort_order": 13
+        },
+        {
+          "en": "budget",
+          "zh": "预算",
+          "hint": "money plan",
+          "sort_order": 14
+        },
+        {
+          "en": "save",
+          "zh": "节省；存钱",
+          "hint": "keep money aside",
+          "sort_order": 15
+        },
+        {
+          "en": "waste",
+          "zh": "浪费",
+          "hint": "use poorly",
+          "sort_order": 16
+        },
+        {
+          "en": "convenient",
+          "zh": "方便的",
+          "hint": "easy to use",
+          "sort_order": 17
+        },
+        {
+          "en": "reliable",
+          "zh": "可靠的",
+          "hint": "can be trusted",
+          "sort_order": 18
+        },
+        {
+          "en": "polite",
+          "zh": "礼貌的",
+          "hint": "good manners",
+          "sort_order": 19
+        },
+        {
+          "en": "patient",
+          "zh": "有耐心的",
+          "hint": "calm while waiting",
+          "sort_order": 20
+        },
+        {
+          "en": "confident",
+          "zh": "自信的",
+          "hint": "sure of yourself",
+          "sort_order": 21
+        },
+        {
+          "en": "curious",
+          "zh": "好奇的",
+          "hint": "want to know more",
+          "sort_order": 22
+        },
+        {
+          "en": "grateful",
+          "zh": "感激的",
+          "hint": "thankful",
+          "sort_order": 23
+        },
+        {
+          "en": "honest",
+          "zh": "诚实的",
+          "hint": "tell the truth",
+          "sort_order": 24
+        },
+        {
+          "en": "improve",
+          "zh": "改进；提高",
+          "hint": "make better",
+          "sort_order": 25
+        },
+        {
+          "en": "negotiate",
+          "zh": "谈判；协商",
+          "hint": "discuss to reach a deal",
+          "sort_order": 26
+        },
+        {
+          "en": "recipe",
+          "zh": "食谱；秘诀",
+          "hint": "cooking instructions",
+          "sort_order": 27
+        },
+        {
+          "en": "feedback",
+          "zh": "反馈",
+          "hint": "response to your work",
+          "sort_order": 28
+        },
+        {
+          "en": "laundry",
+          "zh": "待洗的衣服",
+          "hint": "clothes to wash",
+          "sort_order": 29
+        },
+        {
+          "en": "empathy",
+          "zh": "共情；同理心",
+          "hint": "feeling what others feel",
+          "sort_order": 30
+        },
+        {
+          "en": "streamline",
+          "zh": "精简；使更高效",
+          "hint": "simplify a process",
+          "sort_order": 31
+        },
+        {
+          "en": "checkout",
+          "zh": "结账；退房",
+          "hint": "pay and leave",
+          "sort_order": 32
+        },
+        {
+          "en": "versatile",
+          "zh": "多功能的",
+          "hint": "usable in many ways",
+          "sort_order": 33
+        },
+        {
+          "en": "implement",
+          "zh": "实施；落实",
+          "hint": "put into action",
+          "sort_order": 34
+        },
+        {
+          "en": "subscription",
+          "zh": "订阅",
+          "hint": "recurring payment plan",
+          "sort_order": 35
+        },
+        {
+          "en": "delegate",
+          "zh": "授权；委派",
+          "hint": "assign a task to someone",
+          "sort_order": 36
+        },
+        {
+          "en": "collaborate",
+          "zh": "合作；协作",
+          "hint": "work together closely",
+          "sort_order": 37
+        },
+        {
+          "en": "brief",
+          "zh": "简短的；做简报",
+          "hint": "short or give a quick update",
+          "sort_order": 38
+        },
+        {
+          "en": "compromise",
+          "zh": "妥协；折中",
+          "hint": "each side gives up something",
+          "sort_order": 39
+        },
+        {
+          "en": "occasion",
+          "zh": "场合；时机",
+          "hint": "a particular time or event",
+          "sort_order": 40
+        },
+        {
+          "en": "portion",
+          "zh": "一份；部分",
+          "hint": "a served amount of food",
+          "sort_order": 41
+        },
+        {
+          "en": "spontaneous",
+          "zh": "自发的；即兴的",
+          "hint": "not planned in advance",
+          "sort_order": 42
+        },
+        {
+          "en": "inevitable",
+          "zh": "不可避免的",
+          "hint": "sure to happen",
+          "sort_order": 43
+        },
+        {
+          "en": "distinguish",
+          "zh": "区分；辨别",
+          "hint": "tell apart",
+          "sort_order": 44
+        },
+        {
+          "en": "perspective",
+          "zh": "视角；观点",
+          "hint": "a way of viewing things",
+          "sort_order": 45
+        },
+        {
+          "en": "resolve",
+          "zh": "解决；下定决心",
+          "hint": "settle a problem",
+          "sort_order": 46
+        },
+        {
+          "en": "adjust",
+          "zh": "调整；适应",
+          "hint": "change to fit",
+          "sort_order": 47
+        },
+        {
+          "en": "accomplish",
+          "zh": "完成；实现",
+          "hint": "achieve a goal",
+          "sort_order": 48
+        },
+        {
+          "en": "arrange",
+          "zh": "安排；布置",
+          "hint": "organize or plan",
+          "sort_order": 49
+        },
+        {
+          "en": "snack",
+          "zh": "零食；点心",
+          "hint": "small food between meals",
+          "sort_order": 50
+        },
+        {
+          "en": "adapt",
+          "zh": "适应；改编",
+          "hint": "get used to something new",
+          "sort_order": 51
+        },
+        {
+          "en": "complaint",
+          "zh": "投诉；抱怨",
+          "hint": "expressing dissatisfaction",
+          "sort_order": 52
+        },
+        {
+          "en": "sufficient",
+          "zh": "足够的；充足的",
+          "hint": "enough for the purpose",
+          "sort_order": 53
+        },
+        {
+          "en": "attempt",
+          "zh": "尝试；企图",
+          "hint": "try to do something",
+          "sort_order": 54
+        },
+        {
+          "en": "essential",
+          "zh": "必不可少的",
+          "hint": "absolutely needed",
+          "sort_order": 55
+        },
+        {
+          "en": "thorough",
+          "zh": "彻底的；周密的",
+          "hint": "complete and careful",
+          "sort_order": 56
+        },
+        {
+          "en": "coordinate",
+          "zh": "协调；配合",
+          "hint": "organize activities together",
+          "sort_order": 57
+        },
+        {
+          "en": "outcome",
+          "zh": "结果；成果",
+          "hint": "final result",
+          "sort_order": 58
+        },
+        {
+          "en": "acknowledge",
+          "zh": "承认；确认收到",
+          "hint": "confirm you received something",
+          "sort_order": 59
+        },
+        {
+          "en": "renovate",
+          "zh": "翻新；装修",
+          "hint": "make new again",
+          "sort_order": 60
+        },
+        {
+          "en": "ingredient",
+          "zh": "原料；配料",
+          "hint": "a food component",
+          "sort_order": 61
+        },
+        {
+          "en": "expense",
+          "zh": "开支；花费",
+          "hint": "money spent",
+          "sort_order": 62
+        },
+        {
+          "en": "dilemma",
+          "zh": "困境；两难",
+          "hint": "a hard choice",
+          "sort_order": 63
+        },
+        {
+          "en": "abandon",
+          "zh": "放弃；抛弃",
+          "hint": "give up completely",
+          "sort_order": 64
+        },
+        {
+          "en": "illustrate",
+          "zh": "说明；阐明",
+          "hint": "explain with examples",
+          "sort_order": 65
+        },
+        {
+          "en": "escalate",
+          "zh": "升级；使…升级",
+          "hint": "raise an issue to a higher level",
+          "sort_order": 66
+        },
+        {
+          "en": "onboarding",
+          "zh": "入职引导；新手培训",
+          "hint": "process for integrating new hires",
+          "sort_order": 67
+        },
+        {
+          "en": "benchmark",
+          "zh": "基准；标杆；对标",
+          "hint": "a standard for comparison",
+          "sort_order": 68
+        },
+        {
+          "en": "consensus",
+          "zh": "共识；一致意见",
+          "hint": "general agreement",
+          "sort_order": 69
+        },
+        {
+          "en": "coupon",
+          "zh": "优惠券；折扣券",
+          "hint": "a discount voucher",
+          "sort_order": 70
+        },
+        {
+          "en": "reservation",
+          "zh": "预订；预约",
+          "hint": "booking a table or room",
+          "sort_order": 71
+        },
+        {
+          "en": "mileage",
+          "zh": "里程；英里数",
+          "hint": "distance traveled in miles",
+          "sort_order": 72
+        },
+        {
+          "en": "notion",
+          "zh": "概念；观念",
+          "hint": "an idea or concept",
+          "sort_order": 73
+        },
+        {
+          "en": "reluctant",
+          "zh": "不情愿的；勉强的",
+          "hint": "unwilling to do something",
+          "sort_order": 74
+        },
+        {
+          "en": "criteria",
+          "zh": "标准；准则",
+          "hint": "standards for judging",
+          "sort_order": 75
+        },
+        {
+          "en": "facilitate",
+          "zh": "促进；使便利",
+          "hint": "make easier or smoother",
+          "sort_order": 76
+        },
+        {
+          "en": "scrutinize",
+          "zh": "仔细审查",
+          "hint": "examine very carefully",
+          "sort_order": 77
+        },
+        {
+          "en": "reimburse",
+          "zh": "报销；偿还",
+          "hint": "pay back money spent",
+          "sort_order": 78
+        },
+        {
+          "en": "comply",
+          "zh": "遵守；服从",
+          "hint": "follow rules or requirements",
+          "sort_order": 79
+        },
+        {
+          "en": "chore",
+          "zh": "家务杂事",
+          "hint": "a small routine task",
+          "sort_order": 80
+        },
+        {
+          "en": "detour",
+          "zh": "绕路；迂回",
+          "hint": "a longer alternative route",
+          "sort_order": 81
+        },
+        {
+          "en": "wardrobe",
+          "zh": "衣柜；衣物",
+          "hint": "closet or clothing collection",
+          "sort_order": 82
+        },
+        {
+          "en": "vague",
+          "zh": "模糊的；含糊的",
+          "hint": "not clear or specific",
+          "sort_order": 83
+        },
+        {
+          "en": "optimistic",
+          "zh": "乐观的",
+          "hint": "expecting good outcomes",
+          "sort_order": 84
+        },
+        {
+          "en": "skeptical",
+          "zh": "怀疑的",
+          "hint": "doubtful but open to evidence",
+          "sort_order": 85
+        },
+        {
+          "en": "agenda",
+          "zh": "议程；待办事项",
+          "hint": "list of items to discuss",
+          "sort_order": 86
+        },
+        {
+          "en": "allocate",
+          "zh": "分配；拨给",
+          "hint": "distribute resources or budget",
+          "sort_order": 87
+        },
+        {
+          "en": "diligent",
+          "zh": "勤奋的；认真的",
+          "hint": "hardworking and careful",
+          "sort_order": 88
+        },
+        {
+          "en": "incentive",
+          "zh": "激励；动力",
+          "hint": "something that motivates you",
+          "sort_order": 89
+        },
+        {
+          "en": "frugal",
+          "zh": "节俭的；朴素的",
+          "hint": "careful with money",
+          "sort_order": 90
+        },
+        {
+          "en": "handy",
+          "zh": "方便的；有用的",
+          "hint": "useful and convenient",
+          "sort_order": 91
+        },
+        {
+          "en": "reminisce",
+          "zh": "回忆；追忆",
+          "hint": "talk about past memories",
+          "sort_order": 92
+        },
+        {
+          "en": "procrastinate",
+          "zh": "拖延；耽搁",
+          "hint": "keep putting things off",
+          "sort_order": 93
+        },
+        {
+          "en": "tedious",
+          "zh": "乏味的；单调的",
+          "hint": "boring and repetitive",
+          "sort_order": 94
+        },
+        {
+          "en": "courteous",
+          "zh": "有礼貌的；谦恭的",
+          "hint": "polite and respectful",
+          "sort_order": 95
+        },
+        {
+          "en": "counterpart",
+          "zh": "对应的人；职务相当的人",
+          "hint": "an equivalent person at another organization",
+          "sort_order": 96
+        },
+        {
+          "en": "leverage",
+          "zh": "利用；杠杆作用",
+          "hint": "use something to maximum advantage",
+          "sort_order": 97
+        },
+        {
+          "en": "turnover",
+          "zh": "人员流失率；营业额",
+          "hint": "rate of staff leaving or total sales",
+          "sort_order": 98
+        },
+        {
+          "en": "tangible",
+          "zh": "有形的；切实的",
+          "hint": "real and can be measured",
+          "sort_order": 99
+        },
+        {
+          "en": "commotion",
+          "zh": "骚动；喧闹",
+          "hint": "a noisy disturbance",
+          "sort_order": 100
+        },
+        {
+          "en": "acquaintance",
+          "zh": "熟人；泛泛之交",
+          "hint": "someone you know but not well",
+          "sort_order": 101
+        },
+        {
+          "en": "tactic",
+          "zh": "策略；手段",
+          "hint": "a specific action to achieve a goal",
+          "sort_order": 102
+        },
+        {
+          "en": "relevant",
+          "zh": "相关的；切题的",
+          "hint": "connected to the matter at hand",
+          "sort_order": 103
+        },
+        {
+          "en": "deteriorate",
+          "zh": "恶化；变坏",
+          "hint": "gradually become worse",
+          "sort_order": 104
+        },
+        {
+          "en": "withhold",
+          "zh": "扣留；保留；隐瞒",
+          "hint": "hold back or refuse to give",
+          "sort_order": 105
+        },
+        {
+          "en": "endorse",
+          "zh": "支持；认可；背书",
+          "hint": "give official support to",
+          "sort_order": 106
+        },
+        {
+          "en": "viable",
+          "zh": "可行的；能存活的",
+          "hint": "capable of working successfully",
+          "sort_order": 107
+        },
+        {
+          "en": "amend",
+          "zh": "修改；修正",
+          "hint": "make minor changes to a document",
+          "sort_order": 108
+        },
+        {
+          "en": "disclose",
+          "zh": "披露；公开",
+          "hint": "make information known",
+          "sort_order": 109
+        },
+        {
+          "en": "mortgage",
+          "zh": "抵押贷款；按揭",
+          "hint": "loan secured by property",
+          "sort_order": 110
+        },
+        {
+          "en": "gadget",
+          "zh": "小器具；小玩意",
+          "hint": "a small useful device",
+          "sort_order": 111
+        },
+        {
+          "en": "itinerary",
+          "zh": "行程表；旅行路线",
+          "hint": "a planned travel route",
+          "sort_order": 112
+        },
+        {
+          "en": "perceive",
+          "zh": "察觉；感知；认为",
+          "hint": "become aware of something",
+          "sort_order": 113
+        },
+        {
+          "en": "concise",
+          "zh": "简洁的；简明的",
+          "hint": "brief but comprehensive",
+          "sort_order": 114
+        },
+        {
+          "en": "plausible",
+          "zh": "貌似合理的；可信的",
+          "hint": "seeming reasonable or probable",
+          "sort_order": 115
+        },
+        {
+          "en": "devise",
+          "zh": "设计；想出",
+          "hint": "plan or invent a method",
+          "sort_order": 116
+        },
+        {
+          "en": "retain",
+          "zh": "保留；留住",
+          "hint": "keep or hold onto",
+          "sort_order": 117
+        },
+        {
+          "en": "constrain",
+          "zh": "限制；约束",
+          "hint": "limit or restrict",
+          "sort_order": 118
+        },
+        {
+          "en": "feasible",
+          "zh": "可行的",
+          "hint": "possible to do",
+          "sort_order": 119
+        },
+        {
+          "en": "indulge",
+          "zh": "沉溺于；放纵",
+          "hint": "allow yourself to enjoy",
+          "sort_order": 120
+        },
+        {
+          "en": "scenery",
+          "zh": "风景；景色",
+          "hint": "natural views around you",
+          "sort_order": 121
+        },
+        {
+          "en": "furnish",
+          "zh": "配备家具；提供",
+          "hint": "equip a room with furniture",
+          "sort_order": 122
+        },
+        {
+          "en": "assure",
+          "zh": "向…保证",
+          "hint": "tell someone confidently",
+          "sort_order": 123
+        },
+        {
+          "en": "prevail",
+          "zh": "盛行；获胜",
+          "hint": "win or be most common",
+          "sort_order": 124
+        },
+        {
+          "en": "manifest",
+          "zh": "显现；明显的",
+          "hint": "show or become evident",
+          "sort_order": 125
+        },
+        {
+          "en": "substitute",
+          "zh": "替代；代替",
+          "hint": "replace one thing with another",
+          "sort_order": 126
+        },
+        {
+          "en": "tentative",
+          "zh": "试探性的；暂定的",
+          "hint": "not yet final or certain",
+          "sort_order": 127
+        },
+        {
+          "en": "tackle",
+          "zh": "着手处理；应付",
+          "hint": "start dealing with a problem",
+          "sort_order": 128
+        },
+        {
+          "en": "friction",
+          "zh": "摩擦；冲突",
+          "hint": "tension between people or groups",
+          "sort_order": 129
+        },
+        {
+          "en": "compliment",
+          "zh": "赞美；称赞",
+          "hint": "a flattering remark",
+          "sort_order": 130
+        },
+        {
+          "en": "glance",
+          "zh": "一瞥；扫视",
+          "hint": "a quick brief look",
+          "sort_order": 131
+        },
+        {
+          "en": "perishable",
+          "zh": "易腐烂的；易变质的",
+          "hint": "likely to decay or spoil",
+          "sort_order": 132
+        },
+        {
+          "en": "trivial",
+          "zh": "琐碎的；不重要的",
+          "hint": "of little significance",
+          "sort_order": 133
+        },
+        {
+          "en": "resilient",
+          "zh": "有韧性的；能恢复的",
+          "hint": "able to recover quickly",
+          "sort_order": 134
+        },
+        {
+          "en": "coincide",
+          "zh": "同时发生；巧合",
+          "hint": "happen at the same time",
+          "sort_order": 135
+        },
+        {
+          "en": "synergy",
+          "zh": "协同效应；协作",
+          "hint": "combined energy from teamwork",
+          "sort_order": 136
+        },
+        {
+          "en": "explicit",
+          "zh": "明确的；直截了当的",
+          "hint": "clearly stated",
+          "sort_order": 137
+        },
+        {
+          "en": "concession",
+          "zh": "让步；妥协",
+          "hint": "giving up something in a negotiation",
+          "sort_order": 138
+        },
+        {
+          "en": "mitigate",
+          "zh": "缓解；减轻",
+          "hint": "reduce the severity of",
+          "sort_order": 139
+        },
+        {
+          "en": "nostalgic",
+          "zh": "怀旧的；恋旧的",
+          "hint": "feeling longing for the past",
+          "sort_order": 140
+        },
+        {
+          "en": "thrive",
+          "zh": "茁壮成长；蓬勃发展",
+          "hint": "grow and do well",
+          "sort_order": 141
+        },
+        {
+          "en": "immerse",
+          "zh": "沉浸于；使沉浸",
+          "hint": "involve deeply in an activity",
+          "sort_order": 142
+        },
+        {
+          "en": "contemplate",
+          "zh": "深思；考虑",
+          "hint": "think carefully about something",
+          "sort_order": 143
+        },
+        {
+          "en": "fluctuate",
+          "zh": "波动；起伏",
+          "hint": "rise and fall irregularly",
+          "sort_order": 144
+        },
+        {
+          "en": "prevalent",
+          "zh": "普遍的；盛行的",
+          "hint": "widespread and common",
+          "sort_order": 145
+        },
+        {
+          "en": "compile",
+          "zh": "汇编；编纂",
+          "hint": "gather and combine data",
+          "sort_order": 146
+        },
+        {
+          "en": "articulate",
+          "zh": "清晰表达；善于表达的",
+          "hint": "express ideas clearly",
+          "sort_order": 147
+        },
+        {
+          "en": "terminate",
+          "zh": "终止；结束",
+          "hint": "bring to an end",
+          "sort_order": 148
+        },
+        {
+          "en": "designate",
+          "zh": "指定；委派",
+          "hint": "officially assign a role",
+          "sort_order": 149
+        },
+        {
+          "en": "landlord",
+          "zh": "房东；业主",
+          "hint": "owner who rents property",
+          "sort_order": 150
+        },
+        {
+          "en": "souvenir",
+          "zh": "纪念品",
+          "hint": "a keepsake from a trip",
+          "sort_order": 151
+        },
+        {
+          "en": "cuisine",
+          "zh": "菜肴；烹饪风格",
+          "hint": "a style of cooking",
+          "sort_order": 152
+        },
+        {
+          "en": "pragmatic",
+          "zh": "务实的",
+          "hint": "practical rather than theoretical",
+          "sort_order": 153
+        },
+        {
+          "en": "obsolete",
+          "zh": "过时的；废弃的",
+          "hint": "no longer in use",
+          "sort_order": 154
+        },
+        {
+          "en": "complacent",
+          "zh": "自满的",
+          "hint": "smugly self-satisfied",
+          "sort_order": 155
+        },
+        {
+          "en": "reconcile",
+          "zh": "调和；对账",
+          "hint": "find agreement between two sides",
+          "sort_order": 156
+        },
+        {
+          "en": "appraise",
+          "zh": "评估；估价",
+          "hint": "evaluate value or quality",
+          "sort_order": 157
+        },
+        {
+          "en": "nominate",
+          "zh": "提名；任命",
+          "hint": "officially suggest for a role",
+          "sort_order": 158
+        },
+        {
+          "en": "stipulate",
+          "zh": "规定；明确要求",
+          "hint": "state as a clear requirement",
+          "sort_order": 159
+        },
+        {
+          "en": "savor",
+          "zh": "品味；享受",
+          "hint": "enjoy slowly and fully",
+          "sort_order": 160
+        },
+        {
+          "en": "replenish",
+          "zh": "补充；装满",
+          "hint": "fill up again",
+          "sort_order": 161
+        },
+        {
+          "en": "grudge",
+          "zh": "怨恨；积怨",
+          "hint": "a feeling of resentment",
+          "sort_order": 162
+        },
+        {
+          "en": "blunt",
+          "zh": "直率的；钝的",
+          "hint": "direct and straightforward",
+          "sort_order": 163
+        },
+        {
+          "en": "stall",
+          "zh": "拖延；熄火",
+          "hint": "delay or put off",
+          "sort_order": 164
+        },
+        {
+          "en": "discard",
+          "zh": "丢弃；抛弃",
+          "hint": "throw away as useless",
+          "sort_order": 165
+        },
+        {
+          "en": "discrepancy",
+          "zh": "差异；不一致",
+          "hint": "a difference between things",
+          "sort_order": 166
+        },
+        {
+          "en": "foster",
+          "zh": "培养；促进",
+          "hint": "encourage or nurture",
+          "sort_order": 167
+        },
+        {
+          "en": "bolster",
+          "zh": "支持；加强",
+          "hint": "support or strengthen",
+          "sort_order": 168
+        },
+        {
+          "en": "entail",
+          "zh": "需要；涉及",
+          "hint": "involve or require",
+          "sort_order": 169
+        },
+        {
+          "en": "upheaval",
+          "zh": "剧变；动荡",
+          "hint": "a big disruption or change",
+          "sort_order": 170
+        },
+        {
+          "en": "dwindle",
+          "zh": "减少；缩小",
+          "hint": "gradually diminish",
+          "sort_order": 171
+        },
+        {
+          "en": "rekindle",
+          "zh": "重新点燃；唤起",
+          "hint": "ignite again",
+          "sort_order": 172
+        },
+        {
+          "en": "heed",
+          "zh": "注意；留心",
+          "hint": "pay attention to",
+          "sort_order": 173
+        },
+        {
+          "en": "wary",
+          "zh": "警惕的；小心的",
+          "hint": "cautious and watchful",
+          "sort_order": 174
+        },
+        {
+          "en": "spur",
+          "zh": "激励；刺激",
+          "hint": "urge or motivate",
+          "sort_order": 175
+        },
+        {
+          "en": "envision",
+          "zh": "展望；想象",
+          "hint": "picture a future scenario",
+          "sort_order": 176
+        },
+        {
+          "en": "caliber",
+          "zh": "水准；才干",
+          "hint": "level of quality or ability",
+          "sort_order": 177
+        },
+        {
+          "en": "procure",
+          "zh": "采购；获取",
+          "hint": "obtain or buy something",
+          "sort_order": 178
+        },
+        {
+          "en": "merit",
+          "zh": "优点；值得",
+          "hint": "a good quality or value",
+          "sort_order": 179
+        },
+        {
+          "en": "monotonous",
+          "zh": "单调的；乏味的",
+          "hint": "boringly repetitive",
+          "sort_order": 180
+        },
+        {
+          "en": "clutter",
+          "zh": "杂乱；堆满",
+          "hint": "a messy collection of things",
+          "sort_order": 181
+        },
+        {
+          "en": "appetite",
+          "zh": "胃口；食欲",
+          "hint": "desire for food",
+          "sort_order": 182
+        },
+        {
+          "en": "intriguing",
+          "zh": "引人入胜的",
+          "hint": "arousing curiosity",
+          "sort_order": 183
+        },
+        {
+          "en": "convey",
+          "zh": "传达；表达",
+          "hint": "communicate or express",
+          "sort_order": 184
+        },
+        {
+          "en": "averse",
+          "zh": "反感的；不愿的",
+          "hint": "reluctant or opposed",
+          "sort_order": 185
+        },
+        {
+          "en": "mandate",
+          "zh": "授权；强制要求",
+          "hint": "official authority to act",
+          "sort_order": 186
+        },
+        {
+          "en": "surge",
+          "zh": "激增；猛增",
+          "hint": "a sudden large increase",
+          "sort_order": 187
+        },
+        {
+          "en": "lucrative",
+          "zh": "获利丰厚的",
+          "hint": "producing a lot of profit",
+          "sort_order": 188
+        },
+        {
+          "en": "overhaul",
+          "zh": "彻底改革；大修",
+          "hint": "thoroughly repair or rebuild",
+          "sort_order": 189
+        },
+        {
+          "en": "quaint",
+          "zh": "古雅的；别致的",
+          "hint": "attractively old-fashioned",
+          "sort_order": 190
+        },
+        {
+          "en": "etiquette",
+          "zh": "礼节；规矩",
+          "hint": "rules of polite behavior",
+          "sort_order": 191
+        },
+        {
+          "en": "bargain",
+          "zh": "便宜货；讨价还价",
+          "hint": "a good deal or negotiate price",
+          "sort_order": 192
+        },
+        {
+          "en": "intermittent",
+          "zh": "间歇的；断断续续的",
+          "hint": "stopping and starting at intervals",
+          "sort_order": 193
+        },
+        {
+          "en": "deprive",
+          "zh": "剥夺；使丧失",
+          "hint": "take something away from someone",
+          "sort_order": 194
+        },
+        {
+          "en": "discern",
+          "zh": "辨别；看出",
+          "hint": "recognize or distinguish something",
+          "sort_order": 195
+        },
+        {
+          "en": "refine",
+          "zh": "改进；精炼",
+          "hint": "improve or make finer",
+          "sort_order": 196
+        },
+        {
+          "en": "adhere",
+          "zh": "遵守；坚持",
+          "hint": "stick to a rule or standard",
+          "sort_order": 197
+        },
+        {
+          "en": "converge",
+          "zh": "汇聚；趋同",
+          "hint": "come together from different directions",
+          "sort_order": 198
+        },
+        {
+          "en": "manipulate",
+          "zh": "操纵；操作",
+          "hint": "handle or control something",
+          "sort_order": 199
+        },
+        {
+          "en": "remedy",
+          "zh": "补救；治疗",
+          "hint": "a way to fix a problem",
+          "sort_order": 200
+        },
+        {
+          "en": "crave",
+          "zh": "渴望；贪求",
+          "hint": "strongly desire something",
+          "sort_order": 201
+        },
+        {
+          "en": "scramble",
+          "zh": "争夺；匆忙行动",
+          "hint": "move quickly and urgently",
+          "sort_order": 202
+        },
+        {
+          "en": "aspire",
+          "zh": "渴望；追求",
+          "hint": "direct ambitions toward",
+          "sort_order": 203
+        },
+        {
+          "en": "indifferent",
+          "zh": "冷漠的；不关心的",
+          "hint": "having no interest or concern",
+          "sort_order": 204
+        },
+        {
+          "en": "deter",
+          "zh": "阻止；威慑",
+          "hint": "discourage from doing something",
+          "sort_order": 205
+        },
+        {
+          "en": "accommodate",
+          "zh": "容纳；迁就",
+          "hint": "provide space or adapt to needs",
+          "sort_order": 206
+        },
+        {
+          "en": "compensate",
+          "zh": "补偿；赔偿",
+          "hint": "make up for loss or pay back",
+          "sort_order": 207
+        },
+        {
+          "en": "transition",
+          "zh": "过渡；转变",
+          "hint": "process of changing from one state",
+          "sort_order": 208
+        },
+        {
+          "en": "utilize",
+          "zh": "利用；使用",
+          "hint": "make practical use of",
+          "sort_order": 209
+        },
+        {
+          "en": "gesture",
+          "zh": "手势；姿态",
+          "hint": "a movement expressing meaning",
+          "sort_order": 210
+        },
+        {
+          "en": "bundle",
+          "zh": "捆；束；打包",
+          "hint": "tie things together",
+          "sort_order": 211
+        },
+        {
+          "en": "temper",
+          "zh": "脾气；情绪",
+          "hint": "state of mind or mood",
+          "sort_order": 212
+        },
+        {
+          "en": "infer",
+          "zh": "推断；推论",
+          "hint": "deduce from evidence",
+          "sort_order": 213
+        },
+        {
+          "en": "subsequent",
+          "zh": "随后的；后来的",
+          "hint": "following after something",
+          "sort_order": 214
+        },
+        {
+          "en": "breach",
+          "zh": "违反；破坏",
+          "hint": "break a rule or agreement",
+          "sort_order": 215
+        },
+        {
+          "en": "comprehensive",
+          "zh": "全面的；综合的",
+          "hint": "covering all aspects thoroughly",
+          "sort_order": 216
+        },
+        {
+          "en": "consolidate",
+          "zh": "巩固；合并",
+          "hint": "combine into a stronger whole",
+          "sort_order": 217
+        },
+        {
+          "en": "preliminary",
+          "zh": "初步的；预备的",
+          "hint": "coming before the main part",
+          "sort_order": 218
+        },
+        {
+          "en": "subsidy",
+          "zh": "补贴；津贴",
+          "hint": "government financial support",
+          "sort_order": 219
+        },
+        {
+          "en": "vibrant",
+          "zh": "充满活力的",
+          "hint": "full of energy and life",
+          "sort_order": 220
+        },
+        {
+          "en": "accustomed",
+          "zh": "习惯的",
+          "hint": "being used to something",
+          "sort_order": 221
+        },
+        {
+          "en": "commemorate",
+          "zh": "纪念",
+          "hint": "honor the memory of",
+          "sort_order": 222
+        },
+        {
+          "en": "underlying",
+          "zh": "潜在的；根本的",
+          "hint": "beneath the surface",
+          "sort_order": 223
+        },
+        {
+          "en": "intervene",
+          "zh": "干预；介入",
+          "hint": "step in between parties",
+          "sort_order": 224
+        },
+        {
+          "en": "phenomenon",
+          "zh": "现象",
+          "hint": "an observable event or fact",
+          "sort_order": 225
+        },
+        {
+          "en": "spearhead",
+          "zh": "牵头；领头",
+          "hint": "lead an initiative from the front",
+          "sort_order": 226
+        },
+        {
+          "en": "liaise",
+          "zh": "联络；沟通协调",
+          "hint": "communicate between two parties",
+          "sort_order": 227
+        },
+        {
+          "en": "vet",
+          "zh": "审查；核实",
+          "hint": "examine carefully before approval",
+          "sort_order": 228
+        },
+        {
+          "en": "empower",
+          "zh": "赋权；使能够",
+          "hint": "give someone authority or confidence",
+          "sort_order": 229
+        },
+        {
+          "en": "knack",
+          "zh": "诀窍；技巧",
+          "hint": "a special skill or natural ability",
+          "sort_order": 230
+        },
+        {
+          "en": "stroll",
+          "zh": "散步；溜达",
+          "hint": "a slow relaxed walk",
+          "sort_order": 231
+        },
+        {
+          "en": "rummage",
+          "zh": "翻找；搜找",
+          "hint": "search through things carelessly",
+          "sort_order": 232
+        },
+        {
+          "en": "paradigm",
+          "zh": "范式；典范",
+          "hint": "a model or pattern of something",
+          "sort_order": 233
+        },
+        {
+          "en": "stigma",
+          "zh": "耻辱；污名",
+          "hint": "a mark of social disgrace",
+          "sort_order": 234
+        },
+        {
+          "en": "coherent",
+          "zh": "连贯的；条理清楚的",
+          "hint": "logical and consistent throughout",
+          "sort_order": 235
+        },
+        {
+          "en": "alleviate",
+          "zh": "缓解；减轻",
+          "hint": "make less severe",
+          "sort_order": 236
+        },
+        {
+          "en": "defer",
+          "zh": "推迟；遵从",
+          "hint": "postpone or yield to someone",
+          "sort_order": 237
+        },
+        {
+          "en": "exempt",
+          "zh": "被免除的；豁免",
+          "hint": "freed from an obligation",
+          "sort_order": 238
+        },
+        {
+          "en": "blatant",
+          "zh": "公然的；明目张胆的",
+          "hint": "obviously and shamelessly",
+          "sort_order": 239
+        },
+        {
+          "en": "imminent",
+          "zh": "迫近的；即将发生的",
+          "hint": "about to happen very soon",
+          "sort_order": 240
+        },
+        {
+          "en": "penalize",
+          "zh": "处罚；不利对待",
+          "hint": "punish or impose a penalty",
+          "sort_order": 241
+        },
+        {
+          "en": "pertain",
+          "zh": "与…有关",
+          "hint": "relate to or be relevant to",
+          "sort_order": 242
+        },
+        {
+          "en": "garnish",
+          "zh": "装饰（食物）",
+          "hint": "decorate food for presentation",
+          "sort_order": 243
+        },
+        {
+          "en": "cohort",
+          "zh": "一群人；同辈群体",
+          "hint": "a group with a shared characteristic",
+          "sort_order": 244
+        },
+        {
+          "en": "livelihood",
+          "zh": "生计",
+          "hint": "means of earning a living",
+          "sort_order": 245
+        },
+        {
+          "en": "pristine",
+          "zh": "崭新的；洁净的",
+          "hint": "in original perfect condition",
+          "sort_order": 246
+        },
+        {
+          "en": "propel",
+          "zh": "推进；驱使",
+          "hint": "push or drive forward",
+          "sort_order": 247
+        },
+        {
+          "en": "insight",
+          "zh": "洞察力；见解",
+          "hint": "deep understanding of something",
+          "sort_order": 248
+        },
+        {
+          "en": "encounter",
+          "zh": "遭遇；偶然遇到",
+          "hint": "come across unexpectedly",
+          "sort_order": 249
+        },
+        {
+          "en": "wield",
+          "zh": "行使；运用（权力）",
+          "hint": "hold and use power or influence",
+          "sort_order": 250
+        },
+        {
+          "en": "scrub",
+          "zh": "用力擦洗；取消",
+          "hint": "clean by rubbing hard",
+          "sort_order": 251
+        },
+        {
+          "en": "hefty",
+          "zh": "大量的；沉重的",
+          "hint": "big and heavy in amount",
+          "sort_order": 252
+        },
+        {
+          "en": "lucid",
+          "zh": "清晰的；易懂的",
+          "hint": "clear and easy to understand",
+          "sort_order": 253
+        },
+        {
+          "en": "avalanche",
+          "zh": "雪崩；蜂拥而至",
+          "hint": "a mass of snow rushing down",
+          "sort_order": 254
+        },
+        {
+          "en": "agile",
+          "zh": "敏捷的；灵活的",
+          "hint": "quick and adaptable",
+          "sort_order": 255
+        },
+        {
+          "en": "intricate",
+          "zh": "复杂的；精细的",
+          "hint": "complexly detailed",
+          "sort_order": 256
+        },
+        {
+          "en": "conform",
+          "zh": "顺从；符合",
+          "hint": "comply with standards",
+          "sort_order": 257
+        },
+        {
+          "en": "tenure",
+          "zh": "任期；终身教职",
+          "hint": "period of holding a position",
+          "sort_order": 258
+        },
+        {
+          "en": "vivid",
+          "zh": "生动的；鲜明的",
+          "hint": "bright and clear in memory",
+          "sort_order": 259
+        },
+        {
+          "en": "endure",
+          "zh": "忍受；持久",
+          "hint": "last through hardship",
+          "sort_order": 260
+        },
+        {
+          "en": "commodity",
+          "zh": "商品；日用品",
+          "hint": "a tradable raw material",
+          "sort_order": 261
+        },
+        {
+          "en": "waver",
+          "zh": "动摇；犹豫",
+          "hint": "hesitate between choices",
+          "sort_order": 262
+        },
+        {
+          "en": "embrace",
+          "zh": "拥抱；欣然接受",
+          "hint": "accept eagerly",
+          "sort_order": 263
+        },
+        {
+          "en": "authorize",
+          "zh": "授权；批准",
+          "hint": "give official permission",
+          "sort_order": 264
+        },
+        {
+          "en": "quandary",
+          "zh": "困惑；窘境",
+          "hint": "a state of uncertainty",
+          "sort_order": 265
+        },
+        {
+          "en": "compel",
+          "zh": "迫使；驱使",
+          "hint": "force or drive someone to act",
+          "sort_order": 266
+        },
+        {
+          "en": "cumbersome",
+          "zh": "笨重的；麻烦的",
+          "hint": "heavy and difficult to handle",
+          "sort_order": 267
+        },
+        {
+          "en": "meticulous",
+          "zh": "一丝不苟的",
+          "hint": "very careful about details",
+          "sort_order": 268
+        },
+        {
+          "en": "plunge",
+          "zh": "投入；暴跌",
+          "hint": "fall or drop sharply",
+          "sort_order": 269
+        },
+        {
+          "en": "linger",
+          "zh": "逗留；徘徊",
+          "hint": "stay longer than necessary",
+          "sort_order": 270
+        },
+        {
+          "en": "spacious",
+          "zh": "宽敞的",
+          "hint": "having ample space",
+          "sort_order": 271
+        },
+        {
+          "en": "uplift",
+          "zh": "振奋；提升",
+          "hint": "raise spirits or morale",
+          "sort_order": 272
+        },
+        {
+          "en": "disposition",
+          "zh": "性情；倾向",
+          "hint": "a person's inherent temperament",
+          "sort_order": 273
+        },
+        {
+          "en": "recede",
+          "zh": "后退；消退",
+          "hint": "move back or fade away",
+          "sort_order": 274
+        },
+        {
+          "en": "sentiment",
+          "zh": "情绪；观点",
+          "hint": "a feeling or opinion",
+          "sort_order": 275
+        },
+        {
+          "en": "candid",
+          "zh": "坦率的；直言不讳的",
+          "hint": "honest and direct",
+          "sort_order": 276
+        },
+        {
+          "en": "expedite",
+          "zh": "加速；加急处理",
+          "hint": "speed up a process",
+          "sort_order": 277
+        },
+        {
+          "en": "deliberate",
+          "zh": "蓄意的；慎重思考",
+          "hint": "done on purpose or carefully",
+          "sort_order": 278
+        },
+        {
+          "en": "morale",
+          "zh": "士气；斗志",
+          "hint": "team spirit and confidence",
+          "sort_order": 279
+        },
+        {
+          "en": "nostalgia",
+          "zh": "怀旧；乡愁",
+          "hint": "longing for the past",
+          "sort_order": 280
+        },
+        {
+          "en": "pantry",
+          "zh": "食品储藏室",
+          "hint": "a small food storage room",
+          "sort_order": 281
+        },
+        {
+          "en": "recline",
+          "zh": "斜倚；后仰",
+          "hint": "lean back in a seat",
+          "sort_order": 282
+        },
+        {
+          "en": "eloquent",
+          "zh": "雄辩的；有说服力的",
+          "hint": "articulate and persuasive",
+          "sort_order": 283
+        },
+        {
+          "en": "pervasive",
+          "zh": "弥漫的；无处不在的",
+          "hint": "spread throughout everything",
+          "sort_order": 284
+        },
+        {
+          "en": "subtle",
+          "zh": "微妙的；不易察觉的",
+          "hint": "so slight as to be hard to notice",
+          "sort_order": 285
+        },
+        {
+          "en": "anticipate",
+          "zh": "预期；预料",
+          "hint": "expect something to happen",
+          "sort_order": 286
+        },
+        {
+          "en": "harness",
+          "zh": "利用；驾驭",
+          "hint": "use something to gain advantage",
+          "sort_order": 287
+        },
+        {
+          "en": "incorporate",
+          "zh": "纳入；包含",
+          "hint": "include as part of a whole",
+          "sort_order": 288
+        },
+        {
+          "en": "endeavor",
+          "zh": "努力；尝试",
+          "hint": "try hard to achieve something",
+          "sort_order": 289
+        },
+        {
+          "en": "soothe",
+          "zh": "安慰；缓解",
+          "hint": "calm or relieve pain",
+          "sort_order": 290
+        },
+        {
+          "en": "quench",
+          "zh": "解渴；熄灭",
+          "hint": "satisfy thirst or put out fire",
+          "sort_order": 291
+        },
+        {
+          "en": "sluggish",
+          "zh": "迟缓的；无精打采的",
+          "hint": "slow and lacking energy",
+          "sort_order": 292
+        },
+        {
+          "en": "advocate",
+          "zh": "提倡；拥护者",
+          "hint": "publicly support a cause",
+          "sort_order": 293
+        },
+        {
+          "en": "diminish",
+          "zh": "减少；削弱",
+          "hint": "make or become less",
+          "sort_order": 294
+        },
+        {
+          "en": "ponder",
+          "zh": "沉思；考虑",
+          "hint": "think carefully about something",
+          "sort_order": 295
+        },
+        {
+          "en": "integrity",
+          "zh": "正直；诚信",
+          "hint": "being honest and having strong morals",
+          "sort_order": 296
+        },
+        {
+          "en": "camaraderie",
+          "zh": "同志情谊；战友情",
+          "hint": "mutual trust and friendship in a team",
+          "sort_order": 297
+        },
+        {
+          "en": "tenacious",
+          "zh": "坚韧的；顽强的",
+          "hint": "holding firmly and not giving up",
+          "sort_order": 298
+        },
+        {
+          "en": "novice",
+          "zh": "新手；初学者",
+          "hint": "a beginner with no experience",
+          "sort_order": 299
+        },
+        {
+          "en": "gratitude",
+          "zh": "感激；感恩",
+          "hint": "a feeling of thankfulness",
+          "sort_order": 300
+        },
+        {
+          "en": "rejuvenate",
+          "zh": "使恢复活力",
+          "hint": "make someone feel young and energetic again",
+          "sort_order": 301
+        },
+        {
+          "en": "tranquil",
+          "zh": "宁静的；平静的",
+          "hint": "calm and peaceful",
+          "sort_order": 302
+        },
+        {
+          "en": "fluent",
+          "zh": "流利的；流畅的",
+          "hint": "able to speak a language smoothly and easily",
+          "sort_order": 303
+        },
+        {
+          "en": "scathing",
+          "zh": "严厉的；尖刻的",
+          "hint": "severely critical and harsh",
+          "sort_order": 304
+        },
+        {
+          "en": "perpetual",
+          "zh": "永久的；持续的",
+          "hint": "continuing forever or for a long time",
+          "sort_order": 305
+        },
+        {
+          "en": "elaborate",
+          "zh": "详述；精心制作的",
+          "hint": "explain in detail or carefully made",
+          "sort_order": 306
+        },
+        {
+          "en": "fatigue",
+          "zh": "疲劳；疲惫",
+          "hint": "physical or mental exhaustion",
+          "sort_order": 307
+        },
+        {
+          "en": "hierarchy",
+          "zh": "等级制度；层级",
+          "hint": "a system of ranked levels",
+          "sort_order": 308
+        },
+        {
+          "en": "improvise",
+          "zh": "即兴发挥；临时凑合",
+          "hint": "make up on the spot",
+          "sort_order": 309
+        },
+        {
+          "en": "jeopardize",
+          "zh": "危及；损害",
+          "hint": "put at risk",
+          "sort_order": 310
+        },
+        {
+          "en": "mediocre",
+          "zh": "平庸的；普通的",
+          "hint": "of only average quality",
+          "sort_order": 311
+        },
+        {
+          "en": "undermine",
+          "zh": "暗中破坏；削弱",
+          "hint": "weaken or sabotage gradually",
+          "sort_order": 312
+        },
+        {
+          "en": "abundant",
+          "zh": "丰富的；大量的",
+          "hint": "existing in large quantities",
+          "sort_order": 313
+        },
+        {
+          "en": "precarious",
+          "zh": "不稳定的；危险的",
+          "hint": "not secure or stable",
+          "sort_order": 314
+        },
+        {
+          "en": "whimsical",
+          "zh": "异想天开的；古怪有趣的",
+          "hint": "playfully unpredictable",
+          "sort_order": 315
+        },
+        {
+          "en": "robust",
+          "zh": "强健的；稳健的",
+          "hint": "strong and stable",
+          "sort_order": 316
+        },
+        {
+          "en": "succinct",
+          "zh": "简洁的；简明的",
+          "hint": "briefly and clearly expressed",
+          "sort_order": 317
+        },
+        {
+          "en": "conscientious",
+          "zh": "认真的；尽责的",
+          "hint": "thorough and careful",
+          "sort_order": 318
+        },
+        {
+          "en": "discreet",
+          "zh": "谨慎的；周到的",
+          "hint": "careful to avoid notice",
+          "sort_order": 319
+        },
+        {
+          "en": "excursion",
+          "zh": "短途旅行；远足",
+          "hint": "a short trip for leisure",
+          "sort_order": 320
+        },
+        {
+          "en": "savory",
+          "zh": "咸味的；美味的",
+          "hint": "salty or spicy in taste",
+          "sort_order": 321
+        },
+        {
+          "en": "exuberant",
+          "zh": "精力充沛的",
+          "hint": "full of energy and enthusiasm",
+          "sort_order": 322
+        },
+        {
+          "en": "ambiguous",
+          "zh": "模棱两可的",
+          "hint": "open to multiple interpretations",
+          "sort_order": 323
+        },
+        {
+          "en": "anxious",
+          "zh": "焦虑的；急切的",
+          "hint": "worried or eager",
+          "sort_order": 324
+        },
+        {
+          "en": "fortitude",
+          "zh": "坚韧；刚毅",
+          "hint": "courage in pain or adversity",
+          "sort_order": 325
+        },
+        {
+          "en": "calibrate",
+          "zh": "校准；调整",
+          "hint": "adjust precisely",
+          "sort_order": 326
+        },
+        {
+          "en": "preclude",
+          "zh": "阻止；排除",
+          "hint": "prevent from happening",
+          "sort_order": 327
+        },
+        {
+          "en": "wrangle",
+          "zh": "争论；争吵",
+          "hint": "argue stubbornly",
+          "sort_order": 328
+        },
+        {
+          "en": "astute",
+          "zh": "敏锐的；精明的",
+          "hint": "shrewd and perceptive",
+          "sort_order": 329
+        },
+        {
+          "en": "fervent",
+          "zh": "热烈的；强烈的",
+          "hint": "showing intense feeling",
+          "sort_order": 330
+        },
+        {
+          "en": "meddle",
+          "zh": "干涉；管闲事",
+          "hint": "interfere in others' affairs",
+          "sort_order": 331
+        },
+        {
+          "en": "petty",
+          "zh": "琐碎的；小气的",
+          "hint": "trivial or narrow-minded",
+          "sort_order": 332
+        },
+        {
+          "en": "grueling",
+          "zh": "艰苦的；令人筋疲力尽的",
+          "hint": "extremely exhausting",
+          "sort_order": 333
+        },
+        {
+          "en": "scrimp",
+          "zh": "节省；克扣",
+          "hint": "be thrifty or frugal",
+          "sort_order": 334
+        },
+        {
+          "en": "bulky",
+          "zh": "庞大的；笨重的",
+          "hint": "large and hard to carry",
+          "sort_order": 335
+        },
+        {
+          "en": "plummet",
+          "zh": "暴跌；骤降",
+          "hint": "drop sharply and suddenly",
+          "sort_order": 336
+        },
+        {
+          "en": "vouch",
+          "zh": "担保；保证",
+          "hint": "guarantee someone's character",
+          "sort_order": 337
+        },
+        {
+          "en": "relinquish",
+          "zh": "放弃；交出",
+          "hint": "give up control reluctantly",
+          "sort_order": 338
+        },
+        {
+          "en": "stint",
+          "zh": "一段工作经历",
+          "hint": "a period of work",
+          "sort_order": 339
+        },
+        {
+          "en": "squander",
+          "zh": "挥霍；浪费",
+          "hint": "waste money or opportunity",
+          "sort_order": 340
+        },
+        {
+          "en": "lavish",
+          "zh": "奢华的；慷慨给予",
+          "hint": "luxurious or generous",
+          "sort_order": 341
+        },
+        {
+          "en": "tuck",
+          "zh": "塞入；藏好",
+          "hint": "push into a tight space",
+          "sort_order": 342
+        },
+        {
+          "en": "yield",
+          "zh": "产出；屈服",
+          "hint": "produce or give way",
+          "sort_order": 343
+        },
+        {
+          "en": "zest",
+          "zh": "热情；滋味",
+          "hint": "great enthusiasm or flavor",
+          "sort_order": 344
+        },
+        {
+          "en": "swarm",
+          "zh": "蜂拥；成群",
+          "hint": "move in a large crowd",
+          "sort_order": 345
+        },
+        {
+          "en": "curtail",
+          "zh": "缩短；削减",
+          "hint": "reduce or cut back",
+          "sort_order": 346
+        },
+        {
+          "en": "embark",
+          "zh": "着手；开始",
+          "hint": "start a new venture",
+          "sort_order": 347
+        },
+        {
+          "en": "salvage",
+          "zh": "抢救；挽回",
+          "hint": "rescue from loss",
+          "sort_order": 348
+        },
+        {
+          "en": "garner",
+          "zh": "收集；获得",
+          "hint": "gather or collect",
+          "sort_order": 349
+        },
+        {
+          "en": "bask",
+          "zh": "沐浴；享受",
+          "hint": "enjoy warmth or praise",
+          "sort_order": 350
+        },
+        {
+          "en": "dawdle",
+          "zh": "磨蹭；闲荡",
+          "hint": "waste time moving slowly",
+          "sort_order": 351
+        },
+        {
+          "en": "mundane",
+          "zh": "平凡的；乏味的",
+          "hint": "ordinary and boring",
+          "sort_order": 352
+        },
+        {
+          "en": "grit",
+          "zh": "毅力；勇气",
+          "hint": "courage and determination",
+          "sort_order": 353
+        },
+        {
+          "en": "instill",
+          "zh": "灌输；逐步培养",
+          "hint": "gradually introduce an idea",
+          "sort_order": 354
+        },
+        {
+          "en": "sift",
+          "zh": "筛选；过滤",
+          "hint": "filter through carefully",
+          "sort_order": 355
+        },
+        {
+          "en": "contend",
+          "zh": "竞争；声称",
+          "hint": "compete or claim",
+          "sort_order": 356
+        },
+        {
+          "en": "stature",
+          "zh": "地位；声望",
+          "hint": "status or reputation",
+          "sort_order": 357
+        },
+        {
+          "en": "attest",
+          "zh": "证明；证实",
+          "hint": "serve as proof of",
+          "sort_order": 358
+        },
+        {
+          "en": "contingent",
+          "zh": "视…而定的",
+          "hint": "dependent on something",
+          "sort_order": 359
+        },
+        {
+          "en": "relish",
+          "zh": "享受；津津有味",
+          "hint": "enjoy greatly",
+          "sort_order": 360
+        },
+        {
+          "en": "whisk",
+          "zh": "快速移动；搅打",
+          "hint": "move quickly or beat eggs",
+          "sort_order": 361
+        },
+        {
+          "en": "wrinkle",
+          "zh": "皱纹；小问题",
+          "hint": "a crease or small problem",
+          "sort_order": 362
+        },
+        {
+          "en": "pore",
+          "zh": "仔细研读",
+          "hint": "study carefully",
+          "sort_order": 363
+        },
+        {
+          "en": "flair",
+          "zh": "天赋；才华",
+          "hint": "natural talent or style",
+          "sort_order": 364
+        },
+        {
+          "en": "affable",
+          "zh": "友善的；和蔼的",
+          "hint": "friendly and easy to talk to",
+          "sort_order": 365
+        },
+        {
+          "en": "navigate",
+          "zh": "导航；应对",
+          "hint": "find your way through something complex",
+          "sort_order": 366
+        },
+        {
+          "en": "acquire",
+          "zh": "获得；收购",
+          "hint": "get or buy something, especially a company",
+          "sort_order": 367
+        },
+        {
+          "en": "incur",
+          "zh": "招致；引起",
+          "hint": "bring something unpleasant upon yourself",
+          "sort_order": 368
+        },
+        {
+          "en": "comprise",
+          "zh": "由…组成",
+          "hint": "be made up of; consist of",
+          "sort_order": 369
+        },
+        {
+          "en": "comprehend",
+          "zh": "理解；领悟",
+          "hint": "fully understand something",
+          "sort_order": 370
+        },
+        {
+          "en": "constitute",
+          "zh": "构成；组成",
+          "hint": "form or make up something",
+          "sort_order": 371
+        },
+        {
+          "en": "deduce",
+          "zh": "推断",
+          "hint": "figure out from evidence or logic",
+          "sort_order": 372
+        },
+        {
+          "en": "depict",
+          "zh": "描绘；描述",
+          "hint": "show or describe in words or pictures",
+          "sort_order": 373
+        },
+        {
+          "en": "console",
+          "zh": "安慰；控制台",
+          "hint": "comfort someone who is sad",
+          "sort_order": 374
+        },
+        {
+          "en": "boast",
+          "zh": "自夸；拥有",
+          "hint": "talk with pride about something you have",
+          "sort_order": 375
+        },
+        {
+          "en": "deploy",
+          "zh": "部署；配置",
+          "hint": "put software into production",
+          "sort_order": 376
+        },
+        {
+          "en": "pioneer",
+          "zh": "开创；先驱",
+          "hint": "be the first to do something",
+          "sort_order": 377
+        },
+        {
+          "en": "ratify",
+          "zh": "批准；正式认可",
+          "hint": "formally approve a decision",
+          "sort_order": 378
+        },
+        {
+          "en": "revert",
+          "zh": "恢复；回退到",
+          "hint": "go back to a previous state",
+          "sort_order": 379
+        },
+        {
+          "en": "wholesome",
+          "zh": "有益身心的",
+          "hint": "good for health and well-being",
+          "sort_order": 380
+        },
+        {
+          "en": "weary",
+          "zh": "疲倦的；厌倦的",
+          "hint": "very tired or fed up",
+          "sort_order": 381
+        },
+        {
+          "en": "cozy",
+          "zh": "舒适的；温馨的",
+          "hint": "warm and comfortable",
+          "sort_order": 382
+        },
+        {
+          "en": "nuance",
+          "zh": "细微差别",
+          "hint": "a subtle difference in meaning",
+          "sort_order": 383
+        },
+        {
+          "en": "stagnant",
+          "zh": "停滞的",
+          "hint": "not changing or growing",
+          "sort_order": 384
+        },
+        {
+          "en": "condense",
+          "zh": "浓缩；压缩",
+          "hint": "make shorter or more dense",
+          "sort_order": 385
+        },
+        {
+          "en": "persevere",
+          "zh": "坚持不懈",
+          "hint": "keep going despite difficulties",
+          "sort_order": 386
+        },
+        {
+          "en": "amicable",
+          "zh": "友好的；和睦的",
+          "hint": "friendly and cooperative",
+          "sort_order": 387
+        },
+        {
+          "en": "convene",
+          "zh": "召集；聚集",
+          "hint": "bring people together for a meeting",
+          "sort_order": 388
+        },
+        {
+          "en": "imperative",
+          "zh": "必要的；紧急的",
+          "hint": "absolutely necessary or urgent",
+          "sort_order": 389
+        },
+        {
+          "en": "cherish",
+          "zh": "珍惜；珍爱",
+          "hint": "hold dear in your heart",
+          "sort_order": 390
+        },
+        {
+          "en": "deplore",
+          "zh": "强烈反对；谴责",
+          "hint": "strongly condemn something",
+          "sort_order": 391
+        },
+        {
+          "en": "tinker",
+          "zh": "修补；摆弄",
+          "hint": "casually repair or adjust",
+          "sort_order": 392
+        },
+        {
+          "en": "stringent",
+          "zh": "严格的；严苛的",
+          "hint": "very strict and demanding",
+          "sort_order": 393
+        },
+        {
+          "en": "shrewd",
+          "zh": "精明的；敏锐的",
+          "hint": "sharp and clever in judgment",
+          "sort_order": 394
+        },
+        {
+          "en": "mellow",
+          "zh": "柔和的；醇厚的",
+          "hint": "smooth and soft in tone or taste",
+          "sort_order": 395
+        },
+        {
+          "en": "solicit",
+          "zh": "征求；恳求",
+          "hint": "formally request or seek",
+          "sort_order": 396
+        },
+        {
+          "en": "waive",
+          "zh": "放弃；免除",
+          "hint": "voluntarily give up a right or fee",
+          "sort_order": 397
+        },
+        {
+          "en": "influx",
+          "zh": "涌入；流入",
+          "hint": "a large arrival or inflow",
+          "sort_order": 398
+        },
+        {
+          "en": "warrant",
+          "zh": "值得；保证",
+          "hint": "justify or call for attention",
+          "sort_order": 399
+        },
+        {
+          "en": "utensil",
+          "zh": "器具；餐具",
+          "hint": "a tool for cooking or eating",
+          "sort_order": 400
+        },
+        {
+          "en": "adorn",
+          "zh": "装饰；装扮",
+          "hint": "decorate or beautify",
+          "sort_order": 401
+        },
+        {
+          "en": "nourish",
+          "zh": "滋养；养育",
+          "hint": "provide food or sustenance",
+          "sort_order": 402
+        },
+        {
+          "en": "concede",
+          "zh": "承认；让步",
+          "hint": "admit something reluctantly",
+          "sort_order": 403
+        },
+        {
+          "en": "detract",
+          "zh": "贬低；减损",
+          "hint": "diminish the value of",
+          "sort_order": 404
+        },
+        {
+          "en": "bestow",
+          "zh": "赐予；授予",
+          "hint": "confer an honor or gift",
+          "sort_order": 405
+        },
+        {
+          "en": "elicit",
+          "zh": "引出；诱出",
+          "hint": "draw out a response",
+          "sort_order": 406
+        },
+        {
+          "en": "impart",
+          "zh": "传授；赋予",
+          "hint": "give or share knowledge",
+          "sort_order": 407
+        },
+        {
+          "en": "unanimous",
+          "zh": "一致的；全体同意的",
+          "hint": "fully agreed by everyone",
+          "sort_order": 408
+        },
+        {
+          "en": "slump",
+          "zh": "暴跌；萧条",
+          "hint": "a sharp decline or downturn",
+          "sort_order": 409
+        },
+        {
+          "en": "dispel",
+          "zh": "消除；驱散",
+          "hint": "drive away doubts or rumors",
+          "sort_order": 410
+        },
+        {
+          "en": "subdue",
+          "zh": "压制；使屈服",
+          "hint": "bring under control",
+          "sort_order": 411
+        },
+        {
+          "en": "plight",
+          "zh": "困境；苦境",
+          "hint": "a difficult or sad situation",
+          "sort_order": 412
+        },
+        {
+          "en": "taint",
+          "zh": "污染；玷污",
+          "hint": "spoil or contaminate",
+          "sort_order": 413
+        },
+        {
+          "en": "sanctuary",
+          "zh": "避难所；庇护所",
+          "hint": "a safe place of refuge",
+          "sort_order": 414
+        },
+        {
+          "en": "muster",
+          "zh": "鼓起；集结",
+          "hint": "gather courage or strength",
+          "sort_order": 415
+        },
+        {
+          "en": "caveat",
+          "zh": "警告；注意事项",
+          "hint": "a warning or caution",
+          "sort_order": 416
+        },
+        {
+          "en": "apprise",
+          "zh": "告知；通知",
+          "hint": "inform someone officially",
+          "sort_order": 417
+        },
+        {
+          "en": "formidable",
+          "zh": "强大的；令人敬畏的",
+          "hint": "powerful and intimidating",
+          "sort_order": 418
+        },
+        {
+          "en": "substantiate",
+          "zh": "证实；证明",
+          "hint": "prove with evidence",
+          "sort_order": 419
+        },
+        {
+          "en": "vex",
+          "zh": "烦扰；使恼怒",
+          "hint": "annoy or frustrate",
+          "sort_order": 420
+        },
+        {
+          "en": "succumb",
+          "zh": "屈服；屈从",
+          "hint": "give in to pressure",
+          "sort_order": 421
+        },
+        {
+          "en": "languish",
+          "zh": "衰退；被搁置",
+          "hint": "suffer from neglect",
+          "sort_order": 422
+        },
+        {
+          "en": "fraught",
+          "zh": "充满…的",
+          "hint": "filled with something negative",
+          "sort_order": 423
+        },
+        {
+          "en": "devoid",
+          "zh": "缺乏的；没有的",
+          "hint": "completely without",
+          "sort_order": 424
+        },
+        {
+          "en": "akin",
+          "zh": "类似的；同类的",
+          "hint": "similar in nature",
+          "sort_order": 425
+        }
       ]
     }
   ],
@@ -2361,6 +4616,916 @@
       "zh": "沉思；考虑",
       "pos": "v.",
       "example": "I need to ponder the implications before making a decision."
+    },
+    {
+      "lemma": "integrity",
+      "phonetic": "/ɪnˈteɡrəti/",
+      "zh": "正直；诚信；完好",
+      "pos": "n.",
+      "example": "A good leader is known for their integrity and honesty."
+    },
+    {
+      "lemma": "camaraderie",
+      "phonetic": "/ˌkɑːməˈrɑːdəri/",
+      "zh": "同志情谊；战友之情",
+      "pos": "n.",
+      "example": "There's a strong sense of camaraderie in our team after the hackathon."
+    },
+    {
+      "lemma": "tenacious",
+      "phonetic": "/təˈneɪʃəs/",
+      "zh": "坚韧的；顽强的",
+      "pos": "adj.",
+      "example": "She is tenacious in pursuing her goals, no matter the obstacles."
+    },
+    {
+      "lemma": "novice",
+      "phonetic": "/ˈnɑːvɪs/",
+      "zh": "新手；初学者",
+      "pos": "n.",
+      "example": "As a novice in the field, I have a lot to learn from senior colleagues."
+    },
+    {
+      "lemma": "gratitude",
+      "phonetic": "/ˈɡrætɪtuːd/",
+      "zh": "感激；感恩",
+      "pos": "n.",
+      "example": "I want to express my gratitude for everyone who supported this project."
+    },
+    {
+      "lemma": "rejuvenate",
+      "phonetic": "/rɪˈdʒuːvəneɪt/",
+      "zh": "使恢复活力；使年轻",
+      "pos": "v.",
+      "example": "A weekend getaway really rejuvenated me after a stressful month."
+    },
+    {
+      "lemma": "tranquil",
+      "phonetic": "/ˈtræŋkwɪl/",
+      "zh": "宁静的；平静的",
+      "pos": "adj.",
+      "example": "The lake was tranquil in the early morning, with no wind at all."
+    },
+    {
+      "lemma": "fluent",
+      "phonetic": "/ˈfluːənt/",
+      "zh": "流利的；流畅的",
+      "pos": "adj.",
+      "example": "She is fluent in three languages, including English and Japanese."
+    },
+    {
+      "lemma": "scathing",
+      "phonetic": "/ˈskeɪðɪŋ/",
+      "zh": "严厉的；尖刻的",
+      "pos": "adj.",
+      "example": "The critic wrote a scathing review of the new movie."
+    },
+    {
+      "lemma": "perpetual",
+      "phonetic": "/pərˈpetʃuəl/",
+      "zh": "永久的；持续的",
+      "pos": "adj.",
+      "example": "The perpetual noise from the construction site is driving me crazy."
+    },
+    {
+      "lemma": "elaborate",
+      "phonetic": "/ɪˈlæbərət/",
+      "zh": "详述；精心制作的",
+      "pos": "v./adj.",
+      "example": "Could you elaborate on your proposal for the team?"
+    },
+    {
+      "lemma": "fatigue",
+      "phonetic": "/fəˈtiːɡ/",
+      "zh": "疲劳；疲惫",
+      "pos": "n./v.",
+      "example": "Driver fatigue is one of the leading causes of highway accidents."
+    },
+    {
+      "lemma": "hierarchy",
+      "phonetic": "/ˈhaɪərɑːrki/",
+      "zh": "等级制度；层级",
+      "pos": "n.",
+      "example": "In a flat hierarchy, employees have more autonomy to make decisions."
+    },
+    {
+      "lemma": "improvise",
+      "phonetic": "/ˈɪmprəvaɪz/",
+      "zh": "即兴发挥；临时凑合",
+      "pos": "v.",
+      "example": "The speaker forgot his notes but improvised brilliantly."
+    },
+    {
+      "lemma": "jeopardize",
+      "phonetic": "/ˈdʒepərdaɪz/",
+      "zh": "危及；损害",
+      "pos": "v.",
+      "example": "Don't jeopardize your career by posting reckless comments online."
+    },
+    {
+      "lemma": "mediocre",
+      "phonetic": "/ˌmiːdiˈoʊkər/",
+      "zh": "平庸的；普通的",
+      "pos": "adj.",
+      "example": "The movie received mediocre reviews from critics."
+    },
+    {
+      "lemma": "undermine",
+      "phonetic": "/ˌʌndərˈmaɪn/",
+      "zh": "暗中破坏；削弱",
+      "pos": "v.",
+      "example": "Constant criticism from the manager undermines team confidence."
+    },
+    {
+      "lemma": "abundant",
+      "phonetic": "/əˈbʌndənt/",
+      "zh": "丰富的；大量的",
+      "pos": "adj.",
+      "example": "The region is known for its abundant natural resources."
+    },
+    {
+      "lemma": "precarious",
+      "phonetic": "/prɪˈkeriəs/",
+      "zh": "不稳定的；危险的",
+      "pos": "adj.",
+      "example": "Many gig workers face a precarious financial situation."
+    },
+    {
+      "lemma": "whimsical",
+      "phonetic": "/ˈwɪmzɪkl/",
+      "zh": "异想天开的；古怪有趣的",
+      "pos": "adj.",
+      "example": "The cafe has a whimsical decor with mismatched chairs and colorful walls."
+    },
+    {
+      "lemma": "robust",
+      "phonetic": "/roʊˈbʌst/",
+      "zh": "强健的；稳健的",
+      "pos": "adj.",
+      "example": "The system needs to be robust enough to handle peak traffic."
+    },
+    {
+      "lemma": "succinct",
+      "phonetic": "/səkˈsɪŋkt/",
+      "zh": "简洁的；简明的",
+      "pos": "adj.",
+      "example": "Her succinct summary covered everything in three sentences."
+    },
+    {
+      "lemma": "conscientious",
+      "phonetic": "/ˌkɑːnʃiˈenʃəs/",
+      "zh": "认真的；尽责的",
+      "pos": "adj.",
+      "example": "She is a conscientious worker who double-checks everything."
+    },
+    {
+      "lemma": "discreet",
+      "phonetic": "/dɪˈskriːt/",
+      "zh": "谨慎的；周到的",
+      "pos": "adj.",
+      "example": "Please be discreet about the confidential information."
+    },
+    {
+      "lemma": "excursion",
+      "phonetic": "/ɪkˈskɜːrʒn/",
+      "zh": "短途旅行；远足",
+      "pos": "n.",
+      "example": "We went on a weekend excursion to the mountains."
+    },
+    {
+      "lemma": "savory",
+      "phonetic": "/ˈseɪvəri/",
+      "zh": "咸味的；美味可口的",
+      "pos": "adj.",
+      "example": "The restaurant is known for its savory pies."
+    },
+    {
+      "lemma": "exuberant",
+      "phonetic": "/ɪɡˈzuːbərənt/",
+      "zh": "精力充沛的；热情洋溢的",
+      "pos": "adj.",
+      "example": "Her exuberant personality lights up the room."
+    },
+    {
+      "lemma": "ambiguous",
+      "phonetic": "/æmˈbɪɡjuəs/",
+      "zh": "模棱两可的；含糊的",
+      "pos": "adj.",
+      "example": "The instructions were ambiguous, so nobody knew what to do."
+    },
+    {
+      "lemma": "anxious",
+      "phonetic": "/ˈæŋkʃəs/",
+      "zh": "焦虑的；急切的",
+      "pos": "adj.",
+      "example": "She felt anxious before the big presentation."
+    },
+    {
+      "lemma": "fortitude",
+      "phonetic": "/ˈfɔːrtɪtuːd/",
+      "zh": "坚韧；刚毅",
+      "pos": "n.",
+      "example": "She showed great fortitude during the difficult times."
+    },
+    {
+      "lemma": "calibrate",
+      "phonetic": "/ˈkælɪbreɪt/",
+      "zh": "校准；调整",
+      "pos": "v.",
+      "example": "We need to calibrate the sensors before running the experiment."
+    },
+    {
+      "lemma": "preclude",
+      "phonetic": "/prɪˈkluːd/",
+      "zh": "阻止；排除",
+      "pos": "v.",
+      "example": "A tight budget precludes us from hiring more staff this quarter."
+    },
+    {
+      "lemma": "wrangle",
+      "phonetic": "/ˈræŋɡl/",
+      "zh": "争论；争吵",
+      "pos": "v./n.",
+      "example": "They wrangled over the budget allocation for hours."
+    },
+    {
+      "lemma": "astute",
+      "phonetic": "/əˈstuːt/",
+      "zh": "敏锐的；精明的",
+      "pos": "adj.",
+      "example": "She made an astute observation that changed the direction of the project."
+    },
+    {
+      "lemma": "fervent",
+      "phonetic": "/ˈfɜːrvənt/",
+      "zh": "热烈的；强烈的",
+      "pos": "adj.",
+      "example": "He is a fervent supporter of open-source software."
+    },
+    {
+      "lemma": "meddle",
+      "phonetic": "/ˈmedl/",
+      "zh": "干涉；管闲事",
+      "pos": "v.",
+      "example": "I wish my mother-in-law would stop meddling in our parenting."
+    },
+    {
+      "lemma": "petty",
+      "phonetic": "/ˈpeti/",
+      "zh": "琐碎的；小气的",
+      "pos": "adj.",
+      "example": "Don't waste time on petty disagreements — focus on the big picture."
+    },
+    {
+      "lemma": "grueling",
+      "phonetic": "/ˈɡruːəlɪŋ/",
+      "zh": "艰苦的；令人筋疲力尽的",
+      "pos": "adj.",
+      "example": "The marathon was a grueling test of endurance."
+    },
+    {
+      "lemma": "scrimp",
+      "phonetic": "/skrɪmp/",
+      "zh": "节省；克扣",
+      "pos": "v.",
+      "example": "We scrimped and saved for two years to afford the down payment."
+    },
+    {
+      "lemma": "bulky",
+      "phonetic": "/ˈbʌlki/",
+      "zh": "庞大的；笨重的",
+      "pos": "adj.",
+      "example": "This jacket is too bulky to pack in a carry-on."
+    },
+    {
+      "lemma": "plummet",
+      "phonetic": "/ˈplʌmɪt/",
+      "zh": "暴跌；骤降",
+      "pos": "v.",
+      "example": "Stock prices plummeted after the disappointing earnings report."
+    },
+    {
+      "lemma": "vouch",
+      "phonetic": "/vaʊtʃ/",
+      "zh": "担保；保证",
+      "pos": "v.",
+      "example": "I can vouch for her — she's one of the most reliable people I know."
+    },
+    {
+      "lemma": "relinquish",
+      "phonetic": "/rɪˈlɪŋkwɪʃ/",
+      "zh": "放弃；交出",
+      "pos": "v.",
+      "example": "He reluctantly relinquished control of the project to the new manager."
+    },
+    {
+      "lemma": "stint",
+      "phonetic": "/stɪnt/",
+      "zh": "一段工作经历",
+      "pos": "n.",
+      "example": "She had a brief stint at a startup before joining our team."
+    },
+    {
+      "lemma": "squander",
+      "phonetic": "/ˈskwɑːndər/",
+      "zh": "挥霍；浪费",
+      "pos": "v.",
+      "example": "He squandered his entire bonus on gadgets he never used."
+    },
+    {
+      "lemma": "lavish",
+      "phonetic": "/ˈlævɪʃ/",
+      "zh": "奢华的；慷慨给予",
+      "pos": "adj./v.",
+      "example": "They threw a lavish party to celebrate the company's anniversary."
+    },
+    {
+      "lemma": "tuck",
+      "phonetic": "/tʌk/",
+      "zh": "塞入；藏好",
+      "pos": "v.",
+      "example": "She tucked her phone into her pocket and focused on the meeting."
+    },
+    {
+      "lemma": "yield",
+      "phonetic": "/jiːld/",
+      "zh": "产出；屈服",
+      "pos": "v./n.",
+      "example": "The new farming method yields twice as much per acre."
+    },
+    {
+      "lemma": "zest",
+      "phonetic": "/zest/",
+      "zh": "热情；滋味",
+      "pos": "n.",
+      "example": "She approaches every project with great zest and creativity."
+    },
+    {
+      "lemma": "swarm",
+      "phonetic": "/swɔːrm/",
+      "zh": "蜂拥；成群",
+      "pos": "n./v.",
+      "example": "Fans swarmed the stadium entrance before the concert."
+    },
+    {
+      "lemma": "curtail",
+      "phonetic": "/kərˈteɪl/",
+      "zh": "缩短；削减",
+      "pos": "v.",
+      "example": "The company had to curtail its spending after the budget cuts."
+    },
+    {
+      "lemma": "embark",
+      "phonetic": "/ɪmˈbɑːrk/",
+      "zh": "着手；开始",
+      "pos": "v.",
+      "example": "She embarked on a new career after finishing her degree."
+    },
+    {
+      "lemma": "salvage",
+      "phonetic": "/ˈsælvɪdʒ/",
+      "zh": "抢救；挽回",
+      "pos": "v./n.",
+      "example": "We managed to salvage the project by working through the weekend."
+    },
+    {
+      "lemma": "garner",
+      "phonetic": "/ˈɡɑːrnər/",
+      "zh": "收集；获得",
+      "pos": "v.",
+      "example": "The proposal garnered support from several departments."
+    },
+    {
+      "lemma": "bask",
+      "phonetic": "/bæsk/",
+      "zh": "沐浴；享受",
+      "pos": "v.",
+      "example": "We basked in the warm sun on the beach all afternoon."
+    },
+    {
+      "lemma": "dawdle",
+      "phonetic": "/ˈdɔːdl/",
+      "zh": "磨蹭；闲荡",
+      "pos": "v.",
+      "example": "Stop dawdling or we will miss the train!"
+    },
+    {
+      "lemma": "mundane",
+      "phonetic": "/mʌnˈdeɪn/",
+      "zh": "平凡的；乏味的",
+      "pos": "adj.",
+      "example": "Sorting through mundane paperwork is the least fun part of the job."
+    },
+    {
+      "lemma": "grit",
+      "phonetic": "/ɡrɪt/",
+      "zh": "毅力；勇气",
+      "pos": "n.",
+      "example": "It takes grit to keep going when everyone else has given up."
+    },
+    {
+      "lemma": "instill",
+      "phonetic": "/ɪnˈstɪl/",
+      "zh": "灌输；逐步培养",
+      "pos": "v.",
+      "example": "Parents should instill good habits in their children from an early age."
+    },
+    {
+      "lemma": "sift",
+      "phonetic": "/sɪft/",
+      "zh": "筛选；过滤",
+      "pos": "v.",
+      "example": "We need to sift through hundreds of applications to find the right candidate."
+    },
+    {
+      "lemma": "contend",
+      "phonetic": "/kənˈtend/",
+      "zh": "竞争；声称；主张",
+      "pos": "v.",
+      "example": "Three companies are contending for the same contract."
+    },
+    {
+      "lemma": "stature",
+      "phonetic": "/ˈstætʃər/",
+      "zh": "地位；声望；身高",
+      "pos": "n.",
+      "example": "The award elevated her stature in the industry."
+    },
+    {
+      "lemma": "attest",
+      "phonetic": "/əˈtest/",
+      "zh": "证明；证实",
+      "pos": "v.",
+      "example": "The positive reviews attest to the quality of the product."
+    },
+    {
+      "lemma": "contingent",
+      "phonetic": "/kənˈtɪndʒənt/",
+      "zh": "视…而定的；依条件的",
+      "pos": "adj.",
+      "example": "The funding is contingent on meeting the quarterly targets."
+    },
+    {
+      "lemma": "relish",
+      "phonetic": "/ˈrelɪʃ/",
+      "zh": "享受；津津有味",
+      "pos": "v./n.",
+      "example": "She relished every moment of her vacation abroad."
+    },
+    {
+      "lemma": "whisk",
+      "phonetic": "/wɪsk/",
+      "zh": "快速移动；搅打",
+      "pos": "v.",
+      "example": "She whisked the eggs and started making breakfast."
+    },
+    {
+      "lemma": "wrinkle",
+      "phonetic": "/ˈrɪŋkl/",
+      "zh": "皱纹；起皱；小问题",
+      "pos": "n./v.",
+      "example": "There's a small wrinkle in our plan we need to iron out."
+    },
+    {
+      "lemma": "pore",
+      "phonetic": "/pɔːr/",
+      "zh": "仔细研读；凝视",
+      "pos": "v.",
+      "example": "He pored over the data late into the night."
+    },
+    {
+      "lemma": "flair",
+      "phonetic": "/fler/",
+      "zh": "天赋；才华；风格",
+      "pos": "n.",
+      "example": "She has a flair for making complex topics easy to understand."
+    },
+    {
+      "lemma": "affable",
+      "phonetic": "/ˈæfəbl/",
+      "zh": "友善的；和蔼可亲的",
+      "pos": "adj.",
+      "example": "The new manager is affable and easy to talk to."
+    },
+    {
+      "lemma": "navigate",
+      "phonetic": "/ˈnævɪɡeɪt/",
+      "zh": "导航；浏览；应对",
+      "pos": "v.",
+      "example": "It takes skill to navigate the complex approval process in a large organization."
+    },
+    {
+      "lemma": "acquire",
+      "phonetic": "/əˈkwaɪər/",
+      "zh": "获得；收购",
+      "pos": "v.",
+      "example": "The company acquired a small startup to expand its AI capabilities."
+    },
+    {
+      "lemma": "incur",
+      "phonetic": "/ɪnˈkɜːr/",
+      "zh": "招致；引起",
+      "pos": "v.",
+      "example": "Late submissions may incur additional fees."
+    },
+    {
+      "lemma": "comprise",
+      "phonetic": "/kəmˈpraɪz/",
+      "zh": "由…组成；包含",
+      "pos": "v.",
+      "example": "The committee comprises representatives from five departments."
+    },
+    {
+      "lemma": "comprehend",
+      "phonetic": "/ˌkɑːmprɪˈhend/",
+      "zh": "理解；领悟",
+      "pos": "v.",
+      "example": "It's hard to comprehend how much the city has changed in ten years."
+    },
+    {
+      "lemma": "constitute",
+      "phonetic": "/ˈkɑːnstɪtuːt/",
+      "zh": "构成；组成",
+      "pos": "v.",
+      "example": "These three components constitute the core of the system."
+    },
+    {
+      "lemma": "deduce",
+      "phonetic": "/dɪˈduːs/",
+      "zh": "推断；演绎",
+      "pos": "v.",
+      "example": "From the footprints, the detective deduced that the suspect had left recently."
+    },
+    {
+      "lemma": "depict",
+      "phonetic": "/dɪˈpɪkt/",
+      "zh": "描绘；描述",
+      "pos": "v.",
+      "example": "The documentary depicts the daily lives of fishermen in a small village."
+    },
+    {
+      "lemma": "console",
+      "phonetic": "/kənˈsoʊl/",
+      "zh": "安慰；控制台",
+      "pos": "v./n.",
+      "example": "I tried to console my friend after she failed the interview."
+    },
+    {
+      "lemma": "boast",
+      "phonetic": "/boʊst/",
+      "zh": "自夸；拥有（值得骄傲的事物）",
+      "pos": "v./n.",
+      "example": "The hotel boasts a rooftop pool and a 24-hour gym."
+    },
+    {
+      "lemma": "deploy",
+      "phonetic": "/dɪˈplɔɪ/",
+      "zh": "部署；配置",
+      "pos": "v.",
+      "example": "We plan to deploy the new version to production tonight."
+    },
+    {
+      "lemma": "pioneer",
+      "phonetic": "/ˌpaɪəˈnɪr/",
+      "zh": "开创；先驱",
+      "pos": "v./n.",
+      "example": "She pioneered a new method for testing software."
+    },
+    {
+      "lemma": "ratify",
+      "phonetic": "/ˈrætɪfaɪ/",
+      "zh": "批准；正式认可",
+      "pos": "v.",
+      "example": "The board ratified the new policy at yesterday's meeting."
+    },
+    {
+      "lemma": "revert",
+      "phonetic": "/rɪˈvɜːrt/",
+      "zh": "恢复；回退到",
+      "pos": "v.",
+      "example": "If the fix doesn't work, we'll revert to the previous version."
+    },
+    {
+      "lemma": "wholesome",
+      "phonetic": "/ˈhoʊlsəm/",
+      "zh": "有益身心的；健康的",
+      "pos": "adj.",
+      "example": "We had a wholesome meal and went for a walk in the park."
+    },
+    {
+      "lemma": "weary",
+      "phonetic": "/ˈwɪri/",
+      "zh": "疲倦的；厌倦的",
+      "pos": "adj.",
+      "example": "After three days of negotiations, both sides were weary."
+    },
+    {
+      "lemma": "cozy",
+      "phonetic": "/ˈkoʊzi/",
+      "zh": "舒适的；温馨的",
+      "pos": "adj.",
+      "example": "I love reading a book in this cozy little cafe on rainy days."
+    },
+    {
+      "lemma": "nuance",
+      "phonetic": "/ˈnuːɑːns/",
+      "zh": "细微差别；微妙之处",
+      "pos": "n.",
+      "example": "There's a nuance in his tone that suggests he's not fully convinced."
+    },
+    {
+      "lemma": "stagnant",
+      "phonetic": "/ˈstæɡnənt/",
+      "zh": "停滞的；不发展的",
+      "pos": "adj.",
+      "example": "The market has been stagnant for the past three quarters."
+    },
+    {
+      "lemma": "condense",
+      "phonetic": "/kənˈdens/",
+      "zh": "浓缩；压缩",
+      "pos": "v.",
+      "example": "Can you condense the report into a one-page summary?"
+    },
+    {
+      "lemma": "persevere",
+      "phonetic": "/ˌpɜːrsəˈvɪr/",
+      "zh": "坚持不懈；不屈不挠",
+      "pos": "v.",
+      "example": "Despite repeated failures, she persevered until she found a solution."
+    },
+    {
+      "lemma": "amicable",
+      "phonetic": "/ˈæmɪkəbl/",
+      "zh": "友好的；和睦的",
+      "pos": "adj.",
+      "example": "We reached an amicable agreement without going to court."
+    },
+    {
+      "lemma": "convene",
+      "phonetic": "/kənˈviːn/",
+      "zh": "召集；聚集",
+      "pos": "v.",
+      "example": "The board will convene next Monday to discuss the merger."
+    },
+    {
+      "lemma": "imperative",
+      "phonetic": "/ɪmˈperətɪv/",
+      "zh": "必要的；紧急的",
+      "pos": "adj.",
+      "example": "It is imperative that we fix this bug before the release."
+    },
+    {
+      "lemma": "cherish",
+      "phonetic": "/ˈtʃerɪʃ/",
+      "zh": "珍惜；珍爱",
+      "pos": "v.",
+      "example": "I cherish the memories of traveling with my family."
+    },
+    {
+      "lemma": "deplore",
+      "phonetic": "/dɪˈplɔːr/",
+      "zh": "强烈反对；谴责",
+      "pos": "v.",
+      "example": "The company deplored the data breach and promised to improve security."
+    },
+    {
+      "lemma": "tinker",
+      "phonetic": "/ˈtɪŋkər/",
+      "zh": "修补；摆弄",
+      "pos": "v.",
+      "example": "He spent the weekend tinkering with his motorcycle in the garage."
+    },
+    {
+      "lemma": "stringent",
+      "phonetic": "/ˈstrɪndʒənt/",
+      "zh": "严格的；严苛的",
+      "pos": "adj.",
+      "example": "The factory must follow stringent safety regulations."
+    },
+    {
+      "lemma": "shrewd",
+      "phonetic": "/ʃruːd/",
+      "zh": "精明的；敏锐的",
+      "pos": "adj.",
+      "example": "She made a shrewd investment that tripled in two years."
+    },
+    {
+      "lemma": "mellow",
+      "phonetic": "/ˈmeloʊ/",
+      "zh": "柔和的；醇厚的",
+      "pos": "adj.",
+      "example": "The wine has a mellow flavor after ten years of aging."
+    },
+    {
+      "lemma": "solicit",
+      "phonetic": "/səˈlɪsɪt/",
+      "zh": "征求；恳求",
+      "pos": "v.",
+      "example": "We sent out a survey to solicit feedback from all customers."
+    },
+    {
+      "lemma": "waive",
+      "phonetic": "/weɪv/",
+      "zh": "放弃（权利）；免除",
+      "pos": "v.",
+      "example": "The bank agreed to waive the late fee as a one-time courtesy."
+    },
+    {
+      "lemma": "influx",
+      "phonetic": "/ˈɪnflʌks/",
+      "zh": "涌入；流入",
+      "pos": "n.",
+      "example": "The marketing campaign led to a huge influx of new users."
+    },
+    {
+      "lemma": "warrant",
+      "phonetic": "/ˈwɔːrənt/",
+      "zh": "值得；保证；搜查令",
+      "pos": "v./n.",
+      "example": "This issue warrants immediate attention from the leadership team."
+    },
+    {
+      "lemma": "utensil",
+      "phonetic": "/juːˈtensl/",
+      "zh": "器具；餐具",
+      "pos": "n.",
+      "example": "We bought some new kitchen utensils for the new apartment."
+    },
+    {
+      "lemma": "adorn",
+      "phonetic": "/əˈdɔːrn/",
+      "zh": "装饰；装扮",
+      "pos": "v.",
+      "example": "She adorned the living room with flowers for the party."
+    },
+    {
+      "lemma": "nourish",
+      "phonetic": "/ˈnɜːrɪʃ/",
+      "zh": "滋养；养育",
+      "pos": "v.",
+      "example": "Good books nourish the mind just as food nourishes the body."
+    },
+    {
+      "lemma": "concede",
+      "phonetic": "/kənˈsiːd/",
+      "zh": "承认；让步",
+      "pos": "v.",
+      "example": "After seeing the data, he had to concede that his plan was flawed."
+    },
+    {
+      "lemma": "detract",
+      "phonetic": "/dɪˈtrækt/",
+      "zh": "贬低；减损",
+      "pos": "v.",
+      "example": "The typos detract from the overall quality of the report."
+    },
+    {
+      "lemma": "bestow",
+      "phonetic": "/bɪˈstoʊ/",
+      "zh": "赐予；授予",
+      "pos": "v.",
+      "example": "The university bestowed an honorary degree on the famous scientist."
+    },
+    {
+      "lemma": "elicit",
+      "phonetic": "/ɪˈlɪsɪt/",
+      "zh": "引出；诱出",
+      "pos": "v.",
+      "example": "The survey was designed to elicit honest feedback from employees."
+    },
+    {
+      "lemma": "impart",
+      "phonetic": "/ɪmˈpɑːrt/",
+      "zh": "传授；赋予",
+      "pos": "v.",
+      "example": "Good teachers impart not just knowledge but also curiosity."
+    },
+    {
+      "lemma": "unanimous",
+      "phonetic": "/juːˈnænɪməs/",
+      "zh": "一致的；全体同意的",
+      "pos": "adj.",
+      "example": "The board reached a unanimous decision to approve the merger."
+    },
+    {
+      "lemma": "slump",
+      "phonetic": "/slʌmp/",
+      "zh": "暴跌；萧条",
+      "pos": "v./n.",
+      "example": "Sales slumped during the off-season but recovered in December."
+    },
+    {
+      "lemma": "dispel",
+      "phonetic": "/dɪˈspel/",
+      "zh": "消除；驱散",
+      "pos": "v.",
+      "example": "The manager held a quick meeting to dispel rumors about layoffs."
+    },
+    {
+      "lemma": "subdue",
+      "phonetic": "/səbˈduː/",
+      "zh": "压制；使屈服",
+      "pos": "v.",
+      "example": "It took the team hours to subdue the server outage."
+    },
+    {
+      "lemma": "plight",
+      "phonetic": "/plaɪt/",
+      "zh": "困境；苦境",
+      "pos": "n.",
+      "example": "The documentary highlights the plight of migrant workers."
+    },
+    {
+      "lemma": "taint",
+      "phonetic": "/teɪnt/",
+      "zh": "污染；玷污",
+      "pos": "v./n.",
+      "example": "The scandal tainted the company's reputation for years."
+    },
+    {
+      "lemma": "sanctuary",
+      "phonetic": "/ˈsæŋktʃueri/",
+      "zh": "避难所；庇护所",
+      "pos": "n.",
+      "example": "The national park is a sanctuary for endangered species."
+    },
+    {
+      "lemma": "muster",
+      "phonetic": "/ˈmʌstər/",
+      "zh": "鼓起；集结",
+      "pos": "v.",
+      "example": "She mustered the courage to speak up in the meeting."
+    },
+    {
+      "lemma": "caveat",
+      "phonetic": "/ˈkæviæt/",
+      "zh": "警告；附加说明；注意事项",
+      "pos": "n.",
+      "example": "There's one caveat to this plan: we need more time for testing."
+    },
+    {
+      "lemma": "apprise",
+      "phonetic": "/əˈpraɪz/",
+      "zh": "告知；通知；报告",
+      "pos": "v.",
+      "example": "Please apprise the team of any changes to the schedule."
+    },
+    {
+      "lemma": "formidable",
+      "phonetic": "/ˈfɔːrmɪdəbl/",
+      "zh": "强大的；令人敬畏的",
+      "pos": "adj.",
+      "example": "She is a formidable competitor in the industry."
+    },
+    {
+      "lemma": "substantiate",
+      "phonetic": "/səbˈstænʃieɪt/",
+      "zh": "证实；证明",
+      "pos": "v.",
+      "example": "Can you substantiate your claims with data?"
+    },
+    {
+      "lemma": "vex",
+      "phonetic": "/veks/",
+      "zh": "烦扰；使恼怒",
+      "pos": "v.",
+      "example": "The constant notifications vexed me during the meeting."
+    },
+    {
+      "lemma": "succumb",
+      "phonetic": "/səˈkʌm/",
+      "zh": "屈服；屈服于",
+      "pos": "v.",
+      "example": "After hours of negotiation, he succumbed to their demands."
+    },
+    {
+      "lemma": "languish",
+      "phonetic": "/ˈlæŋɡwɪʃ/",
+      "zh": "衰退；受苦；被搁置",
+      "pos": "v.",
+      "example": "The project languished for months without funding."
+    },
+    {
+      "lemma": "fraught",
+      "phonetic": "/frɔːt/",
+      "zh": "充满…的；令人担忧的",
+      "pos": "adj.",
+      "example": "The negotiation was fraught with tension from the start."
+    },
+    {
+      "lemma": "devoid",
+      "phonetic": "/dɪˈvɔɪd/",
+      "zh": "缺乏的；没有的",
+      "pos": "adj.",
+      "example": "His presentation was devoid of any concrete data."
+    },
+    {
+      "lemma": "akin",
+      "phonetic": "/əˈkɪn/",
+      "zh": "类似的；同种的",
+      "pos": "adj.",
+      "example": "Their approach is akin to what we tried last year."
     }
   ],
   "passages": [
@@ -2369,28 +5534,62 @@
       "title": "A Simple Morning Routine",
       "level": "A2",
       "body": "I wake up early and keep a quiet morning routine. First I stretch for a few minutes. Then I open my notebook and review five words. Small steps still mean progress. After that I make coffee and plan the day.",
-      "wordLemmas": ["routine", "quiet", "stretch", "notebook", "review", "progress", "habit", "focus"]
+      "wordLemmas": [
+        "routine",
+        "quiet",
+        "stretch",
+        "notebook",
+        "review",
+        "progress",
+        "habit",
+        "focus"
+      ]
     },
     {
       "slug": "subway-commute",
       "title": "On the Subway",
       "level": "A2",
       "body": "The subway is crowded in the morning. I wear headphones and listen to a short podcast. At the next station I transfer to another line. The ride takes twenty minutes. When I arrive I feel ready for work.",
-      "wordLemmas": ["subway", "crowded", "headphones", "podcast", "station", "transfer"]
+      "wordLemmas": [
+        "subway",
+        "crowded",
+        "headphones",
+        "podcast",
+        "station",
+        "transfer"
+      ]
     },
     {
       "slug": "weekend-cafe",
       "title": "Weekend at a Cafe",
       "level": "B1",
       "body": "On the weekend I meet a friend at a small cafe. We order a latte and sit at a table by the window. Our conversation is slow and relaxed. Sometimes we go to the library later to borrow a book from the shelf and return another one.",
-      "wordLemmas": ["weekend", "cafe", "order", "latte", "table", "conversation", "library", "borrow", "shelf", "return"]
+      "wordLemmas": [
+        "weekend",
+        "cafe",
+        "order",
+        "latte",
+        "table",
+        "conversation",
+        "library",
+        "borrow",
+        "shelf",
+        "return"
+      ]
     },
     {
       "slug": "streamlining-work",
       "title": "Streamlining Our Workflow",
       "level": "B1",
       "body": "Our team decided to streamline the approval process. We used to negotiate every detail by email, but now we give quick feedback in a shared document. We implemented the new workflow last month, and everyone says it is more convenient than before. We also cancelled a subscription we no longer needed. Small changes like these make a big difference.",
-      "wordLemmas": ["streamline", "negotiate", "feedback", "implement", "convenient", "subscription"]
+      "wordLemmas": [
+        "streamline",
+        "negotiate",
+        "feedback",
+        "implement",
+        "convenient",
+        "subscription"
+      ]
     }
   ]
 }
