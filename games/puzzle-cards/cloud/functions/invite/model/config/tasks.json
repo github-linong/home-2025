@@ -1,0 +1,34 @@
+{
+  "daily": [
+    {
+      "id": "task_01",
+      "name": "完成拼图",
+      "target": 3,
+      "metric": "levelClear",
+      "reward": {
+        "coins": 200
+      }
+    },
+    {
+      "id": "task_02",
+      "name": "获得卡牌",
+      "target": 2,
+      "metric": "newCard",
+      "reward": {
+        "shards": 2
+      }
+    },
+    {
+      "id": "task_03",
+      "name": "社交互动",
+      "target": 1,
+      "metric": "social",
+      "reward": {
+        "puzzleChances": 1
+      }
+    }
+  ],
+  "allCompleteBonus": {
+    "coins": 100
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "puzzle-cards",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "拼拼卡微信小游戏 · 后端算法与云函数（CommonJS，匹配微信云开发运行时）",
+  "scripts": {
+    "gen": "node scripts/gen-config.mjs",
+    "bundle": "node scripts/bundle-functions.mjs",
+    "test": "node --test test/*.test.cjs"
+  },
+  "creator": {
+    "version": "3.8.8"
+  },
+  "uuid": "6e42efb8-a470-428c-8afe-9f2a7dee2a40"
+}

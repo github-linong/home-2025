@@ -78,6 +78,42 @@ const JOBS = [
     },
   },
   {
+    slug: "pinpin",
+    url: "/demos/pinpin/",
+    waitMs: 1200,
+    title: "拼拼卡 · PinPin 拼图",
+    badge: "新作",
+    beforeShot: async (page) => {
+      // 等 Phaser 加载完成并进入菜单
+      await page
+        .waitForFunction(
+          () => {
+            const canvas = document.querySelector("#pinpin-game canvas");
+            return Boolean(canvas && canvas.width > 64 && canvas.height > 64);
+          },
+          { timeout: 15000 },
+        )
+        .catch(() => {});
+      await new Promise((r) => setTimeout(r, 1500));
+      // 点击"开始拼图"，进入游戏场景展示碎片
+      await page.evaluate(() => {
+        const canvas = document.querySelector("#pinpin-game canvas");
+        if (!canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        // 开始按钮在菜单 59% 高度附近居中
+        const x = rect.left + rect.width * 0.5;
+        const y = rect.top + rect.height * 0.59;
+        canvas.dispatchEvent(
+          new MouseEvent("pointerdown", { bubbles: true, clientX: x, clientY: y }),
+        );
+        canvas.dispatchEvent(
+          new MouseEvent("pointerup", { bubbles: true, clientX: x, clientY: y }),
+        );
+      });
+      await new Promise((r) => setTimeout(r, 1200));
+    },
+  },
+  {
     slug: "ai-image-gen",
     url: "/demos/image-gen/",
     waitMs: 1500,

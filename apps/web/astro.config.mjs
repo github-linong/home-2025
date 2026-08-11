@@ -34,7 +34,7 @@ export default defineConfig({
     server: {
       // Whole-site demos are large static trees; watching them stalls the dev server.
       watch: {
-        ignored: ['**/public/demos/project/**', '**/public/demos/pdf/**'],
+        ignored: ['**/public/demos/project/**', '**/public/demos/pdf/**', '**/public/demos/pinpin/**'],
       },
       proxy: {
         '/static': {
@@ -71,6 +71,8 @@ export default defineConfig({
               '/ws/poker': { target: 'ws://127.0.0.1:3003', ws: true, changeOrigin: true },
               '/ws/wander': { target: 'ws://127.0.0.1:3004', ws: true, changeOrigin: true },
               '/ws/chat': { target: 'ws://127.0.0.1:3005', ws: true, changeOrigin: true },
+              '/ws/jianghu': { target: 'ws://127.0.0.1:3011', ws: true, changeOrigin: true },
+              '/ws/dungeon': { target: 'ws://127.0.0.1:3010', ws: true, changeOrigin: true },
             }
           : {
               '/api/demo': { target: 'https://www.lilnong.top', changeOrigin: true, ws: true, agent: proxyAgent },
@@ -78,6 +80,8 @@ export default defineConfig({
               '/ws/poker': { target: 'https://www.lilnong.top', ws: true, changeOrigin: true, agent: proxyAgent },
               '/ws/wander': { target: 'https://www.lilnong.top', ws: true, changeOrigin: true, agent: proxyAgent },
               '/ws/chat': { target: 'https://www.lilnong.top', ws: true, changeOrigin: true, agent: proxyAgent },
+              '/ws/jianghu': { target: 'https://www.lilnong.top', ws: true, changeOrigin: true, agent: proxyAgent },
+              '/ws/dungeon': { target: 'https://www.lilnong.top', ws: true, changeOrigin: true, agent: proxyAgent },
             }),
         // Legacy API (api)
         '/api': {

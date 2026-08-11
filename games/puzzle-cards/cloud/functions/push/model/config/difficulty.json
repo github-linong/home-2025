@@ -1,0 +1,102 @@
+[
+  {
+    "stars": 1,
+    "pieceCount": 4,
+    "shape": "rect",
+    "refMode": "always",
+    "stdTimeSec": 30,
+    "timeLimitSec": 0,
+    "distractors": 0,
+    "rotatable": false
+  },
+  {
+    "stars": 2,
+    "pieceCount": 9,
+    "shape": "rect",
+    "refMode": "first5s",
+    "stdTimeSec": 60,
+    "timeLimitSec": 0,
+    "distractors": 0,
+    "rotatable": false
+  },
+  {
+    "stars": 3,
+    "pieceCount": 16,
+    "shape": "rounded",
+    "refMode": "first5s",
+    "stdTimeSec": 90,
+    "timeLimitSec": 0,
+    "distractors": 1,
+    "rotatable": false
+  },
+  {
+    "stars": 4,
+    "pieceCount": 25,
+    "shape": "rounded",
+    "refMode": "none",
+    "stdTimeSec": 120,
+    "timeLimitSec": 180,
+    "distractors": 2,
+    "rotatable": false
+  },
+  {
+    "stars": 5,
+    "pieceCount": 36,
+    "shape": "rounded",
+    "refMode": "none",
+    "stdTimeSec": 150,
+    "timeLimitSec": 150,
+    "distractors": 3,
+    "rotatable": false
+  },
+  {
+    "stars": 6,
+    "pieceCount": 49,
+    "shape": "irregular",
+    "refMode": "none",
+    "stdTimeSec": 200,
+    "timeLimitSec": 120,
+    "distractors": 3,
+    "rotatable": false
+  },
+  {
+    "stars": 7,
+    "pieceCount": 64,
+    "shape": "irregular",
+    "refMode": "none",
+    "stdTimeSec": 260,
+    "timeLimitSec": 120,
+    "distractors": 4,
+    "rotatable": false
+  },
+  {
+    "stars": 8,
+    "pieceCount": 81,
+    "shape": "irregular",
+    "refMode": "none",
+    "stdTimeSec": 330,
+    "timeLimitSec": 100,
+    "distractors": 4,
+    "rotatable": false
+  },
+  {
+    "stars": 9,
+    "pieceCount": 100,
+    "shape": "irregular",
+    "refMode": "none",
+    "stdTimeSec": 410,
+    "timeLimitSec": 90,
+    "distractors": 5,
+    "rotatable": true
+  },
+  {
+    "stars": 10,
+    "pieceCount": 144,
+    "shape": "irregular",
+    "refMode": "none",
+    "stdTimeSec": 600,
+    "timeLimitSec": 90,
+    "distractors": 6,
+    "rotatable": true
+  }
+]

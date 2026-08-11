@@ -1,0 +1,22 @@
+# 依赖微信云开发，本地忽略构建产物与密钥
+node_modules/
+.DS_Store
+*.log
+
+# Cocos Creator 构建产物（由 Cocos 导出到小游戏工程）
+build/
+dist/
+library/
+local/
+temp/
+profiles/
+settings/*.json.local
+
+# 微信开发者工具本地缓存
+miniprogram_npm/
+.wechatide/
+
+# 环境变量 / 密钥
+.env
+.env.local
+private.*.key

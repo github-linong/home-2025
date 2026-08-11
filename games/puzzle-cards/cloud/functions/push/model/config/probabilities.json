@@ -1,0 +1,115 @@
+{
+  "baseByStars": {
+    "1": {
+      "N": 95,
+      "R": 5,
+      "SR": 0,
+      "SSR": 0
+    },
+    "2": {
+      "N": 80,
+      "R": 18,
+      "SR": 2,
+      "SSR": 0
+    },
+    "3": {
+      "N": 60,
+      "R": 35,
+      "SR": 5,
+      "SSR": 0
+    },
+    "4": {
+      "N": 40,
+      "R": 50,
+      "SR": 9,
+      "SSR": 1
+    },
+    "5": {
+      "N": 20,
+      "R": 60,
+      "SR": 18,
+      "SSR": 2
+    },
+    "6": {
+      "N": 5,
+      "R": 45,
+      "SR": 45,
+      "SSR": 5
+    },
+    "7": {
+      "N": 0,
+      "R": 30,
+      "SR": 55,
+      "SSR": 15
+    },
+    "8": {
+      "N": 0,
+      "R": 15,
+      "SR": 60,
+      "SSR": 25
+    },
+    "9": {
+      "N": 0,
+      "R": 5,
+      "SR": 55,
+      "SSR": 40
+    },
+    "10": {
+      "N": 0,
+      "R": 0,
+      "SR": 40,
+      "SSR": 55
+    },
+    "hidden": {
+      "N": 0,
+      "R": 0,
+      "SR": 0,
+      "SSR": 95
+    }
+  },
+  "maxRarityByStars": {
+    "1": "R",
+    "2": "SR",
+    "3": "SR",
+    "4": "SSR",
+    "5": "SSR",
+    "6": "SSR",
+    "7": "SSR",
+    "8": "SSR",
+    "9": "SSR",
+    "10": "SSR",
+    "hidden": "SSR"
+  },
+  "starBonusPct": {
+    "2": 5,
+    "3": 15
+  },
+  "firstClearBonusPct": 10,
+  "bossMinRarity": "SR",
+  "hiddenChance": 0.05,
+  "pity": {
+    "threshold": 5,
+    "forceMaxRarity": true
+  },
+  "dailyLimit": {
+    "positionHint": 3,
+    "autoPlace": 2,
+    "refHint": 3
+  },
+  "shards": {
+    "duplicateToShards": {
+      "N": 2,
+      "R": 5,
+      "SR": 15,
+      "SSR": 50,
+      "HIDDEN": 0
+    },
+    "exchangeCost": {
+      "N": 10,
+      "R": 30,
+      "SR": 80,
+      "SSR": 200,
+      "HIDDEN": -1
+    }
+  }
+}

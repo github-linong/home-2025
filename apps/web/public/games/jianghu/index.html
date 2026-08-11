@@ -1,0 +1,3429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
+<title>江湖 jianghu · 浏览器试玩版（C2）</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0d0f13; color: #e8e4d8;
+    font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+
+  /* ── HUD 顶栏 ── */
+  #hud { position: absolute; top: 0; left: 0; right: 0; padding: 8px 12px; z-index: 10;
+    background: linear-gradient(rgba(10,12,16,.92), rgba(10,12,16,.55));
+    display: flex; align-items: center; gap: 16px; font-size: 13px; pointer-events: none; flex-wrap: wrap; }
+  #hud .sep { color: #444; }
+  #status { color: #fa0; font-weight: 700; }
+  #status.ok { color: #5fd0e0; }
+  #status.err { color: #f44; }
+  #hpwrap { display: inline-flex; align-items: center; gap: 6px; }
+  #hpbar { width: 110px; height: 8px; background: #301a1a; border: 1px solid #553; border-radius: 3px; overflow: hidden; }
+  #hpfill { height: 100%; width: 100%; background: linear-gradient(90deg, #c8324a, #f2a03c); transition: width .15s; }
+  #level { color: #f2a03c; font-weight: 700; }
+  #skillcd-hud { color: #9fd; }
+  /* ── E17 队伍提示（队友名牌同色）── */
+  #party-hud { color: #f2a03c; font-weight: 700; }
+
+  /* ── E9 底部经验条（当前 xp/xpNext）── */
+  #xpbar { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 10;
+    width: 340px; height: 12px; background: rgba(12,14,20,.88); border: 1px solid #5f8fb0;
+    border-radius: 6px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.5); }
+  #xpfill { height: 100%; width: 0%; background: linear-gradient(90deg, #4f8fc0, #5fd0e0, #f2a03c); transition: width .25s; }
+  #xptext { position: absolute; inset: 0; text-align: center; font-size: 9px; line-height: 12px;
+    color: #e8e4d8; text-shadow: 0 1px 2px #000; letter-spacing: .5px; }
+  .btn { pointer-events: auto; cursor: pointer; }
+  #btn-inv { border: 1px solid #4a5568; padding: 3px 9px; border-radius: 6px; background: rgba(18,22,30,.9); user-select: none; }
+  #btn-inv:hover { border-color: #f2a03c; color: #f2a03c; }
+  #btn-inv.on { border-color: #f2a03c; color: #f2a03c; box-shadow: 0 0 8px rgba(242,160,60,.5); }
+
+  /* ── E12 音效控件（静音按钮 + 音量滑块）── */
+  #btn-sfx { border: 1px solid #4a5568; padding: 3px 9px; border-radius: 6px; background: rgba(18,22,30,.9); user-select: none; }
+  #btn-sfx:hover { border-color: #5fd0e0; }
+  #btn-sfx.off { opacity: .45; border-color: #7a8699; }
+  .sfx-vol { display: inline-flex; align-items: center; gap: 4px; border: 1px solid #4a5568; padding: 2px 8px; border-radius: 6px; background: rgba(18,22,30,.9); cursor: pointer; }
+  .sfx-vol:hover { border-color: #5fd0e0; }
+  #sfx-vol { width: 64px; accent-color: #5fd0e0; }
+
+  /* ── E14 登录按钮 + 登录/注册面板 ── */
+  #btn-login { border: 1px solid #4a5568; padding: 3px 9px; border-radius: 6px; background: rgba(18,22,30,.9); user-select: none; }
+  #btn-login:hover { border-color: #f2a03c; color: #f2a03c; }
+  #btn-login.logged { border-color: #3f8f5f; color: #7fd09a; }
+  #loginpanel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 300px; z-index: 35; display: none;
+    background: rgba(12,14,20,.97); border: 1px solid #4a5568; border-radius: 10px; padding: 16px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.6); }
+  #loginpanel.open { display: block; }
+  #loginpanel h3 { margin-bottom: 10px; font-size: 15px; color: #f2a03c; }
+  #loginpanel input { width: 100%; margin-bottom: 8px; padding: 7px 9px; border: 1px solid #4a5568; border-radius: 6px;
+    background: rgba(18,22,30,.9); color: #e8e4d8; font-size: 13px; }
+  #loginpanel input:focus { outline: none; border-color: #5fd0e0; }
+  #login-row { display: flex; gap: 8px; margin-top: 4px; }
+  #loginpanel .lbtn { flex: 1; border: 1px solid #4a5568; background: rgba(40,48,64,.9); color: #e8e4d8; border-radius: 6px;
+    padding: 6px 0; font-size: 13px; cursor: pointer; user-select: none; }
+  #loginpanel .lbtn.primary { border-color: #5f8fb0; background: rgba(30,50,80,.9); }
+  #loginpanel .lbtn:hover { border-color: #f2a03c; color: #f2a03c; }
+  #login-close { position: absolute; right: 8px; top: 8px; cursor: pointer; border: 1px solid #4a5568; background: transparent;
+    color: #aab; border-radius: 6px; padding: 1px 8px; font-size: 12px; }
+  #login-close:hover { color: #fff; border-color: #f44; }
+  #loginpanel .hint { font-size: 11px; color: #7a8699; margin-top: 8px; line-height: 1.5; }
+
+  /* ── 底部技能栏 ── */
+  #actionbar { position: absolute; left: 12px; bottom: 12px; z-index: 10; display: flex; gap: 8px; align-items: flex-end; }
+  .abtn { width: 58px; height: 58px; border-radius: 8px; border: 1px solid #4a5568; background: rgba(18,22,30,.92);
+    color: #e8e4d8; font-size: 15px; font-weight: 700; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; cursor: pointer; user-select: none; position: relative; transition: transform .06s, border-color .12s; }
+  .abtn:hover { border-color: #5fd0e0; transform: translateY(-2px); }
+  .abtn:active { transform: translateY(0); }
+  .abtn .key { font-size: 10px; color: #7a8699; font-weight: 500; }
+  .abtn .sname { font-size: 13px; color: #e8e4d8; line-height: 1.1; }
+
+  /* ── C3 技能悬停 tooltip（名称/描述/伤害/范围/CD）── */
+  #skill-tip { position: fixed; z-index: 40; display: none; background: rgba(14,16,24,.97);
+    border: 1px solid #5f8fb0; border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #e8e4d8;
+    pointer-events: none; box-shadow: 0 6px 20px rgba(0,0,0,.6); max-width: 260px; line-height: 1.6; }
+  #skill-tip .t-name { font-size: 14px; font-weight: 700; color: #f2a03c; }
+  #skill-tip .t-desc { color: #aab; margin-bottom: 4px; }
+  #skill-tip .t-meta { color: #9fd; font-size: 11px; }
+  .abtn .cd { position: absolute; inset: 0; border-radius: 8px; background: rgba(8,10,14,.78); color: #f2a03c;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  .abtn.parry { width: 68px; height: 68px; border-color: #5f8fb0; }
+  .abtn.parry.active { border-color: #5fd0e0; box-shadow: 0 0 12px rgba(95,208,224,.7); color: #5fd0e0; }
+  .abtn.dungeon { width: auto; min-width: 92px; height: 44px; padding: 0 12px; flex-direction: row; gap: 8px; font-size: 13px;
+    border-color: #7d5fa0; color: #cbb; }
+  .abtn.dungeon:disabled { opacity: .4; cursor: not-allowed; }
+  /* ── E21 药水槽（Q 疗伤药；绿色主题 + 数量 + CD 环）── */
+  .abtn.potion { width: 66px; height: 66px; border-color: #4e8a5a; color: #d8f0d0; }
+  .abtn.potion:hover { border-color: #5fd08a; }
+  .abtn.potion.active { border-color: #5fd08a; box-shadow: 0 0 12px rgba(95,208,138,.7); }
+  .abtn.potion .sname { font-size: 12px; }
+  .abtn.potion .pcount { font-size: 11px; color: #8fd8a0; font-weight: 700; line-height: 1; margin-top: 1px; }
+  .abtn.potion.zero { opacity: .5; }
+
+  /* ── Toast（顶部）── */
+  #toast { position: absolute; top: 52px; left: 50%; transform: translateX(-50%); z-index: 20;
+    background: rgba(20,16,30,.95); border: 1px solid #7d5fa0; color: #e8e4d8; padding: 8px 16px;
+    border-radius: 8px; font-size: 13px; display: none; max-width: 70vw; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,.5); }
+  #toast.err { border-color: #c8324a; background: rgba(40,12,16,.95); }
+
+  /* ── 拾取 toast（屏幕下方，C2）── */
+  #pickup-toast { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 21;
+    background: rgba(14,12,22,.94); border: 1px solid #5f8fb0; color: #e8e4d8; padding: 6px 14px;
+    border-radius: 10px; font-size: 13px; display: none; box-shadow: 0 4px 14px rgba(0,0,0,.55);
+    white-space: nowrap; }
+  #pickup-toast .r { font-weight: 700; }
+
+  /* ── 背包面板（C2）── */
+  #invpanel { position: absolute; right: 16px; top: 64px; width: 320px; z-index: 30; display: none;
+    background: rgba(12,14,20,.96); border: 1px solid #4a5568; border-radius: 10px; padding: 10px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.6); }
+  #invpanel.open { display: block; }
+  #inv-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  #inv-title { font-weight: 700; font-size: 14px; }
+  #inv-count { color: #7a8699; font-size: 12px; margin-left: 6px; }
+  #inv-close { cursor: pointer; border: 1px solid #4a5568; background: transparent; color: #aab; border-radius: 6px;
+    padding: 2px 8px; font-size: 12px; }
+  #inv-close:hover { color: #fff; border-color: #f44; }
+  #inv-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; max-height: 320px; overflow-y: auto; }
+  .inv-cell { border: 2px solid #666; border-radius: 6px; padding: 4px 2px; text-align: center; background: rgba(30,34,44,.7); }
+  .inv-id { font-size: 10px; color: #ddd; font-weight: 700; word-break: break-all; }
+  .inv-meta { font-size: 9px; color: #9aa; margin-top: 2px; }
+  #inv-empty { color: #7a8699; text-align: center; padding: 18px 0; font-size: 13px; }
+
+  /* ── E7 装备栏 + 属性面板 ── */
+  #attr-panel { margin-bottom: 8px; border: 1px solid #3a4250; border-radius: 8px; padding: 6px 8px; font-size: 12px;
+    display: flex; gap: 16px; background: rgba(18,22,30,.7); color: #aab; flex-wrap: wrap; }
+  #attr-panel b { color: #f2a03c; }
+  #inv-equip { display: flex; gap: 6px; margin-bottom: 8px; }
+  .equip-slot { flex: 1; border: 2px solid #4a5568; border-radius: 8px; padding: 5px 3px; text-align: center;
+    background: rgba(30,34,44,.7); cursor: pointer; user-select: none; }
+  .equip-slot:hover { border-color: #5fd0e0; }
+  .equip-slot .slot-label { font-size: 9px; color: #9aa; display: block; margin-bottom: 2px; }
+  .equip-slot .slot-item { font-size: 10px; font-weight: 700; word-break: break-all; }
+  .equip-slot.empty .slot-item { color: #556; }
+  .equip-slot .slot-action { font-size: 9px; color: #7a8699; display: block; margin-top: 2px; }
+  .equip-slot.filled:hover .slot-action { color: #f2a03c; }
+  .equip-btn { margin-top: 3px; font-size: 10px; border: 1px solid #4a5568; background: rgba(40,48,64,.9);
+    color: #e8e4d8; border-radius: 5px; padding: 1px 8px; cursor: pointer; }
+  .equip-btn:hover { border-color: #f2a03c; color: #f2a03c; }
+  /* ── E19 强化：强化按钮 + 材料显示 ── */
+  .enchant-btn { margin-top: 3px; font-size: 10px; border: 1px solid #7a5c2e; background: rgba(64,48,24,.9);
+    color: #e8d8b0; border-radius: 5px; padding: 1px 8px; cursor: pointer; }
+  .enchant-btn:hover:not(:disabled) { border-color: #f2a03c; color: #f2a03c; }
+  .enchant-btn:disabled { opacity: .45; cursor: not-allowed; border-color: #3a4250; color: #7a8699; }
+  /* ── E22 分解：分解按钮（与装备/强化并列）── */
+  .disassemble-btn { margin-top: 3px; font-size: 10px; border: 1px solid #5a3a5e; background: rgba(56,32,52,.9);
+    color: #e8d8d8; border-radius: 5px; padding: 1px 8px; cursor: pointer; }
+  .disassemble-btn:hover { border-color: #e07ab8; color: #e07ab8; }
+  #inv-materials { margin-bottom: 6px; font-size: 11px; color: #e8d8b0; border: 1px solid #3a4250;
+    border-radius: 6px; padding: 3px 8px; background: rgba(30,26,18,.55); }
+  #inv-materials b { color: #f2a03c; }
+
+  /* ── 帮助 ── */
+  #help { position: absolute; right: 12px; bottom: 12px; z-index: 10; color: #7a8699; font-size: 11px;
+    text-align: right; line-height: 1.7; pointer-events: none; text-shadow: 0 1px 3px #000; }
+  #help b { color: #aab; }
+</style>
+</head>
+<body>
+<div id="hud">
+  <span id="status">连接中…</span>
+  <span class="sep">|</span>
+  <span id="room">房间:-</span>
+  <span class="sep">|</span>
+  <span id="tick">tick:-</span>
+  <span class="sep">|</span>
+  <span id="ents">entities:0</span>
+  <span class="sep">|</span>
+  <span id="hpwrap"><span id="hp">HP:-</span><span id="hpbar"><span id="hpfill"></span></span></span>
+  <span id="parryhud"></span>
+  <span id="skillcd-hud"></span>
+  <span id="party-hud"></span>
+  <span class="sep">|</span>
+  <span id="level">Lv.-</span>
+  <span class="btn" id="btn-inv" title="背包（I）">背包 [I]</span>
+  <span class="btn" id="btn-sfx" title="音效开关（点击静音/恢复）">🔊</span>
+  <label class="btn sfx-vol" title="音效音量"><span id="sfx-vol-ico">🔉</span><input type="range" id="sfx-vol" min="0" max="100" value="50"></label>
+  <span class="btn" id="btn-login" title="登录（邮箱+密码；游客可跳过直接玩）">登录</span>
+</div>
+<canvas id="game"></canvas>
+
+<div id="xpbar"><div id="xpfill"></div><span id="xptext">0/0</span></div>
+
+<div id="actionbar">
+  <div class="abtn" id="btn-skill-0" data-skill="0" title="烈斩（键 1）"><span class="sname">烈斩</span><span class="key">1</span></div>
+  <div class="abtn" id="btn-skill-1" data-skill="1" title="剑气（键 2）"><span class="sname">剑气</span><span class="key">2</span></div>
+  <div class="abtn" id="btn-skill-2" data-skill="2" title="震地（键 3）"><span class="sname">震地</span><span class="key">3</span></div>
+  <div class="abtn" id="btn-skill-3" data-skill="3" title="破军（键 4）"><span class="sname">破军</span><span class="key">4</span></div>
+  <div class="abtn parry" id="btn-parry" title="格挡（空格）"><span>格挡</span><span class="key">SPACE</span></div>
+  <!-- E21：药水槽（Q 喝药；击杀精英/BOSS 掉落，普通怪概率；回血 30% maxHp + 5s CD） -->
+  <div class="abtn potion" id="btn-potion" title="疗伤药（Q）· 回血 30% 生命上限 · CD 5s"><span class="sname">疗伤药</span><span class="key">Q</span><span class="pcount" id="potion-count">×0</span></div>
+  <div class="abtn dungeon" id="btn-dungeon" title="进副本 / 出本（F）"><span id="btn-dungeon-label">进副本</span><span class="key">F</span></div>
+</div>
+
+<div id="toast"></div>
+<div id="pickup-toast"></div>
+<div id="skill-tip"></div>
+<div id="invpanel">
+  <div id="inv-head">
+    <span id="inv-title">背包 <span id="inv-count">0/60</span></span>
+    <button id="inv-close">✕</button>
+  </div>
+  <!-- E19：强化石计数（材料独立于背包；character.inventory.materials 推送） -->
+  <div id="inv-materials">强化石 ×<b id="inv-materials-count">0</b></div>
+  <!-- E7：属性面板（攻击/生命/暴击，来自快照 attrs） -->
+  <div id="attr-panel">
+    <span>攻击 <b id="attr-atk">-</b></span>
+    <span>生命 <b id="attr-hp">-</b></span>
+    <span>暴击 <b id="attr-crit">-</b></span>
+  </div>
+  <!-- E7：3 槽装备栏（点击已穿槽位卸下） -->
+  <div id="inv-equip">
+    <div class="equip-slot empty" id="slot-weapon" data-slot="weapon"><span class="slot-label">武器</span><span class="slot-item">—</span><span class="slot-action"></span></div>
+    <div class="equip-slot empty" id="slot-armor" data-slot="armor"><span class="slot-label">护甲</span><span class="slot-item">—</span><span class="slot-action"></span></div>
+    <div class="equip-slot empty" id="slot-trin" data-slot="trinket"><span class="slot-label">饰品</span><span class="slot-item">—</span><span class="slot-action"></span></div>
+  </div>
+  <div id="inv-grid"><div id="inv-empty">空</div></div>
+</div>
+
+<!-- E14：登录/注册面板（游客可关闭跳过；登录成功 → 服务端 session_token → ws 重连） -->
+<div id="loginpanel">
+  <button id="login-close" title="关闭（游客可继续玩）">✕</button>
+  <h3>登录江湖</h3>
+  <input id="login-email" type="email" placeholder="邮箱" autocomplete="email">
+  <input id="login-pass" type="password" placeholder="密码" autocomplete="current-password">
+  <div id="login-row">
+    <button class="lbtn primary" id="btn-login-submit">登录</button>
+    <button class="lbtn" id="btn-login-register">注册</button>
+  </div>
+  <div class="hint">游客可直接关闭面板游玩（拾取/装备不保存）。注册需 api2 配置邀请码。</div>
+</div>
+
+<div id="help">
+  <b>左键点敌人</b> 自动走近普攻 · <b>左键点地面</b> 点击移动 · <b>WASD/方向键</b> 移动（8 向） · <b>空格</b> 格挡 · <b>1-4</b> 技能（<b>烈斩/剑气/震地/破军</b>） · <b>Q</b> 喝药（回 30% 生命，5s CD） · <b>I</b> 背包<br>
+  <b>F</b> 进副本/出本 · 靠近掉落自动拾取 · BOSS 死后按 <b>F</b> 开「战利品宝箱」 · <b>滚轮</b> 缩放（相机锁定跟随，拖拽不平移） · 技能悬停查看描述<br>
+  <b>装备</b>：背包内点「装备」穿装（攻击/生命/暴击立即提升） · 点击装备栏槽位卸下<br>
+  <b>分解</b>：背包内点「分解」清垃圾装（不可撤销）→ 强化石按稀有度（白0/蓝1/金2/暗金3）+ 疗伤药 ×1（白装保底）<br>
+  <b>死亡</b>：倒地 10s 后自动复活回城 · 死亡不掉永久装备
+</div>
+
+<script>
+(function () {
+"use strict";
+// ============================================================================
+// 江湖 jianghu · 浏览器客户端 C2（Canvas 2D + WebSocket，零构建，单文件）
+// ============================================================================
+// 协议要点（对齐服务端 gateway/protocol/protocol-binary，见 README.md）：
+//   - 控制面 JSON（显式 type）；数据面二进制（ws.binaryType='arraybuffer'）。
+//   - input.cmd 必须 { type:'input.cmd', payload:{ cmd:{...} } }（服务端读 payload?.cmd）。
+//   - 动作：0=MOVE 1=PARRY 2..5=SKILL1..4 6=SIGNAL 7=STOP（松开移动键 → 服务端清 lastMove 立即停）
+//     8=ATTACK（E8 普攻，targetEntityId 指定目标；服务端权威 CD/距离/伤害）。
+//   - 目标/伤害由服务端权威结算，客户端只发 skillSlot/targetEntityId，绝不自行锁 target。
+//   - 快照帧：[u8 msgType=0x01][u32 tick LE][u16 count] + 每实体（见 decodeSnapshot）。
+//   - E6 背包：character.inventory（拾取入库推送）/ character.inventory.get（打开面板拉全量）。
+// ============================================================================
+// C2 手感方案（WEB-FEEL 已验证模式，dungeon-online PASS）：
+//   - 本地玩家：按键 → 渲染位置立即按 PLAYER_SPEED*dt 推进（本地预测，仅渲染层，不伪造权威）；
+//     每收到权威快照向 me.pos lerp(RECONCILE_FACTOR=0.3) 收敛；仅瞬移（err>SNAP_THRESHOLD）硬回正。
+//   - 远端实体：10 帧环缓冲，renderTime = lastTick - INTERP_TICKS(3) 双快照 lerp。
+//   - 服务端权威位置不变：预测只是渲染坐标，位置仍以快照为准。
+// ============================================================================
+
+const params = new URLSearchParams(location.search);
+const SERVER = (params.get('server') || (location.hostname === 'localhost' ? 'ws://localhost:3011' : `wss://${location.host}/ws/jianghu`)).replace(/\/+$/, '');
+const DEV_USER = params.get('devUserId') || 'dev';
+const DEBUG = params.get('debug') === '1';
+
+// ── E14 真实登录：HTTP 登录代理基址（由 ws SERVER 推导） + localStorage 会话 token ──
+const SESSION_TOKEN_KEY = 'jianghu_session_token';
+const HTTP_BASE = SERVER.replace(/^wss:\/\//, 'https://').replace(/^ws:\/\//, 'http://');
+let sessionToken = (() => { try { return localStorage.getItem(SESSION_TOKEN_KEY) || ''; } catch { return ''; } })();
+
+// ── 共享常量（与 sim-core/constants.ts 对齐；C1 单一来源的客户端镜像，C7）──
+const TILE = 48;
+const TICK_RATE = 12;
+const TICK_MS = 1000 / TICK_RATE;
+const POTION_CD_TICKS = 5 * TICK_RATE; // E21：药水 CD = 5s @12Hz（sim-core POTION_CD_TICKS 镜像）
+const DISASSEMBLE_STONES_BY_RARITY = { 0: 0, 1: 1, 2: 2, 3: 3 }; // E22：分解产出石数按稀有度（C7 镜像）
+const DISASSEMBLE_POTIONS = 1; // E22：分解固定产出药水数（C7 镜像；白装保底 1 瓶）
+const WORLD_W = 40 * TILE;              // 1920
+const WORLD_H = 30 * TILE;              // 1440
+const ENTRANCE_POS = { x: 20 * TILE, y: 15 * TILE }; // 主世界入口（tile 20,15）
+// E16：进本交互半径 = 1.5×TILE（镜像 C7 ENTRANCE_INTERACT_RADIUS；服务端 dungeon.enter 权威校验同值）。
+// 与拾取提示环（L2 按 F 拾取）一致；超出本半径按 F 不进本（客户端 UI 闸门，服务端仍权威校验）。
+const ENTRANCE_ENTER_RADIUS = Math.round(1.5 * TILE);
+const PARRY_TICKS = 3;                  // 格挡窗口（服务端权威展示用）
+const SKILL_ACTIONS = [2, 3, 4, 5];     // InputAction.SKILL1..4
+const ACTION_STOP = 7;                  // InputAction.STOP
+const ACTION_ATTACK = 8;                // InputAction.ATTACK（E8 普攻）
+const ACTION_INTERACT = 9;              // InputAction.INTERACT（E20 宝箱开箱，targetEntityId 指定宝箱）
+const MELEE_RANGE = 48;                 // 服务端 MELEE_RANGE=1×TILE（近战命中范围，C7 镜像）
+const ATTACK_CD_TICKS = 6;              // 服务端 ATTACK_CD_TICKS=6（0.5s 普攻间隔；CD 由服务端权威）
+const ARRIVE_TOL = 24;                  // 服务端 TARGET_ARRIVE_TOL=0.5×TILE（点击移动到达容差）
+const CLICK_DRAG_TOL = 6;               // 鼠标位移阈值：超过视为拖拽平移，否则为左键点击
+// ── E10 死亡/复活（服务端 constants.ts C7 镜像 + EntityStatus bitmask）──
+const DOWNED_TICKS = 10 * TICK_RATE;    // 服务端 DOWNED_TICKS=120（倒地 10s 自动复活）
+const REVIVE_IFRAME_TICKS = 3 * TICK_RATE; // 服务端 REVIVE_IFRAME_TICKS=36（复活 3s 无敌帧）
+const STATUS_IFRAME = 1 << 4;           // EntityStatus.IFRAME（复活无敌帧闪烁）
+const STATUS_DOWNED = 1 << 5;           // EntityStatus.DOWNED（倒地不可行动）
+const STATUS_WINDUP = 1 << 6;           // EntityStatus.WINDUP（E18 敌人攻击前摇：站立蓄力抬手）
+
+// ── C2 手感/表现参数（WEB-FEEL 模式）──
+const BASE_SPEED = 4;                   // 服务端 BASE_SPEED（格/秒，constants.ts C7 镜像）
+const PLAYER_SPEED = BASE_SPEED * TILE; // 192 px/s 本地预测速度（与服务端权威 1:1）
+const RECONCILE_FACTOR = 0.3;           // 每快照向权威 pos lerp 收敛（无瞬移、无振荡）
+const SNAP_THRESHOLD = 250;             // 仅真实瞬移（重连/切房）硬回正
+const INTERP_TICKS = 3;                 // 远端实体渲染 = 最新 tick - 3（≈250ms @12Hz）
+const BUF_MAX = 10;                     // 快照环缓冲帧数
+const PICKUP_HINT_RADIUS = 1.5 * TILE;  // 拾取提示半径（服务端 PICKUP_RADIUS=1×TILE 自动拾取）
+// ── E23 技能光效差异化（纯客户端表现；按槽位区分，范围/时长对齐服务端 SKILL_RANGE_BY_SLOT=72/120/96/86px）──
+// type：slash=短促白色挥砍弧 / beam=直线剑气波 / quake=地面震荡圈 / crush=大范围斩闪（红金）
+// art-bible 技能色系：烈斩白 / 剑气青金 / 震地土褐 / 破军红金
+const SKILL_FX_CFG = [
+  { type: 'slash', color: '#ffffff', accent: 'rgba(255,255,255,0.9)', ttl: 150, radius: Math.round(1.5 * TILE), arc: Math.PI / 2 },
+  { type: 'beam',  color: '#9fe8ff', accent: '#ffd970', ttl: 250, dist: Math.round(2.5 * TILE), headR: 15, tail: 46 },
+  { type: 'quake', color: '#a0703c', accent: '#7a5230', ttl: 300, radius: Math.round(2.0 * TILE) },
+  { type: 'crush', color: '#d03030', accent: '#f2a03c', ttl: 200, radius: Math.round(1.8 * TILE), arc: Math.PI },
+];
+
+// ── C3 技能 HUD 本地表（服务端后续下发 SKILL_NAMES 前，先用本地表对齐；伤害/CD/范围镜像 sim-core constants）──
+const SKILL_INFO = [
+  { name: '烈斩', desc: '近战重击·高伤', dmg: 20, cd: 3.0, rangeTiles: 1.5 },
+  { name: '剑气', desc: '直线剑气·中距', dmg: 28, cd: 5.0, rangeTiles: 2.5 },
+  { name: '震地', desc: '范围震击·群伤', dmg: 16, cd: 4.0, rangeTiles: 2.0 },
+  { name: '破军', desc: '破军斩·爆发', dmg: 36, cd: 8.0, rangeTiles: 1.8 },
+];
+const SKILL_RANGE_TILES = 1.5;          // 技能范围（格，镜像 SKILL_RANGE=1.5×TILE）
+
+// 8 向单位向量（0=E 1=SE 2=S 3=SW 4=W 5=NW 6=N 7=NE；与服务端 dirToVector 对称）
+const DIR_VECTORS = [
+  { x: 1, y: 0 },
+  { x: Math.SQRT1_2, y: Math.SQRT1_2 },
+  { x: 0, y: 1 },
+  { x: -Math.SQRT1_2, y: Math.SQRT1_2 },
+  { x: -1, y: 0 },
+  { x: -Math.SQRT1_2, y: -Math.SQRT1_2 },
+  { x: 0, y: -1 },
+  { x: Math.SQRT1_2, y: -Math.SQRT1_2 },
+];
+
+// 稀有度配色（art-bible：白/蓝/金/暗金）
+const RARITY_COLORS = ['#D8D2C4', '#4C7FD6', '#F2A03C', '#C8324A'];
+const RARITY_NAMES = ['白', '蓝', '金', '暗金'];
+// E7：装备槽名称（与服务端 ITEM_PROTOS slot 对齐）
+const SLOT_NAMES = { weapon: '武器', armor: '护甲', trinket: '饰品' };
+const KIND = { PLAYER: 0, ENEMY: 1, BOSS: 2, LOOT_GROUND: 3, TELEGRAPH: 4, ENTRANCE: 5, CHEST: 6 };
+
+// ============================================================================
+// E12：WebAudio 程序化武侠音效（零外部资源 / 零网络请求；单文件独立模块，不耦合既有逻辑）
+// ============================================================================
+// 浏览器自动播放策略：首次用户手势（pointerdown/keydown/touchstart）才惰性创建 AudioContext 并 resume；
+// 无手势 / 无音频环境 / 静音时 play() 直接 return（不创建 ctx、不抛错）→ Z1-Z3 保护（无音频环境零报错）。
+// 音量/静音持久化到 localStorage（jianghu_sfx_vol / jianghu_sfx_muted），默认开启。
+const SFX = (() => {
+  const VOL_KEY = 'jianghu_sfx_vol';
+  const MUTE_KEY = 'jianghu_sfx_muted';
+  let ctx = null;          // AudioContext（惰性）
+  let master = null;       // 主增益（音量/静音总闸）
+  let noiseBuf = null;     // 复用白噪声缓冲
+  let vol = 0.5;           // 默认音量 0.5
+  let muted = false;
+  let unlocked = false;    // 是否已有用户手势（自动播放策略门闸）
+
+  // 读取持久化设置（localStorage 不可用时静默忽略）
+  try {
+    const sv = parseFloat(localStorage.getItem(VOL_KEY));
+    if (isFinite(sv) && sv >= 0 && sv <= 1) vol = sv;
+    muted = localStorage.getItem(MUTE_KEY) === '1';
+  } catch (e) { /* ignore */ }
+
+  // 惰性创建 AudioContext（仅首次用户手势后允许；失败/不存在 → null，静默）
+  function ensure() {
+    try {
+      if (ctx) {
+        if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+        return ctx;
+      }
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      ctx = new AC();
+      master = ctx.createGain();
+      master.gain.value = muted ? 0 : vol;
+      master.connect(ctx.destination);
+      if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+      return ctx;
+    } catch (e) {
+      ctx = null;
+      return null;
+    }
+  }
+
+  function unlock() {
+    unlocked = true;
+    ensure();
+  }
+  try {
+    window.addEventListener('pointerdown', unlock, { once: true });
+    window.addEventListener('keydown', unlock, { once: true });
+    window.addEventListener('touchstart', unlock, { once: true });
+  } catch (e) { /* ignore */ }
+
+  // 复用噪声缓冲（避免每音效重建）
+  function getNoise(c, dur) {
+    try {
+      if (noiseBuf && noiseBuf.duration >= dur) return noiseBuf;
+      const len = Math.max(1, Math.ceil(c.sampleRate * dur));
+      const buf = c.createBuffer(1, len, c.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      noiseBuf = buf;
+      return buf;
+    } catch (e) { return null; }
+  }
+
+  // 单振荡器：频率滑落（可选）+ 指数衰减包络（可选 0.15s 延迟回声，剑气/传送用）
+  function osc(c, type, f0, f1, t0, dur, gv, opts) {
+    try {
+      const o = c.createOscillator();
+      o.type = type;
+      o.frequency.setValueAtTime(Math.max(1, f0), t0);
+      if (f1 != null && f1 > 0 && Math.abs(f1 - f0) > 0.5) {
+        o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t0 + dur);
+      }
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0001, gv), t0 + Math.min(0.012, dur * 0.25));
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g);
+      let out = g;
+      if (opts && opts.echo) {
+        const d = c.createDelay(1);
+        d.delayTime.value = opts.echo;
+        const fb = c.createGain();
+        fb.gain.value = opts.echoVol != null ? opts.echoVol : 0.3;
+        const g2 = c.createGain();
+        g2.gain.value = opts.echoGain != null ? opts.echoGain : 0.5;
+        o.connect(g2); g2.connect(d); d.connect(fb); fb.connect(d);
+        const dg = c.createGain();
+        dg.gain.setValueAtTime(0.0001, t0 + opts.echo);
+        dg.gain.exponentialRampToValueAtTime(0.0001, t0 + dur + opts.echo + 0.05);
+        d.connect(dg);
+        dg.connect(master || c.destination);
+      }
+      out.connect(master || c.destination);
+      o.start(t0);
+      o.stop(t0 + dur + (opts && opts.echo ? opts.echo + 0.1 : 0.05));
+    } catch (e) { /* ignore */ }
+  }
+
+  // 白噪声（可选 lowpass/highpass 滤波）
+  function noise(c, t0, dur, gv, filterFreq, filterType) {
+    try {
+      const src = c.createBufferSource();
+      const buf = getNoise(c, Math.max(dur, 0.2));
+      if (!buf) return;
+      src.buffer = buf;
+      src.loop = true;
+      let node = src;
+      if (filterFreq) {
+        const f = c.createBiquadFilter();
+        f.type = filterType || 'lowpass';
+        f.frequency.setValueAtTime(filterFreq, t0);
+        f.Q.value = 0.8;
+        node.connect(f);
+        node = f;
+      }
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0001, gv), t0 + Math.min(0.012, dur * 0.25));
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      node.connect(g);
+      g.connect(master || c.destination);
+      src.start(t0);
+      src.stop(t0 + dur + 0.05);
+    } catch (e) { /* ignore */ }
+  }
+
+  // 噪声扫频（带通滤波，进/出副本传送感）
+  function noiseSweep(c, f0, f1, t0, dur, gv) {
+    try {
+      const src = c.createBufferSource();
+      const buf = getNoise(c, Math.max(dur, 0.3));
+      if (!buf) return;
+      src.buffer = buf;
+      src.loop = true;
+      const f = c.createBiquadFilter();
+      f.type = 'bandpass';
+      f.frequency.setValueAtTime(Math.max(30, f0), t0);
+      f.frequency.exponentialRampToValueAtTime(Math.max(30, f1), t0 + dur);
+      f.Q.value = 1.2;
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0001, gv), t0 + Math.min(0.03, dur * 0.2));
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      src.connect(f); f.connect(g); g.connect(master || c.destination);
+      src.start(t0); src.stop(t0 + dur + 0.05);
+    } catch (e) { /* ignore */ }
+  }
+
+  // ── E12 音效表（全部 WebAudio 程序化合成；def(c, t0)，t0=开始时刻）──
+  const DEFS = {
+    attack(c, t0) {            // 普攻挥砍：短促白噪声爆破(0.08s) + 低频方波 90Hz 衰减
+      noise(c, t0, 0.08, 0.5, 1400, 'lowpass');
+      osc(c, 'square', 90, 55, t0, 0.12, 0.32);
+    },
+    skill_1(c, t0) {           // 烈斩：重击，低频正弦 80→40Hz 滑落 + 噪声爆
+      osc(c, 'sine', 80, 40, t0, 0.35, 0.7);
+      noise(c, t0, 0.18, 0.5, 320, 'lowpass');
+    },
+    skill_2(c, t0) {           // 剑气：尖锐，锯齿波 600→1200Hz 上行 + 0.15s 延迟回声
+      osc(c, 'sawtooth', 600, 1200, t0, 0.28, 0.3, { echo: 0.15, echoVol: 0.35, echoGain: 0.5 });
+      noise(c, t0, 0.15, 0.2, 2500, 'highpass');
+    },
+    skill_3(c, t0) {           // 震地：次低频，正弦 50Hz 长衰减(0.4s) + 隆隆噪声
+      osc(c, 'sine', 50, 32, t0, 0.42, 0.85);
+      noise(c, t0, 0.4, 0.5, 180, 'lowpass');
+    },
+    skill_4(c, t0) {           // 破军：爆发，噪声+低频混合，0.3s 强衰减
+      noise(c, t0, 0.3, 0.6, 900, 'lowpass');
+      osc(c, 'sine', 72, 40, t0, 0.3, 0.7);
+      osc(c, 'square', 110, 60, t0, 0.2, 0.25);
+    },
+    hit(c, t0) {               // 命中（敌人受击）：短促方波 click 220Hz + 噪声(0.05s)
+      osc(c, 'square', 220, 160, t0, 0.06, 0.22);
+      noise(c, t0, 0.05, 0.18, 3000, 'highpass');
+    },
+    crit(c, t0) {              // 暴击：命中 + 高八度泛音
+      osc(c, 'square', 220, 160, t0, 0.06, 0.22);
+      noise(c, t0, 0.05, 0.18, 3000, 'highpass');
+      osc(c, 'sine', 880, 1240, t0, 0.14, 0.2);
+    },
+    parry(c, t0) {             // 格挡：金属，方波 800Hz 快速衰减 + 噪声薄片
+      osc(c, 'square', 800, 480, t0, 0.1, 0.28);
+      noise(c, t0, 0.06, 0.15, 4000, 'highpass');
+    },
+    parry_success(c, t0) {     // 格挡成功：金属 + 泛音 1200Hz
+      osc(c, 'square', 800, 480, t0, 0.1, 0.3);
+      osc(c, 'sine', 1200, 1800, t0, 0.16, 0.22);
+      noise(c, t0, 0.05, 0.12, 4000, 'highpass');
+    },
+    pickup(c, t0) {            // 拾取：轻快上滑音，正弦 400→800Hz 0.1s
+      osc(c, 'sine', 400, 800, t0, 0.1, 0.3);
+      osc(c, 'sine', 600, 1200, t0, 0.08, 0.12);
+    },
+    potion(c, t0) {            // E21 喝药：咕嘟 —— 短促上滑（吞咽）+ 低频气泡（双音，液体感）
+      osc(c, 'sine', 300, 620, t0, 0.14, 0.4);          // 上滑吞咽音
+      osc(c, 'sine', 180, 90, t0 + 0.1, 0.16, 0.3);     // 低频气泡回落
+      noise(c, t0, 0.1, 0.12, 900, 'bandpass');         // 液体噪声薄片
+      osc(c, 'sine', 520, 420, t0 + 0.05, 0.08, 0.12);  // 小气泡上浮
+    },
+    levelup(c, t0) {           // 升级：金色彩虹音，三连音上行 523/659/784Hz
+      osc(c, 'sine', 523, 523, t0, 0.12, 0.35);
+      osc(c, 'sine', 659, 659, t0 + 0.09, 0.12, 0.35);
+      osc(c, 'sine', 784, 784, t0 + 0.18, 0.2, 0.4);
+      osc(c, 'sine', 1046, 1046, t0 + 0.18, 0.22, 0.15);
+    },
+    downed(c, t0) {            // 玩家倒地：低沉下降，正弦 200→60Hz 0.6s
+      osc(c, 'sine', 200, 60, t0, 0.6, 0.6);
+      noise(c, t0, 0.5, 0.25, 240, 'lowpass');
+    },
+    revive(c, t0) {            // 复活：上升音，正弦 200→600Hz 0.4s + 泛音
+      osc(c, 'sine', 200, 600, t0, 0.4, 0.4);
+      osc(c, 'sine', 400, 1200, t0, 0.4, 0.14);
+    },
+    enter_dungeon(c, t0) {     // 进副本：传送，噪声扫频 200→2000Hz + 混响感
+      noiseSweep(c, 200, 2000, t0, 0.5, 0.5);
+      osc(c, 'sine', 240, 880, t0, 0.5, 0.15, { echo: 0.22, echoVol: 0.3, echoGain: 0.4 });
+    },
+    exit_dungeon(c, t0) {      // 出副本：传送反向 2000→200Hz
+      noiseSweep(c, 2000, 200, t0, 0.5, 0.5);
+      osc(c, 'sine', 880, 240, t0, 0.5, 0.15, { echo: 0.22, echoVol: 0.3, echoGain: 0.4 });
+    },
+    disconnect(c, t0) {        // 断线：提示音（单音 440Hz 短，双短）
+      osc(c, 'sine', 440, 440, t0, 0.1, 0.25);
+      osc(c, 'sine', 440, 440, t0 + 0.14, 0.12, 0.25);
+    },
+    reconnect(c, t0) {         // 重连：提示音（440Hz → 660Hz 上行）
+      osc(c, 'sine', 440, 440, t0, 0.1, 0.25);
+      osc(c, 'sine', 660, 660, t0 + 0.14, 0.14, 0.25);
+    },
+    ui(c, t0) {                // UI 点击（背包/按钮）：轻 click 方波 600Hz 0.03s
+      osc(c, 'square', 600, 480, t0, 0.03, 0.14);
+    },
+    enemy_dead(c, t0) {        // 敌人死亡：短促下降音 + 噪声
+      osc(c, 'sine', 300, 70, t0, 0.25, 0.4);
+      noise(c, t0, 0.15, 0.28, 800, 'lowpass');
+    },
+  };
+
+  // 播放（全静默失败：无手势 / 无音频环境 / 静音 → 直接 return，绝不抛错 → Z1-Z3 保护）
+  function play(name) {
+    try {
+      if (muted || !unlocked) return;   // 无手势不创建 ctx（自动播放策略）；静音直接 return
+      const c = ensure();
+      if (!c) return;
+      const def = DEFS[name];
+      if (!def) return;
+      def(c, c.currentTime + 0.005);
+    } catch (e) { /* 静默失败：无音频环境/自动播放策略下不报错 */ }
+  }
+
+  function setVolume(v) {
+    vol = Math.max(0, Math.min(1, v));
+    try { localStorage.setItem(VOL_KEY, String(vol)); } catch (e) { /* ignore */ }
+    if (master) { try { master.gain.value = muted ? 0 : vol; } catch (e) { /* ignore */ } }
+    return vol;
+  }
+
+  function toggleMute() {
+    muted = !muted;
+    try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) { /* ignore */ }
+    if (master) { try { master.gain.value = muted ? 0 : vol; } catch (e) { /* ignore */ } }
+    return muted;
+  }
+
+  return {
+    init: unlock,          // 首次用户手势时调用（惰性创建 + resume）
+    play: play,
+    setVolume: setVolume,
+    getVolume: () => vol,
+    toggleMute: toggleMute,
+    isMuted: () => muted,
+  };
+})();
+
+// ── DOM ──
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const statusEl = document.getElementById('status');
+const roomEl = document.getElementById('room');
+const tickEl = document.getElementById('tick');
+const entsEl = document.getElementById('ents');
+const hpEl = document.getElementById('hp');
+const hpFill = document.getElementById('hpfill');
+const parryHud = document.getElementById('parryhud');
+const skillCdHud = document.getElementById('skillcd-hud');
+const partyHud = document.getElementById('party-hud'); // E17 队伍提示
+const toastEl = document.getElementById('toast');
+const dungeonBtn = document.getElementById('btn-dungeon');
+const dungeonBtnLabel = document.getElementById('btn-dungeon-label');
+const invPanelEl = document.getElementById('invpanel');
+const invGridEl = document.getElementById('inv-grid');
+const invCountEl = document.getElementById('inv-count');
+const invBtn = document.getElementById('btn-inv');
+
+function resize() {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  canvas.width = Math.floor(window.innerWidth * dpr);
+  canvas.height = Math.floor(window.innerHeight * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  view.w = window.innerWidth;
+  view.h = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+
+// ── 调试/自动化暴露（E2E 断言用；C2 新增 lastHits/lastKills/inventory/predicted 钩子）──
+const GAME = window.__game = {
+  connected: false, state: 'connecting', seatId: null, roomId: null, reconnectToken: null,
+  lastSnapshot: null, localEntityId: null, errors: [], snapshotCount: 0, lastTick: 0,
+  skillCd: [0, 0, 0, 0], parryActive: false, localHp: 0, localMaxHp: 0,
+  lastLocalPos: null, wsState: 'closed', guest: null,
+  // E14：登录会话 token（服务端 :3011 HTTP 登录代理颁发；E2E 断言钩子）
+  sessionToken: null,
+  // C2：本地预测 / 打击感 / 掉落 / 背包（E2E 断言钩子）
+  predicted: null, localRenderPos: null, renderTick: 0,
+  lastHits: [], lastKills: [], lastHeals: [], pickupToasts: [], lastSkillAt: 0,
+  lastSkillFx: null, // E23：最近一次技能光效 {slot, type}（E2E 断言钩子；按下即播，不等服务端命中）
+  inventory: { items: [], cap: 60, loaded: false },
+  equipped: {}, // E7：3 槽已穿戴（character.inventory 消息）
+  materials: 0, // E19：强化石计数（character.inventory.materials）
+  potions: 0, // E21：药水计数（character.inventory.potions / character.potion.count）
+  potionCdUntilTick: null, // E21：药水 CD 截止 tick（character.potion.tick + cdTicksLeft；客户端 CD 环）
+  nearLootId: null, pickupHint: '', invOpen: false,
+  // E8：鼠标交互（左键点敌人点选攻击 / 点地面点击移动；E2E 断言钩子）
+  selectedEnemyId: null, combatTarget: null, moveTarget: null, lastAttackAt: 0,
+  // E9：等级/经验（character.level 消息；E2E 断言钩子：登录态打怪后 levelInfo 存在 + 经验条渲染）
+  levelInfo: { level: 1, xp: 0, xpNext: 50 },
+  // E10：倒地/复活状态（status 位驱动；E2E 断言钩子）
+  downed: false, downedSinceTick: null, iframes: false,
+  // C3：相机锁定 + 渲染标志（E2E 断言钩子）
+  cam: { cx: 0, cy: 0, scale: 1, w: 0, h: 0 },
+  playerScreenPos: null, floatTexts: [], rendered: { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0, windup: 0 },
+  // E26：小地图标记计数钩子（drawMinimap 每帧刷新 {boss, chest, entrance, loot}；E2E 断言钩子）
+  minimapMarkers: { boss: 0, chest: 0, entrance: 0, loot: 0 },
+  // E17：队友列表（当前快照中 kind=PLAYER 且 id!==localEntityId；含 ownerId/hp/pos/status，E2E 断言钩子）
+  partyMembers: [],
+  // 调试钩子（仅 ?debug=1 生效；E2E 用）
+  debugEnterDungeon: null, debugExitDungeon: null,
+  toggleInventory: null, openInventory: null, closeInventory: null, sendSignal: null,
+  // E12：WebAudio 音效（调试/自动化钩子：SFX.play / toggleMute / setVolume / isMuted）
+  sfx: SFX,
+};
+
+// ── 视图 / 摄像机（C3：锁定跟随本地玩家，只允许缩放；移除拖拽平移）──
+const view = { w: window.innerWidth, h: window.innerHeight, scale: 1.0, cx: ENTRANCE_POS.x, cy: ENTRANCE_POS.y, follow: true };
+let drag = null;          // 拖拽检测状态（仅用于抑制点击动作；C3 相机不随拖拽移动）
+let clickStart = null;    // 潜在左键点击（mousedown 记录；位移 > CLICK_DRAG_TOL 视为拖拽 → 不触发点击）
+
+// C3：canvas 相对坐标（补偿 canvas 布局偏移；canvas 背板已按 devicePixelRatio 缩放、ctx.setTransform(dpr) 归一，
+// 因此 CSS 像素坐标与绘制坐标一致，无需再乘 dpr）。
+function clientToCanvas(clientX, clientY) {
+  const r = canvas.getBoundingClientRect();
+  return { x: clientX - r.left, y: clientY - r.top };
+}
+// screen → world：(screen - screenCenter) / zoom + cam（与 worldToScreen 严格互逆）
+function screenToWorld(sx, sy) {
+  return { x: (sx - view.w / 2) / view.scale + view.cx, y: (sy - view.h / 2) / view.scale + view.cy };
+}
+// C3：相机 clamp —— 视野不露出世界（40×30 格）外空白；视野大于世界时居中。
+function clampCamera() {
+  const halfW = view.w / 2 / view.scale;
+  const halfH = view.h / 2 / view.scale;
+  if (view.w / view.scale >= WORLD_W) view.cx = WORLD_W / 2;
+  else view.cx = Math.max(halfW, Math.min(WORLD_W - halfW, view.cx));
+  if (view.h / view.scale >= WORLD_H) view.cy = WORLD_H / 2;
+  else view.cy = Math.max(halfH, Math.min(WORLD_H - halfH, view.cy));
+}
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const f = e.deltaY > 0 ? 0.9 : 1.1;
+  view.scale = Math.min(2.5, Math.max(0.45, view.scale * f));
+  clampCamera(); // 缩放后相机 clamp（不露世界外空白）
+}, { passive: false });
+canvas.addEventListener('mousedown', (e) => {
+  if (e.button !== 0) return; // 仅左键可能触发点击/拖拽；右键暂不绑定（E8 说明）
+  const cs = clientToCanvas(e.clientX, e.clientY);
+  clickStart = { x: cs.x, y: cs.y, moved: false };
+});
+window.addEventListener('mousemove', (e) => {
+  if (clickStart && !clickStart.moved) {
+    const cs = clientToCanvas(e.clientX, e.clientY);
+    const dx = cs.x - clickStart.x, dy = cs.y - clickStart.y;
+    if (Math.hypot(dx, dy) > CLICK_DRAG_TOL) {
+      // 位移超阈值 → 视为拖拽（不触发点击动作；C3：相机锁定，拖拽不平移）。
+      clickStart.moved = true;
+      drag = true;
+    }
+  }
+});
+window.addEventListener('mouseup', (e) => {
+  if (drag) { drag = null; }
+  else if (clickStart && !clickStart.moved && e.button === 0) {
+    // 左键点击（无位移）→ 交互动作：点敌人点选攻击 / 点地面点击移动（E8）。
+    // C3：以 mouseup 时刻的相机重算世界坐标（防 mousedown→mouseup 间相机/角色位移导致落点偏）。
+    const cs = clientToCanvas(e.clientX, e.clientY);
+    const w = screenToWorld(cs.x, cs.y);
+    handleClick(w.x, w.y);
+  }
+  clickStart = null;
+});
+canvas.addEventListener('dblclick', () => { view.follow = true; });
+
+// ── 状态 ──
+let state = 'connecting';           // connecting | overworld | dungeon | reconnecting | closed
+function setState(s) { state = s; GAME.state = s; }
+let seq = 1;
+let seatId = null;
+let roomId = null;
+let reconnectToken = null;
+let tickMs = TICK_MS;
+let lastSnapshot = null;            // 最新权威快照
+let localEntityId = null;
+let snapBuffer = [];                // 插值缓冲 [{tick, entities:Map}]
+let lastKnown = new Map();          // id → {ent, alpha} 实体消失淡出
+const keys = new Set();
+let lastMoveDir = null;             // 最近一次发送的移动方向（0-7）
+let inputTimer = null;
+let reconnectAttempts = 0;
+let reconnectTimer = null;
+let ws = null;
+
+// ── C2 表现状态 ──
+let predicted = null;               // 本地玩家渲染位置（预测，仅渲染层）
+let renderTime = 0;                 // 远端实体插值渲染 tick
+let lastFrameT = performance.now();
+let prevHp = new Map();             // id → 上一帧 hp（伤害检测）
+let floatTexts = [];                // 伤害飘字 {x,y,text,color,born,ttl,vy}
+let hitFlashes = new Map();         // id → until(performance.now()) 受击闪白
+let rings = [];                     // 命中/格挡扩散环 {x,y,color,born,ttl,r0,r1}
+let skillFx = [];                   // 技能光效（E23 差异化：{type:'slash'|'beam'|'quake'|'crush', x,y,dir,born,ttl,...}）
+let screenShake = 0;                // E23：破军屏幕震动幅度（px，逐帧衰减）
+let killFx = [];                    // 击杀粒子 {x,y,parts,born,ttl}
+let parryFx = { until: 0 };         // 格挡成功盾闪
+let levelFx = { until: 0 };         // E9：升级金色闪光（until = performance.now() 截止）
+let reviveFx = { until: 0 };        // E10：复活白闪（until = performance.now() 截止）
+let downed = false;                 // E10：本地玩家倒地（快照 status 含 DOWNED）
+let downedSinceTick = null;         // E10：客户端推算的倒地起始 tick（首次观测到 DOWNED 的快照 tick）
+let invOpen = false;
+let nearLootId = null;              // 最近可拾取 LOOT_GROUND id（drawEntities 每帧计算，F 键/提示用）
+let nearChestId = null;             // E20：最近可开箱 CHEST id（drawEntities 每帧计算，F 键/提示用）
+let chestOpenPending = false;       // E20：已按 F 开箱（等待宝箱从快照消失 → 开箱 toast）
+let chestOpenPendingId = null;      // E20：开箱目标宝箱 id（消失判定用）
+let inventory = { items: [], cap: 60, loaded: false };
+let equipped = {};                  // E7：3 槽已穿戴（来自 character.inventory）
+let materials = 0;                  // E19：强化石计数（来自 character.inventory.materials）
+let potions = 0;                    // E21：药水计数（来自 character.inventory.potions / character.potion.count）
+let potionCdUntilTick = null;       // E21：药水 CD 截止 tick（character.potion.tick + cdTicksLeft；null=可用）
+let potSeq = 1;                     // E21：character.usePotion requestId 序号
+let lastEnchant = null;             // E19：最近一次强化请求 {itemId, prevLevel}（回复 toast 用）
+let lastDisassemble = null;         // E22：最近一次分解请求 {itemId}（回复 toast + 抑制通用增量 toast 用）
+let pickupToasts = [];              // 最近拾取 toast（E2E 钩子）
+let invSeq = 1;
+let levelInfo = { level: 1, xp: 0, xpNext: 50 }; // E9：等级/经验（character.level 消息）
+let lvSeq = 1;                      // E9：character.level.get requestId 序号
+
+// ── E8 鼠标交互状态 ──
+let selectedEnemyId = null;         // 选中敌人 id（红圈跟随）
+let combatTarget = null;            // 战斗目标 entity id（左键点敌人；持续走近/普攻）
+let moveTarget = null;              // 点击移动目标格（packed = gx*64+gy；左键点地面）
+let meleeFx = [];                   // 普攻挥砍光效 {x,y,dir,born,ttl}
+let lastSwingSfxAt = 0;             // E12：普攻挥砍音效节流（input loop 12Hz 连发时防机枪声）
+
+// ── Toast ──
+let toastTimer = null;
+function toast(msg, isErr) {
+  toastEl.textContent = msg;
+  toastEl.className = isErr ? 'err' : '';
+  toastEl.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toastEl.style.display = 'none'; }, 3500);
+}
+
+// E7.2：服务端错误码 → 中文友好文案（equip/拾取/进出本常见错误）。
+const ERROR_TEXT = {
+  AUTH_REQUIRED: '需要登录（请刷新或检查连接）',
+  NOT_LOGGED_IN: '未登录：游客无法拾取/穿戴。请用 ?devUserId=dev 打开体验完整玩法',
+  ITEM_NOT_FOUND: '物品不在背包（游客模式拾取不会入包）',
+  BAG_FULL: '背包已满',
+  BAD_ITEM_ID: '无效物品',
+  SLOT_EMPTY: '该装备槽是空的',
+  BAD_SLOT: '无效装备槽',
+  ENCHANT_MAX_LEVEL: '已达最大强化等级（+5）',
+  NO_MATERIALS: '强化石不足（击杀精英/BOSS 获得）',
+  ENCHANT_MATERIAL: '强化石不可强化',
+  EQUIPPED_ITEM: '已装备的物品：请先卸下再分解',
+  NOT_DISASSEMBLABLE: '材料物品不可分解',
+  NO_POTIONS: '没有疗伤药了（击杀精英/BOSS 掉落，普通怪有概率掉）',
+  FULL_HP: '生命已满，无需喝药',
+  POTION_CD: '疗伤药冷却中（5s）',
+  NOT_IN_ROOM: '需先进入游戏世界才能喝药',
+  NOT_IN_RESIDENT: '需在主世界才能进副本',
+  NOT_IN_INSTANCE: '需在副本内才能出本',
+  COOLDOWN: '入口冷却中，稍后再试',
+};
+
+// 拾取 toast（屏幕下方，稀有度色）
+let pickupToastTimer = null;
+function pickupToast(html) {
+  SFX.play('pickup'); // E12：拾取轻快上滑音
+  const el = document.getElementById('pickup-toast');
+  el.innerHTML = html;
+  el.style.display = 'block';
+  pickupToasts.push(html.replace(/<[^>]*>/g, ''));
+  if (pickupToasts.length > 40) pickupToasts.shift();
+  GAME.pickupToasts = pickupToasts.slice();
+  clearTimeout(pickupToastTimer);
+  pickupToastTimer = setTimeout(() => { el.style.display = 'none'; }, 2600);
+}
+
+function setStatus(text, cls) {
+  statusEl.textContent = text;
+  statusEl.className = cls || '';
+}
+
+// ============================================================================
+// 二进制快照解码（对齐 protocol-binary.ts decodeEntity）
+// ============================================================================
+function decodeSnapshot(buf) {
+  const dv = new DataView(buf);
+  let off = 0;
+  const msgType = dv.getUint8(off); off += 1;
+  if (msgType !== 0x01) throw new Error('unknown binary msgType 0x' + msgType.toString(16));
+  const tick = dv.getUint32(off, true); off += 4;
+  const count = dv.getUint16(off, true); off += 2;
+  const entities = [];
+  for (let i = 0; i < count; i++) {
+    const id = dv.getUint16(off, true); off += 2;
+    const mask = dv.getUint16(off, true); off += 2;
+    const x = dv.getInt16(off, true); off += 2;
+    const y = dv.getInt16(off, true); off += 2;
+    const kind = dv.getUint8(off); off += 1;
+    const dir = dv.getUint8(off); off += 1;
+    const hp = dv.getUint16(off, true); off += 2;
+    const maxHp = dv.getUint16(off, true); off += 2;
+    const status = dv.getUint16(off, true); off += 2;
+    const seCount = dv.getUint8(off); off += 1;
+    const statusEffects = [];
+    for (let j = 0; j < seCount; j++) {
+      statusEffects.push({ type: dv.getUint8(off), remainingTicks: dv.getUint16(off, true) });
+      off += 3;
+    }
+    const e = { id, mask, kind, dir, pos: { x, y }, hp, maxHp, status, statusEffects };
+
+    // 条件字段（按 changeMask 位；与服务端 encodeEntity 对称）
+    if (mask & (1 << 5))  { e.ownerId = dv.getUint16(off, true); off += 2; }
+    if (mask & (1 << 6))  { e.parryState = { active: dv.getUint8(off) === 1, windowEndTick: dv.getUint32(off, true) }; off += 5; }
+    if (mask & (1 << 7))  {
+      const itemId = dv.getUint32(off, true); off += 4;
+      const rarity = dv.getUint8(off); off += 1;
+      const affixCount = dv.getUint8(off); off += 1;
+      const affixes = [];
+      for (let j = 0; j < affixCount; j++) { affixes.push(dv.getUint8(off)); off += 1; }
+      const ttlTicks = dv.getUint16(off, true); off += 2;
+      e.loot = { itemId, rarity, affixes, ttlTicks };
+    }
+    if (mask & (1 << 8))  {
+      e.telegraph = { shape: dv.getUint8(off), color: dv.getUint8(off), startTick: dv.getUint32(off, true), applyTick: dv.getUint32(off, true), radius: dv.getUint16(off, true) };
+      off += 12;
+    }
+    if (mask & (1 << 9))  { e.entrance = { cooldownTicks: dv.getUint16(off, true), lastUsedTick: dv.getUint32(off, true) }; off += 6; }
+    if (mask & (1 << 10)) { e.tier = dv.getUint8(off); off += 1; }
+    if (mask & (1 << 11)) { e.skillCd = [dv.getUint16(off, true), dv.getUint16(off + 2, true), dv.getUint16(off + 4, true), dv.getUint16(off + 6, true)]; off += 8; }
+    if (mask & (1 << 12)) {
+      // E7 扩展 attrs：str/dex/vit + hasExt(u8) + (atk u16, maxHp u16, crit千分比 u16)×hasExt
+      const str = dv.getUint8(off); const dex = dv.getUint8(off + 1); const vit = dv.getUint8(off + 2); off += 3;
+      if (dv.getUint8(off) === 1) {
+        off += 1;
+        e.attrs = { str, dex, vit, atk: dv.getUint16(off, true), maxHp: dv.getUint16(off + 2, true), crit: dv.getUint16(off + 4, true) };
+        off += 6;
+      } else {
+        off += 1;
+        e.attrs = { str, dex, vit };
+      }
+    }
+    entities.push(e);
+  }
+  return { tick, entities };
+}
+
+// ============================================================================
+// 连接 / 消息分发
+// ============================================================================
+function wsUrl() {
+  const q = new URLSearchParams();
+  q.set('devUserId', DEV_USER);
+  // E14：已存/已登录的 better-auth session_token → ws 握手带 ?sessionToken=（生产态服务端优先）。
+  if (sessionToken) q.set('sessionToken', sessionToken);
+  return `${SERVER}/ws/jianghu?${q.toString()}`;
+}
+
+function connect() {
+  clearTimeout(reconnectTimer);
+  ws = new WebSocket(wsUrl());
+  ws.binaryType = 'arraybuffer';
+  GAME.wsState = 'connecting';
+
+  ws.onopen = () => {
+    GAME.wsState = 'open';
+    reconnectAttempts = 0;
+    // session.ready 到达后：有 token → session.reconnect；否则 room.join
+  };
+
+  ws.onmessage = (ev) => {
+    if (typeof ev.data === 'string') {
+      let msg; try { msg = JSON.parse(ev.data); } catch { return; }
+      handleControl(msg);
+    } else if (ev.data instanceof ArrayBuffer) {
+      try { handleSnapshot(decodeSnapshot(ev.data)); }
+      catch (err) { GAME.errors.push('decode:' + (err && err.message)); }
+    }
+  };
+
+  ws.onerror = () => {
+    setStatus('连接错误', 'err');
+    GAME.errors.push('ws error');
+  };
+
+  ws.onclose = (ev) => {
+    GAME.wsState = 'closed';
+    GAME.connected = false;
+    if (ev.code === 4001) { setStatus('被踢下线（重复登录）', 'err'); setState('closed'); return; }
+    if (state === 'closed') return;
+    setStatus('断线，自动重连中…', 'err');
+    setState('reconnecting');
+    SFX.play('disconnect'); // E12：断线提示音（440Hz 短）
+    scheduleReconnect();
+  };
+}
+
+function scheduleReconnect() {
+  clearTimeout(reconnectTimer);
+  const delay = Math.min(5000, 800 * Math.pow(1.6, reconnectAttempts++));
+  reconnectTimer = setTimeout(() => connect(), delay);
+}
+
+function sendJson(obj) {
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj));
+}
+
+// C2：房间切换/重连 → 清空表现态（防跨房实体 id 误判伤害/击杀）
+function resetFxState() {
+  snapBuffer = []; lastKnown.clear();
+  prevHp = new Map(); floatTexts = []; hitFlashes = new Map();
+  rings = []; skillFx = []; killFx = []; parryFx.until = 0; meleeFx = []; screenShake = 0; // E23：清屏幕震动（防跨房残留）
+  levelFx.until = 0; // E9：清升级闪光（防跨房残留）
+  reviveFx.until = 0; downed = false; downedSinceTick = null; // E10：清倒地/复活态（防跨房残留）
+  GAME.downed = false; GAME.downedSinceTick = null; GAME.iframes = false;
+  predicted = null;
+  // E8：清鼠标交互目标（防跨房 id 误用）。
+  selectedEnemyId = null; combatTarget = null; moveTarget = null;
+  GAME.selectedEnemyId = null; GAME.combatTarget = null; GAME.moveTarget = null;
+  GAME.lastHits = []; GAME.lastKills = []; GAME.nearLootId = null; GAME.pickupHint = '';
+}
+
+function handleControl(msg) {
+  switch (msg.type) {
+    case 'session.ready': {
+      seatId = msg.seatId;
+      tickMs = msg.tickMs || TICK_MS;
+      GAME.seatId = seatId; GAME.guest = msg.guest;
+      // E14：登录态（非游客）→ 按钮「已登录」+ 欢迎 toast；游客保持原提示。
+      if (!msg.guest) {
+        if (loginBtnEl) { loginBtnEl.textContent = '已登录'; loginBtnEl.classList.add('logged'); }
+        if (pendingLoginEmail) { toast('欢迎，' + pendingLoginEmail); pendingLoginEmail = null; }
+      } else {
+        if (loginBtnEl) { loginBtnEl.textContent = '登录'; loginBtnEl.classList.remove('logged'); }
+        // E7.2：游客模式提示（裸开页面=游客，拾取/装备不保存）。
+        setTimeout(() => toast('游客模式：拾取/装备不保存，用 ?devUserId=dev 打开可登录体验完整玩法'), 800);
+      }
+      if (state === 'reconnecting') {
+        if (reconnectToken && roomId) {
+          sendJson({ type: 'session.reconnect', requestId: 'rec', payload: { roomId, reconnectToken } });
+        } else {
+          sendJson({ type: 'room.join', requestId: 'join' });
+        }
+      } else {
+        sendJson({ type: 'room.join', requestId: 'join' });
+      }
+      break;
+    }
+    case 'room.join.ok': {
+      roomId = msg.roomId;
+      reconnectToken = msg.reconnectToken;
+      setState('overworld');
+      GAME.connected = true;
+      GAME.roomId = roomId; GAME.reconnectToken = reconnectToken;
+      setStatus('主世界', 'ok');
+      resetFxState();
+      startInputLoop();
+      // E9：进入房间拉取当前等级/经验（升级后持久化；游客经服务端忽略）。
+      sendJson({ type: 'character.level.get', requestId: 'lv' + (lvSeq++) });
+      // E21：进入房间拉取背包全量（含 potions 药水计数；HUD 药水槽「开局 2 瓶」/ 历史药水数）。
+      sendJson({ type: 'character.inventory.get', requestId: 'inv' + (invSeq++) });
+      break;
+    }
+    case 'dungeon.enter.ok': {
+      roomId = msg.roomId;
+      reconnectToken = msg.reconnectToken;
+      setState('dungeon');
+      GAME.roomId = roomId; GAME.reconnectToken = reconnectToken;
+      resetFxState();
+      setStatus('副本', 'ok');
+      toast('已进入副本');
+      SFX.play('enter_dungeon'); // E12：噪声扫频传送感
+      break;
+    }
+    case 'dungeon.exit.ok': {
+      roomId = msg.roomId || 'room_resident_public';
+      reconnectToken = null;
+      setState('overworld');
+      GAME.roomId = roomId; GAME.reconnectToken = null;
+      resetFxState();
+      setStatus('主世界', 'ok');
+      toast('已出本');
+      SFX.play('exit_dungeon'); // E12：传送反向
+      break;
+    }
+    case 'session.reconnect.ok': {
+      roomId = msg.roomId;
+      reconnectToken = msg.reconnectToken;
+      setState(msg.fellBackToResident ? 'overworld' : (roomId && roomId !== 'room_resident_public' ? 'dungeon' : 'overworld'));
+      GAME.roomId = roomId; GAME.reconnectToken = reconnectToken;
+      GAME.connected = true;
+      resetFxState();
+      setStatus(state === 'dungeon' ? '副本（已重连）' : '主世界（已重连）', 'ok');
+      toast('已重连');
+      SFX.play('reconnect'); // E12：重连提示音（440→660Hz 上行）
+      // E9：重连拉取当前等级/经验（断线期间升级以持久化为准）。
+      sendJson({ type: 'character.level.get', requestId: 'lv' + (lvSeq++) });
+      // E21：重连拉取背包全量（含 potions；断线期间药水变化以持久化为准）。
+      sendJson({ type: 'character.inventory.get', requestId: 'inv' + (invSeq++) });
+      break;
+    }
+    case 'room.snapshot': {
+      // presence 信息（成员数等）暂不渲染，保留日志
+      break;
+    }
+    case 'session.pong':
+      break;
+    case 'game.error': {
+      const code = msg.error && msg.error.code;
+      toast(ERROR_TEXT[code] || ('服务端: ' + (code || 'unknown')), true);
+      GAME.errors.push('game.error:' + code);
+      break;
+    }
+    case 'session.kicked': {
+      setStatus('被踢下线（重复登录）', 'err');
+      toast('已断开：重复登录', true);
+      setState('closed');
+      break;
+    }
+    // ── E6 背包数据通道：拾取入库推送 / character.inventory.get 回复 / E7 equip/unequip 回复 / E19 enchant 回复 / E21 potions（同一格式）──
+    case 'character.inventory': {
+      const firstInvLoad = !inventory.loaded; // 首次拉取（背包 get）不算「获得」增量
+      const items = (msg.items || []).map((i) => ({ itemId: i.itemId, rarity: i.rarity, affixes: (i.affixes || []).slice(), slot: i.slot, enchantLevel: i.enchantLevel || 0 }));
+      const prevIds = new Set(inventory.items.map((i) => i.itemId));
+      inventory.items = items;
+      inventory.cap = msg.cap || 60;
+      inventory.loaded = true;
+      equipped = msg.equipped || {};
+      // E19：强化石计数（材料独立于背包；击杀精英/BOSS 推送）
+      const prevMaterials = materials;
+      materials = msg.materials || 0;
+      // E22：分解回复判定（character.disassemble 回复 requestId 以 'dis' 开头且 lastDisassemble 未清）。
+      const isDisassembleReply = !!lastDisassemble && msg.requestId && String(msg.requestId).indexOf('dis') === 0;
+      // E20：强化石增量 toast（开箱×2 / 精英击杀×1 / BOSS 击杀×2；diff>0 才提示；首次拉取不算增量）。
+      // E22：分解回复时**抑制**通用增量 toast（由下方「分解成功」统一提示，避免双 toast 噪音）。
+      if (!firstInvLoad && materials > prevMaterials && !isDisassembleReply) {
+        toast('强化石 +' + (materials - prevMaterials));
+        SFX.play('ui');
+      }
+      GAME.inventory = { items: inventory.items.slice(), cap: inventory.cap, loaded: true };
+      GAME.equipped = equipped;
+      GAME.materials = materials;
+      // E21：药水计数（击杀给药水推送 / usePotion 回推一次拉全；首次拉取不算增量）。
+      const prevPotions = potions;
+      potions = msg.potions || 0;
+      if (!firstInvLoad && potions > prevPotions && !isDisassembleReply) {
+        toast('获得疗伤药 ×' + (potions - prevPotions));
+        SFX.play('ui');
+      }
+      GAME.potions = potions;
+      renderPotionHud();
+      // E22：分解成功 toast「分解成功：强化石+N 药水+1」（差分 = 本次分解产出，服务端回推同一格式）。
+      if (isDisassembleReply) {
+        toast('分解成功：强化石 +' + (materials - prevMaterials) + ' 药水 +' + (potions - prevPotions));
+        SFX.play('ui'); // E12：UI 点击（分解成功）
+        lastDisassemble = null;
+      }
+      // 增量 toast：新入库物品 → 屏幕下方「拾取 [稀有度色]物品（词缀xN）」
+      const added = items.filter((i) => !prevIds.has(i.itemId));
+      for (const it of added) {
+        const color = RARITY_COLORS[it.rarity] || '#D8D2C4';
+        pickupToast(`拾取 <span class="r" style="color:${color}">${RARITY_NAMES[it.rarity] || '?'}品</span>（词缀×${it.affixes.length}）`);
+      }
+      // E19：强化成功 toast（character.enchant 回复 requestId 以 'ench' 开头；服务端回推同一格式）。
+      if (msg.requestId && String(msg.requestId).indexOf('ench') === 0 && lastEnchant) {
+        const hit = items.find((i) => i.itemId === lastEnchant.itemId)
+          || Object.values(equipped).find((i) => i && i.itemId === lastEnchant.itemId);
+        const newLv = hit ? (hit.enchantLevel || 0) : (lastEnchant.prevLevel + 1);
+        toast('强化成功！+' + newLv);
+        SFX.play('ui'); // E12：UI 点击（强化成功）
+        lastEnchant = null;
+      }
+      renderMaterials();
+      renderInventory();
+      renderEquip();
+      break;
+    }
+    // ── E21 药水数据通道：character.usePotion 成功回推（count/cdTicksLeft/healed/tick）──
+    case 'character.potion': {
+      if (msg.count != null) { potions = msg.count; GAME.potions = potions; }
+      if (msg.tick != null && msg.cdTicksLeft != null) {
+        potionCdUntilTick = msg.tick + msg.cdTicksLeft;
+        GAME.potionCdUntilTick = potionCdUntilTick;
+      }
+      renderPotionHud();
+      // 回血飘字（绿色 +N 本地玩家头顶）+ 扩散环 + E2E 钩子。
+      if (msg.healed > 0 && localEntityId != null && lastSnapshot) {
+        const me = lastSnapshot.entities.find((e) => e.id === localEntityId);
+        if (me) {
+          const t = performance.now();
+          floatTexts.push({ entityId: localEntityId, x: me.pos.x, y: me.pos.y, offY: -52, text: '+' + msg.healed, color: '#4ade80', born: t, ttl: 1100, vy: -34 });
+          rings.push({ x: me.pos.x, y: me.pos.y, color: '#4ade80', born: t, ttl: 320, r0: 10, r1: 42 });
+          GAME.lastHeals.push({ entityId: localEntityId, healed: msg.healed, t });
+          if (GAME.lastHeals.length > 30) GAME.lastHeals.shift();
+        }
+      }
+      SFX.play('potion'); // E21：咕嘟喝药声
+      break;
+    }
+    // ── E9 等级数据通道：升级推送 / character.level.get 回复（同一格式）──
+    case 'character.level': {
+      const prevLevel = levelInfo.level;
+      levelInfo = {
+        level: Math.max(1, msg.level || 1),
+        xp: Math.max(0, msg.xp || 0),
+        xpNext: Math.max(1, msg.xpNext || 1),
+      };
+      GAME.levelInfo = { ...levelInfo };
+      renderLevelHud();
+      // 升级特效：金色闪光 + toast「升级！Lv.N」（属性面板 atk/maxHp 由下一快照 attrs 自动刷新）。
+      if (msg.level != null && msg.level > prevLevel) {
+        levelFx.until = performance.now() + 1000;
+        toast('升级！Lv.' + msg.level);
+        SFX.play('levelup'); // E12：金色彩虹三连音
+      }
+      break;
+    }
+  }
+}
+
+// ============================================================================
+// 快照处理（权威态 + 本地预测收敛 + 伤害/击杀检测 + 插值缓冲）
+// ============================================================================
+function handleSnapshot(snap) {
+  GAME.snapshotCount++;
+  GAME.lastTick = snap.tick;
+  lastSnapshot = snap;
+  GAME.lastSnapshot = snap;
+
+  // E20：开箱反馈 —— 已按 F 开箱（INTERACT）且目标宝箱从快照消失 → 「打开宝箱！」toast
+  //   （服务端开箱后移除实体；后续 character.inventory 推送逐件「获得」toast + 强化石 +N）。
+  if (chestOpenPending && chestOpenPendingId != null) {
+    const stillThere = snap.entities.some((e) => e.id === chestOpenPendingId && e.kind === KIND.CHEST);
+    if (!stillThere) {
+      chestOpenPending = false;
+      chestOpenPendingId = null;
+      pickupToast('打开宝箱！');
+      SFX.play('pickup');
+    }
+  }
+
+  // 定位本地玩家（seatId 权威映射；kind=PLAYER + ownerId===seatId）
+  localEntityId = null;
+  for (const e of snap.entities) {
+    if (e.kind === KIND.PLAYER && e.ownerId === seatId) { localEntityId = e.id; break; }
+  }
+  GAME.localEntityId = localEntityId;
+  // E17：队友识别 —— kind=PLAYER 且非本地玩家（服务端未下发用户名，MVP 用 ownerId=seatId 编号名牌；
+  //     主世界/副本通用：任一房间出现其他玩家即按队友渲染）。
+  GAME.partyMembers = snap.entities
+    .filter((e) => e.kind === KIND.PLAYER && e.id !== localEntityId)
+    .map((e) => ({ id: e.id, ownerId: e.ownerId, kind: e.kind, hp: e.hp, maxHp: e.maxHp, pos: { x: e.pos.x, y: e.pos.y }, status: e.status }));
+  const me = localEntityId != null ? snap.entities.find((e) => e.id === localEntityId) : null;
+  if (me) {
+    GAME.localHp = me.hp; GAME.localMaxHp = me.maxHp;
+    GAME.lastLocalPos = { x: me.pos.x, y: me.pos.y };
+    GAME.parryActive = !!(me.parryState && me.parryState.active);
+    if (me.skillCd) GAME.skillCd = me.skillCd.slice();
+
+    // C2 本地预测初始化 / 收敛（只改渲染坐标 predicted，绝不写 me/快照权威字段）
+    if (!predicted) {
+      predicted = { x: me.pos.x, y: me.pos.y };
+    } else {
+      const ex = me.pos.x - predicted.x, ey = me.pos.y - predicted.y;
+      const err = Math.hypot(ex, ey);
+      if (err > SNAP_THRESHOLD) { predicted.x = me.pos.x; predicted.y = me.pos.y; } // 真瞬移 → 硬回正
+      else { predicted.x += ex * RECONCILE_FACTOR; predicted.y += ey * RECONCILE_FACTOR; } // lerp 收敛
+    }
+  } else {
+    predicted = null;
+  }
+  GAME.predicted = predicted ? { x: predicted.x, y: predicted.y } : null;
+
+  // E10：本地玩家倒地/复活转换（status 位驱动，快照级检测）。
+  //   倒地：清输入 + 记推算起始 tick（服务端不下发 downedAtTick，C12 —— 客户端用固定
+  //   DOWNED_TICKS 推算倒计时，误差 ≈ 一个快照 RTT，见 E10 报告取舍）。
+  //   复活：白闪 + toast「已复活」。
+  const meDowned = !!(me && (me.status & STATUS_DOWNED));
+  if (meDowned && !downed) {
+    downed = true;
+    downedSinceTick = snap.tick;
+    keys.clear();
+    clearClickTargets();
+    sendStop();
+    SFX.play('downed'); // E12：低沉下降（玩家倒地）
+  } else if (!meDowned && downed) {
+    downed = false;
+    downedSinceTick = null;
+    reviveFx.until = performance.now() + 450;
+    toast('已复活');
+    SFX.play('revive'); // E12：上升音 + 泛音（复活）
+  }
+  GAME.downed = downed;
+  GAME.downedSinceTick = downedSinceTick;
+  GAME.iframes = !!(me && (me.status & STATUS_IFRAME));
+
+  // C2 伤害检测（比较上一帧 hp → 飘字 / 闪白 / 扩散环 / E2E lastHits）
+  for (const e of snap.entities) {
+    const old = prevHp.get(e.id);
+    if (old != null && e.hp < old && e.kind !== KIND.LOOT_GROUND && e.kind !== KIND.ENTRANCE) {
+      recordHit(e, old - e.hp, e.id === localEntityId, e.kind === KIND.ENEMY || e.kind === KIND.BOSS);
+    }
+  }
+
+  // C2 击杀检测：上一帧在、本帧消失的敌人/BOSS → 粒子爆散 + E2E lastKills
+  const newIds = new Set(snap.entities.map((e) => e.id));
+  for (const [id] of prevHp) {
+    if (!newIds.has(id)) {
+      const gone = lastKnown.get(id);
+      if (gone && (gone.ent.kind === KIND.ENEMY || gone.ent.kind === KIND.BOSS)) {
+        spawnKillFx(gone.ent.pos.x, gone.ent.pos.y, gone.ent.kind === KIND.BOSS);
+      }
+    }
+  }
+  prevHp = new Map();
+  for (const e of snap.entities) prevHp.set(e.id, e.hp);
+
+  // 插值缓冲（环缓冲，最多 BUF_MAX 帧；实体按 id 建 Map 便于 lerp）
+  const emap = new Map();
+  for (const e of snap.entities) emap.set(e.id, e);
+  snapBuffer.push({ tick: snap.tick, entities: emap });
+  if (snapBuffer.length > BUF_MAX) snapBuffer.shift();
+
+  // 消失实体淡出
+  const seen = new Set(emap.keys());
+  for (const [id, rec] of lastKnown) {
+    if (!seen.has(id)) { rec.alpha -= 0.15; if (rec.alpha <= 0) lastKnown.delete(id); }
+  }
+  for (const e of snap.entities) lastKnown.set(e.id, { ent: e, alpha: 1 });
+
+  updateHud();
+}
+
+// ── C2 打击感：伤害飘字 / 闪白 / 扩散环 / 格挡反馈 / E2E 钩子 ──
+function recordHit(e, dmg, isLocal, isEnemy) {
+  const t = performance.now();
+  const color = isLocal ? '#ff5a5a' : (isEnemy ? '#ffd27d' : '#ffffff');
+  // C3：飘字锚定实体（entityId + 头顶偏移 offY）；绘制时每帧按实体最新渲染位置换算屏幕坐标（跟随实体移动/相机）。
+  const offY = isLocal ? -52 : (e.kind === KIND.BOSS ? -48 : -34);
+  floatTexts.push({ entityId: e.id, x: e.pos.x, y: e.pos.y, offY, text: '-' + dmg, color, born: t, ttl: 1000, vy: -30 });
+  hitFlashes.set(e.id, t + 150); // 150ms 闪白
+  rings.push({ x: e.pos.x, y: e.pos.y, color, born: t, ttl: 220, r0: 8, r1: isLocal ? 34 : 30 });
+
+  // E2E 钩子：最近飘字（含 entityId —— C3 断言「飘字跟随实体」）
+  GAME.lastHits.push({ id: e.id, entityId: e.id, dmg, kind: e.kind, t });
+  if (GAME.lastHits.length > 30) GAME.lastHits.shift();
+
+  if (isLocal && GAME.parryActive) {
+    // 格挡生效（受击时 parry 窗口激活）→ 「格挡！」+ 盾闪
+    floatTexts.push({ entityId: e.id, x: e.pos.x, y: e.pos.y, offY: -72, text: '格挡！', color: '#5fd0e0', born: t, ttl: 900, vy: -24 });
+    parryFx.until = t + 400;
+    rings.push({ x: e.pos.x, y: e.pos.y, color: '#5fd0e0', born: t, ttl: 300, r0: 20, r1: 46 });
+    SFX.play('parry_success'); // E12：格挡成功（金属 + 泛音）
+  } else if (isEnemy && !isLocal) {
+    // E12：我方打中敌人 → 命中音；暴击音按本地玩家面板暴击率近似（服务端不下发 crit 标志，C12 已知限制）
+    let critChance = 0;
+    const attrMe = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((x) => x.id === localEntityId) : null;
+    if (attrMe && attrMe.attrs && attrMe.attrs.crit != null) critChance = attrMe.attrs.crit / 1000;
+    SFX.play(Math.random() < critChance ? 'crit' : 'hit');
+  } else {
+    SFX.play('hit'); // E12：我方受击 / 其它实体受击
+  }
+  // 技能命中叠加闪光（刚放技能且附近敌人受击）
+  if (isEnemy && t - GAME.lastSkillAt < 600) {
+    rings.push({ x: e.pos.x, y: e.pos.y, color: '#fff2d0', born: t, ttl: 200, r0: 4, r1: 26 });
+  }
+}
+
+function spawnKillFx(x, y, isBoss) {
+  const parts = [];
+  const n = isBoss ? 12 : 7;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + Math.random() * 0.6;
+    const sp = 42 + Math.random() * 70;
+    parts.push({ dx: Math.cos(a) * sp, dy: Math.sin(a) * sp, size: 3 + Math.random() * 4, color: isBoss ? '#e5b25d' : '#e5484d' });
+  }
+  killFx.push({ x, y, parts, born: performance.now(), ttl: 260 });
+  GAME.lastKills.push({ x, y, isBoss, t: performance.now() });
+  if (GAME.lastKills.length > 20) GAME.lastKills.shift();
+  SFX.play('enemy_dead'); // E12：敌人死亡短促下降音 + 噪声
+}
+
+// ============================================================================
+// HUD 更新
+// ============================================================================
+function updateHud() {
+  tickEl.textContent = 'tick:' + (GAME.lastTick || '-');
+  entsEl.textContent = 'entities:' + (lastSnapshot ? lastSnapshot.entities.length : 0);
+  roomEl.textContent = '房间:' + (roomId === 'room_resident_public' ? '主世界' : (state === 'dungeon' ? '副本' : (roomId || '-')));
+  // E17：队伍提示 —— 快照含队友时显示「队伍：N 人」（N 含本地玩家；主世界/副本通用）。
+  const partyTotal = (GAME.partyMembers || []).length + 1;
+  partyHud.textContent = (GAME.partyMembers || []).length > 0 ? ('队伍:' + partyTotal + '人') : '';
+  hpEl.textContent = 'HP:' + GAME.localHp + '/' + GAME.localMaxHp;
+  hpFill.style.width = (GAME.localMaxHp > 0 ? Math.max(0, GAME.localHp / GAME.localMaxHp) * 100 : 0) + '%';
+
+  // 技能 CD（tick 左 → 秒）
+  skillCdHud.textContent = 'CD: ' + GAME.skillCd.map((t) => (t > 0 ? (t / TICK_RATE).toFixed(1) + 's' : '·')).join(' ');
+  for (let i = 0; i < 4; i++) {
+    const btn = document.getElementById('btn-skill-' + i);
+    let cdEl = btn.querySelector('.cd');
+    if (GAME.skillCd[i] > 0) {
+      if (!cdEl) { cdEl = document.createElement('div'); cdEl.className = 'cd'; btn.appendChild(cdEl); }
+      cdEl.textContent = (GAME.skillCd[i] / TICK_RATE).toFixed(1) + 's';
+      // C3：冷却环（conic 扫角 = 剩余 CD 占比；数字保留在环上）
+      const maxTicks = Math.max(1, Math.round((SKILL_INFO[i] ? SKILL_INFO[i].cd : 3) * TICK_RATE));
+      const remain = Math.max(0, Math.min(1, GAME.skillCd[i] / maxTicks));
+      cdEl.style.background = 'conic-gradient(rgba(242,160,60,0.5) ' + ((1 - remain) * 360).toFixed(1) + 'deg, rgba(8,10,14,0.78) 0deg)';
+    } else if (cdEl) cdEl.remove();
+  }
+
+  // E21：药水 CD 环（截止 tick = character.potion.tick + cdTicksLeft；本地预检同源）。
+  const potionBtn = document.getElementById('btn-potion');
+  if (potionBtn) {
+    const cdRemain = potionCdUntilTick != null ? Math.max(0, potionCdUntilTick - GAME.lastTick) : 0;
+    let pcdEl = potionBtn.querySelector('.cd');
+    if (cdRemain > 0) {
+      if (!pcdEl) { pcdEl = document.createElement('div'); pcdEl.className = 'cd'; potionBtn.appendChild(pcdEl); }
+      pcdEl.textContent = (cdRemain / TICK_RATE).toFixed(1) + 's';
+      const remain = Math.max(0, Math.min(1, cdRemain / POTION_CD_TICKS));
+      pcdEl.style.background = 'conic-gradient(rgba(95,208,138,0.5) ' + ((1 - remain) * 360).toFixed(1) + 'deg, rgba(8,10,14,0.78) 0deg)';
+    } else if (pcdEl) { pcdEl.remove(); potionCdUntilTick = null; GAME.potionCdUntilTick = null; }
+  }
+
+  // 格挡
+  const parryBtn = document.getElementById('btn-parry');
+  parryBtn.classList.toggle('active', !!GAME.parryActive);
+  parryHud.textContent = GAME.parryActive ? '格挡中' : '';
+
+  // E7 属性面板（攻击/生命/暴击，来自快照 attrs；crit 千分比 → 百分比）
+  const attrMe = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+  if (attrMe && attrMe.attrs) {
+    document.getElementById('attr-atk').textContent = attrMe.attrs.atk != null ? String(attrMe.attrs.atk) : '-';
+    document.getElementById('attr-hp').textContent = attrMe.attrs.maxHp != null ? String(attrMe.attrs.maxHp) : '-';
+    document.getElementById('attr-crit').textContent = attrMe.attrs.crit != null ? (attrMe.attrs.crit / 10).toFixed(1) + '%' : '-';
+  }
+
+  // 进副本 / 出本按钮
+  updateDungeonButton();
+
+  // E9：等级 HUD（顶部 Lv.N + 底部经验条 xp/xpNext）——每帧刷新（消息到达即更新，快照循环兜底）。
+  renderLevelHud();
+}
+
+// E9：等级 HUD 渲染（左上 Lv.N + 底部经验条 xp/xpNext）。
+function renderLevelHud() {
+  const lvEl = document.getElementById('level');
+  if (lvEl) lvEl.textContent = 'Lv.' + levelInfo.level;
+  const fill = document.getElementById('xpfill');
+  const txt = document.getElementById('xptext');
+  if (fill) fill.style.width = (levelInfo.xpNext > 0 ? Math.min(100, levelInfo.xp / levelInfo.xpNext * 100) : 0) + '%';
+  if (txt) txt.textContent = levelInfo.xp + '/' + levelInfo.xpNext;
+}
+
+function updateDungeonButton() {
+  const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+  const ent = lastSnapshot ? lastSnapshot.entities.find((e) => e.kind === KIND.ENTRANCE) : null;
+  const ep = ent ? ent.pos : ENTRANCE_POS;
+  if (state === 'dungeon') {
+    dungeonBtnLabel.textContent = '出本 (F)';
+    dungeonBtn.disabled = false;
+    dungeonBtn.title = '出本（F）';
+  } else if (state === 'overworld') {
+    dungeonBtnLabel.textContent = '进副本 (F)';
+    const near = me && Math.hypot(me.pos.x - ep.x, me.pos.y - ep.y) <= ENTRANCE_ENTER_RADIUS;
+    dungeonBtn.disabled = !near && !DEBUG;
+    dungeonBtn.title = near ? '进副本（F）' : '靠近裂隙入口（或 ?debug=1 强制）';
+  } else {
+    dungeonBtn.disabled = true;
+  }
+}
+
+// ============================================================================
+// 输入
+// ============================================================================
+// 方向 0=E 1=SE 2=S 3=SW 4=W 5=NW 6=N 7=NE（对齐 movement.ts）
+const KEY_DIRS = {
+  KeyW: { dx: 0, dy: -1 }, ArrowUp: { dx: 0, dy: -1 },
+  KeyS: { dx: 0, dy: 1 }, ArrowDown: { dx: 0, dy: 1 },
+  KeyA: { dx: -1, dy: 0 }, ArrowLeft: { dx: -1, dy: 0 },
+  KeyD: { dx: 1, dy: 0 }, ArrowRight: { dx: 1, dy: 0 },
+};
+
+function dirFromKeys() {
+  let dx = 0, dy = 0;
+  for (const code of keys) { const v = KEY_DIRS[code]; if (v) { dx += v.dx; dy += v.dy; } }
+  if (dx === 0 && dy === 0) return null;
+  if (dx > 0 && dy === 0) return 0;
+  if (dx > 0 && dy > 0) return 1;
+  if (dx === 0 && dy > 0) return 2;
+  if (dx < 0 && dy > 0) return 3;
+  if (dx < 0 && dy === 0) return 4;
+  if (dx < 0 && dy < 0) return 5;
+  if (dx === 0 && dy < 0) return 6;
+  return 7; // dx>0 && dy<0 NE
+}
+
+function sendCmd(cmd) {
+  if (downed) return; // E10：倒地禁用一切输入（移动/技能/格挡/拾取/点击交互全丢弃）
+  if (!lastSnapshot || !(state === 'overworld' || state === 'dungeon')) return;
+  sendJson({
+    type: 'input.cmd',
+    payload: { cmd: { seq: seq++, tick: lastSnapshot.tick, ...cmd } },
+  });
+}
+
+function sendMove(dir) {
+  sendCmd({ action: 0, dir });
+  lastMoveDir = dir;
+}
+
+// 松开移动键 → 显式 STOP（协议缺口修复，P0）：服务端清 lastMove 立即停，不再惯性滑行。
+function sendStop() {
+  if (lastMoveDir == null) return;
+  sendCmd({ action: ACTION_STOP, dir: lastMoveDir });
+  lastMoveDir = null;
+}
+
+function sendParry() { sendCmd({ action: 1, dir: lastMoveDir ?? 0 }); SFX.play('parry'); }
+
+// E21：喝药（Q）→ character.usePotion（服务端权威回血 30% maxHp + 5s CD）。
+// 本地预检（服务端仍权威校验）：无药水 / CD 中 / 满血 → 不发命令（避免服务端错误 toast 噪音）。
+function sendUsePotion() {
+  if (potions <= 0) { toast('没有疗伤药了（击杀精英/BOSS 掉落，普通怪有概率掉）'); SFX.play('ui'); return; }
+  if (potionCdUntilTick != null && lastSnapshot && potionCdUntilTick > lastSnapshot.tick) return; // CD 中静默
+  const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+  if (me && me.hp >= me.maxHp) { toast('生命已满，无需喝药'); SFX.play('ui'); return; }
+  sendJson({ type: 'character.usePotion', requestId: 'pot' + (potSeq++) });
+  // 本地即时反馈：CD 环立即转起来（服务端回推 character.potion 会校正/确认）。
+  if (lastSnapshot) {
+    potionCdUntilTick = lastSnapshot.tick + POTION_CD_TICKS;
+    GAME.potionCdUntilTick = potionCdUntilTick;
+  }
+  renderPotionHud();
+}
+
+// E23：技能释放 → 按下即播差异化本地光效（不等服务端命中确认；服务端命中后叠加命中闪光/飘字，见 C2 伤害检测）
+function sendSkill(slot) {
+  sendCmd({ action: SKILL_ACTIONS[slot] ?? 2, skillSlot: slot, dir: lastMoveDir ?? 0 });
+  const d = dirFromKeys() ?? lastMoveDir ?? 0;
+  const base = predicted || (localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId).pos : { x: 0, y: 0 });
+  const cfg = SKILL_FX_CFG[slot] || SKILL_FX_CFG[0];
+  const now = performance.now();
+  const fx = { x: base.x, y: base.y, dir: d, born: now, ttl: cfg.ttl, color: cfg.color, accent: cfg.accent };
+  if (cfg.type === 'beam') {
+    fx.type = 'beam'; fx.dist = cfg.dist; fx.headR = cfg.headR; fx.tail = cfg.tail;      // 剑气：直线飞行波
+  } else if (cfg.type === 'quake') {
+    fx.type = 'quake'; fx.radius = cfg.radius; fx.seed = (Math.random() * 1000) | 0;     // 震地：震荡圈（裂纹确定性抖动）
+  } else if (cfg.type === 'crush') {
+    fx.type = 'crush'; fx.radius = cfg.radius; fx.arc = cfg.arc; fx.seed = (Math.random() * 1000) | 0;
+    screenShake = Math.max(screenShake, 6); // 破军：轻微屏幕震动
+  } else {
+    fx.type = 'slash'; fx.radius = cfg.radius; fx.arc = cfg.arc;                          // 烈斩：短促挥砍弧
+  }
+  skillFx.push(fx);
+  GAME.lastSkillAt = now;
+  GAME.lastSkillFx = { slot, type: cfg.type }; // E23 E2E 钩子：槽位→光效类型（slash/beam/quake/crush）
+  SFX.play('skill_' + (slot + 1)); // E12：技能音效按 slot 区分（skill_1..4）
+}
+
+// SIGNAL(6)：靠近掉落按 F 的拾取意图（服务端为重叠自动拾取，此动作服务端忽略，仅表现/占位）
+function sendSignal() { sendCmd({ action: 6, dir: lastMoveDir ?? 0 }); }
+
+// E20：INTERACT(9) 开箱 —— 按 F 且最近可开箱宝箱存在 → 服务端权威半径/结算（targetEntityId 指定宝箱）。
+function sendInteract(targetId) {
+  sendCmd({ action: ACTION_INTERACT, dir: lastMoveDir ?? 0, targetEntityId: targetId });
+  // 记录开箱意图：宝箱从快照消失 → 「打开宝箱！」toast（服务端开箱后移除实体）。
+  chestOpenPending = true;
+  chestOpenPendingId = targetId;
+}
+
+// E8：客户端 8 向朝向（与服务端 dirToward 对称；本地预测/光效用，纯几何无随机）。
+function dirTowardClient(ax, ay, bx, by) {
+  const deg = Math.atan2(by - ay, bx - ax) * 180 / Math.PI;
+  const k = Math.round(deg / 45);
+  return ((k % 8) + 8) % 8;
+}
+
+// E8：无条件发 STOP（点击移动/战斗目标结束用；服务端清 lastMove 立即停）。
+function sendStopCmd() {
+  sendCmd({ action: ACTION_STOP, dir: lastMoveDir ?? 0 });
+  lastMoveDir = null;
+}
+
+// E8：点击移动 → MOVE{targetTile}（目标格编码 gx*64+gy，与服务端 world.packTile 一致）。
+function sendMoveToTile(gx, gy) {
+  sendCmd({ action: 0, dir: lastMoveDir ?? 0, targetTile: gx * 64 + gy });
+}
+
+// E8：普攻 → ATTACK{targetEntityId}（服务端权威 CD/距离/伤害）；本地白刃挥砍光效。
+function sendAttack(targetId) {
+  sendCmd({ action: ACTION_ATTACK, dir: lastMoveDir ?? 0, targetEntityId: targetId });
+  const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+  const t = lastSnapshot ? lastSnapshot.entities.find((e) => e.id === targetId) : null;
+  const base = predicted || (me ? me.pos : null);
+  if (base && t) {
+    meleeFx.push({ x: base.x, y: base.y, dir: dirTowardClient(base.x, base.y, t.pos.x, t.pos.y), born: performance.now(), ttl: 220 });
+    GAME.lastAttackAt = performance.now();
+    // E12：普攻挥砍音（节流 350ms，input loop 12Hz 连发时避免机枪声）
+    if (performance.now() - lastSwingSfxAt > 350) { SFX.play('attack'); lastSwingSfxAt = performance.now(); }
+  }
+}
+
+// E8：清鼠标交互目标（点选/战斗/点击移动）。
+function clearClickTargets() {
+  selectedEnemyId = null; combatTarget = null; moveTarget = null;
+  GAME.selectedEnemyId = null; GAME.combatTarget = null; GAME.moveTarget = null;
+}
+
+// E8：敌人点选命中半径（比渲染半径略大，便于点选）。
+function enemyHitRadius(e) {
+  if (e.kind === KIND.BOSS) return 34;
+  if (e.tier === 1) return 24;
+  return 20;
+}
+
+// E8：左键点击 → 命中敌人/BOSS → 点选（红圈）并自动走近普攻；命中地面 → 点击移动。
+// 交互优先级：左键点敌人 → 攻击；左键点地面 → 移动；右键暂不绑定。
+// C3 定位修正：
+//   - 命中检测用「渲染位置」（renderPosFor，与玩家所见一致），修复点怪落点偏（此前用权威 pos，移动敌人可差 ~250ms×移速）；
+//   - 命中半径用**屏幕空间**（× view.scale），缩放任意档位点击手感一致（修复低缩放时点怪困难）。
+function handleClick(wx, wy) {
+  if (downed) return; // E10：倒地点击交互失效（点选/点击移动不发命令）
+  if (!lastSnapshot || localEntityId == null) return;
+  if (state !== 'overworld' && state !== 'dungeon') return;
+  // ① 优先点选敌人/BOSS（存活）。
+  let hit = null, bestD = Infinity;
+  for (const e of lastSnapshot.entities) {
+    if ((e.kind !== KIND.ENEMY && e.kind !== KIND.BOSS) || e.hp <= 0) continue;
+    const rp = renderPosFor(e) || e.pos;
+    // 屏幕空间距离（世界差 × zoom），命中半径固定屏幕像素（缩放无关）。
+    const d = Math.hypot((rp.x - wx) * view.scale, (rp.y - wy) * view.scale);
+    const hitR = Math.max(15, enemyHitRadius(e) * 0.75);
+    if (d <= hitR && d < bestD) { bestD = d; hit = e; }
+  }
+  if (hit) {
+    selectedEnemyId = hit.id;
+    combatTarget = hit.id;
+    moveTarget = null;
+    GAME.selectedEnemyId = selectedEnemyId; GAME.combatTarget = combatTarget; GAME.moveTarget = null;
+    GAME.lastClickEnemy = { id: hit.id, x: hit.pos.x, y: hit.pos.y };
+    return;
+  }
+  // ② 空地 → 点击移动（目标格，clamp 到世界 40×30 内）。
+  const gx = Math.max(0, Math.min(39, Math.floor(wx / TILE)));
+  const gy = Math.max(0, Math.min(29, Math.floor(wy / TILE)));
+  selectedEnemyId = null; combatTarget = null;
+  moveTarget = gx * 64 + gy;
+  GAME.selectedEnemyId = null; GAME.combatTarget = null; GAME.moveTarget = moveTarget;
+  GAME.lastClickMove = { wx, wy, gx, gy };
+}
+
+// 12Hz 输入循环：键盘优先（按住持续 MOVE）；无键盘 → 战斗目标（走近+普攻）→ 点击移动 → 兜底 STOP。
+function startInputLoop() {
+  if (inputTimer) clearInterval(inputTimer);
+  inputTimer = setInterval(() => {
+    if (downed) return; // E10：倒地不发送任何输入（sendCmd 也兜底拦截）
+    if (!(state === 'overworld' || state === 'dungeon')) return;
+    const dir = dirFromKeys();
+    if (dir != null) {
+      // 键盘优先：清点击目标（点击移动/攻击被按键打断）。
+      if (combatTarget != null || moveTarget != null) clearClickTargets();
+      sendMove(dir);
+      return;
+    }
+    if (combatTarget != null) {
+      // 战斗目标：范围内自动普攻（服务端 CD 门闸），范围外发 MOVE{targetTile:敌人格} 走近。
+      const t = lastSnapshot ? lastSnapshot.entities.find((e) => e.id === combatTarget && (e.kind === KIND.ENEMY || e.kind === KIND.BOSS) && e.hp > 0) : null;
+      if (!t) { // 目标死亡/消失 → 清目标并停。
+        clearClickTargets();
+        sendStopCmd();
+        return;
+      }
+      const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+      if (!me) return;
+      const d = Math.hypot(t.pos.x - me.pos.x, t.pos.y - me.pos.y);
+      if (d <= MELEE_RANGE) sendAttack(combatTarget);
+      else sendMoveToTile(
+        Math.max(0, Math.min(39, Math.floor(t.pos.x / TILE))),
+        Math.max(0, Math.min(29, Math.floor(t.pos.y / TILE))),
+      );
+      return;
+    }
+    if (moveTarget != null) {
+      const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+      if (!me) return;
+      const gx = Math.floor(moveTarget / 64), gy = moveTarget % 64;
+      const tx = gx * TILE + TILE / 2, ty = gy * TILE + TILE / 2;
+      if (Math.hypot(tx - me.pos.x, ty - me.pos.y) <= ARRIVE_TOL) {
+        // 到达 → 清目标并停（服务端到达亦自动清 lastMove，双保险）。
+        moveTarget = null; GAME.moveTarget = null;
+        sendStopCmd();
+      } else {
+        sendMoveToTile(gx, gy);
+      }
+      return;
+    }
+    sendStop();
+  }, 80);
+}
+
+// 一次性动作（PARRY/SKILL）在按键沿触发，防连发
+let lastActionAt = 0;
+function fireAction(fn) {
+  const now = performance.now();
+  if (now - lastActionAt < 120) return; // 轻微防抖
+  lastActionAt = now;
+  fn();
+}
+
+window.addEventListener('keydown', (e) => {
+  if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+  keys.add(e.code);
+  if (e.repeat) return;
+  if (e.code === 'Space') fireAction(sendParry);
+  if (e.code === 'Digit1') fireAction(() => sendSkill(0));
+  if (e.code === 'Digit2') fireAction(() => sendSkill(1));
+  if (e.code === 'Digit3') fireAction(() => sendSkill(2));
+  if (e.code === 'Digit4') fireAction(() => sendSkill(3));
+  if (e.code === 'KeyI') { e.preventDefault(); toggleInventory(); }
+  // E21：Q 喝药（服务端权威回血；本地预检无药水/CD/满血不发命令）。
+  if (e.code === 'KeyQ') fireAction(sendUsePotion);
+  // F：副本内 → 出本优先；主世界靠近宝箱 → 开箱（INTERACT，E20）；靠近掉落 → 拾取意图（SIGNAL，服务端忽略，走近重叠即自动拾取）；否则进/出本
+  if (e.code === 'KeyF') fireAction(() => {
+    if (state === 'dungeon') { exitDungeon(); return; }
+    if (nearChestId != null) sendInteract(nearChestId);
+    else if (nearLootId != null) sendSignal();
+    else toggleDungeon();
+  });
+});
+window.addEventListener('keyup', (e) => {
+  keys.delete(e.code);
+  // 最后一个移动键松开 → 显式 STOP（P0 手感修复：服务端清 lastMove 立即停）。
+  if (KEY_DIRS[e.code] && dirFromKeys() === null) sendStop();
+});
+// 失焦 / 切页 / 断连前：清按键 + 清点击目标 + 显式 STOP，避免服务端沿最后方向惯性滑行。
+window.addEventListener('blur', () => {
+  keys.clear();
+  clearClickTargets();
+  sendStop();
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    keys.clear();
+    clearClickTargets();
+    sendStop();
+  }
+});
+window.addEventListener('beforeunload', () => {
+  if (lastMoveDir != null && ws && ws.readyState === 1) {
+    try {
+      sendJson({
+        type: 'input.cmd',
+        payload: { cmd: { seq: seq++, tick: lastSnapshot ? lastSnapshot.tick : 0, action: ACTION_STOP, dir: lastMoveDir } },
+      });
+    } catch { /* ignore */ }
+    lastMoveDir = null;
+  }
+});
+
+// 技能/格挡/背包按钮
+for (let i = 0; i < 4; i++) {
+  document.getElementById('btn-skill-' + i).addEventListener('click', () => fireAction(() => sendSkill(i)));
+}
+// C3：技能悬停 tooltip（名称/描述/伤害/范围/CD）
+const skillTipEl = document.getElementById('skill-tip');
+function showSkillTip(i, e) {
+  const s = SKILL_INFO[i]; if (!s) return;
+  skillTipEl.innerHTML = '<div class="t-name">' + s.name + '</div><div class="t-desc">' + s.desc + '</div>'
+    + '<div class="t-meta">伤害 ' + s.dmg + ' · 范围 ' + s.rangeTiles.toFixed(1) + ' 格 · CD ' + s.cd.toFixed(1) + 's</div>';
+  skillTipEl.style.display = 'block';
+  const pad = 14;
+  skillTipEl.style.left = Math.min(e.clientX + pad, window.innerWidth - 270) + 'px';
+  skillTipEl.style.top = Math.max(8, e.clientY - 40) + 'px';
+}
+function hideSkillTip() { skillTipEl.style.display = 'none'; }
+for (let i = 0; i < 4; i++) {
+  const b = document.getElementById('btn-skill-' + i);
+  b.addEventListener('mouseenter', (e) => showSkillTip(i, e));
+  b.addEventListener('mousemove', (e) => showSkillTip(i, e));
+  b.addEventListener('mouseleave', hideSkillTip);
+}
+document.getElementById('btn-parry').addEventListener('click', () => fireAction(sendParry));
+// E21：药水按钮（Q）
+document.getElementById('btn-potion').addEventListener('click', () => fireAction(sendUsePotion));
+dungeonBtn.addEventListener('click', toggleDungeon);
+invBtn.addEventListener('click', toggleInventory);
+document.getElementById('inv-close').addEventListener('click', closeInventory);
+
+// ── E12：音效 HUD（静音按钮 🔊/🔇 + 音量滑块；默认开启，localStorage 记忆）──
+(function initSfxHud() {
+  try {
+    const btn = document.getElementById('btn-sfx');
+    const slider = document.getElementById('sfx-vol');
+    const ico = document.getElementById('sfx-vol-ico');
+    const sync = () => {
+      const m = SFX.isMuted();
+      btn.textContent = m ? '🔇' : '🔊';
+      btn.classList.toggle('off', m);
+      slider.value = String(Math.round(SFX.getVolume() * 100));
+      if (ico) ico.textContent = SFX.getVolume() <= 0.01 ? '🔇' : (SFX.getVolume() < 0.5 ? '🔉' : '🔊');
+    };
+    btn.addEventListener('click', () => {
+      const m = SFX.toggleMute();
+      sync();
+      if (!m) SFX.play('ui'); // 恢复声音时的反馈 click
+    });
+    slider.addEventListener('input', () => { // 拖动实时改音量
+      SFX.setVolume(Number(slider.value) / 100);
+      sync();
+    });
+    slider.addEventListener('change', () => { // 松手后播一声反馈
+      if (!SFX.isMuted()) SFX.play('ui');
+    });
+    sync();
+  } catch (e) { /* 静默失败：不阻断游戏 */ }
+})();
+
+// ============================================================================
+// E14：真实登录（服务端 :3011 HTTP 登录代理 → better-auth session_token → ws 重连）
+// 游客免登录照玩（关闭面板/跳过即可）；已存 token 时连接直接带 ?sessionToken=。
+// ============================================================================
+let pendingLoginEmail = null; // 登录后等 session.ready（非游客）→ 欢迎 toast
+const loginBtnEl = document.getElementById('btn-login');
+const loginPanelEl = document.getElementById('loginpanel');
+const loginEmailEl = document.getElementById('login-email');
+const loginPassEl = document.getElementById('login-pass');
+GAME.sessionToken = sessionToken || null;
+
+const LOGIN_ERROR_TEXT = {
+  API2_UNREACHABLE: '登录服务暂不可用，请稍后再试',
+  INVALID_CREDENTIALS: '邮箱或密码错误（注册需邀请码）',
+  BAD_REQUEST: '请求无效，请检查输入',
+  SERVER_ERROR: '登录服务异常，请稍后再试',
+};
+
+function openLoginPanel() {
+  loginPanelEl.classList.add('open');
+  loginEmailEl.focus();
+  SFX.play('ui');
+}
+function closeLoginPanel() {
+  loginPanelEl.classList.remove('open');
+  SFX.play('ui');
+}
+
+// 登录/注册提交：调服务端 HTTP 代理 → 存 token → 重连 ws（带 ?sessionToken=）
+async function submitLogin(mode) {
+  const email = loginEmailEl.value.trim();
+  const password = loginPassEl.value;
+  if (!email || !password) { toast('请输入邮箱和密码', true); return; }
+  const path = mode === 'register' ? '/api/auth/register' : '/api/auth/login';
+  let data;
+  try {
+    const res = await fetch(HTTP_BASE + path, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok || !data.sessionToken) {
+      toast(LOGIN_ERROR_TEXT[data.error] || '登录失败，请重试', true);
+      return;
+    }
+  } catch {
+    toast('无法连接登录服务，请稍后再试', true);
+    return;
+  }
+  try { localStorage.setItem(SESSION_TOKEN_KEY, data.sessionToken); } catch { /* ignore */ }
+  sessionToken = data.sessionToken;
+  GAME.sessionToken = sessionToken;
+  pendingLoginEmail = email;
+  closeLoginPanel();
+  loginPassEl.value = '';
+  toast(mode === 'register' ? '注册成功，正在进入…' : '登录成功，正在进入…');
+  // 重连 ws（?sessionToken= 由 wsUrl() 读取 sessionToken 自动带上）→ session.ready 非游客 → 欢迎 toast
+  if (ws) { try { ws.onclose = null; ws.close(); } catch { /* ignore */ } }
+  setState('connecting');
+  setStatus('登录中，重连…');
+  connect();
+}
+
+loginBtnEl.addEventListener('click', () => {
+  loginPanelEl.classList.contains('open') ? closeLoginPanel() : openLoginPanel();
+});
+document.getElementById('login-close').addEventListener('click', closeLoginPanel);
+document.getElementById('btn-login-submit').addEventListener('click', () => submitLogin('login'));
+document.getElementById('btn-login-register').addEventListener('click', () => submitLogin('register'));
+loginPassEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitLogin('login'); });
+
+// E7：点击已穿槽位 → 卸下（character.unequip）
+for (const slotEl of document.querySelectorAll('.equip-slot')) {
+  slotEl.addEventListener('click', () => {
+    const slot = slotEl.dataset.slot;
+    if (equipped && equipped[slot]) sendUnequip(slot);
+  });
+}
+
+// 进副本 / 出本
+function enterDungeon() {
+  sendJson({ type: 'dungeon.enter', requestId: 'enter', payload: { entranceId: 1 } });
+}
+function exitDungeon() {
+  sendJson({ type: 'dungeon.exit', requestId: 'exit' });
+}
+function toggleDungeon() {
+  if (downed) return; // E10：倒地不可进出副本
+  if (state === 'dungeon') { exitDungeon(); return; }
+  if (state !== 'overworld') return;
+  if (DEBUG) { enterDungeon(); return; }
+  const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+  const ent = lastSnapshot ? lastSnapshot.entities.find((e) => e.kind === KIND.ENTRANCE) : null;
+  const ep = ent ? ent.pos : ENTRANCE_POS;
+  if (me && Math.hypot(me.pos.x - ep.x, me.pos.y - ep.y) <= ENTRANCE_ENTER_RADIUS) enterDungeon();
+  else toast('请先靠近裂隙入口');
+}
+
+// ============================================================================
+// 背包面板（C2）：按 I / HUD 按钮开关；character.inventory 推送实时刷新 + 打开拉全量
+// ============================================================================
+function openInventory() {
+  invOpen = true; GAME.invOpen = true;
+  invPanelEl.classList.add('open');
+  invBtn.classList.add('on');
+  sendJson({ type: 'character.inventory.get', requestId: 'inv' + (invSeq++) }); // 打开拉全量
+  renderInventory();
+  renderEquip();
+  SFX.play('ui'); // E12：UI 点击（背包打开）
+}
+function closeInventory() {
+  invOpen = false; GAME.invOpen = false;
+  invPanelEl.classList.remove('open');
+  invBtn.classList.remove('on');
+  SFX.play('ui'); // E12：UI 点击（背包关闭）
+}
+function toggleInventory() { invOpen ? closeInventory() : openInventory(); }
+
+// E19：强化石计数显示（背包面板顶部「强化石 ×N」）。
+function renderMaterials() {
+  const el = document.getElementById('inv-materials-count');
+  if (el) el.textContent = String(materials);
+}
+
+// E21：药水槽显示（「疗伤药 Q ×N」+ CD 环；无药水 → 半透明）。
+function renderPotionHud() {
+  const btn = document.getElementById('btn-potion');
+  const countEl = document.getElementById('potion-count');
+  if (countEl) countEl.textContent = '×' + Math.max(0, potions);
+  if (btn) btn.classList.toggle('zero', potions <= 0);
+}
+
+function renderInventory() {
+  invCountEl.textContent = inventory.items.length + '/' + inventory.cap;
+  if (inventory.items.length === 0) {
+    invGridEl.innerHTML = '<div id="inv-empty">空</div>';
+    return;
+  }
+  invGridEl.innerHTML = '';
+  for (const it of inventory.items) {
+    const color = RARITY_COLORS[it.rarity] || '#D8D2C4';
+    const cell = document.createElement('div');
+    cell.className = 'inv-cell';
+    cell.style.borderColor = color;
+    const short = '#' + (it.itemId % 0x10000).toString(16).toUpperCase().padStart(4, '0');
+    const aff = it.affixes.length > 0 ? '词缀×' + it.affixes.length : '无词缀';
+    const slotName = SLOT_NAMES[it.slot] || '';
+    // E19：强化等级 +N 显示（enchantLevel>0）。
+    const ench = (it.enchantLevel || 0) > 0 ? ' +' + it.enchantLevel : '';
+    cell.innerHTML = `<div class="inv-id">${short}</div><div class="inv-meta" style="color:${color}">${RARITY_NAMES[it.rarity] || '?'}${ench} · ${aff}${slotName ? ' · ' + slotName : ''}</div>`;
+    // E7：装备按钮（发 character.equip；已穿同槽位物品会被换下回背包）。
+    const eqBtn = document.createElement('button');
+    eqBtn.className = 'equip-btn';
+    eqBtn.textContent = '装备';
+    eqBtn.addEventListener('click', () => { SFX.play('ui'); sendEquip(it.itemId); });
+    cell.appendChild(eqBtn);
+    // E19：强化按钮（有材料可用，消耗 1 石；已达上限禁用）。class=enchant-btn 供 E2E DOM 断言。
+    const enchBtn = document.createElement('button');
+    enchBtn.className = 'enchant-btn';
+    const lv = it.enchantLevel || 0;
+    enchBtn.textContent = lv >= 5 ? '已满' : '强化';
+    enchBtn.disabled = lv >= 5 || materials < 1;
+    enchBtn.addEventListener('click', () => { SFX.play('ui'); sendEnchant(it.itemId); });
+    cell.appendChild(enchBtn);
+    // E22：分解按钮（任何背包装备可分解 → 强化石按稀有度 + 药水 1；确认弹窗）。class=disassemble-btn 供 E2E DOM 断言。
+    const disBtn = document.createElement('button');
+    disBtn.className = 'disassemble-btn';
+    disBtn.textContent = '分解';
+    disBtn.addEventListener('click', () => { SFX.play('ui'); sendDisassemble(it.itemId); });
+    cell.appendChild(disBtn);
+    invGridEl.appendChild(cell);
+  }
+}
+
+// E7：3 槽已穿戴渲染（稀有度色边框 + 短号；点击已穿槽位 → 卸下）。E19：已强化 +N。
+function renderEquip() {
+  for (const slot of ['weapon', 'armor', 'trinket']) {
+    const el = document.getElementById('slot-' + (slot === 'trinket' ? 'trin' : slot));
+    if (!el) continue;
+    const item = equipped[slot] || null;
+    const itemEl = el.querySelector('.slot-item');
+    const actionEl = el.querySelector('.slot-action');
+    if (item) {
+      const color = RARITY_COLORS[item.rarity] || '#D8D2C4';
+      const short = '#' + (item.itemId % 0x10000).toString(16).toUpperCase().padStart(4, '0');
+      const ench = (item.enchantLevel || 0) > 0 ? ' +' + item.enchantLevel : '';
+      el.classList.remove('empty'); el.classList.add('filled');
+      el.style.borderColor = color;
+      itemEl.textContent = short + ench + ' · 词缀×' + (item.affixes || []).length;
+      itemEl.style.color = color;
+      actionEl.textContent = '点击卸下';
+    } else {
+      el.classList.add('empty'); el.classList.remove('filled');
+      el.style.borderColor = '';
+      itemEl.textContent = '—';
+      itemEl.style.color = '';
+      actionEl.textContent = '';
+    }
+  }
+}
+
+// E7：装备 / 卸下（服务端经 character.inventory 回推刷新）
+function sendEquip(itemId) {
+  sendJson({ type: 'character.equip', requestId: 'eq' + (invSeq++), payload: { itemId } });
+}
+function sendUnequip(slot) {
+  sendJson({ type: 'character.unequip', requestId: 'ueq' + (invSeq++), payload: { slot } });
+}
+
+// E19：强化（消耗 1 强化石；服务端经 character.inventory 回推刷新 + requestId 关联 toast）。
+function sendEnchant(itemId) {
+  const it = inventory.items.find((i) => i.itemId === itemId);
+  lastEnchant = { itemId, prevLevel: it ? (it.enchantLevel || 0) : 0 };
+  sendJson({ type: 'character.enchant', requestId: 'ench' + (invSeq++), payload: { itemId } });
+}
+
+// E22：分解（确认弹窗「分解 [物品]？得 强化石×N 药水×1」→ 服务端移除物品 + 材料/药水累加；
+// 不做撤销；MVP 直接分解 + toast「分解成功：强化石+N 药水+1」，可撤销说明见 help）。
+function sendDisassemble(itemId) {
+  const it = inventory.items.find((i) => i.itemId === itemId);
+  if (!it) return;
+  const stones = DISASSEMBLE_STONES_BY_RARITY[it.rarity] || 0;
+  const rarityName = RARITY_NAMES[it.rarity] || '?';
+  const short = '#' + (itemId % 0x10000).toString(16).toUpperCase().padStart(4, '0');
+  const ok = window.confirm(`分解 ${rarityName}品 ${short}？得 强化石×${stones} 药水×${DISASSEMBLE_POTIONS}（不可撤销）`);
+  if (!ok) return;
+  lastDisassemble = { itemId };
+  sendJson({ type: 'character.disassemble', requestId: 'dis' + (invSeq++), payload: { itemId } });
+}
+
+// 调试钩子（?debug=1 时暴露给 E2E）
+if (DEBUG) {
+  GAME.debugEnterDungeon = enterDungeon;
+  GAME.debugExitDungeon = exitDungeon;
+  GAME.sendMove = sendMove;
+  GAME.sendSkill = sendSkill;
+  GAME.sendParry = sendParry;
+  GAME.toggleInventory = toggleInventory;
+  GAME.openInventory = openInventory;
+  GAME.closeInventory = closeInventory;
+  GAME.sendSignal = sendSignal;
+  GAME.sendEquip = sendEquip; // E7
+  GAME.sendUnequip = sendUnequip; // E7
+  GAME.sendEnchant = sendEnchant; // E19
+  GAME.sendDisassemble = sendDisassemble; // E22
+  GAME.sendAttack = sendAttack; // E8 普攻
+  GAME.sendMoveToTile = sendMoveToTile; // E8 点击移动
+  GAME.clickWorld = (wx, wy) => handleClick(wx, wy); // E8 世界坐标点击（E2E 兜底/调试）
+  GAME.clearClickTargets = clearClickTargets; // E8
+  GAME.worldToScreen = worldToScreen; // E8 E2E：世界坐标 → 屏幕坐标（page.mouse.click 用）
+  GAME.screenToWorld = screenToWorld; // E8
+}
+
+// ============================================================================
+// 渲染
+// ============================================================================
+function worldToScreen(p) {
+  return {
+    x: (p.x - view.cx) * view.scale + view.w / 2,
+    y: (p.y - view.cy) * view.scale + view.h / 2,
+  };
+}
+
+// C2 远端实体插值：10 帧环缓冲，renderTime = 最新 tick - INTERP_TICKS 双快照 lerp
+function interpPos(id, t) {
+  let a = null, b = null;
+  for (let i = snapBuffer.length - 1; i >= 0; i--) {
+    const s = snapBuffer[i];
+    const ent = s.entities.get(id);
+    if (!ent) continue;
+    if (s.tick <= t) { a = { tick: s.tick, pos: ent.pos }; break; }
+    b = { tick: s.tick, pos: ent.pos };
+  }
+  if (a && b) {
+    const span = Math.max(1, b.tick - a.tick);
+    const f = Math.min(1, Math.max(0, (t - a.tick) / span));
+    return { x: a.pos.x + (b.pos.x - a.pos.x) * f, y: a.pos.y + (b.pos.y - a.pos.y) * f };
+  }
+  if (a) return { x: a.pos.x, y: a.pos.y };
+  if (b) return { x: b.pos.x, y: b.pos.y };
+  const rec = lastKnown.get(id);
+  return rec ? { x: rec.ent.pos.x, y: rec.ent.pos.y } : null;
+}
+
+// 实体渲染位置：本地 → 预测坐标；远端 → renderTime 插值
+function renderPosFor(e) {
+  if (e.id === localEntityId && predicted) return { x: predicted.x, y: predicted.y };
+  return interpPos(e.id, renderTime);
+}
+
+// C3：任意实体的当前渲染位置（本地=预测；远端=插值；已消失=lastKnown 兜底）——伤害飘字锚定用。
+function entityRenderPos(id) {
+  if (id === localEntityId && predicted) return { x: predicted.x, y: predicted.y };
+  const cur = lastSnapshot ? lastSnapshot.entities.find((e) => e.id === id) : null;
+  if (cur) return renderPosFor(cur) || cur.pos;
+  const rec = lastKnown.get(id);
+  return rec ? { x: rec.ent.pos.x, y: rec.ent.pos.y } : null;
+}
+
+function draw() {
+  requestAnimationFrame(draw);
+  const t = performance.now();
+  const dt = Math.min(0.05, (t - lastFrameT) / 1000);
+  lastFrameT = t;
+
+  if (!lastSnapshot) {
+    ctx.fillStyle = '#14161c';
+    ctx.fillRect(0, 0, view.w, view.h);
+    ctx.fillStyle = '#7a8699';
+    ctx.font = '15px system-ui';
+    ctx.fillText('等待服务器快照…', 24, 48);
+    return;
+  }
+
+  // C2 远端渲染 tick = 最新 tick - INTERP_TICKS（≈250ms @12Hz）
+  renderTime = lastSnapshot.tick - INTERP_TICKS;
+  GAME.renderTick = renderTime;
+
+  // C2/E8 本地预测：按键 / 战斗目标 / 点击移动 → 渲染位置立即推进（帧率无关，按 PLAYER_SPEED*dt；仅渲染层）
+  // E10：倒地禁止预测移动（躺尸原地；predicted 由 RECONCILE_FACTOR 收敛回权威死亡点）
+  if (predicted && (state === 'overworld' || state === 'dungeon') && !downed) {
+    const d = dirFromKeys();
+    if (d != null) {
+      const v = DIR_VECTORS[d];
+      predicted.x += v.x * PLAYER_SPEED * dt;
+      predicted.y += v.y * PLAYER_SPEED * dt;
+    } else if (combatTarget != null) {
+      const t = lastSnapshot ? lastSnapshot.entities.find((e) => e.id === combatTarget && (e.kind === KIND.ENEMY || e.kind === KIND.BOSS) && e.hp > 0) : null;
+      if (t && Math.hypot(t.pos.x - predicted.x, t.pos.y - predicted.y) > MELEE_RANGE) {
+        const v = DIR_VECTORS[dirTowardClient(predicted.x, predicted.y, t.pos.x, t.pos.y)];
+        predicted.x += v.x * PLAYER_SPEED * dt;
+        predicted.y += v.y * PLAYER_SPEED * dt;
+      }
+    } else if (moveTarget != null) {
+      const gx = Math.floor(moveTarget / 64), gy = moveTarget % 64;
+      const tx = gx * TILE + TILE / 2, ty = gy * TILE + TILE / 2;
+      if (Math.hypot(tx - predicted.x, ty - predicted.y) > ARRIVE_TOL) {
+        const v = DIR_VECTORS[dirTowardClient(predicted.x, predicted.y, tx, ty)];
+        predicted.x += v.x * PLAYER_SPEED * dt;
+        predicted.y += v.y * PLAYER_SPEED * dt;
+      }
+    }
+    // 世界边界 clamp（近似；墙内由 RECONCILE_FACTOR 每快照收敛回正）
+    predicted.x = Math.max(8, Math.min(WORLD_W - 8, predicted.x));
+    predicted.y = Math.max(8, Math.min(WORLD_H - 8, predicted.y));
+  }
+  GAME.predicted = predicted ? { x: predicted.x, y: predicted.y } : null;
+  GAME.localRenderPos = predicted ? { x: predicted.x, y: predicted.y } : null;
+
+  // C3 相机锁定跟随本地玩家（预测位置 → 按键即时动，手感优先）+ 世界边界 clamp（不露空白）
+  if (view.follow) {
+    if (predicted) { view.cx = predicted.x; view.cy = predicted.y; }
+    else if (localEntityId != null) {
+      const p = interpPos(localEntityId, renderTime);
+      if (p) { view.cx = p.x; view.cy = p.y; }
+    }
+  }
+  clampCamera();
+  const camX = view.cx, camY = view.cy;
+  // C3 E2E 钩子：相机状态 + 本地玩家屏幕位置
+  GAME.cam = { cx: view.cx, cy: view.cy, scale: view.scale, w: view.w, h: view.h };
+  GAME.playerScreenPos = predicted ? worldToScreen(predicted) : null;
+
+  ctx.fillStyle = '#14161c';
+  ctx.fillRect(0, 0, view.w, view.h);
+
+  ctx.save();
+  // E23：破军屏幕震动（仅偏移世界层渲染；GAME.cam / worldToScreen 不受影响 → E2E 相机断言稳定）
+  const shx = screenShake > 0 ? (Math.random() * 2 - 1) * screenShake : 0;
+  const shy = screenShake > 0 ? (Math.random() * 2 - 1) * screenShake : 0;
+  if (screenShake > 0) screenShake = Math.max(0, screenShake - 40 * dt); // 6px → ~0.15s 衰减完
+  ctx.translate(view.w / 2 - camX * view.scale + shx * view.scale, view.h / 2 - camY * view.scale + shy * view.scale);
+  ctx.scale(view.scale, view.scale);
+
+  drawGrid();
+  drawWorldBounds();
+  drawTelegraphs();
+  drawEntities();
+
+  ctx.restore();
+  drawDownedOverlay(); // E10：倒地全屏红滤镜 + 大字 + 复活倒计时
+  drawFx();
+  drawMinimap(camX, camY);
+}
+
+function drawGrid() {
+  const x0 = Math.max(0, Math.floor((view.cx - view.w / 2 / view.scale) / TILE) * TILE);
+  const x1 = Math.min(WORLD_W, Math.ceil((view.cx + view.w / 2 / view.scale) / TILE) * TILE);
+  const y0 = Math.max(0, Math.floor((view.cy - view.h / 2 / view.scale) / TILE) * TILE);
+  const y1 = Math.min(WORLD_H, Math.ceil((view.cy + view.h / 2 / view.scale) / TILE) * TILE);
+  ctx.strokeStyle = 'rgba(90,100,120,0.14)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let x = x0; x <= x1; x += TILE) { ctx.moveTo(x, y0); ctx.lineTo(x, y1); }
+  for (let y = y0; y <= y1; y += TILE) { ctx.moveTo(x0, y); ctx.lineTo(x1, y); }
+  ctx.stroke();
+  // 安全区/出生区淡色块（主世界入口附近）
+  ctx.fillStyle = 'rgba(95,208,224,0.04)';
+  ctx.fillRect(18 * TILE, 13 * TILE, 4 * TILE, 4 * TILE);
+}
+
+function drawWorldBounds() {
+  ctx.strokeStyle = 'rgba(200,180,140,0.35)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(1, 1, WORLD_W - 2, WORLD_H - 2);
+}
+
+// E10：倒地全屏反馈（红滤镜 + 大字「你倒下了」+ 复活倒计时）。
+//   倒计时 = 服务端快照 tick + 固定 DOWNED_TICKS 推算（服务端不下发 downedAtTick，C12）。
+function drawDownedOverlay() {
+  if (!downed || downedSinceTick == null || !lastSnapshot) return;
+  const elapsed = Math.max(0, lastSnapshot.tick - downedSinceTick);
+  const remain = Math.max(0, Math.ceil((DOWNED_TICKS - elapsed) / TICK_RATE));
+  ctx.save();
+  // 红滤镜（中心淡、四周深，死亡压迫感）
+  const grad = ctx.createRadialGradient(
+    view.w / 2, view.h / 2, Math.min(view.w, view.h) * 0.22,
+    view.w / 2, view.h / 2, Math.max(view.w, view.h) * 0.72,
+  );
+  grad.addColorStop(0, 'rgba(140,16,26,0.16)');
+  grad.addColorStop(1, 'rgba(140,16,26,0.52)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, view.w, view.h);
+  // 大字
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 44px system-ui';
+  ctx.lineWidth = 6;
+  ctx.strokeStyle = 'rgba(0,0,0,0.78)';
+  ctx.strokeText('你倒下了', view.w / 2, view.h / 2 - 30);
+  ctx.fillStyle = '#ff5a5a';
+  ctx.fillText('你倒下了', view.w / 2, view.h / 2 - 30);
+  // 复活倒计时（秒）
+  ctx.font = 'bold 22px system-ui';
+  ctx.lineWidth = 4;
+  ctx.strokeText(remain + 's 后复活', view.w / 2, view.h / 2 + 14);
+  ctx.fillStyle = '#ffd27d';
+  ctx.fillText(remain + 's 后复活', view.w / 2, view.h / 2 + 14);
+  ctx.restore();
+}
+
+function drawHpBar(x, y, w, hp, maxHp, alignBottom) {
+  if (!maxHp) return;
+  const h = 5;
+  const bx = x - w / 2, by = alignBottom ? y - 12 : y - 30;
+  ctx.fillStyle = 'rgba(0,0,0,0.65)';
+  ctx.fillRect(bx - 1, by - 1, w + 2, h + 2);
+  ctx.fillStyle = '#3a0f12';
+  ctx.fillRect(bx, by, w, h);
+  const f = Math.max(0, Math.min(1, hp / maxHp));
+  ctx.fillStyle = f > 0.5 ? '#5fa85f' : (f > 0.25 ? '#f2a03c' : '#c8324a');
+  ctx.fillRect(bx, by, w * f, h);
+}
+
+function drawPlayer(e, p) {
+  const isLocal = e.id === localEntityId;
+  const isTeammate = !isLocal; // E17：kind=PLAYER 且非本地 → 队友
+  const size = isLocal ? 30 : 26;
+  const s = worldToScreen(p);
+  if (s.x < -60 || s.y < -60 || s.x > view.w + 60 || s.y > view.h + 60) return;
+
+  const ang = e.dir * Math.PI / 4;
+  const facing = { x: Math.cos(ang), y: Math.sin(ang) };
+  const isDowned = !!(e.status & STATUS_DOWNED);   // E10：倒地
+  const isIframe = !!(e.status & STATUS_IFRAME);   // E10：复活无敌帧
+
+  ctx.save();
+  ctx.translate(s.x, s.y);
+  // E10：倒地 → 旋转 90° 平躺（躺尸表现）。
+  if (isDowned) ctx.rotate(Math.PI / 2);
+  // E10：复活无敌帧 → 半透明闪烁（alpha 呼吸；IFRAME 位由服务端权威驱动，到期即停）。
+  if (isIframe) ctx.globalAlpha = 0.45 + 0.3 * Math.sin(performance.now() / 70);
+
+  // C3：程序化斗笠侠客剪影（按 dir 朝向旋转；本地更亮；倒地灰色平躺）。E17：队友暖橙调（区分本地深青）。
+  drawWuxiaHero(isLocal ? 'local' : 'teammate', isDowned, facing, size);
+  GAME.rendered.player++;
+  if (isTeammate) GAME.rendered.party++; // E17 E2E 钩子：本帧渲染的队友数
+  ctx.globalAlpha = 1;
+
+  // C2 受击闪白（150ms）——叠加在剪影上
+  const flashUntil = hitFlashes.get(e.id);
+  if (flashUntil && performance.now() < flashUntil) {
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(0, 0, size / 2 + 2, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // E10：倒地骷髅标记（白圆 + 双眼 + 嘴；替代朝向点/金圈）
+  if (isDowned) {
+    ctx.fillStyle = '#e8e8ee';
+    ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#22242a';
+    ctx.beginPath(); ctx.arc(-3.2, -1.5, 2, 0, Math.PI * 2); ctx.arc(3.2, -1.5, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#22242a'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(-3, 3.5); ctx.lineTo(3, 3.5); ctx.stroke();
+  }
+
+  // 本地玩家金圈（倒地不显示）
+  if (isLocal && !isDowned) {
+    ctx.strokeStyle = 'rgba(255,210,0,0.95)';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = 'rgba(255,210,0,0.8)';
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(0, 0, size / 2 + 5, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  // 格挡光环
+  if (e.parryState && e.parryState.active) {
+    ctx.strokeStyle = '#5fd0e0';
+    ctx.lineWidth = 3;
+    ctx.shadowColor = '#5fd0e0';
+    ctx.shadowBlur = 14;
+    ctx.beginPath();
+    ctx.arc(0, 0, size / 2 + 9, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(95,208,224,0.12)';
+    ctx.beginPath(); ctx.arc(0, 0, size / 2 + 9, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+
+  // C2 格挡中提示（本地玩家，parry 窗口）
+  if (isLocal && e.parryState && e.parryState.active) {
+    ctx.fillStyle = '#5fd0e0';
+    ctx.font = 'bold 11px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText('格挡中', s.x, s.y - size / 2 - 20);
+  }
+
+  drawHpBar(s.x, s.y, isLocal ? 44 : 38, e.hp, e.maxHp, true);
+
+  // E17：队友名牌（头顶；服务端未下发用户名 → ownerId=seatId 编号「侠客·N」；倒地变灰）。
+  //     本地玩家保持现状（金圈标识，不加名牌，简洁）。
+  if (isTeammate) {
+    drawNameplate(s.x, s.y - size - 8, teammateName(e), isDowned
+      ? { bg: 'rgba(56,58,66,0.82)', border: '#7a7d84', color: '#9aa0a8' }
+      : { bg: 'rgba(20,16,26,0.78)', border: '#c97b3d', color: '#f2a03c' });
+  }
+}
+
+// E17：队友名牌文案（服务端未下发用户名；MVP 用 seatId 编号，真实用户名归 Phase-3）。
+function teammateName(e) {
+  return e.ownerId != null ? ('侠客·' + e.ownerId) : '队友';
+}
+
+// E17：头顶名牌（小圆角标签，队友标识）。
+function drawNameplate(x, y, text, opts) {
+  ctx.save();
+  ctx.font = 'bold 10px system-ui';
+  ctx.textAlign = 'center';
+  const w = ctx.measureText(text).width + 9;
+  const h = 13;
+  const rx = x - w / 2, ry = y - h;
+  ctx.fillStyle = opts.bg || 'rgba(16,18,26,0.75)';
+  roundRect(rx, ry, w, h, 3);
+  ctx.fill();
+  ctx.strokeStyle = opts.border || 'rgba(200,160,92,0.85)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.fillStyle = opts.color || '#f2a03c';
+  ctx.fillText(text, x, y - 3.5);
+  ctx.restore();
+}
+
+function drawEnemy(e, p) {
+  const s = worldToScreen(p);
+  if (s.x < -80 || s.y < -80 || s.x > view.w + 80 || s.y > view.h + 80) return;
+  const isBoss = e.kind === KIND.BOSS;
+  const isElite = e.tier === 1;
+  const size = isBoss ? 52 : (isElite ? 34 : 26);
+  const variant = enemyVariant(e); // C3：确定性变体（山贼/野兽/暗影刺客/巨魔）
+  GAME.rendered.enemies.push({ id: e.id, variant, tier: e.tier || 0 });
+  // E18：敌人攻击前摇（服务端 EntityStatus.WINDUP 位驱动）→ 站立蓄力抬手表现。
+  const winding = !!(e.status & STATUS_WINDUP);
+
+  ctx.save();
+  ctx.translate(s.x, s.y);
+
+  const ang = e.dir * Math.PI / 4;
+  const facing = { x: Math.cos(ang), y: Math.sin(ang) };
+  // C3：程序化武侠剪影（零外部资源，按变体分支绘制）
+  // E18 前摇：压低 scale 0.92 + 前倾 15°（仅作用于剪影；叠加物如受击闪白/选中圈保持不倾斜）
+  ctx.save();
+  if (winding) { ctx.scale(0.92, 0.92); ctx.rotate(0.26); GAME.rendered.windup++; }
+  if (variant === 'troll') drawTroll(size);
+  else if (variant === 'shadow') drawShadowAssassin(size, facing);
+  else if (variant === 'savage') drawSavageWolf(size, facing);
+  else if (variant === 'boar') drawBoar(size, facing);
+  else drawBrigand(size, facing);
+  ctx.restore();
+
+  // E18 前摇警示：头亮红/黄（可读——「即将出手」）。亮圈置于头部（facing 局部坐标）脉动。
+  if (winding) {
+    const pulse = 0.55 + 0.45 * Math.sin(performance.now() / 90);
+    ctx.save();
+    ctx.rotate(ang);
+    ctx.globalAlpha = 0.55 + pulse * 0.45;
+    ctx.fillStyle = '#ff4438';
+    ctx.shadowColor = '#ff4438';
+    ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.arc(0, -size * 0.60, size * 0.22, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    // BOSS 前摇：脚下红色蓄力圈（复用 telegraph 红色视觉，读作「即将落刀」，可走位躲）。
+    if (isBoss) {
+      ctx.save();
+      ctx.globalAlpha = 0.16 + pulse * 0.30;
+      ctx.strokeStyle = '#ff3b30';
+      ctx.lineWidth = 2 + pulse * 2;
+      ctx.beginPath(); ctx.arc(0, 0, size * 1.5, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // C2 受击闪白（150ms）
+  const flashUntil = hitFlashes.get(e.id);
+  if (flashUntil && performance.now() < flashUntil) {
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // 朝向点（剪影已表达朝向，仅保留微弱指示）
+  ctx.fillStyle = 'rgba(255,255,255,0.75)';
+  ctx.beginPath();
+  ctx.arc(size * 0.32 * facing.x, size * 0.32 * facing.y, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // E8：选中敌人红圈（左键点选跟随；脉动呼吸）
+  if (e.id === selectedEnemyId) {
+    const pulse = 0.75 + 0.25 * Math.sin(performance.now() / 160);
+    ctx.strokeStyle = 'rgba(255,60,60,' + pulse.toFixed(2) + ')';
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = 'rgba(255,60,60,0.9)';
+    ctx.shadowBlur = 10;
+    ctx.beginPath(); ctx.arc(0, 0, size / 2 + 7, 0, Math.PI * 2); ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+  ctx.restore();
+
+  drawHpBar(s.x, s.y, isBoss ? 72 : (isElite ? 48 : 38), e.hp, e.maxHp, true);
+  if (isBoss) { ctx.fillStyle = '#e5b25d'; ctx.font = '10px system-ui'; ctx.textAlign = 'center'; ctx.fillText('BOSS', s.x, s.y - 40); }
+  else if (isElite) { ctx.fillStyle = '#5fd0e0'; ctx.font = '9px system-ui'; ctx.textAlign = 'center'; ctx.fillText('精英', s.x, s.y - 26); }
+}
+
+// ============================================================================
+// C3 程序化武侠剪影（零外部资源，纯 Canvas 路径；确定性；集中 drawEntity 分支）
+// ============================================================================
+// 协议未下发 enemyTypeId（C12），普通怪形状用实体 id 稳定哈希区分（同 id 恒同变体，D9 确定性）。
+// E24：普通怪变体 2 种 → 3 种（山贼/狼/野猪；id 哈希稳定 %3，同 id 恒同变体）。
+function enemyVariant(e) {
+  if (e.kind === KIND.BOSS) return 'troll';
+  if (e.tier === 1) return 'shadow';
+  const h = ((e.id * 2654435761) >>> 0) ^ (e.id >>> 1);
+  const v = h % 3;
+  return v === 0 ? 'brigand' : v === 1 ? 'savage' : 'boar';
+}
+
+// 斗笠侠客（玩家）：圆帽 + 披风 + 剑轮廓；按 facing 旋转朝向；本地深青更亮；队友暖橙（E17 区分）；倒地灰色。
+function drawWuxiaHero(role, isDowned, facing, size) {
+  const R = size / 2;
+  const isLocal = role === 'local';
+  const isTeammate = role === 'teammate';
+  const robe = isDowned ? '#5c5f66' : (isLocal ? '#2f4a66' : (isTeammate ? '#8a4a24' : '#3a4d5e'));
+  const robeHi = isDowned ? '#7a7d84' : (isLocal ? '#5a86ad' : (isTeammate ? '#c07a44' : '#55718a'));
+  const hat = isDowned ? '#8d8a80' : (isTeammate ? '#e8b060' : '#c8a05c');
+  const blade = isDowned ? '#9aa0a8' : '#dce9ff';
+  const a = Math.atan2(facing.y, facing.x);
+  ctx.save();
+  ctx.rotate(a);
+  // 披风（身后左后飘）
+  ctx.fillStyle = robe;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.35, -R * 0.25);
+  ctx.quadraticCurveTo(-R * 1.5, 0, -R * 0.95, R * 0.5);
+  ctx.quadraticCurveTo(-R * 0.5, R * 0.25, -R * 0.15, R * 0.45);
+  ctx.closePath();
+  ctx.fill();
+  // 身体/袍（躯干 + 下摆）
+  ctx.fillStyle = robe;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.45, -R * 0.35);
+  ctx.lineTo(R * 0.35, -R * 0.3);
+  ctx.quadraticCurveTo(R * 0.55, 0, R * 0.3, R * 0.55);
+  ctx.quadraticCurveTo(0, R * 0.7, -R * 0.4, R * 0.5);
+  ctx.quadraticCurveTo(-R * 0.6, 0, -R * 0.45, -R * 0.35);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = robeHi; ctx.lineWidth = 1.2; ctx.stroke();
+  // 剑（朝 facing 方向伸出：剑身 + 护手）
+  ctx.strokeStyle = blade; ctx.lineWidth = Math.max(2.2, R * 0.15);
+  ctx.beginPath(); ctx.moveTo(R * 0.25, 0); ctx.lineTo(R * 1.15, 0); ctx.stroke();
+  ctx.strokeStyle = isDowned ? '#8d8d8d' : '#e8b64a'; ctx.lineWidth = Math.max(3, R * 0.2);
+  ctx.beginPath(); ctx.moveTo(R * 0.08, 0); ctx.lineTo(R * 0.6, 0); ctx.stroke();
+  // 斗笠（帽檐椭圆 + 帽顶两层）
+  ctx.fillStyle = hat;
+  ctx.beginPath(); ctx.ellipse(0, -R * 0.62, R * 0.85, R * 0.34, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = isDowned ? '#6e6c64' : (isTeammate ? '#b88a3e' : '#a8813d');
+  ctx.beginPath(); ctx.arc(0, -R * 0.8, R * 0.34, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = isDowned ? '#8d8a80' : (isTeammate ? '#f0c878' : '#d9b96e');
+  ctx.beginPath(); ctx.arc(0, -R * 0.8, R * 0.18, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// 山贼（普通怪变体 A）：红头巾 + 粗布衣 + 短刀。
+function drawBrigand(size, facing) {
+  const R = size / 2;
+  const a = Math.atan2(facing.y, facing.x);
+  ctx.save();
+  ctx.rotate(a);
+  ctx.fillStyle = '#7a4a2b';
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.4, -R * 0.3);
+  ctx.lineTo(R * 0.3, -R * 0.32);
+  ctx.quadraticCurveTo(R * 0.5, 0, R * 0.28, R * 0.5);
+  ctx.quadraticCurveTo(0, R * 0.62, -R * 0.42, R * 0.48);
+  ctx.quadraticCurveTo(-R * 0.58, 0, -R * 0.4, -R * 0.3);
+  ctx.closePath(); ctx.fill();
+  // 头
+  ctx.fillStyle = '#c99a6b';
+  ctx.beginPath(); ctx.arc(0, -R * 0.55, R * 0.32, 0, Math.PI * 2); ctx.fill();
+  // 红头巾（额带 + 结）
+  ctx.fillStyle = '#c8323a';
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.44, -R * 0.64); ctx.lineTo(R * 0.44, -R * 0.64);
+  ctx.lineTo(R * 0.5, -R * 0.46); ctx.lineTo(-R * 0.5, -R * 0.46);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.arc(-R * 0.28, -R * 0.56, R * 0.13, 0, Math.PI * 2); ctx.fill();
+  // 短刀（朝前）
+  ctx.strokeStyle = '#e8eef7'; ctx.lineWidth = Math.max(2, R * 0.14);
+  ctx.beginPath(); ctx.moveTo(R * 0.22, 0); ctx.lineTo(R * 1.05, -R * 0.15); ctx.stroke();
+  ctx.strokeStyle = '#6b4a2a'; ctx.lineWidth = Math.max(2.6, R * 0.2);
+  ctx.beginPath(); ctx.moveTo(R * 0.18, 0); ctx.lineTo(R * 0.5, -R * 0.07); ctx.stroke();
+  ctx.restore();
+}
+
+// 野兽/狼（普通怪变体 B）：拉长躯干 + 吻 + 耳 + 尾 + 四腿，眼泛凶光。
+function drawSavageWolf(size, facing) {
+  const R = size / 2;
+  const a = Math.atan2(facing.y, facing.x);
+  ctx.save();
+  ctx.rotate(a);
+  const body = '#5a5f6a';
+  // 躯干
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.ellipse(R * 0.2, 0, R * 0.95, R * 0.45, 0, 0, Math.PI * 2); ctx.fill();
+  // 尾
+  ctx.strokeStyle = body; ctx.lineWidth = Math.max(2.4, R * 0.18);
+  ctx.beginPath(); ctx.moveTo(-R * 0.7, 0); ctx.quadraticCurveTo(-R * 1.05, -R * 0.3, -R * 1.15, -R * 0.55); ctx.stroke();
+  // 腿（前 2 后 2）
+  ctx.strokeStyle = body; ctx.lineWidth = Math.max(2.2, R * 0.16);
+  ctx.beginPath();
+  ctx.moveTo(R * 0.55, R * 0.3); ctx.lineTo(R * 0.55, R * 0.85);
+  ctx.moveTo(R * 0.25, R * 0.35); ctx.lineTo(R * 0.25, R * 0.88);
+  ctx.moveTo(-R * 0.25, R * 0.32); ctx.lineTo(-R * 0.25, R * 0.85);
+  ctx.moveTo(-R * 0.55, R * 0.28); ctx.lineTo(-R * 0.55, R * 0.82);
+  ctx.stroke();
+  // 头 + 吻 + 双耳
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.arc(R * 0.85, -R * 0.12, R * 0.4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(R * 0.9, -R * 0.25); ctx.lineTo(R * 1.55, -R * 0.05); ctx.lineTo(R * 0.95, R * 0.12); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(R * 0.72, -R * 0.42); ctx.lineTo(R * 0.88, -R * 0.72); ctx.lineTo(R * 1.02, -R * 0.42); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(R * 1.05, -R * 0.3); ctx.lineTo(R * 1.25, -R * 0.52); ctx.lineTo(R * 1.2, -R * 0.18); ctx.closePath(); ctx.fill();
+  // 眼
+  ctx.fillStyle = '#ffd27d';
+  ctx.beginPath(); ctx.arc(R * 1.02, -R * 0.16, R * 0.07, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// 野猪（普通怪变体 C，E24）：深棕椭圆躯干 + 吻（圆头+鼻孔）+ 小耳 + 短腿 + 上弯獠牙，与狼/山贼可区分。
+function drawBoar(size, facing) {
+  const R = size / 2;
+  const a = Math.atan2(facing.y, facing.x);
+  ctx.save();
+  ctx.rotate(a);
+  const body = '#6b4226', dark = '#4a2c17', tusk = '#efe6d0';
+  // 躯干（深棕椭圆，比狼更宽短）
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.ellipse(0, 0, R * 0.95, R * 0.55, 0, 0, Math.PI * 2); ctx.fill();
+  // 短腿（4 条，粗短）
+  ctx.strokeStyle = dark; ctx.lineWidth = Math.max(2.4, R * 0.2);
+  ctx.beginPath();
+  ctx.moveTo(R * 0.5, R * 0.45); ctx.lineTo(R * 0.5, R * 0.85);
+  ctx.moveTo(R * 0.18, R * 0.5); ctx.lineTo(R * 0.18, R * 0.9);
+  ctx.moveTo(-R * 0.18, R * 0.5); ctx.lineTo(-R * 0.18, R * 0.9);
+  ctx.moveTo(-R * 0.5, R * 0.45); ctx.lineTo(-R * 0.5, R * 0.85);
+  ctx.stroke();
+  // 吻（朝前圆头 + 鼻孔）
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.ellipse(R * 1.0, 0, R * 0.42, R * 0.32, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = dark;
+  ctx.beginPath(); ctx.arc(R * 1.15, -R * 0.08, R * 0.07, 0, Math.PI * 2); ctx.arc(R * 1.15, R * 0.1, R * 0.07, 0, Math.PI * 2); ctx.fill();
+  // 小耳（两枚小三角）
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.moveTo(R * 0.72, -R * 0.4); ctx.lineTo(R * 0.8, -R * 0.68); ctx.lineTo(R * 0.95, -R * 0.38); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(R * 0.98, -R * 0.42); ctx.lineTo(R * 1.12, -R * 0.66); ctx.lineTo(R * 1.18, -R * 0.36); ctx.closePath(); ctx.fill();
+  // 獠牙（上弯白牙，从吻下侧伸出）
+  ctx.strokeStyle = tusk; ctx.lineWidth = Math.max(1.6, R * 0.1);
+  ctx.beginPath(); ctx.moveTo(R * 1.05, R * 0.22); ctx.quadraticCurveTo(R * 1.3, R * 0.42, R * 1.42, R * 0.28); ctx.stroke();
+  // 眼（凶光小点）
+  ctx.fillStyle = '#ffd27d';
+  ctx.beginPath(); ctx.arc(R * 0.98, -R * 0.1, R * 0.06, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// 暗影刺客（精英）：尖兜帽 + 披风 + 匕首，暗紫调 + 幽青眼。
+function drawShadowAssassin(size, facing) {
+  const R = size / 2;
+  const a = Math.atan2(facing.y, facing.x);
+  ctx.save();
+  ctx.rotate(a);
+  const cloak = '#4a2a5e', cloakHi = '#7a4a9e';
+  // 兜帽（尖顶）
+  ctx.fillStyle = cloak;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.5, -R * 0.2);
+  ctx.quadraticCurveTo(-R * 0.45, -R * 0.8, 0, -R * 0.95);
+  ctx.quadraticCurveTo(R * 0.45, -R * 0.8, R * 0.5, -R * 0.2);
+  ctx.closePath(); ctx.fill();
+  // 披风（身后）
+  ctx.fillStyle = cloak;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.5, -R * 0.15);
+  ctx.quadraticCurveTo(-R * 1.3, R * 0.2, -R * 0.9, R * 0.85);
+  ctx.quadraticCurveTo(-R * 0.4, R * 0.6, -R * 0.15, R * 0.5);
+  ctx.closePath(); ctx.fill();
+  // 身体
+  ctx.fillStyle = cloak;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.45, -R * 0.3);
+  ctx.quadraticCurveTo(R * 0.5, -R * 0.35, R * 0.45, R * 0.05);
+  ctx.quadraticCurveTo(R * 0.5, R * 0.5, 0, R * 0.62);
+  ctx.quadraticCurveTo(-R * 0.5, R * 0.5, -R * 0.45, -R * 0.3);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = cloakHi; ctx.lineWidth = 1.4; ctx.stroke();
+  // 匕首
+  ctx.strokeStyle = '#d9c8f2'; ctx.lineWidth = Math.max(2, R * 0.12);
+  ctx.beginPath(); ctx.moveTo(R * 0.25, 0); ctx.lineTo(R * 1.1, -R * 0.2); ctx.stroke();
+  // 幽青眼
+  ctx.fillStyle = '#5fd0e0';
+  ctx.beginPath(); ctx.arc(R * 0.12, -R * 0.42, R * 0.08, 0, Math.PI * 2); ctx.arc(-R * 0.12, -R * 0.42, R * 0.08, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// 巨魔（BOSS）：巨块身躯 + 弯曲双角 + 金红眼 + 两侧巨拳，深色调。
+function drawTroll(size) {
+  const R = size / 2;
+  ctx.save();
+  const pulse = 1 + 0.03 * Math.sin(performance.now() / 500);
+  ctx.scale(pulse, pulse);
+  const skin = '#4a2f28', dark = '#2c1b16', horn = '#c9a06a';
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.65, -R * 0.55);
+  ctx.quadraticCurveTo(0, -R * 0.85, R * 0.65, -R * 0.5);
+  ctx.lineTo(R * 0.75, R * 0.55);
+  ctx.quadraticCurveTo(0, R * 0.8, -R * 0.75, R * 0.55);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = dark; ctx.lineWidth = 2; ctx.stroke();
+  // 双角
+  ctx.strokeStyle = horn; ctx.lineWidth = Math.max(4, R * 0.18);
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.45, -R * 0.72); ctx.quadraticCurveTo(-R * 0.85, -R * 1.1, -R * 0.75, -R * 1.35); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(R * 0.45, -R * 0.72); ctx.quadraticCurveTo(R * 0.85, -R * 1.1, R * 0.75, -R * 1.35); ctx.stroke();
+  // 眼睛
+  ctx.fillStyle = '#e5b25d';
+  ctx.beginPath(); ctx.arc(-R * 0.22, -R * 0.35, R * 0.1, 0, Math.PI * 2); ctx.arc(R * 0.22, -R * 0.35, R * 0.1, 0, Math.PI * 2); ctx.fill();
+  // 巨拳
+  ctx.fillStyle = dark;
+  ctx.beginPath(); ctx.arc(-R * 0.8, R * 0.3, R * 0.3, 0, Math.PI * 2); ctx.arc(R * 0.8, R * 0.3, R * 0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// C3：地面掉落物品剪影（武器/护甲/饰品，稀有度色；slot = itemId % 3 镜像服务端 itemProto）。
+function drawLootIcon(slot, color) {
+  ctx.save();
+  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
+  if (slot === 0) { // 武器（剑）
+    ctx.beginPath(); ctx.moveTo(0, -7); ctx.lineTo(1.6, 6); ctx.lineTo(-1.6, 6); ctx.closePath(); ctx.fill();
+    ctx.fillRect(-2.6, 4, 5.2, 2);
+  } else if (slot === 1) { // 护甲（盾）
+    ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(20,22,28,0.7)'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(0, -4); ctx.lineTo(0, 4); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, 2.2, 0, Math.PI * 2); ctx.stroke();
+  } else { // 饰品（戒指/宝石）
+    ctx.beginPath(); ctx.arc(0, 0, 4.6, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawLoot(e, p) {
+  const s = worldToScreen(p);
+  if (s.x < -60 || s.y < -60 || s.x > view.w + 60 || s.y > view.h + 60) return;
+  const rarity = e.loot ? e.loot.rarity : 0;
+  const color = RARITY_COLORS[rarity] || '#D8D2C4';
+  const t = performance.now() / 1000;
+  const pulse = 0.62 + 0.28 * Math.sin(t * 3.2); // 轻微脉动（alpha 呼吸）
+
+  ctx.save();
+  ctx.translate(s.x, s.y);
+
+  // C2 稀有度光柱（地面向上竖条，alpha 呼吸）
+  const pillarH = 58 + pulse * 10;
+  const pillarW = 10 + pulse * 3;
+  const grad = ctx.createLinearGradient(0, -pillarH, 0, 0);
+  grad.addColorStop(0, hexA(color, 0));
+  grad.addColorStop(0.25, hexA(color, 0.65 * pulse));
+  grad.addColorStop(1, hexA(color, 0.35 * pulse));
+  ctx.fillStyle = grad;
+  ctx.fillRect(-pillarW / 2, -pillarH, pillarW, pillarH);
+
+  // 底部光晕
+  ctx.globalAlpha = 0.5 * pulse;
+  const bg = ctx.createRadialGradient(0, 0, 2, 0, 0, 22);
+  bg.addColorStop(0, hexA(color, 0.9));
+  bg.addColorStop(1, hexA(color, 0));
+  ctx.fillStyle = bg;
+  ctx.beginPath(); ctx.arc(0, 0, 22, 0, Math.PI * 2); ctx.fill();
+
+  // 菱形核心（漂浮光晕）
+  ctx.globalAlpha = 1;
+  ctx.shadowColor = color; ctx.shadowBlur = 10;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(0, -9); ctx.lineTo(9, 0); ctx.lineTo(0, 9); ctx.lineTo(-9, 0);
+  ctx.closePath(); ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.beginPath(); ctx.arc(0, 0, 2.5, 0, Math.PI * 2); ctx.fill();
+  // C3：物品小图标（武器/护甲/饰品剪影，按 itemId % 3 槽位；镜像服务端 itemProto）
+  const slotIdx = e.loot ? (((e.loot.itemId % 3) + 3) % 3) : 0;
+  drawLootIcon(slotIdx, color);
+  GAME.rendered.lootSlots.push(slotIdx);
+  ctx.restore();
+
+  // C2 名字放大 + 描边 + 脉动
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, pulse + 0.15);
+  ctx.font = 'bold 12px system-ui';
+  ctx.textAlign = 'center';
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(10,12,16,0.9)';
+  const label = (RARITY_NAMES[rarity] || '?') + ' ' + (e.loot ? e.loot.itemId : '');
+  ctx.strokeText(label, s.x, s.y + 26);
+  ctx.fillStyle = color;
+  ctx.fillText(label, s.x, s.y + 26);
+  if (e.loot && e.loot.ttlTicks != null) {
+    ctx.font = '9px system-ui';
+    const ttl = (e.loot.ttlTicks / TICK_RATE).toFixed(0) + 's';
+    ctx.strokeText(ttl, s.x, s.y + 38);
+    ctx.fillStyle = 'rgba(210,210,220,0.75)';
+    ctx.fillText(ttl, s.x, s.y + 38);
+  }
+  ctx.restore();
+}
+
+// E20：战利品宝箱渲染（金色宝箱剪影 + 增强光柱 + 脉动 + TTL 倒计时）
+function drawChest(e, p) {
+  const s = worldToScreen(p);
+  if (s.x < -80 || s.y < -80 || s.x > view.w + 80 || s.y > view.h + 80) return;
+  const t = performance.now() / 1000;
+  const pulse = 0.62 + 0.28 * Math.sin(t * 2.6); // 脉动（alpha 呼吸）
+  const gold = '#f2a03c'; // 金（rarity=2 色，宝箱主题色；暗金预告由开箱 toast 呈现）
+
+  ctx.save();
+  ctx.translate(s.x, s.y);
+
+  // 金色光柱（增强：比普通掉落更高更宽）
+  const pillarH = 80 + pulse * 14;
+  const pillarW = 14 + pulse * 4;
+  const grad = ctx.createLinearGradient(0, -pillarH, 0, 0);
+  grad.addColorStop(0, hexA(gold, 0));
+  grad.addColorStop(0.3, hexA(gold, 0.75 * pulse));
+  grad.addColorStop(1, hexA(gold, 0.4 * pulse));
+  ctx.fillStyle = grad;
+  ctx.fillRect(-pillarW / 2, -pillarH, pillarW, pillarH);
+
+  // 底部金色光晕
+  ctx.globalAlpha = 0.6 * pulse;
+  const bg = ctx.createRadialGradient(0, 0, 2, 0, 0, 32);
+  bg.addColorStop(0, hexA(gold, 0.95));
+  bg.addColorStop(1, hexA(gold, 0));
+  ctx.fillStyle = bg;
+  ctx.beginPath(); ctx.arc(0, 0, 32, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // 宝箱本体（箱体 + 弧盖 + 锁扣 + 金边）
+  ctx.shadowColor = gold; ctx.shadowBlur = 14;
+  ctx.fillStyle = '#7a5416';
+  ctx.strokeStyle = gold; ctx.lineWidth = 2;
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(-15, 2, 30, 15, 3);
+  else ctx.rect(-15, 2, 30, 15);
+  ctx.fill(); ctx.stroke();
+  // 箱盖（弧顶）
+  ctx.beginPath(); ctx.moveTo(-17, 3); ctx.quadraticCurveTo(0, -15, 17, 3); ctx.closePath(); ctx.fill(); ctx.stroke();
+  // 锁扣
+  ctx.fillStyle = gold;
+  ctx.beginPath(); ctx.arc(0, 5, 3.4, 0, Math.PI * 2); ctx.fill();
+  // 盖缝高光
+  ctx.strokeStyle = 'rgba(255,225,150,0.9)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(-14, 3); ctx.lineTo(14, 3); ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.restore();
+  GAME.rendered.chests += 1; // E20 E2E 钩子（宝箱渲染标志）
+
+  // 标签 + TTL 倒计时
+  ctx.save();
+  ctx.font = 'bold 12px system-ui';
+  ctx.textAlign = 'center';
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(10,12,16,0.9)';
+  ctx.strokeText('战利品宝箱', s.x, s.y - 30);
+  ctx.fillStyle = gold;
+  ctx.fillText('战利品宝箱', s.x, s.y - 30);
+  if (e.loot && e.loot.ttlTicks != null) {
+    ctx.font = '9px system-ui';
+    const ttl = (e.loot.ttlTicks / TICK_RATE).toFixed(0) + 's';
+    ctx.strokeText(ttl, s.x, s.y - 18);
+    ctx.fillStyle = 'rgba(240,200,120,0.85)';
+    ctx.fillText(ttl, s.x, s.y - 18);
+  }
+  ctx.restore();
+}
+
+function drawEntrance(e, p) {
+  const s = worldToScreen(p);
+  if (s.x < -80 || s.y < -80 || s.x > view.w + 80 || s.y > view.h + 80) return;
+  const t = performance.now() / 1000;
+  const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((x) => x.id === localEntityId) : null;
+  const near = me && Math.hypot(me.pos.x - e.pos.x, me.pos.y - e.pos.y) <= ENTRANCE_ENTER_RADIUS;
+
+  ctx.save();
+  ctx.translate(s.x, s.y);
+  // C3：旋转光晕增强（外发光径向渐变，呼吸）
+  const glow = ctx.createRadialGradient(0, 0, 4, 0, 0, 42 + Math.sin(t * 1.8) * 6);
+  glow.addColorStop(0, 'rgba(200,150,255,0.38)');
+  glow.addColorStop(1, 'rgba(155,95,214,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.arc(0, 0, 46, 0, Math.PI * 2); ctx.fill();
+  GAME.rendered.entrance = true;
+  // 旋转涡流（裂隙异象）
+  for (let i = 0; i < 3; i++) {
+    const rr = 18 + i * 10 + Math.sin(t * 2 + i) * 3;
+    ctx.strokeStyle = i === 0 ? '#9b5fd6' : (i === 1 ? '#5fd0e0' : 'rgba(155,95,214,0.4)');
+    ctx.lineWidth = 3 - i * 0.7;
+    ctx.setLineDash([6, 5]);
+    ctx.lineDashOffset = -t * 40 * (i + 1);
+    ctx.beginPath(); ctx.arc(0, 0, rr, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  ctx.fillStyle = 'rgba(155,95,214,0.18)';
+  ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI * 2); ctx.fill();
+  // 中心
+  ctx.fillStyle = near ? '#e8d5ff' : '#cbb';
+  ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle = near ? '#e8d5ff' : 'rgba(200,190,220,0.8)';
+  ctx.font = '11px system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText(near ? '裂隙入口（按 F）' : '裂隙入口', s.x, s.y - 30);
+  if (e.entrance && e.entrance.cooldownTicks > 0) {
+    const left = e.entrance.cooldownTicks - (GAME.lastTick - e.entrance.lastUsedTick);
+    if (left > 0) {
+      ctx.fillStyle = '#f2a03c';
+      ctx.font = '9px system-ui';
+      ctx.fillText('冷却 ' + (left / TICK_RATE).toFixed(1) + 's', s.x, s.y - 20);
+    }
+  }
+}
+
+function drawTelegraph(e, p) {
+  if (!e.telegraph) return;
+  const s = worldToScreen(p);
+  if (s.x < -120 || s.y < -120 || s.x > view.w + 120 || s.y > view.h + 120) return;
+  const t = e.telegraph;
+  const radius = t.radius || 60;
+  const progress = t.applyTick > t.startTick ? Math.min(1, Math.max(0, (GAME.lastTick - t.startTick) / (t.applyTick - t.startTick))) : 0;
+  ctx.save();
+  ctx.translate(s.x, s.y);
+  ctx.globalAlpha = 0.3 + progress * 0.45;
+  ctx.fillStyle = t.color === 1 ? '#5fd0e0' : '#e5484d';
+  ctx.strokeStyle = t.color === 1 ? '#5fd0e0' : '#e5484d';
+  if (t.shape === 1) { ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.fill(); }
+  else {
+    ctx.lineWidth = 3 + progress * 3;
+    ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
+    ctx.globalAlpha = 0.12; ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawTelegraphs() {
+  if (!lastSnapshot) return;
+  for (const e of lastSnapshot.entities) {
+    if (e.kind !== KIND.TELEGRAPH) continue;
+    const p = renderPosFor(e) || e.pos;
+    if (p) drawTelegraph(e, p);
+  }
+}
+
+function drawEntities() {
+  if (!lastSnapshot) return;
+  // C3 E2E 钩子：每帧重置渲染标志（drawPlayer/drawEnemy/drawLoot/drawEntrance 内填充）
+  GAME.rendered = { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0, windup: 0, chests: 0 };
+  // 入口画在实体底层
+  for (const e of lastSnapshot.entities) {
+    if (e.kind !== KIND.ENTRANCE) continue;
+    drawEntrance(e, e.pos);
+  }
+
+  // C2 拾取/开箱提示：最近 LOOT_GROUND ≤ 1.5×TILE → 「按 F 拾取」（服务端重叠自动拾取，走近即拾取）；
+  // E20：最近 CHEST ≤ 1.5×TILE → 「按 F 开箱」（服务端 CHEST_OPEN_RADIUS 权威判定，按 F 触发 INTERACT）。
+  nearLootId = null; GAME.nearLootId = null; GAME.pickupHint = '';
+  nearChestId = null; GAME.nearChestId = null;
+  const mePos = predicted || (localEntityId != null ? (lastSnapshot.entities.find((e) => e.id === localEntityId) || {}).pos : null);
+  if (mePos) {
+    let bestLoot = null, bestLootD = Infinity, bestChest = null, bestChestD = Infinity;
+    for (const e of lastSnapshot.entities) {
+      const d = Math.hypot(e.pos.x - mePos.x, e.pos.y - mePos.y);
+      if (e.kind === KIND.LOOT_GROUND && d < bestLootD) { bestLootD = d; bestLoot = e; }
+      else if (e.kind === KIND.CHEST && d < bestChestD) { bestChestD = d; bestChest = e; }
+    }
+    // 宝箱优先（仪式感 > 自动拾取；两者同半径时优先开箱）。
+    if (bestChest && bestChestD <= PICKUP_HINT_RADIUS && bestChestD <= bestLootD) {
+      nearChestId = bestChest.id;
+      GAME.nearChestId = nearChestId;
+      GAME.pickupHint = '按 F 开箱';
+      const lp = interpPos(bestChest.id, renderTime) || bestChest.pos;
+      const ls = worldToScreen(lp);
+      ctx.save();
+      ctx.font = 'bold 12px system-ui';
+      ctx.textAlign = 'center';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(10,12,16,0.9)';
+      ctx.strokeText('按 F 开箱', ls.x, ls.y - 46);
+      ctx.fillStyle = '#ffd27d';
+      ctx.fillText('按 F 开箱', ls.x, ls.y - 46);
+      ctx.restore();
+    } else if (bestLoot && bestLootD <= PICKUP_HINT_RADIUS) {
+      nearLootId = bestLoot.id;
+      GAME.nearLootId = nearLootId;
+      GAME.pickupHint = '按 F 拾取';
+      const lp = interpPos(bestLoot.id, renderTime) || bestLoot.pos;
+      const ls = worldToScreen(lp);
+      ctx.save();
+      ctx.font = 'bold 12px system-ui';
+      ctx.textAlign = 'center';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(10,12,16,0.9)';
+      ctx.strokeText('按 F 拾取', ls.x, ls.y - 42);
+      ctx.fillStyle = '#ffd27d';
+      ctx.fillText('按 F 拾取', ls.x, ls.y - 42);
+      ctx.restore();
+    }
+  }
+
+  // E8：点击移动目标点标记（小十字圈，淡黄虚线）
+  if (moveTarget != null) {
+    const gx = Math.floor(moveTarget / 64), gy = moveTarget % 64;
+    const ms = worldToScreen({ x: gx * TILE + TILE / 2, y: gy * TILE + TILE / 2 });
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,210,0,0.85)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.arc(ms.x, ms.y, 12, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(ms.x - 17, ms.y); ctx.lineTo(ms.x - 6, ms.y);
+    ctx.moveTo(ms.x + 6, ms.y); ctx.lineTo(ms.x + 17, ms.y);
+    ctx.moveTo(ms.x, ms.y - 17); ctx.lineTo(ms.x, ms.y - 6);
+    ctx.moveTo(ms.x, ms.y + 6); ctx.lineTo(ms.x, ms.y + 17);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  for (const e of lastSnapshot.entities) {
+    if (e.kind === KIND.ENTRANCE) continue;
+    const p = renderPosFor(e) || e.pos;
+    if (!p) continue;
+    if (e.kind === KIND.PLAYER) drawPlayer(e, p);
+    else if (e.kind === KIND.ENEMY || e.kind === KIND.BOSS) drawEnemy(e, p);
+    else if (e.kind === KIND.LOOT_GROUND) drawLoot(e, p);
+    else if (e.kind === KIND.CHEST) drawChest(e, p); // E20：战利品宝箱
+    else if (e.kind === KIND.TELEGRAPH) { /* telegraph 已底层绘制 */ }
+  }
+  // 消失实体淡出
+  for (const [id, rec] of lastKnown) {
+    if (!lastSnapshot.entities.some((e) => e.id === id)) {
+      const p = rec.ent.pos;
+      const s = worldToScreen(p);
+      if (s.x < -80 || s.y < -80 || s.x > view.w + 80 || s.y > view.h + 80) continue;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, rec.alpha);
+      if (rec.ent.kind === KIND.LOOT_GROUND) { drawLoot(rec.ent, p); }
+      else if (rec.ent.kind === KIND.CHEST) { drawChest(rec.ent, p); } // E20：宝箱开箱/到期淡出
+      else if (rec.ent.kind === KIND.ENEMY || rec.ent.kind === KIND.BOSS) { drawEnemy(rec.ent, p); }
+      ctx.restore();
+    }
+  }
+}
+
+// C2 表现层特效（飘字 / 命中环 / 技能光效 / 击杀粒子）— 屏幕空间绘制
+function drawFx() {
+  const t = performance.now();
+
+  // 伤害飘字（1s 淡出上飘）—— C3：锚定实体当前渲染位置（每帧换算屏幕坐标），实体/相机移动时飘字跟随。
+  for (let i = floatTexts.length - 1; i >= 0; i--) {
+    const f = floatTexts[i];
+    const age = t - f.born;
+    if (age > f.ttl) { floatTexts.splice(i, 1); continue; }
+    const k = age / f.ttl;
+    let ax = f.x, ay = f.y;
+    if (f.entityId != null) {
+      const anchor = entityRenderPos(f.entityId);
+      if (anchor) { ax = anchor.x; ay = anchor.y; }
+    }
+    const s = worldToScreen({ x: ax, y: ay + (f.offY || 0) + f.vy * age / 1000 });
+    f.screen = { x: s.x, y: s.y }; // C3 E2E：飘字当前屏幕位置（断言跟随用）
+    ctx.save();
+    ctx.globalAlpha = 1 - k * k;
+    ctx.font = 'bold 15px system-ui';
+    ctx.textAlign = 'center';
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+    ctx.strokeText(f.text, s.x, s.y);
+    ctx.fillStyle = f.color;
+    ctx.fillText(f.text, s.x, s.y);
+    ctx.restore();
+  }
+  GAME.floatTexts = floatTexts.map((f) => ({ entityId: f.entityId, text: f.text, screen: f.screen || null }));
+
+  // 命中/格挡扩散环
+  for (let i = rings.length - 1; i >= 0; i--) {
+    const r = rings[i];
+    const age = t - r.born;
+    if (age > r.ttl) { rings.splice(i, 1); continue; }
+    const k = age / r.ttl;
+    const s = worldToScreen({ x: r.x, y: r.y });
+    ctx.save();
+    ctx.globalAlpha = (1 - k) * 0.9;
+    ctx.strokeStyle = r.color;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, r.r0 + (r.r1 - r.r0) * k, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // E23：技能光效差异化（按槽位：slash 烈斩短促挥砍弧 / beam 剑气直线波 / quake 震地震荡圈 / crush 破军斩闪）
+  for (let i = skillFx.length - 1; i >= 0; i--) {
+    const fx = skillFx[i];
+    const age = t - fx.born;
+    if (age > fx.ttl) { skillFx.splice(i, 1); continue; }
+    const k = Math.min(1, age / fx.ttl);
+    if (fx.type === 'beam') drawSkillBeam(fx, k);
+    else if (fx.type === 'quake') drawSkillQuake(fx, k);
+    else if (fx.type === 'crush') drawSkillCrush(fx, k);
+    else drawSkillSlash(fx, k);
+  }
+
+// E23：四技能差异化光效绘制（世界坐标→屏幕；k=0..1 生命周期进度）。纯几何，无随机每帧抖动（裂纹/斩线用 seed 确定性）。
+function fxEaseOut(k) { return 1 - (1 - k) * (1 - k); }
+
+// 烈斩：短促白色挥砍弧（玩家面前 90° 快弧，0.15s，近战感；前缘亮弧随进度扫过）
+function drawSkillSlash(fx, k) {
+  const s = worldToScreen({ x: fx.x, y: fx.y });
+  const ang = fx.dir * Math.PI / 4;
+  const a0 = -fx.arc / 2, a1 = fx.arc / 2;
+  ctx.save();
+  ctx.translate(s.x, s.y);
+  ctx.rotate(ang);
+  ctx.globalAlpha = (1 - k) * 0.95;
+  const grad = ctx.createRadialGradient(0, 0, 4, 0, 0, fx.radius);
+  grad.addColorStop(0, 'rgba(255,255,255,1)');
+  grad.addColorStop(0.55, 'rgba(255,255,255,0.78)');
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.arc(0, 0, fx.radius, a0, a1);
+  ctx.closePath();
+  ctx.fill();
+  const sweep = a0 + (a1 - a0) * k; // 前缘由左向右扫，斩击感
+  ctx.strokeStyle = 'rgba(255,255,255,' + ((1 - k) * 0.95).toFixed(3) + ')';
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  ctx.arc(0, 0, fx.radius * 0.82, sweep - 0.22, sweep);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// 剑气：直线剑气波（青白芯 + 金晕尾迹，沿 dir 飞 2.5×TILE=120px，0.25s，到终点消散）
+function drawSkillBeam(fx, k) {
+  const v = DIR_VECTORS[fx.dir];
+  const traveled = k * fx.dist;
+  const hx = fx.x + v.x * traveled, hy = fx.y + v.y * traveled;
+  const tailBack = Math.max(0, traveled - fx.tail);
+  const s = worldToScreen({ x: hx, y: hy });
+  const te = worldToScreen({ x: fx.x + v.x * tailBack, y: fx.y + v.y * tailBack });
+  ctx.save();
+  ctx.globalAlpha = 1 - k * 0.45;
+  ctx.lineCap = 'round';
+  const tg = ctx.createLinearGradient(s.x, s.y, te.x, te.y);
+  tg.addColorStop(0, 'rgba(159,232,255,0.95)');
+  tg.addColorStop(0.45, 'rgba(159,232,255,0.45)');
+  tg.addColorStop(1, 'rgba(255,217,112,0)');
+  ctx.strokeStyle = tg;
+  ctx.lineWidth = 7;
+  ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(te.x, te.y); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,217,112,0.5)';
+  ctx.lineWidth = 2.4;
+  ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(te.x, te.y); ctx.stroke();
+  const hg = ctx.createRadialGradient(s.x, s.y, 1, s.x, s.y, fx.headR * 2.2);
+  hg.addColorStop(0, 'rgba(255,255,255,1)');
+  hg.addColorStop(0.35, 'rgba(159,232,255,0.95)');
+  hg.addColorStop(0.7, 'rgba(255,217,112,0.5)');
+  hg.addColorStop(1, 'rgba(255,217,112,0)');
+  ctx.fillStyle = hg;
+  ctx.beginPath(); ctx.arc(s.x, s.y, fx.headR * 2.2, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  ctx.beginPath(); ctx.arc(s.x, s.y, fx.headR * 0.8, 0, Math.PI * 2); ctx.fill();
+  if (k > 0.85) { // 到位消散小爆闪（命中范围视觉对得上服务端 120px）
+    const pk = (k - 0.85) / 0.15;
+    ctx.globalAlpha = (1 - pk) * 0.8;
+    ctx.strokeStyle = 'rgba(159,232,255,0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(s.x, s.y, 8 + pk * 24, 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// 震地：地面震荡圈（土褐圆环扩散 + 放射裂纹，0.3s，2.0×TILE=96px）
+function drawSkillQuake(fx, k) {
+  const s = worldToScreen({ x: fx.x, y: fx.y });
+  const r = 8 + (fx.radius - 8) * fxEaseOut(k);
+  const alpha = (1 - k) * 0.85;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = fx.color;
+  ctx.lineWidth = 3.5;
+  ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = fx.accent;
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(s.x, s.y, r * 0.72, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = 'rgba(160,112,60,0.4)';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.arc(s.x, s.y, r * 1.1, 0, Math.PI * 2); ctx.stroke();
+  for (let i = 0; i < 8; i++) { // 8 条放射裂纹（seed 确定性抖动）
+    const baseA = (i / 8) * Math.PI * 2 + (fx.seed % 7) * 0.13;
+    const len = (0.5 + ((fx.seed + i * 37) % 10) / 20) * r;
+    const sp = 0.18 + 0.12 * Math.sin(i * 2.7 + fx.seed);
+    ctx.strokeStyle = 'rgba(122,82,48,' + (alpha * 0.9).toFixed(3) + ')';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(s.x + Math.cos(baseA - sp) * r * 0.5, s.y + Math.sin(baseA - sp) * r * 0.5);
+    ctx.lineTo(s.x + Math.cos(baseA + sp) * r * 0.5, s.y + Math.sin(baseA + sp) * r * 0.5);
+    ctx.lineTo(s.x + Math.cos(baseA) * len, s.y + Math.sin(baseA) * len);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = alpha * 0.22; // 中心尘土淡棕
+  ctx.fillStyle = '#a0703c';
+  ctx.beginPath(); ctx.arc(s.x, s.y, r * 0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// 破军：大范围斩闪（180° 红/金巨弧，0.2s 爆发感；屏幕震动在 sendSkill 触发）
+function drawSkillCrush(fx, k) {
+  const s = worldToScreen({ x: fx.x, y: fx.y });
+  const ang = fx.dir * Math.PI / 4;
+  const a0 = -fx.arc / 2, a1 = fx.arc / 2;
+  const r = fx.radius * (0.7 + 0.3 * k);
+  const alpha = (1 - k) * 0.9;
+  ctx.save();
+  ctx.translate(s.x, s.y);
+  ctx.rotate(ang);
+  ctx.globalAlpha = alpha;
+  const grad = ctx.createRadialGradient(0, 0, 6, 0, 0, r);
+  grad.addColorStop(0, 'rgba(255,240,200,0.95)');
+  grad.addColorStop(0.35, 'rgba(208,48,48,0.9)');
+  grad.addColorStop(0.75, 'rgba(242,160,60,0.5)');
+  grad.addColorStop(1, 'rgba(208,48,48,0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.arc(0, 0, r, a0, a1);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(242,160,60,' + alpha.toFixed(3) + ')'; // 金色前缘巨弧
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(0, 0, r * 0.92, a0, a1); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,214,120,' + (alpha * 0.8).toFixed(3) + ')'; // 4 道放射金斩线
+  ctx.lineWidth = 1.6;
+  for (let i = 0; i < 4; i++) {
+    const a = a0 + (a1 - a0) * ((i + 0.5) / 4) + Math.sin(i * 3.1 + fx.seed) * 0.08;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(Math.cos(a) * r * 0.96, Math.sin(a) * r * 0.96);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+  // E8 普攻挥砍弧线（白刃扇形短闪 0.22s，复用技能光效模式）
+  for (let i = meleeFx.length - 1; i >= 0; i--) {
+    const fx = meleeFx[i];
+    const age = t - fx.born;
+    if (age > fx.ttl) { meleeFx.splice(i, 1); continue; }
+    const k = age / fx.ttl;
+    const s = worldToScreen({ x: fx.x, y: fx.y });
+    const ang = fx.dir * Math.PI / 4;
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.rotate(ang);
+    ctx.globalAlpha = (1 - k) * 0.85;
+    const grad = ctx.createRadialGradient(0, 0, 2, 0, 0, 36);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(0.5, 'rgba(255,255,255,0.7)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, 36, -0.5, 0.5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(0, 0, 30, -0.5, 0.5);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 击杀粒子（6-12 个小方块，200ms 淡出四散）
+  for (let i = killFx.length - 1; i >= 0; i--) {
+    const fx = killFx[i];
+    const age = t - fx.born;
+    if (age > fx.ttl) { killFx.splice(i, 1); continue; }
+    const k = age / fx.ttl;
+    for (const p of fx.parts) {
+      const s = worldToScreen({ x: fx.x + p.dx * k, y: fx.y + p.dy * k });
+      ctx.save();
+      ctx.globalAlpha = 1 - k;
+      ctx.fillStyle = p.color;
+      ctx.translate(s.x, s.y);
+      ctx.rotate(p.dx * k * 0.1);
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+      ctx.restore();
+    }
+  }
+
+  // 格挡成功盾闪（本地玩家，受击时 parry 生效）
+  if (parryFx.until > t) {
+    const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+    const base = predicted || (me ? me.pos : null);
+    if (base) {
+      const s = worldToScreen(base);
+      const k = 1 - (parryFx.until - t) / 400;
+      ctx.save();
+      ctx.globalAlpha = (1 - k) * 0.8;
+      ctx.strokeStyle = '#5fd0e0';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 26 + k * 18, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // E9：升级金色闪光（全屏淡金 + 本地玩家扩散金环，1s 淡出）
+  if (levelFx.until > t) {
+    const k = 1 - (levelFx.until - t) / 1000;
+    ctx.save();
+    ctx.globalAlpha = (1 - k) * 0.28;
+    ctx.fillStyle = '#f2a03c';
+    ctx.fillRect(0, 0, view.w, view.h);
+    ctx.restore();
+    const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+    const base = predicted || (me ? me.pos : null);
+    if (base) {
+      const s = worldToScreen(base);
+      ctx.save();
+      ctx.globalAlpha = (1 - k) * 0.9;
+      ctx.strokeStyle = '#f2a03c';
+      ctx.lineWidth = 4;
+      ctx.shadowColor = '#f2a03c';
+      ctx.shadowBlur = 18;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 30 + k * 40, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // E10：复活白闪（全屏白色快速淡出 + 本地玩家扩散白环，~0.45s）
+  if (reviveFx.until > t) {
+    const k = 1 - (reviveFx.until - t) / 450;
+    ctx.save();
+    ctx.globalAlpha = (1 - k) * 0.72;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, view.w, view.h);
+    ctx.restore();
+    const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
+    const base = predicted || (me ? me.pos : null);
+    if (base) {
+      const s = worldToScreen(base);
+      ctx.save();
+      ctx.globalAlpha = (1 - k) * 0.9;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 4;
+      ctx.shadowColor = '#ffffff';
+      ctx.shadowBlur = 18;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 26 + k * 46, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+}
+
+// E26：小地图增强 —— 按 kind 区分形状/颜色（BOSS 大红菱形 / 宝箱金方块脉动 / 入口紫色漩涡 / 掉落按稀有度小点），
+// 世界 40×30 格等比映射（副本 world 同 40×30 → 同比例；kx===ky，格子在图上为正方形）。
+function drawMinimap(camX, camY) {
+  // E26 比例修正：minimap 盒 152×114 = 世界 1920×1440 = 4:3（原 150×112 非等比，格子在图上略扁）
+  const mw = 152, mh = 114, mx = view.w - mw - 12, my = 52;
+  const k = mw / WORLD_W; // = mh / WORLD_H（40×30 格 TILE 对齐：一格在图上 = 48*k px 正方形）
+  ctx.save();
+  ctx.globalAlpha = 0.85;
+  ctx.fillStyle = 'rgba(10,12,16,0.85)';
+  ctx.fillRect(mx - 2, my - 2, mw + 4, mh + 4);
+  ctx.strokeStyle = 'rgba(90,100,120,0.5)';
+  ctx.strokeRect(mx - 2, my - 2, mw + 4, mh + 4);
+  const counts = { boss: 0, chest: 0, entrance: 0, loot: 0 };
+  if (lastSnapshot) {
+    const t = performance.now() / 1000;
+    for (const e of lastSnapshot.entities) {
+      const px = mx + e.pos.x * k, py = my + e.pos.y * k;
+      if (e.kind === KIND.PLAYER) { // 玩家金点 / 队友暖橙点（E17，与名牌一致）
+        ctx.fillStyle = e.id === localEntityId ? '#ffd200' : '#f2a03c';
+        ctx.fillRect(px - 1.5, py - 1.5, 3, 3);
+      } else if (e.kind === KIND.ENEMY) { // 敌人小红点
+        ctx.fillStyle = '#e5484d';
+        ctx.fillRect(px - 1, py - 1, 2, 2);
+      } else if (e.kind === KIND.BOSS) { // BOSS：大红菱形 + 呼吸（副本内一眼可见）
+        counts.boss++;
+        ctx.save();
+        ctx.globalAlpha = 0.75 + 0.25 * Math.sin(t * 4.2);
+        ctx.fillStyle = '#d92632';
+        ctx.shadowColor = '#ff5560'; ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.moveTo(px, py - 6.5); ctx.lineTo(px + 6.5, py); ctx.lineTo(px, py + 6.5); ctx.lineTo(px - 6.5, py);
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      } else if (e.kind === KIND.CHEST) { // 宝箱：金方块 + 脉动（打完 BOSS 找箱）
+        counts.chest++;
+        const s = 4.4 + 1.1 * Math.sin(t * 5);
+        ctx.save();
+        ctx.fillStyle = '#f2a03c';
+        ctx.shadowColor = '#f2a03c'; ctx.shadowBlur = 5;
+        ctx.fillRect(px - s / 2, py - s / 2, s, s);
+        ctx.fillStyle = '#fff3d0';
+        ctx.fillRect(px - s * 0.16, py - s * 0.16, s * 0.32, s * 0.32);
+        ctx.restore();
+      } else if (e.kind === KIND.ENTRANCE) { // 入口：紫色漩涡点（出本/进本方向）
+        counts.entrance++;
+        ctx.save();
+        ctx.globalAlpha = 0.8 + 0.2 * Math.sin(t * 3);
+        ctx.strokeStyle = '#9b5fd6'; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.arc(px, py, 4.4, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = '#c9a0f0';
+        ctx.beginPath(); ctx.arc(px, py, 1.8, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      } else if (e.kind === KIND.LOOT_GROUND) { // 地面掉落：按稀有度 白/蓝/金/暗金 小点（稀有掉落一眼可见）
+        counts.loot++;
+        ctx.fillStyle = RARITY_COLORS[e.loot ? e.loot.rarity : 0] || '#D8D2C4';
+        ctx.fillRect(px - 1.2, py - 1.2, 2.4, 2.4);
+      }
+    }
+  }
+  GAME.minimapMarkers = counts; // E26 E2E 钩子：本帧 minimap 标记计数（boss/chest/entrance/loot）
+  // 视野框
+  const vw = view.w / view.scale * k, vh = view.h / view.scale * k;
+  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+  ctx.strokeRect(mx + camX * k - vw / 2, my + camY * k - vh / 2, vw, vh);
+  ctx.restore();
+}
+
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+// hex → rgba(...,a) 辅助（稀有度色光柱渐变）
+function hexA(hex, a) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+}
+
+// ── 启动 ──
+resize();
+connect();
+draw();
+})();
+</script>
+</body>
+</html>

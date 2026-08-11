@@ -72,7 +72,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       { label: '普通 3×3', grid: 3, pieces: 9 },
       { label: '困难 4×4', grid: 4, pieces: 16 },
     ];
-    const SNAP_DIST = 32;
+    const SNAP_DIST = 40;
 
     function getCollection() {
       try { const r = localStorage.getItem('pinpin_collection'); return r ? JSON.parse(r) : []; }
@@ -405,13 +405,24 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
             if(this._placed) return;
             const gid=this._groupId;
             if(gid!==null){
+              // 立即停止整组的吸附动画，避免 tween 与 drag 竞争导致位置错乱
+              self.pieces.forEach(p=>{if(p._groupId===gid&&!p._placed) self.tweens.killTweensOf(p);});
               const offX=dx-this.x, offY=dy-this.y;
               self.pieces.forEach(p=>{if(p._groupId===gid&&!p._placed){p.x+=offX;p.y+=offY;p.setDepth(100);}});
-            }else{this.x=dx;this.y=dy;this.setDepth(100);}
+            }else{
+              self.tweens.killTweensOf(this);
+              this.x=dx;this.y=dy;this.setDepth(100);
+            }
           });
           piece.on('dragend',function(){
             if(this._placed) return;
-            this.setDepth(0);
+            const gid=this._groupId;
+            if(gid!==null){
+              self.pieces.forEach(p=>{if(p._groupId===gid&&!p._placed) p.setDepth(0);});
+            }else{
+              this.setDepth(0);
+            }
+            console.log('[PinPin] dragend id=' + this._id + ' gid=' + this._groupId + ' pos=(' + this.x.toFixed(1) + ',' + this.y.toFixed(1) + ') target=(' + this._targetX + ',' + this._targetY + ')');
             self.checkSnap(this);
           });
           this.pieces.push(piece);
@@ -468,15 +479,28 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         return this.pieces.some(p=>!p._placed&&Math.abs(p.x-x)<t&&Math.abs(p.y-y)<t);
       }
 
-      // --- 吸附检测 ---
+      // --- 吸附检测（整组：拖动大块时任一成员接近目标都可触发） ---
       checkSnap(piece){
-        const dx=piece.x-piece._targetX, dy=piece.y-piece._targetY;
-        if(Math.abs(dx)<SNAP_DIST&&Math.abs(dy)<SNAP_DIST){
-          this._placePiece(piece,piece._targetX,piece._targetY);
-          return;
+        const gid = piece._groupId;
+        const members = gid === null ? [piece] : this.pieces.filter(p=>p._groupId===gid&&!p._placed);
+        console.log('[PinPin] checkSnap', { id: piece._id, gid, memberCount: members.length });
+        // 1. 任一成员在自己目标格 → 放置（_placePiece 处理整组）
+        for (const m of members) {
+          if (Math.abs(m.x-m._targetX)<SNAP_DIST && Math.abs(m.y-m._targetY)<SNAP_DIST) {
+            console.log('[PinPin] → target match: member', m._id, 'at', m.x.toFixed(1), m.y.toFixed(1), 'target', m._targetX, m._targetY);
+            this._placePiece(m, m._targetX, m._targetY);
+            return;
+          }
         }
-        if(this._trySnapToPlaced(piece)) return;
-        this._tryGroupWithNeighbor(piece);
+        // 2. 任一成员接近已放置邻居 → 整组吸附
+        for (const m of members) {
+          if (this._trySnapToPlaced(m)) return;
+        }
+        // 3. 任一成员接近未放置邻居 → 整组与外部组队
+        for (const m of members) {
+          if (this._tryGroupWithNeighbor(m)) return;
+        }
+        console.log('[PinPin] → no snap triggered, piece stays at', piece.x.toFixed(1), piece.y.toFixed(1));
       }
 
       _trySnapToPlaced(piece){
@@ -486,8 +510,10 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
           if(nr<0||nr>=this.gridSize||nc<0||nc>=this.gridSize) continue;
           const nb=this.pieces.find(p=>p._gRow===nr&&p._gCol===nc);
           if(!nb||!nb._placed) continue;
-          const tx=nb.x-dc*this.pieceW, ty=nb.y-dr*this.pieceH;
+          // 基于 nb 的最终目标位置计算吸附点（避免 tween 中位置偏差）
+          const tx=nb._targetX-dc*this.pieceW, ty=nb._targetY-dr*this.pieceH;
           if(Math.abs(piece.x-tx)<SNAP_DIST*1.3&&Math.abs(piece.y-ty)<SNAP_DIST*1.3){
+            console.log('[PinPin] snapToPlaced:', piece._id, '→ nb', nb._id, 'dir', dr+','+dc, 'dist=', Math.hypot(piece.x-tx, piece.y-ty).toFixed(1));
             this._placePiece(piece,tx,ty);
             return true;
           }
@@ -496,46 +522,83 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       }
 
       _tryGroupWithNeighbor(piece){
-        const dirs=[[-1,0],[1,0],[0,-1],[0,1]];
-        for(const [dr,dc] of dirs){
-          const nr=piece._gRow+dr, nc=piece._gCol+dc;
-          if(nr<0||nr>=this.gridSize||nc<0||nc>=this.gridSize) continue;
-          const nb=this.pieces.find(p=>p._gRow===nr&&p._gCol===nc);
-          if(!nb||nb._placed) continue;
-          const expX=piece.x+dc*this.pieceW, expY=piece.y+dr*this.pieceH;
-          if(Math.abs(nb.x-expX)<SNAP_DIST*2&&Math.abs(nb.y-expY)<SNAP_DIST*2){
-            this.tweens.add({targets:nb,x:expX,y:expY,duration:120,ease:'Back.easeOut'});
-            let gid=piece._groupId;
-            if(gid===null) gid=this._nextGroupId++;
-            const oldNbGid=nb._groupId;
-            piece._groupId=gid;
-            nb._groupId=gid;
-            if(oldNbGid!==null&&oldNbGid!==gid){
-              this.pieces.forEach(p=>{if(p._groupId===oldNbGid) p._groupId=gid;});
+        const gid = piece._groupId;
+        const myMembers = gid === null ? [piece] : this.pieces.filter(p=>p._groupId===gid&&!p._placed);
+        const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+        for (const m of myMembers) {
+          for (const [dr, dc] of dirs) {
+            const nr = m._gRow+dr, nc = m._gCol+dc;
+            if (nr<0||nr>=this.gridSize||nc<0||nc>=this.gridSize) continue;
+            const nb = this.pieces.find(p=>p._gRow===nr&&p._gCol===nc);
+            if (!nb || nb._placed) continue;
+            if (gid !== null && nb._groupId === gid) continue;
+            // 组队：双方都未放置，用 nb 当前位置让两个碎片真正贴在一起
+            const tx = nb.x - dc*this.pieceW, ty = nb.y - dr*this.pieceH;
+            if (Math.abs(m.x-tx) >= SNAP_DIST*2 || Math.abs(m.y-ty) >= SNAP_DIST*2) continue;
+
+            const nMembers = nb._groupId===null ? null : this.pieces.filter(p=>p._groupId===nb._groupId&&!p._placed);
+            const nSize = nMembers ? nMembers.length : 1;
+            const mSize = myMembers.length;
+
+            let newGid = gid;
+            if (newGid === null) newGid = nb._groupId;
+            if (newGid === null) newGid = this._nextGroupId++;
+            const oldNbGid = nb._groupId;
+
+            const dist = Math.hypot(m.x-tx, m.y-ty).toFixed(1);
+            if (mSize <= nSize) {
+              const offX = tx - m.x, offY = ty - m.y;
+              console.log('[PinPin] group(m=' + mSize + '→nb=' + nSize + '): move myGroup, m=' + m._id + ' nb=' + nb._id + ' dir=' + dr + ',' + dc + ' dist=' + dist + ' offX=' + offX.toFixed(1) + ' offY=' + offY.toFixed(1));
+              // 直接瞬移贴合，避免 tween 与后续 drag 竞争导致组内相对位置错乱
+              myMembers.forEach(pm => pm.setPosition(pm.x+offX, pm.y+offY));
+            } else {
+              const expX = m.x + dc*this.pieceW, expY = m.y + dr*this.pieceH;
+              const offX = expX - nb.x, offY = expY - nb.y;
+              console.log('[PinPin] group(m=' + mSize + '→nb=' + nSize + '): move nbGroup, m=' + m._id + ' nb=' + nb._id + ' dir=' + dr + ',' + dc + ' dist=' + dist + ' offX=' + offX.toFixed(1) + ' offY=' + offY.toFixed(1));
+              if (nMembers) {
+                nMembers.forEach(nm => nm.setPosition(nm.x+offX, nm.y+offY));
+              } else {
+                nb.setPosition(expX, expY);
+              }
             }
+
+            myMembers.forEach(pm => pm._groupId = newGid);
+            nb._groupId = newGid;
+            if (oldNbGid !== null && oldNbGid !== newGid) {
+              this.pieces.forEach(p => { if (p._groupId === oldNbGid) p._groupId = newGid; });
+            }
+            return true;
           }
         }
+        return false;
       }
 
-      _placePiece(piece,tx,ty){
-        const gid=piece._groupId;
+      _placePiece(member,tx,ty){
+        const gid=member._groupId;
         if(gid!==null){
           const members=this.pieces.filter(p=>p._groupId===gid&&!p._placed);
-          const refPiece=members[0];
-          const goffX=tx-refPiece.x, goffY=ty-refPiece.y;
+          // 以 member 为基准计算整组偏移，检查整组是否都接近各自 target，避免"飞过去连起来"
+          const goffX=tx-member.x, goffY=ty-member.y;
           let allAlign=true;
           for(const m of members){
-            if(Math.abs((m.x+goffX)-m._targetX)>SNAP_DIST||Math.abs((m.y+goffY)-m._targetY)>SNAP_DIST){allAlign=false;break;}
+            if(Math.abs((m.x+goffX)-m._targetX)>SNAP_DIST*2||Math.abs((m.y+goffY)-m._targetY)>SNAP_DIST*2){allAlign=false;break;}
           }
           if(allAlign){
+            console.log('[PinPin] place group:', members.map(m=>m._id).join(','), '→ targets',
+              members.map(m=>`(${m._targetX},${m._targetY})`).join(' '));
             for(const m of members){
               this.tweens.add({targets:m,x:m._targetX,y:m._targetY,duration:150,ease:'Back.easeOut'});
               this._markPlaced(m);
             }
-          }else{return;}
+          }else{
+            console.log('[PinPin] place group ABORTED (not all aligned):', members.map(m=>m._id).join(','),
+              'member', member._id, '→', tx, ty, 'target', member._targetX, member._targetY);
+            return;
+          }
         }else{
-          this.tweens.add({targets:piece,x:tx,y:ty,duration:150,ease:'Back.easeOut'});
-          this._markPlaced(piece);
+          console.log('[PinPin] place single:', member._id, '→', tx, ty, '(target', member._targetX, member._targetY + ')');
+          this.tweens.add({targets:member,x:tx,y:ty,duration:150,ease:'Back.easeOut'});
+          this._markPlaced(member);
         }
         if(this.placedCount>=this.pieceCount) this.time.delayedCall(400,()=>this.onComplete());
       }

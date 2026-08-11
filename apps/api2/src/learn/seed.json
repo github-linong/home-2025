@@ -2614,6 +2614,66 @@
           "zh": "深刻的；深远的",
           "hint": "very deep or significant",
           "sort_order": 435
+        },
+        {
+          "en": "align",
+          "zh": "对齐；使一致；使结盟",
+          "hint": "make things line up or agree",
+          "sort_order": 436
+        },
+        {
+          "en": "outsource",
+          "zh": "外包；外购",
+          "hint": "hire an outside company to do the work",
+          "sort_order": 437
+        },
+        {
+          "en": "stakeholder",
+          "zh": "利益相关者；干系人",
+          "hint": "someone affected by a project",
+          "sort_order": 438
+        },
+        {
+          "en": "bandwidth",
+          "zh": "带宽；精力/时间余量",
+          "hint": "available time, energy, or capacity",
+          "sort_order": 439
+        },
+        {
+          "en": "linen",
+          "zh": "亚麻布；床上用品",
+          "hint": "cloth made from flax or bed sheets",
+          "sort_order": 440
+        },
+        {
+          "en": "curfew",
+          "zh": "宵禁；门禁时间",
+          "hint": "a set time to be back or indoors",
+          "sort_order": 441
+        },
+        {
+          "en": "trek",
+          "zh": "长途跋涉；徒步旅行",
+          "hint": "a long, slow journey or hike",
+          "sort_order": 442
+        },
+        {
+          "en": "attribute",
+          "zh": "把…归因于；特性；属性",
+          "hint": "regard something as caused by",
+          "sort_order": 443
+        },
+        {
+          "en": "threshold",
+          "zh": "门槛；临界点",
+          "hint": "the point where something begins",
+          "sort_order": 444
+        },
+        {
+          "en": "gist",
+          "zh": "要点；主旨",
+          "hint": "the main point or essence",
+          "sort_order": 445
         }
       ]
     }
@@ -5656,6 +5716,76 @@
       "zh": "深刻的；深远的",
       "pos": "adj.",
       "example": "The book had a profound impact on how I see work."
+    },
+    {
+      "lemma": "align",
+      "phonetic": "/əˈlaɪn/",
+      "zh": "对齐；使一致；使结盟",
+      "pos": "v.",
+      "example": "We need to align our goals with the company's strategy."
+    },
+    {
+      "lemma": "outsource",
+      "phonetic": "/ˈaʊtsɔːrs/",
+      "zh": "外包；外购",
+      "pos": "v.",
+      "example": "Many startups outsource customer support to cut costs."
+    },
+    {
+      "lemma": "stakeholder",
+      "phonetic": "/ˈsteɪkhoʊldər/",
+      "zh": "利益相关者；干系人",
+      "pos": "n.",
+      "example": "Keep all stakeholders informed about the project delay."
+    },
+    {
+      "lemma": "bandwidth",
+      "phonetic": "/ˈbændwɪdθ/",
+      "zh": "带宽；精力/时间余量",
+      "pos": "n.",
+      "example": "I don't have the bandwidth to take on another project this week."
+    },
+    {
+      "lemma": "linen",
+      "phonetic": "/ˈlɪnɪn/",
+      "zh": "亚麻布；床上用品",
+      "pos": "n.",
+      "example": "The hotel provides fresh linen for every guest."
+    },
+    {
+      "lemma": "curfew",
+      "phonetic": "/ˈkɜːrfjuː/",
+      "zh": "宵禁；门禁时间",
+      "pos": "n.",
+      "example": "The hostel has a midnight curfew for all guests."
+    },
+    {
+      "lemma": "trek",
+      "phonetic": "/trek/",
+      "zh": "长途跋涉；徒步旅行",
+      "pos": "n./v.",
+      "example": "We went on a two-day trek through the mountains."
+    },
+    {
+      "lemma": "attribute",
+      "phonetic": "/əˈtrɪbjuːt/",
+      "zh": "把…归因于；特性；属性",
+      "pos": "v./n.",
+      "example": "She attributes her success to consistent daily habits."
+    },
+    {
+      "lemma": "threshold",
+      "phonetic": "/ˈθreʃhoʊld/",
+      "zh": "门槛；临界点",
+      "pos": "n.",
+      "example": "We are at the threshold of a major product launch."
+    },
+    {
+      "lemma": "gist",
+      "phonetic": "/dʒɪst/",
+      "zh": "要点；主旨",
+      "pos": "n.",
+      "example": "Can you give me the gist of the meeting? I missed it."
     }
   ],
   "passages": [

@@ -1,0 +1,42 @@
+{
+  "cardPacks": {
+    "normal": {
+      "id": "pack_normal",
+      "prob": {
+        "N": 60,
+        "R": 30,
+        "SR": 9,
+        "SSR": 1
+      },
+      "pity": {
+        "count": 10,
+        "guarantee": "SR"
+      }
+    },
+    "premium": {
+      "id": "pack_premium",
+      "prob": {
+        "N": 20,
+        "R": 40,
+        "SR": 30,
+        "SSR": 10
+      },
+      "pity": {
+        "count": 5,
+        "guarantee": "SSR"
+      }
+    },
+    "limited": {
+      "id": "pack_limited",
+      "prob": {
+        "SR": 100,
+        "SSR": 20
+      },
+      "limited": true,
+      "pity": {
+        "count": 3,
+        "guarantee": "SSR"
+      }
+    }
+  }
+}

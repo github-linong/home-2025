@@ -1,0 +1,56 @@
+{
+  "days": [
+    {
+      "day": 1,
+      "reward": {
+        "coins": 100
+      }
+    },
+    {
+      "day": 2,
+      "reward": {
+        "puzzleChances": 1
+      }
+    },
+    {
+      "day": 3,
+      "reward": {
+        "shards": 2
+      }
+    },
+    {
+      "day": 4,
+      "reward": {
+        "coins": 200
+      }
+    },
+    {
+      "day": 5,
+      "reward": {
+        "puzzleChances": 1,
+        "shards": 1
+      }
+    },
+    {
+      "day": 6,
+      "reward": {
+        "coins": 300
+      }
+    },
+    {
+      "day": 7,
+      "reward": {
+        "cardPack": "normal",
+        "shards": 5
+      }
+    }
+  ],
+  "weekBonus": {
+    "first": {
+      "cardPack": "premium"
+    },
+    "repeat": {
+      "coins": 500
+    }
+  }
+}
