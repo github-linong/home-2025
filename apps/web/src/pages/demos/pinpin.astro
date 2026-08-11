@@ -1,0 +1,664 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="拼拼卡 · PinPin Cards — 拼图小游戏 Demo"
+  description="浏览器打开就能玩的拼图 Demo，支持 4/9/16 片三种难度，拖拽拼图收集卡牌，数据存 localStroage。"
+  sideBarActiveItemID="demos"
+>
+  <div class="prose mb-4 max-w-none">
+    <h1>拼拼卡 · PinPin Cards</h1>
+    <p class="opacity-80">
+      拖拽拼图，收集卡牌！Phaser 3 小游戏 Demo，数据存本地浏览器。
+    </p>
+    <div class="flex flex-wrap gap-2 not-prose mb-4">
+      <span class="badge badge-primary">Web</span>
+      <span class="badge badge-secondary">Phaser 3</span>
+      <span class="badge badge-outline">小游戏</span>
+      <span class="badge badge-outline">纯前端</span>
+    </div>
+  </div>
+
+  <!-- 游戏容器 -->
+  <div class="flex justify-center">
+    <div
+      id="pinpin-game"
+      class="relative overflow-hidden rounded-2xl shadow-xl border border-base-300 bg-[#FFF8F0]"
+      style="width:400px; height:700px;"
+    >
+      <div id="pinpin-loading" class="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-[#FFF8F0]">
+        <div class="w-32 rounded-full overflow-hidden h-2 bg-orange-100">
+          <div id="pinpin-bar" class="h-full rounded-full bg-[#FF9A6C] transition-all" style="width:0%"></div>
+        </div>
+        <span class="text-sm text-[#A1887F]">加载中…</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex justify-center gap-3 mt-4">
+    <span class="text-xs opacity-50">游戏区域 400×700 · 拖拽碎片到正确位置自动吸附</span>
+  </div>
+
+  <!-- Phaser 3 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+
+  <script is:inline>
+  (function initPinPin() {
+    // 等待 DOM 就绪且 Phaser 加载完成
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPinPin);
+      return;
+    }
+    if (typeof Phaser === 'undefined') {
+      console.log('[PinPin] Phaser not yet loaded, retrying in 100ms...');
+      setTimeout(initPinPin, 100);
+      return;
+    }
+    console.log('[PinPin] DOM ready, Phaser available. Initializing game...');
+
+    const GAME_W = 400, GAME_H = 700;
+    const BG_COLOR = '#FFF8F0';
+    const MAIN_COLOR = 0xFF9A6C;
+    const MAIN_COLOR_STR = '#FF9A6C';
+    const DARK_COLOR = '#5D4037';
+    const CARD_PICS = [
+      { key: 'img1', name: '🌸 春樱', cardName: '樱花卡' },
+      { key: 'img2', name: '🐱 橘猫', cardName: '猫咪卡' },
+      { key: 'img3', name: '🍰 草莓蛋糕', cardName: '蛋糕卡' },
+    ];
+    const DIFFICULTIES = [
+      { label: '简单 2×2', grid: 2, pieces: 4 },
+      { label: '普通 3×3', grid: 3, pieces: 9 },
+      { label: '困难 4×4', grid: 4, pieces: 16 },
+    ];
+    const SNAP_DIST = 32;
+
+    function getCollection() {
+      try { const r = localStorage.getItem('pinpin_collection'); return r ? JSON.parse(r) : []; }
+      catch { return []; }
+    }
+    function addToCollection(idx) {
+      const c = getCollection();
+      if (!c.includes(idx)) { c.push(idx); localStorage.setItem('pinpin_collection', JSON.stringify(c)); }
+    }
+    function formatTime(ms) {
+      const s = Math.floor(ms/1000), m = Math.floor(s/60);
+      return String(m).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+    }
+
+    // =====  Boot Scene =====
+    class BootScene extends Phaser.Scene {
+      constructor() { super('Boot'); }
+      preload() {
+        const cx = GAME_W/2, cy = GAME_H/2;
+        this.cameras.main.setBackgroundColor(BG_COLOR);
+
+        console.log('[PinPin] BootScene.preload() called');
+        console.log('[PinPin] Phaser version:', Phaser.VERSION);
+        console.log('[PinPin] Renderer:', this.game.renderer.type === Phaser.WEBGL ? 'WebGL' : 'Canvas');
+
+        // 进度条
+        this.load.on('progress', (v) => {
+          console.log('[PinPin] progress:', Math.floor(v*100) + '%');
+          const el = document.getElementById('pinpin-bar');
+          if (el) el.style.width = Math.floor(v*100) + '%';
+        });
+
+        // 每个文件加载完成
+        this.load.on('filecomplete', (key) => {
+          console.log('[PinPin] filecomplete:', key);
+        });
+
+        // 加载错误
+        this.load.on('loaderror', (file) => {
+          console.error('[PinPin] loaderror:', file.key || file, file.src);
+        });
+
+        // 全部完成
+        this.load.on('complete', () => {
+          console.log('[PinPin] All assets loaded! Starting Menu scene...');
+          const el = document.getElementById('pinpin-loading');
+          if (el) { el.style.opacity='0'; setTimeout(()=>el.remove(),300); }
+        });
+
+        // 使用绝对路径加载资源
+        const base = '/demos/pinpin/assets/';
+        console.log('[PinPin] Loading assets from:', base);
+        this.load.image('img1', base + 'img1.jpg');
+        this.load.image('img2', base + 'img2.jpg');
+        this.load.image('img3', base + 'img3.jpg');
+        this.load.image('card_back', base + 'card_back.png');
+        console.log('[PinPin] 4 assets queued');
+        // 注意：不要手动调用 this.load.start()，Phaser 会在 preload 返回后自动开始
+      }
+      create() {
+        console.log('[PinPin] BootScene.create() - transitioning to Menu');
+        this.scene.start('Menu');
+      }
+    }
+
+    // 拼图齿轮廓模板（归一化：x∈[0,1] 沿边方向，y∈[0,1] 凸出高度比例）
+    // 钥匙形：窄颈 + 圆润宽头，配合 Catmull-Rom 样条生成平滑曲线
+    const TAB_PROFILE = [
+      [0.00, 0.00],
+      [0.10, 0.00],
+      [0.16, 0.04],
+      [0.22, 0.14],
+      [0.30, 0.28],
+      [0.38, 0.36],
+      [0.50, 0.38],
+      [0.62, 0.36],
+      [0.70, 0.28],
+      [0.78, 0.14],
+      [0.84, 0.04],
+      [0.90, 0.00],
+      [1.00, 0.00],
+    ];
+    // Catmull-Rom 样条插值（与 snapfit 的平滑齿效果一致）
+    function catmullRom(p0, p1, p2, p3, t) {
+      const t2 = t * t, t3 = t2 * t;
+      return {
+        x: 0.5 * ((2*p1.x) + (-p0.x+p2.x)*t + (2*p0.x-5*p1.x+4*p2.x-p3.x)*t2 + (-p0.x+3*p1.x-3*p2.x+p3.x)*t3),
+        y: 0.5 * ((2*p1.y) + (-p0.y+p2.y)*t + (2*p0.y-5*p1.y+4*p2.y-p3.y)*t2 + (-p0.y+3*p1.y-3*p2.y+p3.y)*t3),
+      };
+    }
+
+    // =====  Menu Scene =====
+    class MenuScene extends Phaser.Scene {
+      constructor() { super('Menu'); }
+      create() {
+        this.cameras.main.setBackgroundColor(BG_COLOR);
+        const cx = GAME_W/2; let y = 20;
+
+        this.add.text(cx, y, '🀄 拼拼卡', {
+          fontSize:'32px', fontFamily:'sans-serif', color: DARK_COLOR, fontStyle:'bold' }).setOrigin(0.5,0);
+        y += 48;
+        this.add.text(cx, y, '拖拽拼图，收集卡牌！', {
+          fontSize:'13px', fontFamily:'sans-serif', color:'#A1887F' }).setOrigin(0.5,0);
+        y += 28;
+
+        // 选择图片
+        this.add.text(cx, y, '选择图片', {
+          fontSize:'15px', fontFamily:'sans-serif', color: DARK_COLOR, fontStyle:'bold' }).setOrigin(0.5,0);
+        y += 24;
+        this.selectedPic = 0;
+        this.picThumbs = [];
+        const thumbSize=70, thumbGap=12;
+        const startX = cx - (3*thumbSize+2*thumbGap)/2 + thumbSize/2;
+        for (let i=0; i<3; i++) {
+          const tx = startX+i*(thumbSize+thumbGap);
+          const thumb = this.add.image(tx, y+thumbSize/2, CARD_PICS[i].key).setDisplaySize(thumbSize,thumbSize);
+          const maskG = this.make.graphics({ x:tx-thumbSize/2, y });
+          maskG.fillStyle(0xffffff); maskG.fillRoundedRect(0,0,thumbSize,thumbSize,10);
+          thumb.setMask(maskG.createGeometryMask());
+          const border = this.add.graphics();
+          border.lineStyle(3, MAIN_COLOR, 1);
+          border.strokeRoundedRect(tx-thumbSize/2, y, thumbSize, thumbSize, 10);
+          if (i!==0) border.setAlpha(0);
+          this.picThumbs.push({thumb,border});
+          this.add.text(tx, y+thumbSize+6, CARD_PICS[i].name, {
+            fontSize:'10px', fontFamily:'sans-serif', color:'#8D6E63' }).setOrigin(0.5,0);
+          const hit = this.add.zone(tx, y+thumbSize/2, thumbSize, thumbSize).setInteractive({useHandCursor:true});
+          hit.on('pointerdown', () => this.selectPic(i));
+        }
+        y += thumbSize + 28;
+
+        // 选择难度
+        this.add.text(cx, y, '选择难度', {
+          fontSize:'15px', fontFamily:'sans-serif', color: DARK_COLOR, fontStyle:'bold' }).setOrigin(0.5,0);
+        y += 24;
+        this.selectedDiff = 0;
+        this.diffBtns = [];
+        this._diffBtnYs = [];
+        this._diffLabels = [];
+        for (let i=0; i<DIFFICULTIES.length; i++) {
+          const btnY = y + i*42;
+          this._diffBtnYs.push(btnY);
+          const btn = this.add.graphics();
+          this.drawDiffBtn(btn, cx, btnY, i===0);
+          this.diffBtns.push(btn);
+          this._diffLabels.push(
+            this.add.text(cx, btnY+18, DIFFICULTIES[i].label, {
+              fontSize:'13px', fontFamily:'sans-serif', color: i===0?'#fff':DARK_COLOR, fontStyle:'bold'
+            }).setOrigin(0.5,0.5)
+          );
+          this.add.zone(cx, btnY+18, 200, 38).setInteractive({useHandCursor:true})
+            .on('pointerdown', () => this.selectDiff(i));
+        }
+        y += DIFFICULTIES.length*42 + 20;
+
+        // 开始按钮
+        this.createBtn(cx, y, '🎮 开始拼图', () => {
+          this.scene.start('Game', { picIndex: this.selectedPic, diffIndex: this.selectedDiff });
+        });
+        y += 54;
+        this.createBtn(cx, y, '📖 我的图鉴', () => { this.scene.start('Collection'); }, false, 0xFFA726);
+      }
+      selectPic(idx) {
+        this.selectedPic = idx;
+        this.picThumbs.forEach((o,i) => o.border.setAlpha(i===idx?1:0));
+      }
+      selectDiff(idx) {
+        this.selectedDiff = idx;
+        this.diffBtns.forEach((btn,i) => {
+          this.drawDiffBtn(btn, GAME_W/2, this._diffBtnYs[i], i===idx);
+          this._diffLabels[i].setColor(i===idx?'#fff':DARK_COLOR);
+        });
+      }
+      drawDiffBtn(gfx, cx, y, selected) {
+        gfx.clear();
+        gfx.fillStyle(selected?MAIN_COLOR:0xffffff, 1);
+        gfx.fillRoundedRect(cx-100, y, 200, 36, 18);
+        if (!selected) { gfx.lineStyle(2, MAIN_COLOR, 0.6); gfx.strokeRoundedRect(cx-100, y, 200, 36, 18); }
+      }
+      createBtn(cx, y, label, cb, large=true, color=MAIN_COLOR) {
+        const w=large?190:150, h=large?44:38, r=large?22:19;
+        const bg = this.add.graphics();
+        bg.fillStyle(color,1); bg.fillRoundedRect(cx-w/2, y, w, h, r);
+        const sd = this.add.graphics();
+        sd.fillStyle(color,0.25); sd.fillRoundedRect(cx-w/2+2, y+3, w, h, r); sd.setDepth(-1);
+        this.add.text(cx, y+h/2, label, {
+          fontSize:large?'16px':'13px', fontFamily:'sans-serif', color:'#fff', fontStyle:'bold'
+        }).setOrigin(0.5,0.5);
+        this.add.zone(cx, y+h/2, w, h).setInteractive({useHandCursor:true})
+          .on('pointerdown', cb).on('pointerover', () => bg.setAlpha(0.85)).on('pointerout', () => bg.setAlpha(1));
+      }
+    }
+
+    // =====  Game Scene =====
+    class GameScene extends Phaser.Scene {
+      constructor() { super('Game'); }
+      init(d) { this.picIndex=d.picIndex||0; this.diffIndex=d.diffIndex||0; }
+      create() {
+        const diff=DIFFICULTIES[this.diffIndex];
+        this.gridSize=diff.grid; this.pieceCount=diff.pieces;
+        const puzzleArea=360;
+        this.puzzleX=(GAME_W-puzzleArea)/2; this.puzzleY=100;
+        this.pieceW=Math.floor(puzzleArea/this.gridSize); this.pieceH=this.pieceW;
+        const cx=GAME_W/2, texKey=CARD_PICS[this.picIndex].key;
+        this.cameras.main.setBackgroundColor(BG_COLOR);
+        this.placedCount=0; this.startTime=Date.now();
+        this._nextGroupId=1;
+        this._timer=this.time.addEvent({delay:100,loop:true,callback:()=>this.updateTimer()});
+
+        // --- 异型拼图：生成 Tab 凹凸齿方案 ---
+        this._edgeMap=[];
+        for(let r=0;r<this.gridSize;r++){
+          this._edgeMap[r]=[];
+          for(let c=0;c<this.gridSize;c++){
+            this._edgeMap[r][c]={
+              top:    r===0 ? 0 : -this._edgeMap[r-1][c].bottom,
+              right:  c===this.gridSize-1 ? 0 : (Math.random()>0.5?1:-1),
+              bottom: r===this.gridSize-1 ? 0 : (Math.random()>0.5?1:-1),
+              left:   c===0 ? 0 : -this._edgeMap[r][c-1].right,
+            };
+          }
+        }
+        for(let r=0;r<this.gridSize;r++){
+          this._edgeMap[r][0].left=0;
+          this._edgeMap[r][this.gridSize-1].right=0;
+        }
+        for(let c=0;c<this.gridSize;c++){
+          this._edgeMap[0][c].top=0;
+          this._edgeMap[this.gridSize-1][c].bottom=0;
+        }
+
+        const tabSize=Math.floor(this.pieceW*0.22);
+        const drawPath = this._drawJigsawPath.bind(this);
+
+        // --- 先把原图 cover 成正方形，避免碎片内容拉伸变形 ---
+        const srcImg=this.textures.get(texKey).getSourceImage();
+        const covSize=puzzleArea;
+        const coverCv=document.createElement('canvas');
+        coverCv.width=coverCv.height=covSize;
+        const cctx=coverCv.getContext('2d');
+        const covScale=Math.max(covSize/srcImg.width, covSize/srcImg.height);
+        const cw=srcImg.width*covScale, ch=srcImg.height*covScale;
+        cctx.drawImage(srcImg,(covSize-cw)/2,(covSize-ch)/2,cw,ch);
+        const sqTexKey='_cover_'+texKey;
+        if(this.textures.exists(sqTexKey)) this.textures.remove(sqTexKey);
+        this.textures.addCanvas(sqTexKey,coverCv);
+
+        const cropW=Math.floor(covSize/this.gridSize);
+        const cropH=cropW;
+        const padW=this.pieceW+tabSize*2;
+        const padH=this.pieceH+tabSize*2;
+        for(let i=0;i<this.pieceCount;i++){
+          const r=Math.floor(i/this.gridSize), c=i%this.gridSize;
+          const pKey='_jig_'+i;
+          if(this.textures.exists(pKey)) this.textures.remove(pKey);
+          const cv=document.createElement('canvas');
+          cv.width=padW; cv.height=padH;
+          const ctx=cv.getContext('2d');
+          const cx2=padW/2, cy2=padH/2;
+          const hw=this.pieceW/2, hh=this.pieceH/2;
+
+          ctx.save();
+          ctx.beginPath();
+          drawPath(ctx, cx2, cy2, hw, hh, this._edgeMap[r][c], tabSize);
+          ctx.clip();
+
+          // 源区域：本格内容 + 四向扩展 tabSize（覆盖凹凸齿凸出部分），铺满整个画布
+          const srcX=Math.max(0,c*cropW-tabSize);
+          const srcY=Math.max(0,r*cropH-tabSize);
+          const srcW=Math.min(cropW+tabSize*2,covSize-srcX);
+          const srcH=Math.min(cropH+tabSize*2,covSize-srcY);
+          ctx.drawImage(coverCv, srcX, srcY, srcW, srcH, 0, 0, padW, padH);
+          ctx.restore();
+
+          // 描边
+          ctx.strokeStyle='#BDBDBD';
+          ctx.lineWidth=1.5;
+          ctx.beginPath();
+          drawPath(ctx, cx2, cy2, hw, hh, this._edgeMap[r][c], tabSize);
+          ctx.stroke();
+
+          this.textures.addCanvas(pKey, cv);
+        }
+
+        // --- top bar ---
+        this.add.graphics().fillStyle(0xffffff,0.95).fillRoundedRect(10,8,GAME_W-20,44,20);
+        this.add.text(30,30,'← 返回',{
+          fontSize:'14px',fontFamily:'sans-serif',color:MAIN_COLOR_STR,fontStyle:'bold'
+        }).setOrigin(0.5).setInteractive({useHandCursor:true}).on('pointerdown',()=>{
+          this.time.removeAllEvents(); this.scene.start('Menu');
+        });
+        this.add.text(cx,30,DIFFICULTIES[this.diffIndex].label,{
+          fontSize:'14px',fontFamily:'sans-serif',color:DARK_COLOR,fontStyle:'bold'}).setOrigin(0.5);
+        this.timerText=this.add.text(GAME_W-30,30,'00:00',{
+          fontSize:'15px',fontFamily:'monospace',color:MAIN_COLOR_STR,fontStyle:'bold'}).setOrigin(1,0.5);
+
+        // --- hint grid ---
+        const gridGfx=this.add.graphics(); gridGfx.lineStyle(1,MAIN_COLOR,0.15);
+        for(let r=0;r<=this.gridSize;r++){
+          gridGfx.lineBetween(this.puzzleX,this.puzzleY+r*this.pieceH,this.puzzleX+puzzleArea,this.puzzleY+r*this.pieceH);
+          gridGfx.lineBetween(this.puzzleX+r*this.pieceW,this.puzzleY,this.puzzleX+r*this.pieceW,this.puzzleY+puzzleArea);
+        }
+
+        // --- base image ---
+        this.baseImage=this.add.image(this.puzzleX+puzzleArea/2,this.puzzleY+puzzleArea/2,sqTexKey)
+          .setDisplaySize(puzzleArea,puzzleArea).setAlpha(0.12);
+
+        // --- 创建拼图碎片 ---
+        this.pieces=[];
+        const scatterY=this.puzzleY+puzzleArea+20;
+        const scatterH=GAME_H-scatterY-20;
+        const self=this;
+        for(let i=0;i<this.pieceCount;i++){
+          const gridRow=Math.floor(i/this.gridSize), gridCol=i%this.gridSize;
+          let sx,sy,tries=0;
+          do{sx=Phaser.Math.Between(20,GAME_W-20);sy=Phaser.Math.Between(scatterY,scatterY+scatterH-this.pieceH);tries++;}
+          while(tries<50&&self._overlapsPiece(sx,sy));
+          sy=Math.max(scatterY,Math.min(sy,scatterY+scatterH-this.pieceH));
+
+          const piece=this.add.image(sx,sy,'_jig_'+i)
+            .setDisplaySize(padW, padH)
+            .setInteractive({useHandCursor:true,draggable:true});
+
+          piece._id=i; piece._gRow=gridRow; piece._gCol=gridCol;
+          piece._targetX=this.puzzleX+gridCol*this.pieceW+this.pieceW/2;
+          piece._targetY=this.puzzleY+gridRow*this.pieceH+this.pieceH/2;
+          piece._placed=false; piece._groupId=null;
+
+          piece.on('drag',function(ptr,dx,dy){
+            if(this._placed) return;
+            const gid=this._groupId;
+            if(gid!==null){
+              const offX=dx-this.x, offY=dy-this.y;
+              self.pieces.forEach(p=>{if(p._groupId===gid&&!p._placed){p.x+=offX;p.y+=offY;p.setDepth(100);}});
+            }else{this.x=dx;this.y=dy;this.setDepth(100);}
+          });
+          piece.on('dragend',function(){
+            if(this._placed) return;
+            this.setDepth(0);
+            self.checkSnap(this);
+          });
+          this.pieces.push(piece);
+        }
+
+        this.add.graphics().lineStyle(2,MAIN_COLOR,0.4)
+          .strokeRoundedRect(this.puzzleX-4,this.puzzleY-4,puzzleArea+8,puzzleArea+8,8);
+      }
+
+      // ==========================================
+      // 拼图齿路径（snapfit 风格）
+      // 用钥匙形模板 + Catmull-Rom 样条生成平滑的凹凸齿
+      // 凸出量 ≤ tabSize，保证不被画布裁切
+      // ==========================================
+      _drawJigsawPath(ctx, cx, cy, hw, hh, edges, tabSize) {
+        const protrude = tabSize * 0.9;    // 齿的最大凸出高度
+        ctx.moveTo(cx - hw, cy - hh);
+        this._traceEdge(ctx, cx - hw, cy - hh, cx + hw, cy - hh, edges.top,    protrude, -1); // top
+        this._traceEdge(ctx, cx + hw, cy - hh, cx + hw, cy + hh, edges.right,  protrude, 1);  // right
+        this._traceEdge(ctx, cx + hw, cy + hh, cx - hw, cy + hh, edges.bottom, protrude, 1);  // bottom
+        this._traceEdge(ctx, cx - hw, cy + hh, cx - hw, cy - hh, edges.left,   protrude, -1); // left
+        ctx.closePath();
+      }
+      // 沿一条边生成齿轮廓并描样条曲线
+      _traceEdge(ctx, x1, y1, x2, y2, tab, protrude, dir) {
+        if (tab === 0) { ctx.lineTo(x2, y2); return; }
+        const o = (tab > 0 ? dir : -dir);          // 凸起朝外(dir)，凹陷朝内(-dir)
+        const horizontal = (y1 === y2);
+        const n = TAB_PROFILE.length;
+        const pts = [];
+        for (let i = 0; i < n; i++) {
+          const t = TAB_PROFILE[i][0];
+          const off = TAB_PROFILE[i][1] * protrude * o;
+          pts.push(horizontal
+            ? { x: x1 + t * (x2 - x1), y: y1 + off }
+            : { x: x1 + off,          y: y1 + t * (y2 - y1) });
+        }
+        ctx.lineTo(pts[0].x, pts[0].y);
+        for (let i = 0; i < n - 1; i++) {
+          const p0 = pts[Math.max(0, i - 1)];
+          const p1 = pts[i];
+          const p2 = pts[i + 1];
+          const p3 = pts[Math.min(n - 1, i + 2)];
+          for (let s = 1; s <= 5; s++) {           // 每段细分5次保证平滑
+            const p = catmullRom(p0, p1, p2, p3, s / 5);
+            ctx.lineTo(p.x, p.y);
+          }
+        }
+        ctx.lineTo(x2, y2);
+      }
+
+      _overlapsPiece(x,y){
+        const t=this.pieceW*0.6;
+        return this.pieces.some(p=>!p._placed&&Math.abs(p.x-x)<t&&Math.abs(p.y-y)<t);
+      }
+
+      // --- 吸附检测 ---
+      checkSnap(piece){
+        const dx=piece.x-piece._targetX, dy=piece.y-piece._targetY;
+        if(Math.abs(dx)<SNAP_DIST&&Math.abs(dy)<SNAP_DIST){
+          this._placePiece(piece,piece._targetX,piece._targetY);
+          return;
+        }
+        if(this._trySnapToPlaced(piece)) return;
+        this._tryGroupWithNeighbor(piece);
+      }
+
+      _trySnapToPlaced(piece){
+        const dirs=[[-1,0],[1,0],[0,-1],[0,1]];
+        for(const [dr,dc] of dirs){
+          const nr=piece._gRow+dr, nc=piece._gCol+dc;
+          if(nr<0||nr>=this.gridSize||nc<0||nc>=this.gridSize) continue;
+          const nb=this.pieces.find(p=>p._gRow===nr&&p._gCol===nc);
+          if(!nb||!nb._placed) continue;
+          const tx=nb.x-dc*this.pieceW, ty=nb.y-dr*this.pieceH;
+          if(Math.abs(piece.x-tx)<SNAP_DIST*1.3&&Math.abs(piece.y-ty)<SNAP_DIST*1.3){
+            this._placePiece(piece,tx,ty);
+            return true;
+          }
+        }
+        return false;
+      }
+
+      _tryGroupWithNeighbor(piece){
+        const dirs=[[-1,0],[1,0],[0,-1],[0,1]];
+        for(const [dr,dc] of dirs){
+          const nr=piece._gRow+dr, nc=piece._gCol+dc;
+          if(nr<0||nr>=this.gridSize||nc<0||nc>=this.gridSize) continue;
+          const nb=this.pieces.find(p=>p._gRow===nr&&p._gCol===nc);
+          if(!nb||nb._placed) continue;
+          const expX=piece.x+dc*this.pieceW, expY=piece.y+dr*this.pieceH;
+          if(Math.abs(nb.x-expX)<SNAP_DIST*2&&Math.abs(nb.y-expY)<SNAP_DIST*2){
+            this.tweens.add({targets:nb,x:expX,y:expY,duration:120,ease:'Back.easeOut'});
+            let gid=piece._groupId;
+            if(gid===null) gid=this._nextGroupId++;
+            const oldNbGid=nb._groupId;
+            piece._groupId=gid;
+            nb._groupId=gid;
+            if(oldNbGid!==null&&oldNbGid!==gid){
+              this.pieces.forEach(p=>{if(p._groupId===oldNbGid) p._groupId=gid;});
+            }
+          }
+        }
+      }
+
+      _placePiece(piece,tx,ty){
+        const gid=piece._groupId;
+        if(gid!==null){
+          const members=this.pieces.filter(p=>p._groupId===gid&&!p._placed);
+          const refPiece=members[0];
+          const goffX=tx-refPiece.x, goffY=ty-refPiece.y;
+          let allAlign=true;
+          for(const m of members){
+            if(Math.abs((m.x+goffX)-m._targetX)>SNAP_DIST||Math.abs((m.y+goffY)-m._targetY)>SNAP_DIST){allAlign=false;break;}
+          }
+          if(allAlign){
+            for(const m of members){
+              this.tweens.add({targets:m,x:m._targetX,y:m._targetY,duration:150,ease:'Back.easeOut'});
+              this._markPlaced(m);
+            }
+          }else{return;}
+        }else{
+          this.tweens.add({targets:piece,x:tx,y:ty,duration:150,ease:'Back.easeOut'});
+          this._markPlaced(piece);
+        }
+        if(this.placedCount>=this.pieceCount) this.time.delayedCall(400,()=>this.onComplete());
+      }
+
+      _markPlaced(piece){
+        piece._placed=true; piece.disableInteractive(); piece.setDepth(-1); piece._groupId=null;
+        this.placedCount++;
+        for(let i=0;i<6;i++){
+          const p=this.add.graphics(); p.fillStyle(MAIN_COLOR,0.8);
+          p.fillCircle(0,0,Phaser.Math.Between(3,6));
+          p.setPosition(piece.x,piece.y).setDepth(50);
+          this.tweens.add({targets:p,x:p.x+Phaser.Math.Between(-40,40),y:p.y+Phaser.Math.Between(-40,40),
+            alpha:0,scale:0,duration:400,ease:'Quad.easeOut',onComplete:()=>p.destroy()});
+        }
+      }
+
+      updateTimer(){this.timerText.setText(formatTime(Date.now()-this.startTime));}
+      onComplete(){
+        this.time.removeAllEvents();
+        const elapsed=Date.now()-this.startTime;
+        const cx=GAME_W/2,cy=GAME_H/2;
+        this.baseImage.setAlpha(1);
+        this.pieces.forEach(p=>{if(p._placed){this.tweens.add({targets:p,alpha:0,duration:300});}else{p.setVisible(false);}});
+        this.cameras.main.flash(400,255,255,255);
+        this.time.delayedCall(600,()=>this.showCardFlip(elapsed));
+      }
+      showCardFlip(elapsed){
+        const cx=GAME_W/2,cy=GAME_H/2;
+        const cardW=200,cardH=280;
+        const card=this.add.image(cx,cy,'card_back').setDisplaySize(cardW,cardH).setScale(1,1).setDepth(200);
+        const doneT=this.add.text(cx,cy-cardH/2-40,'✨ 拼图完成！',{
+          fontSize:'24px',fontFamily:'sans-serif',color:DARK_COLOR,fontStyle:'bold'
+        }).setOrigin(0.5).setDepth(200).setAlpha(0);
+        const timeT=this.add.text(cx,cy-cardH/2-10,'用时 '+formatTime(elapsed),{
+          fontSize:'16px',fontFamily:'sans-serif',color:'#8D6E63'
+        }).setOrigin(0.5).setDepth(200).setAlpha(0);
+        this.tweens.add({targets:[doneT,timeT],alpha:1,duration:400});
+        this.tweens.add({targets:card,scaleX:0,duration:400,delay:600,ease:'Quad.easeIn',onComplete:()=>{
+          card.setTexture(CARD_PICS[this.picIndex].key);
+          this.tweens.add({targets:card,scaleX:1,duration:400,ease:'Quad.easeOut'});
+          const cn=this.add.text(cx,cy+cardH/2+20,'获得「'+CARD_PICS[this.picIndex].cardName+'」',{
+            fontSize:'18px',fontFamily:'sans-serif',color:MAIN_COLOR_STR,fontStyle:'bold'
+          }).setOrigin(0.5).setDepth(200).setAlpha(0);
+          this.tweens.add({targets:cn,alpha:1,duration:400,delay:200});
+          addToCollection(this.picIndex);
+        }});
+        this.time.delayedCall(2100,()=>{
+          this.createGameBtn(cx-70,cy+cardH/2+60,'🔄 再来',()=>{
+            this.scene.restart({picIndex:this.picIndex,diffIndex:this.diffIndex});
+          });
+          this.createGameBtn(cx+70,cy+cardH/2+60,'🏠 主页',()=>{this.scene.start('Menu');});
+        });
+      }
+      createGameBtn(x,y,label,cb){
+        const w=110,h=40;
+        const bg=this.add.graphics().setDepth(200);
+        bg.fillStyle(MAIN_COLOR,1); bg.fillRoundedRect(x-w/2,y-h/2,w,h,20);
+        this.add.text(x,y,label,{fontSize:'14px',fontFamily:'sans-serif',color:'#fff',fontStyle:'bold'}).setOrigin(0.5).setDepth(200);
+        this.add.zone(x,y,w,h).setInteractive({useHandCursor:true}).setDepth(200).on('pointerdown',cb);
+      }
+    }
+
+    // =====  Collection Scene =====
+    class CollectionScene extends Phaser.Scene {
+      constructor() { super('Collection'); }
+      create() {
+        this.cameras.main.setBackgroundColor(BG_COLOR);
+        const cx=GAME_W/2; let y=50;
+        this.add.text(cx,y,'📖 我的图鉴',{
+          fontSize:'28px',fontFamily:'sans-serif',color:DARK_COLOR,fontStyle:'bold'}).setOrigin(0.5,0);
+        y+=50;
+        const col=getCollection();
+        const cardW=140,cardH=200,gap=16;
+        const startX=(GAME_W-(cardW*2+gap))/2+cardW/2;
+        for(let i=0;i<3;i++){
+          const colI=i%2,rowI=Math.floor(i/2);
+          const cx2=startX+colI*(cardW+gap),cy2=y+rowI*(cardH+50);
+          if(col.includes(i)){
+            const card=this.add.image(cx2,cy2+cardH/2,CARD_PICS[i].key).setDisplaySize(cardW,cardH);
+            const maskG=this.make.graphics({x:cx2-cardW/2,y:cy2});
+            maskG.fillStyle(0xffffff); maskG.fillRoundedRect(0,0,cardW,cardH,16);
+            card.setMask(maskG.createGeometryMask());
+            this.add.text(cx2,cy2+cardH+10,CARD_PICS[i].cardName,{
+              fontSize:'14px',fontFamily:'sans-serif',color:DARK_COLOR,fontStyle:'bold'}).setOrigin(0.5,0);
+            this.add.text(cx2,cy2+cardH+30,'✓ 已收集',{
+              fontSize:'11px',fontFamily:'sans-serif',color:'#66BB6A'}).setOrigin(0.5,0);
+          }else{
+            const ph=this.add.graphics();
+            ph.fillStyle(0xE0E0E0,0.5); ph.fillRoundedRect(cx2-cardW/2,cy2,cardW,cardH,16);
+            ph.lineStyle(2,0xE0E0E0,1); ph.strokeRoundedRect(cx2-cardW/2,cy2,cardW,cardH,16);
+            this.add.text(cx2,cy2+cardH/2,'?',{
+              fontSize:'48px',fontFamily:'sans-serif',color:'#BDBDBD'}).setOrigin(0.5);
+            this.add.text(cx2,cy2+cardH+10,'???',{
+              fontSize:'14px',fontFamily:'sans-serif',color:'#BCAAA4'}).setOrigin(0.5,0);
+            this.add.text(cx2,cy2+cardH+30,'未收集',{
+              fontSize:'11px',fontFamily:'sans-serif',color:'#BCAAA4'}).setOrigin(0.5,0);
+          }
+        }
+        y+=2*(cardH+50)+30;
+        this.createColBtn(GAME_W/2,y,'🏠 返回主页',()=>{this.scene.start('Menu');});
+        this.createColBtn(GAME_W/2,y+50,'🗑 清除记录',()=>{localStorage.removeItem('pinpin_collection');this.scene.restart();},false,0xBDBDBD);
+      }
+      createColBtn(cx,y,label,cb,large=true,color=MAIN_COLOR){
+        const w=180,h=42,r=21;
+        const bg=this.add.graphics(); bg.fillStyle(color,1); bg.fillRoundedRect(cx-w/2,y,w,h,r);
+        this.add.text(cx,y+h/2,label,{fontSize:'15px',fontFamily:'sans-serif',color:'#fff',fontStyle:'bold'}).setOrigin(0.5);
+        this.add.zone(cx,y+h/2,w,h).setInteractive({useHandCursor:true}).on('pointerdown',cb);
+      }
+    }
+
+    // =====  Launch Phaser =====
+    console.log('[PinPin] Creating Phaser.Game, parent:', document.getElementById('pinpin-game'));
+
+    const game = new Phaser.Game({
+      type: Phaser.CANVAS,
+      width: GAME_W, height: GAME_H,
+      parent: 'pinpin-game',
+      backgroundColor: BG_COLOR,
+      scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+      scene: [BootScene, MenuScene, GameScene, CollectionScene],
+    });
+    console.log('[PinPin] Phaser.Game created, scenes registered');
+    console.log('[PinPin] Initialization complete!');
+  })();
+  </script>
+</BaseLayout>
