@@ -44,13 +44,8 @@ ENV_KEYS=(
   DASHSCOPE_TTS_MODEL
   DASHSCOPE_TTS_VOICE
   TENCENT_MAP_KEY
-  # fequiz 前端面试题库（学前端）— 服务器 MySQL
-  FEQUIZ_MYSQL_URL
-  FEQUIZ_MYSQL_HOST
-  FEQUIZ_MYSQL_PORT
-  FEQUIZ_MYSQL_USER
-  FEQUIZ_MYSQL_PASSWORD
-  FEQUIZ_MYSQL_DATABASE
+  # FEQUIZ_MYSQL_* 不从此处同步 —— 服务器 MySQL 配置与本地不同，
+  # 部署脚本会自动检测服务器 MySQL 端口并修正 .env（见下方 fequiz 自愈逻辑）。
 )
 
 cd "$ROOT"
@@ -118,14 +113,60 @@ set -euo pipefail
 cd "$REMOTE_DIR"
 npm ci --omit=dev
 
-# fequiz（学前端）初始化：建表 + 种子题（幂等）。MySQL 未配置时只告警，不阻塞主服务。
-if npm run fe:migrate >/tmp/fe-migrate.log 2>&1; then
-  echo "==> fequiz migrate OK"
-else
-  echo "WARN: fe:migrate 失败（检查 .env 中 FEQUIZ_MYSQL_* 与服务器 MySQL），日志: /tmp/fe-migrate.log" >&2
+# ── fequiz 自愈：自动检测服务器 MySQL 端口并修正 .env ──
+echo "==> fequiz: detect MySQL & auto-heal .env..."
+MYSQL_PORT="$(ss -tlnp 2>/dev/null | grep -oP '127\.0\.0\.1:\K\d+(?=.*mysqld)' | head -1 || true)"
+if [[ -z "$MYSQL_PORT" ]]; then
+  MYSQL_PORT="$(ss -tlnp 2>/dev/null | grep -oP '\*?:\K3306(?=.*mysqld)' | head -1 || true)"
 fi
+if [[ -n "$MYSQL_PORT" ]]; then
+  echo "   detected MySQL on 127.0.0.1:$MYSQL_PORT"
+  CURRENT_PORT="$(grep -oP '^FEQUIZ_MYSQL_PORT=\K.*' .env 2>/dev/null || true)"
+  if [[ "$CURRENT_PORT" != "$MYSQL_PORT" ]]; then
+    if grep -q '^FEQUIZ_MYSQL_PORT=' .env 2>/dev/null; then
+      sed -i "s/^FEQUIZ_MYSQL_PORT=.*/FEQUIZ_MYSQL_PORT=$MYSQL_PORT/" .env
+    else
+      echo "FEQUIZ_MYSQL_PORT=$MYSQL_PORT" >> .env
+    fi
+    echo "   corrected FEQUIZ_MYSQL_PORT: ${CURRENT_PORT:-unset} → $MYSQL_PORT"
+  else
+    echo "   FEQUIZ_MYSQL_PORT=$CURRENT_PORT (correct)"
+  fi
+else
+  echo "   WARN: MySQL not detected; fequiz will be skipped"
+fi
+
+# 确保 fequiz 数据库存在（幂等）
+if [[ -n "$MYSQL_PORT" ]]; then
+  mysql -h 127.0.0.1 -P "$MYSQL_PORT" -u root -e "
+    CREATE DATABASE IF NOT EXISTS fequiz CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CREATE USER IF NOT EXISTS 'fequiz'@'127.0.0.1' IDENTIFIED BY 'fequiz2026prod';
+    GRANT ALL PRIVILEGES ON fequiz.* TO 'fequiz'@'127.0.0.1';
+    FLUSH PRIVILEGES;
+  " 2>/dev/null && echo "   fequiz DB/user ensured" || echo "   WARN: cannot create fequiz DB (use existing)"
+fi
+
+# fequiz 建表 + 种子题（幂等，失败自动重试一次）
+migrate_fe() {
+  if npm run fe:migrate >/tmp/fe-migrate.log 2>&1; then
+    echo "==> fequiz migrate OK"
+    return 0
+  fi
+  # 第一次失败 → 自动修正端口后重试
+  echo "   fe:migrate failed (log: /tmp/fe-migrate.log), trying auto-fix..."
+  if [[ -n "$MYSQL_PORT" ]]; then
+    sed -i "s/^FEQUIZ_MYSQL_PORT=.*/FEQUIZ_MYSQL_PORT=$MYSQL_PORT/" .env
+  fi
+  if npm run fe:migrate >/tmp/fe-migrate.log 2>&1; then
+    echo "==> fequiz migrate OK (retry)"
+    return 0
+  fi
+  echo "WARN: fe:migrate 最终失败，日志: /tmp/fe-migrate.log" >&2
+  return 1
+}
+migrate_fe
+
 # 可选：全量导入 web-interview + AI 全量预处理（耗时长）。
-# 用法：DEPLOY_FE_IMPORT=1 ./scripts/deploy-api2.sh
 if [ "${DEPLOY_FE_IMPORT:-0}" = "1" ]; then
   echo "==> fequiz 全量导入 + 预处理（耗时较长，请耐心）..."
   if npm run fe:import >/tmp/fe-import.log 2>&1; then
@@ -231,5 +272,8 @@ REMOTE
 
 echo "==> Public smoke (health only; avatar session is paid, not auto-hit)..."
 curl -sS "https://www.lilnong.top/api/health" -o /dev/null -w "api/health HTTP %{http_code}\n" || true
+
+echo "==> fequiz smoke..."
+curl -sS "https://www.lilnong.top/api/fequiz/overview" -o /dev/null -w "api/fequiz/overview HTTP %{http_code}\n" || true
 
 echo "==> Done."
