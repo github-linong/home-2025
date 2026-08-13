@@ -164,6 +164,55 @@
   #help { position: absolute; right: 12px; bottom: 12px; z-index: 10; color: #7a8699; font-size: 11px;
     text-align: right; line-height: 1.7; pointer-events: none; text-shadow: 0 1px 3px #000; }
   #help b { color: #aab; }
+
+  /* ── P2.1 启动闪屏：用 hero 图做 backdrop，给用户与营销图一致的"开屏"印象 ── */
+  #splash {
+    position: fixed; inset: 0; z-index: 60;
+    background:
+      linear-gradient(180deg, rgba(8,10,16,0.4) 0%, rgba(0,0,0,0.85) 100%),
+      url('/heroes/demo/jianghu.webp') center/cover no-repeat;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    transition: opacity 0.55s ease, visibility 0.55s ease;
+  }
+  #splash.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+  #splash .title {
+    font-size: 42px; font-weight: 900; color: #f5d488;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 0 36px rgba(242,160,60,0.6);
+    letter-spacing: 6px; margin-bottom: 6px;
+  }
+  #splash .subtitle { color: #d4b58e; font-size: 14px; letter-spacing: 3px; margin-bottom: 36px;
+    text-shadow: 0 1px 4px #000; }
+  #splash .bar { width: 220px; height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden;
+    box-shadow: 0 1px 3px #000; }
+  #splash .bar > div { height: 100%; width: 0%; background: linear-gradient(90deg, #f2a03c, #f5d488); transition: width 0.3s; }
+  #splash .tip { color: #b89a72; font-size: 12px; margin-top: 12px; text-shadow: 0 1px 2px #000; }
+  #splash .badge {
+    margin-top: 24px; padding: 4px 12px; background: rgba(40,28,18,0.7); border: 1px solid #5f3a18;
+    border-radius: 14px; color: #c0a880; font-size: 11px; letter-spacing: 1px;
+  }
+
+  /* ── P1.4 玩法提示条（屏幕底部，5 句轮换，8s 换）── */
+  #playhint {
+    position: fixed; left: 50%; bottom: 132px; transform: translateX(-50%);
+    z-index: 11; padding: 6px 14px; background: rgba(14,12,20,0.85);
+    border: 1px solid #5f8fb0; border-radius: 18px; color: #c0a880;
+    font-size: 12px; pointer-events: none; opacity: 0;
+    transition: opacity 0.4s; max-width: 80vw; text-align: center;
+  }
+  #playhint.show { opacity: 1; }
+  #playhint b { color: #f2a03c; }
+
+  /* ── P2.2 美术风格说明（顶部小卡片：声明本试玩版采用程序化剪影）── */
+  #art-badge {
+    position: fixed; top: 36px; right: 12px; z-index: 12;
+    background: rgba(12,14,20,0.85); border: 1px solid #4a5568; border-radius: 8px;
+    color: #aab; font-size: 10px; padding: 5px 10px; max-width: 220px; line-height: 1.5;
+    cursor: pointer; user-select: none;
+  }
+  #art-badge:hover { border-color: #f2a03c; }
+  #art-badge .b-title { color: #f2a03c; font-weight: 700; margin-bottom: 2px; }
+  #art-badge.expanded .b-detail { display: block; }
+  #art-badge .b-detail { display: none; margin-top: 4px; color: #9aa; }
 </style>
 </head>
 <body>
@@ -246,6 +295,27 @@
   <b>装备</b>：背包内点「装备」穿装（攻击/生命/暴击立即提升） · 点击装备栏槽位卸下<br>
   <b>分解</b>：背包内点「分解」清垃圾装（不可撤销）→ 强化石按稀有度（白0/蓝1/金2/暗金3）+ 疗伤药 ×1（白装保底）<br>
   <b>死亡</b>：倒地 10s 后自动复活回城 · 死亡不掉永久装备
+</div>
+
+<!-- P1.4 玩法提示条 -->
+<div id="playhint"></div>
+<!-- P2.1 启动闪屏：用 hero 图与营销页保持一致 -->
+<div id="splash">
+  <div class="title">江湖</div>
+  <div class="subtitle">JIANGHU · 武侠联机</div>
+  <div class="bar"><div id="splash-bar"></div></div>
+  <div class="tip" id="splash-tip">连接江湖服务器…</div>
+  <div class="badge">浏览器试玩版 · 零安装即开即玩</div>
+</div>
+<!-- P2.2 美术风格说明（点击展开） -->
+<div id="art-badge" title="点击查看说明">
+  <div class="b-title">🎨 美术说明</div>
+  <div>本试玩版采用程序化剪影</div>
+  <div class="b-detail">
+    营销图（demo 页 hero）由 AI 绘制，仅作风格示意。<br>
+    试玩版角色为 Canvas 程序化绘制（斗笠侠客 / 山贼 / 野兽 / 暗影刺客 / 巨魔），与正式美术资源存在差异。<br>
+    核心玩法（移动 / 技能 / 副本 / 掉装 / 强化 / 分解）与营销图描述一致。
+  </div>
 </div>
 
 <script>
@@ -957,6 +1027,8 @@ function connect() {
   ws.onopen = () => {
     GAME.wsState = 'open';
     reconnectAttempts = 0;
+    // P2.1: 连接建立 → 推进 splash 进度
+    updateSplashProgress(0.4, '握手成功，等待服务器分配身份…');
     // session.ready 到达后：有 token → session.reconnect；否则 room.join
   };
 
@@ -973,6 +1045,8 @@ function connect() {
   ws.onerror = () => {
     setStatus('连接错误', 'err');
     GAME.errors.push('ws error');
+    // P2.1: 连接错误时给 splash 加错误提示
+    updateSplashProgress(0, '连接错误（服务端未启动？）');
   };
 
   ws.onclose = (ev) => {
@@ -985,6 +1059,23 @@ function connect() {
     SFX.play('disconnect'); // E12：断线提示音（440Hz 短）
     scheduleReconnect();
   };
+}
+
+// ── P2.1 splash 控制 ──
+let _splashHidden = false;
+function updateSplashProgress(p, text) {
+  const bar = document.getElementById('splash-bar');
+  const tip = document.getElementById('splash-tip');
+  if (bar) bar.style.width = Math.round(p * 100) + '%';
+  if (tip && text) tip.textContent = text;
+}
+function hideSplash() {
+  if (_splashHidden) return;
+  _splashHidden = true;
+  const splash = document.getElementById('splash');
+  if (splash) splash.classList.add('hide');
+  // P1.4: 进入主世界后开始循环玩法提示
+  startPlayHints();
 }
 
 function scheduleReconnect() {
@@ -1047,6 +1138,9 @@ function handleControl(msg) {
       setStatus('主世界', 'ok');
       resetFxState();
       startInputLoop();
+      // P2.1: 进房成功 → 隐藏 splash
+      updateSplashProgress(1, '进入主世界');
+      setTimeout(hideSplash, 350);
       // E9：进入房间拉取当前等级/经验（升级后持久化；游客经服务端忽略）。
       sendJson({ type: 'character.level.get', requestId: 'lv' + (lvSeq++) });
       // E21：进入房间拉取背包全量（含 potions 药水计数；HUD 药水槽「开局 2 瓶」/ 历史药水数）。
@@ -1062,6 +1156,7 @@ function handleControl(msg) {
       setStatus('副本', 'ok');
       toast('已进入副本');
       SFX.play('enter_dungeon'); // E12：噪声扫频传送感
+      hideSplash(); // 副本回房也兜底隐藏
       break;
     }
     case 'dungeon.exit.ok': {
@@ -2059,6 +2154,43 @@ if (DEBUG) {
   GAME.clearClickTargets = clearClickTargets; // E8
   GAME.worldToScreen = worldToScreen; // E8 E2E：世界坐标 → 屏幕坐标（page.mouse.click 用）
   GAME.screenToWorld = screenToWorld; // E8
+
+  // P1.4 + P2.2：玩法提示条 + 美术说明卡片
+  setupPlayHints();
+  setupArtBadge();
+}
+
+// ── P1.4 玩法提示条（每 8s 切换一句）──
+const PLAY_HINTS_JH = [
+  '<b>💡</b> 鼠标左键点敌人 = 走近普攻；左键点地面 = 走过去',
+  '<b>💡</b> 空格格挡只有 0.25s 窗口，但能减伤 60% — 关键攻击前摇那一刻按',
+  '<b>💡</b> 1/2/3/4 分别是 烈斩 / 剑气 / 震地 / 破军，按数字键或点底部技能栏',
+  '<b>💡</b> Q 喝药 5s CD，回 30% 生命；倒地被围时喝药可救自己一命',
+  '<b>💡</b> F 进副本：先看 BOSS 血量决定是推波次还是攒装备',
+  '<b>💡</b> 蓝/金/暗金装值得强化（+5/次，词缀×1.15），白装可直接分解换强化石',
+  '<b>💡</b> 队伍满 4 人时，进本门槛是「先到者 5s 窗口内 2 人集合」',
+  '<b>💡</b> 倒地 10s 后自动回城（不掉永久装）— 不用急，按 F 复活可更快',
+];
+let _playHintTimer = null, _playHintIdx = 0;
+function setupPlayHints() {
+  const el = document.getElementById('playhint');
+  if (!el) return;
+  const cycle = () => {
+    el.innerHTML = PLAY_HINTS_JH[_playHintIdx % PLAY_HINTS_JH.length];
+    el.classList.add('show');
+    _playHintIdx++;
+  };
+  cycle();
+  if (_playHintTimer) clearInterval(_playHintTimer);
+  _playHintTimer = setInterval(cycle, 8000);
+}
+function startPlayHints() { setupPlayHints(); }
+
+// ── P2.2 美术说明卡片（点击展开）──
+function setupArtBadge() {
+  const el = document.getElementById('art-badge');
+  if (!el) return;
+  el.addEventListener('click', () => el.classList.toggle('expanded'));
 }
 
 // ============================================================================

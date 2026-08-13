@@ -26,6 +26,7 @@ import {
 import {
   resolveDamage,
   CombatKind,
+  PLAYER_ATTACK_DAMAGE,
   type CombatEntity,
 } from "../../src/combat.ts";
 
@@ -45,7 +46,8 @@ test("ENEMY_PROTOTYPES.brute_charger exists, faster than grunt, telegraphTicks =
     18,
     "aggressive front-swing = MIN_TELEGRAPH_TICKS (0.6s)",
   );
-  assert.equal(ENEMY_PROTOTYPES.brute_charger.attackDamage, 12, "glass-cannon rush damage = 12");
+  // SLAUGHTER-FIX 2026-08-12：12→6（冲锋者靠速度/前摇威胁，不靠单发伤害）。
+  assert.equal(ENEMY_PROTOTYPES.brute_charger.attackDamage, 6, "glass-cannon rush damage = 6");
 });
 
 // ============================================================
@@ -63,7 +65,7 @@ test("stepEnemyAi brute_charger rushes: MOVE toward player when out of range", (
   assert.ok(Math.abs(Math.hypot(dir.x, dir.y) - 1) < 1e-9, "dir is unit length");
 });
 
-test("stepEnemyAi brute_charger attacks when in range (prototype damage 12)", () => {
+test("stepEnemyAi brute_charger attacks when in range (prototype damage 10)", () => {
   const self: EnemyAiSelf = { id: 7, x: 0, y: 0, enemyTypeId: "brute_charger" };
   // 玩家在 (10,0) 距 10 ≤ brute_charger.attackRange(38) → 发起 ATTACK。
   const players: EnemyAiPlayer[] = [{ id: 1, x: 10, y: 0, alive: true }];
@@ -74,7 +76,7 @@ test("stepEnemyAi brute_charger attacks when in range (prototype damage 12)", ()
     assert.equal(
       intent.damage,
       ENEMY_PROTOTYPES.brute_charger.attackDamage,
-      "damage = prototype value (12), not player 18",
+      "damage = prototype value (6), not player 38",
     );
   }
 });
@@ -124,11 +126,11 @@ test("brute_charger enrage: hp < 50% spawns exactly 1 grunt_swarm add, once", (t
   const gruntBefore = world.actors().filter((a) => a.enemyTypeId === "grunt_swarm").length;
   const combatMap = new Map(world.actors().map((a) => [a.id, a as CombatEntity]));
   const c = world.actors().find((a) => a.id === chargerId)!;
-  // 经 resolveDamage（玩家路径 -18）将其 hp 压到 <50% maxHp 且 >0（保持存活，不触发倒地）。
+  // 经 resolveDamage（玩家路径，服务端裁决伤害）将其 hp 压到 <50% maxHp 且 >0（保持存活，不触发倒地）。
   while (c.hp > 0 && c.hp >= c.maxHp * 0.5) {
-    // maxHp=36 时 -18 无法落入 (0,50%) 窗口（36→18→0），此类 charger 无法经玩家伤害触发狂暴 → SKIP。
-    if (c.hp - 18 <= 0) {
-      t.skip("charger maxHp makes -18 unable to reach the (0,50%) enrage window");
+    // 某些 maxHp 下玩家一刀伤害无法落入 (0,50%) 窗口（直接归零）→ 此类 charger 无法经玩家伤害触发狂暴 → SKIP。
+    if (c.hp - PLAYER_ATTACK_DAMAGE <= 0) {
+      t.skip("charger maxHp makes player damage unable to reach the (0,50%) enrage window");
       return;
     }
     resolveDamage(

@@ -165,3 +165,68 @@ test("unknown message type errors", () => {
   );
   assert.equal((res.reply as any).error.code, "INVALID_ACTION");
 });
+
+test("O1 room.signal broadcasts to room members; non-member / unknown signal rejected", () => {
+  const created = dispatch(
+    { userId: "A", connId: "cA", runManager: rm },
+    { type: "room.create", requestId: "r1", payload: { displayName: "Alice" } },
+  );
+  const roomId = (created.reply as any).roomId;
+
+  // 成员发信号 → room 广播
+  const sig = dispatch(
+    { userId: "A", connId: "cA", runManager: rm },
+    { type: "room.signal", requestId: "s1", payload: { roomId, signalId: "rally" } },
+  );
+  assert.equal(sig.broadcasts?.[0].kind, "room");
+  assert.equal((sig.broadcasts![0].message as any).type, "room.signal");
+  assert.equal((sig.broadcasts![0].message as any).signalId, "rally");
+
+  // 非成员 → 拒绝
+  const outsider = dispatch(
+    { userId: "Z", connId: "cZ", runManager: rm },
+    { type: "room.signal", requestId: "s2", payload: { roomId, signalId: "rally" } },
+  );
+  assert.equal((outsider.reply as any).error.code, "NOT_IN_ROOM");
+
+  // 非法信号 → 拒绝
+  const bad = dispatch(
+    { userId: "A", connId: "cA", runManager: rm },
+    { type: "room.signal", requestId: "s3", payload: { roomId, signalId: "lol" } },
+  );
+  assert.equal((bad.reply as any).error.code, "INVALID_ACTION");
+});
+
+test("S3 character.class.select updates seat.classId and broadcasts room.snapshot", () => {
+  const created = dispatch(
+    { userId: "A", connId: "cA", runManager: rm },
+    { type: "room.create", requestId: "r1", payload: { displayName: "Alice" } },
+  );
+  const roomId = (created.reply as any).roomId;
+
+  const sel = dispatch(
+    { userId: "A", connId: "cA", runManager: rm },
+    { type: "character.class.select", requestId: "cs1", payload: { roomId, classId: "mage" } },
+  );
+  assert.equal((sel.reply as any).type, "character.class.select.ok");
+  assert.equal((sel.reply as any).classId, "mage");
+  const snap = (sel.broadcasts?.[0].message as any);
+  assert.equal(snap.seats.find((s: any) => s.userId === "A").classId, "mage");
+
+  // 非法职业 → 拒绝
+  const bad = dispatch(
+    { userId: "A", connId: "cA", runManager: rm },
+    { type: "character.class.select", requestId: "cs2", payload: { roomId, classId: "ninja" } },
+  );
+  assert.equal((bad.reply as any).error.code, "INVALID_ACTION");
+});
+
+test("S3 room.quickMatch joins the resident hub or creates a fresh room", () => {
+  const q = dispatch(
+    { userId: "N1", connId: "cN1", runManager: rm },
+    { type: "room.quickMatch", requestId: "q1", payload: { displayName: "Newbie" } },
+  );
+  assert.equal((q.reply as any).type, "room.join.ok");
+  assert.ok((q.reply as any).roomId);
+  assert.equal((q.reply as any).seatIndex, 0);
+});

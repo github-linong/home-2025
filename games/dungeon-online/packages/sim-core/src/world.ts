@@ -55,6 +55,12 @@ import { PerPlayerInputQueue, drainForTick } from "./input.ts";
 import {
   resolveDamage,
   MIN_TELEGRAPH_TICKS,
+  PLAYER_ATTACK_RANGE,
+  PLAYER_ATTACK_CONE_RAD,
+  KNOCKBACK_TICKS,
+  BOSS_NOVA_INTERVAL,
+  BOSS_NOVA_RADIUS,
+  BOSS_NOVA_TELEGRAPH,
   CombatKind,
   type AttackWindup,
   type CombatEntity,
@@ -80,6 +86,10 @@ export interface CreateWorldOpts {
   readonly players: readonly PlayerSeat[];
   /** 是否生成敌人（默认 true）。单元测试可在无敌人世界隔离 ⑪ 倒地/救援/超时逻辑。 */
   readonly spawnEnemies?: boolean;
+  /** META-PROGRESSION（P2 2026-08-12）：开局预置的永久升级 perk 列表（如 ['dmg_up','dmg_up']）。
+   *  由客户端 localStorage 的「灰烬升级」累计而来——「死了也变强」回环。确定性：列表来自
+   *  localStorage（非随机）；单元测试/golden 不传 → 默认空 → 行为与原来完全一致，golden 无损。 */
+  readonly startingPerks?: readonly string[];
 }
 
 interface Actor {
@@ -96,6 +106,12 @@ interface Actor {
   classId?: PlayerClass; // 玩家职业（驱动移动速率 / 未来伤害派生）
   telegraph?: AttackWindup | null; // 进行中的攻击前摇（D12）
   iframeUntilTick?: number; // dodge 免伤窗口截止 tick（DODGE）
+  // ── G1 升级系统（击杀得经验 → 升级提升属性；仅玩家持有，确定性）──
+  level?: number; // 当前等级（初值 1）
+  xp?: number; // 当前经验（击杀敌人累积；达阈值升级）
+  // ── G2 Buff 持续收益（玩家拾取 LOOT buff 的窗口；快照公开供 HUD 显示剩余秒）──
+  buffUntilTick?: number;
+  buffMult?: number;
   // ── E8 协作技运行时状态（仅 world.step 维护；纪律 B：落地只经 world.step / combat）──
   cooldownUntilTick?: number; // 协作技冷却截止 tick；<= 当前 tick 即可再次施法
   activeSkill?: number | null; // 当前/最近施放的协作技 id（HUD 用；即时技施放后保留至下次）
@@ -118,8 +134,35 @@ interface Actor {
   buffMult?: number; // 临时攻击 buff 倍率（resolveDamage 消费，1+LOOT_BUFF_MULT）
   // ── Boss 多阶段（engagement；阶段只升不降，守卫一次性生怪）──
   phase?: number; // 1=常态 2=<50%hp 3=<25%hp；达到后保持
+  // ── BOSS-MULTI-SKILL（P2 2026-08-12）：火焰新星周期（tick 单位）——
+  //    boss 每 BOSS_NOVA_INTERVAL tick 以自身为中心爆 AOE_FILL 火圈（radius 130, telegraph 预警）。
+  //    与普攻（CONE 扇形）交替 = 「靠近喷扇形 + 周期爆火圈」双技能节奏（参考 Hades boss 模式化）。
+  //    确定性：初始由 world 在 boss spawn 后按 hash 派生，之后 +INTERVAL 纯算术。undefined → JSON 丢弃。
+  bossNovaAtTick?: number;
+  // 玩家硬直/击退（P0-1）之外：boss 新星预警已结算标记（防同一 tick 重复爆，纯内部守卫，不序列化）
+  novaFiredTick?: number;
   // ── brute_charger 狂暴（enrage；血量破 50% 一次性生 1 只 grunt add，guard 防重复）──
   enraged?: boolean; // 触发狂暴后置 true（undefined → JSON 丢弃，不影响确定性快照哈希，与 phase 同先例）
+  // ── AFFIX（P1 精英词缀 2026-08-12）：elite spawn 时确定性随机挂 1 个词缀（参考暗黑词缀）——
+  //    "hasted" 移速 ×1.4 / "lifesteal" 攻击吸血 2（world 敌人 AI / 结算消费）。
+  //    undefined → JSON 丢弃（不影响 golden 哈希；仅 elite 挂词缀，grunt/boss 无）。
+  affix?: "hasted" | "lifesteal";
+  // ── KNOCKBACK（P0-1 2026-08-12）：玩家近战命中敌人施加「击退位移 + 硬直」——
+  //    割草游戏"砍飞一片"的核心反馈（参考暗黑/VS）。world.step 玩家 AOE 结算时设置，
+  //    敌人移动阶段消费：击退窗口内沿 kbDir 位移，AI 暂停（不新起攻击）。
+  //    确定性：方向/距离由命中时攻击者→目标几何决定，无随机源；会影响后续位置 → golden 重锁。
+  kbUntilTick?: number; // 击退截止 tick（<= tick 即无效）
+  kbDirX?: number;      // 击退方向单位向量 x
+  kbDirY?: number;      // 击退方向单位向量 y
+  // ── S2 局内 Build（perk；三选一后的服务端权威加成；仅玩家持有，undefined 不序列化）──
+  perks?: string[];          // 已选 perk id 列表（HUD 展示）
+  perkDamageMult?: number;   // 伤害倍率（combat.resolveDamage 消费）
+  perkSpeedMult?: number;    // 移速倍率（world 移动消费）
+  perkMaxHpBonus?: number;   // 生命上限绝对加成（选择时立即生效并同步 hp）
+  perkCdr?: number;          // 技能冷却缩减 0..1（skills.cooldownTicks 缩放）
+  // BUILD-UP（P1）：新能力型 perk 的服务端权威加成（undefined 不序列化，golden 无损）。
+  perkAtkspd?: number;       // 普攻前摇缩放（<1 更快；如 0.75 = -25%；world 攻击前摇消费）
+  perkRangeMult?: number;    // 攻击范围倍率（>1 更远；如 1.25 = +25%；world 射程校验 + AOE 结算消费）
 }
 
 /**
@@ -157,7 +200,41 @@ export interface World {
   projectiles(): readonly Projectile[];
   /** S7.6/S7.7 断线托管：置位/清除玩家 disconnected 标记，并在断开瞬间抓拍 PersonalState（D8 单次持有）。 */
   setDisconnected(playerId: number, disconnected: boolean): void;
+  /**
+   * S2 局内 Build：玩家在层间「商」点选择三选一 perk（服务端权威落地）。
+   * 校验 perkId ∈ 当前可选池（perkChoices）；选择后立即生效（伤害/移速/生命/冷却）。
+   * @returns 成功返回 true；perkId 非法/不可选返回 false（protocol 层据此回 error）。
+   */
+  applyPerk(playerId: number, perkId: string): boolean;
+  /** S2 逃生口：本玩家跳过本层商点（视为已决策，perk 池按在场玩家全决策自动关闭）。 */
+  skipPerk(playerId: number): boolean;
+  /** S2 只读当前三选一可选池（客户端 HUD/协议下发用）。 */
+  perkChoices(): readonly string[];
+  /** S2 只读当前楼层（客户端 HUD 用；顶层字段，不影响 golden entities 哈希）。 */
+  floor(): number;
+  /** S2 总楼层数。 */
+  totalFloors(): number;
 }
+
+/** S2 perk 目录（局内 Build 三选一）。所有倍率/加成服务端权威，客户端只展示名称。
+ *  BUILD-UP（P0-2）：升级选择复用本池。P1 扩充「新能力型」perk（攻速/范围/吸血），
+ *  参考 VS/Hades——不只纯数值倍率，还有改变攻击行为的能力。 */
+export const PERK_CATALOG: Record<
+  string,
+  { name: string; desc: string; icon: string }
+> = {
+  dmg_up: { name: "伤害强化", desc: "所有攻击伤害 +15%", icon: "⚔" },
+  hp_up: { name: "生命强化", desc: "生命上限 +20", icon: "❤" },
+  spd_up: { name: "身法强化", desc: "移动速度 +12%", icon: "💨" },
+  cdr_up: { name: "冷却加速", desc: "技能冷却时间 -15%", icon: "⏱" },
+  atkspd_up: { name: "攻速强化", desc: "普攻前摇 -25%（挥砍更快）", icon: "🗡" },
+  range_up: { name: "范围强化", desc: "攻击范围 +25%（砍得更远）", icon: "🛡" },
+  lifesteal_up: { name: "汲取", desc: "击杀敌人回复 3 生命", icon: "🩸" },
+};
+/** 每个「商」点可选池大小（三选一）。 */
+const PERK_CHOICES_PER_FLOOR = 3;
+/** 可选池 = 目录随机抽 3（确定性 Rng，seed 由 run seed + floor 派生）。 */
+const PERK_POOL: readonly string[] = Object.keys(PERK_CATALOG);
 
 /**
  * 每 tick 移动速率 = CLASS_BASE[classId].moveSpeed / TICK_RATE（O2 接管：移除占位 MOVE_SPEED_PX）。
@@ -221,6 +298,31 @@ export function createWorld(opts: CreateWorldOpts): World {
   let maxWave = Math.max(1, ...layout.spawnPoints.map((s) => s.wave));
   let intermissionUntilTick = 0;
   let currentRoomPhase: RoomPhaseValue = RoomPhase.ACTIVE;
+  // ── S2 逐层下行 + 局内 Build（确定性；floor 由 layout.floorOfWave 映射，perk 池由 Rng 派生）──
+  let currentFloor = layout.floorOfWave[1] ?? 1;
+  let perkChoicesState: string[] = [];
+  // 层间「商」点：进入新楼层（>1）前的过渡期生成三选一池；perkChoices 非空即客户端弹出信号。
+  let lastPerkFloor = 0;  // 已发过商点的楼层（防同层重复弹）
+  // ── ROUTE-PICK（P3）：层间路线选择（Hades 房间节点简化版）──
+  // intermission 结束时生成「下一层路线」2 选 1（确定性 Rng 派生）；玩家 CHOOSE_FLOOR 选择后
+  // 应用 modifier 再 spawnWave。未选择前 world 停留在 intermission（等待决策，不刷怪）。
+  //   routeId: "deep"(深渊: 怪更肉但经验+50%) / "vault"(宝库: 怪更少但掉落率×2)
+  let pendingFloorRoute: null | { options: Array<{ id: string; name: string; desc: string; icon: string }> } = null;
+  let activeFloorRoute: null | string = null; // 当前层生效的路线 modifier
+  // 层间生成路线选择（仅非首层；已生成本层防重复）。
+  let lastRouteFloor = 0;
+  function openFloorRoute(nextFloor: number): void {
+    if (nextFloor <= 1 || lastRouteFloor === nextFloor) return;
+    lastRouteFloor = nextFloor;
+    const rr = new Rng(hashString64(`${opts.seed}:${opts.biomeId}:route:${nextFloor}`));
+    // 2 选 1（确定性；重跑同 seed 一致）。
+    const options = [
+      { id: "deep",  name: "深渊", desc: "敌人更肉(+20% HP) 但经验 +50%", icon: "🌋" },
+      { id: "vault", name: "宝库", desc: "敌人更少(-25%) 但掉落率 ×2", icon: "💎" },
+    ];
+    pendingFloorRoute = { options };
+  }
+  const pickedPerkThisOffer = new Set<number>(); // 已在本层商点选过的 playerId（防重复选择）
   // waveHasBoss[n] = wave n 是否含 boss（用于 BOSS 阶段路由）；仅索引 1..maxWave 有效。
   const waveHasBoss: boolean[] = [];
   for (let n = 1; n <= maxWave; n += 1) {
@@ -298,6 +400,42 @@ export function createWorld(opts: CreateWorldOpts): World {
     }
   }
 
+  /** G1 升级：玩家获得经验；达阈值连续升级。升级提升：maxHp+10（同步回 20% 血）、普攻伤害 +3、
+   *  移速 +2%（由 combat/world 消费——普攻伤害在 resolveDamage 按 level 派生，移速在移动消费）。
+   *  BUILD-UP（P0-2 2026-08-12）：升级时额外触发一次「能力三选一」（复用 S2 perk 机制，
+   *  参考 VS/Hades「每级选能力」）。升级 = 自动成长 + 一次构筑选择 —— 核心乐趣从"自动变强"
+   *  变成"选择怎么变强"。确定性：选择池由 run seed + playerId + level 派生（无随机源）。
+   *  确定性：纯算术 + 循环，无随机源。 */
+  function grantXp(pl: Actor, amount: number): void {
+    if (pl.kind !== EntityKind.PLAYER) return;
+    pl.xp = (pl.xp ?? 0) + amount;
+    let lv = pl.level ?? 1;
+    let leveled = false;
+    // 升级循环：xpToNext(lv) = 30 + (lv-1)*25。
+    while ((pl.xp ?? 0) >= 30 + (lv - 1) * 25) {
+      pl.xp = (pl.xp ?? 0) - (30 + (lv - 1) * 25);
+      lv += 1;
+      pl.level = lv;
+      pl.maxHp += 10;
+      pl.hp = Math.min(pl.maxHp, pl.hp + Math.ceil(pl.maxHp * 0.2)); // 升级补 20% 血
+      pl.levelUpCount = (pl.levelUpCount ?? 0) + 1; // 供客户端播放升级特效
+      leveled = true;
+    }
+    // BUILD-UP：本次升级（且当前无未决策的弹窗）→ 生成一次「能力三选一」。
+    // 只在新升级那一级开一次（防连升多次重复弹）；若已有弹窗（层间商点/上次升级未选）则不覆盖。
+    if (leveled && perkChoicesState.length === 0) {
+      const upRng = new Rng(hashString64(`${opts.seed}:${opts.biomeId}:lvlup:${pl.id}:${lv}`));
+      const pool = [...PERK_POOL];
+      perkChoicesState = [];
+      for (let i = 0; i < PERK_CHOICES_PER_FLOOR && pool.length > 0; i += 1) {
+        const idx = upRng.nextInt(0, pool.length - 1);
+        perkChoicesState.push(pool[idx]);
+        pool.splice(idx, 1);
+      }
+      pickedPerkThisOffer.clear();
+    }
+  }
+
   /** brute_charger 狂暴：血量破 50% 时确定性一次性生 1 只 grunt_swarm 近怪（seed 由 charger id + tick）。 */
   function spawnChargerAdd(charger: Actor, tick: number): void {
     const proto = ENEMY_PROTOTYPES.grunt_swarm;
@@ -328,12 +466,30 @@ export function createWorld(opts: CreateWorldOpts): World {
    * （含 rescueTicks/downedTicks/disconnected/personalState:null），保证其它系统不受影响。 */
   function spawnWave(n: number): void {
     const wrng = new Rng(hashString64(`${opts.seed}:${opts.biomeId}:wave:${n}:enemies`));
+    // TIME-PRESSURE（P1 2026-08-12）：敌人 HP 随所在楼层缩放（参考雨中冒险2 时间压力）。
+    //   wave n 所在楼层 = layout.floorOfWave[n]（S2 映射）；每层 +15% HP，让「越下越强」有体感。
+    //   确定性：floorOfWave 是固定序列，纯算术，无随机源 → golden 需重锁。
+    const waveFloor = layout.floorOfWave[n] ?? 1;
+    let floorScale = 1 + 0.15 * (waveFloor - 1);
+    // ROUTE-PICK（P3）：当前层生效的路线 modifier 影响生成。
+    //   deep → 敌人 HP ×1.2（更肉）；vault → 生成数量 ×0.75（更少怪）。
+    //   确定性：activeFloorRoute 由玩家 CHOOSE_FLOOR 决定（有限集合，无随机源）。
+    let routeCountScale = 1;
+    if (activeFloorRoute === "deep") floorScale *= 1.2;
+    else if (activeFloorRoute === "vault") routeCountScale = 0.75;
     for (const sp of layout.spawnPoints) {
       if (sp.wave !== n) continue;
       const proto = ENEMY_PROTOTYPES[sp.enemyTypeId];
-      for (let i = 0; i < sp.count; i += 1) {
-        const hp = wrng.nextInt(proto.hpMin, proto.hpMax);
+      const spCount = Math.max(1, Math.round(sp.count * routeCountScale));
+      for (let i = 0; i < spCount; i += 1) {
+        const hp = Math.max(1, Math.round(wrng.nextInt(proto.hpMin, proto.hpMax) * floorScale));
         const kind = proto.tier === "boss" ? EntityKind.BOSS : EntityKind.ENEMY;
+        // AFFIX（P1 精英词缀）：elite spawn 时确定性派生 1 个词缀（wrng 已由 wave seed 派生，无随机源）。
+        //   elite 才有词缀；grunt/boss 无（undefined → JSON 丢弃，golden 无损）。
+        let affix: "hasted" | "lifesteal" | undefined;
+        if (proto.tier === "elite") {
+          affix = wrng.nextInt(0, 1) === 0 ? "hasted" : "lifesteal";
+        }
         actors.push({
           id: nextId++,
           kind,
@@ -344,11 +500,15 @@ export function createWorld(opts: CreateWorldOpts): World {
           maxHp: hp,
           status: EntityStatus.ALIVE,
           enemyTypeId: sp.enemyTypeId,
+          affix,
           enraged: undefined,
           rescueTicks: 0,
           downedTicks: 0,
           disconnected: false,
           personalState: null,
+          // BOSS-MULTI-SKILL（P2）：boss 首颗新星由 wave seed 确定性派生（错峰 1.5-3s），
+          //   之后每 +BOSS_NOVA_INTERVAL tick 一次（phase 段纯算术推进，无随机源）。
+          bossNovaAtTick: kind === EntityKind.BOSS ? wrng.nextInt(45, 90) : undefined,
         });
       }
     }
@@ -417,6 +577,9 @@ export function createWorld(opts: CreateWorldOpts): World {
         downedTicks: 0,
         disconnected: false,
         personalState: null,
+        // ── G1 升级初始状态（击杀得经验 → 升级提升属性）──
+        level: 1,
+        xp: 0,
         // ── E8 协作技初始状态（仅玩家持有；敌人不施技，字段保持 undefined）──
         cooldownUntilTick: 0,
         activeSkill: null,
@@ -424,6 +587,29 @@ export function createWorld(opts: CreateWorldOpts): World {
         shieldReduction: 0,
         tauntUntilTick: 0,
       });
+      // META-PROGRESSION（P2）：开局预置永久升级 perk（灰烬购买，localStorage 累计）。
+      //   复用 perk 字段（dmg_up/hp_up/spd_up/cdr_up...），叠加生效——「死了也变强」。
+      //   确定性：列表来自 opts.startingPerks（客户端 localStorage，非随机）；golden 不传 → 空。
+      if (opts.startingPerks && opts.startingPerks.length > 0) {
+        const pl = actors[actors.length - 1]; // 刚 push 的玩家
+        const plBase = CLASS_BASE[p.classId];
+        for (const pid of opts.startingPerks) {
+          if (pid === "dmg_up") pl.perkDamageMult = (pl.perkDamageMult ?? 1) * 1.15;
+          else if (pid === "spd_up") pl.perkSpeedMult = (pl.perkSpeedMult ?? 1) * 1.12;
+          else if (pid === "cdr_up") pl.perkCdr = (pl.perkCdr ?? 0) + 0.15;
+          else if (pid === "atkspd_up") pl.perkAtkspd = (pl.perkAtkspd ?? 1) * 0.75;
+          else if (pid === "range_up") pl.perkRangeMult = (pl.perkRangeMult ?? 1) * 1.25;
+          else if (pid === "hp_up") {
+            const bonus = (pl.perkMaxHpBonus ?? 0) + 20;
+            pl.perkMaxHpBonus = bonus;
+            pl.maxHp = plBase.hp + bonus;
+            pl.hp = pl.maxHp; // 满血开局
+          } else if (pid === "lifesteal_up") {
+            // 吸血无叠加上限语义：记录（击杀回血固定 3，多选仍 3，等价单次）
+          }
+          pl.perks = pl.perks ? [...pl.perks, pid] : [pid];
+        }
+      }
   }
 
   // 敌人：波次推进（progression）—— 初始只生 wave 1；后续 wave 在 step 末尾清场后按间隔派生。
@@ -490,32 +676,76 @@ export function createWorld(opts: CreateWorldOpts): World {
           if (!cmd) continue;
           if (cmd.action === InputAction.MOVE) {
             // O2 移动接管：CLASS_BASE.moveSpeed / 30（每 tick 位移，可为小数）。
-            const ms = moveSpeedPerTick(a.classId!);
+            // S2 perk：身法强化 → 移速 ×perkSpeedMult（>1）；未选则 ×1（golden 无损）。
+            const ms = moveSpeedPerTick(a.classId!) * (a.perkSpeedMult ?? 1);
             a.x += cmd.dir.x * ms;
             a.y += cmd.dir.y * ms;
             // N2：仅当真正移动（位移非 0）才更新朝向，保持静止时的上次朝向（不重置）。
             if (cmd.dir.x !== 0 || cmd.dir.y !== 0) a.dir = vecToDir8(cmd.dir);
           } else if (cmd.action === InputAction.ATTACK) {
             // 战斗意图：启动前摇（D12）。若已有进行中前摇则忽略（防覆盖/刷新）。
+            // DIST-FIX：玩家普攻有射程（PLAYER_ATTACK_RANGE≈60px）。目标超出射程 → 本次 ATTACK
+            // no-op（不启动前摇），避免「隔全图锁头攻击」破坏走位/风筝玩法。
             if (!a.telegraph) {
-              a.telegraph = {
-                startTick: world.tick,
-                applyTick: world.tick + MIN_TELEGRAPH_TICKS,
-                targetId: cmd.target ?? a.id,
-                kind: CombatKind.ATTACK,
-              };
+              let targetOk = false;
+              if (cmd.target != null) {
+                const tgt = actors.find((t) => t.id === cmd.target);
+                if (tgt && (tgt.status & EntityStatus.ALIVE) !== 0) {
+                  const dx = tgt.x - a.x;
+                  const dy = tgt.y - a.y;
+                  // BUILD-UP（P1）：范围强化 perk → 射程 ×perkRangeMult。
+                  const rangePx = PLAYER_ATTACK_RANGE * (a.perkRangeMult ?? 1);
+                  targetOk = dx * dx + dy * dy <= rangePx * rangePx;
+                }
+              }
+              if (!targetOk) {
+                // 无有效射程内目标 → 忽略本次攻击（不回 a.id 自打）。
+                a.telegraph = null;
+              } else {
+                // 玩家普攻：记录攻击朝向（cmd.dir = 客户端 aimDir / 移动方向）用于扇形 AOE 结算。
+                // RANGE-BALANCE：玩家近战从单体改前向扇形，命中方向即本次挥砍朝向。
+                // BUILD-UP（P1）：攻速强化 perk → 前摇 ticks ×perkAtkspd（<1 更快）。
+                const d = cmd.dir && (cmd.dir.x !== 0 || cmd.dir.y !== 0) ? cmd.dir : { x: 1, y: 0 };
+                const dl = Math.hypot(d.x, d.y) || 1;
+                const windupTicks = Math.max(
+                  1,
+                  Math.round(MIN_TELEGRAPH_TICKS * (a.perkAtkspd ?? 1)),
+                );
+                a.telegraph = {
+                  startTick: world.tick,
+                  applyTick: world.tick + windupTicks,
+                  targetId: cmd.target!,
+                  kind: CombatKind.ATTACK,
+                  dir: { x: d.x / dl, y: d.y / dl },
+                };
+              }
             }
           } else if (cmd.action === InputAction.SKILL) {
             // E8 / O-A 闭合：协作技路由。skills.ts 纯校验 + 效果数学产出 SkillApplication
             // 意图；本处（world.step）落地——所有 hp/status 改变只经 combat/world（纪律 B）。
             // 冷却门控：冷却未结束直接忽略（不进入冷却、不落地）。
             if ((a.cooldownUntilTick ?? 0) <= world.tick) {
-              const target =
+              let target =
                 cmd.target != null ? actors.find((t) => t.id === cmd.target) ?? null : null;
               const skillId = cmd.param ?? SKILL_IDS.SHIELD_ALLY;
+              // SOLO-SELF-FALLBACK：无其他活跃玩家（单机割草）时，SHIELD_ALLY 允许对自身施放
+              // 护盾 —— 参考吸血鬼幸存者：solo 技能必须"按了有反馈"，护盾自保而非指向空盟友。
+              // 覆盖 target 为 null（cmd.target=0 无该 id）与 target==caster（玩家 id 恰为 0）
+              // 两种情况：只要 solo 环境，护盾一律落地到自己。
+              const hasOtherPlayer = actors.some(
+                (t) =>
+                  t.kind === EntityKind.PLAYER &&
+                  t.id !== a.id &&
+                  !(t.status & EntityStatus.OUT),
+              );
+              const allowSelfCast = !hasOtherPlayer && skillId === SKILL_IDS.SHIELD_ALLY;
+              if (allowSelfCast) target = a;
               const app = resolveSkillApplication(
-                { id: a.id, kind: a.kind, status: a.status, disconnected: a.disconnected, classId: a.classId },
-                target, skillId, world.tick,
+                { id: a.id, kind: a.kind, status: a.status, disconnected: a.disconnected, classId: a.classId, x: a.x, y: a.y },
+                target
+                  ? { id: target.id, kind: target.kind, status: target.status, disconnected: target.disconnected, classId: target.classId, x: target.x, y: target.y }
+                  : null,
+                skillId, world.tick, allowSelfCast,
               );
               if (app) {
                 // ① SHIELD_ALLY：给目标盟友设减伤护盾窗口（combat.resolveDamage 消费）。
@@ -554,7 +784,9 @@ export function createWorld(opts: CreateWorldOpts): World {
                     enemyDamage: app.flatDamage,
                   });
                 }
-                a.cooldownUntilTick = world.tick + app.cooldownTicks;
+                // S2 perk：冷却加速 → 冷却时间 ×(1 - perkCdr)（如 -15%）。
+                const cdr = a.perkCdr ?? 0;
+                a.cooldownUntilTick = world.tick + Math.round(app.cooldownTicks * (1 - cdr));
                 a.activeSkill = app.skillId;
               }
             }
@@ -567,6 +799,15 @@ export function createWorld(opts: CreateWorldOpts): World {
               tick: world.tick,
               kind: CombatKind.DODGE,
             });
+          } else if (cmd.action === InputAction.CHOOSE_FLOOR) {
+            // ROUTE-PICK（P3）：层间路线选择（仅首位玩家生效；参数=选项 idx）。
+            if (pendingFloorRoute && cmd.param != null && cmd.param >= 0 && cmd.param < pendingFloorRoute.options.length) {
+              const opt = pendingFloorRoute.options[cmd.param];
+              activeFloorRoute = opt.id;
+              pendingFloorRoute = null;
+              // 选择后立即生成下一层敌人（modifier 影响 spawnWave 的 HP/掉落）。
+              spawnWave(currentWave + 1);
+            }
           }
           // SIGNAL → 无模拟效果（E10 信号系统，本 Sprint 不实现）。
         } else if (a.kind === EntityKind.ENEMY || a.kind === EntityKind.BOSS) {
@@ -603,12 +844,37 @@ export function createWorld(opts: CreateWorldOpts): World {
             }
             speedMult = phase >= 3 ? 1.6 : phase >= 2 ? 1.4 : 1.0;
             telMult = phase >= 2 ? 0.8 : 1.0;
+            // BOSS-MULTI-SKILL（P2）：火焰新星周期 —— 参考 Hades boss 模式化技能。
+            //   bossNovaAtTick 由 spawn 时确定性派生；到达时设 telegraph（novaRadius=130,
+            //   applyTick=+25 预警），结算复用 bomber AOE 模式。若已有普攻前摇则不覆盖（防吞）。
+            if (a.bossNovaAtTick != null && world.tick >= a.bossNovaAtTick && a.novaFiredTick !== world.tick) {
+              a.novaFiredTick = world.tick;
+              a.bossNovaAtTick = world.tick + BOSS_NOVA_INTERVAL; // 排下一次
+              // 强制覆盖普攻前摇（新星是周期技能，优先级更高；普攻丢一次可接受）：
+              //   若普攻 telegraph 正在前摇中，它会被本次新星替换——下一 tick AI 再开新普攻。
+              a.telegraph = {
+                startTick: world.tick,
+                applyTick: world.tick + Math.max(1, Math.round(BOSS_NOVA_TELEGRAPH * telMult)),
+                targetId: a.id, // 新星无特定目标（AOE），targetId 仅占位
+                kind: CombatKind.ATTACK,
+                novaRadius: BOSS_NOVA_RADIUS,
+              };
+            }
           }
 
-          if (intent.type === "MOVE") {
+          // KNOCKBACK（P0-1）：击退窗口内 → 沿 kbDir 位移（速度 130px/s），AI 暂停
+          //   （不执行 MOVE/ATTACK）——"砍飞一片"期间敌人被压制，无法反击或走位。
+          if (a.kbUntilTick != null && a.kbUntilTick > world.tick) {
+            const kbSpeed = 130; // px/s 击退速度（≈ 1.5× grunt 移速，直观"被打飞"）
+            const kbStep = kbSpeed / 30;
+            a.x += (a.kbDirX ?? 0) * kbStep;
+            a.y += (a.kbDirY ?? 0) * kbStep;
+          } else if (intent.type === "MOVE") {
             // 敌人移速按 ENEMY_PROTOTYPES.speed / 30（每 tick 位移，平衡初稿）；Boss 阶段叠加倍率。
+            // AFFIX（P1）：hasted 精英 → 移速 ×1.4（更危险，需优先处理）。
             const proto = ENEMY_PROTOTYPES[a.enemyTypeId!];
-            const ms = (proto.speed / 30) * speedMult;
+            const affixMult = a.affix === "hasted" ? 1.4 : 1;
+            const ms = (proto.speed / 30) * speedMult * affixMult;
             a.x += intent.dir.x * ms;
             a.y += intent.dir.y * ms;
             // N2：敌人移动即更新朝向（静止时保持上次朝向）。
@@ -632,7 +898,27 @@ export function createWorld(opts: CreateWorldOpts): World {
       for (const a of actors) {
         if (a.telegraph && a.telegraph.applyTick <= world.tick) {
           const proto = a.enemyTypeId != null ? ENEMY_PROTOTYPES[a.enemyTypeId] : null;
-          if (a.enemyTypeId === "bomber_imp" && proto) {
+          if (a.kind === EntityKind.BOSS && a.telegraph.novaRadius != null) {
+            // BOSS-MULTI-SKILL（P2）：火焰新星 —— 以 boss 为中心半径 novaRadius 内所有 ALIVE 玩家
+            //   结算 attackDamage（复用 bomber AOE 结算模式）。确定性：遍历 actors 数组顺序。
+            const r2 = a.telegraph.novaRadius * a.telegraph.novaRadius;
+            for (const t of actors) {
+              if (t.kind !== EntityKind.PLAYER) continue;
+              if ((t.status & EntityStatus.ALIVE) === 0) continue;
+              const dx = t.x - a.x;
+              const dy = t.y - a.y;
+              if (dx * dx + dy * dy <= r2) {
+                resolveDamage(combatState, {
+                  sourceId: a.id,
+                  targetId: t.id,
+                  amount: 0,
+                  tick: world.tick,
+                  kind: a.telegraph.kind,
+                  enemyDamage: proto?.attackDamage ?? 14,
+                });
+              }
+            }
+          } else if (a.enemyTypeId === "bomber_imp" && proto) {
             // 自爆兵 AOE（M13）：applyTick 抵达 → 对 bomber 半径（=attackRange）内所有 ALIVE 玩家，
             // 经 ⑦ resolveDamage 各结算 attackDamage（AOE，非仅原目标 telegraph.targetId）；随后自毁。
             // 纪律 B：AOE 伤害走 resolveDamage（唯一 hp 结算出口）；自毁（set hp=0 + DOWNED）发生在
@@ -695,29 +981,138 @@ export function createWorld(opts: CreateWorldOpts): World {
               });
             }
           } else {
-            const target = actors.find(
-              (t) => t.id === a.telegraph!.targetId && (t.status & EntityStatus.ALIVE) !== 0,
-            );
-            if (target) {
-              // E6：敌人来源 → 伤害取 ENEMY_PROTOTYPES 平衡初稿（world 经意图提交的 enemyDamage）；
-              //     玩家来源 → PLAYER_ATTACK_DAMAGE（resolveDamage 内裁决，C11 忽略 amount）。
-              const enemyDamage =
-                a.enemyTypeId != null ? ENEMY_PROTOTYPES[a.enemyTypeId].attackDamage : undefined;
-              resolveDamage(combatState, {
-                sourceId: a.id,
-                targetId: target.id,
-                amount: 0,
-                tick: world.tick,
-                kind: a.telegraph.kind,
-                enemyDamage,
-              });
-              // 死亡掉落（仅敌人/boss；玩家倒地不掉落）：hp≤0 且刚置 DOWNED → 确定性生 loot。
-              if (
-                (target.kind === EntityKind.ENEMY || target.kind === EntityKind.BOSS) &&
-                target.hp <= 0 &&
-                (target.status & EntityStatus.DOWNED) !== 0
-              ) {
-                trySpawnLoot(target, world.tick);
+            // RANGE-BALANCE（2026-08-12）：
+            //   * 玩家近战 → 「前向扇形 AOE」：命中「朝向 ±60°、距离 ≤ PLAYER_ATTACK_RANGE」的所有存活
+            //     敌人（参考暗黑/VS 近战 AOE，割草清屏核心爽感）。方向来自 telegraph.dir（客户端 aimDir）。
+            //   * 敌人近战 → 保持单体命中 telegraph.targetId（原逻辑；敌人目标=玩家，扇形无意义）。
+            //   确定性：遍历 actors 数组顺序（无随机源）；对同一批目标逐个结算。
+            const enemyDamage =
+              a.enemyTypeId != null ? ENEMY_PROTOTYPES[a.enemyTypeId].attackDamage : undefined;
+            const isPlayerSwing = a.kind === EntityKind.PLAYER;
+            if (!isPlayerSwing) {
+              // ── 敌人近战：单体命中锁定目标（原逻辑不变）──
+              const target = actors.find(
+                (t) => t.id === a.telegraph!.targetId && (t.status & EntityStatus.ALIVE) !== 0,
+              );
+              if (target) {
+                resolveDamage(combatState, {
+                  sourceId: a.id,
+                  targetId: target.id,
+                  amount: 0,
+                  tick: world.tick,
+                  kind: a.telegraph.kind,
+                  enemyDamage,
+                });
+                // AFFIX（P1）：lifesteal 精英攻击命中玩家 → 回复 2 HP（需玩家仍存活）。
+                //   确定性：仅本敌人 hp 增减，无随机源。
+                if (a.affix === "lifesteal" && (target.status & EntityStatus.ALIVE) !== 0) {
+                  a.hp = Math.min(a.maxHp, a.hp + 2);
+                }
+                // 死亡掉落（仅敌人/boss；玩家倒地不掉落）：hp≤0 且刚置 DOWNED → 确定性生 loot。
+                if (
+                  (target.kind === EntityKind.ENEMY || target.kind === EntityKind.BOSS) &&
+                  target.hp <= 0 &&
+                  (target.status & EntityStatus.DOWNED) !== 0
+                ) {
+                  trySpawnLoot(target, world.tick);
+                  if (a.kind === EntityKind.PLAYER) {
+                    const proto = ENEMY_PROTOTYPES[target.enemyTypeId ?? ""];
+                    const xpGain = proto?.tier === "boss" ? 80 : proto?.tier === "elite" ? 18 : 6;
+                    grantXp(a, xpGain);
+                  }
+                }
+              }
+            } else {
+              // ── 玩家近战：前向扇形 AOE ──
+              // 扇形方向优先用「主目标实时方向」（移动中玩家甩开目标时，AOE 应跟随当前朝向，
+              //   telegraph.dir 是启动时朝向可能已过时）；主目标不存在/同点则回退 telegraph.dir。
+              const mt = actors.find((t) => t.id === a.telegraph!.targetId);
+              let fx = 1, fy = 0;
+              if (mt && Math.hypot(mt.x - a.x, mt.y - a.y) > 1) {
+                const pl = Math.hypot(mt.x - a.x, mt.y - a.y);
+                fx = (mt.x - a.x) / pl; fy = (mt.y - a.y) / pl;
+              } else {
+                const coneDir = a.telegraph!.dir;
+                if (coneDir && (coneDir.x !== 0 || coneDir.y !== 0)) {
+                  const cl = Math.hypot(coneDir.x, coneDir.y) || 1;
+                  fx = coneDir.x / cl; fy = coneDir.y / cl;
+                }
+              }
+              const coneCos = Math.cos(PLAYER_ATTACK_CONE_RAD); // cos(60°)≈0.5 → ±60°
+              // BUILD-UP（P1）：范围强化 perk → AOE 射程 ×perkRangeMult（与触发校验一致）。
+              const aRangePx = PLAYER_ATTACK_RANGE * (a.perkRangeMult ?? 1);
+              const rangeSq = aRangePx * aRangePx;
+              const mainTargetId = a.telegraph!.targetId;
+              const hit = (t: Actor): boolean => {
+                if (t.kind !== EntityKind.ENEMY && t.kind !== EntityKind.BOSS) return false; // 只打敌人/BOSS
+                if ((t.status & EntityStatus.ALIVE) === 0) return false;
+                const dx = t.x - a.x, dy = t.y - a.y;
+                const dSq = dx * dx + dy * dy;
+                if (dSq > rangeSq) return false; // 超出射程
+                // 主目标（telegraph.targetId）：锁定必中（保留原单体行为——移动中玩家甩开目标时
+                //   AOE 扇形判定会把它排到背后 → 必须豁免，否则走A会莫名落空）。
+                if (t.id === mainTargetId) return true;
+                const dot = dx * fx + dy * fy;
+                if (dSq > 0 && dot < 0) return false; // 背面排除（dot<0）
+                if (dot * dot < coneCos * coneCos * dSq) return false; // 超出半角（|cos|<cos60）
+                return true;
+              };
+              for (const target of actors) {
+                if (!hit(target)) continue;
+                // CRIT（P2）：玩家普攻 15% 暴击 ×1.5（确定性 seed：来源+目标+当前 tick，无随机源）。
+                //   参考暗黑/VS 暴击系统——触发时伤害大增 + 客户端大数字反馈。
+                const critRoll = new Rng(
+                  hashString64(`crit:${a.id}:${target.id}:${world.tick}`),
+                );
+                const critMult = critRoll.nextInt(0, 99) < 15 ? 1.5 : undefined;
+                resolveDamage(combatState, {
+                  sourceId: a.id,
+                  targetId: target.id,
+                  amount: 0,
+                  tick: world.tick,
+                  kind: a.telegraph.kind,
+                  enemyDamage,
+                  critMult,
+                });
+                // KNOCKBACK（P0-1）：玩家近战命中敌人 → 击退位移 + 硬直（割草"砍飞"反馈）。
+                //   - 方向 = 攻击者→目标单位向量（命中几何，无随机，确定性）
+                //   - 位移 26px、硬直 4 tick（@30Hz ≈0.13s）
+                //   - 仅存活敌人；boss 击退减半（防止被打飞破坏走位）
+                //   - 已处击退窗口的目标重置窗口（连续命中保持压制）
+                if (
+                  target.kind === EntityKind.ENEMY &&
+                  (target.status & EntityStatus.ALIVE) !== 0 &&
+                  (target.status & EntityStatus.DOWNED) === 0
+                ) {
+                  const kdx = target.x - a.x, kdy = target.y - a.y;
+                  const kl = Math.hypot(kdx, kdy);
+                  const kbScale = target.kind === EntityKind.BOSS ? 0.5 : 1;
+                  if (kl > 1) {
+                    target.kbUntilTick = world.tick + KNOCKBACK_TICKS;
+                    target.kbDirX = (kdx / kl) * kbScale;
+                    target.kbDirY = (kdy / kl) * kbScale;
+                  } else {
+                    // 目标与攻击者重叠（极小概率）：用攻击朝向兜底
+                    target.kbUntilTick = world.tick + KNOCKBACK_TICKS;
+                    target.kbDirX = fx * kbScale;
+                    target.kbDirY = fy * kbScale;
+                  }
+                }
+                // 死亡掉落 + 升级
+                if (
+                  (target.kind === EntityKind.ENEMY || target.kind === EntityKind.BOSS) &&
+                  target.hp <= 0 &&
+                  (target.status & EntityStatus.DOWNED) !== 0
+                ) {
+                  trySpawnLoot(target, world.tick);
+                  const proto = ENEMY_PROTOTYPES[target.enemyTypeId ?? ""];
+                  const xpGain = proto?.tier === "boss" ? 80 : proto?.tier === "elite" ? 18 : 6;
+                  grantXp(a, xpGain);
+                  // BUILD-UP（P1）：汲取 perk → 击杀回 3 HP（割草续航；确定性，无随机源）。
+                  if (a.perks && a.perks.includes("lifesteal_up")) {
+                    a.hp = Math.min(a.maxHp, a.hp + 3);
+                  }
+                }
               }
             }
           }
@@ -847,14 +1242,59 @@ export function createWorld(opts: CreateWorldOpts): World {
         if (intermissionUntilTick > 0) {
           if (world.tick >= intermissionUntilTick) {
             intermissionUntilTick = 0;
-            spawnWave(currentWave + 1);
+            // S2 逐层下行：进入新楼层时更新 currentFloor（wave→floor 由 layout.floorOfWave 映射）。
+            const nf = layout.floorOfWave[currentWave + 1] ?? currentFloor;
+            const prevFloor = currentFloor;
+            currentFloor = nf;
+            // ROUTE-PICK（P3）：真的进入新楼层（floor↑）且非最后一层 → 弹「下一层路线选择」，
+            //   等玩家 CHOOSE_FLOOR 后 spawnWave（Hades 房间选择）。
+            const hasNextFloor = nf > prevFloor;
+            if (hasNextFloor && currentWave + 1 < maxWave) {
+              openFloorRoute(nf);
+              if (pendingFloorRoute) {
+                // 等待玩家选择；snapshot 下发 floorChoice → 客户端弹 UI → CHOOSE_FLOOR。
+                // world 继续步进（选择动作在输入 drain 处理），但 spawn 延后。
+              } else {
+                spawnWave(currentWave + 1);
+              }
+            } else {
+              spawnWave(currentWave + 1);
+            }
           }
         } else if (aliveEnemies === 0) {
           if (currentWave < maxWave) {
             intermissionUntilTick = world.tick + WAVE_INTERMISSION_TICKS;
+            // S2 层间「商」点：进入新楼层前的过渡期，生成本层三选一 perk 池（确定性 Rng）。
+            // 首层（floor 1）不弹（开局无 Build），此后每层过渡弹一次；同层防重复。
+            const nextFloor = layout.floorOfWave[currentWave + 1] ?? currentFloor;
+            if (nextFloor > lastPerkFloor && nextFloor > 1) {
+              lastPerkFloor = nextFloor;
+              const prng = new Rng(hashString64(`${opts.seed}:${opts.biomeId}:perk:${nextFloor}`));
+              const pool = [...PERK_POOL];
+              perkChoicesState = [];
+              for (let i = 0; i < PERK_CHOICES_PER_FLOOR && pool.length > 0; i += 1) {
+                const idx = prng.nextInt(0, pool.length - 1);
+                perkChoicesState.push(pool[idx]);
+                pool.splice(idx, 1);
+              }
+              pickedPerkThisOffer.clear();
+            }
           } else {
             currentRoomPhase = RoomPhase.SETTLE; // 通关
           }
+        }
+
+        // S2 商点生命周期：所有「在场玩家」都选完后清空池（否则客户端 overlay 循环弹）。
+        // 「在场」= 未断线玩家；断线玩家不计入（避免卡死等待永远不选的人）。
+        if (perkChoicesState.length > 0) {
+          const present = actors.filter(
+            (a) =>
+              a.kind === EntityKind.PLAYER &&
+              a.ownerId !== undefined &&
+              !a.disconnected,
+          );
+          const allPicked = present.every((a) => pickedPerkThisOffer.has(a.ownerId!));
+          if (allPicked) perkChoicesState = [];
         }
       }
 
@@ -863,13 +1303,29 @@ export function createWorld(opts: CreateWorldOpts): World {
     snapshot(): WorldSnapshot {
       const entities: EntityState[] = actors.map((a) => {
         // N2：方向性 telegraph（CONE/LINE）携带攻击者朝向单位向量；RING/AOE_FILL 径向对称省略。
+        // RANGE-BALANCE-FIX：玩家近战是「前向扇形 AOE」（±60°、130px）——telegraph 必须画成 CONE
+        //   与判定一致，而不是 RING（360° 大圆）——否则视觉上"人物脚下 260px 大圈"把攻击范围
+        //   误显示成人物范围，玩家分不清哪里能打到。
+        // BOSS-MULTI-SKILL（P2）：火焰新星 telegraph → AOE_FILL（实心火圈），radius=novaRadius。
         const shape =
-          a.enemyTypeId != null
-            ? ENEMY_PROTOTYPES[a.enemyTypeId].shape
-            : TelegraphShape.RING;
+          a.telegraph && a.telegraph.novaRadius != null
+            ? TelegraphShape.AOE_FILL
+            : a.enemyTypeId != null
+              ? ENEMY_PROTOTYPES[a.enemyTypeId].shape
+              : TelegraphShape.CONE;
         const isDirectional = shape === TelegraphShape.CONE || shape === TelegraphShape.LINE;
-        // 攻击者 facing（Actor.dir 0-7）→ 单位向量；径向形状置 undefined（JSON 丢弃，不影响哈希）。
-        const teleDir: Vec2 | undefined = isDirectional ? dirToVector(a.dir) : undefined;
+        // 方向性 telegraph 的朝向：优先用「攻击方向」（玩家 CONE 是前向扇形，方向存于 telegraph.dir，
+        //   由攻击 input 的 aimDir 提供，静止攻击也正确朝目标）；无攻击方向才退回 Actor 朝向。
+        //   （径向形状 RING/AOE_FILL 置 undefined，JSON 丢弃，不影响哈希。）
+        let teleDir: Vec2 | undefined;
+        if (isDirectional) {
+          if (a.telegraph && a.telegraph.dir && (a.telegraph.dir.x !== 0 || a.telegraph.dir.y !== 0)) {
+            const dl = Math.hypot(a.telegraph.dir.x, a.telegraph.dir.y) || 1;
+            teleDir = { x: a.telegraph.dir.x / dl, y: a.telegraph.dir.y / dl };
+          } else {
+            teleDir = dirToVector(a.dir);
+          }
+        }
         return {
         id: a.id,
         kind: a.kind,
@@ -882,10 +1338,19 @@ export function createWorld(opts: CreateWorldOpts): World {
         ownerId: a.ownerId,
         classId: a.classId,
         enemyTypeId: a.enemyTypeId,
+        // AFFIX（P1 精英词缀）：仅 elite 下发（grunt/boss undefined → JSON 丢弃，golden 无损）。
+        affix: a.affix ?? undefined,
         // S7.2 救援读条：仅倒地「玩家」附带（敌人倒地不进救援系统；undefined 不影响确定性快照哈希）。
         rescue:
           a.kind === EntityKind.PLAYER && (a.status & EntityStatus.DOWNED) !== 0
-            ? { targetId: a.id, progressTicks: a.rescueTicks, totalTicks: RESCUE_TICKS }
+            ? {
+                targetId: a.id,
+                progressTicks: a.rescueTicks,
+                totalTicks: RESCUE_TICKS,
+                // O3 倒地已过 tick（客户端算「自动复活 / OUT 超时」倒计时；仅倒地玩家下发，
+                // 与其他 rescue 字段一致——未倒地实体 rescue 为 undefined，JSON 丢弃，golden 无损）。
+                downedTicks: a.downedTicks,
+              }
             : undefined,
         // ── E8 / D12 快照序列化（READ-ONLY；纪律 B：绝不改 hp/status，仅公开已存在的权威状态）──
         // 仅当实体真实持有该状态才下发对应字段，否则赋 undefined（JSON.stringify 自动丢弃 undefined
@@ -899,11 +1364,13 @@ export function createWorld(opts: CreateWorldOpts): World {
                 color: DANGER_COLOR,
                 startTick: a.telegraph.startTick,
                 applyTick: a.telegraph.applyTick,
-                // 危险区半径：敌人取原型 attackRange；玩家普攻预警半径初稿（待 P5 调优）。
+                // 危险区半径：火焰新星取 novaRadius；敌人取原型 attackRange；玩家普攻预警 = 实际射程。
                 radius:
-                  a.enemyTypeId != null
-                    ? ENEMY_PROTOTYPES[a.enemyTypeId].attackRange
-                    : 40,
+                  a.telegraph && a.telegraph.novaRadius != null
+                    ? a.telegraph.novaRadius
+                    : a.enemyTypeId != null
+                      ? ENEMY_PROTOTYPES[a.enemyTypeId].attackRange
+                      : PLAYER_ATTACK_RANGE,
                 // N2：方向性形状（CONE/LINE）填充攻击者 facing 单位向量；RING/AOE_FILL 省略（undefined）。
                 dir: teleDir,
               }
@@ -936,6 +1403,25 @@ export function createWorld(opts: CreateWorldOpts): World {
         // 掉落（progression/feedback）：仅 loot 实体携带 lootType/value；其他实体为 undefined → 不下发。
         lootType: a.lootType,
         value: a.value,
+        // S2 局内 Build（perk）：仅玩家已选 perk 才下发对应字段，未选 → undefined → JSON 丢弃
+        // （不影响「无 perk 玩家」的确定性哈希，与 rescue/telegraph 先例一致）。
+        perks:
+          a.perks && a.perks.length > 0 ? (a.perks as readonly string[]) : undefined,
+        perkDamageMult: a.perkDamageMult ?? undefined,
+        perkSpeedMult: a.perkSpeedMult ?? undefined,
+        perkMaxHpBonus: a.perkMaxHpBonus ?? undefined,
+        // ── G1 升级（仅玩家下发 level/xp；敌人 undefined → JSON 丢弃，golden 无损）──
+        level: a.level ?? undefined,
+        xp: a.xp ?? undefined,
+        // G2 Buff 持续收益：拾取 LOOT buff 的窗口截止 tick（客户端 HUD 显示剩余秒/倍率）。
+        buffUntilTick:
+          a.buffUntilTick != null && a.buffUntilTick > world.tick
+            ? a.buffUntilTick
+            : undefined,
+        buffMult: a.buffMult ?? undefined,
+        // G1 升级特效：本 tick 升级次数（客户端播放金光特效；0/undefined 不下发）。
+        levelUpCount:
+          a.levelUpCount != null && a.levelUpCount > 0 ? a.levelUpCount : undefined,
         };
       });
       const enemiesRemaining = entities.filter(
@@ -950,6 +1436,14 @@ export function createWorld(opts: CreateWorldOpts): World {
         totalWaves: maxWave,
         intermissionTicks: Math.max(0, intermissionUntilTick - world.tick),
         enemiesRemaining,
+        // S2 逐层下行（顶层字段 → golden 仅哈希 entities，不影响确定性）。
+        floor: currentFloor,
+        totalFloors: layout.floorSequence.length,
+        // S2 三选一 Build 可选池（层间「商」点弹出时非空；无商点时空数组）。
+        perkChoices: perkChoicesState,
+        // ROUTE-PICK（P3）：层间路线选择（intermission 后未决策时非空；客户端弹 UI → CHOOSE_FLOOR）。
+        floorChoice: pendingFloorRoute ? pendingFloorRoute.options : null,
+        activeRoute: activeFloorRoute ?? null,
         entities,
         // M16：飞行弹道瞬态实体（顶层字段，独立于 entities；golden 仅哈希 entities，故 golden 安全）。
         projectiles: projectiles.map((p) => ({
@@ -980,6 +1474,64 @@ export function createWorld(opts: CreateWorldOpts): World {
         );
       }
       a.disconnected = disconnected;
+    },
+    applyPerk(playerId: number, perkId: string) {
+      // S2 局内 Build：服务端权威落地（纪律 B——仅 world 授权路径改实体状态）。
+      // 仅当处于「商」点窗口（perkChoices 非空）且 perkId 在可选池中且本玩家尚未选择才生效。
+      if (perkChoicesState.length === 0) return false;
+      if (!perkChoicesState.includes(perkId)) return false;
+      if (pickedPerkThisOffer.has(playerId)) return false;
+      const pl = actors.find((x) => x.kind === EntityKind.PLAYER && x.ownerId === playerId);
+      if (!pl) return false;
+      const def = PERK_CATALOG[perkId];
+      if (!def) return false;
+      // 落地：写入 perk 状态（伤害/移速/冷却/攻速/范围由 combat/world 消费；生命立即生效并同步 hp）。
+      pl.perks = pl.perks ? [...pl.perks, perkId] : [perkId];
+      if (perkId === "dmg_up") pl.perkDamageMult = 1.15;
+      else if (perkId === "spd_up") pl.perkSpeedMult = 1.12;
+      else if (perkId === "cdr_up") pl.perkCdr = 0.15;
+      else if (perkId === "atkspd_up") pl.perkAtkspd = 0.75; // 前摇 -25%
+      else if (perkId === "range_up") pl.perkRangeMult = 1.25; // 范围 +25%
+      else if (perkId === "hp_up") {
+        pl.perkMaxHpBonus = (pl.perkMaxHpBonus ?? 0) + 20;
+        pl.maxHp += 20;
+        pl.hp = Math.min(pl.maxHp, pl.hp + 20); // 立即同步：上限与当前血都 +20
+      }
+      pickedPerkThisOffer.add(playerId);
+      return true;
+    },
+    skipPerk(playerId: number) {
+      // S2 逃生口：商点窗口内标记该玩家已决策（等价于「选一个」但不写 perk）。
+      if (perkChoicesState.length === 0) return false;
+      if (pickedPerkThisOffer.has(playerId)) return true; // 已决策（选过或跳过的幂等）
+      const pl = actors.find((x) => x.kind === EntityKind.PLAYER && x.ownerId === playerId);
+      if (!pl) return false;
+      pickedPerkThisOffer.add(playerId);
+      return true;
+    },
+    perkChoices() {
+      return perkChoicesState;
+    },
+    // S2 测试钩子（仅测试用；生产不暴露）：强制开一个「商」点窗口（确定性三选一）。
+    // 用于 S2 单元测试验证 applyPerk 机制，避免依赖「真实推进到 floor 2」（怪海下单刷会死）。
+    __debugForcePerkOffer() {
+      const prng = new Rng(hashString64(`${opts.seed}:${opts.biomeId}:test-perk`));
+      const pool = [...PERK_POOL];
+      perkChoicesState = [];
+      for (let i = 0; i < PERK_CHOICES_PER_FLOOR && pool.length > 0; i += 1) {
+        const idx = prng.nextInt(0, pool.length - 1);
+        perkChoicesState.push(pool[idx]);
+        pool.splice(idx, 1);
+      }
+      pickedPerkThisOffer.clear();
+      lastPerkFloor = Number.MAX_SAFE_INTEGER; // 防后续楼层过渡覆盖
+      return perkChoicesState;
+    },
+    floor() {
+      return currentFloor;
+    },
+    totalFloors() {
+      return layout.floorSequence.length;
     },
   };
 

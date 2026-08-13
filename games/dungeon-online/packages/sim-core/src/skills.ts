@@ -35,6 +35,9 @@ export interface SkillActorView {
   readonly disconnected?: boolean;
   /** 施法者职业（C4 白名单校验用；legacy/未知 caster 为 undefined → 跳过白名单）。 */
   readonly classId?: PlayerClass;
+  /** 世界坐标（DIST-FIX：技能射程校验用；由 world 投影填充，纯只读）。 */
+  readonly x?: number;
+  readonly y?: number;
 }
 
 /**
@@ -99,6 +102,7 @@ export function resolveSkillApplication(
   target: SkillActorView | null,
   skillId: number,
   tick: number,
+  allowSelfCast = false,
 ): SkillApplication | null {
   const proto = getSkillPrototype(skillId);
   if (!proto) return null; // 未知技能 id
@@ -116,6 +120,21 @@ export function resolveSkillApplication(
     return toApplication(proto, caster.id, caster.id);
   }
 
+  // DIST-FIX：技能射程校验（range>0 且双方坐标可见时）。超距 → 拒绝（防全图施放）。
+  // SELF 模式 range=0 不限距离；ALLY/ENEMY 模式由 prototype.range 约束。
+  if (
+    proto.range > 0 &&
+    caster.x != null &&
+    caster.y != null &&
+    target &&
+    target.x != null &&
+    target.y != null
+  ) {
+    const dx = target.x - caster.x;
+    const dy = target.y - caster.y;
+    if (dx * dx + dy * dy > proto.range * proto.range) return null;
+  }
+
   // ENEMY 模式（C4b 进攻技 MARK/BARRAGE）：目标必须是「敌人」（ENEMY 或 BOSS），
   // 不可指向玩家/资源/弹幕/自己；纯状态/伤害效果由 world.step / combat 落地（discipline B）。
   if (proto.targetMode === SkillTargetMode.ENEMY) {
@@ -127,7 +146,13 @@ export function resolveSkillApplication(
   // ALLY 模式：必须指向「其他玩家盟友」。
   if (!target) return null;
   if (target.kind !== EntityKind.PLAYER) return null; // 不能指向敌人 / 资源 / 弹幕
-  if (target.id === caster.id) return null; // 不能指向自己（协作技非 solo）
+  // SOLO-SELF-FALLBACK：无其他玩家（单机割草）时，允许对自身施放护盾 ——
+  // 参考吸血鬼幸存者等 solo 割草游戏：技能必须"按了有反馈"，护盾自保而非指向空盟友。
+  // allowSelfCast 由 world.step 在检测到 solo 环境时传入；非 solo（联机）仍禁止 self-cast。
+  if (target.id === caster.id) {
+    if (!allowSelfCast) return null;
+    if (skillId !== SKILL_IDS.SHIELD_ALLY) return null; // 仅护盾支持 solo 自保（急救需要倒地队友）
+  }
   if (target.disconnected) return null; // 目标托管中不可施技
 
   if (skillId === SKILL_IDS.REVIVE_BOOST) {

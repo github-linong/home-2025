@@ -34,7 +34,11 @@ import { ENEMY_PROTOTYPES } from "../../src/types.ts";
 //   注：world 哈希（GOLDEN_WORLD_HASH，E5）与 playtest 哈希（GOLDEN_PLAYTEST_HASH）未变——
 //   二者仅涉及 wave-1（恒为 grunt_swarm，首刷怪点 rng 抽流未漂移）与 220-tick 窗口（未抵达含
 //   bomber_imp 的 wave≥2），故实体集不变、哈希稳定。
-const GOLDEN_LAYOUT_HASH = "c1b4c7abfeef4cc6f90fd492930a5acc8f5522373314fa168994195e9eccce64";
+// BAL-FIX 2026-08-11 重锁：SPAWN_COUNT_MAX 6→4（刷怪密度收敛）→ 布局哈希改变；确定性未破坏。
+// DIST-FIX 2026-08-11 重锁：wave1 刷怪点锚定到玩家出生点 150-300px 环带（开局即可接敌）→
+//   布局哈希改变；确定性未破坏（同 seed+biome 三次运行字节相等），故重锁本值。
+// SLAUGHTER-FIX 2026-08-12 重锁：SPAWN 6-10/点 + 2-4 波/层 + 资源 4-8 → 布局哈希改变；确定性未破坏。
+const GOLDEN_LAYOUT_HASH = "2dd90a2ef1cfd3dc3f7e8915a2531dbd5aba70dc8a7a94cc9f9af7cc2c4a9808";
 // E5 战斗管线接入后填充（同 seed + 同输入序列 → 同世界哈希；见 world-determinism.test.ts）。
 const GOLDEN_WORLD_HASH =
   "823863c6b4927719b78d28f4e4de1867e4da281141191b58b303d3888017ed27";

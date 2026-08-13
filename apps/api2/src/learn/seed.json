@@ -2674,6 +2674,126 @@
           "zh": "要点；主旨",
           "hint": "the main point or essence",
           "sort_order": 445
+        },
+        {
+          "en": "oversee",
+          "zh": "监督；管理；俯瞰",
+          "hint": "supervise or manage from above",
+          "sort_order": 446
+        },
+        {
+          "en": "assemble",
+          "zh": "组装；集合；聚集",
+          "hint": "put parts together or gather",
+          "sort_order": 447
+        },
+        {
+          "en": "forecast",
+          "zh": "预测；预报",
+          "hint": "predict a future outcome",
+          "sort_order": 448
+        },
+        {
+          "en": "rectify",
+          "zh": "纠正；改正；整顿",
+          "hint": "correct a mistake or fault",
+          "sort_order": 449
+        },
+        {
+          "en": "appliance",
+          "zh": "家用电器；器具",
+          "hint": "a powered home device",
+          "sort_order": 450
+        },
+        {
+          "en": "unwind",
+          "zh": "放松；解压；松开",
+          "hint": "relax after tension",
+          "sort_order": 451
+        },
+        {
+          "en": "brew",
+          "zh": "冲泡；酿造；酝酿",
+          "hint": "make tea, coffee, or beer",
+          "sort_order": 452
+        },
+        {
+          "en": "prudent",
+          "zh": "谨慎的；审慎的；明智的",
+          "hint": "careful and sensible",
+          "sort_order": 453
+        },
+        {
+          "en": "unfold",
+          "zh": "展开；呈现；逐渐明朗",
+          "hint": "gradually become clear",
+          "sort_order": 454
+        },
+        {
+          "en": "abide",
+          "zh": "遵守；忍受；居留",
+          "hint": "accept and follow rules",
+          "sort_order": 455
+        },
+        {
+          "en": "iterate",
+          "zh": "反复做；迭代",
+          "hint": "do repeatedly; refine in cycles",
+          "sort_order": 456
+        },
+        {
+          "en": "prioritize",
+          "zh": "优先处理；按重要性排序",
+          "hint": "rank tasks by importance",
+          "sort_order": 457
+        },
+        {
+          "en": "proactive",
+          "zh": "主动的；前瞻性的",
+          "hint": "taking initiative ahead of time",
+          "sort_order": 458
+        },
+        {
+          "en": "scalable",
+          "zh": "可扩展的；可伸缩的",
+          "hint": "able to grow in capacity",
+          "sort_order": 459
+        },
+        {
+          "en": "kindle",
+          "zh": "点燃；激发（兴趣、情感）",
+          "hint": "light or spark (interest)",
+          "sort_order": 460
+        },
+        {
+          "en": "serene",
+          "zh": "宁静的；安详的",
+          "hint": "calm and peaceful",
+          "sort_order": 461
+        },
+        {
+          "en": "hustle",
+          "zh": "忙碌奔波；熙攘",
+          "hint": "busy rush; bustle",
+          "sort_order": 462
+        },
+        {
+          "en": "culminate",
+          "zh": "达到顶点；（以…）告终",
+          "hint": "reach a climax or endpoint",
+          "sort_order": 463
+        },
+        {
+          "en": "recur",
+          "zh": "再发生；反复出现",
+          "hint": "happen again repeatedly",
+          "sort_order": 464
+        },
+        {
+          "en": "embody",
+          "zh": "体现；使具体化",
+          "hint": "represent concretely",
+          "sort_order": 465
         }
       ]
     }
@@ -5786,6 +5906,146 @@
       "zh": "要点；主旨",
       "pos": "n.",
       "example": "Can you give me the gist of the meeting? I missed it."
+    },
+    {
+      "lemma": "oversee",
+      "phonetic": "/ˌoʊvərˈsiː/",
+      "zh": "监督；管理；俯瞰",
+      "pos": "v.",
+      "example": "She oversees a team of twelve engineers across two offices."
+    },
+    {
+      "lemma": "assemble",
+      "phonetic": "/əˈsembl/",
+      "zh": "组装；集合；聚集",
+      "pos": "v.",
+      "example": "We need to assemble the furniture before the guests arrive."
+    },
+    {
+      "lemma": "forecast",
+      "phonetic": "/ˈfɔːrkæst/",
+      "zh": "预测；预报",
+      "pos": "v./n.",
+      "example": "Analysts forecast a 10% growth in revenue next quarter."
+    },
+    {
+      "lemma": "rectify",
+      "phonetic": "/ˈrektɪfaɪ/",
+      "zh": "纠正；改正；整顿",
+      "pos": "v.",
+      "example": "We must rectify the error before the report goes out."
+    },
+    {
+      "lemma": "appliance",
+      "phonetic": "/əˈplaɪəns/",
+      "zh": "家用电器；器具",
+      "pos": "n.",
+      "example": "The kitchen appliance broke down right before the dinner party."
+    },
+    {
+      "lemma": "unwind",
+      "phonetic": "/ʌnˈwaɪnd/",
+      "zh": "放松；解压；松开",
+      "pos": "v.",
+      "example": "I like to unwind with a book after a long day."
+    },
+    {
+      "lemma": "brew",
+      "phonetic": "/bruː/",
+      "zh": "冲泡；酿造；酝酿",
+      "pos": "v./n.",
+      "example": "I will brew a pot of coffee while you finish the call."
+    },
+    {
+      "lemma": "prudent",
+      "phonetic": "/ˈpruːdnt/",
+      "zh": "谨慎的；审慎的；明智的",
+      "pos": "adj.",
+      "example": "It would be prudent to save some money for emergencies."
+    },
+    {
+      "lemma": "unfold",
+      "phonetic": "/ʌnˈfoʊld/",
+      "zh": "展开；呈现；逐渐明朗",
+      "pos": "v.",
+      "example": "The full story unfolded over the next few days."
+    },
+    {
+      "lemma": "abide",
+      "phonetic": "/əˈbaɪd/",
+      "zh": "遵守；忍受；居留",
+      "pos": "v.",
+      "example": "All visitors must abide by the house rules."
+    },
+    {
+      "lemma": "iterate",
+      "phonetic": "/ˈɪtəreɪt/",
+      "zh": "反复做；迭代",
+      "pos": "v.",
+      "example": "We iterate on the design based on user feedback every sprint."
+    },
+    {
+      "lemma": "prioritize",
+      "phonetic": "/praɪˈɔːrətaɪz/",
+      "zh": "优先处理；按重要性排序",
+      "pos": "v.",
+      "example": "You should prioritize the urgent tasks before the end of the day."
+    },
+    {
+      "lemma": "proactive",
+      "phonetic": "/proʊˈæktɪv/",
+      "zh": "主动的；前瞻性的",
+      "pos": "adj.",
+      "example": "A proactive team member spots problems before they escalate."
+    },
+    {
+      "lemma": "scalable",
+      "phonetic": "/ˈskeɪləbl/",
+      "zh": "可扩展的；可伸缩的",
+      "pos": "adj.",
+      "example": "We need a scalable architecture that handles millions of users."
+    },
+    {
+      "lemma": "kindle",
+      "phonetic": "/ˈkɪndl/",
+      "zh": "点燃；激发（兴趣、情感）",
+      "pos": "v.",
+      "example": "The campfire kindled a sense of warmth among the travelers."
+    },
+    {
+      "lemma": "serene",
+      "phonetic": "/səˈriːn/",
+      "zh": "宁静的；安详的",
+      "pos": "adj.",
+      "example": "She found a serene spot by the lake to read in the morning."
+    },
+    {
+      "lemma": "hustle",
+      "phonetic": "/ˈhʌsl/",
+      "zh": "忙碌奔波；熙攘",
+      "pos": "n./v.",
+      "example": "The morning hustle of the city wakes up before sunrise."
+    },
+    {
+      "lemma": "culminate",
+      "phonetic": "/ˈkʌlmɪneɪt/",
+      "zh": "达到顶点；（以…）告终",
+      "pos": "v.",
+      "example": "Years of research culminated in a breakthrough publication."
+    },
+    {
+      "lemma": "recur",
+      "phonetic": "/rɪˈkɜːr/",
+      "zh": "再发生；反复出现",
+      "pos": "v.",
+      "example": "The same error tends to recur whenever the server restarts."
+    },
+    {
+      "lemma": "embody",
+      "phonetic": "/ɪmˈbɑːdi/",
+      "zh": "体现；使具体化",
+      "pos": "v.",
+      "example": "The statue embodies the values of courage and freedom."
     }
   ],
   "passages": [

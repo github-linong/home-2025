@@ -77,8 +77,8 @@ test("(A) gunner_imp prototype sanity", () => {
     "telegraph shape is LINE (3)",
   );
   assert.ok(
-    ENEMY_PROTOTYPES.gunner_imp.attackRange >= 140,
-    `attackRange ${ENEMY_PROTOTYPES.gunner_imp.attackRange} >= 140 (kite range)`,
+    ENEMY_PROTOTYPES.gunner_imp.attackRange >= 100 && ENEMY_PROTOTYPES.gunner_imp.attackRange <= 130,
+    `attackRange ${ENEMY_PROTOTYPES.gunner_imp.attackRange} in [100,130] (RANGE-BALANCE: remote kiter, still < player 130)`,
   );
   assert.ok(
     ENEMY_PROTOTYPES.gunner_imp.telegraphTicks >= 16,

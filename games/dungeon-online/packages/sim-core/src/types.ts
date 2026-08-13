@@ -40,10 +40,15 @@ export const SKILL_IDS = {
 export type SkillIdValue = (typeof SKILL_IDS)[keyof typeof SKILL_IDS];
 
 export const CLASS_BASE: Record<PlayerClass, ClassBase> = {
-  tank: { hp: 140, moveSpeed: 210, attackCooldownMs: 400, label: "守卫士" },
-  ranger: { hp: 80, moveSpeed: 278, attackCooldownMs: 400, label: "游侠" },
-  mage: { hp: 90, moveSpeed: 248, attackCooldownMs: 400, label: "术士" },
-  healer: { hp: 100, moveSpeed: 255, attackCooldownMs: 400, label: "医者" },
+  // BAL-FIX 2026-08-11：HP 全体 +40%（tank 140→196 / ranger 80→112 / mage 90→126 / healer 100→140），
+  // 解决「人太弱」——ranger 原 80 被 3 只 grunt(8/只) 围殴 4 轮即倒；buff 后 112 可扛 14 轮 grunt
+  // 或 9 轮 elite(12/只)，给走位/协作留出反应时间。移速/攻速不变。
+  // SLAUGHTER-FIX 2026-08-12：攻速 400→280ms（+35%），配合伤害 38 给「一刀一片」割草感。
+  // 怪海（6-10/点）下玩家需更肉（HP +30%）才能在「碾压怪」而非「被围殴」时站得住。
+  tank: { hp: 255, moveSpeed: 210, attackCooldownMs: 280, label: "守卫士" },
+  ranger: { hp: 145, moveSpeed: 278, attackCooldownMs: 280, label: "游侠" },
+  mage: { hp: 164, moveSpeed: 248, attackCooldownMs: 280, label: "术士" },
+  healer: { hp: 182, moveSpeed: 255, attackCooldownMs: 280, label: "医者" },
 };
 
 /** C4：每职业可用的协作技白名单（权威校验用）。SHIELD_ALLY 为通用技，各职业配一个招牌技。
@@ -161,6 +166,21 @@ export interface EntityState {
   // ── 掉落（progression/feedback；仅 loot 实体携带，world.snapshot 公开）──
   readonly lootType?: number; // 0=medkit | 1=ammo | 2=buff
   readonly value?: number; // 掉落数值：medkit=治疗量 / buff=百分比(如 20) / ammo=0
+  // ── S2 局内 Build（perk；三选一后的服务端权威加成，仅玩家持有）──
+  // 仅当玩家已选择 perk 才下发对应字段；未选（undefined）→ JSON 丢弃键，
+  // 不影响「无 perk 玩家」的确定性快照哈希（与 rescue/telegraph 先例一致）。
+  readonly perkDamageMult?: number; // 伤害加成倍率（>1，如 1.15；resolveDamage 消费）
+  readonly perkSpeedMult?: number;  // 移速加成倍率（>1，如 1.12；world 移动消费）
+  readonly perkMaxHpBonus?: number; // 生命上限加成（绝对值；选择 perk 时立即生效并同步 hp）
+  /** 已选 perk 的 id 列表（HUD 展示；无 perk 时为 undefined 不下发）。 */
+  readonly perks?: readonly string[];
+  // ── G1 升级系统（击杀得经验 → 升级提升属性；仅玩家持有）──
+  readonly level?: number;          // 当前等级（初值 1；undefined = 敌人不显示）
+  readonly xp?: number;             // 当前经验（击杀累积）
+  readonly levelUpCount?: number;   // 本 tick 升级次数（客户端播特效；undefined = 无升级）
+  // ── G2 Buff 持续收益（玩家拾取 LOOT buff 的窗口；HUD 显示剩余秒/倍率）──
+  readonly buffUntilTick?: number;  // 临时攻击 buff 窗口截止 tick（> world.tick 才下发）
+  readonly buffMult?: number;       // 临时攻击 buff 倍率（1+LOOT_BUFF_MULT）
 }
 
 /** telegraph 静态可读预警（P3 硬约束，art-bible §7）。 */
@@ -185,6 +205,8 @@ export interface RescueState {
   readonly targetId: number;
   progressTicks: number;
   readonly totalTicks: number;
+  /** O3 倒地已过 tick（客户端据此算「自动复活 / OUT 超时」倒计时；仅倒地玩家下发）。 */
+  readonly downedTicks?: number;
 }
 
 /** 飞行弹道快照（M16；world.snapshot 公开，供客户端渲染 + 命中判定可视化）。
@@ -215,6 +237,18 @@ export interface WorldSnapshot {
   readonly intermissionTicks: number;
   /** 剩余存活敌人/Boss 数（progression；客户端 HUD 渲染）。 */
   readonly enemiesRemaining: number;
+  /**
+   * S2 逐层下行：当前楼层（1-based）。由 wave 经 floorOfWave 映射。
+   * 顶层字段 → golden 仅哈希 entities，本字段不影响确定性哈希（与 projectiles 先例一致）。
+   */
+  readonly floor: number;
+  /** S2 总楼层数（= floorSequence.length；客户端「第 X / N 层」HUD）。 */
+  readonly totalFloors: number;
+  /**
+   * S2 三选一 Build 可选池（层间「商」点弹出时下发；空/未到选择时为空数组）。
+   * 服务端权威下发可选项，客户端只展示与提交选择（不自行定义 perk）。
+   */
+  readonly perkChoices: readonly string[];
   /** 数据面路由标记（C2）：客户端据 `type` 区分快照与控制/房间消息，避免脆弱的形状探测。 */
   readonly type: "snapshot";
   readonly entities: readonly EntityState[];
@@ -290,11 +324,12 @@ export const ENEMY_PROTOTYPES: Record<string, EnemyPrototype> = {
   grunt_swarm: {
     id: "grunt_swarm",
     tier: "grunt",
-    hpMin: 30,
-    hpMax: 60,
-    attackDamageMin: 8,
-    attackDamageMax: 12,
-    attackDamage: 8, // 平衡初稿
+    // SLAUGHTER-FIX 2026-08-12：30-60→18-30（血量大降 → 玩家 38 一刀一个）；伤害 6→4（围攻不死）。
+    hpMin: 18,
+    hpMax: 30,
+    attackDamageMin: 4,
+    attackDamageMax: 7,
+    attackDamage: 4, // SLAUGHTER-FIX: 6→4
     speed: 70, // 平衡初稿 px/s (WEB-FEEL: 110 → 70, 拉开与玩家差距)
     attackRange: 40, // 平衡初稿 px
     telegraphTicks: 21, // 0.7s @30Hz
@@ -303,11 +338,12 @@ export const ENEMY_PROTOTYPES: Record<string, EnemyPrototype> = {
   elite_warden: {
     id: "elite_warden",
     tier: "elite",
-    hpMin: 120,
-    hpMax: 200,
-    attackDamageMin: 15,
-    attackDamageMax: 20,
-    attackDamage: 12, // 平衡初稿
+    // SLAUGHTER-FIX：120-200→45-70（3 刀）；伤害 10→7（不两下带走玩家）。
+    hpMin: 45,
+    hpMax: 70,
+    attackDamageMin: 8,
+    attackDamageMax: 12,
+    attackDamage: 7, // SLAUGHTER-FIX: 10→7
     speed: 60, // 平衡初稿 px/s (WEB-FEEL: 95 → 60, 拉开与玩家差距)
     attackRange: 48, // 平衡初稿 px
     telegraphTicks: 24, // 0.8s @30Hz
@@ -316,24 +352,26 @@ export const ENEMY_PROTOTYPES: Record<string, EnemyPrototype> = {
   caster_ember: {
     id: "caster_ember",
     tier: "elite",
-    hpMin: 40,
-    hpMax: 80,
-    attackDamageMin: 8,
-    attackDamageMax: 12,
-    attackDamage: 10, // 平衡初稿（远程法术，单体 LINE）
+    // SLAUGHTER-FIX：40-80→22-36（2 刀）；伤害 9→6。
+    hpMin: 22,
+    hpMax: 36,
+    attackDamageMin: 6,
+    attackDamageMax: 10,
+    attackDamage: 6, // SLAUGHTER-FIX: 9→6
     speed: 55, // 平衡初稿 px/s（远程风筝者，略慢于近战精英）
-    attackRange: 175, // 平衡初稿 px（远程射程，远大于近战）
+    attackRange: 120, // RANGE-BALANCE: 175→120（下调远程射程，避免近战玩家被远程怪在屏幕边缘放风筝；仍远于近战怪 40-64）
     telegraphTicks: 24, // 0.8s @30Hz（精英下限）
     shape: TelegraphShape.LINE, // 线性法术弹道（N2 方向性 telegraph）
   },
   boss_emberlord: {
     id: "boss_emberlord",
     tier: "boss",
-    hpMin: 800,
-    hpMax: 1500,
-    attackDamageMin: 20,
-    attackDamageMax: 35,
-    attackDamage: 20, // 平衡初稿
+    // SLAUGHTER-FIX：800-1500→350-550（12 刀≈8s 不拖沓）；伤害 18→14。
+    hpMin: 350,
+    hpMax: 550,
+    attackDamageMin: 14,
+    attackDamageMax: 24,
+    attackDamage: 14, // SLAUGHTER-FIX: 18→14
     speed: 50, // 平衡初稿 px/s (WEB-FEEL: 80 → 50, 拉开与玩家差距)
     attackRange: 64, // 平衡初稿 px
     telegraphTicks: 30, // 1.0s @30Hz
@@ -342,11 +380,12 @@ export const ENEMY_PROTOTYPES: Record<string, EnemyPrototype> = {
   brute_charger: {
     id: "brute_charger",
     tier: "grunt",
-    hpMin: 35,
-    hpMax: 55,
-    attackDamageMin: 10,
-    attackDamageMax: 14,
-    attackDamage: 12, // 平衡初稿（比 grunt 高，玻璃大炮冲锋者）
+    // SLAUGHTER-FIX：35-55→20-30（1 刀）；伤害 10→6。
+    hpMin: 20,
+    hpMax: 30,
+    attackDamageMin: 6,
+    attackDamageMax: 10,
+    attackDamage: 6, // SLAUGHTER-FIX: 10→6
     speed: 95, // 平衡初稿 px/s（明显快于 grunt 70 / elite 60 / boss 50）
     attackRange: 38, // 平衡初稿 px
     telegraphTicks: 18, // 0.6s @30Hz（最短下限 MIN_TELEGRAPH_TICKS，更激进的前摇）
@@ -355,11 +394,12 @@ export const ENEMY_PROTOTYPES: Record<string, EnemyPrototype> = {
   bomber_imp: {
     id: "bomber_imp",
     tier: "grunt",
-    hpMin: 14,
-    hpMax: 20,
+    // SLAUGHTER-FIX：14-20→8-12（1 刀）；AOE 12→8。
+    hpMin: 8,
+    hpMax: 12,
     attackDamageMin: 0, // 自爆兵 AOE 为定值（非区间随机），Min/Max 置 0 以与③原型表字段一致
     attackDamageMax: 0,
-    attackDamage: 14, // AOE 扁平伤害（对 blast 半径内每名玩家各结算 14）
+    attackDamage: 8, // AOE 扁平伤害（SLAUGHTER-FIX: 12→8）
     speed: 135, // 平衡初稿 px/s（远超 grunt 70 / elite 60 / boss 50 / brute 95；高速脆皮冲锋）
     attackRange: 36, // 平衡初稿 px（= blast 半径：进入即起 telegraph，applyTick 时 AOE 结算）
     telegraphTicks: 18, // 0.6s @30Hz（D12 MIN_TELEGRAPH_TICKS 下限；消除 M13 刻意短前摇例外，与 brute 一致）
@@ -368,13 +408,14 @@ export const ENEMY_PROTOTYPES: Record<string, EnemyPrototype> = {
   gunner_imp: {
     id: "gunner_imp",
     tier: "grunt",
-    hpMin: 18,
-    hpMax: 26,
+    // SLAUGHTER-FIX：18-26→10-16（1 刀）；伤害 9→6。
+    hpMin: 10,
+    hpMax: 16,
     attackDamageMin: 0, // 弹道命中伤害为扁平定值（非区间随机），Min/Max 置 0 与③原型表字段一致
     attackDamageMax: 0,
-    attackDamage: 10, // 弹道命中伤害（扁平，单一值；经 ⑦ resolveDamage 落地，enemyDamage=p.damage）
+    attackDamage: 6, // 弹道命中伤害（SLAUGHTER-FIX: 9→6）
     speed: 90, // 平衡初稿 px/s（介于 grunt 70 与 bomber 135 之间，远程风筝者）
-    attackRange: 160, // 平衡初稿 px（远程风筝射程，远大于近战；gunner 保持距离开火）
+    attackRange: 110, // RANGE-BALANCE: 160→110（下调远程射程，避免近战玩家被远程怪在屏幕边缘放风筝；仍远于近战怪 40-64）
     telegraphTicks: 16, // 瞄准前摇 tick（抵达 applyTick 时 world 生成飞行弹道实体，非近战结算）
     shape: TelegraphShape.LINE, // 线性瞄准预警（N2 方向性 telegraph，沿 facing 拉伸瞄准线）
   },
@@ -446,6 +487,7 @@ export const InputAction = {
   DODGE: 2,
   SKILL: 3,
   SIGNAL: 4,
+  CHOOSE_FLOOR: 5, // ROUTE-PICK（P3）：层间路线选择（param=选项 idx，0..n-1）
 } as const;
 export type InputActionValue = (typeof InputAction)[keyof typeof InputAction];
 
@@ -479,6 +521,12 @@ export interface DamageRequest {
    * PLAYER_ATTACK_DAMAGE（C11 忽略客户端 amount）。未提供（undefined）→ 走玩家裁决路径。
    */
   readonly enemyDamage?: number; // E6 平衡初稿，服务端裁决
+  /**
+   * CRIT（P2 2026-08-12）：暴击倍率（>1 触发）。由 world.step 玩家攻击结算用确定性 seed
+   * 派生（15% 概率，无随机源）；combat.resolveDamage 消费：dmg ×critMult，事件 crit=true。
+   * 未设置 → 恒不触发（golden 场景无损）。
+   */
+  readonly critMult?: number;
 }
 
 /**
@@ -492,6 +540,8 @@ export interface DamageEvent {
   readonly deltaHp: number;
   readonly statusChange: number;
   readonly tick: number;
+  /** CRIT（P2）：本次是否暴击（dmg ×critMult；客户端大数字/音效反馈用）。 */
+  readonly crit?: boolean;
 }
 
 /**
@@ -551,6 +601,9 @@ export interface SkillPrototype {
   readonly cooldownTicks: number; // 冷却 tick（≈ 12s=360 / 10s=300 / 14s=420 @30Hz）
   readonly castTicks: number; // 施法前摇 tick；0 = 即时（服务器权威落地，无客户端前摇）
   readonly targetMode: SkillTargetModeValue;
+  /** DIST-FIX 施法射程（px）。>0 时施法者与目标距离超过此值 → resolveSkillApplication 拒绝
+   * （防全图施放；SHIELD/REVIVE 协作需靠近、MARK/BARRAGE 进攻技有较远射程）。0 = 不限距离。 */
+  readonly range: number;
   readonly effect: SkillEffect;
 }
 
@@ -572,6 +625,8 @@ export const SKILL_PROTOTYPES: Record<string, SkillPrototype> = {
     cooldownTicks: 360,
     castTicks: 0,
     targetMode: SkillTargetMode.ALLY,
+    // DIST-FIX：协作护盾需靠近队友（140px ≈ 4 tiles），不能隔全图施放。
+    range: 140,
     effect: { shieldTicks: 90, shieldReduction: 0.5, rescueBoostTicks: 0, tauntTicks: 0, markTicks: 0, flatDamage: 0 },
   },
   REVIVE_BOOST: {
@@ -580,6 +635,8 @@ export const SKILL_PROTOTYPES: Record<string, SkillPrototype> = {
     cooldownTicks: 300,
     castTicks: 0,
     targetMode: SkillTargetMode.ALLY,
+    // DIST-FIX：急救同样需靠近倒地队友（140px）。
+    range: 140,
     effect: { shieldTicks: 0, shieldReduction: 0, rescueBoostTicks: 45, tauntTicks: 0, markTicks: 0, flatDamage: 0 },
   },
   TAUNT: {
@@ -588,6 +645,7 @@ export const SKILL_PROTOTYPES: Record<string, SkillPrototype> = {
     cooldownTicks: 420,
     castTicks: 0,
     targetMode: SkillTargetMode.SELF,
+    range: 0, // SELF 模式无距离限制
     effect: { shieldTicks: 0, shieldReduction: 0, rescueBoostTicks: 0, tauntTicks: 120, markTicks: 0, flatDamage: 0 },
   },
   MARK: {
@@ -596,6 +654,8 @@ export const SKILL_PROTOTYPES: Record<string, SkillPrototype> = {
     cooldownTicks: 420, // 14s @30Hz（MARK_CD=14000ms）
     castTicks: 0,
     targetMode: SkillTargetMode.ENEMY,
+    // DIST-FIX：远程标记（240px ≈ 7 tiles，游侠射程），略短于 caster 远程 175*1.5。
+    range: 240,
     effect: { shieldTicks: 0, shieldReduction: 0, rescueBoostTicks: 0, tauntTicks: 0, markTicks: 180, flatDamage: 0 },
   },
   BARRAGE: {
@@ -604,6 +664,8 @@ export const SKILL_PROTOTYPES: Record<string, SkillPrototype> = {
     cooldownTicks: 480, // 16s @30Hz（BARRAGE_CD=16000ms）
     castTicks: 0,
     targetMode: SkillTargetMode.ENEMY,
+    // DIST-FIX：术士弹幕 240px（远程攻击技）。
+    range: 240,
     effect: { shieldTicks: 0, shieldReduction: 0, rescueBoostTicks: 0, tauntTicks: 0, markTicks: 0, flatDamage: 22 },
   },
 };

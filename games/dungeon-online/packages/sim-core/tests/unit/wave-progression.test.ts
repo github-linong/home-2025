@@ -37,7 +37,7 @@ test("wave progression: clearing wave 1 advances to wave 2 (or SETTLE if single-
   assert.ok(s0.totalWaves >= 1, "totalWaves must be >= 1");
 
   // 反复清场直到无敌人（intermission 中/通关）；处理可能的 boss phase-3 adds。
-  // 每次迭代重建 combatMap（含本 wave 新生成实体），确定性经 resolveDamage 玩家裁决路径(-18/次)击杀。
+  // 每次迭代重建 combatMap（含本 wave 新生成实体），确定性经 resolveDamage 玩家裁决路径击杀（伤害值由服务端常量裁决）。
   let safety = 0;
   while (safety < 64) {
     const all = world.actors();

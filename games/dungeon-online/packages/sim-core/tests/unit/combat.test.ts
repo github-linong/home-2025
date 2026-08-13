@@ -33,9 +33,10 @@ function req(p: Partial<DamageRequest> & Pick<DamageRequest, "sourceId" | "targe
 test("damage reduces target hp (⑦ authoritative settlement)", () => {
   const target: CombatEntity = { id: 10, hp: 100, maxHp: 100, status: EntityStatus.ALIVE };
   const source: CombatEntity = { id: 1, hp: 140, maxHp: 140, status: EntityStatus.ALIVE };
+  // SLAUGHTER-FIX 2026-08-12：玩家普攻 26→38。
   const ev = resolveDamage(mkState(5, [target, source]), req({ sourceId: 1, targetId: 10, kind: CombatKind.ATTACK }));
-  assert.equal(target.hp, 82, "100 - 18 (server damage) = 82");
-  assert.equal(ev.deltaHp, -18);
+  assert.equal(target.hp, 62, "100 - 38 (server damage) = 62");
+  assert.equal(ev.deltaHp, -38);
   assert.equal(ev.targetId, 10);
   assert.equal(ev.tick, 5);
   assert.equal(ev.statusChange & EntityStatus.ALIVE, EntityStatus.ALIVE);
@@ -82,23 +83,23 @@ test("telegraph windup enforced: damage is no-op before 18 ticks (D12)", () => {
   assert.equal(early.deltaHp, 0, "pre-windup hit is a no-op");
   assert.equal(target.hp, 100, "hp untouched before windup completes");
 
-  // tick=18 == applyTick → 前摇完成，伤害生效。
+  // tick=18 == applyTick → 前摇完成，伤害生效（SLAUGHTER-FIX：普攻 38）。
   const ready = resolveDamage(mkState(18, [target, source]), req({ sourceId: 1, targetId: 10, kind: CombatKind.ATTACK }));
-  assert.equal(ready.deltaHp, -18, "damage applies once windup completes");
-  assert.equal(target.hp, 82);
+  assert.equal(ready.deltaHp, -38, "damage applies once windup completes");
+  assert.equal(target.hp, 62);
 });
 
 test("C11 forged-amount rejection: client amount is ignored, server adjudicates", () => {
   const target: CombatEntity = { id: 10, hp: 30, maxHp: 30, status: EntityStatus.ALIVE };
   const source: CombatEntity = { id: 1, hp: 140, maxHp: 140, status: EntityStatus.ALIVE };
 
-  // 客户端伪造 amount=9999（秒杀），但 ⑦ 完全忽略，按服务端 18 结算。
+  // 客户端伪造 amount=9999（秒杀），但 ⑦ 完全忽略，按服务端 38 结算（SLAUGHTER-FIX）。
   const ev = resolveDamage(
     mkState(4, [target, source]),
     req({ sourceId: 1, targetId: 10, kind: CombatKind.ATTACK, amount: 9999 }),
   );
-  assert.equal(target.hp, 12, "30 - 18 (server), NOT 30 - 9999");
-  assert.equal(ev.deltaHp, -18, "forged amount must not leak into deltaHp");
+  assert.equal(target.hp, 0, "30 - 38 clamped to 0 (DOWNED), NOT 30 - 9999");
+  assert.equal(ev.deltaHp, -30, "deltaHp clamped to actual hp loss (30)");
 });
 
 test("discipline B: ⑧ enemy-ai imports only types and never mutates entity state directly", () => {

@@ -164,6 +164,13 @@ const demoJsonLd = buildCreativeWorkJsonLd({
           )
         }
         {
+          demo.category === "游戏" && (
+            <a class="btn btn-outline" href="/games/" target="_blank" rel="noreferrer">
+              游戏入口页
+            </a>
+          )
+        }
+        {
           demo.legacyUrl && (
             <span class="text-sm opacity-60 self-center">
               原路径 <code>{demo.legacyUrl}</code>
@@ -194,7 +201,9 @@ const demoJsonLd = buildCreativeWorkJsonLd({
             title={demo.title}
             class:list={[
               "w-full rounded-lg border border-base-300",
-              demo.demoUrl.includes("/demos/project/") ? "h-[min(85vh,900px)] bg-[#0b1220]" : "h-[480px] bg-base-100",
+              demo.demoUrl.includes("/demos/project/") || demo.demoUrl.includes("/games/")
+                ? "h-[min(85vh,900px)] bg-[#0b1220]"
+                : "h-[480px] bg-base-100",
             ]}
             loading="lazy"></iframe>
         </div>

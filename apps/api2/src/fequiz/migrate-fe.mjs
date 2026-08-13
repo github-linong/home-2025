@@ -13,8 +13,8 @@ import { fequizConnect } from "./db.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const schemaSql = readFileSync(join(__dirname, "schema.sql"), "utf8");
-// 合并所有 seed-*.json（seed-fe 前端内置 + seed-ai AI/大模型与高频补充）
-const seeds = ["seed-fe.json", "seed-ai.json"].map((f) =>
+// 合并所有 seed-*.json（seed-fe 前端内置 + seed-ai AI/大模型 + seed-fde Agent落地/FDE + seed-beisen 北森改编）
+const seeds = ["seed-fe.json", "seed-ai.json", "seed-fde.json", "seed-beisen.json"].map((f) =>
   JSON.parse(readFileSync(join(__dirname, f), "utf8")),
 );
 const seed = {

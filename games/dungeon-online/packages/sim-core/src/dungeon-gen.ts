@@ -37,6 +37,12 @@ export interface LayoutSnapshot {
   readonly spawnPoints: readonly SpawnPoint[];
   readonly resourceNodes: readonly ResourceNode[];
   readonly floorSequence: readonly number[];
+  /**
+   * S2 逐层下行：wave 号(1-based) → 楼层号(1-based)。
+   * 由生成循环内的楼层归属直接记录（同 wave 必属同一层；纯新增字段，
+   * 不改变任何 Rng 抽流 → 布局随机流与旧版完全一致，仅序列化哈希重锁）。
+   */
+  readonly floorOfWave: readonly number[];
 }
 
 /* ============================================================================
@@ -61,6 +67,11 @@ const GRID_H = 40;
 /** 每 tile 像素数；与 types.ts「32px tile」全项目一致。网格坐标 × 此值落地为世界 px。 */
 const TILE_PX = 32;
 
+/** 玩家出生点（地图中心；必须与 world.ts 的 centerX/centerY 一致）。
+ * DIST-FIX 2026-08-11：wave1 刷怪点据此锚定，保证开局 150~300px 内即有怪可接。 */
+const PLAYER_SPAWN_X = 32 * 32;
+const PLAYER_SPAWN_Y = 20 * 32;
+
 /** 单层变体索引上界加成：每层 variant ∈ [0, biomeId + FLOOR_VARIANT_MAX_BONUS]。
  *  +2 让每个 biome 在同 seed 下仍可派生数个确定布局变体（biomeId=0 → 3 变体，=1 → 4 变体…）。
  *  调大 → 同 biome 内布局多样性更高；调小 → 更收敛。 */
@@ -72,17 +83,24 @@ const FLOOR_COUNT_MAX = 5;
 
 /** 每层波数 [min,max]（闭区间）。1 波用于短层（opener 轻量）；至多 3 波逐步加压。
  *  与楼层数相乘 → 总波次落在 ~3–15。 */
-const WAVES_PER_FLOOR_MIN = 1;
-const WAVES_PER_FLOOR_MAX = 3;
+// SLAUGHTER-FIX：1-3→2-4 波/层（更多怪海持续涌来）。
+const WAVES_PER_FLOOR_MIN = 2;
+const WAVES_PER_FLOOR_MAX = 4;
 
 /** 单个刷怪点的敌人数 [min,max]（闭区间）。2 保证每点有存在感；6 为单 tile 簇密度上限，避免过载。
- *  注意：这是「每刷怪点」而非「每波总数」。 */
-const SPAWN_COUNT_MIN = 2;
-const SPAWN_COUNT_MAX = 6;
+ *  注意：这是「每刷怪点」而非「每波总数」。
+ * BAL-FIX 2026-08-11：上限 6→4，解决「怪太多」——原 2-6/点 × 每层 1-3 波 × 3-5 层，
+ *  单波常见 6-12 只，1 名玩家（43DPS 单体）清场过慢；收敛到 2-4/点后单波 4-8 只，配合
+ *  玩家 HP buff 可正面接战。 */
+// SLAUGHTER-FIX 2026-08-12：2-4→6-10/点（怪海）。配合玩家 38 伤害/280ms 攻速（一刀一片），
+// 单波 6-10×点 → 满屏怪涌向玩家（割草感核心）。
+const SPAWN_COUNT_MIN = 6;
+const SPAWN_COUNT_MAX = 10;
 
 /** 资源点数量 [min,max]（闭区间）。最少 2 保证有拾取；最多 5 避免杂乱。与楼层/波次数无关。 */
-const RESOURCE_NODE_MIN = 2;
-const RESOURCE_NODE_MAX = 5;
+// SLAUGHTER-FIX：资源点 2-5→4-8（怪多，掉得多 → 拾取更频繁）。
+const RESOURCE_NODE_MIN = 4;
+const RESOURCE_NODE_MAX = 8;
 
 /** bomber_imp / gunner_imp 注入的最低波次（wave >= 此值才注入；等价于原 wave>1）。
  *  锁定 wave 1 为纯 grunt_swarm opener：保留温和开场，并稳定 playtest/world 哈希（wave-1 实体集不变）。 */
@@ -139,6 +157,10 @@ export function generateLayout(seed: string, biomeId: number): LayoutSnapshot {
     floorSequence.push(rng.nextInt(0, biomeId + FLOOR_VARIANT_MAX_BONUS));
   }
 
+  // S2 逐层下行：floorOfWave[wave(1-based)] = floor(1-based)。生成循环内记录，
+  // 与「每层 1-3 波」的随机流完全同步，不新增 Rng 抽流（确定性 intact）。
+  const floorOfWave: number[] = [];
+
   // 基础刷怪池：排除注入型敌人（caster_ember / brute_charger / bomber_imp / gunner_imp），
   // 维持 grunt/elite/boss 三类的相对分布不变。注入型敌人仅以「确定性低密度」方式注入
   // （见下方各自槽位替换），不计入随机池，控制其出现频率，避免破坏各原型的设计占比意图。
@@ -149,8 +171,10 @@ export function generateLayout(seed: string, biomeId: number): LayoutSnapshot {
   let wave = 0;
   for (let f = 0; f < floorCount; f += 1) {
     const wavesThisFloor = rng.nextInt(WAVES_PER_FLOOR_MIN, WAVES_PER_FLOOR_MAX);
+    // S2：本层所有 wave 归属 floor = f+1（1-based）。
     for (let w = 0; w < wavesThisFloor; w += 1) {
       wave += 1;
+      floorOfWave[wave] = f + 1;
       const rolled = enemyTypeIds[rng.nextInt(0, enemyTypeIds.length - 1)];
       // 确定性低密度注入（理由见上方各 *_INJECTION_CHANCE 常量注释）：
       // - caster_ember：仅当本槽为 elite_warden 时，以 CASTER_INJECTION_CHANCE 概率替换为远程施法者；
@@ -179,10 +203,26 @@ export function generateLayout(seed: string, biomeId: number): LayoutSnapshot {
         enemyTypeId = rolled;
       }
       const count = rng.nextInt(SPAWN_COUNT_MIN, SPAWN_COUNT_MAX);
-      const pos: Vec2 = {
-        x: rng.nextInt(0, GRID_W - 1) * TILE_PX,
-        y: rng.nextInt(0, GRID_H - 1) * TILE_PX,
-      };
+      // DIST-FIX 2026-08-11：wave 1 刷怪点强制锚定在玩家出生点附近（150~300px 环带）。
+      // 原实现纯随机 tile → 首波可能刷在地图角落（如 (1568,0) vs 玩家 (1024,640) 相距 840px），
+      // 玩家开局 4 秒找不到怪 → 「完全不可用」的直接原因之一。
+      // 独立 Rng（seed 派生）不污染主随机流 → wave≥2 的位置/类型分布与旧版逐位一致（确定性 intact）。
+      // 注意：本改动改变 LayoutSnapshot 的 wave1 位置 → 需重锁 GOLDEN_LAYOUT_HASH / GOLDEN_WORLD_HASH。
+      let pos: Vec2;
+      if (wave === 1) {
+        const anchorRng = new Rng(hashString64(`${seed}:${biomeId}:w1-anchor`));
+        const ang = anchorRng.nextFloat() * Math.PI * 2;
+        const dist = anchorRng.nextInt(150, 300);
+        pos = {
+          x: Math.round(PLAYER_SPAWN_X + Math.cos(ang) * dist),
+          y: Math.round(PLAYER_SPAWN_Y + Math.sin(ang) * dist),
+        };
+      } else {
+        pos = {
+          x: rng.nextInt(0, GRID_W - 1) * TILE_PX,
+          y: rng.nextInt(0, GRID_H - 1) * TILE_PX,
+        };
+      }
       spawnPoints.push({ pos, enemyTypeId, wave, count });
     }
   }
@@ -215,5 +255,5 @@ export function generateLayout(seed: string, biomeId: number): LayoutSnapshot {
     });
   }
 
-  return { seed, biomeId, spawnPoints, resourceNodes, floorSequence };
+  return { seed, biomeId, spawnPoints, resourceNodes, floorSequence, floorOfWave };
 }

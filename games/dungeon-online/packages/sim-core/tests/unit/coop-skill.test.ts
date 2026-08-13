@@ -348,3 +348,48 @@ test("resolveSkillApplication: validates target mode / DOWNED requirement (pure)
   const dc: SkillActorView = { ...caster, disconnected: true };
   assert.equal(resolveSkillApplication(dc, ally, SKILL_IDS.SHIELD_ALLY, 0), null, "disconnected caster rejected");
 });
+
+// ---------------------------------------------------------------------------
+// 9) SOLO-SELF-FALLBACK：无队友（单机割草）时，SHIELD_ALLY 可对自身施放护盾。
+//    参考吸血鬼幸存者等 solo 割草游戏：技能必须"按了有反馈"，护盾自保而非指向空盟友。
+// ---------------------------------------------------------------------------
+test("solo self-cast: SHIELD_ALLY targets self when no other player exists", () => {
+  // 单机：只有 1 名玩家（tank，含护盾技）。
+  const w = createWorld({ runId: "SOLO-SELF", seed: "EMBER-S1", biomeId: 0, players: [{ seatId: 0, userId: "P1", classId: "tank" }] });
+  const actors = w.actors();
+  const p0 = actors.find((a) => a.ownerId === 0)!;
+  // 出生时无护盾。
+  assert.equal(p0.shieldUntilTick ?? 0, 0, "initial no shield");
+
+  // 单机下对自身施护盾（客户端 solo 时 target=0 → world 兜底为 caster 自己）。
+  w.enqueueInput(0, {
+    seq: 1,
+    tick: 0,
+    action: InputAction.SKILL,
+    dir: { x: 0, y: 0 },
+    target: 0, // solo 无盟友 → 0
+    param: SKILL_IDS.SHIELD_ALLY,
+  });
+  w.step();
+
+  assert.ok((p0.shieldUntilTick ?? 0) > 0, "solo SHIELD_ALLY should apply shield to self");
+  assert.equal(p0.shieldReduction, SKILL_PROTOTYPES.SHIELD_ALLY.effect.shieldReduction, "self shield reduction");
+  assert.ok((p0.cooldownUntilTick ?? 0) > 0, "self-cast should consume cooldown");
+});
+
+test("solo self-cast: REVIVE_BOOST / non-shield ally skills still rejected on self", () => {
+  const w = createWorld({ runId: "SOLO-REVIVE", seed: "EMBER-S1", biomeId: 0, players: [{ seatId: 0, userId: "P1", classId: "ranger" }] });
+  const actors = w.actors();
+  const p0 = actors.find((a) => a.ownerId === 0)!;
+  // ranger 有急救链，但 solo 对自己施急救 → 仍无效（急救需要倒地队友）。
+  w.enqueueInput(0, {
+    seq: 1,
+    tick: 0,
+    action: InputAction.SKILL,
+    dir: { x: 0, y: 0 },
+    target: 0,
+    param: SKILL_IDS.REVIVE_BOOST,
+  });
+  w.step();
+  assert.equal(p0.rescueTicks ?? 0, 0, "REVIVE_BOOST on self (not downed) → no-op");
+});

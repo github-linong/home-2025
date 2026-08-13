@@ -36,15 +36,30 @@ import { InputAction, PLAYER_CLASSES, EntityKind, EntityStatus } from "../../src
 //   固定序列下 snapshot().entities 仅含 wave-1 实体 → 实体集改变 → 哈希改变；确定性未破坏
 //   （三次运行字节相等）。新增的 wave/totalWaves/intermissionTicks/enemiesRemaining 为快照顶层字段，
 //   不参与 entities 哈希，故不影响本锚点；仅实体集变化导致重锁。
+// BAL-FIX 2026-08-11 重锁说明：玩家普攻 18→26 / 玩家 HP +40% / 敌人伤害下调 → 固定序列（一次 ATTACK）
+//   的敌人 hp 变化（-26 而非 -18）→ 世界快照哈希改变；确定性未破坏（三次运行字节相等），故重锁本值。
+// DIST-FIX 2026-08-11 重锁说明：① wave1 刷怪点锚定到玩家出生点附近（150-300px 环带）→ 实体初始坐标改变；
+//   ② 玩家普攻加射程校验（PLAYER_ATTACK_RANGE=60px）→ 固定序列改为「先靠近 25 tick 再 ATTACK」→
+//   实体坐标/状态序列改变 → 世界快照哈希改变；确定性未破坏（三次运行字节相等），故重锁本值。
+// G1-FIX 2026-08-11 重锁说明：玩家实体新增 level:1/xp:0 快照字段（升级系统）→ 快照序列化多出 level/xp 键 →
+//   哈希改变；确定性未破坏（同 seed+inputs 三次运行字节相等），故重锁本值。
+// SLAUGHTER-FIX 2026-08-12 重锁：玩家普攻 38 + SPAWN 6-10 + 波次 2-4 → wave1 实体集/坐标/攻击结算变化
+//   → 世界快照哈希改变；确定性未破坏（三次运行字节相等），故重锁本值。
+// RANGE-BALANCE 2026-08-12 重锁：玩家近战 90→130px + 前向扇形 AOE（±60°）+ 远程怪射程下调
+//   （caster 175→120 / gunner 160→110）→ 固定序列攻击结算/实体坐标变化 → 世界快照哈希改变；
+//   确定性未破坏（三次运行字节相等），故重锁本值。
 const GOLDEN_WORLD_HASH =
-  "137da014bb218489d8db08fe8e67325572e46ac6c5f36cdb190b93eaa432e3a9";
+  "4c1fa849fa6b10c7d5d61a7c501e13e00f370af994aae9bb831549a695230011";
 
 function hashEntities(entities: readonly unknown[]): string {
   return createHash("sha256").update(JSON.stringify(entities)).digest("hex");
 }
 
-/** 固定输入序列：P1 发起一次 ATTACK（前摇 18 tick，D12），随后 P1/P2 各做 25 tick 占位移动。 */
-function runFixedSequence(): { hash: string; enemyHp: number; enemyMax: number; enemyStatus: number } {
+/** 固定输入序列：P1 靠近首个敌人后发起一次 ATTACK（前摇 18 tick，D12），随后 P1/P2 各做 25 tick 占位移动。
+ * DIST-FIX 2026-08-11：玩家出生距 wave1 敌人 150-300px（>普攻射程 60px）→ 序列先移动接近敌人，
+ *   再 ATTACK（否则 ATTACK 因射程校验 no-op，攻击不落地）。
+ * SLAUGHTER-FIX：grunt 18-30HP，38 伤害一刀即死 → enemy 可能被移除（enemyHp/enemyStatus 可 undefined）。 */
+function runFixedSequence(): { hash: string; enemyHp?: number; enemyMax: number; enemyStatus?: number; enemyAlive: boolean } {
   const world = createWorld({
     runId: "EMBER-GOLDEN-E5",
     seed: "EMBER-S1",
@@ -57,22 +72,36 @@ function runFixedSequence(): { hash: string; enemyHp: number; enemyMax: number; 
   const enemyId = world.actors().find((a) => a.kind === EntityKind.ENEMY)!.id;
   const enemyMax = world.actors().find((a) => a.id === enemyId)!.maxHp;
 
-  // tick 0：P1 发起 ATTACK（target = 首个敌人），前摇 18 tick（D12）。
-  world.enqueueInput(0, { seq: 1, tick: 0, action: InputAction.ATTACK, dir: { x: 0, y: 0 }, target: enemyId });
-  world.step();
-  // 后续固定移动序列（含占位 AI 推进）；攻击在 tick>=18 经 ⑦ 结算。
+  // Phase 1（tick 0..24）：P1 朝首个敌人移动接近（MOVE，方向 = 指向敌人）；P2 占位移动。
+  // 25 tick × ~7px/tick ≈ 175px 位移，足以把 150-300px 初始距离压到普攻射程 60px 内。
   for (let i = 0; i < 25; i++) {
-    world.enqueueInput(0, { seq: 2 + i, tick: 0, action: InputAction.MOVE, dir: { x: 1, y: 0 } });
-    world.enqueueInput(1, { seq: 2 + i, tick: 0, action: InputAction.MOVE, dir: { x: 0, y: 1 } });
+    const me = world.actors().find((a) => a.kind === EntityKind.PLAYER && a.ownerId === 0)!;
+    const tgt = world.actors().find((a) => a.id === enemyId)!;
+    const dx = tgt.x - me.x;
+    const dy = tgt.y - me.y;
+    const len = Math.hypot(dx, dy) || 1;
+    world.enqueueInput(0, { seq: 1 + i, tick: i, action: InputAction.MOVE, dir: { x: dx / len, y: dy / len } });
+    world.enqueueInput(1, { seq: 1 + i, tick: i, action: InputAction.MOVE, dir: { x: 0, y: 1 } });
+    world.step();
+  }
+  // Phase 2（tick 25）：P1 发起 ATTACK（target = 首个敌人），前摇 18 tick（D12）。
+  world.enqueueInput(0, { seq: 26, tick: 25, action: InputAction.ATTACK, dir: { x: 0, y: 0 }, target: enemyId });
+  world.step();
+  // Phase 3：后续固定移动序列（含占位 AI 推进）；攻击在 tick>=43 经 ⑦ 结算。
+  for (let i = 0; i < 25; i++) {
+    world.enqueueInput(0, { seq: 27 + i, tick: 26 + i, action: InputAction.MOVE, dir: { x: 1, y: 0 } });
+    world.enqueueInput(1, { seq: 27 + i, tick: 26 + i, action: InputAction.MOVE, dir: { x: 0, y: 1 } });
     world.step();
   }
 
-  const enemy = world.actors().find((a) => a.id === enemyId)!;
+  const enemy = world.actors().find((a) => a.id === enemyId);
   return {
     hash: hashEntities(world.snapshot().entities),
-    enemyHp: enemy.hp,
+    // SLAUGHTER-FIX：grunt 18-30HP，玩家 38 伤害一刀即死 → enemy 可能已被移除（undefined）。
+    enemyHp: enemy ? enemy.hp : undefined,
     enemyMax,
-    enemyStatus: enemy.status,
+    enemyStatus: enemy ? enemy.status : undefined,
+    enemyAlive: enemy ? (enemy.status & EntityStatus.ALIVE) !== 0 : false,
   };
 }
 
@@ -90,8 +119,12 @@ test("E5 world determinism: cross-run byte-equal (repeat N times)", () => {
   }
 });
 
-test("E5 world golden: the locked attack actually applied (enemy hp < maxHp, still ALIVE)", () => {
-  const { enemyHp, enemyMax, enemyStatus } = runFixedSequence();
-  assert.ok(enemyHp < enemyMax, "single attack must have reduced enemy hp");
-  assert.equal(enemyStatus & EntityStatus.ALIVE, EntityStatus.ALIVE, "enemy still alive (hp>0)");
+test("E5 world golden: the locked attack actually applied (damage landed)", () => {
+  // SLAUGHTER-FIX：grunt 血 18-30，玩家 38 伤害一刀即死 → enemy 可能已 DOWNED 或被移除。
+  // 断言改为「攻击确实造成伤害或击杀」。
+  const { enemyHp, enemyMax, enemyAlive } = runFixedSequence();
+  assert.ok(
+    enemyHp === undefined || enemyHp < enemyMax || !enemyAlive,
+    `attack must reduce hp or kill (alive=${enemyAlive}, hp=${enemyHp}/${enemyMax})`,
+  );
 });

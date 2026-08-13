@@ -191,6 +191,15 @@ export const CURATED_DEMO_SECTIONS: CuratedSection[] = [
       "project-vue-cli-build-axios",
     ],
   },
+  {
+    id: "games",
+    title: "联机游戏",
+    description: "浏览器可直接游玩的多人联机游戏：地牢 Roguelike 与武侠 ARPG。",
+    slugs: [
+      "dungeon-online",
+      "jianghu",
+    ],
+  },
 ];
 
 /** Flat set of curated slugs for badge / filter use */

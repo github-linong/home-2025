@@ -63,7 +63,7 @@ async function main() {
     page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
     page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
 
-    await page.goto(`http://localhost:${CLIENT_PORT}/index.html?server=ws://localhost:${SERVER_PORT}`, { waitUntil: 'load' });
+    await page.goto(`http://localhost:${CLIENT_PORT}/index.html?server=ws://localhost:${SERVER_PORT}&solo=1`, { waitUntil: 'load' });
 
     // wait for connection
     let connected = false;
@@ -84,29 +84,50 @@ async function main() {
     results.snapshotType = await page.evaluate(() => window.__game.lastSnapshot?.type ?? null);
 
     // ── movement sample (hold Right) ──
+    // O2 稳定化：先等 gameState 进入 playing（冷启动时 room→playing 可能慢于首帧采样）。
+    let playing = false;
+    for (let i = 0; i < 40; i++) {
+      playing = await page.evaluate(() => window.__game.gameState === 'playing');
+      if (playing) break;
+      await sleep(100);
+    }
+    results.reachedPlaying = playing;
     await page.keyboard.down('KeyD');
+    // O2 flaky 修复：同时记录 authPos 和对应 snapshot.tick；按 tick 差归一化位移，
+    // 消除「100ms 采样 vs 33ms tick」的相位抖动（否则 CoV 偶发超标误报）。
+    // 预热 5 个采样（玩家加速/插值窗口）后再正式采样，进一步降低冷启动误报。
     const samples = [];
     let lootSeen = false;
+    for (let warm = 0; warm < 5; warm++) {
+      const p = await page.evaluate(() => window.__game.authPos);
+      const t = await page.evaluate(() => window.__game.lastSnapshot?.tick ?? 0);
+      if (p) samples.push({ x: p.x, y: p.y, tick: t });
+      await sleep(100);
+    }
+    samples.length = 0; // 预热丢弃
     for (let i = 0; i < 35; i++) {
       const p = await page.evaluate(() => window.__game.authPos);
-      if (p) samples.push(p);
+      const t = await page.evaluate(() => window.__game.lastSnapshot?.tick ?? 0);
+      if (p) samples.push({ x: p.x, y: p.y, tick: t });
       const lk = await page.evaluate(() => (window.__game.lastSnapshot?.entities || []).some((e) => e.kind === 6));
       if (lk) lootSeen = true;
       await sleep(100);
     }
     await page.keyboard.up('KeyD');
 
-    // compute net speed + smoothness (CoV of per-sample step)
-    let dists = [];
+    // compute net speed + smoothness (CoV of per-sample per-tick step)
+    const STEP_TICKS = 3; // 服务端 30Hz；100ms 采样 ≈ 3 ticks
+    let perTickSteps = [];
     for (let i = 1; i < samples.length; i++) {
-      const dx = samples[i].x - samples[i - 1].x;
-      const dy = samples[i].y - samples[i - 1].y;
-      dists.push(Math.hypot(dx, dy));
+      const dt = Math.max(1, samples[i].tick - samples[i - 1].tick);
+      const dx = (samples[i].x - samples[i - 1].x) / dt;
+      const dy = (samples[i].y - samples[i - 1].y) / dt;
+      perTickSteps.push(Math.hypot(dx, dy));
     }
-    const mean = dists.reduce((a, b) => a + b, 0) / (dists.length || 1);
-    const variance = dists.reduce((a, b) => a + (b - mean) ** 2, 0) / (dists.length || 1);
+    const mean = perTickSteps.reduce((a, b) => a + b, 0) / (perTickSteps.length || 1);
+    const variance = perTickSteps.reduce((a, b) => a + (b - mean) ** 2, 0) / (perTickSteps.length || 1);
     const cov = mean > 0 ? Math.sqrt(variance) / mean : 1;
-    const netSpeed = mean / 0.1; // px/s (100ms cadence)
+    const netSpeed = mean * STEP_TICKS / 0.1; // px/s（按 100ms=3tick 折算）
     results.netSpeed = Math.round(netSpeed);
     results.smoothCov = +cov.toFixed(3);
 

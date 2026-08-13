@@ -42,6 +42,20 @@ function enemyId(world: World): number {
   return world.actors().find((a) => a.kind === EntityKind.ENEMY || a.kind === EntityKind.BOSS)!.id;
 }
 
+/** DIST-FIX：玩家出生距 wave1 敌人 >150px（>普攻射程 60px）。测试需 ATTACK 前先靠近敌人。 */
+function moveClose(world: World, targetId: number, ticks = 30): void {
+  for (let t = 0; t < ticks; t++) {
+    const me = world.actors().find((a) => a.kind === EntityKind.PLAYER && a.ownerId === 0);
+    const tgt = world.actors().find((a) => a.id === targetId);
+    if (!me || !tgt) break;
+    const dx = tgt.x - me.x;
+    const dy = tgt.y - me.y;
+    const len = Math.hypot(dx, dy) || 1;
+    world.enqueueInput(0, { seq: t + 1, tick: t, action: InputAction.MOVE, dir: { x: dx / len, y: dy / len } });
+    world.step();
+  }
+}
+
 function dodgeCmd(seq: number) {
   return { seq, tick: 0, action: InputAction.DODGE, dir: { x: 0, y: 0 } };
 }
@@ -71,9 +85,13 @@ test("(a) DODGE grants IFRAME window on the dodger (O-M source state)", () => {
 test("(b) during iframe window: negated damage + player can MOVE/ATTACK/DODGE (binary gating unfreezes)", () => {
   const world = makeWorld();
   const p = world.actors()[0];
+  const eid = enemyId(world);
+  // DIST-FIX：先靠近敌人（进入普攻射程），保证窗口内 ATTACK 能建立 telegraph。
+  moveClose(world, eid);
+  let seq = 31;
 
-  // DODGE at tick 0 → status=17, iframeUntilTick=12。
-  world.enqueueInput(0, dodgeCmd(1));
+  // DODGE → status=17, iframeUntilTick=当前+12。
+  world.enqueueInput(0, dodgeCmd(seq++));
   world.step();
   assert.equal(p.status, EntityStatus.ALIVE | EntityStatus.IFRAME, "status = ALIVE|IFRAME = 17");
 
@@ -88,18 +106,18 @@ test("(b) during iframe window: negated damage + player can MOVE/ATTACK/DODGE (b
 
   // MOVE：向右一步 → x 变化（证明 17 & 1 = 1 解冻移动）。
   const xBefore = p.x;
-  world.enqueueInput(0, moveCmd(2, { x: 1, y: 0 }));
+  world.enqueueInput(0, moveCmd(seq++, { x: 1, y: 0 }));
   world.step();
   assert.ok(p.x > xBefore, "player can MOVE during iframe (unfrozen by bitwise gating)");
 
   // ATTACK：可再次发出攻击（前摇建立，证明非仅 MOVE 解冻）。
-  world.enqueueInput(0, attackCmd(3, enemyId(world)));
+  world.enqueueInput(0, attackCmd(seq++, enemyId(world)));
   world.step();
   assert.ok(p.telegraph, "player can ATTACK during iframe (telegraph created)");
 
   // DODGE：可再次闪避（刷新窗口）。
   const wBefore = p.iframeUntilTick;
-  world.enqueueInput(0, dodgeCmd(4));
+  world.enqueueInput(0, dodgeCmd(seq++));
   world.step();
   assert.ok(
     p.iframeUntilTick != null && p.iframeUntilTick > (wBefore ?? -1),
@@ -157,15 +175,18 @@ test("(e) repeated dodge + combat inputs usable outside window (no carry-over fr
   const world = makeWorld();
   const p = world.actors()[0];
   const eid = enemyId(world);
+  // DIST-FIX：先靠近敌人（进入普攻射程），保证 ATTACK 能建立 telegraph。
+  moveClose(world, eid);
+  const s0 = 31;
 
   // 第一次闪避 + 推进越过窗口。
-  world.enqueueInput(0, dodgeCmd(1));
+  world.enqueueInput(0, dodgeCmd(s0));
   world.step();
-  for (let i = 2; i <= DODGE_IFRAME_TICKS + 2; i++) world.step();
+  for (let i = s0 + 1; i <= s0 + DODGE_IFRAME_TICKS + 2; i++) world.step();
 
   // 窗口外再次闪避。
   const wBefore = p.iframeUntilTick;
-  world.enqueueInput(0, dodgeCmd(DODGE_IFRAME_TICKS + 3));
+  world.enqueueInput(0, dodgeCmd(s0 + DODGE_IFRAME_TICKS + 3));
   world.step();
   assert.ok(
     p.iframeUntilTick != null && p.iframeUntilTick !== wBefore,
@@ -174,7 +195,7 @@ test("(e) repeated dodge + combat inputs usable outside window (no carry-over fr
   assert.equal(p.status & EntityStatus.IFRAME, EntityStatus.IFRAME, "IFRAME re-granted by re-dodge");
 
   // 窗口外发动攻击（前摇建立）。
-  world.enqueueInput(0, attackCmd(DODGE_IFRAME_TICKS + 4, eid));
+  world.enqueueInput(0, attackCmd(s0 + DODGE_IFRAME_TICKS + 4, eid));
   world.step();
   assert.ok(p.telegraph, "attack usable outside window (no carry-over freeze)");
 });

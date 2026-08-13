@@ -34,6 +34,8 @@ export interface Seat {
   reconnectTokenExpires: number | null;
   disconnectTimer: ReturnType<typeof setTimeout> | null;
   disconnectedAt: number | null;
+  /** S3 职业选择（客户端大厅选坦/射/法/医；game.start 消费）。null=未选（默认按座位分配）。 */
+  classId: string | null;
 }
 
 export interface Room {
@@ -106,6 +108,7 @@ function emptySeat(seatIndex: number): Seat {
     reconnectTokenExpires: null,
     disconnectTimer: null,
     disconnectedAt: null,
+    classId: null,
   };
 }
 
@@ -291,6 +294,21 @@ export function markDisconnected(room: Room, userId: string): void {
   seat.disconnectTimer.unref?.();
 }
 
+/** S3 职业选择：座位设 classId（白名单校验在 protocol 层）。返回是否更新。 */
+export function setSeatClass(
+  room: Room,
+  userId: string,
+  classId: string,
+): boolean {
+  const seat = room.seats.find(
+    (s) => s.userId === userId && s.status !== "empty",
+  );
+  if (!seat) return false;
+  seat.classId = classId;
+  bumpRoomVersion(room);
+  return true;
+}
+
 export function clearDisconnectTimer(room: Room, userId: string): void {
   const seat = room.seats.find((s) => s.userId === userId);
   if (seat?.disconnectTimer) {
@@ -381,6 +399,7 @@ export function roomSnapshot(room: Room) {
       displayName: s.displayName,
       status: s.status,
       disconnected: s.status === "disconnected",
+      classId: s.classId, // S3 职业选择（客户端大厅展示）
     })),
   };
 }

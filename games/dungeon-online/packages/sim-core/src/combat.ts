@@ -30,8 +30,34 @@ export type { DamageRequest, DamageEvent } from "./types.ts";
 /** ADR D12：telegraph 前摇最小 tick 数（0.6s @30Hz）。伤害在 windup 完成前为 no-op。 */
 export const MIN_TELEGRAPH_TICKS = 18;
 
-/** C11：玩家普攻伤害完全服务端裁决（忽略客户端传入 amount）。初稿定值，待 P5 调优。 */
-export const PLAYER_ATTACK_DAMAGE = 18;
+/** C11：玩家普攻伤害完全服务端裁决（忽略客户端传入 amount）。
+ * BAL-FIX 2026-08-11：18 → 26（+44%），解决「人太弱」——原 18/0.6s≈30DPS 单体，
+ * 面对 6-12 只/波清场过慢；26/0.6s≈43DPS 与 grunt 40HP 约 2 刀、精英 150 约 6 刀匹配。 */
+export const PLAYER_ATTACK_DAMAGE = 38;
+
+/** 玩家普攻射程（px，DIST-FIX 2026-08-11；RANGE-BALANCE 2026-08-12 90→130）。
+ * 之前玩家 ATTACK 目标完全由客户端指定且无距离校验 → 可隔全图锁头攻击（破坏走位/风筝玩法）。
+ * 参照割草游戏（Vampire Survivors/暗黑）近战射程：130px ≈ 4 tiles，显著长于近战怪物攻击范围
+ * （grunt 40 / brute 48 / elite 64），并匹配远程怪下调后的射程（caster 120 / gunner 110）——
+ * 解决「怪物攻击范围远大于人物」的不对称。
+ * 攻击判定在 telegraph 启动时校验（world.step）：超出射程的目标 → 本次 ATTACK no-op（不启动前摇）。 */
+export const PLAYER_ATTACK_RANGE = 130;
+
+/** KNOCKBACK（P0-1 2026-08-12）：玩家近战命中敌人施加击退的硬直时长（tick，@30Hz ≈0.13s）。
+ *  位移速度在 world.step 击退消费处定义（130px/s）；boss 位移减半。 */
+export const KNOCKBACK_TICKS = 4;
+
+/** BOSS-MULTI-SKILL（P2 2026-08-12）：火焰新星参数（参考 Hades boss 模式化技能）。
+ *  INTERVAL 50 tick ≈1.7s 一次；RADIUS 130px（≈普攻范围 2x，需走位躲）；TELEGRAPH 25 tick ≈0.83s 预警。 */
+export const BOSS_NOVA_INTERVAL = 50;
+export const BOSS_NOVA_RADIUS = 130;
+export const BOSS_NOVA_TELEGRAPH = 25;
+
+/** 玩家普攻命中扇形半角（rad，RANGE-BALANCE 2026-08-12）。
+ * 玩家近战从「单体锁定」改为「前向扇形 AOE」：命中朝向方向 ±PLAYER_ATTACK_CONE_RAD 内、
+ * 距离 ≤ PLAYER_ATTACK_RANGE 的所有敌人（参考暗黑/VS 近战 AOE，割草清屏核心爽感）。
+ * 注意：方向来自 telegraph 启动时的朝向（客户端 aimDir / 移动方向）。 */
+export const PLAYER_ATTACK_CONE_RAD = Math.PI / 3; // 60° 半角 → 120° 扇形
 
 /** DODGE 授予的 IFRAME 免伤窗口（tick，~0.4s @30Hz）。 */
 export const DODGE_IFRAME_TICKS = 12;
@@ -53,6 +79,12 @@ export interface AttackWindup {
   readonly applyTick: number;
   readonly targetId: number;
   readonly kind: number;
+  /** 攻击朝向单位向量（RANGE-BALANCE 2026-08-12：玩家近战扇形 AOE 结算方向）。
+   *  玩家 telegraph 启动时由 cmd.dir（aimDir/移动方向）记录；敌人无需（保持单体命中 targetId）。 */
+  dir?: { readonly x: number; readonly y: number };
+  /** BOSS-MULTI-SKILL（P2）：火焰新星 AOE 半径（px）。boss 周期性以自身为中心爆火圈；
+   *  结算时若 novaRadius 非空 → 对该半径内所有 ALIVE 玩家结算（复用 bomber AOE 模式）。 */
+  novaRadius?: number;
 }
 
 /**
@@ -76,6 +108,9 @@ export interface CombatEntity {
   shieldUntilTick?: number;
   /** SHIELD_ALLY 减伤比例 0..1（由 world.step 设置；combat 单一出口消费）。 */
   shieldReduction?: number;
+  /** G1 升级：来源（玩家）等级。>1 时普攻伤害 + (level-1)*2（击杀得经验 → 升级变强）。
+   *  由 world 传参（CombatEntity 视图含 level）；未设置/==1 → 恒 PLAYER_ATTACK_DAMAGE（golden 无损）。 */
+  level?: number;
   /** 拾取 buff 临时攻击增幅窗口截止 tick（world.step 经拾取设置，combat 消费）。 */
   buffUntilTick?: number;
   /** 临时攻击 buff 倍率（>1，如 1.2=+20%；由 world.step 设置；combat 单一出口消费）。 */
@@ -86,6 +121,8 @@ export interface CombatEntity {
    * 未设置 / 已过期 → 不影响结算（确定性 intact，golden 场景永不触发本分支）。
    */
   markedUntilTick?: number;
+  /** S2 perk：伤害加成倍率（>1，如 1.15）。world.step 经 applyPerk 设置，combat 单一出口消费。 */
+  perkDamageMult?: number;
 }
 
 /** resolveDamage 的权威战斗态快照（每 tick 由 world 组装传入）。 */
@@ -150,7 +187,12 @@ export function resolveDamage(state: CombatState, req: DamageRequest): DamageEve
   // C11：玩家攻击服务端裁决伤害，忽略 req.amount（恒 PLAYER_ATTACK_DAMAGE）。
   // E6：敌人攻击取 world 经意图提交的 enemyDamage（来自 ENEMY_PROTOTYPES 平衡初稿），
   //     同样由服务端裁决，客户端不可注入（enemyDamage 只可能由 ① 编排层设置）。
-  const dmgBase = req.enemyDamage != null ? req.enemyDamage : PLAYER_ATTACK_DAMAGE;
+  let dmgBase = req.enemyDamage != null ? req.enemyDamage : PLAYER_ATTACK_DAMAGE;
+  // G1 升级伤害加成：玩家等级 >1 时，普攻伤害 + (level-1)*2（击杀得经验 → 升级越打越疼）。
+  // 由 world 在 CombatEntity 视图传 level；未设置/==1 → 恒 base（golden 场景无损）。
+  if (source?.level != null && source.level > 1 && req.enemyDamage == null) {
+    dmgBase += (source.level - 1) * 3; // SLAUGHTER-FIX: +2→+3/级
+  }
   // 来源攻击 buff（拾取 buff 后临时增幅；world 经拾取设置 buffUntilTick/buffMult，
   // 仍由本函数单一出口落地，skills 模块绝不直改 hp，discipline B）。
   // 未设置 / 已过期 → dmgBase 原样结算（golden 场景此分支恒不触发）。
@@ -163,6 +205,12 @@ export function resolveDamage(state: CombatState, req: DamageRequest): DamageEve
     source.buffMult > 0
   ) {
     dmg = Math.round(dmg * source.buffMult);
+  }
+  // S2 perk 伤害加成：玩家选择「伤害」perk 后，其所有攻击伤害 ×perkDamageMult（>1）。
+  // 由 world.step 经 applyPerk 设置；仍由本函数（唯一 hp 结算出口）落地。
+  // 未选 perk → 本分支恒不触发（golden 场景无损）。
+  if (source?.perkDamageMult != null && source.perkDamageMult > 0) {
+    dmg = Math.round(dmg * source.perkDamageMult);
   }
   // ⑨ E8 SHIELD_ALLY 减伤：目标处于护盾窗口且带减伤比例 → 按比例减免。
   // 仍由本函数（唯一 hp 结算出口）落地，skills 模块绝不直改 hp（discipline B）。
@@ -182,6 +230,13 @@ export function resolveDamage(state: CombatState, req: DamageRequest): DamageEve
   if (target.markedUntilTick != null && target.markedUntilTick > state.tick) {
     dmg = Math.round(dmg * 1.25);
   }
+  // CRIT（P2 2026-08-12）：暴击倍率（由 world 用确定性 seed 派生 15% 概率，无随机源）。
+  //   critMult>1 时伤害 ×critMult，DamageEvent.crit=true 供客户端大数字/音效反馈。
+  //   未设置 → 恒不触发（golden 场景无损）。
+  const isCrit = req.critMult != null && req.critMult > 1;
+  if (isCrit) {
+    dmg = Math.round(dmg * req.critMult);
+  }
   const before = target.hp;
   target.hp = Math.max(0, target.hp - dmg);
   const deltaHp = target.hp - before; // 负数
@@ -195,5 +250,6 @@ export function resolveDamage(state: CombatState, req: DamageRequest): DamageEve
     deltaHp,
     statusChange: target.status,
     tick: state.tick,
+    crit: isCrit || undefined,
   };
 }
