@@ -72,6 +72,12 @@ export interface SpawnedEnemySpec {
   readonly aoeRadius?: number;
   /** E28：击杀经验覆盖；缺省 undefined = ENEMY_XP[tier]（world 侧回退）。 */
   readonly enemyXp?: number;
+  /** E31：telegraph 形状覆盖（0=圆环 1=AOE填充 2=锥形 3=线性）；缺省 undefined = 1（world 侧回退）。 */
+  readonly aoeShape?: number;
+  /** E31：telegraph 伤害倍率覆盖；缺省 undefined = BOSS_AOE_DAMAGE_MULT（world 侧回退）。 */
+  readonly aoeDamageMult?: number;
+  /** E31：接触攻击命中玩家时施加 SLOW（幽冢鬼母「鬼爪」）；缺省 undefined = false。 */
+  readonly slowOnHit?: boolean;
 }
 
 /** 刷怪波次实例结果。 */
@@ -118,6 +124,9 @@ export function spawnWave(zones: readonly SpawnZone[], rng: Rng): SpawnResult {
         patrolTiles,
         aoeRadius: variant?.aoeRadius,
         enemyXp: variant?.xp,
+        aoeShape: variant?.aoeShape,
+        aoeDamageMult: variant?.aoeDamageMult,
+        slowOnHit: variant?.slowOnHit,
       });
     }
   }

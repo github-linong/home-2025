@@ -629,12 +629,28 @@ export interface EnemyTypeVariant {
   readonly atkMult: number;
   readonly xp?: number;
   readonly aoeRadius?: number;
+  /** E31：telegraph 形状（0=圆环 1=AOE填充 2=锥形 3=线性）；缺省 1（AOE 填充，golden 锚点）。 */
+  readonly aoeShape?: number;
+  /** E31：telegraph 伤害倍率（× 敌人 atk）；缺省 BOSS_AOE_DAMAGE_MULT（1.5，golden 锚点）。 */
+  readonly aoeDamageMult?: number;
+  /** E31：接触攻击命中玩家时施加 SLOW 减速（幽冢鬼母「鬼爪」）；缺省 false（golden 锚点）。 */
+  readonly slowOnHit?: boolean;
 }
 
 /** E28 敌人原型变体表（单一来源；spawning/world 只读引用，C7）。 */
 export const ENEMY_TYPE_VARIANTS: Readonly<Record<string, EnemyTypeVariant>> = {
   // 铁骨魁（石牢 BOSS）：HP×1.2 / ATK×1.1（偏肉）；裂地重锤 radius=96px=2×TILE（dungeon-variants §2）。
   ironbone: { hpMult: 1.2, atkMult: 1.1, aoeRadius: Math.round(2 * TILE) },
+  // 幽冢鬼母（荒冢 BOSS）：HP×0.9 / ATK×1.2（脆皮高伤）；鬼啸扇形 radius=120px=2.5×TILE、
+  // shape=2 锥形、伤害×1.2；接触「鬼爪」命中附加 SLOW 减速（dungeon-variants §2）。
+  ghostmother: {
+    hpMult: 0.9,
+    atkMult: 1.2,
+    aoeRadius: Math.round(2.5 * TILE),
+    aoeShape: 2, // 锥形（鬼啸扇形）
+    aoeDamageMult: 1.2,
+    slowOnHit: true,
+  },
 };
 
 /**
@@ -643,4 +659,45 @@ export const ENEMY_TYPE_VARIANTS: Readonly<Record<string, EnemyTypeVariant>> = {
  */
 export function bossRarityWeightsForBiome(biomeId: number): readonly number[] | undefined {
   return biomeId === BIOME_STONE_PRISON ? STONE_PRISON_BOSS_WEIGHTS : undefined;
+}
+
+// ─────────────────────────────────────────────────────────────
+// E31：内容扩展续（副本变体「荒冢」+ 精英 BOSS「幽冢鬼母」）
+// ─────────────────────────────────────────────────────────────
+
+/** 荒冢副本 biome ID（Barrow / Ghost Tomb，dungeon-variants §1 变体 B）。 */
+export const BIOME_BARROW = 2;
+
+/**
+ * 减速（SLOW）时长（tick）= 3s @12Hz = 36。design §1/§2 未给具体数值，取合理默认（"持续短"）。
+ * 幽冢鬼母「鬼爪」（接触攻击）与「鬼啸扇形」（锥形 telegraph）命中玩家时施加 SLOW 位
+ * （复用 EntityStatus.SLOW=1<<2）；到期由 world 清除（仅 world 内部，不进快照 C12）。
+ */
+export const SLOW_TICKS = 3 * TICK_RATE;
+
+/**
+ * 减速（SLOW）移动速度倍率 = 0.6（即移速 -40%）。design §1"移速 -X%"未给数值，取合理默认。
+ * world 玩家移动速度 = CELLS_PER_TICK × (1 + moveSpeed) × SLOW_MOVE_MULT（仅 SLOW 位置位时）。
+ */
+export const SLOW_MOVE_MULT = 0.6;
+
+/**
+ * 荒冢「减速主题掉落倾向」词缀权重放大倍数（design §1 变体 B：moveSpeed 51–64 + reduction 23–30 ↑）。
+ * 仅对 boost 词缀 id 区间放大；其余词缀权重保持 1（最小实现，不新增词缀）。
+ */
+export const BARROW_AFFIX_BOOST_MULT = 3;
+
+/**
+ * E31：biomeId → 词缀权重覆盖（荒冢「减速主题掉落倾向」）。
+ * - 荒冢（biome 2）：reduction（23–30）+ moveSpeed（51–64）词缀权重 ×BARROW_AFFIX_BOOST_MULT（↑）；
+ * - 普通/未知 → undefined（loot 走均匀 rng.nextInt(1, AFFIX_ID_MAX)，golden 不变）。
+ * 返回长度 AFFIX_ID_MAX 的权重数组（索引 i → 词缀 id i+1）；loot.rollAffixId 按加权抽取。
+ * 仅改词缀权重、不碰掉落 Rng 流结构（加权抽取同样消耗 1 次 Rng 步进，与均匀 nextInt 同量）。
+ */
+export function affixWeightsForBiome(biomeId: number): readonly number[] | undefined {
+  if (biomeId !== BIOME_BARROW) return undefined;
+  const weights: number[] = new Array<number>(AFFIX_ID_MAX).fill(1);
+  for (let id = 23; id <= 30; id++) weights[id - 1] = BARROW_AFFIX_BOOST_MULT; // reduction 23..30
+  for (let id = 51; id <= 64; id++) weights[id - 1] = BARROW_AFFIX_BOOST_MULT; // moveSpeed 51..64
+  return weights;
 }

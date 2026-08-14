@@ -26,6 +26,7 @@ import {
   BIOME_DEFAULT,
   BIOME_STONE_PRISON,
   STONE_PRISON_SPAWN_DENSITY,
+  BIOME_BARROW,
 } from "./constants.ts"; // C7 单一来源
 
 /** 副本布局快照。 */
@@ -62,10 +63,14 @@ const DEFAULT_ENEMY_POOL = ["savage", "brigand", "shadow"] as const;
 /** 石牢敌人原型 id 池：近战系为主（savage 变体加权，dungeon-variants §1）。 */
 const STONE_PRISON_ENEMY_POOL = ["savage", "savage", "brigand"] as const;
 
+/** 荒冢敌人原型 id 池：幽灵系为主（shadow 变体加权，dungeon-variants §1 变体 B）。 */
+const BARROW_ENEMY_POOL = ["shadow", "shadow", "savage"] as const;
+
 /**
  * biome 分派配置（dungeon-variants §1：biomeId 决定敌人池 / BOSS 类型 / 密度，不重写生成器）。
  * - 0 普通副本（默认）：敌人池 savage/brigand/shadow，BOSS=dungeon_boss，密度 1.2（golden 锚点）；
- * - 1 石牢：近战 savage 加权、BOSS=ironbone（铁骨魁）、密度 1.5（暗金倾向由 loot 按 biome 覆盖）。
+ * - 1 石牢：近战 savage 加权、BOSS=ironbone（铁骨魁）、密度 1.5（暗金倾向由 loot 按 biome 覆盖）；
+ * - 2 荒冢：幽灵 shadow 加权、BOSS=ghostmother（幽冢鬼母）、密度 1.2（减速词缀倾向由 loot 按 biome 覆盖）。
  */
 interface BiomeConfig {
   readonly enemyPool: readonly string[];
@@ -83,6 +88,11 @@ const BIOME_CONFIGS: Readonly<Record<number, BiomeConfig>> = {
     enemyPool: STONE_PRISON_ENEMY_POOL,
     bossTypeId: "ironbone",
     spawnDensity: STONE_PRISON_SPAWN_DENSITY,
+  },
+  [BIOME_BARROW]: {
+    enemyPool: BARROW_ENEMY_POOL,
+    bossTypeId: "ghostmother",
+    spawnDensity: DUNGEON_SPAWN_DENSITY,
   },
 };
 
@@ -134,7 +144,7 @@ function generateInternal(seed: string, biomeId: number): InternalDungeon {
       wave += 1;
       if (isBossRoom && w === 0) {
         // BOSS 房第一波 = BOSS（tier=2，必掉更好词缀）；置于最深层中心。
-        // E28：BOSS 类型按 biome 分派（普通=dungeon_boss / 石牢=ironbone）。
+        // E28/E31：BOSS 类型按 biome 分派（普通=dungeon_boss / 石牢=ironbone / 荒冢=ghostmother）。
         spawnPoints.push({ pos: center, enemyTypeId: cfg.bossTypeId, wave, count: 1 });
         // E6：BOSS 默认 aggressive（仇恨半径内索敌追击 + 接触攻击）。
         spawnZones.push({ pos: center, tier: 2, enemyTypeId: cfg.bossTypeId, count: 1, aggression: "aggressive" });

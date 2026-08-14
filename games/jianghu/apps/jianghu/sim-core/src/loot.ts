@@ -48,19 +48,40 @@ function rollAffixCount(rng: Rng, rarityIdx: number): number {
 }
 
 /**
+ * E31：掷词缀 id（1..AFFIX_ID_MAX）。缺省均匀（rng.nextInt，golden 锚点）；
+ * 提供 weights（长度 AFFIX_ID_MAX，索引 i → id i+1）时按权重抽取（荒冢减速主题倾向）。
+ * 两种路径均消耗恰 1 次 Rng 步进 → 不改变掉落 Rng 流结构（D9）。
+ */
+function rollAffixId(rng: Rng, weights?: readonly number[]): number {
+  if (!weights) return rng.nextInt(1, AFFIX_ID_MAX);
+  const total = weights.reduce<number>((a, b) => a + b, 0);
+  let r = rng.nextFloat() * total;
+  for (let i = 0; i < weights.length; i++) {
+    if (r < weights[i]) return i + 1;
+    r -= weights[i];
+  }
+  return weights.length; // 权重和越界兜底（确定性）
+}
+
+/**
  * 掷骰掉落（确定性，复用传入的实例 seed Rng 流）。
  * - 命中：rng.nextFloat() < DROP_RATE[tier]（normal 0.3；elite/boss 1.0）；未命中 → null。
  * - 命中 → 掷稀有度（权重 白>蓝>金>暗金，比例取 GDD §⑥）→ 掷词缀数（AFFIX_COUNTS 区间）
  *   → 生成词缀 id 数组（rng 选 1..AFFIX_ID_MAX）→ itemId = rng。
  * 返回 LootResult{itemId, rarity, affixes}。
  */
-export function rollLoot(rng: Rng, tier: EnemyTier, weights?: readonly number[]): LootResult | null {
+export function rollLoot(
+  rng: Rng,
+  tier: EnemyTier,
+  weights?: readonly number[],
+  affixWeights?: readonly number[],
+): LootResult | null {
   // 命中判定（C11 服务端权威掷骰，非客户端决定）。
   if (rng.nextFloat() >= DROP_RATE[tier]) return null;
   const rarityIdx = rollRarityIndex(rng, tier, weights);
   const count = rollAffixCount(rng, rarityIdx);
   const affixes: number[] = [];
-  for (let i = 0; i < count; i++) affixes.push(rng.nextInt(1, AFFIX_ID_MAX));
+  for (let i = 0; i < count; i++) affixes.push(rollAffixId(rng, affixWeights));
   const itemId = rng.nextInt(1, 0x7fffffff);
   return { itemId, rarity: rarityIdx, affixes };
 }
@@ -96,18 +117,22 @@ export function dropToGround(rng: Rng, tier: EnemyTier): LootState {
  * 用于：① 宝箱实体「显示暗金」（BOSS 死亡刷宝箱时预掷，向玩家预告必含暗金）；
  * ② 开箱结算第 1 件（必含暗金）。
  */
-export function rollGuaranteedDarkgold(rng: Rng, weights?: readonly number[]): LootResult {
-  let res = rollLoot(rng, "boss", weights);
+export function rollGuaranteedDarkgold(
+  rng: Rng,
+  weights?: readonly number[],
+  affixWeights?: readonly number[],
+): LootResult {
+  let res = rollLoot(rng, "boss", weights, affixWeights);
   let guard = 0;
   while (res !== null && res.rarity !== 3 && guard < 16) {
-    res = rollLoot(rng, "boss", weights);
+    res = rollLoot(rng, "boss", weights, affixWeights);
     guard += 1;
   }
   if (res === null || res.rarity !== 3) {
     // 极端兜底（确定性）：暗金 AFFIX_COUNTS.darkgold=[5,5] 恒 5 词缀 + 随机 itemId。
     const affixes: number[] = [];
     const count = AFFIX_COUNTS.darkgold[0];
-    for (let i = 0; i < count; i++) affixes.push(rng.nextInt(1, AFFIX_ID_MAX));
+    for (let i = 0; i < count; i++) affixes.push(rollAffixId(rng, affixWeights));
     res = { itemId: rng.nextInt(1, 0x7fffffff), rarity: 3, affixes };
   }
   return res;
@@ -118,11 +143,11 @@ export function rollGuaranteedDarkgold(rng: Rng, weights?: readonly number[]): L
  * 掷 elite 掉落（权重 蓝40/金45/暗金15）直至非暗金；guard 上限兜底直接构造（蓝/金随机）。
  * 确定性：同 rng 流 ⇒ 同结果（D9）。
  */
-export function rollGoldOrBlue(rng: Rng): LootResult {
-  let res = rollLoot(rng, "elite");
+export function rollGoldOrBlue(rng: Rng, affixWeights?: readonly number[]): LootResult {
+  let res = rollLoot(rng, "elite", undefined, affixWeights);
   let guard = 0;
   while (res !== null && res.rarity === 3 && guard < 16) {
-    res = rollLoot(rng, "elite");
+    res = rollLoot(rng, "elite", undefined, affixWeights);
     guard += 1;
   }
   if (res === null || res.rarity === 3) {
@@ -130,7 +155,7 @@ export function rollGoldOrBlue(rng: Rng): LootResult {
     const range = AFFIX_COUNTS[RARITY_NAMES[rarityIdx]];
     const count = rng.nextInt(range[0], range[1]);
     const affixes: number[] = [];
-    for (let i = 0; i < count; i++) affixes.push(rng.nextInt(1, AFFIX_ID_MAX));
+    for (let i = 0; i < count; i++) affixes.push(rollAffixId(rng, affixWeights));
     res = { itemId: rng.nextInt(1, 0x7fffffff), rarity: rarityIdx, affixes };
   }
   return res;
@@ -141,10 +166,14 @@ export function rollGoldOrBlue(rng: Rng): LootResult {
  * 确定性（D9）：同 rng 流 ⇒ 同内容序列；消费 Rng 流发生在**开箱 tick**（非 BOSS 死亡 tick）。
  * 件数区间 CHEST_ITEM_COUNT_MIN/MAX（C7 单一来源）。
  */
-export function rollChestContents(rng: Rng, weights?: readonly number[]): LootResult[] {
+export function rollChestContents(
+  rng: Rng,
+  weights?: readonly number[],
+  affixWeights?: readonly number[],
+): LootResult[] {
   const count = rng.nextInt(CHEST_ITEM_COUNT_MIN, CHEST_ITEM_COUNT_MAX);
-  const items: LootResult[] = [rollGuaranteedDarkgold(rng, weights)];
-  for (let i = 1; i < count; i++) items.push(rollGoldOrBlue(rng));
+  const items: LootResult[] = [rollGuaranteedDarkgold(rng, weights, affixWeights)];
+  for (let i = 1; i < count; i++) items.push(rollGoldOrBlue(rng, affixWeights));
   return items;
 }
 

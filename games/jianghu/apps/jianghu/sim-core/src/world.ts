@@ -97,6 +97,9 @@ import {
   POTION_DROP_NORMAL_CHANCE, // E21：普通怪击杀药水掉落概率 = 0.10
   POTIONS_BY_TIER, // E21：精英/BOSS 击杀药水数（材料计数，普通怪走概率）
   bossRarityWeightsForBiome, // E28：biomeId → BOSS 稀有度权重覆盖（石牢暗金↑）
+  SLOW_TICKS, // E31：减速时长（tick）= 3s @12Hz（幽冢鬼母鬼爪/鬼啸命中施加）
+  SLOW_MOVE_MULT, // E31：减速移动速度倍率 = 0.6（移速 -40%；SLOW 位置位时玩家移动打折）
+  affixWeightsForBiome, // E31：biomeId → 词缀权重覆盖（荒冢减速主题掉落倾向）
 } from "./constants.ts"; // C7 单一来源
 import { Rng } from "./rng.ts";
 import { stepMovement } from "./movement.ts"; // E3 真移动（纯函数）
@@ -258,14 +261,29 @@ interface Actor {
   // E10 新增（玩家倒地/复活；**不进 EntityState 快照**，C12 纪律——客户端用固定 DOWNED_TICKS 推算倒计时）
   downedAtTick?: number; // 玩家倒地起始 tick（复活计时；仅 world 内部）
   iframesUntilTick?: number; // 复活无敌帧截止 tick（IFRAME 到期清位；仅 world 内部）
+  // E31 新增（玩家减速 SLOW；**不进 EntityState 快照** C12——SLOW 位经 status 下发，截止 tick 仅 world 内部）
+  slowUntilTick?: number; // SLOW 减速截止 tick（t >= 本值清 SLOW 位；仅 world 内部）
   // E15 新增（telegraph 预警；C12 条件序列化——仅 telegraph 字段进快照，dmg/lastAoeTick 仅 world 内部）
-  telegraph?: { shape: number; color: number; startTick: number; applyTick: number; radius: number };
+  telegraph?: {
+    shape: number;
+    color: number;
+    startTick: number;
+    applyTick: number;
+    radius: number;
+    /** E31：落刀命中玩家时附加 SLOW（幽冢鬼母鬼啸扇形）；仅 world 内部，不进快照 C12。 */
+    slows?: boolean;
+  };
   dmg?: number; // telegraph 落刀伤害（生成时由 BOSS atk × BOSS_AOE_DAMAGE_MULT 计算；不进快照）
   lastAoeTick?: number; // BOSS AOE 预警节流（上次生成 telegraph 的 tick；仅 world 内部）
   // E28 新增（敌人原型变体；**不进 EntityState 快照** C12——telegraph 半径经 telegraph.radius 下发，
   //   经验仅 world 内部结算；未登记变体 → undefined → 回退 TELEGRAPH_RADIUS / ENEMY_XP[tier]，golden 不变）。
   aoeRadius?: number; // BOSS phase2 telegraph 半径覆盖（px）
   enemyXp?: number; // 击杀经验覆盖（undefined → ENEMY_XP[tier]）
+  // E31 新增（敌人原型变体续：telegraph 形状/伤害倍率 + 接触减速；**不进 EntityState 快照** C12——
+  //   telegraph 形状经 telegraph.shape 下发、伤害经 dmg 结算、减速经 SLOW 位下发；未登记 → 回退基线，golden 不变）。
+  aoeShape?: number; // BOSS phase2 telegraph 形状覆盖（undefined → 1=AOE 填充）
+  aoeDamageMult?: number; // telegraph 伤害倍率覆盖（undefined → BOSS_AOE_DAMAGE_MULT）
+  slowOnHit?: boolean; // 接触攻击命中附加 SLOW（undefined → false）
   // E18 新增（敌人攻击前摇；**不进 EntityState 快照**，C12 纪律——客户端用 WINDUP status 位表现抬手）
   windupUntilTick?: number; // 前摇截止 tick（t >= 本值落刀；仅 world 内部）
   windupTargetId?: number; // 前摇锁定目标 actor id（落刀时判定是否仍在接触范围；仅 world 内部）
@@ -542,6 +560,20 @@ function resolveEnemyWindup(e: Actor, target: Actor | null, t: number): void {
     targetReduction: target.equipStats?.reduction ?? 0,
   });
   target.hp += dmg.deltaHp;
+  // E31：接触攻击命中 → 敌人原型标记 slowOnHit（幽冢鬼母「鬼爪」）→ 施加 SLOW。
+  if (e.slowOnHit) applySlow(target, t);
+}
+
+/**
+ * E31：对玩家施加 SLOW 减速（幽冢鬼母「鬼爪」接触 /「鬼啸扇形」telegraph 命中）。
+ * - 置 EntityStatus.SLOW 位 + 记 slowUntilTick = t + SLOW_TICKS；
+ * - 移动速度在 world.step 玩家段按 SLOW_MOVE_MULT 打折（SLOW 位置位时）；
+ * - 截止 tick 仅 world 内部（C12：不进快照）；SLOW 位经快照 status 自然下发（客户端画减速）。
+ * 纯函数式改写 target 状态（world.step 内调用；无随机无 Date.now，D9）。
+ */
+function applySlow(target: Actor, t: number): void {
+  target.status |= EntityStatus.SLOW;
+  target.slowUntilTick = t + SLOW_TICKS;
 }
 
 /**
@@ -665,6 +697,8 @@ export function createWorld(opts: CreateWorldOpts): World {
 
   // E28：biome → BOSS 掉装稀有度权重覆盖（石牢暗金↑）；普通/未知 → undefined（默认权重，golden 不变）。
   const bossWeights = bossRarityWeightsForBiome(opts.biomeId ?? 0);
+  // E31：biome → 词缀权重覆盖（荒冢减速主题掉落倾向）；普通/未知 → undefined（均匀词缀，golden 不变）。
+  const affixWeights = affixWeightsForBiome(opts.biomeId ?? 0);
 
   // ── 刷怪区运行态（复活计时）──
   const spawnStates: SpawnZoneRuntime[] = [];
@@ -733,6 +767,10 @@ export function createWorld(opts: CreateWorldOpts): World {
           // E28：敌人原型变体（铁骨魁等）→ telegraph 半径 / 击杀经验覆盖（缺省 undefined 回退基线）。
           aoeRadius: spec.aoeRadius,
           enemyXp: spec.enemyXp,
+          // E31：敌人原型变体续 → telegraph 形状/伤害倍率/接触减速覆盖（缺省 undefined 回退基线）。
+          aoeShape: spec.aoeShape,
+          aoeDamageMult: spec.aoeDamageMult,
+          slowOnHit: spec.slowOnHit,
           lastAttackTick: -ENEMY_ATTACK_INTERVAL_TICKS,
         });
         aliveIds.push(id);
@@ -891,6 +929,8 @@ export function createWorld(opts: CreateWorldOpts): World {
         if (!a) continue;
         // E7：装备汇总属性缓存（makePlayerActor/setPlayerEquipped 已算好，热路径零分配；防御回退共享冻结常量）。
         const pStats: EquipmentStats = a.equipStats ?? EMPTY_EQUIP_STATS;
+        // E31：SLOW 减速移动倍率（SLOW 位置位时 ×SLOW_MOVE_MULT；未减速 ×1，golden 锚点）。
+        const slowMult = a.status & EntityStatus.SLOW ? SLOW_MOVE_MULT : 1;
 
         // skillCd 递减
         if (a.skillCd) {
@@ -911,6 +951,11 @@ export function createWorld(opts: CreateWorldOpts): World {
           a.iframesUntilTick = undefined;
           a.status &= ~EntityStatus.IFRAME;
         }
+        // E31：SLOW 减速到期清位（tick 驱动确定性；SLOW 位经快照下发，截止 tick 仅 world 内部）。
+        if (a.slowUntilTick !== undefined && t >= a.slowUntilTick) {
+          a.slowUntilTick = undefined;
+          a.status &= ~EntityStatus.SLOW;
+        }
 
         const cmd = pending.get(seatId);
         pending.delete(seatId);
@@ -929,7 +974,7 @@ export function createWorld(opts: CreateWorldOpts): World {
                 const np = stepMovement(
                   { x: a.x, y: a.y },
                   dir,
-                  { speedPerTick: CELLS_PER_TICK * (1 + pStats.moveSpeed), isBlocked },
+                  { speedPerTick: CELLS_PER_TICK * (1 + pStats.moveSpeed) * slowMult, isBlocked },
                 );
                 a.x = np.x;
                 a.y = np.y;
@@ -942,7 +987,7 @@ export function createWorld(opts: CreateWorldOpts): World {
               const np = stepMovement(
                 { x: a.x, y: a.y },
                 cmd.dir,
-                { speedPerTick: CELLS_PER_TICK * (1 + pStats.moveSpeed), isBlocked },
+                { speedPerTick: CELLS_PER_TICK * (1 + pStats.moveSpeed) * slowMult, isBlocked },
               );
               a.x = np.x;
               a.y = np.y;
@@ -1040,7 +1085,7 @@ export function createWorld(opts: CreateWorldOpts): World {
               chest.loot.ttlTicks > 0 &&
               Math.hypot(chest.x - a.x, chest.y - a.y) <= CHEST_OPEN_RADIUS
             ) {
-              const items = rollChestContents(simRng, bossWeights);
+              const items = rollChestContents(simRng, bossWeights, affixWeights);
               const stones = CHEST_STONES;
               if (a.ownerId !== undefined) {
                 const cev: ChestOpenEvent = { seatId: a.ownerId, items, stones };
@@ -1068,7 +1113,7 @@ export function createWorld(opts: CreateWorldOpts): World {
               const np = stepMovement(
                 { x: a.x, y: a.y },
                 dir,
-                { speedPerTick: CELLS_PER_TICK * (1 + pStats.moveSpeed), isBlocked },
+                { speedPerTick: CELLS_PER_TICK * (1 + pStats.moveSpeed) * slowMult, isBlocked },
               );
               a.x = np.x;
               a.y = np.y;
@@ -1078,7 +1123,7 @@ export function createWorld(opts: CreateWorldOpts): World {
             const np = stepMovement(
               { x: a.x, y: a.y },
               mv.dir,
-              { speedPerTick: CELLS_PER_TICK * (1 + pStats.moveSpeed), isBlocked },
+              { speedPerTick: CELLS_PER_TICK * (1 + pStats.moveSpeed) * slowMult, isBlocked },
             );
             a.x = np.x;
             a.y = np.y;
@@ -1155,15 +1200,19 @@ export function createWorld(opts: CreateWorldOpts): World {
             maxHp: 1,
             status: EntityStatus.ALIVE,
             telegraph: {
-              shape: 1, // AOE 填充（types.ts TelegraphState schema；0=圆环 1=AOE填充）
+              // E28/E31：shape 由敌人原型变体覆盖（默认/铁骨魁=1 AOE填充；幽冢鬼母=2 锥形鬼啸）。
+              shape: e.aoeShape ?? 1, // types.ts TelegraphState schema；0=圆环 1=AOE填充 2=锥形 3=线性
               color: 0, // DANGER（红；客户端 drawTelegraph color===1 才青色，0 红色）
               startTick: t,
               applyTick: t + TELEGRAPH_TICKS,
-              // E28：敌人原型变体可覆盖半径（铁骨魁裂地重锤 96px）；缺省回退 TELEGRAPH_RADIUS。
+              // E28/E31：敌人原型变体可覆盖半径（铁骨魁 96px / 幽冢鬼母 120px）；缺省回退 TELEGRAPH_RADIUS。
               radius: e.aoeRadius ?? TELEGRAPH_RADIUS,
+              // E31：落刀命中玩家时附加 SLOW（幽冢鬼母鬼啸扇形）；仅 world 内部，不进快照 C12。
+              slows: e.slowOnHit === true,
             },
-            // 落刀伤害（生成时由 BOSS atk × BOSS_AOE_DAMAGE_MULT 计算，服务端权威 C11）。
-            dmg: Math.round((e.atk ?? ENEMY_BASE_ATK) * BOSS_AOE_DAMAGE_MULT),
+            // 落刀伤害（生成时由 BOSS atk × 伤害倍率计算，服务端权威 C11）。
+            // E28/E31：倍率由原型变体覆盖（幽冢鬼母鬼啸 ×1.2）；缺省 BOSS_AOE_DAMAGE_MULT=1.5（golden 锚点）。
+            dmg: Math.round((e.atk ?? ENEMY_BASE_ATK) * (e.aoeDamageMult ?? BOSS_AOE_DAMAGE_MULT)),
           });
           e.lastAoeTick = t;
         }
@@ -1245,6 +1294,8 @@ export function createWorld(opts: CreateWorldOpts): World {
                 targetReduction: p.equipStats?.reduction ?? 0, // 装备减伤仍生效
               });
               p.hp += dmg.deltaHp;
+              // E31：锥形 telegraph（幽冢鬼母鬼啸扇形）命中 → 施加 SLOW。
+              if (a.telegraph.slows) applySlow(p, t);
             }
           }
           expiredTelegraph.push(a.id);
@@ -1363,7 +1414,7 @@ export function createWorld(opts: CreateWorldOpts): World {
           //   同 seed 结果确定 D9）；普通/精英掉落路径不变。
           const tierName = TIER_NAMES[e.tier ?? 0];
           if (tierName === "boss") {
-            const display = rollGuaranteedDarkgold(simRng, bossWeights);
+            const display = rollGuaranteedDarkgold(simRng, bossWeights, affixWeights);
             actors.push({
               id: nextId++,
               kind: EntityKind.CHEST,
@@ -1381,7 +1432,7 @@ export function createWorld(opts: CreateWorldOpts): World {
               },
             });
           } else {
-            const res = rollLoot(simRng, tierName);
+            const res = rollLoot(simRng, tierName, undefined, affixWeights);
             if (res) {
               actors.push({
                 id: nextId++,
@@ -1442,6 +1493,10 @@ export function createWorld(opts: CreateWorldOpts): World {
               // E28：敌人原型变体（铁骨魁等）→ telegraph 半径 / 击杀经验覆盖（缺省 undefined 回退基线）。
               aoeRadius: spec.aoeRadius,
               enemyXp: spec.enemyXp,
+              // E31：敌人原型变体续 → telegraph 形状/伤害倍率/接触减速覆盖（缺省 undefined 回退基线）。
+              aoeShape: spec.aoeShape,
+              aoeDamageMult: spec.aoeDamageMult,
+              slowOnHit: spec.slowOnHit,
               lastAttackTick: t - ENEMY_ATTACK_INTERVAL_TICKS,
             });
             st.aliveIds.push(id);

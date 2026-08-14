@@ -30,6 +30,7 @@ import {
   DISASSEMBLE_POTIONS, // E22：分解固定产出药水数（C7 单一来源）
   BIOME_DEFAULT, // E28：普通副本 biome（默认入口）
   BIOME_STONE_PRISON, // E28：石牢副本 biome（石牢入口）
+  BIOME_BARROW, // E31：荒冢副本 biome（荒冢入口）
 } from "../sim-core/src/constants.ts"; // C7 单一来源
 import type { SpawnZone } from "../sim-core/src/spawning.ts";
 import { computeInstanceSeed, buildDungeonSpec } from "../sim-core/src/dungeonGen.ts"; // C7/D9/C-Dgn-1
@@ -552,14 +553,20 @@ export function bootResidentRun(seed = "jianghu-overworld-0"): WorldSnapshot {
 /** E28：石牢副本入口 ID（主世界第二个「裂隙」逻辑入口；复用同一物理 ENTRANCE 实体，MVP 最简）。 */
 const STONE_PRISON_ENTRANCE_ID = 2;
 
+/** E31：荒冢副本入口 ID（主世界第三个「裂隙」逻辑入口；复用同一物理 ENTRANCE 实体，MVP 最简）。 */
+const BARROW_ENTRANCE_ID = 3;
+
 /**
- * E28：入口 → biome 映射（MVP 最简方案：entranceId 区分副本主题，复用同一物理 ENTRANCE 实体）。
+ * E28/E31：入口 → biome 映射（MVP 最简方案：entranceId 区分副本主题，复用同一物理 ENTRANCE 实体）。
  * - entranceId=2 → 石牢（biome 1：高密度近战 + 铁骨魁 BOSS + 暗金↑）；
+ * - entranceId=3 → 荒冢（biome 2：幽灵精英 + 幽冢鬼母 BOSS + 减速词缀倾向）；
  * - 其余（含默认/playtest 的 entranceId=1）→ 普通副本（biome 0，golden 不变）。
- * 客户端发 `dungeon.enter { entranceId: 2 }` 即进石牢；第二个可视化入口渲染为客户端 Phase-2。
+ * 客户端发 `dungeon.enter { entranceId: N }` 即进对应主题副本；可视化入口渲染为客户端 Phase-2。
  */
 function biomeIdForEntrance(entranceId: number): number {
-  return entranceId === STONE_PRISON_ENTRANCE_ID ? BIOME_STONE_PRISON : BIOME_DEFAULT;
+  if (entranceId === STONE_PRISON_ENTRANCE_ID) return BIOME_STONE_PRISON;
+  if (entranceId === BARROW_ENTRANCE_ID) return BIOME_BARROW;
+  return BIOME_DEFAULT;
 }
 
 export interface EnterInstanceOpts {
