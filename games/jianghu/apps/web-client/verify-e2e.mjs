@@ -259,6 +259,26 @@ const main = async () => {
     record("E26-1 minimap标记钩子(minimapMarkers 形状)", mmHookOk,
       mmOver ? `boss=${mmOver.boss} chest=${mmOver.chest} entrance=${mmOver.entrance} loot=${mmOver.loot}（主世界）` : "no minimapMarkers hook");
 
+    // ── E27 新手引导（加分断言）：onboarding 钩子存在 + debug=1 静默不触发 ──
+    {
+      const ob = await page.evaluate(() => {
+        const g = window.__game;
+        return g && g.onboarding ? {
+          has: true,
+          enabled: g.onboarding.enabled,
+          step: g.onboarding.step,
+          seenIsArr: Array.isArray(g.onboarding.seen),
+        } : { has: false };
+      });
+      record("E27-1 新手引导钩子(onboarding存在+seen数组+debug静默)",
+        ob.has && ob.seenIsArr && ob.enabled === false,
+        ob.has ? `enabled=${ob.enabled} step=${ob.step} seenArr=${ob.seenIsArr}` : "no onboarding hook");
+      // debug=1 → 引导不推进（step 恒 0）；等 1.5s 后复读确认无触发。
+      await sleep(1500);
+      const stepAfter = await page.evaluate(() => (window.__game && window.__game.onboarding ? window.__game.onboarding.step : null));
+      record("E27-2 新手引导 debug 静默(step不推进)", stepAfter === 0, `step=${stepAfter}（debug=1 应恒为 0）`);
+    }
+
     // ── E14 真实登录（加分断言，不跑完整登录流程）：HUD 登录按钮 + 面板 DOM 存在 ──
     // 完整登录需真实 api2（本回归 DEV_SKIP_AUTH=true，未起 api2），仅断言 UI 元素已就位。
     const loginDom = await page.evaluate(() => {
