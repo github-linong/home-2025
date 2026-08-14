@@ -66,6 +66,8 @@ overview-*.md
 data-analysis-viz-knowledge-graph.html
 artifacts/
 docs/
+# 游戏工程设计文档需要跟踪（docs/ 豁免）
+!games/puzzle-cards/docs/
 frontend/
 .qoder/
 games/jianghu/data/
