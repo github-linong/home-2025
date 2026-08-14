@@ -15,7 +15,7 @@ import assert from "node:assert/strict";
 import { bootResidentRun, enterInstance, exitInstance, getWorld, isInstanceRunning } from "../src/run-manager.ts";
 import { dispatch } from "../src/protocol.ts";
 import { RESIDENT_ROOM_ID } from "../src/room-service.ts";
-import { ENTRANCE_INTERACT_RADIUS, TILE, RESPAWN_POS } from "../sim-core/src/constants.ts";
+import { ENTRANCE_INTERACT_RADIUS, TILE, RESPAWN_POS, BIOME_DEFAULT } from "../sim-core/src/constants.ts";
 
 type Reply = { type: string; [key: string]: unknown };
 function replyOf(r: { reply?: unknown }): Reply | undefined {
@@ -75,6 +75,7 @@ test("② 玩家走到入口旁（≤72px）→ dungeon.enter.ok（坐标校验�
     { type: "dungeon.enter", requestId: "e2", payload: { entranceId: 301 } },
   );
   assert.equal(replyOf(res)?.type, "dungeon.enter.ok", "入口旁进入成功");
+  assert.equal(replyOf(res)?.biomeId, BIOME_DEFAULT, "E34：dungeon.enter.ok 下发 biomeId（默认入口 → 0）");
   const instId = res.roomId as string;
   assert.ok(instId && instId !== RESIDENT_ROOM_ID, "切换到实例房间");
   assert.equal(isInstanceRunning(instId), true);

@@ -38,6 +38,7 @@ export const ChangeBit = {
   TIER: 1 << 10,
   SKILL_CD: 1 << 11,
   ATTRS: 1 << 12,
+  ENEMY_TYPE: 1 << 13, // E34：敌人原型数值 ID（ironbone=1/ghostmother=2/magmacolossus=3）
 } as const;
 
 // ----------------------------- 写入辅助 -----------------------------
@@ -159,6 +160,10 @@ function encodeEntity(e: EntityState): Buffer {
     w.u8(e.tier);
     mask |= ChangeBit.TIER;
   }
+  if (e.enemyTypeId !== undefined) {
+    w.u8(e.enemyTypeId);
+    mask |= ChangeBit.ENEMY_TYPE;
+  }
   if (e.skillCd !== undefined) {
     for (let i = 0; i < 4; i++) w.u16(e.skillCd[i] ?? 0);
     mask |= ChangeBit.SKILL_CD;
@@ -204,6 +209,7 @@ function decodeEntity(r: BufReader): EntityState {
   let telegraph: { shape: number; color: number; startTick: number; applyTick: number; radius: number } | undefined;
   let entrance: { cooldownTicks: number; lastUsedTick: number } | undefined;
   let tier: number | undefined;
+  let enemyTypeId: number | undefined;
   let skillCd: number[] | undefined;
   let attrs: { str: number; dex: number; vit: number; atk?: number; maxHp?: number; crit?: number } | undefined;
 
@@ -233,6 +239,7 @@ function decodeEntity(r: BufReader): EntityState {
     entrance = { cooldownTicks: r.u16(), lastUsedTick: r.u32() };
   }
   if (mask & ChangeBit.TIER) tier = r.u8();
+  if (mask & ChangeBit.ENEMY_TYPE) enemyTypeId = r.u8();
   if (mask & ChangeBit.SKILL_CD) {
     skillCd = [r.u16(), r.u16(), r.u16(), r.u16()];
   }
@@ -264,6 +271,7 @@ function decodeEntity(r: BufReader): EntityState {
     ...(telegraph !== undefined ? { telegraph } : {}),
     ...(entrance !== undefined ? { entrance } : {}),
     ...(tier !== undefined ? { tier } : {}),
+    ...(enemyTypeId !== undefined ? { enemyTypeId } : {}),
     ...(skillCd !== undefined ? { skillCd } : {}),
     ...(attrs !== undefined ? { attrs } : {}),
   };

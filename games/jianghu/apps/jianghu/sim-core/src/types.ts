@@ -131,6 +131,8 @@ export interface EntityState {
 
   // ── 敌人/BOSS ──
   readonly tier?: number; // 0=normal 1=elite 2=boss
+  /** E34：敌人原型数值 ID（ironbone=1/ghostmother=2/magmacolossus=3；C12 条件序列化，仅登记变体持有）。 */
+  readonly enemyTypeId?: number;
 
   // ── 地面溢出掉落（背包满）──
   readonly loot?: LootState; // 含 ttlTicks（C-Per-3）

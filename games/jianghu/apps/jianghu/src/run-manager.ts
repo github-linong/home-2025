@@ -625,7 +625,7 @@ export function enterInstance(
   entranceId: number,
   members: readonly InstanceMember[],
   opts: EnterInstanceOpts = {},
-): { ok: boolean; reason?: string; requiredLevel?: number; instanceRoomId?: string; joined?: boolean } {
+): { ok: boolean; reason?: string; requiredLevel?: number; instanceRoomId?: string; joined?: boolean; biomeId?: number } {
   const resident = runs.get(RESIDENT_ROOM_ID);
   if (!resident) return { ok: false, reason: "RESIDENT_NOT_RUNNING" };
 
@@ -655,7 +655,7 @@ export function enterInstance(
     getWorld(waiting.instanceRoomId)?.addPlayer(m.seatId, m.userId, waiting.entryTile, equipBySeat.get(m.seatId), levelBySeat.get(m.seatId), materialBySeat.get(m.seatId), potionBySeat.get(m.seatId));
     // 满员 → 立即锁定开本。
     if (waiting.members.length >= PARTY_MAX_MEMBERS) sweepWaitingInstances();
-    return { ok: true, joined: true, instanceRoomId: waiting.instanceRoomId };
+    return { ok: true, joined: true, instanceRoomId: waiting.instanceRoomId, biomeId: waiting.biomeId };
   }
 
   // ② 创建路径。
@@ -734,7 +734,7 @@ export function enterInstance(
     expireAt,
   });
 
-  return { ok: true, joined: false, instanceRoomId };
+  return { ok: true, joined: false, instanceRoomId, biomeId };
 }
 
 /**

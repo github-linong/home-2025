@@ -122,6 +122,39 @@ test("changeMask bit layout is stable", () => {
   assert.equal(ChangeBit.PARRY, 1 << 6);
   assert.equal(ChangeBit.LOOT, 1 << 7);
   assert.equal(ChangeBit.ENTRANCE, 1 << 9);
+  assert.equal(ChangeBit.ENEMY_TYPE, 1 << 13);
+});
+
+test("E34: enemyTypeId conditional serialization round-trip (C12)", () => {
+  const ironbone: EntityState = {
+    id: 77,
+    kind: EntityKind.BOSS,
+    pos: { x: 960, y: 720 },
+    dir: 0,
+    hp: 360,
+    maxHp: 360,
+    status: EntityStatus.ALIVE,
+    statusEffects: [],
+    tier: 2,
+    enemyTypeId: 1, // ironbone（铁骨魁）
+  };
+  const d = decodeSnapshot(encodeSnapshot(makeSnapshot([ironbone]))).entities[0];
+  assert.equal(d.enemyTypeId, 1, "ironbone enemyTypeId round-trip");
+
+  // 默认巨魔（未登记变体）不带 enemyTypeId → 解码后 undefined（playtest 默认 BOSS 序列化不变）。
+  const defaultBoss: EntityState = {
+    id: 78,
+    kind: EntityKind.BOSS,
+    pos: { x: 960, y: 720 },
+    dir: 0,
+    hp: 300,
+    maxHp: 300,
+    status: EntityStatus.ALIVE,
+    statusEffects: [],
+    tier: 2,
+  };
+  const d2 = decodeSnapshot(encodeSnapshot(makeSnapshot([defaultBoss]))).entities[0];
+  assert.equal(d2.enemyTypeId, undefined, "default boss omits enemyTypeId (golden stable)");
 });
 
 test("E7: ATTRS extended fields (atk/maxHp/crit) round-trip", () => {

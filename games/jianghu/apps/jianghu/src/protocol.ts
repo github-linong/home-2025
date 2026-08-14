@@ -614,6 +614,8 @@ export function dispatch(
           // E13：多人同本 —— 返回成员数 + 是否加入已有 waiting 实例（客户端队伍 UI 用）。
           memberCount: instRoom?.members.size ?? 0,
           joined: res.joined ?? false,
+          // E34：副本 biome（0=普通/1=石牢/2=荒冢/3=熔窟；客户端副本色调 + BOSS 视觉同步用）。
+          biomeId: res.biomeId ?? 0,
           // 副本内重连 token（C-Net-3/C10：寿命内回本）。
           reconnectToken: member?.reconnectToken,
         },
@@ -665,6 +667,7 @@ export function dispatch(
             reconnectToken: member.reconnectToken,
             snapshotTick: snap?.tick ?? 0,
             fellBackToResident: true,
+            biomeId: 0, // E34：回主世界 → biome 0（无副本色调）
           },
           broadcasts,
           roomId: resident.roomId,
@@ -690,6 +693,7 @@ export function dispatch(
             roomId,
             reconnectToken: newToken,
             snapshotTick: snap?.tick ?? 0,
+            biomeId: getWorld(roomId)?.biomeId ?? 0, // E34：重连回副本 → 副本 biome（副本色调恢复）
           },
           broadcasts,
           roomId,

@@ -19,6 +19,7 @@ import {
   SPAWN_SCATTER_PX,
   DEFAULT_RESPAWN_TICKS,
   ENEMY_TYPE_VARIANTS, // E28：敌人原型变体（铁骨魁等；未登记 → 同 tier 基线）
+  ENEMY_TYPE_IDS, // E34：敌人原型 → 数值 ID（客户端视觉同步；未登记 → undefined）
   type EnemyTier,
 } from "./constants.ts"; // C7 单一来源
 
@@ -64,6 +65,8 @@ export interface SpawnedEnemySpec {
   readonly hp: number;
   readonly maxHp: number;
   readonly tier: number; // 0/1/2
+  /** E34：敌人原型数值 ID（ironbone=1/ghostmother=2/magmacolossus=3；缺省 undefined = 默认巨魔）。 */
+  readonly enemyTypeId?: number;
   readonly atk: number; // 接触伤害基础
   readonly aggression: Aggression; // E6 敌人类别（world 据此跑 AI 状态机）
   /** E24：巡逻半径（格）；缺省 undefined = 不巡逻（world AI 段据此跑 IDLE 巡逻）。 */
@@ -110,6 +113,8 @@ export function spawnWave(zones: readonly SpawnZone[], rng: Rng): SpawnResult {
     const mult = HP_MULT[tierKey];
     // E28：敌人原型变体（铁骨魁等）覆盖 hp/atk/telegraph 半径/经验；未登记 → 同 tier 基线（D9/golden）。
     const variant = ENEMY_TYPE_VARIANTS[z.enemyTypeId];
+    // E34：敌人原型数值 ID 透传（客户端视觉同步；未登记 → undefined → 默认巨魔，golden 不变）。
+    const enemyTypeId = ENEMY_TYPE_IDS[z.enemyTypeId];
     const hpMult = mult * (variant?.hpMult ?? 1);
     const atkMult = mult * (variant?.atkMult ?? 1);
     const maxHp = Math.round(ENEMY_BASE_HP * hpMult);
@@ -127,6 +132,7 @@ export function spawnWave(zones: readonly SpawnZone[], rng: Rng): SpawnResult {
         hp: maxHp,
         maxHp,
         tier: z.tier,
+        enemyTypeId, // E34：仅登记变体持有（默认巨魔 undefined → 条件序列化不下发）
         atk,
         aggression,
         patrolTiles,

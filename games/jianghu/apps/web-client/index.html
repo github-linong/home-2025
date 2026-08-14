@@ -984,7 +984,7 @@ window.addEventListener('resize', resize);
 
 // ── 调试/自动化暴露（E2E 断言用；C2 新增 lastHits/lastKills/inventory/predicted 钩子）──
 const GAME = window.__game = {
-  connected: false, state: 'connecting', seatId: null, roomId: null, reconnectToken: null,
+  connected: false, state: 'connecting', seatId: null, roomId: null, reconnectToken: null, biomeId: 0,
   lastSnapshot: null, localEntityId: null, errors: [], snapshotCount: 0, lastTick: 0,
   skillCd: [0, 0, 0, 0], parryActive: false, localHp: 0, localMaxHp: 0,
   lastLocalPos: null, wsState: 'closed', guest: null,
@@ -1008,7 +1008,7 @@ const GAME = window.__game = {
   downed: false, downedSinceTick: null, iframes: false,
   // C3：相机锁定 + 渲染标志（E2E 断言钩子）
   cam: { cx: 0, cy: 0, scale: 1, w: 0, h: 0 },
-  playerScreenPos: null, floatTexts: [], rendered: { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0, windup: 0, chests: 0, elite_blue: 0, boss_aura: 0 },
+  playerScreenPos: null, floatTexts: [], rendered: { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0, windup: 0, chests: 0, elite_blue: 0, boss_aura: 0, boss_variant: null },
   // E26：小地图标记计数钩子（drawMinimap 每帧刷新 {boss, chest, entrance, loot}；E2E 断言钩子）
   minimapMarkers: { boss: 0, chest: 0, entrance: 0, loot: 0 },
   // E17：队友列表（当前快照中 kind=PLAYER 且 id!==localEntityId；含 ownerId/hp/pos/status，E2E 断言钩子）
@@ -1093,6 +1093,11 @@ let seatId = null;
 let roomId = null;
 let reconnectToken = null;
 let tickMs = TICK_MS;
+let currentBiomeId = 0;             // E34：当前副本 biome（0=主世界/普通 1=石牢 2=荒冢 3=熔窟；驱动副本色调 tint）
+function setBiome(id) {
+  currentBiomeId = id || 0;
+  GAME.biomeId = currentBiomeId;
+}
 let lastSnapshot = null;            // 最新权威快照
 let localEntityId = null;
 let snapBuffer = [];                // 插值缓冲 [{tick, entities:Map}]
@@ -1246,6 +1251,7 @@ function decodeSnapshot(buf) {
     }
     if (mask & (1 << 9))  { e.entrance = { cooldownTicks: dv.getUint16(off, true), lastUsedTick: dv.getUint32(off, true) }; off += 6; }
     if (mask & (1 << 10)) { e.tier = dv.getUint8(off); off += 1; }
+    if (mask & (1 << 13)) { e.enemyTypeId = dv.getUint8(off); off += 1; } // E34：敌人原型数值 ID（BOSS 视觉变体分派）
     if (mask & (1 << 11)) { e.skillCd = [dv.getUint16(off, true), dv.getUint16(off + 2, true), dv.getUint16(off + 4, true), dv.getUint16(off + 6, true)]; off += 8; }
     if (mask & (1 << 12)) {
       // E7 扩展 attrs：str/dex/vit + hasExt(u8) + (atk u16, maxHp u16, crit千分比 u16)×hasExt
@@ -1394,6 +1400,7 @@ function handleControl(msg) {
       GAME.roomId = roomId; GAME.reconnectToken = reconnectToken;
       setStatus('主世界', 'ok');
       resetFxState();
+      setBiome(0); // E34：主世界无副本色调（biome 0）
       startInputLoop();
       // P2.1: 进房成功 → 隐藏 splash
       updateSplashProgress(1, '进入主世界');
@@ -1410,6 +1417,7 @@ function handleControl(msg) {
       setState('dungeon');
       GAME.roomId = roomId; GAME.reconnectToken = reconnectToken;
       resetFxState();
+      setBiome(msg.biomeId || 0); // E34：副本 biome（1=石牢/2=荒冢/3=熔窟）→ 副本色调
       setStatus('副本', 'ok');
       toast('已进入副本');
       SFX.play('enter_dungeon'); // E12：噪声扫频传送感
@@ -1422,6 +1430,7 @@ function handleControl(msg) {
       setState('overworld');
       GAME.roomId = roomId; GAME.reconnectToken = null;
       resetFxState();
+      setBiome(0); // E34：出本回主世界 → 清除副本色调
       setStatus('主世界', 'ok');
       toast('已出本');
       SFX.play('exit_dungeon'); // E12：传送反向
@@ -1434,6 +1443,7 @@ function handleControl(msg) {
       GAME.roomId = roomId; GAME.reconnectToken = reconnectToken;
       GAME.connected = true;
       resetFxState();
+      setBiome(msg.biomeId || 0); // E34：重连回副本 → 恢复副本色调；回主世界 → 0
       setStatus(state === 'dungeon' ? '副本（已重连）' : '主世界（已重连）', 'ok');
       toast('已重连');
       SFX.play('reconnect'); // E12：重连提示音（440→660Hz 上行）
@@ -2591,6 +2601,7 @@ function draw() {
 
   ctx.fillStyle = '#14161c';
   ctx.fillRect(0, 0, view.w, view.h);
+  drawBiomeTint(); // E34：副本色调（主世界 biome 0 无叠加，字节不变）
 
   ctx.save();
   // E23：破军屏幕震动（仅偏移世界层渲染；GAME.cam / worldToScreen 不受影响 → E2E 相机断言稳定）
@@ -2633,6 +2644,34 @@ function drawWorldBounds() {
   ctx.strokeStyle = 'rgba(200,180,140,0.35)';
   ctx.lineWidth = 3;
   ctx.strokeRect(1, 1, WORLD_W - 2, WORLD_H - 2);
+}
+
+// E34：副本色调（屏幕空间全屏 tint + vignette，相机变换前绘制）。
+//   石牢=灰蓝冷调 / 荒冢=绿灰阴森 / 熔窟=红橙暖调；主世界（biome 0）直接 return → 渲染字节不变（E2E 稳定）。
+const BIOME_TINTS = {
+  1: { tint: 'rgba(74,96,128,0.12)', vignette: 'rgba(28,38,58,0.32)' }, // 石牢（灰蓝冷调）
+  2: { tint: 'rgba(86,116,92,0.14)', vignette: 'rgba(22,32,26,0.36)' },  // 荒冢（绿灰阴森）
+  3: { tint: 'rgba(168,72,40,0.16)', vignette: 'rgba(58,24,14,0.36)' },  // 熔窟（红橙暖调）
+};
+function drawBiomeTint() {
+  if (state !== 'dungeon' || !currentBiomeId) return; // 主世界/普通副本（0）无叠加
+  const b = BIOME_TINTS[currentBiomeId];
+  if (!b) return;
+  ctx.save();
+  // 全屏 tint（叠加在 #14161c 基础底色之上）
+  ctx.fillStyle = b.tint;
+  ctx.fillRect(0, 0, view.w, view.h);
+  // vignette（四角加深，强化副本氛围；中心透明、边缘渐深）
+  const r = Math.max(view.w, view.h) * 0.72;
+  const grad = ctx.createRadialGradient(
+    view.w / 2, view.h / 2, Math.min(view.w, view.h) * 0.38,
+    view.w / 2, view.h / 2, r,
+  );
+  grad.addColorStop(0, 'rgba(0,0,0,0)');
+  grad.addColorStop(1, b.vignette);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, view.w, view.h);
+  ctx.restore();
 }
 
 // E10：倒地全屏反馈（红滤镜 + 大字「你倒下了」+ 复活倒计时）。
@@ -2817,6 +2856,7 @@ function drawEnemy(e, p) {
   GAME.rendered.enemies.push({ id: e.id, variant, tier: e.tier || 0 });
   if (isElite) GAME.rendered.elite_blue++; // E30 E2E 钩子：精英蓝怪化渲染标志
   if (isBoss) GAME.rendered.boss_aura++;   // E30 E2E 钩子：BOSS 常驻异象 aura 渲染标志
+  if (isBoss) GAME.rendered.boss_variant = variant; // E34 E2E 钩子：BOSS 视觉变体（troll/ironbone/ghostmother/magmacolossus）
   // E18：敌人攻击前摇（服务端 EntityStatus.WINDUP 位驱动）→ 站立蓄力抬手表现。
   const winding = !!(e.status & STATUS_WINDUP);
 
@@ -2833,6 +2873,9 @@ function drawEnemy(e, p) {
   ctx.save();
   if (winding) { ctx.scale(0.92, 0.92); ctx.rotate(0.26); GAME.rendered.windup++; }
   if (variant === 'troll') drawTroll(size);
+  else if (variant === 'ironbone') drawIronbone(size);
+  else if (variant === 'ghostmother') drawGhostmother(size);
+  else if (variant === 'magmacolossus') drawMagmaColossus(size);
   else if (variant === 'shadow') drawShadowAssassin(size, facing);
   else if (variant === 'savage') drawSavageWolf(size, facing);
   else if (variant === 'boar') drawBoar(size, facing);
@@ -2918,10 +2961,17 @@ function drawEnemy(e, p) {
 // ============================================================================
 // C3 程序化武侠剪影（零外部资源，纯 Canvas 路径；确定性；集中 drawEntity 分支）
 // ============================================================================
-// 协议未下发 enemyTypeId（C12），普通怪形状用实体 id 稳定哈希区分（同 id 恒同变体，D9 确定性）。
+// E34：BOSS 按服务端下发的 enemyTypeId 分派视觉变体（ironbone=1/ghostmother=2/magmacolossus=3）；
+//   未下发（默认巨魔 / 旧协议）→ 回退 'troll'（现有 drawTroll，E30）。普通怪仍用实体 id 稳定哈希区分
+//   （同 id 恒同变体，D9 确定性；C3-6 普通怪变体不变）。
 // E24：普通怪变体 2 种 → 3 种（山贼/狼/野猪；id 哈希稳定 %3，同 id 恒同变体）。
 function enemyVariant(e) {
-  if (e.kind === KIND.BOSS) return 'troll';
+  if (e.kind === KIND.BOSS) {
+    if (e.enemyTypeId === 1) return 'ironbone';
+    if (e.enemyTypeId === 2) return 'ghostmother';
+    if (e.enemyTypeId === 3) return 'magmacolossus';
+    return 'troll';
+  }
   if (e.tier === 1) return 'shadow';
   const h = ((e.id * 2654435761) >>> 0) ^ (e.id >>> 1);
   const v = h % 3;
@@ -3183,6 +3233,203 @@ function drawTroll(size) {
   ctx.beginPath(); ctx.arc(R * 0.28, -R * 0.08, R * 0.1, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = 'rgba(20,16,26,0.9)';
   ctx.beginPath(); ctx.arc(R * 0.28, -R * 0.08, R * 0.035, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// E34：铁骨魁（石牢 BOSS）→ 钢铁巨魔：铁灰金属质感 + 铆钉 + 裂地重锤（telegraph 96px=2×TILE）。
+//   复用 drawTroll 多部件框架，换金属配色 + 重锤 + 铆钉点缀。
+function drawIronbone(size) {
+  const R = size / 2;
+  ctx.save();
+  const skin = '#5a636e', dark = '#2e343b', hi = '#9aa4ad', rivet = '#c8d0d8';
+  // 下肢（粗壮铁柱腿）
+  ctx.fillStyle = dark;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.5, R * 0.55); ctx.lineTo(-R * 0.58, R * 1.0); ctx.lineTo(-R * 0.3, R * 1.0); ctx.lineTo(-R * 0.28, R * 0.55);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(R * 0.28, R * 0.55); ctx.lineTo(R * 0.3, R * 1.0); ctx.lineTo(R * 0.58, R * 1.0); ctx.lineTo(R * 0.5, R * 0.55);
+  ctx.closePath(); ctx.fill();
+  // 巨块躯干（铁灰金属）
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.75, -R * 0.5);
+  ctx.quadraticCurveTo(-R * 0.85, R * 0.2, -R * 0.55, R * 0.6);
+  ctx.lineTo(R * 0.55, R * 0.6);
+  ctx.quadraticCurveTo(R * 0.85, R * 0.2, R * 0.75, -R * 0.5);
+  ctx.quadraticCurveTo(0, -R * 0.9, -R * 0.75, -R * 0.5);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = dark; ctx.lineWidth = 2; ctx.stroke();
+  // 铆钉行（躯干中缝 + 两侧）
+  ctx.fillStyle = rivet;
+  for (let i = 0; i < 3; i++) {
+    const ry = -R * 0.3 + i * R * 0.28;
+    ctx.beginPath(); ctx.arc(0, ry, R * 0.05, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-R * 0.62, ry + R * 0.08, R * 0.04, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(R * 0.62, ry + R * 0.08, R * 0.04, 0, Math.PI * 2); ctx.fill();
+  }
+  // 双肩甲（铁板 + 铆钉）
+  ctx.fillStyle = dark;
+  ctx.beginPath(); ctx.arc(-R * 0.72, -R * 0.25, R * 0.24, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(R * 0.72, -R * 0.25, R * 0.24, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = rivet;
+  ctx.beginPath(); ctx.arc(-R * 0.72, -R * 0.25, R * 0.06, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(R * 0.72, -R * 0.25, R * 0.06, 0, Math.PI * 2); ctx.fill();
+  // 头（铁盔头 + 面罩横缝 + 冷白眼）
+  ctx.fillStyle = skin;
+  ctx.beginPath(); ctx.arc(0, -R * 0.45, R * 0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = dark; ctx.lineWidth = 2; ctx.stroke();
+  ctx.strokeStyle = dark; ctx.lineWidth = 2.2;
+  ctx.beginPath(); ctx.moveTo(-R * 0.18, -R * 0.38); ctx.lineTo(R * 0.18, -R * 0.38); ctx.stroke();
+  ctx.fillStyle = '#dce9ff';
+  ctx.beginPath(); ctx.arc(-R * 0.13, -R * 0.5, R * 0.07, 0, Math.PI * 2); ctx.arc(R * 0.13, -R * 0.5, R * 0.07, 0, Math.PI * 2); ctx.fill();
+  // 金属尖角（直而锋利，替代巨魔弯角）
+  ctx.strokeStyle = hi; ctx.lineWidth = Math.max(4, R * 0.16); ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-R * 0.3, -R * 0.68); ctx.lineTo(-R * 0.55, -R * 1.3); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(R * 0.3, -R * 0.68); ctx.lineTo(R * 0.55, -R * 1.3); ctx.stroke();
+  // 脊柱金属尖刺
+  ctx.fillStyle = hi;
+  for (let i = 0; i < 4; i++) {
+    const bx = -R * 0.3 + i * R * 0.2;
+    ctx.beginPath();
+    ctx.moveTo(bx, -R * 0.68); ctx.lineTo(bx + R * 0.06, -R * 0.9); ctx.lineTo(bx + R * 0.12, -R * 0.68);
+    ctx.closePath(); ctx.fill();
+  }
+  // 裂地重锤（右侧持锤：大锤头 + 锤柄，金属高光）
+  ctx.strokeStyle = dark; ctx.lineWidth = Math.max(4, R * 0.14);
+  ctx.beginPath(); ctx.moveTo(R * 0.55, R * 0.2); ctx.lineTo(R * 0.95, R * 0.72); ctx.stroke();
+  ctx.fillStyle = hi;
+  ctx.beginPath(); ctx.arc(R * 1.0, R * 0.8, R * 0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = dark; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = rivet;
+  ctx.beginPath(); ctx.arc(R * 1.0, R * 0.8, R * 0.08, 0, Math.PI * 2); ctx.fill();
+  // 左拳（护手铁拳）
+  ctx.fillStyle = dark;
+  ctx.beginPath(); ctx.arc(-R * 0.85, R * 0.32, R * 0.28, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// E34：幽冢鬼母（荒冢 BOSS）→ 幽灵女妖：半透明青白 + 漂浮下摆（无腿）+ 披发 + 空洞眼 + 伸前鬼爪
+//   （telegraph 120px 锥形鬼啸扇形由 drawTelegraph shape=2 表达）。复用 drawTroll 框架，改幽灵化配色/部件。
+function drawGhostmother(size) {
+  const R = size / 2;
+  ctx.save();
+  const ghost = 'rgba(186,214,222,0.82)', ghostHi = 'rgba(220,240,246,0.95)', voidEye = 'rgba(30,40,48,0.9)';
+  // 漂浮下摆（替代双腿：下宽上窄的雾状裙摆拖尾）
+  ctx.fillStyle = ghost;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.42, R * 0.5);
+  ctx.quadraticCurveTo(-R * 0.9, R * 1.25, -R * 0.35, R * 1.35);
+  ctx.quadraticCurveTo(0, R * 1.45, R * 0.35, R * 1.35);
+  ctx.quadraticCurveTo(R * 0.9, R * 1.25, R * 0.42, R * 0.5);
+  ctx.closePath(); ctx.fill();
+  // 幽灵躯干（瘦长，半透明）
+  ctx.fillStyle = ghost;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.5, -R * 0.5);
+  ctx.quadraticCurveTo(-R * 0.62, R * 0.1, -R * 0.4, R * 0.55);
+  ctx.quadraticCurveTo(0, R * 0.68, R * 0.4, R * 0.55);
+  ctx.quadraticCurveTo(R * 0.62, R * 0.1, R * 0.5, -R * 0.5);
+  ctx.quadraticCurveTo(0, -R * 0.8, -R * 0.5, -R * 0.5);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = ghostHi; ctx.lineWidth = 1.4; ctx.stroke();
+  // 披发（两侧垂下的长发，替代角）
+  ctx.fillStyle = ghostHi;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.32, -R * 0.6); ctx.quadraticCurveTo(-R * 0.7, -R * 0.5, -R * 0.62, -R * 0.1); ctx.lineTo(-R * 0.34, -R * 0.18); ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(R * 0.32, -R * 0.6); ctx.quadraticCurveTo(R * 0.7, -R * 0.5, R * 0.62, -R * 0.1); ctx.lineTo(R * 0.34, -R * 0.18); ctx.closePath(); ctx.fill();
+  // 头（苍白脸 + 空洞青白眼）
+  ctx.fillStyle = ghostHi;
+  ctx.beginPath(); ctx.arc(0, -R * 0.45, R * 0.28, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(120,150,162,0.9)'; ctx.lineWidth = 1.6; ctx.stroke();
+  ctx.fillStyle = voidEye;
+  ctx.beginPath(); ctx.arc(-R * 0.12, -R * 0.5, R * 0.08, 0, Math.PI * 2); ctx.arc(R * 0.12, -R * 0.5, R * 0.08, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(95,208,224,0.95)';
+  ctx.beginPath(); ctx.arc(-R * 0.12, -R * 0.5, R * 0.035, 0, Math.PI * 2); ctx.arc(R * 0.12, -R * 0.5, R * 0.035, 0, Math.PI * 2); ctx.fill();
+  // 伸前鬼爪（双臂前伸 + 尖指，SLOW「鬼爪」语义）
+  ctx.strokeStyle = ghostHi; ctx.lineWidth = Math.max(2.2, R * 0.12); ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-R * 0.2, R * 0.05); ctx.lineTo(-R * 0.85, R * 0.02); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(R * 0.2, R * 0.05); ctx.lineTo(R * 0.85, R * 0.02); ctx.stroke();
+  ctx.strokeStyle = ghostHi; ctx.lineWidth = Math.max(1.6, R * 0.08);
+  for (let i = 0; i < 3; i++) {
+    const spread = (i - 1) * R * 0.12;
+    ctx.beginPath(); ctx.moveTo(-R * 0.85, R * 0.02); ctx.lineTo(-R * 1.12, R * 0.02 + spread); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(R * 0.85, R * 0.02); ctx.lineTo(R * 1.12, R * 0.02 + spread); ctx.stroke();
+  }
+  // 头顶鬼火（青白冷焰，恒定）
+  ctx.fillStyle = 'rgba(95,208,224,0.85)';
+  ctx.beginPath(); ctx.moveTo(0, -R * 0.78); ctx.quadraticCurveTo(R * 0.1, -R * 1.0, 0, -R * 1.08); ctx.quadraticCurveTo(-R * 0.1, -R * 1.0, 0, -R * 0.78); ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+// E34：熔岩巨像（熔窟 BOSS）→ 岩浆巨像：红黑 + 熔岩裂纹发光 + 岩石角 + 发光眼 + 环形喷发
+//   （telegraph 环形喷发 shape=0 圆环由 drawTelegraph 表达）。复用 drawTroll 框架，换岩浆化配色/发光部件。
+function drawMagmaColossus(size) {
+  const R = size / 2;
+  ctx.save();
+  const rock = '#3a1512', dark = '#1c0a08', lava = '#ff6a2a', lavaHi = '#ffb03a';
+  // 下肢（粗壮岩石腿，底部熔岩）
+  ctx.fillStyle = dark;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.5, R * 0.55); ctx.lineTo(-R * 0.58, R * 1.0); ctx.lineTo(-R * 0.3, R * 1.0); ctx.lineTo(-R * 0.28, R * 0.55);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(R * 0.28, R * 0.55); ctx.lineTo(R * 0.3, R * 1.0); ctx.lineTo(R * 0.58, R * 1.0); ctx.lineTo(R * 0.5, R * 0.55);
+  ctx.closePath(); ctx.fill();
+  // 巨块躯干（红黑岩石）
+  ctx.fillStyle = rock;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.75, -R * 0.5);
+  ctx.quadraticCurveTo(-R * 0.85, R * 0.2, -R * 0.55, R * 0.6);
+  ctx.lineTo(R * 0.55, R * 0.6);
+  ctx.quadraticCurveTo(R * 0.85, R * 0.2, R * 0.75, -R * 0.5);
+  ctx.quadraticCurveTo(0, -R * 0.9, -R * 0.75, -R * 0.5);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = dark; ctx.lineWidth = 2; ctx.stroke();
+  // 熔岩裂纹（躯干发光裂线）
+  ctx.strokeStyle = lava; ctx.lineWidth = 2; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-R * 0.4, -R * 0.2); ctx.lineTo(-R * 0.18, -R * 0.02); ctx.lineTo(-R * 0.3, R * 0.22); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(R * 0.35, -R * 0.3); ctx.lineTo(R * 0.16, -R * 0.06); ctx.lineTo(R * 0.3, R * 0.16); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-R * 0.05, -R * 0.55); ctx.lineTo(0, -R * 0.3); ctx.lineTo(-R * 0.14, -R * 0.05); ctx.stroke();
+  ctx.strokeStyle = lavaHi; ctx.lineWidth = 1; 
+  ctx.beginPath(); ctx.moveTo(-R * 0.18, -R * 0.02); ctx.lineTo(-R * 0.3, R * 0.22); ctx.stroke();
+  // 双肩甲（岩石块，裂纹发光）
+  ctx.fillStyle = dark;
+  ctx.beginPath(); ctx.arc(-R * 0.72, -R * 0.25, R * 0.24, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(R * 0.72, -R * 0.25, R * 0.24, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = lava; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.arc(-R * 0.72, -R * 0.25, R * 0.24, -Math.PI * 0.6, -Math.PI * 0.15); ctx.stroke();
+  ctx.beginPath(); ctx.arc(R * 0.72, -R * 0.25, R * 0.24, Math.PI * 1.15, Math.PI * 1.6); ctx.stroke();
+  // 头（岩石头 + 发光眼 + 横裂口）
+  ctx.fillStyle = rock;
+  ctx.beginPath(); ctx.arc(0, -R * 0.45, R * 0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = dark; ctx.lineWidth = 2; ctx.stroke();
+  ctx.strokeStyle = dark; ctx.lineWidth = 2.2;
+  ctx.beginPath(); ctx.moveTo(-R * 0.18, -R * 0.38); ctx.lineTo(R * 0.18, -R * 0.38); ctx.stroke();
+  ctx.fillStyle = lavaHi;
+  ctx.beginPath(); ctx.arc(-R * 0.13, -R * 0.5, R * 0.07, 0, Math.PI * 2); ctx.arc(R * 0.13, -R * 0.5, R * 0.07, 0, Math.PI * 2); ctx.fill();
+  // 岩石角（粗短向上，熔岩裂纹）
+  ctx.strokeStyle = dark; ctx.lineWidth = Math.max(4, R * 0.16); ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-R * 0.3, -R * 0.68); ctx.lineTo(-R * 0.5, -R * 1.15); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(R * 0.3, -R * 0.68); ctx.lineTo(R * 0.5, -R * 1.15); ctx.stroke();
+  ctx.strokeStyle = lava; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.moveTo(-R * 0.4, -R * 0.9); ctx.lineTo(-R * 0.46, -R * 1.05); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(R * 0.4, -R * 0.9); ctx.lineTo(R * 0.46, -R * 1.05); ctx.stroke();
+  // 双巨拳（岩石拳，关节裂纹发光）
+  ctx.fillStyle = dark;
+  ctx.beginPath(); ctx.arc(-R * 0.85, R * 0.32, R * 0.28, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(R * 0.85, R * 0.32, R * 0.28, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = lava; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.moveTo(-R * 0.95, R * 0.24); ctx.lineTo(-R * 0.85, R * 0.4); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(R * 0.95, R * 0.24); ctx.lineTo(R * 0.85, R * 0.4); ctx.stroke();
+  // 环形喷发（身周几个小熔岩喷点，恒定，环形喷发 telegraph 语义的静态视觉锚）
+  for (let i = 0; i < 6; i++) {
+    const a = i * Math.PI / 3;
+    const px = Math.cos(a) * R * 1.15, py = Math.sin(a) * R * 1.15;
+    ctx.fillStyle = i % 2 === 0 ? lavaHi : lava;
+    ctx.beginPath(); ctx.arc(px, py, R * 0.06, 0, Math.PI * 2); ctx.fill();
+  }
   ctx.restore();
 }
 
@@ -3620,7 +3867,7 @@ function updatePortalHum() {
 function drawEntities() {
   if (!lastSnapshot) return;
   // C3 E2E 钩子：每帧重置渲染标志（drawPlayer/drawEnemy/drawLoot/drawEntrance 内填充）
-  GAME.rendered = { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0, windup: 0, chests: 0, elite_blue: 0, boss_aura: 0 };
+  GAME.rendered = { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0, windup: 0, chests: 0, elite_blue: 0, boss_aura: 0, boss_variant: null };
   // 入口画在实体底层
   for (const e of lastSnapshot.entities) {
     if (e.kind !== KIND.ENTRANCE) continue;

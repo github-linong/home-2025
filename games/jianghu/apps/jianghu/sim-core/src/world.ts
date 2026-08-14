@@ -229,6 +229,9 @@ interface Actor {
   entrance?: { cooldownTicks: number; lastUsedTick: number };
   // E4 新增（条件）
   tier?: number; // 0=normal 1=elite 2=boss（敌人）
+  // E34 新增（条件）：敌人原型数值 ID（ironbone=1/ghostmother=2/magmacolossus=3）。
+  // **仅登记变体才持有** → snapshot 条件序列化；默认巨魔不带 → playtest 默认 BOSS 序列化不变（golden 稳定）。
+  enemyTypeId?: number;
   atk?: number; // 敌人接触伤害
   parryState?: { active: boolean; windowEndTick: number };
   skillCd?: number[]; // [4] 玩家技能 CD（tick 左）
@@ -761,6 +764,7 @@ export function createWorld(opts: CreateWorldOpts): World {
           maxHp: spec.maxHp,
           status: EntityStatus.ALIVE,
           tier: spec.tier,
+          enemyTypeId: spec.enemyTypeId, // E34：仅登记变体持有（默认巨魔 undefined → 条件序列化不下发）
           atk: spec.atk,
           aggression: spec.aggression, // E6 敌人类别（passive / aggressive）
           zoneIndex: spawnStates.length,
@@ -1223,7 +1227,7 @@ export function createWorld(opts: CreateWorldOpts): World {
         }
 
         // E33：熔岩巨像灼烧地面（DOT 降级版）——高频低伤 telegraph 近似持续灼烧（主理人裁定：
-        //   不新增 DOT 世界机制）。仅当敌人原型登记 burnAoe（熔岩巨像）时启用；短前摇（telegraphTicks）
+        //   不新增 DOT 世界机制）。仅当敌人原型登记 burnAoe（熔岩巨像）时启用；前摇（telegraphTicks=8 可读下界）
         //   + 低伤（damageMult）模拟「地面持续灼烧」。复用下方 (3b) telegraph 落刀段
         //   （applyTick 到点 → 圈内 resolveDamage + 移除），无新结算路径（D9：无 Rng 消耗，golden 稳）。
         if (
@@ -1246,7 +1250,7 @@ export function createWorld(opts: CreateWorldOpts): World {
               shape: e.burnAoe.shape,
               color: 0, // DANGER（红；灼烧地面）
               startTick: t,
-              applyTick: t + e.burnAoe.telegraphTicks, // 短前摇（≈167ms），模拟「踩上去就掉血」
+              applyTick: t + e.burnAoe.telegraphTicks, // 前摇 8 tick（666ms 可读下界），模拟「地面持续灼烧」
               radius: e.burnAoe.radius,
             },
             dmg: Math.round((e.atk ?? ENEMY_BASE_ATK) * e.burnAoe.damageMult), // 低伤（atk×0.15）
@@ -1520,6 +1524,7 @@ export function createWorld(opts: CreateWorldOpts): World {
               maxHp: spec.maxHp,
               status: EntityStatus.ALIVE,
               tier: spec.tier,
+              enemyTypeId: spec.enemyTypeId, // E34：仅登记变体持有（复活同样下发视觉 ID）
               atk: spec.atk,
               aggression: spec.aggression, // E6 敌人类别（passive / aggressive）
               zoneIndex: zi,
@@ -1652,6 +1657,8 @@ export function createWorld(opts: CreateWorldOpts): World {
             : {}),
           // 敌人/BOSS：tier（仅持有才下发）。
           ...(a.tier !== undefined ? { tier: a.tier } : {}),
+          // E34：敌人原型数值 ID（仅登记变体持有才下发；默认巨魔不带 → golden 序列化不变，C12）。
+          ...(a.enemyTypeId !== undefined ? { enemyTypeId: a.enemyTypeId } : {}),
         };
         return base;
       });

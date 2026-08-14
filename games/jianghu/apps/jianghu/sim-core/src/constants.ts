@@ -665,6 +665,18 @@ export const MAGMA_BURN_TELEGRAPH_TICKS = MIN_TELEGRAPH_TICKS; // Sprint 2 修�
 export const MAGMA_BURN_RADIUS = Math.round(1.5 * TILE);
 export const MAGMA_BURN_DAMAGE_MULT = 0.15;
 
+/**
+ * E34：敌人原型 → 数值 ID（客户端视觉同步用；C7 单一来源）。
+ * 协议未下发 enemyTypeId 时客户端 BOSS 全画默认巨魔；本表把登记过的 BOSS 变体映射为稳定数值，
+ * 经 EntityState.enemyTypeId 条件序列化下发（仅登记变体才持有 → 默认巨魔不带 → playtest golden 不变）。
+ * 数值映射：ironbone=1 / ghostmother=2 / magmacolossus=3。
+ */
+export const ENEMY_TYPE_IDS: Readonly<Record<string, number>> = {
+  ironbone: 1,
+  ghostmother: 2,
+  magmacolossus: 3,
+} as const;
+
 /** E28 敌人原型变体表（单一来源；spawning/world 只读引用，C7）。 */
 export const ENEMY_TYPE_VARIANTS: Readonly<Record<string, EnemyTypeVariant>> = {
   // 铁骨魁（石牢 BOSS）：HP×1.2 / ATK×1.1（偏肉）；裂地重锤 radius=96px=2×TILE（dungeon-variants §2）。

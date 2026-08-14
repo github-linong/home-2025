@@ -33,6 +33,7 @@ test("入口→biome：entranceId=2 石牢 / 3 荒冢 / 4 熔窟 / 默认入口�
   // ① 石牢入口（entranceId=2，生产常量）→ biome 1。
   const stone = enterInstance(2, [{ seatId: SEAT, userId: "u-stone" }], { lifetimeMs: 10 ** 12 });
   assert.equal(stone.ok, true, "石牢入口创建成功");
+  assert.equal(stone.biomeId, BIOME_STONE_PRISON, "E34：enterInstance 返回 biomeId=1（客户端副本色调下发）");
   const stoneWorld = getWorld(stone.instanceRoomId!)!;
   assert.equal(stoneWorld.biomeId, BIOME_STONE_PRISON, "石牢入口 → biome 1");
   const stoneBoss = stoneWorld.actors().find((a) => a.kind === EntityKind.BOSS)!;
@@ -46,6 +47,7 @@ test("入口→biome：entranceId=2 石牢 / 3 荒冢 / 4 熔窟 / 默认入口�
   // ② 默认入口（entranceId=401，非石牢/荒冢）→ biome 0（playtest 同源入口 1 → biome 0，golden 不变）。
   const normal = enterInstance(401, [{ seatId: SEAT, userId: "u-normal" }], { lifetimeMs: 10 ** 12 });
   assert.equal(normal.ok, true, "默认入口创建成功");
+  assert.equal(normal.biomeId, BIOME_DEFAULT, "E34：默认入口返回 biomeId=0（无副本色调）");
   const normalWorld = getWorld(normal.instanceRoomId!)!;
   assert.equal(normalWorld.biomeId, BIOME_DEFAULT, "默认入口 → biome 0（golden 路径）");
   const normalBoss = normalWorld.actors().find((a) => a.kind === EntityKind.BOSS)!;
@@ -56,6 +58,7 @@ test("入口→biome：entranceId=2 石牢 / 3 荒冢 / 4 熔窟 / 默认入口�
   for (let i = 0; i < ENTRANCE_COOLDOWN_TICKS + 1; i++) resident.step();
   const barrow = enterInstance(3, [{ seatId: SEAT, userId: "u-barrow" }], { lifetimeMs: 10 ** 12 });
   assert.equal(barrow.ok, true, "荒冢入口创建成功");
+  assert.equal(barrow.biomeId, BIOME_BARROW, "E34：荒冢入口返回 biomeId=2");
   const barrowWorld = getWorld(barrow.instanceRoomId!)!;
   assert.equal(barrowWorld.biomeId, BIOME_BARROW, "荒冢入口 → biome 2");
   const barrowBoss = barrowWorld.actors().find((a) => a.kind === EntityKind.BOSS)!;
@@ -68,6 +71,7 @@ test("入口→biome：entranceId=2 石牢 / 3 荒冢 / 4 熔窟 / 默认入口�
   addPlayerToRoom(RESIDENT_ROOM_ID, SEAT, "u-molten", undefined, MOLTEN_CAVERN_MIN_LEVEL);
   const molten = enterInstance(4, [{ seatId: SEAT, userId: "u-molten" }], { lifetimeMs: 10 ** 12 });
   assert.equal(molten.ok, true, "熔窟入口创建成功（等级达标）");
+  assert.equal(molten.biomeId, BIOME_MOLTEN_CAVERN, "E34：熔窟入口返回 biomeId=3");
   const moltenWorld = getWorld(molten.instanceRoomId!)!;
   assert.equal(moltenWorld.biomeId, BIOME_MOLTEN_CAVERN, "熔窟入口 → biome 3");
   const moltenBoss = moltenWorld.actors().find((a) => a.kind === EntityKind.BOSS)!;
