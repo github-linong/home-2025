@@ -656,12 +656,12 @@ export interface EnemyTypeVariant {
 /**
  * 灼烧地面用「高频低伤 telegraph AOE」近似持续灼烧（不新增 DOT 世界机制，主理人裁定）：
  * - 间隔 MAGMA_BURN_INTERVAL_TICKS=6（0.5s @12Hz，高频，模拟「地面持续灼烧」）；
- * - 前摇 MAGMA_BURN_TELEGRAPH_TICKS=2（≈167ms，几乎即时落刀，模拟「踩上去就掉血」）；
+ * - 前摇 MAGMA_BURN_TELEGRAPH_TICKS=MIN_TELEGRAPH_TICKS（8 tick = 666ms，可读下界，玩家可读可躲）；
  * - 半径 MAGMA_BURN_RADIUS=72px（1.5×TILE，BOSS 身周）；
  * - 伤害 MAGMA_BURN_DAMAGE_MULT=0.15（atk×0.15，每 0.5s → 每秒 ≈ atk×0.3 = design「DOT 每秒 atk×0.3」）。
  */
 export const MAGMA_BURN_INTERVAL_TICKS = 6;
-export const MAGMA_BURN_TELEGRAPH_TICKS = 2;
+export const MAGMA_BURN_TELEGRAPH_TICKS = MIN_TELEGRAPH_TICKS; // Sprint 2 修复：167ms → 666ms 可读下界（P3 硬约束）
 export const MAGMA_BURN_RADIUS = Math.round(1.5 * TILE);
 export const MAGMA_BURN_DAMAGE_MULT = 0.15;
 
@@ -738,6 +738,13 @@ export const BARROW_AFFIX_BOOST_MULT = 3;
 export const BIOME_MOLTEN_CAVERN = 3;
 
 /**
+ * 熔窟入口最低等级门槛（Sprint 2 修复，防 L1 新手被熔岩巨像一击秒杀）。
+ * 进熔窟（biome3）需等级 ≥ 3；biome0/1/2 无门槛（golden 不变）。
+ * run-manager.enterInstance 读 levelBySeat 缓存（缺省 L1）做权威校验。
+ */
+export const MOLTEN_CAVERN_MIN_LEVEL = 3;
+
+/**
  * 熔窟「爆发主题掉落倾向」词缀权重放大倍数（design §1 变体 C：critChance 31–40 + atk 1–12 ↑，
  * attackSpeed 41–50 微升——爆发 build）。
  * - atk(1–12) / critChance(31–40) ×MOLTEN_AFFIX_BOOST_MULT（主 boost）；
@@ -777,28 +784,30 @@ export function affixWeightsForBiome(biomeId: number): readonly number[] | undef
 // ─────────────────────────────────────────────────────────────
 
 /** 套装 id（InventoryItem / EquippedItem.setId；0=无套装）。 */
-export const SET_IRONBONE = 1; // 铁骨套装（Ironbone）——石牢 biome1 普通/精英掉落
-export const SET_WRAITH = 2; // 鬼影套装（Wraith）——荒冢 biome2 普通/精英掉落
-export const SET_BLAZING_SUN = 3; // 烈阳套装（Blazing Sun）——熔窟 biome3（普通/精英 + BOSS 宝箱）
+export const SET_IRONBONE = 1; // 铁骨套装（Ironbone）——石牢 biome1 普通/精英掉落 + 石牢 BOSS 宝箱
+export const SET_WRAITH = 2; // 鬼影套装（Wraith）——荒冢 biome2 普通/精英掉落 + 荒冢 BOSS 宝箱
+export const SET_BLAZING_SUN = 3; // 烈阳套装（Blazing Sun）——熔窟 biome3 普通/精英掉落 + 熔窟 BOSS 宝箱
 
 /** 套装掉落来源：drop=普通/精英击杀；boss-chest=BOSS 宝箱。 */
 export type SetDropSource = "drop" | "boss-chest";
 
 /**
  * E32/E33：掉落后映射 setId（单一来源，C7）。
- * - 铁骨(1) = 石牢 biome1 普通/精英掉落；
- * - 鬼影(2) = 荒冢 biome2 普通/精英掉落；
- * - 烈阳(3) = 主题副本（石牢/荒冢/熔窟）BOSS 宝箱 + 熔窟普通/精英掉落（E33：烈阳主产地=熔窟，
+ * - 铁骨(1) = 石牢 biome1 普通/精英掉落 + 石牢 BOSS 宝箱；
+ * - 鬼影(2) = 荒冢 biome2 普通/精英掉落 + 荒冢 BOSS 宝箱；
+ * - 烈阳(3) = 熔窟 biome3 普通/精英掉落 + 熔窟 BOSS 宝箱（E33：烈阳主产地=熔窟，
  *   design §3 定位「熔窟 DPS 关底」+ §1 变体 C 爆发掉落倾向 critChance/atk）；
  * - biome0 / 未知 / 主世界 → 0（无套装）→ playtest golden 不变（D9）。
+ * 三主题闭环（Sprint 2 修复，design §7 Q3「对应主题 BOSS 出本主题套装」）：
+ *   石牢 BOSS 宝箱→铁骨、荒冢 BOSS 宝箱→鬼影、熔窟 BOSS 宝箱→烈阳。
  * 纯函数确定性（无随机 / 无副作用）。
  */
 export function setIdForDrop(biomeId: number, source: SetDropSource): number {
   if (source === "boss-chest") {
-    // E33：熔窟加入主题副本 BOSS 宝箱（烈阳）；石牢/荒冢保持 E32 现状（烈阳=主题副本 BOSS 宝箱）。
-    return biomeId === BIOME_STONE_PRISON || biomeId === BIOME_BARROW || biomeId === BIOME_MOLTEN_CAVERN
-      ? SET_BLAZING_SUN
-      : 0;
+    if (biomeId === BIOME_STONE_PRISON) return SET_IRONBONE;
+    if (biomeId === BIOME_BARROW) return SET_WRAITH;
+    if (biomeId === BIOME_MOLTEN_CAVERN) return SET_BLAZING_SUN;
+    return 0;
   }
   if (biomeId === BIOME_STONE_PRISON) return SET_IRONBONE;
   if (biomeId === BIOME_BARROW) return SET_WRAITH;

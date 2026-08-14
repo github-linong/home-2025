@@ -3,7 +3,7 @@
  * ===========================================================================
  * 覆盖：
  *   - setIdForDrop：套装只在特定来源掉（铁骨=石牢 biome1、鬼影=荒冢 biome2、
- *     烈阳=主题副本 BOSS 宝箱；biome0/未知/主世界 → 0 无套装 → playtest golden 不变）；
+ *     烈阳=熔窟 biome3；对应主题 BOSS 宝箱出本主题套装；biome0/未知/主世界 → 0 → golden 不变）；
  *   - computeEquipStats 套装加成：2 件/3 件阈值、累计（3 件 = 2 件 + 3 件）、
  *     不同套装、单件无加成、不同套装混搭无加成；
  *   - 六类 affix 映射正确（atk/maxHp/reduction/critChance/attackSpeed/moveSpeed）。
@@ -43,15 +43,15 @@ function eq(items: Array<{ slot: Slot; setId?: number }>): EquippedSlots {
 // ① setIdForDrop：套装掉落来源（biome / BOSS 宝箱）
 // ─────────────────────────────────────────────────────────────
 
-test("setIdForDrop：铁骨=石牢 biome1，鬼影=荒冢 biome2，烈阳=主题 BOSS 宝箱 + 熔窟 biome3", () => {
+test("setIdForDrop：三主题闭环（铁骨=石牢、鬼影=荒冢、烈阳=熔窟；对应 BOSS 宝箱出本主题套装）", () => {
   // 普通/精英掉落（source="drop"）。
   assert.equal(setIdForDrop(BIOME_STONE_PRISON, "drop"), SET_IRONBONE, "石牢掉铁骨");
   assert.equal(setIdForDrop(BIOME_BARROW, "drop"), SET_WRAITH, "荒冢掉鬼影");
   assert.equal(setIdForDrop(BIOME_MOLTEN_CAVERN, "drop"), SET_BLAZING_SUN, "熔窟普通/精英掉烈阳（E33 主产地）");
   assert.equal(setIdForDrop(BIOME_DEFAULT, "drop"), 0, "普通副本不掉套装（golden 不变）");
-  // BOSS 宝箱（source="boss-chest"）：主题副本掉烈阳，biome0 不掉。
-  assert.equal(setIdForDrop(BIOME_STONE_PRISON, "boss-chest"), SET_BLAZING_SUN, "石牢 BOSS 宝箱掉烈阳");
-  assert.equal(setIdForDrop(BIOME_BARROW, "boss-chest"), SET_BLAZING_SUN, "荒冢 BOSS 宝箱掉烈阳");
+  // BOSS 宝箱（source="boss-chest"）：三主题闭环——对应主题 BOSS 出本主题套装；biome0 不掉。
+  assert.equal(setIdForDrop(BIOME_STONE_PRISON, "boss-chest"), SET_IRONBONE, "石牢 BOSS 宝箱掉铁骨（三主题闭环）");
+  assert.equal(setIdForDrop(BIOME_BARROW, "boss-chest"), SET_WRAITH, "荒冢 BOSS 宝箱掉鬼影（三主题闭环）");
   assert.equal(setIdForDrop(BIOME_MOLTEN_CAVERN, "boss-chest"), SET_BLAZING_SUN, "熔窟 BOSS 宝箱掉烈阳（E33）");
   assert.equal(setIdForDrop(BIOME_DEFAULT, "boss-chest"), 0, "普通副本 BOSS 宝箱不掉套装（golden 不变）");
   // 未知 biome / 越界 → 0。

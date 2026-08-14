@@ -35,7 +35,7 @@ import {
   applyDisassembleToCharacter, // E22：分解落库 + 世界镜像同步（队列内执行）
 } from "./run-manager.ts";
 import { RoomPhase } from "../sim-core/src/types.ts";
-import { INVENTORY_CAP, xpForLevel, ENCHANT_STONE_ITEM_ID, MAX_ENCHANT_LEVEL, ENCHANT_COST, POTION_CD_TICKS } from "../sim-core/src/constants.ts"; // C7 单一来源（背包上限 / 升级经验需求 / E19 强化常量 / E21 药水 CD）
+import { INVENTORY_CAP, xpForLevel, ENCHANT_STONE_ITEM_ID, MAX_ENCHANT_LEVEL, ENCHANT_COST, POTION_CD_TICKS, MOLTEN_CAVERN_MIN_LEVEL } from "../sim-core/src/constants.ts"; // C7 单一来源（背包上限 / 升级经验需求 / E19 强化常量 / E21 药水 CD / C 熔窟等级门槛）
 import { itemProto, type EquippedSlots } from "../sim-core/src/affixes.ts"; // E7：slot 推导 / 装备槽
 import { encodeSnapshot } from "./protocol-binary.ts";
 import { generateId } from "./ids.ts";
@@ -598,7 +598,10 @@ export function dispatch(
       // E13：进入或加入（多人同本 —— 同入口 waiting 窗口内加入同一实例）。
       const res = enterInstance(entranceId, [{ seatId: ctx.seatId, userId: ctx.userId }]);
       if (!res.ok) {
-        return { reply: err(requestId, res.reason ?? "ENTER_FAILED", "enter instance rejected") };
+        const message = res.reason === "LEVEL_TOO_LOW"
+          ? `molten cavern requires level ${res.requiredLevel ?? MOLTEN_CAVERN_MIN_LEVEL}`
+          : "enter instance rejected";
+        return { reply: err(requestId, res.reason ?? "ENTER_FAILED", message) };
       }
       const instRoom = getInstanceRoom(res.instanceRoomId!);
       const member = instRoom?.members.get(ctx.userId);

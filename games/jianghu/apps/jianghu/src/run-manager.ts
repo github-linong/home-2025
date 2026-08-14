@@ -32,6 +32,7 @@ import {
   BIOME_STONE_PRISON, // E28：石牢副本 biome（石牢入口）
   BIOME_BARROW, // E31：荒冢副本 biome（荒冢入口）
   BIOME_MOLTEN_CAVERN, // E33：熔窟副本 biome（熔窟入口）
+  MOLTEN_CAVERN_MIN_LEVEL, // C（Sprint 2 修复）：熔窟等级门槛（防新手被秒杀）
   setIdForDrop, // E32：掉落后映射套装 id（按 biome/来源，C7 单一来源）
 } from "../sim-core/src/constants.ts"; // C7 单一来源
 import type { SpawnZone } from "../sim-core/src/spawning.ts";
@@ -576,6 +577,25 @@ function biomeIdForEntrance(entranceId: number): number {
   return BIOME_DEFAULT;
 }
 
+/**
+ * C（Sprint 2 修复）：熔窟等级门槛（防 L1 新手被熔岩巨像一击秒杀）。
+ * 进熔窟（biome3）需等级 ≥ MOLTEN_CAVERN_MIN_LEVEL；biome0/1/2 无门槛（golden 不变）。
+ * 读 levelBySeat 缓存（与进本 addPlayer 播种同源；缺省 L1）做权威校验——同一玩家进入
+ * 与加入 waiting 实例都必须通过本闸门。
+ */
+function checkBiomeLevelGate(
+  biomeId: number,
+  members: readonly InstanceMember[],
+): { ok: true } | { ok: false; requiredLevel: number } {
+  if (biomeId !== BIOME_MOLTEN_CAVERN) return { ok: true };
+  for (const m of members) {
+    if ((levelBySeat.get(m.seatId) ?? 1) < MOLTEN_CAVERN_MIN_LEVEL) {
+      return { ok: false, requiredLevel: MOLTEN_CAVERN_MIN_LEVEL };
+    }
+  }
+  return { ok: true };
+}
+
 export interface EnterInstanceOpts {
   readonly biomeId?: number;
   /** 副本寿命（ms），缺省 DUNGEON_EXPIRE_MS=30min（C-Dgn-4）。测试可注入短寿命。 */
@@ -605,7 +625,7 @@ export function enterInstance(
   entranceId: number,
   members: readonly InstanceMember[],
   opts: EnterInstanceOpts = {},
-): { ok: boolean; reason?: string; instanceRoomId?: string; joined?: boolean } {
+): { ok: boolean; reason?: string; requiredLevel?: number; instanceRoomId?: string; joined?: boolean } {
   const resident = runs.get(RESIDENT_ROOM_ID);
   if (!resident) return { ok: false, reason: "RESIDENT_NOT_RUNNING" };
 
@@ -624,6 +644,9 @@ export function enterInstance(
     if (waiting.members.some((x) => x.seatId === m.seatId || x.userId === m.userId)) {
       return { ok: false, reason: "ALREADY_MEMBER", instanceRoomId: waiting.instanceRoomId };
     }
+    // C（Sprint 2 修复）：加入熔窟 waiting 实例同样受等级门槛（低等级成员不得混入关底本）。
+    const gate = checkBiomeLevelGate(waiting.biomeId, [m]);
+    if (!gate.ok) return { ok: false, reason: "LEVEL_TOO_LOW", requiredLevel: gate.requiredLevel };
     // 追加成员：waiting 列表 + room.members（编排层显式操作；外部 joinInstance 仍被 locked 拒，C-Dgn-2）。
     waiting.members.push(m);
     addInstanceMember(waiting.instanceRoomId, m.userId);
@@ -640,6 +663,11 @@ export function enterInstance(
   for (const meta of instances.values()) {
     if (meta.entranceId === entranceId) return { ok: false, reason: "INSTANCE_LOCKED" };
   }
+  // E28：biome 由入口映射推导（entrance 2=石牢）；显式 opts.biomeId 优先（测试注入）。
+  const biomeId = opts.biomeId ?? biomeIdForEntrance(entranceId);
+  // 2a2. C（Sprint 2 修复）：熔窟等级门槛（先于冷却校验，避免被拒进本误消耗入口冷却）。
+  const gate = checkBiomeLevelGate(biomeId, members);
+  if (!gate.ok) return { ok: false, reason: "LEVEL_TOO_LOW", requiredLevel: gate.requiredLevel };
   // 2b. 入口冷却（C-Dgn-4：10s 防刷本；服务端权威闸门）。用 RESIDENT world tick（与 E13 窗口
   //     同源，测试可确定性推进）；join 路径不走本闸门（E13：加入 waiting 不受上次冷却影响）。
   if (!resident.world.tryEnterEntrance(resident.world.tick)) {
@@ -653,8 +681,6 @@ export function enterInstance(
   const serverTick = resident.handle.getTick();
   const partyTag = members[0].userId;
   const seed = computeInstanceSeed(serverTick, entranceId, partyTag).toString();
-  // E28：biome 由入口映射推导（entrance 2=石牢）；显式 opts.biomeId 优先（测试注入）。
-  const biomeId = opts.biomeId ?? biomeIdForEntrance(entranceId);
 
   // 2d. 确定性布局 + 副本规格（BOSS 置最深层，C-Dgn-3；刷怪密度 ×1.2，DUNGEON_SPAWN_DENSITY）。
   const spec = buildDungeonSpec(seed, biomeId);
@@ -1100,7 +1126,7 @@ export async function applyChestOpenToInventory(
   stones: number,
 ): Promise<void> {
   const { snapshot, seatId } = await cs.loadOrCreate(userId);
-  // E32：BOSS 宝箱 → 烈阳套装 id（主题副本石牢/荒冢；biome0 → 0 无套装，golden 不变）。
+  // E32：BOSS 宝箱 → 按主题闭环（石牢→铁骨/荒冢→鬼影/熔窟→烈阳；biome0 → 0 无套装，golden 不变）。
   const setId = setIdForDrop(world.biomeId, "boss-chest");
   let inventory = snapshot.inventory;
   const overflows: InventoryItem[] = [];

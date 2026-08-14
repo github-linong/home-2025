@@ -345,7 +345,7 @@ test("⑬ 熔岩巨像数值：HP×1.3=390 / ATK×1.3=104 / 环形喷发 shape=0
   assert.equal(variant.aoeDamageMult, 1.5, "环形喷发伤害 ×1.5");
   assert.ok(variant.burnAoe, "灼烧地面已登记（DOT 降级版）");
   assert.equal(variant.burnAoe!.intervalTicks, MAGMA_BURN_INTERVAL_TICKS, "灼烧间隔=6 tick（高频）");
-  assert.equal(variant.burnAoe!.telegraphTicks, MAGMA_BURN_TELEGRAPH_TICKS, "灼烧前摇=2 tick（短）");
+  assert.equal(variant.burnAoe!.telegraphTicks, MAGMA_BURN_TELEGRAPH_TICKS, "灼烧前摇=8 tick（可读下界 666ms）");
   assert.equal(variant.burnAoe!.radius, MAGMA_BURN_RADIUS, "灼烧半径=72px");
   assert.equal(variant.burnAoe!.damageMult, MAGMA_BURN_DAMAGE_MULT, "灼烧伤害 ×0.15（低伤）");
   assert.equal(variant.burnAoe!.shape, 1, "灼烧 shape=1 AOE 填充");
@@ -410,9 +410,9 @@ test("⑮ 熔岩巨像灼烧地面：高频短前摇 telegraph 命中玩家火�
   assert.equal(ring.telegraph!.radius, Math.round(2 * TILE), "环形喷发 radius=96px");
   assert.ok(burn, "phase2 战斗态应生成灼烧 telegraph（shape=1 AOE 填充）");
   assert.equal(burn.telegraph!.radius, MAGMA_BURN_RADIUS, "灼烧半径=72px");
-  assert.equal(burn.telegraph!.applyTick, MAGMA_BURN_TELEGRAPH_TICKS, "灼烧前摇=2 tick（applyTick=t+2）");
+  assert.equal(burn.telegraph!.applyTick, MAGMA_BURN_TELEGRAPH_TICKS, "灼烧前摇=8 tick（applyTick=t+8）");
 
-  // 推进 MAGMA_BURN_TELEGRAPH_TICKS 落刀（t=2 命中圈内玩家 → 火伤）。
+  // 推进 MAGMA_BURN_TELEGRAPH_TICKS 落刀（t=8 命中圈内玩家 → 火伤）。
   for (let i = 0; i < MAGMA_BURN_TELEGRAPH_TICKS; i++) world.step();
   const p = world.actors().find((a) => a.ownerId === 0)!;
   const atk = Math.round(ENEMY_BASE_ATK * HP_MULT.boss * 1.3); // 104
@@ -444,18 +444,19 @@ test("⑯ 熔岩巨像灼烧高频复现：间隔 6 tick 反复生成灼烧 tele
 
   // 推进 3 个灼烧间隔（18 tick）：应至少生成 3 次灼烧 telegraph（t=0/6/12）。
   for (let i = 0; i < MAGMA_BURN_INTERVAL_TICKS * 3; i++) world.step();
-  // 每次灼烧 telegraph（短前摇 2 tick）落刀造成火伤；玩家全程站圈内持续掉血。
+  // 每次灼烧 telegraph（前摇 8 tick 可读）落刀造成火伤；玩家全程站圈内持续掉血。
   const p = world.actors().find((a) => a.ownerId === 0)!;
   const atk = Math.round(ENEMY_BASE_ATK * HP_MULT.boss * 1.3);
   const perHit = Math.round(atk * MAGMA_BURN_DAMAGE_MULT);
-  // t=0/6/12 生成灼烧，t=2/8/14 落刀 → 3 次火伤；主技能环形（applyTick=12）在 t=12 也落刀（半径 96 覆盖 40）。
+  // t=0/6/12 生成灼烧，t=8/14 落刀 → 2 次火伤（第 3 记 applyTick=20 落在 18 tick 窗口外）；
+  // 主技能环形（applyTick=12）在 t=12 也落刀一次（半径 96 覆盖 40）。
   const ringHits = 1; // 主技能环形在 t=12 落刀一次
   const ringDmg = Math.round(atk * 1.5);
-  const burnHits = 3;
+  const burnHits = 2;
   assert.equal(
     p.hp,
     100000 - burnHits * perHit - ringHits * ringDmg,
-    `3 次灼烧(${perHit}) + 1 次环形(${ringDmg}) 持续掉血`,
+    `2 次灼烧(${perHit}) + 1 次环形(${ringDmg}) 持续掉血`,
   );
 });
 
