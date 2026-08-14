@@ -11,6 +11,7 @@
 > E26 新增（纯客户端 · 小地图增强）：右上角 minimap 按 kind 区分**形状/颜色** —— **玩家金点 / 队友暖橙点 / 敌人小红点 / BOSS 大红菱形（呼吸）/ 宝箱金方块（脉动）/ 入口紫色漩涡 / 地面掉落按稀有度 白·蓝·金·暗金 小点**（副本内打完 BOSS 找宝箱、找入口出本一眼可见）；minimap 盒改为世界 40×30 格**等比映射**（152×114 = 1920×1440 = 4:3，格子在图上为正方形，原 150×112 略扁已修正）；副本 world 同主世界 40×30 → 同一比例。服务端零改动。
 > E27 新增（纯客户端 · 新手引导）：7 步逐动词引导（**点击移动 → 点击普攻 → 走近拾取 → I 背包穿装 → Q 喝药 → 数字键 1 放烈斩 → F 进/出副本**），**完成条件即「检测已会」**（移动/普攻/拾取/穿装/喝药/技能/进本任一动作做到即推进）；`localStorage`（`jh.onboarding.seenSteps`）记忆 + 老玩家（有穿装 / 等级>1 / 曾进本）整段跳过仅留 playhint；游客 Step3/4 自动跳过 + 一次性「登录可保存」提示；`?debug=1` 整体静默（E2E 不干扰）。服务端零改动。
 > E29 新增（纯客户端 · 音频 P0 补全）：按 `art/audio-direction.md` P0 落地 —— **三总线结构**（`sfxBus 0.6` / `musicBus 0.3` / `ambienceBus 0.14`，统一挂 master 总闸）+ **7 条新音效**：`telegraph`（1s sawtooth 上行 + tremolo 加速脉冲，挂预警出现）、`ambient_wind`（环境风噪循环，探索态常驻）、`chest_open`（E20 宝箱开启专属音）、`enchant_success`（E19 强化成功）、`disassemble`（E22 分解）、`portal_hum`（入口漩涡嗡鸣循环，近距离开关）、`footstep`（移动脚步，250ms 节流）。循环音走 `LOOPS` 注册表（随游戏状态/距离启停）；所有合成沿用 WebAudio 原语，零外部资源；`window.__game.sfx.sounds` 暴露全量音效名（E2E 断言）。服务端零改动。
+> E30 新增（纯客户端 · 美术 P0 补强）：按 `art/asset-audit.md` P0 清单落地（纯 `draw*` 改动，零资产）——**①精英蓝怪化**（`drawShadowAssassin` 暗紫 → 钢蓝 `#5F8FB0` tint + 常驻青环 `#5FD0E0` + 王冠图标）**②BOSS 重做**（`drawTroll` 体量 52→92px 多部件：巨块身躯+弯曲双角+双肩甲+双巨拳+脊柱骨刺+下肢+妖纹符文；`drawBossAura` 常驻 RIFT 紫 `#7B5CC4`+青 `#3FB6B0` 漩涡/裂痕/粒子；`drawBossIcon` 头顶妖纹独眼图标；阶段色后置 P2）**③阵营色 P1-P4**（`factionColor(ownerId)` 哈希 → `#4CB5F5/#9B7BE8/#E86FB0/#6FD68A`，敌人统一敌对红；落地 描边外圈/名牌/血条底 三处）**④telegraph 三重编码**（形状图标 ⚠/十字/扇形箭头 + 45° 白色斜纹 + 形状多样化 圆环/AOE/锥形/线性，色盲友好）。`window.__game.rendered` 增 `elite_blue`/`boss_aura` 渲染标志（E2E 加分断言）。服务端零改动。
 
 ---
 
@@ -87,12 +88,13 @@ http://localhost:8080/index.html
 - **E2E 钩子**：`window.__game.sfx.sounds` 暴露全量音效名（18 旧 + 5 新一次性 + 2 循环 = 25 条），新增 7 条名称存在即可。
 
 **C3 程序化武侠剪影（零外部资源，Canvas 路径绘制）**：
-- **玩家「斗笠侠客」**：圆帽（帽檐椭圆 + 帽顶两层）+ 披风 + 剑轮廓（剑身 + 护手），按 `dir` 旋转朝向；本地更亮 + 描边高光；倒地灰色平躺；IFRAME 半透闪烁；复活无敌叠加金色圆环。
-- **普通怪**（协议未下发 enemyTypeId，用实体 id 稳定哈希确定性区分）：**山贼**（红头巾 + 粗布衣 + 短刀）/ **野兽**（拉长躯干 + 吻 + 双耳 + 尾 + 四腿 + 凶光眼）。
-- **精英「暗影刺客」**：尖兜帽 + 披风 + 匕首，暗紫调 + 幽青眼。
-- **BOSS「巨魔」**：巨块身躯 + 弯曲双角 + 金红眼 + 两侧巨拳，深色调。
+- **玩家「斗笠侠客」**：圆帽（帽檐椭圆 + 帽顶两层）+ 披风 + 剑轮廓（剑身 + 护手），按 `dir` 旋转朝向；本地更亮 + 描边高光；倒地灰色平躺；IFRAME 半透闪烁；复活无敌叠加金色圆环。**E30 阵营描边外圈**（2px，本地/队友按 ownerId 哈希落到 4 色，本地金圈保留最外层）。
+- **普通怪**（协议未下发 enemyTypeId，用实体 id 稳定哈希确定性区分）：**山贼**（红头巾 + 粗布衣 + 短刀）/ **野兽**（拉长躯干 + 吻 + 双耳 + 尾 + 四腿 + 凶光眼）/ **野猪**（深棕椭圆 + 吻 + 上弯獠牙 + 短腿）。
+- **精英「暗影刺客」（E30 蓝怪化）**：尖兜帽 + 披风 + 匕首；主色**钢蓝 `#5F8FB0`**（高光 `#8FB8D8`）+ 常驻青环 `#5FD0E0` + 头顶**王冠图标**（白黑双描边）——三重编码：色相 + 上下文 + 形状，不靠单一颜色。
+- **BOSS「巨魔」（E30 重做）**：**≥90px 多部件**（巨块身躯 + 弯曲双角 + 双肩甲 + 双巨拳 + 脊柱骨刺 + 下肢 + 妖纹符文）+ 常驻**RIFT 紫青异象 aura**（脚下漩涡/地面裂痕/粒子，恒定不脉动）+ 头顶**妖纹独眼图标**（白黑双描边）；阶段色后置 P2。
 - **掉落物品图标**（按 `itemId % 3` 槽位，镜像服务端 `itemProto`）：武器（剑剪影）/ 护甲（盾）/ 饰品（戒指/宝石），稀有度色描边。
 - **入口「裂隙」**：旋转涡流 + 径向外发光增强（呼吸脉动）。
+- **telegraph（E30 三重编码）**：DANGER 红 `#E5484D` 区叠加 **45° 白色斜纹** + 中央**形状图标**（圆环=⚠ / AOE=同心三角 / 锥形=扇形箭头 / 线性=十字，白黑双描边）+ **形状多样化**（圆环 / AOE 填充 / 锥形 / 线性陷阱格），色盲友好（不只靠颜色，靠斜纹 + 形状）。
 
 **E17 客户端多人渲染（纯客户端；服务端 E13 已支持多人同本，本版本零服务端改动）**：
 - **队友识别**：`kind===0 && id!==localEntityId` → 队友（非本地玩家；主世界/副本通用——任一房间快照出现其他玩家即按队友渲染）。
@@ -198,7 +200,7 @@ GAME.predicted / localRenderPos / renderTick     // C2 本地预测渲染位置 
 GAME.lastHits / lastKills / lastSkillAt          // C2 打击感：最近伤害飘字 / 击杀 / 技能时刻（C3 lastHits 含 entityId）
 GAME.lastSkillFx                                  // E23：最近一次技能光效 {slot, type}（slash/beam/quake/crush；E2E 断言钩子）
 GAME.inventory {items,cap,loaded} / GAME.equipped / pickupToasts / nearLootId / pickupHint / invOpen
-GAME.cam {cx,cy,scale,w,h} / GAME.playerScreenPos / GAME.floatTexts[] / GAME.rendered {enemies,lootSlots,entrance,player,party}   // C3 相机+飘字+贴图标志（E17：party=本帧渲染队友数）
+GAME.cam {cx,cy,scale,w,h} / GAME.playerScreenPos / GAME.floatTexts[] / GAME.rendered {enemies,lootSlots,entrance,player,party,chests,elite_blue,boss_aura}   // C3 相机+飘字+贴图标志（E17：party=本帧渲染队友数；E30：elite_blue/boss_aura=本帧渲染精英蓝怪/BOSS aura 数）
 GAME.minimapMarkers {boss, chest, entrance, loot}   // E26：小地图标记计数（drawMinimap 每帧刷新；副本内 BOSS/入口存在）
 GAME.onboarding {enabled, step, seen, graduated, veteran, dismissed}   // E27：新手引导状态（debug 下 enabled=false/step=0；E2E 断言钩子）
 GAME.partyMembers    // E17：当前快照队友列表 [{id,ownerId,kind,hp,maxHp,pos,status}]（kind=PLAYER 且 id!==localEntityId）
@@ -211,7 +213,7 @@ GAME.toggleInventory() / GAME.openInventory() / GAME.closeInventory()
 
 C2 E2E 断言约定：`lastHits` 记录最近 30 条 `{id, entityId, dmg, kind, t}`（hp 下降即记录；C3 entityId 锚定飘字跟随）；`lastKills` 记录敌人消失 `{x,y,isBoss,t}`；`pickupToasts` 记录最近拾取文案；`inventory.loaded` 收到过 `character.inventory`；`nearLootId` 非空表示拾取提示已显示。
 
-C3 E2E 断言约定：`cam` 每帧更新 `{cx,cy,scale,w,h}`（相机锁定跟随 + clamp）；`playerScreenPos` 每帧更新（断言移动中恒在屏内）；`floatTexts` 每帧更新为 `{entityId, text, screen}`（断言锚定实体且屏幕位置随实体）；`rendered` 每帧重置为 `{enemies:[{id,variant,tier}], lootSlots:[slot], entrance:false, player:count, party:count}`（断言玩家/敌人剪影/掉落图标/入口增强渲染；E17 增 `party`=本帧渲染队友数）。
+C3 E2E 断言约定：`cam` 每帧更新 `{cx,cy,scale,w,h}`（相机锁定跟随 + clamp）；`playerScreenPos` 每帧更新（断言移动中恒在屏内）；`floatTexts` 每帧更新为 `{entityId, text, screen}`（断言锚定实体且屏幕位置随实体）；`rendered` 每帧重置为 `{enemies:[{id,variant,tier}], lootSlots:[slot], entrance:false, player:count, party:count, chests:count, elite_blue:count, boss_aura:count}`（断言玩家/敌人剪影/掉落图标/入口增强渲染；E17 增 `party`=本帧渲染队友数；E30 增 `elite_blue`=本帧精英蓝怪渲染数 / `boss_aura`=本帧 BOSS aura 渲染数）。
 
 E17 E2E 断言约定（加分）：`partyMembers` = 当前快照队友列表（kind=PLAYER 且 id!==localEntityId，含 ownerId）；双页面真连 → P1 先进本（E13 waiting）→ P2 5s 窗口内加入同一 instance → 断言同 roomId、副本快照含 ≥2 个 kind=0、`partyMembers≥1`、`rendered.party≥1`（名牌为 Canvas 绘制无 DOM，用渲染标志代）。
 
@@ -237,7 +239,7 @@ E17 E2E 断言约定（加分）：`partyMembers` = 当前快照队友列表（k
 ## 6. 验证（真连真实服务端）
 
 - **服务端回归**：`cd apps/jianghu && npm test` → **全绿（135）**（C2 未动服务端代码）。
-- **C3 E2E**（`verify-e2e.mjs`，Puppeteer 真连真实 jianghu 服务端，puppeteer@24 + Chrome for Testing）：自管进程（起 jianghu 服务 + 静态服务 + Puppeteer）→ 断言链：连接→`session.ready`→`room.join`→收二进制快照→**E26 minimap 标记钩子（minimapMarkers 形状）**→**移动预测（按键 60ms 内渲染位即变 + 松键收敛）**→**掉落可见性（LOOT_GROUND + 拾取提示）→ 拾取→`character.inventory` 入库→背包面板**→鼠标点击移动（M1，屏内 tile 守卫）→鼠标点敌人 + 普攻（M2，屏内敌人守卫）→**C3 客户端体验大修**：**C3-3 飘字跟随**（lastHits.entityId + floatTexts.screen 锚定实体）→**C3-1 相机锁定**（移动中 playerScreenPos 在屏内 + cam clamp）→**C3-2 点击定位**（点 tile 中心 → moveTo 世界坐标误差 < 20px）→**C3-4 禁平移**（拖拽 cam 不动 + 不触发点击）→**C3-5 技能名 HUD**（烈斩/剑气/震地/破军）→**C3-6 程序化贴图**（rendered.player/enemies/lootSlots/entrance）→SKILL1→**E23 技能光效差异化**（lastSkillFx 钩子：1-4 按下即播 → 槽位对应 slash/beam/quake/crush）→**真实输入 walk+F 进副本**→副本内 SKILL1 命中敌人（HP 下降 + **伤害飘字 lastHits**）→**E26 副本内 BOSS/入口 minimap 标记存在（minimapMarkers.boss/entrance ≥1）**→出本→CDP 模拟断网→自动重连（`session.reconnect`）→**E17 双人同本（P1 进本 + P2 集合窗口加入 → 同 roomId / partyMembers / rendered.party）**；截图存 `verify/01-overworld.png` / `02-dungeon.png` / `03-after-exit.png` / `04-loot-pickup.png` / `05-inventory.png` / `06-equip.png` / `07-click-move.png` / `08-melee.png` / `09-camera-lock.png` / `10-click-accuracy.png` / `11-sprites.png` / `12-party-dungeon.png`。零 pageerror / GAME.errors / console.error。退出码 0=全绿（**44 项断言**：原 42 项 + E27 新手引导 2 项 —— 断言 `window.__game.onboarding` 钩子存在（`enabled===false`）且 `?debug=1` 下 `step` 恒为 0 不推进）。
+- **C3 E2E**（`verify-e2e.mjs`，Puppeteer 真连真实 jianghu 服务端，puppeteer@24 + Chrome for Testing）：自管进程（起 jianghu 服务 + 静态服务 + Puppeteer）→ 断言链：连接→`session.ready`→`room.join`→收二进制快照→**E26 minimap 标记钩子（minimapMarkers 形状）**→**移动预测（按键 60ms 内渲染位即变 + 松键收敛）**→**掉落可见性（LOOT_GROUND + 拾取提示）→ 拾取→`character.inventory` 入库→背包面板**→鼠标点击移动（M1，屏内 tile 守卫）→鼠标点敌人 + 普攻（M2，屏内敌人守卫）→**C3 客户端体验大修**：**C3-3 飘字跟随**（lastHits.entityId + floatTexts.screen 锚定实体）→**C3-1 相机锁定**（移动中 playerScreenPos 在屏内 + cam clamp）→**C3-2 点击定位**（点 tile 中心 → moveTo 世界坐标误差 < 20px）→**C3-4 禁平移**（拖拽 cam 不动 + 不触发点击）→**C3-5 技能名 HUD**（烈斩/剑气/震地/破军）→**C3-6 程序化贴图**（rendered.player/enemies/lootSlots/entrance）→SKILL1→**E23 技能光效差异化**（lastSkillFx 钩子：1-4 按下即播 → 槽位对应 slash/beam/quake/crush）→**真实输入 walk+F 进副本**→**E30 美术 P0 加分断言（BOSS 常驻 aura 渲染 boss_aura / 精英蓝怪化渲染 elite_blue，walk 至安全可视距离 400px，布局随机时信息项容忍）**→副本内 SKILL1 命中敌人（HP 下降 + **伤害飘字 lastHits**）→**E26 副本内 BOSS/入口 minimap 标记存在（minimapMarkers.boss/entrance ≥1）**→出本→CDP 模拟断网→自动重连（`session.reconnect`）→**E17 双人同本（P1 进本 + P2 集合窗口加入 → 同 roomId / partyMembers / rendered.party）**；截图存 `verify/01-overworld.png` / `02-dungeon.png` / `03-after-exit.png` / `04-loot-pickup.png` / `05-inventory.png` / `06-equip.png` / `07-click-move.png` / `08-melee.png` / `09-camera-lock.png` / `10-click-accuracy.png` / `11-sprites.png` / `12-party-dungeon.png`。零 pageerror / GAME.errors / console.error。退出码 0=全绿（**46 项断言**：原 42 项 + E27 新手引导 2 项 + E30 美术 P0 2 项 —— E27 断言 `window.__game.onboarding` 钩子存在（`enabled===false`）且 `?debug=1` 下 `step` 恒为 0 不推进；E30 断言 `window.__game.rendered.elite_blue/boss_aura` 渲染标志）。
 
   ```bash
   cd games/jianghu/apps/web-client

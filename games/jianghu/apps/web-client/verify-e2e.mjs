@@ -851,7 +851,7 @@ const main = async () => {
     // ── E10 死亡体验探针（信息项，不阻塞回归）：故意被精英/BOSS 击杀 → 断言倒地 → 复活回血 ──
     // 时序受副本随机布局影响（BOSS/精英位置、出生点），故为信息项：未触发仅记录 detail，不判 FAIL。
     // 位置放在 F1 之前：探针结束保证玩家已复活（倒地 10s 服务端确定性复活），F1 出本不受影响。
-    let deathInfo = { downed: false, revived: false, note: "" };
+    let deathInfo = { downed: false, revived: false, note: "", e30: null };
     if (okEnter) {
       try {
         const aggro = await page.evaluate(() => {
@@ -872,6 +872,8 @@ const main = async () => {
           const tExpr = `s.entities.find(e => e.id === ${aggro.id}) ? { x: s.entities.find(e => e.id === ${aggro.id}).pos.x, y: s.entities.find(e => e.id === ${aggro.id}).pos.y } : null`;
           const walkRes = await walkToward(page, tExpr, 40, 25); // 走进接触范围（≤48px）
           if (walkRes.ok) {
+            // E30 加分断言（借 D3 走进可视范围的时机读渲染标志；BOSS/精英在 ≤40px 必进 drawEnemy）
+            deathInfo.e30 = await page.evaluate(() => ({ boss_aura: window.__game.rendered.boss_aura || 0, elite_blue: window.__game.rendered.elite_blue || 0 }));
             // 站桩不格挡 → 被击杀（精英 atk24/12tick，约 2s 内死亡）→ 服务端置 DOWNED
             const downedSeen = await waitFor(page, "window.__game.downed === true", 15000, "e10 downed");
             deathInfo.downed = downedSeen;
@@ -900,6 +902,15 @@ const main = async () => {
           : `未触发（信息项，不阻塞）：${deathInfo.note}`);
     } else {
       record("D3 E10 死亡体验(倒地→复活, 信息项)", true, "SKIPPED（未进副本）");
+    }
+    // ── E30 美术 P0 加分断言（信息项）：BOSS 常驻 aura / 精英蓝怪化 渲染标志（借 D3 走进可视范围的时机读）──
+    // 时序受副本随机布局影响（BOSS/精英位置），故为信息项：仅记录 detail，不判 FAIL（与 D3 同口径）。
+    if (okEnter && deathInfo.e30) {
+      record("E30-1 BOSS 常驻异象 aura 渲染(boss_aura)", true, `boss_aura=${deathInfo.e30.boss_aura}（D3 探针时机，BOSS 在视口内则 ≥1）`);
+      record("E30-2 精英蓝怪化渲染(elite_blue)", true, `elite_blue=${deathInfo.e30.elite_blue}（D3 探针时机，精英在视口内则 ≥1）`);
+    } else {
+      record("E30-1 BOSS 常驻异象 aura 渲染(boss_aura)", true, "SKIPPED（D3 未进可视范围）");
+      record("E30-2 精英蓝怪化渲染(elite_blue)", true, "SKIPPED（D3 未进可视范围）");
     }
     // 探针后确保玩家存活（倒地 10s 服务端确定性复活；防御性等待，防 F1 在倒地态被禁用）。
     if (okEnter && deathInfo.downed) {

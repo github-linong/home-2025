@@ -451,6 +451,20 @@ const RARITY_NAMES = ['白', '蓝', '金', '暗金'];
 const SLOT_NAMES = { weapon: '武器', armor: '护甲', trinket: '饰品' };
 const KIND = { PLAYER: 0, ENEMY: 1, BOSS: 2, LOOT_GROUND: 3, TELEGRAPH: 4, ENTRANCE: 5, CHEST: 6 };
 
+// E30 美术 P0：阵营色（art/asset-audit.md P0-3）。玩家 P1-P4 按 ownerId 稳定哈希落到 4 色，
+// 敌人统一敌对红；落地在 描边外圈 / 名牌 / 血条底 三处（本地玩家金圈保留，不冲突）。
+const FACTION_COLORS = ['#4CB5F5', '#9B7BE8', '#E86FB0', '#6FD68A'];
+const FACTION_ENEMY = '#E5484D';
+function factionColor(ownerId) {
+  const n = (ownerId == null ? 0 : ownerId) >>> 0;
+  const h = ((n * 2654435761) >>> 0) ^ ((n * 40503) >>> 0);
+  return FACTION_COLORS[h % FACTION_COLORS.length];
+}
+function factionForEntity(e) {
+  if (e.kind === KIND.PLAYER) return factionColor(e.ownerId != null ? e.ownerId : (e.id || 0));
+  return FACTION_ENEMY;
+}
+
 // ============================================================================
 // E12：WebAudio 程序化武侠音效（零外部资源 / 零网络请求；单文件独立模块，不耦合既有逻辑）
 // ============================================================================
@@ -943,7 +957,7 @@ const GAME = window.__game = {
   downed: false, downedSinceTick: null, iframes: false,
   // C3：相机锁定 + 渲染标志（E2E 断言钩子）
   cam: { cx: 0, cy: 0, scale: 1, w: 0, h: 0 },
-  playerScreenPos: null, floatTexts: [], rendered: { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0, windup: 0 },
+  playerScreenPos: null, floatTexts: [], rendered: { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0, windup: 0, chests: 0, elite_blue: 0, boss_aura: 0 },
   // E26：小地图标记计数钩子（drawMinimap 每帧刷新 {boss, chest, entrance, loot}；E2E 断言钩子）
   minimapMarkers: { boss: 0, chest: 0, entrance: 0, loot: 0 },
   // E17：队友列表（当前快照中 kind=PLAYER 且 id!==localEntityId；含 ownerId/hp/pos/status，E2E 断言钩子）
@@ -2584,13 +2598,13 @@ function drawDownedOverlay() {
   ctx.restore();
 }
 
-function drawHpBar(x, y, w, hp, maxHp, alignBottom) {
+function drawHpBar(x, y, w, hp, maxHp, alignBottom, faction) {
   if (!maxHp) return;
   const h = 5;
   const bx = x - w / 2, by = alignBottom ? y - 12 : y - 30;
   ctx.fillStyle = 'rgba(0,0,0,0.65)';
   ctx.fillRect(bx - 1, by - 1, w + 2, h + 2);
-  ctx.fillStyle = '#3a0f12';
+  ctx.fillStyle = faction || '#3a0f12'; // E30：血条底 = 阵营色（本地/队友/敌人可区分）
   ctx.fillRect(bx, by, w, h);
   const f = Math.max(0, Math.min(1, hp / maxHp));
   ctx.fillStyle = f > 0.5 ? '#5fa85f' : (f > 0.25 ? '#f2a03c' : '#c8324a');
@@ -2601,6 +2615,7 @@ function drawPlayer(e, p) {
   const isLocal = e.id === localEntityId;
   const isTeammate = !isLocal; // E17：kind=PLAYER 且非本地 → 队友
   const size = isLocal ? 30 : 26;
+  const faction = factionForEntity(e); // E30：阵营色（本地/队友按 ownerId 哈希）
   const s = worldToScreen(p);
   if (s.x < -60 || s.y < -60 || s.x > view.w + 60 || s.y > view.h + 60) return;
 
@@ -2621,6 +2636,15 @@ function drawPlayer(e, p) {
   GAME.rendered.player++;
   if (isTeammate) GAME.rendered.party++; // E17 E2E 钩子：本帧渲染的队友数
   ctx.globalAlpha = 1;
+
+  // E30：阵营描边外圈（2px ink-outline；本地玩家金圈在最外层保留，二者不冲突）
+  if (!isDowned) {
+    ctx.strokeStyle = faction;
+    ctx.globalAlpha = 0.9;
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(0, 0, size / 2 + 3, 0, Math.PI * 2); ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
 
   // C2 受击闪白（150ms）——叠加在剪影上
   const flashUntil = hitFlashes.get(e.id);
@@ -2676,14 +2700,14 @@ function drawPlayer(e, p) {
     ctx.fillText('格挡中', s.x, s.y - size / 2 - 20);
   }
 
-  drawHpBar(s.x, s.y, isLocal ? 44 : 38, e.hp, e.maxHp, true);
+  drawHpBar(s.x, s.y, isLocal ? 44 : 38, e.hp, e.maxHp, true, faction);
 
   // E17：队友名牌（头顶；服务端未下发用户名 → ownerId=seatId 编号「侠客·N」；倒地变灰）。
-  //     本地玩家保持现状（金圈标识，不加名牌，简洁）。
+  //     本地玩家保持现状（金圈标识，不加名牌，简洁）。E30：边框与名字用阵营色（替代统一暖橙）。
   if (isTeammate) {
     drawNameplate(s.x, s.y - size - 8, teammateName(e), isDowned
       ? { bg: 'rgba(56,58,66,0.82)', border: '#7a7d84', color: '#9aa0a8' }
-      : { bg: 'rgba(20,16,26,0.78)', border: '#c97b3d', color: '#f2a03c' });
+      : { bg: 'rgba(20,16,26,0.78)', border: faction, color: faction });
   }
 }
 
@@ -2712,18 +2736,25 @@ function drawNameplate(x, y, text, opts) {
 }
 
 function drawEnemy(e, p) {
-  const s = worldToScreen(p);
-  if (s.x < -80 || s.y < -80 || s.x > view.w + 80 || s.y > view.h + 80) return;
   const isBoss = e.kind === KIND.BOSS;
   const isElite = e.tier === 1;
-  const size = isBoss ? 52 : (isElite ? 34 : 26);
+  const size = isBoss ? 92 : (isElite ? 34 : 26); // E30：BOSS 体量 52→92（≈普通怪 3.5×）
+  const margin = isBoss ? 140 : 80;
+  const s = worldToScreen(p);
+  if (s.x < -margin || s.y < -margin || s.x > view.w + margin || s.y > view.h + margin) return;
   const variant = enemyVariant(e); // C3：确定性变体（山贼/野兽/暗影刺客/巨魔）
+  const faction = factionForEntity(e); // E30：阵营色（敌人统一敌对红）
   GAME.rendered.enemies.push({ id: e.id, variant, tier: e.tier || 0 });
+  if (isElite) GAME.rendered.elite_blue++; // E30 E2E 钩子：精英蓝怪化渲染标志
+  if (isBoss) GAME.rendered.boss_aura++;   // E30 E2E 钩子：BOSS 常驻异象 aura 渲染标志
   // E18：敌人攻击前摇（服务端 EntityStatus.WINDUP 位驱动）→ 站立蓄力抬手表现。
   const winding = !!(e.status & STATUS_WINDUP);
 
   ctx.save();
   ctx.translate(s.x, s.y);
+
+  // E30：BOSS 常驻 RIFT 紫青异象 aura（脚下；恒定不脉动，与精英青环拉开层级）
+  if (isBoss) drawBossAura(size / 2);
 
   const ang = e.dir * Math.PI / 4;
   const facing = { x: Math.cos(ang), y: Math.sin(ang) };
@@ -2737,6 +2768,20 @@ function drawEnemy(e, p) {
   else if (variant === 'boar') drawBoar(size, facing);
   else drawBrigand(size, facing);
   ctx.restore();
+
+  // E30：阵营描边外圈（2px ink-outline，敌人统一敌对红）
+  ctx.strokeStyle = faction;
+  ctx.globalAlpha = 0.85;
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(0, 0, size / 2 + 3, 0, Math.PI * 2); ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // E30：精英常驻青环（蓝怪规范：钢蓝 tint + 青环 + 王冠图标；恒定不脉动）
+  if (isElite) {
+    ctx.strokeStyle = 'rgba(95,208,224,0.9)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(0, 0, size / 2 + 6, 0, Math.PI * 2); ctx.stroke();
+  }
 
   // E18 前摇警示：头亮红/黄（可读——「即将出手」）。亮圈置于头部（facing 局部坐标）脉动。
   if (winding) {
@@ -2755,7 +2800,7 @@ function drawEnemy(e, p) {
       ctx.globalAlpha = 0.16 + pulse * 0.30;
       ctx.strokeStyle = '#ff3b30';
       ctx.lineWidth = 2 + pulse * 2;
-      ctx.beginPath(); ctx.arc(0, 0, size * 1.5, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 0, size * 1.1, 0, Math.PI * 2); ctx.stroke();
       ctx.restore();
     }
   }
@@ -2782,14 +2827,22 @@ function drawEnemy(e, p) {
     ctx.lineWidth = 2.5;
     ctx.shadowColor = 'rgba(255,60,60,0.9)';
     ctx.shadowBlur = 10;
-    ctx.beginPath(); ctx.arc(0, 0, size / 2 + 7, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, size / 2 + 9, 0, Math.PI * 2); ctx.stroke();
     ctx.shadowBlur = 0;
   }
   ctx.restore();
 
-  drawHpBar(s.x, s.y, isBoss ? 72 : (isElite ? 48 : 38), e.hp, e.maxHp, true);
-  if (isBoss) { ctx.fillStyle = '#e5b25d'; ctx.font = '10px system-ui'; ctx.textAlign = 'center'; ctx.fillText('BOSS', s.x, s.y - 40); }
-  else if (isElite) { ctx.fillStyle = '#5fd0e0'; ctx.font = '9px system-ui'; ctx.textAlign = 'center'; ctx.fillText('精英', s.x, s.y - 26); }
+  drawHpBar(s.x, s.y, isBoss ? 84 : (isElite ? 48 : 38), e.hp, e.maxHp, true, faction);
+  // E30：精英王冠图标（白黑双描边，替代纯文字作形状层；文字保留作冗余）
+  if (isElite) {
+    drawEliteIcon(s.x, s.y - size - 12, 9);
+    ctx.fillStyle = '#5fd0e0'; ctx.font = '9px system-ui'; ctx.textAlign = 'center'; ctx.fillText('精英', s.x, s.y - size - 22);
+  }
+  // E30：BOSS 妖纹图标（白黑双描边，替代金色纯文字作形状层；文字保留作冗余）
+  else if (isBoss) {
+    drawBossIcon(s.x, s.y - size - 16, 13);
+    ctx.fillStyle = '#e5b25d'; ctx.font = '10px system-ui'; ctx.textAlign = 'center'; ctx.fillText('BOSS', s.x, s.y - size - 30);
+  }
 }
 
 // ============================================================================
@@ -2952,13 +3005,14 @@ function drawBoar(size, facing) {
   ctx.restore();
 }
 
-// 暗影刺客（精英）：尖兜帽 + 披风 + 匕首，暗紫调 + 幽青眼。
+// 暗影刺客（精英，E30 蓝怪化）：尖兜帽 + 披风 + 匕首；主色由暗紫改钢蓝 #5F8FB0 tint（高光 #8FB8D8），
+// 常驻青环 + 王冠图标由 drawEnemy 叠加（三重编码：钢蓝色相 + 青环上下文 + 图标形状）。
 function drawShadowAssassin(size, facing) {
   const R = size / 2;
   const a = Math.atan2(facing.y, facing.x);
   ctx.save();
   ctx.rotate(a);
-  const cloak = '#4a2a5e', cloakHi = '#7a4a9e';
+  const cloak = '#5F8FB0', cloakHi = '#8FB8D8';
   // 兜帽（尖顶）
   ctx.fillStyle = cloak;
   ctx.beginPath();
@@ -2983,7 +3037,7 @@ function drawShadowAssassin(size, facing) {
   ctx.closePath(); ctx.fill();
   ctx.strokeStyle = cloakHi; ctx.lineWidth = 1.4; ctx.stroke();
   // 匕首
-  ctx.strokeStyle = '#d9c8f2'; ctx.lineWidth = Math.max(2, R * 0.12);
+  ctx.strokeStyle = '#dce9ff'; ctx.lineWidth = Math.max(2, R * 0.12);
   ctx.beginPath(); ctx.moveTo(R * 0.25, 0); ctx.lineTo(R * 1.1, -R * 0.2); ctx.stroke();
   // 幽青眼
   ctx.fillStyle = '#5fd0e0';
@@ -2991,33 +3045,157 @@ function drawShadowAssassin(size, facing) {
   ctx.restore();
 }
 
-// 巨魔（BOSS）：巨块身躯 + 弯曲双角 + 金红眼 + 两侧巨拳，深色调。
+// 巨魔（BOSS，E30 重做）：多部件巨块身躯 + 弯曲双角 + 双肩甲 + 双巨拳 + 脊柱骨刺 + 下肢 + 妖纹符文；
+//   体量由 52px → ≥90px（drawEnemy 传入 size=92）；墨线 2px 轮廓 + 去饱和深棕主色。
+//   常驻 RIFT 紫青异象 aura 由 drawEnemy 调用 drawBossAura 叠加；妖纹图标由 drawEnemy 调用 drawBossIcon 叠加。
 function drawTroll(size) {
   const R = size / 2;
   ctx.save();
-  const pulse = 1 + 0.03 * Math.sin(performance.now() / 500);
-  ctx.scale(pulse, pulse);
-  const skin = '#4a2f28', dark = '#2c1b16', horn = '#c9a06a';
+  const skin = '#4a2f28', dark = '#2c1b16', horn = '#c9a06a', bone = '#d8c8a8';
+  // 下肢（粗壮双腿，支撑巨块）
+  ctx.fillStyle = dark;
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.5, R * 0.55); ctx.lineTo(-R * 0.58, R * 1.0); ctx.lineTo(-R * 0.3, R * 1.0); ctx.lineTo(-R * 0.28, R * 0.55);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(R * 0.28, R * 0.55); ctx.lineTo(R * 0.3, R * 1.0); ctx.lineTo(R * 0.58, R * 1.0); ctx.lineTo(R * 0.5, R * 0.55);
+  ctx.closePath(); ctx.fill();
+  // 巨块躯干（肩宽体壮，去饱和深棕）
   ctx.fillStyle = skin;
   ctx.beginPath();
-  ctx.moveTo(-R * 0.65, -R * 0.55);
-  ctx.quadraticCurveTo(0, -R * 0.85, R * 0.65, -R * 0.5);
-  ctx.lineTo(R * 0.75, R * 0.55);
-  ctx.quadraticCurveTo(0, R * 0.8, -R * 0.75, R * 0.55);
+  ctx.moveTo(-R * 0.75, -R * 0.5);
+  ctx.quadraticCurveTo(-R * 0.85, R * 0.2, -R * 0.55, R * 0.6);
+  ctx.lineTo(R * 0.55, R * 0.6);
+  ctx.quadraticCurveTo(R * 0.85, R * 0.2, R * 0.75, -R * 0.5);
+  ctx.quadraticCurveTo(0, -R * 0.9, -R * 0.75, -R * 0.5);
   ctx.closePath(); ctx.fill();
   ctx.strokeStyle = dark; ctx.lineWidth = 2; ctx.stroke();
-  // 双角
-  ctx.strokeStyle = horn; ctx.lineWidth = Math.max(4, R * 0.18);
-  ctx.beginPath();
-  ctx.moveTo(-R * 0.45, -R * 0.72); ctx.quadraticCurveTo(-R * 0.85, -R * 1.1, -R * 0.75, -R * 1.35); ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(R * 0.45, -R * 0.72); ctx.quadraticCurveTo(R * 0.85, -R * 1.1, R * 0.75, -R * 1.35); ctx.stroke();
-  // 眼睛
-  ctx.fillStyle = '#e5b25d';
-  ctx.beginPath(); ctx.arc(-R * 0.22, -R * 0.35, R * 0.1, 0, Math.PI * 2); ctx.arc(R * 0.22, -R * 0.35, R * 0.1, 0, Math.PI * 2); ctx.fill();
-  // 巨拳
+  // 双肩甲（两侧隆起的护甲块）
   ctx.fillStyle = dark;
-  ctx.beginPath(); ctx.arc(-R * 0.8, R * 0.3, R * 0.3, 0, Math.PI * 2); ctx.arc(R * 0.8, R * 0.3, R * 0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(-R * 0.72, -R * 0.25, R * 0.24, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(R * 0.72, -R * 0.25, R * 0.24, 0, Math.PI * 2); ctx.fill();
+  // 头（巨口 + 獠牙 + 金红眼）
+  ctx.fillStyle = skin;
+  ctx.beginPath(); ctx.arc(0, -R * 0.45, R * 0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = dark; ctx.lineWidth = 2; ctx.stroke();
+  // 巨口（横裂口 + 上/下獠牙）
+  ctx.strokeStyle = dark; ctx.lineWidth = 2.2;
+  ctx.beginPath(); ctx.moveTo(-R * 0.18, -R * 0.38); ctx.lineTo(R * 0.18, -R * 0.38); ctx.stroke();
+  ctx.fillStyle = bone;
+  ctx.beginPath(); ctx.moveTo(-R * 0.18, -R * 0.38); ctx.lineTo(-R * 0.1, -R * 0.52); ctx.lineTo(-R * 0.04, -R * 0.38); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(R * 0.18, -R * 0.38); ctx.lineTo(R * 0.1, -R * 0.52); ctx.lineTo(R * 0.04, -R * 0.38); ctx.closePath(); ctx.fill();
+  // 金红眼
+  ctx.fillStyle = '#e5b25d';
+  ctx.beginPath(); ctx.arc(-R * 0.13, -R * 0.5, R * 0.07, 0, Math.PI * 2); ctx.arc(R * 0.13, -R * 0.5, R * 0.07, 0, Math.PI * 2); ctx.fill();
+  // 弯曲双角（向上弯，加粗）
+  ctx.strokeStyle = horn; ctx.lineWidth = Math.max(4, R * 0.16); ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.3, -R * 0.68); ctx.quadraticCurveTo(-R * 0.75, -R * 1.05, -R * 0.6, -R * 1.3); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(R * 0.3, -R * 0.68); ctx.quadraticCurveTo(R * 0.75, -R * 1.05, R * 0.6, -R * 1.3); ctx.stroke();
+  // 脊柱骨刺（背部一排小骨刺）
+  ctx.fillStyle = bone;
+  for (let i = 0; i < 4; i++) {
+    const bx = -R * 0.3 + i * R * 0.2;
+    ctx.beginPath();
+    ctx.moveTo(bx, -R * 0.68); ctx.lineTo(bx + R * 0.06, -R * 0.9); ctx.lineTo(bx + R * 0.12, -R * 0.68);
+    ctx.closePath(); ctx.fill();
+  }
+  // 双巨拳（两侧，扩到 90px 体量）
+  ctx.fillStyle = dark;
+  ctx.beginPath(); ctx.arc(-R * 0.85, R * 0.32, R * 0.28, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(R * 0.85, R * 0.32, R * 0.28, 0, Math.PI * 2); ctx.fill();
+  // 妖纹符文（身体不对称回纹/独眼，RIFT 青紫微光，三重编码之「图标」层）
+  ctx.strokeStyle = 'rgba(63,182,176,0.9)';
+  ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.moveTo(-R * 0.32, -R * 0.15); ctx.lineTo(-R * 0.12, -R * 0.15); ctx.lineTo(-R * 0.12, -R * 0.02); ctx.lineTo(-R * 0.32, -R * 0.02); ctx.stroke();
+  ctx.fillStyle = 'rgba(123,92,196,0.9)';
+  ctx.beginPath(); ctx.arc(R * 0.28, -R * 0.08, R * 0.1, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(20,16,26,0.9)';
+  ctx.beginPath(); ctx.arc(R * 0.28, -R * 0.08, R * 0.035, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// E30：BOSS 常驻异象 aura（RIFT 紫 #7B5CC4 + RIFT_TEAL #3FB6B0 漩涡 + 地面裂痕；恒定不脉动，与精英青环拉开层级）。
+function drawBossAura(R) {
+  ctx.save();
+  ctx.translate(0, R * 0.55); // 脚下
+  // 紫青径向光晕（去饱和）
+  const glow = ctx.createRadialGradient(0, 0, R * 0.2, 0, 0, R * 1.3);
+  glow.addColorStop(0, 'rgba(123,92,196,0.32)');
+  glow.addColorStop(0.6, 'rgba(63,182,176,0.14)');
+  glow.addColorStop(1, 'rgba(123,92,196,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.arc(0, 0, R * 1.3, 0, Math.PI * 2); ctx.fill();
+  // 地面裂痕（径向裂纹，恒定）
+  ctx.strokeStyle = 'rgba(123,92,196,0.5)';
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const a = i * Math.PI / 5;
+    ctx.moveTo(Math.cos(a) * R * 0.7, Math.sin(a) * R * 0.7);
+    ctx.lineTo(Math.cos(a) * R * 1.12, Math.sin(a) * R * 1.12);
+  }
+  ctx.stroke();
+  // 双环漩涡（紫实线 + 青虚线，恒定）
+  ctx.strokeStyle = 'rgba(123,92,196,0.85)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(0, 0, R * 0.95, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = 'rgba(63,182,176,0.85)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([8, 6]);
+  ctx.beginPath(); ctx.arc(0, 0, R * 1.06, 0, Math.PI * 2); ctx.stroke();
+  ctx.setLineDash([]);
+  // 身周粒子（固定 6 点青紫，恒定不脉动）
+  for (let i = 0; i < 6; i++) {
+    const a = i * Math.PI / 3;
+    const px = Math.cos(a) * R * 1.22, py = Math.sin(a) * R * 1.22;
+    ctx.fillStyle = i % 2 === 0 ? 'rgba(63,182,176,0.9)' : 'rgba(123,92,196,0.9)';
+    ctx.beginPath(); ctx.arc(px, py, 2, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// E30：精英王冠图标（≥16px，白 #fff + 黑 #111 双描边；三重编码之「形状」层）。
+function drawEliteIcon(x, y, s) {
+  ctx.save();
+  ctx.translate(x, y);
+  const crown = () => {
+    ctx.beginPath();
+    ctx.moveTo(-s, s * 0.5);
+    ctx.lineTo(-s, -s * 0.25);
+    ctx.lineTo(-s * 0.34, s * 0.05);
+    ctx.lineTo(0, -s * 0.6);
+    ctx.lineTo(s * 0.34, s * 0.05);
+    ctx.lineTo(s, -s * 0.25);
+    ctx.lineTo(s, s * 0.5);
+    ctx.closePath();
+  };
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#111'; ctx.lineWidth = s * 0.3; crown(); ctx.stroke();
+  ctx.fillStyle = '#fff'; crown(); ctx.fill();
+  ctx.strokeStyle = '#111'; ctx.lineWidth = s * 0.1; crown(); ctx.stroke();
+  ctx.restore();
+}
+
+// E30：BOSS 妖纹图标（≥20px，白黑双描边；不对称回纹/独眼，替代金色纯文字作形状层）。
+function drawBossIcon(x, y, s) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.lineJoin = 'round';
+  const eye = () => {
+    ctx.beginPath();
+    ctx.arc(-s * 0.1, 0, s * 0.55, 0, Math.PI * 2);
+  };
+  // 回纹凸起（右侧，不对称）
+  ctx.strokeStyle = '#111'; ctx.lineWidth = s * 0.3;
+  ctx.beginPath(); ctx.moveTo(s * 0.3, -s * 0.25); ctx.lineTo(s * 0.72, -s * 0.25); ctx.lineTo(s * 0.72, s * 0.15); ctx.lineTo(s * 0.45, s * 0.15); ctx.stroke();
+  ctx.strokeStyle = '#111'; ctx.lineWidth = s * 0.3; eye(); ctx.stroke();
+  ctx.fillStyle = '#fff'; eye(); ctx.fill();
+  ctx.strokeStyle = '#111'; ctx.lineWidth = s * 0.1; eye(); ctx.stroke();
+  // 独眼瞳孔（不对称：偏右）
+  ctx.fillStyle = '#111';
+  ctx.beginPath(); ctx.arc(s * 0.12, 0, s * 0.18, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 }
 
@@ -3229,16 +3407,102 @@ function drawTelegraph(e, p) {
   const t = e.telegraph;
   const radius = t.radius || 60;
   const progress = t.applyTick > t.startTick ? Math.min(1, Math.max(0, (GAME.lastTick - t.startTick) / (t.applyTick - t.startTick))) : 0;
+  const danger = t.color === 1 ? '#5fd0e0' : '#e5484d';
+  const ang = ((e.dir != null ? e.dir : 0) * Math.PI) / 4;
   ctx.save();
   ctx.translate(s.x, s.y);
   ctx.globalAlpha = 0.3 + progress * 0.45;
-  ctx.fillStyle = t.color === 1 ? '#5fd0e0' : '#e5484d';
-  ctx.strokeStyle = t.color === 1 ? '#5fd0e0' : '#e5484d';
-  if (t.shape === 1) { ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.fill(); }
-  else {
+  ctx.fillStyle = danger;
+  ctx.strokeStyle = danger;
+
+  // E30：形状多样化（协议 TelegraphState.shape：0=圆环 1=AOE填充 2=锥形 3=线性），
+  // 危险区叠加 45° 白色斜纹（色盲友好，不靠单一颜色）；形状本身作为第二重编码。
+  if (t.shape === 2) {
+    // 锥形/扇形（沿 dir 朝向，120°）
+    const a0 = ang - Math.PI / 3, a1 = ang + Math.PI / 3;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, radius, a0, a1); ctx.closePath();
+    ctx.fill();
+    ctx.lineWidth = 2; ctx.stroke();
+    ctx.save(); ctx.clip(); drawTelegraphStripes(radius, 0.2); ctx.restore();
+  } else if (t.shape === 3) {
+    // 线性/矩形陷阱格（沿 dir 长条）
+    ctx.save();
+    ctx.rotate(ang);
+    const w = radius * 2, h = radius * 0.55;
+    ctx.beginPath(); ctx.rect(-w / 2, -h / 2, w, h);
+    ctx.fill();
+    ctx.lineWidth = 2; ctx.stroke();
+    ctx.clip(); drawTelegraphStripes(radius, 0.2);
+    ctx.restore();
+  } else if (t.shape === 1) {
+    // AOE 填充圆
+    ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.fill();
+    ctx.save(); ctx.clip(); drawTelegraphStripes(radius, 0.2); ctx.restore();
+  } else {
+    // 0=圆环
     ctx.lineWidth = 3 + progress * 3;
     ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
-    ctx.globalAlpha = 0.12; ctx.fill();
+    ctx.globalAlpha *= 0.5;
+    ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.fill();
+    ctx.save(); ctx.clip(); drawTelegraphStripes(radius, 0.14); ctx.restore();
+  }
+
+  // E30：中央危险图标（第三重编码：形状图标，白 #fff + 黑 #111 双描边，恒定可读）
+  ctx.globalAlpha = 1;
+  drawTelegraphIcon(t.shape);
+  ctx.restore();
+}
+
+// E30：telegraph 色盲斜纹（45° 白色半透明叠加在危险区；accessibility #11，不依赖颜色）。
+function drawTelegraphStripes(r, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for (let off = -r; off <= r; off += 11) {
+    ctx.moveTo(off - r, r);
+    ctx.lineTo(off + r, -r);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+// E30：telegraph 中央危险图标（≥16px，白黑双描边；陷阱=十字、AOE=同心三角、锥形=扇形箭头、圆环=⚠）。
+function drawTelegraphIcon(shape) {
+  const s = 9;
+  ctx.save();
+  ctx.lineJoin = 'round';
+  const tri = () => { ctx.beginPath(); ctx.moveTo(0, -s); ctx.lineTo(s * 0.82, s * 0.58); ctx.lineTo(-s * 0.82, s * 0.58); ctx.closePath(); };
+  if (shape === 3) {
+    const cross = () => { ctx.beginPath(); ctx.moveTo(-s, 0); ctx.lineTo(s, 0); ctx.moveTo(0, -s); ctx.lineTo(0, s); };
+    ctx.strokeStyle = '#111'; ctx.lineWidth = 4; cross(); ctx.stroke();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.8; cross(); ctx.stroke();
+  } else if (shape === 2) {
+    const arrow = () => { ctx.beginPath(); ctx.moveTo(-s, s * 0.5); ctx.lineTo(s * 0.2, s * 0.5); ctx.lineTo(s * 0.2, -s * 0.7); ctx.lineTo(s * 0.9, -s * 0.7); };
+    ctx.strokeStyle = '#111'; ctx.lineWidth = 4; arrow(); ctx.stroke();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.8; arrow(); ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.moveTo(s * 0.9, -s * 1.15); ctx.lineTo(s * 1.4, -s * 0.7); ctx.lineTo(s * 0.9, -s * 0.3); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#111'; ctx.lineWidth = 1.4; ctx.stroke();
+  } else {
+    // shape 0/1：⚠ 警告三角（1=AOE 时叠加内三角 = 同心三角）
+    ctx.strokeStyle = '#111'; ctx.lineWidth = 4; tri(); ctx.stroke();
+    ctx.fillStyle = '#fff'; tri(); ctx.fill();
+    ctx.strokeStyle = '#111'; ctx.lineWidth = 1.2; tri(); ctx.stroke();
+    if (shape === 1) {
+      // 内三角（同心，AOE 专用）
+      ctx.strokeStyle = '#111'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(0, -s * 0.5); ctx.lineTo(s * 0.41, s * 0.29); ctx.lineTo(-s * 0.41, s * 0.29); ctx.closePath(); ctx.stroke();
+    }
+    ctx.strokeStyle = '#111'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(0, -s * 0.3); ctx.lineTo(0, s * 0.12); ctx.stroke();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(0, -s * 0.3); ctx.lineTo(0, s * 0.12); ctx.stroke();
+    ctx.fillStyle = '#111';
+    ctx.beginPath(); ctx.arc(0, s * 0.38, s * 0.1, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(0, s * 0.38, s * 0.05, 0, Math.PI * 2); ctx.fill();
   }
   ctx.restore();
 }
@@ -3286,7 +3550,7 @@ function updatePortalHum() {
 function drawEntities() {
   if (!lastSnapshot) return;
   // C3 E2E 钩子：每帧重置渲染标志（drawPlayer/drawEnemy/drawLoot/drawEntrance 内填充）
-  GAME.rendered = { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0, windup: 0, chests: 0 };
+  GAME.rendered = { enemies: [], lootSlots: [], entrance: false, player: 0, party: 0, windup: 0, chests: 0, elite_blue: 0, boss_aura: 0 };
   // 入口画在实体底层
   for (const e of lastSnapshot.entities) {
     if (e.kind !== KIND.ENTRANCE) continue;
