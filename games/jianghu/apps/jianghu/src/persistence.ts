@@ -40,6 +40,8 @@ export interface InventoryItem {
   readonly slot?: ItemSlot;
   /** E19：强化等级（+N；可缺省 = 未强化，旧存档兼容）。仅在属性计算时放大词缀值，不存词缀表。 */
   readonly enchantLevel?: number;
+  /** E32：套装 id（0/缺省 = 无套装）。旧存档兼容；同 setId 件数 ≥2/3 → 套装加成（见 affixes.SET_DEFS）。 */
+  readonly setId?: number;
 }
 
 /** 背包（≤ INVENTORY_CAP）。 */

@@ -107,13 +107,24 @@ export interface InventoryItemView {
   readonly slot: "weapon" | "armor" | "trinket";
   /** E19：强化等级（+N；缺省 0 = 未强化）。 */
   readonly enchantLevel?: number;
+  /** E32：套装 id（0/缺省 = 无套装）。 */
+  readonly setId?: number;
 }
 
 /** 已穿戴装备视图（客户端装备栏渲染用；slot 即键）。 */
+export interface EquippedItemView {
+  readonly itemId: number;
+  readonly rarity: number;
+  readonly affixes: readonly number[];
+  readonly enchantLevel?: number;
+  /** E32：套装 id（0/缺省 = 无套装）。 */
+  readonly setId?: number;
+}
+
 export interface EquippedView {
-  readonly weapon?: { readonly itemId: number; readonly rarity: number; readonly affixes: readonly number[]; readonly enchantLevel?: number };
-  readonly armor?: { readonly itemId: number; readonly rarity: number; readonly affixes: readonly number[]; readonly enchantLevel?: number };
-  readonly trinket?: { readonly itemId: number; readonly rarity: number; readonly affixes: readonly number[]; readonly enchantLevel?: number };
+  readonly weapon?: EquippedItemView;
+  readonly armor?: EquippedItemView;
+  readonly trinket?: EquippedItemView;
 }
 
 export interface InventoryMessage {
@@ -129,22 +140,23 @@ export interface InventoryMessage {
   readonly potions: number;
 }
 
-/** EquippedSlots → EquippedView（去 slot 键、展平 affixes；缺省空槽）。E19：保留 enchantLevel。 */
+/** EquippedSlots → EquippedView（去 slot 键、展平 affixes；缺省空槽）。E19：保留 enchantLevel。E32：保留 setId。 */
 function equippedView(equipped: EquippedSlots | undefined): EquippedView {
+  const toView = (item: { itemId: number; rarity: number; affixes: readonly number[]; enchantLevel?: number; setId?: number }): EquippedItemView => ({
+    itemId: item.itemId,
+    rarity: item.rarity,
+    affixes: [...item.affixes],
+    ...(item.enchantLevel ? { enchantLevel: item.enchantLevel } : {}),
+    ...(item.setId ? { setId: item.setId } : {}),
+  });
   return {
-    ...(equipped?.weapon
-      ? { weapon: { itemId: equipped.weapon.itemId, rarity: equipped.weapon.rarity, affixes: [...equipped.weapon.affixes], ...(equipped.weapon.enchantLevel ? { enchantLevel: equipped.weapon.enchantLevel } : {}) } }
-      : {}),
-    ...(equipped?.armor
-      ? { armor: { itemId: equipped.armor.itemId, rarity: equipped.armor.rarity, affixes: [...equipped.armor.affixes], ...(equipped.armor.enchantLevel ? { enchantLevel: equipped.armor.enchantLevel } : {}) } }
-      : {}),
-    ...(equipped?.trinket
-      ? { trinket: { itemId: equipped.trinket.itemId, rarity: equipped.trinket.rarity, affixes: [...equipped.trinket.affixes], ...(equipped.trinket.enchantLevel ? { enchantLevel: equipped.trinket.enchantLevel } : {}) } }
-      : {}),
+    ...(equipped?.weapon ? { weapon: toView(equipped.weapon) } : {}),
+    ...(equipped?.armor ? { armor: toView(equipped.armor) } : {}),
+    ...(equipped?.trinket ? { trinket: toView(equipped.trinket) } : {}),
   };
 }
 
-/** 背包 → 消息 items 视图（slot 由 itemId 推导）。E19：保留 enchantLevel。 */
+/** 背包 → 消息 items 视图（slot 由 itemId 推导）。E19：保留 enchantLevel。E32：保留 setId。 */
 function itemsView(inventory: Inventory): InventoryItemView[] {
   return inventory.items.map((i) => ({
     itemId: i.itemId,
@@ -152,6 +164,7 @@ function itemsView(inventory: Inventory): InventoryItemView[] {
     affixes: [...i.affixes],
     slot: itemProto(i.itemId).slot,
     ...(i.enchantLevel ? { enchantLevel: i.enchantLevel } : {}),
+    ...(i.setId ? { setId: i.setId } : {}),
   }));
 }
 
@@ -284,11 +297,13 @@ export async function resolveEquip(
     return equipError(requestId, "BAG_FULL", "unequipping would overflow bag");
   }
   // E19：装备入槽保留 enchantLevel（强化等级随穿戴生效，computeEquipStats 放大词缀）。
+  // E32：装备入槽保留 setId（套装加成随穿戴生效，computeEquipStats 统计同 setId 件数）。
   equipped[slot] = {
     itemId: item.itemId,
     rarity: item.rarity,
     affixes: [...item.affixes],
     ...(item.enchantLevel ? { enchantLevel: item.enchantLevel } : {}),
+    ...(item.setId ? { setId: item.setId } : {}),
   };
 
   const inventory: Inventory = { items: remaining };

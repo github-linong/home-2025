@@ -31,6 +31,7 @@ import {
   BIOME_DEFAULT, // E28：普通副本 biome（默认入口）
   BIOME_STONE_PRISON, // E28：石牢副本 biome（石牢入口）
   BIOME_BARROW, // E31：荒冢副本 biome（荒冢入口）
+  setIdForDrop, // E32：掉落后映射套装 id（按 biome/来源，C7 单一来源）
 } from "../sim-core/src/constants.ts"; // C7 单一来源
 import type { SpawnZone } from "../sim-core/src/spawning.ts";
 import { computeInstanceSeed, buildDungeonSpec } from "../sim-core/src/dungeonGen.ts"; // C7/D9/C-Dgn-1
@@ -827,6 +828,7 @@ export function pushInventoryToSeat(seatId: number, inventory: Inventory, equipp
       affixes: [...i.affixes],
       slot: itemProto(i.itemId).slot,
       ...(i.enchantLevel ? { enchantLevel: i.enchantLevel } : {}),
+      ...(i.setId ? { setId: i.setId } : {}), // E32：套装 id（客户端 tooltip / 套装加成展示）
     })),
     equipped: equipped ?? {},
     cap: INVENTORY_CAP,
@@ -1049,11 +1051,14 @@ export async function applyPickupToInventory(
   loot: LootResult,
 ): Promise<void> {
   const { snapshot, seatId } = await cs.loadOrCreate(userId);
+  // E32：掉落→套装 id 映射（石牢=铁骨、荒冢=鬼影；biome0/主世界 → 0 无套装，golden 不变）。
+  const setId = setIdForDrop(world.biomeId, "drop");
   const item: InventoryItem = {
     itemId: loot.itemId,
     rarity: loot.rarity,
     affixes: loot.affixes,
     slot: itemProto(loot.itemId).slot, // E7：slot 由 itemId 确定性推导（掉落后再映射）
+    ...(setId > 0 ? { setId } : {}),
   };
   const { inventory, overflow } = addItem(snapshot.inventory, item);
   await cs.save(userId, { character: snapshot.character, inventory });
@@ -1089,6 +1094,8 @@ export async function applyChestOpenToInventory(
   stones: number,
 ): Promise<void> {
   const { snapshot, seatId } = await cs.loadOrCreate(userId);
+  // E32：BOSS 宝箱 → 烈阳套装 id（主题副本石牢/荒冢；biome0 → 0 无套装，golden 不变）。
+  const setId = setIdForDrop(world.biomeId, "boss-chest");
   let inventory = snapshot.inventory;
   const overflows: InventoryItem[] = [];
   for (const loot of items) {
@@ -1097,6 +1104,7 @@ export async function applyChestOpenToInventory(
       rarity: loot.rarity,
       affixes: loot.affixes,
       slot: itemProto(loot.itemId).slot, // E7：slot 由 itemId 确定性推导
+      ...(setId > 0 ? { setId } : {}),
     };
     const { inventory: next, overflow } = addItem(inventory, item);
     inventory = next;

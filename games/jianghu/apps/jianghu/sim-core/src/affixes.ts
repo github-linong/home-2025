@@ -14,7 +14,12 @@
  *
  * 纪律：本文件只含类型 / const 数据 / 纯函数；无 I/O、无随机、无全局可变状态。
  */
-import { ENCHANT_AFFIX_MULT_PER_LEVEL } from "./constants.ts"; // E19：强化放大系数（C7 单一来源）
+import {
+  ENCHANT_AFFIX_MULT_PER_LEVEL, // E19：强化放大系数（C7 单一来源）
+  SET_IRONBONE, // E32：铁骨套装 id（C7 单一来源）
+  SET_WRAITH, // E32：鬼影套装 id（C7 单一来源）
+  SET_BLAZING_SUN, // E32：烈阳套装 id（C7 单一来源）
+} from "./constants.ts";
 
 // ─────────────────────────────────────────────────────────────
 // 词缀 stat 类型（6 类；combat/world 消费）
@@ -190,6 +195,8 @@ export interface EquippedItem {
   readonly affixes: readonly number[];
   /** E19：强化等级（+N；缺省 0 = 未强化）。仅放大词缀 value，见 computeEquipStats。 */
   readonly enchantLevel?: number;
+  /** E32：套装 id（0/缺省 = 无套装）。同 setId 件数 ≥2/3 → 叠加套装加成，见 SET_DEFS / setBonus。 */
+  readonly setId?: number;
 }
 
 /** 装备槽（3 槽；缺省 undefined = 空槽）。 */
@@ -249,10 +256,113 @@ export function computeEquipStats(equipped: EquippedSlots | undefined): Equipmen
       }
     }
   }
+  // E32：套装加成（累计 2 件/3 件；映射同 6 类属性，百分点归一 0..1）。
+  const setStats = setBonus(equipped);
+  s.atk += setStats.atk;
+  s.maxHp += setStats.maxHp;
+  s.reduction += setStats.reduction;
+  s.critChance += setStats.critChance;
+  s.attackSpeed += setStats.attackSpeed;
+  s.moveSpeed += setStats.moveSpeed;
   return s;
 }
 
 /** 空装备槽（构造新角色/游客默认）。 */
 export function emptyEquipped(): EquippedSlots {
   return {};
+}
+
+// ─────────────────────────────────────────────────────────────
+// E32：装备套装定义 + 套装加成（dungeon-variants §3）
+// ─────────────────────────────────────────────────────────────
+
+/** 套装加成条目（stat ∈ AffixStat 六类；value 单位与词缀 value 一致：atk/maxHp 为点，其余为百分点）。 */
+export interface SetBonusEntry {
+  readonly stat: AffixStat;
+  readonly value: number;
+}
+
+/** 套装定义。bonuses[2]/[3] 为「达到该件数时」叠加的加成（**累计**：3 件 = 2 件 + 3 件）。 */
+export interface SetDef {
+  readonly name: string;
+  readonly bonuses: {
+    readonly 2: readonly SetBonusEntry[];
+    readonly 3: readonly SetBonusEntry[];
+  };
+}
+
+const setBonusEntry = (stat: AffixStat, value: number): SetBonusEntry => Object.freeze({ stat, value });
+const setBonusTier = (...entries: SetBonusEntry[]): readonly SetBonusEntry[] => Object.freeze(entries);
+
+/**
+ * 套装表（C7 单一来源；数值同量级词缀，防主导策略红线，dungeon-variants §3）。
+ * - 铁骨（防御坦克，抗高密度石牢）：2 件 maxHp+30；3 件 reduction+8% + maxHp+60（累计 maxHp+90）。
+ * - 鬼影（攻速游走，反制荒冢减速）：2 件 attackSpeed+8%；3 件 moveSpeed+12% + attackSpeed+5%（累计 attackSpeed+13%）。
+ * - 烈阳（暴击爆发，熔窟 DPS 关底）：2 件 critChance+8%；3 件 atk+20 + critChance+5%（累计 critChance+13%）。
+ */
+export const SET_DEFS: Readonly<Record<number, SetDef>> = Object.freeze({
+  [SET_IRONBONE]: Object.freeze({
+    name: "铁骨套装",
+    bonuses: Object.freeze({
+      2: setBonusTier(setBonusEntry("maxHp", 30)),
+      3: setBonusTier(setBonusEntry("reduction", 8), setBonusEntry("maxHp", 60)),
+    }),
+  }),
+  [SET_WRAITH]: Object.freeze({
+    name: "鬼影套装",
+    bonuses: Object.freeze({
+      2: setBonusTier(setBonusEntry("attackSpeed", 8)),
+      3: setBonusTier(setBonusEntry("moveSpeed", 12), setBonusEntry("attackSpeed", 5)),
+    }),
+  }),
+  [SET_BLAZING_SUN]: Object.freeze({
+    name: "烈阳套装",
+    bonuses: Object.freeze({
+      2: setBonusTier(setBonusEntry("critChance", 8)),
+      3: setBonusTier(setBonusEntry("atk", 20), setBonusEntry("critChance", 5)),
+    }),
+  }),
+});
+
+/** 套装加成汇总（纯函数，无副作用；仅统计已穿戴同 setId 件数，与 affix 无关）。 */
+function addSetBonusStat(
+  s: { atk: number; maxHp: number; reduction: number; critChance: number; attackSpeed: number; moveSpeed: number },
+  entries: readonly SetBonusEntry[],
+): void {
+  for (const b of entries) {
+    switch (b.stat) {
+      case "atk": s.atk += b.value; break;
+      case "maxHp": s.maxHp += b.value; break;
+      case "reduction": s.reduction += b.value / 100; break;
+      case "critChance": s.critChance += b.value / 100; break;
+      case "attackSpeed": s.attackSpeed += b.value / 100; break;
+      case "moveSpeed": s.moveSpeed += b.value / 100; break;
+    }
+  }
+}
+
+/**
+ * 计算已穿戴装备的套装加成（纯函数）。
+ * - 统计已穿戴同 setId 件数（3 槽各计 1）；
+ * - 件数 ≥2 → 叠加 bonuses[2]；件数 ≥3 → 叠加 bonuses[3]（累计，与 SET_DEFS 语义一致）；
+ * - 单件 / 无 setId / 未知 setId → 无加成。
+ * 返回值单位同 EquipmentStats（atk/maxHp 为点；reduction/crit/attackSpeed/moveSpeed 为 0..1）。
+ */
+export function setBonus(equipped: EquippedSlots | undefined): EquipmentStats {
+  const s = { atk: 0, maxHp: 0, reduction: 0, critChance: 0, attackSpeed: 0, moveSpeed: 0 };
+  if (!equipped) return s;
+  const counts: Record<number, number> = {};
+  for (const slot of ["weapon", "armor", "trinket"] as const) {
+    const setId = equipped[slot]?.setId ?? 0;
+    if (setId > 0) counts[setId] = (counts[setId] ?? 0) + 1;
+  }
+  for (const key of Object.keys(counts)) {
+    const setId = Number(key);
+    const def = SET_DEFS[setId];
+    if (!def) continue;
+    const count = counts[setId];
+    if (count >= 2) addSetBonusStat(s, def.bonuses[2]);
+    if (count >= 3) addSetBonusStat(s, def.bonuses[3]);
+  }
+  return s;
 }

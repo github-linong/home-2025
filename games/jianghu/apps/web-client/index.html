@@ -159,6 +159,10 @@
   #inv-materials { margin-bottom: 6px; font-size: 11px; color: #e8d8b0; border: 1px solid #3a4250;
     border-radius: 6px; padding: 3px 8px; background: rgba(30,26,18,.55); }
   #inv-materials b { color: #f2a03c; }
+  /* ── E32 套装加成（背包面板内属性面板下方；仅穿 2/3 件时显示）── */
+  #set-bonus { margin-bottom: 6px; font-size: 11px; color: #7fe0c0; border: 1px solid #2e5a4a;
+    border-radius: 6px; padding: 3px 8px; background: rgba(16,34,28,.55); line-height: 1.6; }
+  #set-bonus:empty { display: none; }
 
   /* ── 帮助 ── */
   #help { position: absolute; right: 12px; bottom: 12px; z-index: 10; color: #7a8699; font-size: 11px;
@@ -285,6 +289,8 @@
     <span>生命 <b id="attr-hp">-</b></span>
     <span>暴击 <b id="attr-crit">-</b></span>
   </div>
+  <!-- E32：套装加成（穿戴同套装 2/3 件时显示「铁骨套装 2/3：生命+30…」） -->
+  <div id="set-bonus"></div>
   <!-- E7：3 槽装备栏（点击已穿槽位卸下） -->
   <div id="inv-equip">
     <div class="equip-slot empty" id="slot-weapon" data-slot="weapon"><span class="slot-label">武器</span><span class="slot-item">—</span><span class="slot-action"></span></div>
@@ -450,6 +456,51 @@ const RARITY_NAMES = ['白', '蓝', '金', '暗金'];
 // E7：装备槽名称（与服务端 ITEM_PROTOS slot 对齐）
 const SLOT_NAMES = { weapon: '武器', armor: '护甲', trinket: '饰品' };
 const KIND = { PLAYER: 0, ENEMY: 1, BOSS: 2, LOOT_GROUND: 3, TELEGRAPH: 4, ENTRANCE: 5, CHEST: 6 };
+
+// E32：装备套装表镜像（与服务端 sim-core/affixes.ts SET_DEFS 同源；仅展示用，权威结算在服务端）。
+// 铁骨 2 件 maxHp+30 / 3 件 reduction+8% + maxHp+60（累计 +90）；
+// 鬼影 2 件 attackSpeed+8% / 3 件 moveSpeed+12% + attackSpeed+5%（累计 +13%）；
+// 烈阳 2 件 critChance+8% / 3 件 atk+20 + critChance+5%（累计 +13%）。
+const SET_DEFS = {
+  1: { name: '铁骨套装', bonuses: { 2: [{ stat: 'maxHp', value: 30 }], 3: [{ stat: 'reduction', value: 8 }, { stat: 'maxHp', value: 60 }] } },
+  2: { name: '鬼影套装', bonuses: { 2: [{ stat: 'attackSpeed', value: 8 }], 3: [{ stat: 'moveSpeed', value: 12 }, { stat: 'attackSpeed', value: 5 }] } },
+  3: { name: '烈阳套装', bonuses: { 2: [{ stat: 'critChance', value: 8 }], 3: [{ stat: 'atk', value: 20 }, { stat: 'critChance', value: 5 }] } },
+};
+const SET_STAT_NAMES = { atk: '攻击', maxHp: '生命', reduction: '减伤', critChance: '暴击', attackSpeed: '攻速', moveSpeed: '移速' };
+const SET_PERCENT_STATS = { reduction: 1, critChance: 1, attackSpeed: 1, moveSpeed: 1 };
+function setBonusText(entries) {
+  return entries.map((b) => `${SET_STAT_NAMES[b.stat] || b.stat}+${b.value}${SET_PERCENT_STATS[b.stat] ? '%' : ''}`).join('、');
+}
+function setNameFor(item) {
+  const sid = item && item.setId ? Number(item.setId) : 0;
+  return sid > 0 && SET_DEFS[sid] ? SET_DEFS[sid].name : '';
+}
+// 统计当前已穿戴套装件数 → [{ setId, name, count, text }]（text=当前已激活的累计加成文案）。
+function equippedSetInfo() {
+  const counts = {};
+  for (const slot of ['weapon', 'armor', 'trinket']) {
+    const it = equipped[slot];
+    const sid = it && it.setId ? Number(it.setId) : 0;
+    if (sid > 0) counts[sid] = (counts[sid] || 0) + 1;
+  }
+  const infos = [];
+  for (const k of Object.keys(counts)) {
+    const sid = Number(k);
+    const def = SET_DEFS[sid];
+    if (!def) continue;
+    const n = counts[sid];
+    const lines = [];
+    if (n >= 2) lines.push(setBonusText(def.bonuses[2]));
+    if (n >= 3) lines.push(setBonusText(def.bonuses[3]));
+    infos.push({ setId: sid, name: def.name, count: n, text: lines.join('；') });
+  }
+  return infos;
+}
+function setTooltip(setId) {
+  const info = equippedSetInfo().find((x) => x.setId === Number(setId));
+  if (!info) return '';
+  return `${info.name} ${info.count}/3\n当前加成：${info.text || '无'}`;
+}
 
 // E30 美术 P0：阵营色（art/asset-audit.md P0-3）。玩家 P1-P4 按 ownerId 稳定哈希落到 4 色，
 // 敌人统一敌对红；落地在 描边外圈 / 名牌 / 血条底 三处（本地玩家金圈保留，不冲突）。
@@ -1412,7 +1463,7 @@ function handleControl(msg) {
     // ── E6 背包数据通道：拾取入库推送 / character.inventory.get 回复 / E7 equip/unequip 回复 / E19 enchant 回复 / E21 potions（同一格式）──
     case 'character.inventory': {
       const firstInvLoad = !inventory.loaded; // 首次拉取（背包 get）不算「获得」增量
-      const items = (msg.items || []).map((i) => ({ itemId: i.itemId, rarity: i.rarity, affixes: (i.affixes || []).slice(), slot: i.slot, enchantLevel: i.enchantLevel || 0 }));
+      const items = (msg.items || []).map((i) => ({ itemId: i.itemId, rarity: i.rarity, affixes: (i.affixes || []).slice(), slot: i.slot, enchantLevel: i.enchantLevel || 0, setId: i.setId || 0 }));
       const prevIds = new Set(inventory.items.map((i) => i.itemId));
       inventory.items = items;
       inventory.cap = msg.cap || 60;
@@ -2265,9 +2316,12 @@ function renderInventory() {
     const short = '#' + (it.itemId % 0x10000).toString(16).toUpperCase().padStart(4, '0');
     const aff = it.affixes.length > 0 ? '词缀×' + it.affixes.length : '无词缀';
     const slotName = SLOT_NAMES[it.slot] || '';
+    // E32：套装名（背包物品显示；tooltip 显示「铁骨套装 2/3 + 当前加成」）。
+    const setName = setNameFor(it);
     // E19：强化等级 +N 显示（enchantLevel>0）。
     const ench = (it.enchantLevel || 0) > 0 ? ' +' + it.enchantLevel : '';
-    cell.innerHTML = `<div class="inv-id">${short}</div><div class="inv-meta" style="color:${color}">${RARITY_NAMES[it.rarity] || '?'}${ench} · ${aff}${slotName ? ' · ' + slotName : ''}</div>`;
+    cell.innerHTML = `<div class="inv-id">${short}</div><div class="inv-meta" style="color:${color}">${RARITY_NAMES[it.rarity] || '?'}${ench} · ${aff}${slotName ? ' · ' + slotName : ''}${setName ? ' · ' + setName : ''}</div>`;
+    if (it.setId) cell.title = setTooltip(it.setId);
     // E7：装备按钮（发 character.equip；已穿同槽位物品会被换下回背包）。
     const eqBtn = document.createElement('button');
     eqBtn.className = 'equip-btn';
@@ -2304,19 +2358,34 @@ function renderEquip() {
       const color = RARITY_COLORS[item.rarity] || '#D8D2C4';
       const short = '#' + (item.itemId % 0x10000).toString(16).toUpperCase().padStart(4, '0');
       const ench = (item.enchantLevel || 0) > 0 ? ' +' + item.enchantLevel : '';
+      // E32：套装名显示在装备槽；tooltip 显示「套装名 n/3 + 当前加成」。
+      const setName = setNameFor(item);
       el.classList.remove('empty'); el.classList.add('filled');
       el.style.borderColor = color;
-      itemEl.textContent = short + ench + ' · 词缀×' + (item.affixes || []).length;
+      itemEl.textContent = short + ench + ' · 词缀×' + (item.affixes || []).length + (setName ? ' · ' + setName : '');
       itemEl.style.color = color;
       actionEl.textContent = '点击卸下';
+      el.title = item.setId ? setTooltip(item.setId) : '';
     } else {
       el.classList.add('empty'); el.classList.remove('filled');
       el.style.borderColor = '';
       itemEl.textContent = '—';
       itemEl.style.color = '';
       actionEl.textContent = '';
+      el.title = '';
     }
   }
+  renderSetBonus();
+}
+
+// E32：套装加成面板（穿戴同套装 2/3 件时显示当前激活加成）。
+function renderSetBonus() {
+  const el = document.getElementById('set-bonus');
+  if (!el) return;
+  const infos = equippedSetInfo();
+  el.innerHTML = infos.length
+    ? infos.map((i) => `<span>${i.name} ${i.count}/3：${i.text || '无加成'}</span>`).join('<br>')
+    : '';
 }
 
 // E7：装备 / 卸下（服务端经 character.inventory 回推刷新）

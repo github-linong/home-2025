@@ -701,3 +701,32 @@ export function affixWeightsForBiome(biomeId: number): readonly number[] | undef
   for (let id = 51; id <= 64; id++) weights[id - 1] = BARROW_AFFIX_BOOST_MULT; // moveSpeed 51..64
   return weights;
 }
+
+// ─────────────────────────────────────────────────────────────
+// E32：装备套装（set；dungeon-variants §3）
+// ─────────────────────────────────────────────────────────────
+
+/** 套装 id（InventoryItem / EquippedItem.setId；0=无套装）。 */
+export const SET_IRONBONE = 1; // 铁骨套装（Ironbone）——石牢 biome1 普通/精英掉落
+export const SET_WRAITH = 2; // 鬼影套装（Wraith）——荒冢 biome2 普通/精英掉落
+export const SET_BLAZING_SUN = 3; // 烈阳套装（Blazing Sun）——主题副本 BOSS 宝箱
+
+/** 套装掉落来源：drop=普通/精英击杀；boss-chest=BOSS 宝箱。 */
+export type SetDropSource = "drop" | "boss-chest";
+
+/**
+ * E32：掉落后映射 setId（单一来源，C7）。
+ * - 铁骨(1) = 石牢 biome1 普通/精英掉落；
+ * - 鬼影(2) = 荒冢 biome2 普通/精英掉落；
+ * - 烈阳(3) = 主题副本（石牢/荒冢）BOSS 宝箱；
+ * - biome0 / 未知 / 主世界 → 0（无套装）→ playtest golden 不变（D9）。
+ * 纯函数确定性（无随机 / 无副作用）。
+ */
+export function setIdForDrop(biomeId: number, source: SetDropSource): number {
+  if (source === "boss-chest") {
+    return biomeId === BIOME_STONE_PRISON || biomeId === BIOME_BARROW ? SET_BLAZING_SUN : 0;
+  }
+  if (biomeId === BIOME_STONE_PRISON) return SET_IRONBONE;
+  if (biomeId === BIOME_BARROW) return SET_WRAITH;
+  return 0;
+}
