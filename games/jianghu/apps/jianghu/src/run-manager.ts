@@ -31,6 +31,7 @@ import {
   BIOME_DEFAULT, // E28：普通副本 biome（默认入口）
   BIOME_STONE_PRISON, // E28：石牢副本 biome（石牢入口）
   BIOME_BARROW, // E31：荒冢副本 biome（荒冢入口）
+  BIOME_MOLTEN_CAVERN, // E33：熔窟副本 biome（熔窟入口）
   setIdForDrop, // E32：掉落后映射套装 id（按 biome/来源，C7 单一来源）
 } from "../sim-core/src/constants.ts"; // C7 单一来源
 import type { SpawnZone } from "../sim-core/src/spawning.ts";
@@ -557,16 +558,21 @@ const STONE_PRISON_ENTRANCE_ID = 2;
 /** E31：荒冢副本入口 ID（主世界第三个「裂隙」逻辑入口；复用同一物理 ENTRANCE 实体，MVP 最简）。 */
 const BARROW_ENTRANCE_ID = 3;
 
+/** E33：熔窟副本入口 ID（主世界第四个「裂隙」逻辑入口；复用同一物理 ENTRANCE 实体，MVP 最简）。 */
+const MOLTEN_CAVERN_ENTRANCE_ID = 4;
+
 /**
- * E28/E31：入口 → biome 映射（MVP 最简方案：entranceId 区分副本主题，复用同一物理 ENTRANCE 实体）。
+ * E28/E31/E33：入口 → biome 映射（MVP 最简方案：entranceId 区分副本主题，复用同一物理 ENTRANCE 实体）。
  * - entranceId=2 → 石牢（biome 1：高密度近战 + 铁骨魁 BOSS + 暗金↑）；
  * - entranceId=3 → 荒冢（biome 2：幽灵精英 + 幽冢鬼母 BOSS + 减速词缀倾向）；
+ * - entranceId=4 → 熔窟（biome 3：火系敌人 + 熔岩巨像 BOSS + 灼烧地面 + 爆发词缀倾向）；
  * - 其余（含默认/playtest 的 entranceId=1）→ 普通副本（biome 0，golden 不变）。
  * 客户端发 `dungeon.enter { entranceId: N }` 即进对应主题副本；可视化入口渲染为客户端 Phase-2。
  */
 function biomeIdForEntrance(entranceId: number): number {
   if (entranceId === STONE_PRISON_ENTRANCE_ID) return BIOME_STONE_PRISON;
   if (entranceId === BARROW_ENTRANCE_ID) return BIOME_BARROW;
+  if (entranceId === MOLTEN_CAVERN_ENTRANCE_ID) return BIOME_MOLTEN_CAVERN;
   return BIOME_DEFAULT;
 }
 

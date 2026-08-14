@@ -3,8 +3,10 @@
  * ===========================================================================
  * 覆盖（MVP 最简入口方案：entranceId 区分副本主题，复用同一物理 ENTRANCE 实体）：
  *   ① entranceId=2 → 石牢（biome 1）：实例 world.biomeId=1 + BOSS=铁骨魁（HP=360）；
- *   ② 默认入口（非 2，如 401）→ 普通副本（biome 0）：world.biomeId=0 + BOSS=dungeon_boss（HP=300）；
- *   ③ 默认入口路径不变 = playtest golden（entranceId=1 → biome 0）不触达铁骨魁/石牢。
+ *   ② 默认入口（非 2/3/4，如 401）→ 普通副本（biome 0）：world.biomeId=0 + BOSS=dungeon_boss（HP=300）；
+ *   ③ entranceId=3 → 荒冢（biome 2）+ BOSS=幽冢鬼母（HP=270）；
+ *   ④ entranceId=4 → 熔窟（biome 3）+ BOSS=熔岩巨像（HP=390）；
+ *   ⑤ 默认入口路径不变 = playtest golden（entranceId=1 → biome 0）不触达石牢/荒冢/熔窟。
  */
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -15,6 +17,7 @@ import {
   BIOME_DEFAULT,
   BIOME_STONE_PRISON,
   BIOME_BARROW,
+  BIOME_MOLTEN_CAVERN,
   ENEMY_BASE_HP,
   HP_MULT,
   ENTRANCE_COOLDOWN_TICKS,
@@ -22,7 +25,7 @@ import {
 
 const SEAT = 1;
 
-test("入口→biome：entranceId=2 石牢 / 3 荒冢 / 默认入口普通副本（golden 路径不变）", () => {
+test("入口→biome：entranceId=2 石牢 / 3 荒冢 / 4 熔窟 / 默认入口普通副本（golden 路径不变）", () => {
   bootResidentRun();
 
   // ① 石牢入口（entranceId=2，生产常量）→ biome 1。
@@ -56,4 +59,14 @@ test("入口→biome：entranceId=2 石牢 / 3 荒冢 / 默认入口普通副本
   const barrowBoss = barrowWorld.actors().find((a) => a.kind === EntityKind.BOSS)!;
   assert.equal(barrowBoss.maxHp, Math.round(ENEMY_BASE_HP * HP_MULT.boss * 0.9), "幽冢鬼母 HP=270");
   exitInstance(barrow.instanceRoomId!, { seatId: SEAT });
+
+  // ④ 熔窟入口（entranceId=4，生产常量）→ biome 3（火系敌人 + 熔岩巨像 BOSS）。
+  for (let i = 0; i < ENTRANCE_COOLDOWN_TICKS + 1; i++) resident.step();
+  const molten = enterInstance(4, [{ seatId: SEAT, userId: "u-molten" }], { lifetimeMs: 10 ** 12 });
+  assert.equal(molten.ok, true, "熔窟入口创建成功");
+  const moltenWorld = getWorld(molten.instanceRoomId!)!;
+  assert.equal(moltenWorld.biomeId, BIOME_MOLTEN_CAVERN, "熔窟入口 → biome 3");
+  const moltenBoss = moltenWorld.actors().find((a) => a.kind === EntityKind.BOSS)!;
+  assert.equal(moltenBoss.maxHp, Math.round(ENEMY_BASE_HP * HP_MULT.boss * 1.3), "熔岩巨像 HP=390");
+  exitInstance(molten.instanceRoomId!, { seatId: SEAT });
 });

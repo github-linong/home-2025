@@ -21,6 +21,7 @@ import {
   BIOME_DEFAULT,
   BIOME_STONE_PRISON,
   BIOME_BARROW,
+  BIOME_MOLTEN_CAVERN,
   ENEMY_BASE_HP,
   ENEMY_BASE_ATK,
   HP_MULT,
@@ -37,6 +38,12 @@ import {
   TELEGRAPH_TICKS,
   affixWeightsForBiome,
   BARROW_AFFIX_BOOST_MULT,
+  MOLTEN_AFFIX_BOOST_MULT,
+  MOLTEN_ATTACK_SPEED_BOOST_MULT,
+  MAGMA_BURN_INTERVAL_TICKS,
+  MAGMA_BURN_TELEGRAPH_TICKS,
+  MAGMA_BURN_RADIUS,
+  MAGMA_BURN_DAMAGE_MULT,
 } from "../../src/constants.ts";
 
 // ─────────────────────────────────────────────────────────────
@@ -307,3 +314,148 @@ test("⑪ 幽冢鬼母鬼啸扇形：telegraph shape=2 + radius=120 + 命中 SLO
   assert.equal(p.hp, 1000 - expectedDmg, `鬼啸伤害 = atk(96)×1.2=${expectedDmg}`);
   assert.ok(p.status & EntityStatus.SLOW, "鬼啸命中后玩家 status 含 SLOW");
 });
+
+// ─────────────────────────────────────────────────────────────
+// E33 扩展：熔窟副本 + 熔岩巨像 + 灼烧地面（DOT 降级版）
+// ─────────────────────────────────────────────────────────────
+
+// ⑫ 熔窟 biomeId 生成
+test("⑫ 熔窟 biomeId=3：密度 1.2 + BOSS=magmacolossus + 火系敌人池（dungeon-variants §1 变体 C）", () => {
+  for (let i = 0; i < 20; i++) {
+    const spec = buildDungeonSpec(`molten-${i}`, BIOME_MOLTEN_CAVERN);
+    assert.equal(spec.spawnDensityMultiplier, DUNGEON_SPAWN_DENSITY, `密度=1.2（seed molten-${i}）`);
+    const bossZones = spec.spawnZones.filter((z) => z.tier === 2);
+    assert.equal(bossZones.length, 1, `恰好一个 BOSS 区（seed molten-${i}）`);
+    assert.equal(bossZones[0].enemyTypeId, "magmacolossus", `BOSS=熔岩巨像 magmacolossus（seed molten-${i}）`);
+    for (const z of spec.spawnZones) {
+      if (z.tier !== 2) {
+        assert.ok(["brigand", "savage"].includes(z.enemyTypeId), `火系池 brigand/savage，实际=${z.enemyTypeId}`);
+      }
+    }
+  }
+});
+
+// ⑬ 熔岩巨像数值
+test("⑬ 熔岩巨像数值：HP×1.3=390 / ATK×1.3=104 / 环形喷发 shape=0 96px ×1.5 + 灼烧（dungeon-variants §2）", () => {
+  const variant = ENEMY_TYPE_VARIANTS.magmacolossus;
+  assert.equal(variant.hpMult, 1.3, "HP×1.3");
+  assert.equal(variant.atkMult, 1.3, "ATK×1.3");
+  assert.equal(variant.aoeRadius, Math.round(2 * TILE), "环形喷发半径=96px");
+  assert.equal(variant.aoeShape, 0, "shape=0 圆环（内圈安全）");
+  assert.equal(variant.aoeDamageMult, 1.5, "环形喷发伤害 ×1.5");
+  assert.ok(variant.burnAoe, "灼烧地面已登记（DOT 降级版）");
+  assert.equal(variant.burnAoe!.intervalTicks, MAGMA_BURN_INTERVAL_TICKS, "灼烧间隔=6 tick（高频）");
+  assert.equal(variant.burnAoe!.telegraphTicks, MAGMA_BURN_TELEGRAPH_TICKS, "灼烧前摇=2 tick（短）");
+  assert.equal(variant.burnAoe!.radius, MAGMA_BURN_RADIUS, "灼烧半径=72px");
+  assert.equal(variant.burnAoe!.damageMult, MAGMA_BURN_DAMAGE_MULT, "灼烧伤害 ×0.15（低伤）");
+  assert.equal(variant.burnAoe!.shape, 1, "灼烧 shape=1 AOE 填充");
+
+  const r = spawnWave(
+    [{ pos: { x: 100, y: 100 }, tier: 2, enemyTypeId: "magmacolossus", count: 1 }],
+    new Rng("magmacolossus"),
+  );
+  const b = r.enemies[0];
+  assert.equal(b.kind, EntityKind.BOSS, "tier=2 → BOSS");
+  assert.equal(b.maxHp, Math.round(ENEMY_BASE_HP * HP_MULT.boss * 1.3), "HP=30×10×1.3=390");
+  assert.equal(b.hp, b.maxHp, "初始 hp=maxHp");
+  assert.equal(b.atk, Math.round(ENEMY_BASE_ATK * HP_MULT.boss * 1.3), "ATK=8×10×1.3=104");
+  assert.equal(b.aoeShape, 0, "aoeShape 透传=0");
+  assert.equal(b.aoeDamageMult, 1.5, "aoeDamageMult 透传=1.5");
+  assert.deepEqual(b.burnAoe, variant.burnAoe, "burnAoe 透传（DOT 降级版参数）");
+});
+
+// ⑭ 熔窟爆发词缀倾向
+test("⑭ 熔窟爆发词缀倾向：biome3 atk 1-12/critChance 31-40 ×3、attackSpeed 41-50 ×2；默认/未知=undefined", () => {
+  assert.equal(affixWeightsForBiome(BIOME_DEFAULT), undefined, "普通副本回退均匀词缀");
+  assert.equal(affixWeightsForBiome(999), undefined, "未知 biome 回退均匀词缀");
+  const w = affixWeightsForBiome(BIOME_MOLTEN_CAVERN)!;
+  assert.equal(w.length, 64, "权重数组长度=AFFIX_ID_MAX=64");
+  assert.equal(w[0], MOLTEN_AFFIX_BOOST_MULT, "atk(1) 权重 ×3");
+  assert.equal(w[11], MOLTEN_AFFIX_BOOST_MULT, "atk(12) 权重 ×3");
+  assert.equal(w[30], MOLTEN_AFFIX_BOOST_MULT, "critChance(31) 权重 ×3");
+  assert.equal(w[39], MOLTEN_AFFIX_BOOST_MULT, "critChance(40) 权重 ×3");
+  assert.equal(w[40], MOLTEN_ATTACK_SPEED_BOOST_MULT, "attackSpeed(41) 权重 ×2");
+  assert.equal(w[49], MOLTEN_ATTACK_SPEED_BOOST_MULT, "attackSpeed(50) 权重 ×2");
+  assert.equal(w[12], 1, "maxHp(13) 权重保持 1（非 boost 区）");
+  assert.equal(w[22], 1, "reduction(23) 权重保持 1（非 boost 区）");
+});
+
+// ⑮ 熔岩巨像灼烧地面（DOT 降级版）：高频短前摇 telegraph 命中玩家火伤
+test("⑮ 熔岩巨像灼烧地面：高频短前摇 telegraph 命中玩家火伤（不新增 DOT 世界机制）", () => {
+  const world = createWorld({
+    runId: "r",
+    roomId: "rm",
+    seed: "burn-magma",
+    phase: RoomPhase.OVERWORLD,
+    players: [{ seatId: 0, userId: "u0" }],
+    lootTokens: 0,
+    biomeId: BIOME_MOLTEN_CAVERN,
+    spawnZones: [
+      { pos: { x: 20 * TILE, y: 15 * TILE }, tier: 2, enemyTypeId: "magmacolossus", count: 1, respawnTicks: 100000, aggression: "passive" },
+    ],
+  });
+  const boss = world.actors().find((a) => a.kind === EntityKind.BOSS)!;
+  const player = world.actors().find((a) => a.ownerId === 0)!;
+  player.x = boss.x + 40; // 灼烧半径 72 内 + 仇恨内（≤240）
+  player.y = boss.y;
+  player.maxHp = 10000;
+  player.hp = 10000;
+  boss.bossPhase = 1; // 强制 phase2（同 telegraph.test 先例）
+
+  world.step(); // t=0 生成主技能（环形 shape=0）+ 灼烧（shape=1）telegraph
+  const telegraphs = world.actors().filter((a) => a.kind === EntityKind.TELEGRAPH);
+  const ring = telegraphs.find((a) => a.telegraph!.shape === 0);
+  const burn = telegraphs.find((a) => a.telegraph!.shape === 1);
+  assert.ok(ring, "phase2 战斗态应生成环形喷发 telegraph（shape=0）");
+  assert.equal(ring.telegraph!.radius, Math.round(2 * TILE), "环形喷发 radius=96px");
+  assert.ok(burn, "phase2 战斗态应生成灼烧 telegraph（shape=1 AOE 填充）");
+  assert.equal(burn.telegraph!.radius, MAGMA_BURN_RADIUS, "灼烧半径=72px");
+  assert.equal(burn.telegraph!.applyTick, MAGMA_BURN_TELEGRAPH_TICKS, "灼烧前摇=2 tick（applyTick=t+2）");
+
+  // 推进 MAGMA_BURN_TELEGRAPH_TICKS 落刀（t=2 命中圈内玩家 → 火伤）。
+  for (let i = 0; i < MAGMA_BURN_TELEGRAPH_TICKS; i++) world.step();
+  const p = world.actors().find((a) => a.ownerId === 0)!;
+  const atk = Math.round(ENEMY_BASE_ATK * HP_MULT.boss * 1.3); // 104
+  const expectedBurn = Math.round(atk * MAGMA_BURN_DAMAGE_MULT); // round(104×0.15)=16
+  assert.equal(p.hp, 10000 - expectedBurn, `灼烧伤害 = atk(104)×0.15=${expectedBurn}（环形尚未落刀，仅灼烧扣血）`);
+});
+
+// ⑯ 熔岩巨像灼烧高频复现：间隔内反复生成灼烧 telegraph（每 MAGMA_BURN_INTERVAL_TICKS 一记）
+test("⑯ 熔岩巨像灼烧高频复现：间隔 6 tick 反复生成灼烧 telegraph（模拟持续灼烧）", () => {
+  const world = createWorld({
+    runId: "r",
+    roomId: "rm",
+    seed: "burn-repeat",
+    phase: RoomPhase.OVERWORLD,
+    players: [{ seatId: 0, userId: "u0" }],
+    lootTokens: 0,
+    biomeId: BIOME_MOLTEN_CAVERN,
+    spawnZones: [
+      { pos: { x: 20 * TILE, y: 15 * TILE }, tier: 2, enemyTypeId: "magmacolossus", count: 1, respawnTicks: 100000, aggression: "passive" },
+    ],
+  });
+  const boss = world.actors().find((a) => a.kind === EntityKind.BOSS)!;
+  const player = world.actors().find((a) => a.ownerId === 0)!;
+  player.x = boss.x + 40;
+  player.y = boss.y;
+  player.maxHp = 100000;
+  player.hp = 100000;
+  boss.bossPhase = 1;
+
+  // 推进 3 个灼烧间隔（18 tick）：应至少生成 3 次灼烧 telegraph（t=0/6/12）。
+  for (let i = 0; i < MAGMA_BURN_INTERVAL_TICKS * 3; i++) world.step();
+  // 每次灼烧 telegraph（短前摇 2 tick）落刀造成火伤；玩家全程站圈内持续掉血。
+  const p = world.actors().find((a) => a.ownerId === 0)!;
+  const atk = Math.round(ENEMY_BASE_ATK * HP_MULT.boss * 1.3);
+  const perHit = Math.round(atk * MAGMA_BURN_DAMAGE_MULT);
+  // t=0/6/12 生成灼烧，t=2/8/14 落刀 → 3 次火伤；主技能环形（applyTick=12）在 t=12 也落刀（半径 96 覆盖 40）。
+  const ringHits = 1; // 主技能环形在 t=12 落刀一次
+  const ringDmg = Math.round(atk * 1.5);
+  const burnHits = 3;
+  assert.equal(
+    p.hp,
+    100000 - burnHits * perHit - ringHits * ringDmg,
+    `3 次灼烧(${perHit}) + 1 次环形(${ringDmg}) 持续掉血`,
+  );
+});
+

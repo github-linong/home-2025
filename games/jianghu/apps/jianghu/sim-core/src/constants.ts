@@ -635,7 +635,35 @@ export interface EnemyTypeVariant {
   readonly aoeDamageMult?: number;
   /** E31：接触攻击命中玩家时施加 SLOW 减速（幽冢鬼母「鬼爪」）；缺省 false（golden 锚点）。 */
   readonly slowOnHit?: boolean;
+  /**
+   * E33：灼烧地面（DOT 降级版；主理人裁定不新增 DOT 世界机制）——高频低伤 telegraph 近似持续灼烧。
+   * 缺省 undefined = 无灼烧（golden 锚点）。world 在 BOSS phase2 战斗态按 intervalTicks 间隔在自身周围
+   * 生成灼烧 telegraph（shape/radius/damageMult，telegraphTicks 短前摇），复用既有 telegraph 落刀结算。
+   */
+  readonly burnAoe?: {
+    readonly intervalTicks: number;
+    readonly telegraphTicks: number;
+    readonly radius: number;
+    readonly damageMult: number;
+    readonly shape: number;
+  };
 }
+
+// ─────────────────────────────────────────────────────────────
+// E33：熔岩巨像灼烧地面（DOT 降级版，主理人裁定）
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * 灼烧地面用「高频低伤 telegraph AOE」近似持续灼烧（不新增 DOT 世界机制，主理人裁定）：
+ * - 间隔 MAGMA_BURN_INTERVAL_TICKS=6（0.5s @12Hz，高频，模拟「地面持续灼烧」）；
+ * - 前摇 MAGMA_BURN_TELEGRAPH_TICKS=2（≈167ms，几乎即时落刀，模拟「踩上去就掉血」）；
+ * - 半径 MAGMA_BURN_RADIUS=72px（1.5×TILE，BOSS 身周）；
+ * - 伤害 MAGMA_BURN_DAMAGE_MULT=0.15（atk×0.15，每 0.5s → 每秒 ≈ atk×0.3 = design「DOT 每秒 atk×0.3」）。
+ */
+export const MAGMA_BURN_INTERVAL_TICKS = 6;
+export const MAGMA_BURN_TELEGRAPH_TICKS = 2;
+export const MAGMA_BURN_RADIUS = Math.round(1.5 * TILE);
+export const MAGMA_BURN_DAMAGE_MULT = 0.15;
 
 /** E28 敌人原型变体表（单一来源；spawning/world 只读引用，C7）。 */
 export const ENEMY_TYPE_VARIANTS: Readonly<Record<string, EnemyTypeVariant>> = {
@@ -650,6 +678,22 @@ export const ENEMY_TYPE_VARIANTS: Readonly<Record<string, EnemyTypeVariant>> = {
     aoeShape: 2, // 锥形（鬼啸扇形）
     aoeDamageMult: 1.2,
     slowOnHit: true,
+  },
+  // 熔岩巨像（熔窟 BOSS）：HP×1.3 / ATK×1.3（关底定位）；环形喷发 shape=0 圆环 96px=2×TILE ×1.5；
+  // 灼烧地面（DOT 降级版）shape=1 AOE 填充 72px ×0.15，每 6 tick 高频短前摇（dungeon-variants §2）。
+  magmacolossus: {
+    hpMult: 1.3,
+    atkMult: 1.3,
+    aoeRadius: Math.round(2 * TILE),
+    aoeShape: 0, // 圆环（环形喷发，内圈安全；MVP 服务端仍圆形结算，几何差异由客户端渲染表达）
+    aoeDamageMult: 1.5,
+    burnAoe: {
+      intervalTicks: MAGMA_BURN_INTERVAL_TICKS,
+      telegraphTicks: MAGMA_BURN_TELEGRAPH_TICKS,
+      radius: MAGMA_BURN_RADIUS,
+      damageMult: MAGMA_BURN_DAMAGE_MULT,
+      shape: 1, // AOE 填充（灼烧地面）
+    },
   },
 };
 
@@ -688,18 +732,44 @@ export const SLOW_MOVE_MULT = 0.6;
 export const BARROW_AFFIX_BOOST_MULT = 3;
 
 /**
- * E31：biomeId → 词缀权重覆盖（荒冢「减速主题掉落倾向」）。
+ * 熔窟副本 biome ID（Molten Cavern，dungeon-variants §1 变体 C）。
+ * 放在 affixWeightsForBiome 之前（该函数按 biome 分派词缀权重）。
+ */
+export const BIOME_MOLTEN_CAVERN = 3;
+
+/**
+ * 熔窟「爆发主题掉落倾向」词缀权重放大倍数（design §1 变体 C：critChance 31–40 + atk 1–12 ↑，
+ * attackSpeed 41–50 微升——爆发 build）。
+ * - atk(1–12) / critChance(31–40) ×MOLTEN_AFFIX_BOOST_MULT（主 boost）；
+ * - attackSpeed(41–50) ×MOLTEN_ATTACK_SPEED_BOOST_MULT（微升，比主 boost 小）。
+ */
+export const MOLTEN_AFFIX_BOOST_MULT = 3;
+export const MOLTEN_ATTACK_SPEED_BOOST_MULT = 2;
+
+/**
+ * E31/E33：biomeId → 词缀权重覆盖（荒冢「减速主题」/ 熔窟「爆发主题」掉落倾向）。
  * - 荒冢（biome 2）：reduction（23–30）+ moveSpeed（51–64）词缀权重 ×BARROW_AFFIX_BOOST_MULT（↑）；
+ * - 熔窟（biome 3）：atk（1–12）+ critChance（31–40）×MOLTEN_AFFIX_BOOST_MULT（↑）、
+ *   attackSpeed（41–50）×MOLTEN_ATTACK_SPEED_BOOST_MULT（微升）；
  * - 普通/未知 → undefined（loot 走均匀 rng.nextInt(1, AFFIX_ID_MAX)，golden 不变）。
  * 返回长度 AFFIX_ID_MAX 的权重数组（索引 i → 词缀 id i+1）；loot.rollAffixId 按加权抽取。
  * 仅改词缀权重、不碰掉落 Rng 流结构（加权抽取同样消耗 1 次 Rng 步进，与均匀 nextInt 同量）。
  */
 export function affixWeightsForBiome(biomeId: number): readonly number[] | undefined {
-  if (biomeId !== BIOME_BARROW) return undefined;
-  const weights: number[] = new Array<number>(AFFIX_ID_MAX).fill(1);
-  for (let id = 23; id <= 30; id++) weights[id - 1] = BARROW_AFFIX_BOOST_MULT; // reduction 23..30
-  for (let id = 51; id <= 64; id++) weights[id - 1] = BARROW_AFFIX_BOOST_MULT; // moveSpeed 51..64
-  return weights;
+  if (biomeId === BIOME_BARROW) {
+    const weights: number[] = new Array<number>(AFFIX_ID_MAX).fill(1);
+    for (let id = 23; id <= 30; id++) weights[id - 1] = BARROW_AFFIX_BOOST_MULT; // reduction 23..30
+    for (let id = 51; id <= 64; id++) weights[id - 1] = BARROW_AFFIX_BOOST_MULT; // moveSpeed 51..64
+    return weights;
+  }
+  if (biomeId === BIOME_MOLTEN_CAVERN) {
+    const weights: number[] = new Array<number>(AFFIX_ID_MAX).fill(1);
+    for (let id = 1; id <= 12; id++) weights[id - 1] = MOLTEN_AFFIX_BOOST_MULT; // atk 1..12
+    for (let id = 31; id <= 40; id++) weights[id - 1] = MOLTEN_AFFIX_BOOST_MULT; // critChance 31..40
+    for (let id = 41; id <= 50; id++) weights[id - 1] = MOLTEN_ATTACK_SPEED_BOOST_MULT; // attackSpeed 41..50 微升
+    return weights;
+  }
+  return undefined;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -709,24 +779,30 @@ export function affixWeightsForBiome(biomeId: number): readonly number[] | undef
 /** 套装 id（InventoryItem / EquippedItem.setId；0=无套装）。 */
 export const SET_IRONBONE = 1; // 铁骨套装（Ironbone）——石牢 biome1 普通/精英掉落
 export const SET_WRAITH = 2; // 鬼影套装（Wraith）——荒冢 biome2 普通/精英掉落
-export const SET_BLAZING_SUN = 3; // 烈阳套装（Blazing Sun）——主题副本 BOSS 宝箱
+export const SET_BLAZING_SUN = 3; // 烈阳套装（Blazing Sun）——熔窟 biome3（普通/精英 + BOSS 宝箱）
 
 /** 套装掉落来源：drop=普通/精英击杀；boss-chest=BOSS 宝箱。 */
 export type SetDropSource = "drop" | "boss-chest";
 
 /**
- * E32：掉落后映射 setId（单一来源，C7）。
+ * E32/E33：掉落后映射 setId（单一来源，C7）。
  * - 铁骨(1) = 石牢 biome1 普通/精英掉落；
  * - 鬼影(2) = 荒冢 biome2 普通/精英掉落；
- * - 烈阳(3) = 主题副本（石牢/荒冢）BOSS 宝箱；
+ * - 烈阳(3) = 主题副本（石牢/荒冢/熔窟）BOSS 宝箱 + 熔窟普通/精英掉落（E33：烈阳主产地=熔窟，
+ *   design §3 定位「熔窟 DPS 关底」+ §1 变体 C 爆发掉落倾向 critChance/atk）；
  * - biome0 / 未知 / 主世界 → 0（无套装）→ playtest golden 不变（D9）。
  * 纯函数确定性（无随机 / 无副作用）。
  */
 export function setIdForDrop(biomeId: number, source: SetDropSource): number {
   if (source === "boss-chest") {
-    return biomeId === BIOME_STONE_PRISON || biomeId === BIOME_BARROW ? SET_BLAZING_SUN : 0;
+    // E33：熔窟加入主题副本 BOSS 宝箱（烈阳）；石牢/荒冢保持 E32 现状（烈阳=主题副本 BOSS 宝箱）。
+    return biomeId === BIOME_STONE_PRISON || biomeId === BIOME_BARROW || biomeId === BIOME_MOLTEN_CAVERN
+      ? SET_BLAZING_SUN
+      : 0;
   }
   if (biomeId === BIOME_STONE_PRISON) return SET_IRONBONE;
   if (biomeId === BIOME_BARROW) return SET_WRAITH;
+  // E33：熔窟普通/精英掉落 → 烈阳（暴击爆发主题，design §3 烈阳定位「熔窟 DPS 关底」）。
+  if (biomeId === BIOME_MOLTEN_CAVERN) return SET_BLAZING_SUN;
   return 0;
 }

@@ -78,6 +78,14 @@ export interface SpawnedEnemySpec {
   readonly aoeDamageMult?: number;
   /** E31：接触攻击命中玩家时施加 SLOW（幽冢鬼母「鬼爪」）；缺省 undefined = false。 */
   readonly slowOnHit?: boolean;
+  /** E33：灼烧地面（DOT 降级版）——高频低伤 telegraph 近似持续灼烧；缺省 undefined = 无灼烧。 */
+  readonly burnAoe?: {
+    readonly intervalTicks: number;
+    readonly telegraphTicks: number;
+    readonly radius: number;
+    readonly damageMult: number;
+    readonly shape: number;
+  };
 }
 
 /** 刷怪波次实例结果。 */
@@ -127,6 +135,7 @@ export function spawnWave(zones: readonly SpawnZone[], rng: Rng): SpawnResult {
         aoeShape: variant?.aoeShape,
         aoeDamageMult: variant?.aoeDamageMult,
         slowOnHit: variant?.slowOnHit,
+        burnAoe: variant?.burnAoe, // E33：灼烧地面（DOT 降级版）透传；未登记 → undefined 无灼烧
       });
     }
   }

@@ -284,6 +284,10 @@ interface Actor {
   aoeShape?: number; // BOSS phase2 telegraph 形状覆盖（undefined → 1=AOE 填充）
   aoeDamageMult?: number; // telegraph 伤害倍率覆盖（undefined → BOSS_AOE_DAMAGE_MULT）
   slowOnHit?: boolean; // 接触攻击命中附加 SLOW（undefined → false）
+  // E33 新增（熔岩巨像灼烧地面；**不进 EntityState 快照** C12——灼烧 telegraph 经 telegraph.radius/shape 下发，
+  //   伤害经 dmg 结算、间隔/前摇仅 world 内部；未登记 → undefined → 无灼烧，golden 不变）。
+  burnAoe?: { intervalTicks: number; telegraphTicks: number; radius: number; damageMult: number; shape: number };
+  lastBurnAoeTick?: number; // 灼烧 telegraph 生成节流（上次生成灼烧 telegraph 的 tick；仅 world 内部）
   // E18 新增（敌人攻击前摇；**不进 EntityState 快照**，C12 纪律——客户端用 WINDUP status 位表现抬手）
   windupUntilTick?: number; // 前摇截止 tick（t >= 本值落刀；仅 world 内部）
   windupTargetId?: number; // 前摇锁定目标 actor id（落刀时判定是否仍在接触范围；仅 world 内部）
@@ -771,6 +775,7 @@ export function createWorld(opts: CreateWorldOpts): World {
           aoeShape: spec.aoeShape,
           aoeDamageMult: spec.aoeDamageMult,
           slowOnHit: spec.slowOnHit,
+          burnAoe: spec.burnAoe, // E33：灼烧地面（DOT 降级版）透传；未登记 → undefined 无灼烧
           lastAttackTick: -ENEMY_ATTACK_INTERVAL_TICKS,
         });
         aliveIds.push(id);
@@ -1217,6 +1222,38 @@ export function createWorld(opts: CreateWorldOpts): World {
           e.lastAoeTick = t;
         }
 
+        // E33：熔岩巨像灼烧地面（DOT 降级版）——高频低伤 telegraph 近似持续灼烧（主理人裁定：
+        //   不新增 DOT 世界机制）。仅当敌人原型登记 burnAoe（熔岩巨像）时启用；短前摇（telegraphTicks）
+        //   + 低伤（damageMult）模拟「地面持续灼烧」。复用下方 (3b) telegraph 落刀段
+        //   （applyTick 到点 → 圈内 resolveDamage + 移除），无新结算路径（D9：无 Rng 消耗，golden 稳）。
+        if (
+          e.kind === EntityKind.BOSS &&
+          e.burnAoe !== undefined &&
+          (e.bossPhase ?? 0) >= 1 &&
+          best <= AGGRO_RADIUS &&
+          t - (e.lastBurnAoeTick ?? -e.burnAoe.intervalTicks) >= e.burnAoe.intervalTicks
+        ) {
+          actors.push({
+            id: nextId++,
+            kind: EntityKind.TELEGRAPH,
+            x: e.x,
+            y: e.y,
+            dir: 0,
+            hp: 1,
+            maxHp: 1,
+            status: EntityStatus.ALIVE,
+            telegraph: {
+              shape: e.burnAoe.shape,
+              color: 0, // DANGER（红；灼烧地面）
+              startTick: t,
+              applyTick: t + e.burnAoe.telegraphTicks, // 短前摇（≈167ms），模拟「踩上去就掉血」
+              radius: e.burnAoe.radius,
+            },
+            dmg: Math.round((e.atk ?? ENEMY_BASE_ATK) * e.burnAoe.damageMult), // 低伤（atk×0.15）
+          });
+          e.lastBurnAoeTick = t;
+        }
+
         if (aggression === "aggressive") {
           // aggressive：仇恨半径内索敌追击；接触内不移动（攻击）；半径外 → 脱战回归出生点（E16）。
           if (best <= AGGRO_RADIUS) {
@@ -1497,6 +1534,7 @@ export function createWorld(opts: CreateWorldOpts): World {
               aoeShape: spec.aoeShape,
               aoeDamageMult: spec.aoeDamageMult,
               slowOnHit: spec.slowOnHit,
+              burnAoe: spec.burnAoe, // E33：灼烧地面（DOT 降级版）透传（复活同样生效）
               lastAttackTick: t - ENEMY_ATTACK_INTERVAL_TICKS,
             });
             st.aliveIds.push(id);
