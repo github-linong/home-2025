@@ -10,6 +10,7 @@
 > E23 新增（纯客户端 · 技能光效差异化）：四技能**按下即播**本地差异化光效（不等服务端命中，命中后叠加命中闪光/飘字），视觉与 E11 定位/数值匹配 —— **烈斩=短促白色挥砍弧（90°/0.15s 近战感）、剑气=直线剑气波（青白金，飞 2.5×TILE+尾迹，到终点消散）、震地=地面震荡圈（土褐圆环+裂纹，2.0×TILE/0.3s）、破军=大范围斩闪（180° 红金巨弧+轻微屏幕震动，1.8×TILE/0.2s）**；范围对齐服务端 `SKILL_RANGE_BY_SLOT=72/120/96/86px`。同时修正客户端 SKILL_INFO 镜像（CD 3/5/4/8s、范围 1.5/2.5/2.0/1.8 格），HUD tooltip 与 CD 环对齐。服务端零改动。
 > E26 新增（纯客户端 · 小地图增强）：右上角 minimap 按 kind 区分**形状/颜色** —— **玩家金点 / 队友暖橙点 / 敌人小红点 / BOSS 大红菱形（呼吸）/ 宝箱金方块（脉动）/ 入口紫色漩涡 / 地面掉落按稀有度 白·蓝·金·暗金 小点**（副本内打完 BOSS 找宝箱、找入口出本一眼可见）；minimap 盒改为世界 40×30 格**等比映射**（152×114 = 1920×1440 = 4:3，格子在图上为正方形，原 150×112 略扁已修正）；副本 world 同主世界 40×30 → 同一比例。服务端零改动。
 > E27 新增（纯客户端 · 新手引导）：7 步逐动词引导（**点击移动 → 点击普攻 → 走近拾取 → I 背包穿装 → Q 喝药 → 数字键 1 放烈斩 → F 进/出副本**），**完成条件即「检测已会」**（移动/普攻/拾取/穿装/喝药/技能/进本任一动作做到即推进）；`localStorage`（`jh.onboarding.seenSteps`）记忆 + 老玩家（有穿装 / 等级>1 / 曾进本）整段跳过仅留 playhint；游客 Step3/4 自动跳过 + 一次性「登录可保存」提示；`?debug=1` 整体静默（E2E 不干扰）。服务端零改动。
+> E29 新增（纯客户端 · 音频 P0 补全）：按 `art/audio-direction.md` P0 落地 —— **三总线结构**（`sfxBus 0.6` / `musicBus 0.3` / `ambienceBus 0.14`，统一挂 master 总闸）+ **7 条新音效**：`telegraph`（1s sawtooth 上行 + tremolo 加速脉冲，挂预警出现）、`ambient_wind`（环境风噪循环，探索态常驻）、`chest_open`（E20 宝箱开启专属音）、`enchant_success`（E19 强化成功）、`disassemble`（E22 分解）、`portal_hum`（入口漩涡嗡鸣循环，近距离开关）、`footstep`（移动脚步，250ms 节流）。循环音走 `LOOPS` 注册表（随游戏状态/距离启停）；所有合成沿用 WebAudio 原语，零外部资源；`window.__game.sfx.sounds` 暴露全量音效名（E2E 断言）。服务端零改动。
 
 ---
 
@@ -77,6 +78,13 @@ http://localhost:8080/index.html
 **打击感（纯客户端表现）**：实体 HP 下降 → **C3 飘字锚定实体**（头顶 -N，敌人受击黄 / 玩家受击红，1s 淡出上飘；**每帧按实体当前渲染位置换算屏幕坐标，实体移动/相机移动时跟随**）+ **150ms 受击闪白** + 扩散环；玩家放技能 → **E23 差异化本地光效（按下即播，按槽位：烈斩白色挥砍弧 / 剑气直线波 / 震地土褐震荡圈 / 破军红金斩闪 + 屏幕震动）**，命中叠加扩散环/闪白；击杀 → 6-12 个小方块粒子四散淡出。
 
 **E12 音效（WebAudio 程序化合成，零外部资源 / 零网络请求）**：所有音效由 `SFX` 模块（`index.html` 内独立 IIFE，不耦合既有逻辑）实时合成——攻击/技能/命中/格挡/拾取/升级/倒地/复活/进出副本/断线重连/UI 点击/敌人死亡共 18 种。**浏览器自动播放策略**：首次用户手势（pointerdown/keydown）才惰性创建 `AudioContext` 并 resume；无手势 / 无音频环境 / 静音时 `play()` 直接 return（不创建 ctx、不抛错），E2E Z1-Z3 零报错。**音量控制**：HUD 顶部 🔊/🔇 按钮（点击静音/恢复）+ 音量滑块；默认开启，`localStorage`（`jianghu_sfx_vol` / `jianghu_sfx_muted`）记忆。技能音效按 slot 区分（`skill_1..4`）；普攻挥砍音 350ms 节流（input loop 12Hz 连发防机枪声）。
+
+**E29 音频 P0 补全（三总线 + 7 条新音效，纯客户端）**：
+- **三总线**：`master`（总闸，受 🔊/🔇 + 音量滑块控制，沿用 `jianghu_sfx_vol/muted` 持久化）→ `sfxBus 0.6`（一次性音效，基准最响）/ `musicBus 0.3`（BGM 预留 Phase-2）/ `ambienceBus 0.14`（环境风噪/入口嗡鸣，最底）。分总线可调：`SFX.setBusVolume('sfx'|'music'|'ambience', v)`（MVP 至少 master 总闸 + sfx/ambience 两档）。
+- **一次性音效新增 5 条**（`SFX.DEFS`，沿用 `osc/noise/noiseSweep` 原语）：`telegraph`（预警，1s `sawtooth` 150→400Hz 上行 + `sine` 90Hz tremolo 6→14Hz 加速脉冲，与 0.4s 前摇区分）、`chest_open`（E20 宝箱：木箱 thunk + 吱嘎 + 金光上行琶音）、`enchant_success`（E19 强化：锤击 + 金属短爆 + 泛音 660→1320 上行）、`disassemble`（E22 分解：碎裂高频短爆 + 下行 + 碎玻璃）、`footstep`（移动脚步：短低通噪声 + 轻低频 sine，250ms 节流防连发）。
+- **循环音新增 2 条**（`SFX.LOOP_DEFS` → `LOOPS` 注册表，`start/stop` 幂等，挂 `ambienceBus`）：`ambient_wind`（环境风噪：低通白噪声 + LFO 调制截止频率，探索态常驻，随进房/出房/断线启停）、`portal_hum`（入口漩涡嗡鸣：双 detune `sawtooth` 55/57.5Hz + 慢幅度 LFO + 高频 2kHz 微光，靠近入口 `PORTAL_HUM_RADIUS=3×TILE` 内开、离开关）。
+- **挂接点**：`telegraph` → `drawTelegraphs`（实体首次出现/startTick 变化播一次）；`chest_open` → 开箱成功（宝箱从快照消失）；`enchant_success` → 强化成功 toast；`disassemble` → 分解成功 toast；`footstep` → `sendMove`/`sendMoveToTile`；`portal_hum` → `updatePortalHum()`（每帧距离判定）。
+- **E2E 钩子**：`window.__game.sfx.sounds` 暴露全量音效名（18 旧 + 5 新一次性 + 2 循环 = 25 条），新增 7 条名称存在即可。
 
 **C3 程序化武侠剪影（零外部资源，Canvas 路径绘制）**：
 - **玩家「斗笠侠客」**：圆帽（帽檐椭圆 + 帽顶两层）+ 披风 + 剑轮廓（剑身 + 护手），按 `dir` 旋转朝向；本地更亮 + 描边高光；倒地灰色平躺；IFRAME 半透闪烁；复活无敌叠加金色圆环。

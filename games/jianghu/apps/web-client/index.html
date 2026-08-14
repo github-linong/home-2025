@@ -388,6 +388,7 @@ const ENTRANCE_POS = { x: 20 * TILE, y: 15 * TILE }; // 主世界入口（tile 2
 // E16：进本交互半径 = 1.5×TILE（镜像 C7 ENTRANCE_INTERACT_RADIUS；服务端 dungeon.enter 权威校验同值）。
 // 与拾取提示环（L2 按 F 拾取）一致；超出本半径按 F 不进本（客户端 UI 闸门，服务端仍权威校验）。
 const ENTRANCE_ENTER_RADIUS = Math.round(1.5 * TILE);
+const PORTAL_HUM_RADIUS = 3 * TILE;      // E29 P0：入口漩涡嗡鸣触发半径（比「按 F 进本」更早响起）
 const PARRY_TICKS = 3;                  // 格挡窗口（服务端权威展示用）
 const SKILL_ACTIONS = [2, 3, 4, 5];     // InputAction.SKILL1..4
 const ACTION_STOP = 7;                  // InputAction.STOP
@@ -461,10 +462,17 @@ const SFX = (() => {
   const MUTE_KEY = 'jianghu_sfx_muted';
   let ctx = null;          // AudioContext（惰性）
   let master = null;       // 主增益（音量/静音总闸）
+  let sfxBus = null;       // E29：一次性音效总线
+  let musicBus = null;     // E29：BGM 总线（预留 Phase-2）
+  let ambienceBus = null;  // E29：环境/嗡鸣总线
   let noiseBuf = null;     // 复用白噪声缓冲
   let vol = 0.5;           // 默认音量 0.5
   let muted = false;
   let unlocked = false;    // 是否已有用户手势（自动播放策略门闸）
+  // E29：三总线增益（相对 master 总闸；sfx 基准最响、ambience 最底、music 预留）
+  const busGains = { sfx: 0.6, music: 0.3, ambience: 0.14 };
+  let loops = {};          // E29：运行中的循环节点 name -> {nodes,out}
+  let desiredLoops = {};   // E29：期望循环状态（手势解锁前记录意图，解锁后补起）
 
   // 读取持久化设置（localStorage 不可用时静默忽略）
   try {
@@ -486,6 +494,10 @@ const SFX = (() => {
       master = ctx.createGain();
       master.gain.value = muted ? 0 : vol;
       master.connect(ctx.destination);
+      // E29：三总线（sfx / music / ambience）统一挂 master 总闸下；SFX 走 sfxBus、环境/嗡鸣走 ambienceBus
+      sfxBus = ctx.createGain(); sfxBus.gain.value = busGains.sfx; sfxBus.connect(master);
+      musicBus = ctx.createGain(); musicBus.gain.value = busGains.music; musicBus.connect(master);
+      ambienceBus = ctx.createGain(); ambienceBus.gain.value = busGains.ambience; ambienceBus.connect(master);
       if (ctx.state === 'suspended') ctx.resume().catch(() => {});
       return ctx;
     } catch (e) {
@@ -497,6 +509,8 @@ const SFX = (() => {
   function unlock() {
     unlocked = true;
     ensure();
+    // E29：手势解锁后才真正启动此前请求的循环音（自动播放策略门闸）
+    for (const name in desiredLoops) { if (desiredLoops[name]) startLoop(name); }
   }
   try {
     window.addEventListener('pointerdown', unlock, { once: true });
@@ -516,6 +530,9 @@ const SFX = (() => {
       return buf;
     } catch (e) { return null; }
   }
+
+  // E29：一次性 SFX 输出目标（sfxBus；未就绪则回退 master/destination）
+  function sfxOut(c) { return sfxBus || master || c.destination; }
 
   // 单振荡器：频率滑落（可选）+ 指数衰减包络（可选 0.15s 延迟回声，剑气/传送用）
   function osc(c, type, f0, f1, t0, dur, gv, opts) {
@@ -544,9 +561,9 @@ const SFX = (() => {
         dg.gain.setValueAtTime(0.0001, t0 + opts.echo);
         dg.gain.exponentialRampToValueAtTime(0.0001, t0 + dur + opts.echo + 0.05);
         d.connect(dg);
-        dg.connect(master || c.destination);
+        dg.connect(sfxOut(c));
       }
-      out.connect(master || c.destination);
+      out.connect(sfxOut(c));
       o.start(t0);
       o.stop(t0 + dur + (opts && opts.echo ? opts.echo + 0.1 : 0.05));
     } catch (e) { /* ignore */ }
@@ -574,7 +591,7 @@ const SFX = (() => {
       g.gain.exponentialRampToValueAtTime(Math.max(0.0001, gv), t0 + Math.min(0.012, dur * 0.25));
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
       node.connect(g);
-      g.connect(master || c.destination);
+      g.connect(sfxOut(c));
       src.start(t0);
       src.stop(t0 + dur + 0.05);
     } catch (e) { /* ignore */ }
@@ -597,7 +614,7 @@ const SFX = (() => {
       g.gain.setValueAtTime(0.0001, t0);
       g.gain.exponentialRampToValueAtTime(Math.max(0.0001, gv), t0 + Math.min(0.03, dur * 0.2));
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-      src.connect(f); f.connect(g); g.connect(master || c.destination);
+      src.connect(f); f.connect(g); g.connect(sfxOut(c));
       src.start(t0); src.stop(t0 + dur + 0.05);
     } catch (e) { /* ignore */ }
   }
@@ -690,7 +707,142 @@ const SFX = (() => {
       osc(c, 'sine', 300, 70, t0, 0.25, 0.4);
       noise(c, t0, 0.15, 0.28, 800, 'lowpass');
     },
+    // ── E29 P0：战斗安全 / 反馈补齐 / 手感 ──
+    telegraph(c, t0) {         // 1s sawtooth 150→400 上行 + 90Hz tremolo 加速脉冲（与 0.4s 前摇区分）
+      const dur = 1.0;
+      const o = c.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(150, t0);
+      o.frequency.exponentialRampToValueAtTime(400, t0 + dur);
+      const og = c.createGain();
+      og.gain.setValueAtTime(0.0001, t0);
+      og.gain.exponentialRampToValueAtTime(0.22, t0 + 0.18);   // 慢 attack
+      og.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);  // 快 release
+      o.connect(og); og.connect(sfxOut(c));
+      const p = c.createOscillator(); p.type = 'sine'; p.frequency.value = 90;
+      const trem = c.createGain(); trem.gain.value = 0.5;
+      const pg = c.createGain();
+      pg.gain.setValueAtTime(0.0001, t0);
+      pg.gain.exponentialRampToValueAtTime(0.28, t0 + 0.12);
+      pg.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      const lfo = c.createOscillator(); lfo.type = 'sine';
+      lfo.frequency.setValueAtTime(6, t0);
+      lfo.frequency.exponentialRampToValueAtTime(14, t0 + dur);
+      const lfoG = c.createGain(); lfoG.gain.value = 0.4;
+      lfo.connect(lfoG); lfoG.connect(trem.gain);
+      p.connect(trem); trem.connect(pg); pg.connect(sfxOut(c));
+      o.start(t0); o.stop(t0 + dur + 0.05);
+      p.start(t0); p.stop(t0 + dur + 0.05);
+      lfo.start(t0); lfo.stop(t0 + dur + 0.05);
+    },
+    chest_open(c, t0) {        // E20：木箱 thunk + 吱嘎 + 金光上行琶音（比 levelup 更软）
+      osc(c, 'square', 120, 80, t0, 0.16, 0.4);
+      osc(c, 'sawtooth', 200, 300, t0 + 0.04, 0.14, 0.12);
+      osc(c, 'sine', 523, 523, t0 + 0.12, 0.14, 0.2);
+      osc(c, 'sine', 659, 659, t0 + 0.2, 0.14, 0.2);
+      osc(c, 'sine', 784, 784, t0 + 0.28, 0.24, 0.22);
+    },
+    enchant_success(c, t0) {   // E19：锤击 + 金属噪声短爆 + 泛音 660→1320 上行
+      osc(c, 'square', 200, 140, t0, 0.2, 0.4);
+      noise(c, t0, 0.08, 0.38, 2600, 'highpass');
+      osc(c, 'sine', 660, 1320, t0 + 0.05, 0.28, 0.24);
+    },
+    disassemble(c, t0) {       // E22：碎裂高频短爆 + 下行 + 碎玻璃
+      noise(c, t0, 0.12, 0.4, 3000, 'highpass');
+      osc(c, 'sine', 800, 300, t0, 0.3, 0.28);
+      noise(c, t0 + 0.1, 0.06, 0.2, 4200, 'highpass');
+      noise(c, t0 + 0.18, 0.06, 0.16, 5000, 'highpass');
+    },
+    footstep(c, t0) {          // 移动脚步：短低通噪声 + 轻低频 sine
+      noise(c, t0, 0.04, 0.16, 600, 'lowpass');
+      osc(c, 'sine', 100, 80, t0, 0.05, 0.12);
+    },
   };
+
+  // ── E29 P0：循环节点（LOOPS 注册表：ambient_wind / portal_hum；musicBus 预留 BGM Phase-2）──
+  const LOOP_DEFS = {
+    ambient_wind(c) {          // 环境风噪：低通白噪声 + LFO 调制截止频率（极低音量底座）
+      const src = c.createBufferSource();
+      const buf = getNoise(c, 2);
+      if (!buf) return null;
+      src.buffer = buf; src.loop = true;
+      const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 420; f.Q.value = 0.6;
+      const lfo = c.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.13;
+      const lfoG = c.createGain(); lfoG.gain.value = 120;
+      lfo.connect(lfoG); lfoG.connect(f.frequency);
+      const g = c.createGain(); g.gain.value = 0.12;
+      src.connect(f); f.connect(g);
+      src.start(); lfo.start();
+      return { nodes: [src, f, lfo, lfoG, g], out: g };
+    },
+    portal_hum(c) {            // 入口漩涡嗡鸣：双 detune sawtooth 55/57.5Hz + 慢幅度 LFO + 高频微光
+      const o1 = c.createOscillator(); o1.type = 'sawtooth'; o1.frequency.value = 55;
+      const o2 = c.createOscillator(); o2.type = 'sawtooth'; o2.frequency.value = 57.5;
+      const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 260; f.Q.value = 1.2;
+      const g = c.createGain(); g.gain.value = 0.14;
+      const lfo = c.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.5;
+      const lfoG = c.createGain(); lfoG.gain.value = 0.06;
+      lfo.connect(lfoG); lfoG.connect(g.gain);
+      const gl = c.createOscillator(); gl.type = 'sine'; gl.frequency.value = 2000;
+      const glg = c.createGain(); glg.gain.value = 0.015;
+      gl.connect(glg);
+      const out = c.createGain(); out.gain.value = 1;
+      o1.connect(f); o2.connect(f); f.connect(g); g.connect(out); glg.connect(out);
+      o1.start(); o2.start(); lfo.start(); gl.start();
+      return { nodes: [o1, o2, f, g, lfo, lfoG, gl, glg, out], out: out };
+    },
+  };
+
+  // 启动循环（幂等：已运行则跳过；无手势/无 ctx → 记入 desiredLoops 待解锁后补起）
+  function startLoop(name) {
+    try {
+      if (loops[name]) return;
+      const c = ensure();
+      if (!c || !unlocked) return;
+      const build = LOOP_DEFS[name];
+      if (!build) return;
+      const inst = build(c);
+      if (!inst) return;
+      inst.out.connect(ambienceBus || master || c.destination);
+      inst.running = true;
+      loops[name] = inst;
+    } catch (e) { /* 静默失败：无音频环境/自动播放策略下不报错 */ }
+  }
+
+  // 停止循环（幂等）
+  function stopLoop(name) {
+    try {
+      const inst = loops[name];
+      if (!inst) return;
+      try { inst.out.disconnect(); } catch (e) { /* ignore */ }
+      for (const n of (inst.nodes || [])) {
+        try { if (n.stop) n.stop(); } catch (e) { /* ignore */ }
+        try { n.disconnect(); } catch (e) { /* ignore */ }
+      }
+      loops[name] = null;
+    } catch (e) { /* ignore */ }
+  }
+
+  // E29：循环开/关（on=true 启动 / false 停止；供游戏状态与入口邻近管理调用）
+  function loop(name, on) {
+    try {
+      desiredLoops[name] = !!on;
+      if (on) startLoop(name); else stopLoop(name);
+    } catch (e) { /* ignore */ }
+  }
+
+  // E29：分总线音量（sfx/music/ambience 可分别调；master 总闸仍由 setVolume/toggleMute 控制）
+  function setBusVolume(bus, v) {
+    try {
+      if (busGains[bus] == null) return null;
+      const nv = Math.max(0, Math.min(1, v));
+      busGains[bus] = nv;
+      const node = bus === 'sfx' ? sfxBus : (bus === 'music' ? musicBus : ambienceBus);
+      if (node) node.gain.value = nv;
+      return nv;
+    } catch (e) { return null; }
+  }
+  function getBusVolume(bus) { return busGains[bus]; }
 
   // 播放（全静默失败：无手势 / 无音频环境 / 静音 → 直接 return，绝不抛错 → Z1-Z3 保护）
   function play(name) {
@@ -725,6 +877,13 @@ const SFX = (() => {
     getVolume: () => vol,
     toggleMute: toggleMute,
     isMuted: () => muted,
+    // E29：循环音注册表 + 分总线音量 + 音效名清单（E2E 断言钩子）
+    loop: loop,
+    startLoop: startLoop,
+    stopLoop: stopLoop,
+    setBusVolume: setBusVolume,
+    getBusVolume: getBusVolume,
+    sounds: Object.keys(DEFS).concat(Object.keys(LOOP_DEFS)),
   };
 })();
 
@@ -857,7 +1016,13 @@ canvas.addEventListener('dblclick', () => { view.follow = true; });
 
 // ── 状态 ──
 let state = 'connecting';           // connecting | overworld | dungeon | reconnecting | closed
-function setState(s) { state = s; GAME.state = s; }
+function setState(s) {
+  state = s; GAME.state = s;
+  // E29 P0：环境风噪循环随游戏状态启停（探索态 overworld/dungeon 常驻；断线/关闭/重连中停止）
+  try {
+    SFX.loop('ambient_wind', s === 'overworld' || s === 'dungeon');
+  } catch (e) { /* ignore */ }
+}
 let seq = 1;
 let seatId = null;
 let roomId = null;
@@ -914,6 +1079,7 @@ let combatTarget = null;            // 战斗目标 entity id（左键点敌人�
 let moveTarget = null;              // 点击移动目标格（packed = gx*64+gy；左键点地面）
 let meleeFx = [];                   // 普攻挥砍光效 {x,y,dir,born,ttl}
 let lastSwingSfxAt = 0;             // E12：普攻挥砍音效节流（input loop 12Hz 连发时防机枪声）
+let lastFootstepAt = 0;             // E29：脚步音效节流（250ms 防连发）
 
 // ── Toast ──
 let toastTimer = null;
@@ -1264,7 +1430,7 @@ function handleControl(msg) {
       // E22：分解成功 toast「分解成功：强化石+N 药水+1」（差分 = 本次分解产出，服务端回推同一格式）。
       if (isDisassembleReply) {
         toast('分解成功：强化石 +' + (materials - prevMaterials) + ' 药水 +' + (potions - prevPotions));
-        SFX.play('ui'); // E12：UI 点击（分解成功）
+        SFX.play('disassemble'); // E29 P0：分解成功（碎裂 + 下行 + 碎玻璃）
         lastDisassemble = null;
       }
       // 增量 toast：新入库物品 → 屏幕下方「拾取 [稀有度色]物品（词缀xN）」
@@ -1279,7 +1445,7 @@ function handleControl(msg) {
           || Object.values(equipped).find((i) => i && i.itemId === lastEnchant.itemId);
         const newLv = hit ? (hit.enchantLevel || 0) : (lastEnchant.prevLevel + 1);
         toast('强化成功！+' + newLv);
-        SFX.play('ui'); // E12：UI 点击（强化成功）
+        SFX.play('enchant_success'); // E29 P0：强化成功（锤击 + 金属泛音上行）
         lastEnchant = null;
       }
       renderMaterials();
@@ -1347,7 +1513,7 @@ function handleSnapshot(snap) {
       chestOpenPending = false;
       chestOpenPendingId = null;
       pickupToast('打开宝箱！');
-      SFX.play('pickup');
+      SFX.play('chest_open'); // E29 P0：宝箱开启专属音（替代 pickup/ui 占位）
     }
   }
 
@@ -1615,9 +1781,18 @@ function sendCmd(cmd) {
   });
 }
 
+// E29 P0：脚步音（节流 250ms，防 12Hz/80ms 输入循环连发成机枪声）
+function footstepSfx() {
+  const now = performance.now();
+  if (now - lastFootstepAt < 250) return;
+  lastFootstepAt = now;
+  SFX.play('footstep');
+}
+
 function sendMove(dir) {
   sendCmd({ action: 0, dir });
   lastMoveDir = dir;
+  footstepSfx(); // E29 P0：玩家移动脚步
 }
 
 // 松开移动键 → 显式 STOP（协议缺口修复，P0）：服务端清 lastMove 立即停，不再惯性滑行。
@@ -1696,6 +1871,7 @@ function sendStopCmd() {
 // E8：点击移动 → MOVE{targetTile}（目标格编码 gx*64+gy，与服务端 world.packTile 一致）。
 function sendMoveToTile(gx, gy) {
   sendCmd({ action: 0, dir: lastMoveDir ?? 0, targetTile: gx * 64 + gy });
+  footstepSfx(); // E29 P0：点击移动 / 走近战斗目标的脚步
 }
 
 // E8：普攻 → ATTACK{targetEntityId}（服务端权威 CD/距离/伤害）；本地白刃挥砍光效。
@@ -2344,6 +2520,7 @@ function draw() {
   drawWorldBounds();
   drawTelegraphs();
   drawEntities();
+  updatePortalHum(); // E29 P0：入口嗡鸣循环（距离开关）
 
   ctx.restore();
   drawDownedOverlay(); // E10：倒地全屏红滤镜 + 大字 + 复活倒计时
@@ -3066,13 +3243,44 @@ function drawTelegraph(e, p) {
   ctx.restore();
 }
 
+// E29 P0：telegraph 预警音（实体首次出现/startTick 变化时播一次；随快照清理防 id 复用误判）
+const seenTelegraphs = new Map(); // id -> startTick
 function drawTelegraphs() {
   if (!lastSnapshot) return;
+  const alive = new Set();
   for (const e of lastSnapshot.entities) {
     if (e.kind !== KIND.TELEGRAPH) continue;
+    alive.add(e.id);
+    if (e.telegraph && seenTelegraphs.get(e.id) !== e.telegraph.startTick) {
+      seenTelegraphs.set(e.id, e.telegraph.startTick);
+      SFX.play('telegraph'); // E29 P0：telegraph 出现即播 1s 上行预警音（视觉红圈的音频冗余）
+    }
     const p = renderPosFor(e) || e.pos;
     if (p) drawTelegraph(e, p);
   }
+  for (const id of seenTelegraphs.keys()) if (!alive.has(id)) seenTelegraphs.delete(id);
+}
+
+// E29 P0：入口漩涡嗡鸣（循环）——靠近裂隙入口（视距内）开关；MVP 简单开关，距离衰减 Phase-2
+function updatePortalHum() {
+  try {
+    if (state !== 'overworld' && state !== 'dungeon') { SFX.loop('portal_hum', false); return; }
+    if (!lastSnapshot) { SFX.loop('portal_hum', false); return; }
+    let mx = null, my = null;
+    if (predicted) { mx = predicted.x; my = predicted.y; }
+    else if (localEntityId != null) {
+      const me = lastSnapshot.entities.find((e) => e.id === localEntityId);
+      if (me) { mx = me.pos.x; my = me.pos.y; }
+    }
+    let near = false;
+    if (mx != null) {
+      for (const e of lastSnapshot.entities) {
+        if (e.kind !== KIND.ENTRANCE) continue;
+        if (Math.hypot(e.pos.x - mx, e.pos.y - my) <= PORTAL_HUM_RADIUS) { near = true; break; }
+      }
+    }
+    SFX.loop('portal_hum', near);
+  } catch (e) { /* ignore */ }
 }
 
 function drawEntities() {
