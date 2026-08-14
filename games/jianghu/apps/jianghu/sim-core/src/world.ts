@@ -96,6 +96,7 @@ import {
   POTION_CD_TICKS, // E21：药水使用冷却（tick）= 5s @12Hz
   POTION_DROP_NORMAL_CHANCE, // E21：普通怪击杀药水掉落概率 = 0.10
   POTIONS_BY_TIER, // E21：精英/BOSS 击杀药水数（材料计数，普通怪走概率）
+  bossRarityWeightsForBiome, // E28：biomeId → BOSS 稀有度权重覆盖（石牢暗金↑）
 } from "./constants.ts"; // C7 单一来源
 import { Rng } from "./rng.ts";
 import { stepMovement } from "./movement.ts"; // E3 真移动（纯函数）
@@ -131,6 +132,12 @@ export interface CreateWorldOpts {
    * 副本 instance world 由 run-manager 传 spec.entryTile（进本落点一致，防复活卡墙/出副本）。
    */
   readonly respawnPos?: Vec2;
+  /**
+   * E28：副本 biome ID（0=普通 / 1=石牢）。缺省 0（golden 锚点）。
+   * 仅影响 BOSS 掉装稀有度权重（rollGuaranteedDarkgold / rollChestContents 传入）；
+   * 敌人 hp/atk/telegraph 半径已由 spawnWave 按 enemyTypeId 变体折算进 SpawnedEnemySpec。
+   */
+  readonly biomeId?: number;
 }
 
 /** 拾取事件（地面掉落被玩家拾取）。 */
@@ -255,6 +262,10 @@ interface Actor {
   telegraph?: { shape: number; color: number; startTick: number; applyTick: number; radius: number };
   dmg?: number; // telegraph 落刀伤害（生成时由 BOSS atk × BOSS_AOE_DAMAGE_MULT 计算；不进快照）
   lastAoeTick?: number; // BOSS AOE 预警节流（上次生成 telegraph 的 tick；仅 world 内部）
+  // E28 新增（敌人原型变体；**不进 EntityState 快照** C12——telegraph 半径经 telegraph.radius 下发，
+  //   经验仅 world 内部结算；未登记变体 → undefined → 回退 TELEGRAPH_RADIUS / ENEMY_XP[tier]，golden 不变）。
+  aoeRadius?: number; // BOSS phase2 telegraph 半径覆盖（px）
+  enemyXp?: number; // 击杀经验覆盖（undefined → ENEMY_XP[tier]）
   // E18 新增（敌人攻击前摇；**不进 EntityState 快照**，C12 纪律——客户端用 WINDUP status 位表现抬手）
   windupUntilTick?: number; // 前摇截止 tick（t >= 本值落刀；仅 world 内部）
   windupTargetId?: number; // 前摇锁定目标 actor id（落刀时判定是否仍在接触范围；仅 world 内部）
@@ -287,6 +298,8 @@ export interface World {
   readonly runId: string;
   readonly roomId: string;
   readonly seed: string;
+  /** E28：副本 biome ID（0=普通 / 1=石牢）；主世界缺省 0。 */
+  readonly biomeId: number;
   tick: number;
   phase: RoomPhaseValue;
   /** 在权威世界 spawn 一个玩家实体（幂等：重复 seatId 不叠加）。E7：equipped 可选（持久化镜像）。E9：level 可选（持久化镜像）。E19：materials 可选（持久化镜像）。E21：potions 可选（持久化镜像）。 */
@@ -650,6 +663,9 @@ export function createWorld(opts: CreateWorldOpts): World {
   // ── 确定性 Rng 实例（战斗/刷怪/掉装/复活共用种子流，D9）──
   const simRng = new Rng(`combat:${opts.seed}`);
 
+  // E28：biome → BOSS 掉装稀有度权重覆盖（石牢暗金↑）；普通/未知 → undefined（默认权重，golden 不变）。
+  const bossWeights = bossRarityWeightsForBiome(opts.biomeId ?? 0);
+
   // ── 刷怪区运行态（复活计时）──
   const spawnStates: SpawnZoneRuntime[] = [];
 
@@ -714,6 +730,9 @@ export function createWorld(opts: CreateWorldOpts): World {
           spawnOrigin: { x: spec.pos.x, y: spec.pos.y },
           // E24：巡逻半径（zone.patrolTiles 透传；缺省 undefined = 不巡逻，不进快照 C12）。
           patrolTiles: spec.patrolTiles,
+          // E28：敌人原型变体（铁骨魁等）→ telegraph 半径 / 击杀经验覆盖（缺省 undefined 回退基线）。
+          aoeRadius: spec.aoeRadius,
+          enemyXp: spec.enemyXp,
           lastAttackTick: -ENEMY_ATTACK_INTERVAL_TICKS,
         });
         aliveIds.push(id);
@@ -733,6 +752,7 @@ export function createWorld(opts: CreateWorldOpts): World {
     runId: opts.runId,
     roomId: opts.roomId,
     seed: opts.seed,
+    biomeId: opts.biomeId ?? 0,
     tick: 0,
     phase: opts.phase,
     actors: () => actors.slice(),
@@ -1020,7 +1040,7 @@ export function createWorld(opts: CreateWorldOpts): World {
               chest.loot.ttlTicks > 0 &&
               Math.hypot(chest.x - a.x, chest.y - a.y) <= CHEST_OPEN_RADIUS
             ) {
-              const items = rollChestContents(simRng);
+              const items = rollChestContents(simRng, bossWeights);
               const stones = CHEST_STONES;
               if (a.ownerId !== undefined) {
                 const cev: ChestOpenEvent = { seatId: a.ownerId, items, stones };
@@ -1139,7 +1159,8 @@ export function createWorld(opts: CreateWorldOpts): World {
               color: 0, // DANGER（红；客户端 drawTelegraph color===1 才青色，0 红色）
               startTick: t,
               applyTick: t + TELEGRAPH_TICKS,
-              radius: TELEGRAPH_RADIUS,
+              // E28：敌人原型变体可覆盖半径（铁骨魁裂地重锤 96px）；缺省回退 TELEGRAPH_RADIUS。
+              radius: e.aoeRadius ?? TELEGRAPH_RADIUS,
             },
             // 落刀伤害（生成时由 BOSS atk × BOSS_AOE_DAMAGE_MULT 计算，服务端权威 C11）。
             dmg: Math.round((e.atk ?? ENEMY_BASE_ATK) * BOSS_AOE_DAMAGE_MULT),
@@ -1285,7 +1306,8 @@ export function createWorld(opts: CreateWorldOpts): World {
             const killer = killerId !== undefined ? actors.find((x) => x.id === killerId) : undefined;
             if (killer && killer.hp > 0) {
               const tierName = TIER_NAMES[e.tier ?? 0];
-              let xp = (killer.xp ?? 0) + ENEMY_XP[tierName];
+              // E28：敌人原型变体可覆盖击杀经验（缺省回退 ENEMY_XP[tier]）。
+              let xp = (killer.xp ?? 0) + (e.enemyXp ?? ENEMY_XP[tierName]);
               let level = killer.level ?? 1;
               let leveled = false;
               while (xp >= xpForLevel(level)) {
@@ -1341,7 +1363,7 @@ export function createWorld(opts: CreateWorldOpts): World {
           //   同 seed 结果确定 D9）；普通/精英掉落路径不变。
           const tierName = TIER_NAMES[e.tier ?? 0];
           if (tierName === "boss") {
-            const display = rollGuaranteedDarkgold(simRng);
+            const display = rollGuaranteedDarkgold(simRng, bossWeights);
             actors.push({
               id: nextId++,
               kind: EntityKind.CHEST,
@@ -1417,6 +1439,9 @@ export function createWorld(opts: CreateWorldOpts): World {
               spawnOrigin: { x: spec.pos.x, y: spec.pos.y },
               // E24：巡逻半径（zone.patrolTiles 透传；缺省 undefined = 不巡逻，不进快照 C12）。
               patrolTiles: spec.patrolTiles,
+              // E28：敌人原型变体（铁骨魁等）→ telegraph 半径 / 击杀经验覆盖（缺省 undefined 回退基线）。
+              aoeRadius: spec.aoeRadius,
+              enemyXp: spec.enemyXp,
               lastAttackTick: t - ENEMY_ATTACK_INTERVAL_TICKS,
             });
             st.aliveIds.push(id);

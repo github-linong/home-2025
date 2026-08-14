@@ -18,6 +18,7 @@ import {
   ENEMY_BASE_ATK,
   SPAWN_SCATTER_PX,
   DEFAULT_RESPAWN_TICKS,
+  ENEMY_TYPE_VARIANTS, // E28：敌人原型变体（铁骨魁等；未登记 → 同 tier 基线）
   type EnemyTier,
 } from "./constants.ts"; // C7 单一来源
 
@@ -67,6 +68,10 @@ export interface SpawnedEnemySpec {
   readonly aggression: Aggression; // E6 敌人类别（world 据此跑 AI 状态机）
   /** E24：巡逻半径（格）；缺省 undefined = 不巡逻（world AI 段据此跑 IDLE 巡逻）。 */
   readonly patrolTiles?: number;
+  /** E28：BOSS phase2 telegraph 半径覆盖（px）；缺省 undefined = TELEGRAPH_RADIUS（world 侧回退）。 */
+  readonly aoeRadius?: number;
+  /** E28：击杀经验覆盖；缺省 undefined = ENEMY_XP[tier]（world 侧回退）。 */
+  readonly enemyXp?: number;
 }
 
 /** 刷怪波次实例结果。 */
@@ -89,8 +94,12 @@ export function spawnWave(zones: readonly SpawnZone[], rng: Rng): SpawnResult {
   for (const z of zones) {
     const tierKey: EnemyTier = TIER_KEYS[z.tier];
     const mult = HP_MULT[tierKey];
-    const maxHp = ENEMY_BASE_HP * mult;
-    const atk = ENEMY_BASE_ATK * mult;
+    // E28：敌人原型变体（铁骨魁等）覆盖 hp/atk/telegraph 半径/经验；未登记 → 同 tier 基线（D9/golden）。
+    const variant = ENEMY_TYPE_VARIANTS[z.enemyTypeId];
+    const hpMult = mult * (variant?.hpMult ?? 1);
+    const atkMult = mult * (variant?.atkMult ?? 1);
+    const maxHp = Math.round(ENEMY_BASE_HP * hpMult);
+    const atk = Math.round(ENEMY_BASE_ATK * atkMult);
     const kind = z.tier === 2 ? EntityKind.BOSS : EntityKind.ENEMY;
     const aggression = z.aggression ?? defaultAggression(z.tier); // E6：显式覆盖或按 tier 缺省
     // E24：巡逻半径透传（缺省 undefined = 不巡逻；world AI 段据此跑 IDLE 巡逻）。
@@ -107,6 +116,8 @@ export function spawnWave(zones: readonly SpawnZone[], rng: Rng): SpawnResult {
         atk,
         aggression,
         patrolTiles,
+        aoeRadius: variant?.aoeRadius,
+        enemyXp: variant?.xp,
       });
     }
   }

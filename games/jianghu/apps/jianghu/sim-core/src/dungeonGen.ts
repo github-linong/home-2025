@@ -19,7 +19,14 @@
 import type { SpawnPoint, Vec2 } from "./types.ts";
 import type { SpawnZone } from "./spawning.ts"; // 纪律 A：仅类型（不调生成函数）
 import { Rng } from "./rng.ts";
-import { instanceSeed, TILE, DUNGEON_SPAWN_DENSITY } from "./constants.ts"; // C7 单一来源
+import {
+  instanceSeed,
+  TILE,
+  DUNGEON_SPAWN_DENSITY,
+  BIOME_DEFAULT,
+  BIOME_STONE_PRISON,
+  STONE_PRISON_SPAWN_DENSITY,
+} from "./constants.ts"; // C7 单一来源
 
 /** 副本布局快照。 */
 export interface LayoutSnapshot {
@@ -42,15 +49,47 @@ export interface DungeonSpec {
   readonly bossTile: Vec2; // BOSS 房中心（最深层）
   readonly bossDepth: number; // BOSS 所在层（= maxDepth，C-Dgn-3）
   readonly bossPlaced: boolean;
-  readonly spawnDensityMultiplier: number; // 副本密度 ×1.2（E6 调低，spawning.md §⑥）
+  readonly spawnDensityMultiplier: number; // 副本密度（E28 按 biome：普通 1.2 / 石牢 1.5）
 }
 
 /** 网格尺寸（tile）。与 createWorld 默认 bounds（40×30 tile）一致。 */
 const GRID_TILES_W = 40;
 const GRID_TILES_H = 30;
 
-/** 敌人原型 id 池（引用刷怪表 ID，非运行时实例）。 */
-const ENEMY_POOL = ["savage", "brigand", "shadow"] as const;
+/** 普通副本敌人原型 id 池（biome 0，golden 锚点；引用刷怪表 ID，非运行时实例）。 */
+const DEFAULT_ENEMY_POOL = ["savage", "brigand", "shadow"] as const;
+
+/** 石牢敌人原型 id 池：近战系为主（savage 变体加权，dungeon-variants §1）。 */
+const STONE_PRISON_ENEMY_POOL = ["savage", "savage", "brigand"] as const;
+
+/**
+ * biome 分派配置（dungeon-variants §1：biomeId 决定敌人池 / BOSS 类型 / 密度，不重写生成器）。
+ * - 0 普通副本（默认）：敌人池 savage/brigand/shadow，BOSS=dungeon_boss，密度 1.2（golden 锚点）；
+ * - 1 石牢：近战 savage 加权、BOSS=ironbone（铁骨魁）、密度 1.5（暗金倾向由 loot 按 biome 覆盖）。
+ */
+interface BiomeConfig {
+  readonly enemyPool: readonly string[];
+  readonly bossTypeId: string;
+  readonly spawnDensity: number;
+}
+
+const BIOME_CONFIGS: Readonly<Record<number, BiomeConfig>> = {
+  [BIOME_DEFAULT]: {
+    enemyPool: DEFAULT_ENEMY_POOL,
+    bossTypeId: "dungeon_boss",
+    spawnDensity: DUNGEON_SPAWN_DENSITY,
+  },
+  [BIOME_STONE_PRISON]: {
+    enemyPool: STONE_PRISON_ENEMY_POOL,
+    bossTypeId: "ironbone",
+    spawnDensity: STONE_PRISON_SPAWN_DENSITY,
+  },
+};
+
+/** biomeId → 配置（未知 biome 回退默认普通副本，保持确定性 + 防御越界）。 */
+function biomeConfig(biomeId: number): BiomeConfig {
+  return BIOME_CONFIGS[biomeId] ?? BIOME_CONFIGS[BIOME_DEFAULT];
+}
 
 interface InternalDungeon {
   readonly layout: LayoutSnapshot;
@@ -64,6 +103,8 @@ interface InternalDungeon {
 function generateInternal(seed: string, biomeId: number): InternalDungeon {
   // biomeId 参与派生：`layout:${seed}:b${biomeId}`（经 layoutRng 单入口，C7/D9）。
   const rng = layoutRng(`${seed}:b${biomeId}`);
+  // E28：biome 分派敌人池 / BOSS 类型 / 密度（未知 biome 回退普通副本）。
+  const cfg = biomeConfig(biomeId);
 
   const rooms = rng.nextInt(5, 12);
   const maxDepth = 3;
@@ -93,21 +134,22 @@ function generateInternal(seed: string, biomeId: number): InternalDungeon {
       wave += 1;
       if (isBossRoom && w === 0) {
         // BOSS 房第一波 = BOSS（tier=2，必掉更好词缀）；置于最深层中心。
-        spawnPoints.push({ pos: center, enemyTypeId: "dungeon_boss", wave, count: 1 });
+        // E28：BOSS 类型按 biome 分派（普通=dungeon_boss / 石牢=ironbone）。
+        spawnPoints.push({ pos: center, enemyTypeId: cfg.bossTypeId, wave, count: 1 });
         // E6：BOSS 默认 aggressive（仇恨半径内索敌追击 + 接触攻击）。
-        spawnZones.push({ pos: center, tier: 2, enemyTypeId: "dungeon_boss", count: 1, aggression: "aggressive" });
+        spawnZones.push({ pos: center, tier: 2, enemyTypeId: cfg.bossTypeId, count: 1, aggression: "aggressive" });
         bossPlaced = true;
         bossTile = center;
         exitTile = center;
         continue;
       }
-      // 普通/精英波：count 依副本密度 ×1.2（E6 调低：1.5→1.2，配区间 1..3，避免副本被围死）。
-      const count = Math.max(1, Math.round(rng.nextInt(1, 3) * DUNGEON_SPAWN_DENSITY));
+      // 普通/精英波：count 依副本密度（E28 按 biome 分派：普通 1.2 / 石牢 1.5），配区间 1..3。
+      const count = Math.max(1, Math.round(rng.nextInt(1, 3) * cfg.spawnDensity));
       const pos: Vec2 = {
         x: center.x + rng.nextInt(-1, 1) * TILE,
         y: center.y + rng.nextInt(-1, 1) * TILE,
       };
-      const enemyTypeId = ENEMY_POOL[rng.nextInt(0, ENEMY_POOL.length - 1)];
+      const enemyTypeId = cfg.enemyPool[rng.nextInt(0, cfg.enemyPool.length - 1)];
       spawnPoints.push({ pos, enemyTypeId, wave, count });
       // 15% 精英（tier=1），其余普通（tier=0）。
       const tier = rng.nextBool(0.15) ? (1 as const) : (0 as const);
@@ -127,7 +169,7 @@ function generateInternal(seed: string, biomeId: number): InternalDungeon {
     bossTile,
     bossDepth: maxDepth,
     bossPlaced,
-    spawnDensityMultiplier: DUNGEON_SPAWN_DENSITY,
+    spawnDensityMultiplier: cfg.spawnDensity,
   };
   return { layout, spec };
 }

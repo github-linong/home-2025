@@ -592,3 +592,55 @@ export const ENEMY_PATROL_SPEED = 1;
  * 巡逻为「位置函数化」ping-pong（patrolOffsetX），本常量是三角波单程时长推导的单一来源。
  */
 export const ENEMY_PATROL_MOVE_SPEED = ENEMY_PATROL_SPEED / TICK_RATE;
+
+// ─────────────────────────────────────────────────────────────
+// E28：内容扩展 P0（副本变体「石牢」+ 精英 BOSS「铁骨魁」）
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * 副本 biome ID：0=普通副本（默认，golden 锚点）；1=石牢（Stone Prison，dungeon-variants §1）。
+ * dungeonGen 按 biomeId 分派敌人池/密度/BOSS 类型；run-manager 按入口映射 biome。
+ */
+export const BIOME_DEFAULT = 0;
+export const BIOME_STONE_PRISON = 1;
+
+/**
+ * 石牢刷怪密度（普通本 DUNGEON_SPAWN_DENSITY=1.2；dungeon-variants §1 石牢取 1.5）。
+ * 仅 biome 1 使用；biome 0 仍走 DUNGEON_SPAWN_DENSITY（golden 不变）。
+ */
+export const STONE_PRISON_SPAWN_DENSITY = 1.5;
+
+/**
+ * 石牢 BOSS 稀有度权重 [白,蓝,金,暗金]=[0,0,40,60]（普通本 boss=[0,0,55,45]，暗金↑）。
+ * dungeon-variants §1「专属掉落倾向：暗金掉率↑（BOSS 权重 [0,0,45,55] 调为 [0,0,40,60]）」——
+ * 注：design 原文写 [0,0,45,55] 对应旧金55/暗金45 口径，本表落地取 RARITY_WEIGHTS_BY_TIER.boss
+ * 的 [0,0,55,45] → 石牢 [0,0,40,60]（暗金 45→60）。
+ */
+export const STONE_PRISON_BOSS_WEIGHTS = [0, 0, 40, 60] as const;
+
+/**
+ * 敌人原型变体（按 enemyTypeId 查表）。仅登记者覆盖；未登记 → 同 tier 基线不变（D9/golden）。
+ * - hpMult/atkMult：在 HP_MULT[tier] 之上的倍率（spawning 侧计算 maxHp/atk）；
+ * - xp：击杀经验；缺省 ENEMY_XP[tier]（铁骨魁 design 未给 XP → 沿用 boss=80）；
+ * - aoeRadius：BOSS phase2 telegraph 半径（px）；缺省 TELEGRAPH_RADIUS（72px）。
+ */
+export interface EnemyTypeVariant {
+  readonly hpMult: number;
+  readonly atkMult: number;
+  readonly xp?: number;
+  readonly aoeRadius?: number;
+}
+
+/** E28 敌人原型变体表（单一来源；spawning/world 只读引用，C7）。 */
+export const ENEMY_TYPE_VARIANTS: Readonly<Record<string, EnemyTypeVariant>> = {
+  // 铁骨魁（石牢 BOSS）：HP×1.2 / ATK×1.1（偏肉）；裂地重锤 radius=96px=2×TILE（dungeon-variants §2）。
+  ironbone: { hpMult: 1.2, atkMult: 1.1, aoeRadius: Math.round(2 * TILE) },
+};
+
+/**
+ * biomeId → BOSS 稀有度权重覆盖（石牢暗金↑）；普通/未知 → undefined（用 RARITY_WEIGHTS_BY_TIER.boss）。
+ * world 在 BOSS 掉装（rollGuaranteedDarkgold / rollChestContents）时传入，只改稀有度权重、不碰 Rng 流结构。
+ */
+export function bossRarityWeightsForBiome(biomeId: number): readonly number[] | undefined {
+  return biomeId === BIOME_STONE_PRISON ? STONE_PRISON_BOSS_WEIGHTS : undefined;
+}

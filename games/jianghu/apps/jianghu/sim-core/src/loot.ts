@@ -29,16 +29,16 @@ export interface LootResult {
   readonly affixes: number[]; // 词缀 id 列表（数量由 AFFIX_COUNTS 决定）
 }
 
-/** 按 tier 掷稀有度索引（权重见 RARITY_WEIGHTS_BY_TIER，loot §⑥）。 */
-function rollRarityIndex(rng: Rng, tier: EnemyTier): number {
-  const weights = RARITY_WEIGHTS_BY_TIER[tier];
-  const total = weights.reduce<number>((a, b) => a + b, 0);
+/** 按 tier 掷稀有度索引（权重见 RARITY_WEIGHTS_BY_TIER，loot §⑥；可选 biome 覆盖权重，E28）。 */
+function rollRarityIndex(rng: Rng, tier: EnemyTier, weights?: readonly number[]): number {
+  const w = weights ?? RARITY_WEIGHTS_BY_TIER[tier];
+  const total = w.reduce<number>((a, b) => a + b, 0);
   let r = rng.nextFloat() * total;
-  for (let i = 0; i < weights.length; i++) {
-    if (r < weights[i]) return i;
-    r -= weights[i];
+  for (let i = 0; i < w.length; i++) {
+    if (r < w[i]) return i;
+    r -= w[i];
   }
-  return weights.length - 1;
+  return w.length - 1;
 }
 
 /** 按稀有度掷词缀数（落在区间 [AFFIX_COUNTS[rarity][0], AFFIX_COUNTS[rarity][1]]）。 */
@@ -54,10 +54,10 @@ function rollAffixCount(rng: Rng, rarityIdx: number): number {
  *   → 生成词缀 id 数组（rng 选 1..AFFIX_ID_MAX）→ itemId = rng。
  * 返回 LootResult{itemId, rarity, affixes}。
  */
-export function rollLoot(rng: Rng, tier: EnemyTier): LootResult | null {
+export function rollLoot(rng: Rng, tier: EnemyTier, weights?: readonly number[]): LootResult | null {
   // 命中判定（C11 服务端权威掷骰，非客户端决定）。
   if (rng.nextFloat() >= DROP_RATE[tier]) return null;
-  const rarityIdx = rollRarityIndex(rng, tier);
+  const rarityIdx = rollRarityIndex(rng, tier, weights);
   const count = rollAffixCount(rng, rarityIdx);
   const affixes: number[] = [];
   for (let i = 0; i < count; i++) affixes.push(rng.nextInt(1, AFFIX_ID_MAX));
@@ -96,11 +96,11 @@ export function dropToGround(rng: Rng, tier: EnemyTier): LootState {
  * 用于：① 宝箱实体「显示暗金」（BOSS 死亡刷宝箱时预掷，向玩家预告必含暗金）；
  * ② 开箱结算第 1 件（必含暗金）。
  */
-export function rollGuaranteedDarkgold(rng: Rng): LootResult {
-  let res = rollLoot(rng, "boss");
+export function rollGuaranteedDarkgold(rng: Rng, weights?: readonly number[]): LootResult {
+  let res = rollLoot(rng, "boss", weights);
   let guard = 0;
   while (res !== null && res.rarity !== 3 && guard < 16) {
-    res = rollLoot(rng, "boss");
+    res = rollLoot(rng, "boss", weights);
     guard += 1;
   }
   if (res === null || res.rarity !== 3) {
@@ -141,9 +141,9 @@ export function rollGoldOrBlue(rng: Rng): LootResult {
  * 确定性（D9）：同 rng 流 ⇒ 同内容序列；消费 Rng 流发生在**开箱 tick**（非 BOSS 死亡 tick）。
  * 件数区间 CHEST_ITEM_COUNT_MIN/MAX（C7 单一来源）。
  */
-export function rollChestContents(rng: Rng): LootResult[] {
+export function rollChestContents(rng: Rng, weights?: readonly number[]): LootResult[] {
   const count = rng.nextInt(CHEST_ITEM_COUNT_MIN, CHEST_ITEM_COUNT_MAX);
-  const items: LootResult[] = [rollGuaranteedDarkgold(rng)];
+  const items: LootResult[] = [rollGuaranteedDarkgold(rng, weights)];
   for (let i = 1; i < count; i++) items.push(rollGoldOrBlue(rng));
   return items;
 }

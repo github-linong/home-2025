@@ -28,6 +28,8 @@ import {
   ENCHANT_STONE_ITEM_ID, // E19：强化石物品 id（材料计数；分解防御校验）
   DISASSEMBLE_STONES_BY_RARITY, // E22：分解产出石数按稀有度（C7 单一来源）
   DISASSEMBLE_POTIONS, // E22：分解固定产出药水数（C7 单一来源）
+  BIOME_DEFAULT, // E28：普通副本 biome（默认入口）
+  BIOME_STONE_PRISON, // E28：石牢副本 biome（石牢入口）
 } from "../sim-core/src/constants.ts"; // C7 单一来源
 import type { SpawnZone } from "../sim-core/src/spawning.ts";
 import { computeInstanceSeed, buildDungeonSpec } from "../sim-core/src/dungeonGen.ts"; // C7/D9/C-Dgn-1
@@ -131,6 +133,11 @@ export interface StartRunOpts {
    * enterInstance 传 spec.entryTile（进本落点一致，防复活卡墙/出副本坐标）。
    */
   readonly respawnPos?: Vec2;
+  /**
+   * E28：副本 biome ID（0=普通 / 1=石牢）。缺省 0（主世界/普通副本，golden 不变）；
+   * enterInstance 由入口映射推导，透传进 createWorld 供 BOSS 掉装权重分派。
+   */
+  readonly biomeId?: number;
   /**
    * 拾取回调（可选）。每次玩家拾取地面掉落时触发（seatId + 掉落）。
    * **默认已接**（F1）：bootResidentRun / enterInstance 传 `handlePickup` —— seatId → 登录/游客解析，
@@ -285,6 +292,7 @@ export function startRun(opts: StartRunOpts): WorldSnapshot {
     spawnZones: opts.spawnZones, // E5：副本刷怪区
     bounds: opts.bounds, // E5：实例世界尺寸
     respawnPos: opts.respawnPos, // E15：副本复活点（缺省 RESPAWN_POS）
+    biomeId: opts.biomeId, // E28：副本 biome（缺省 0，普通副本 golden 不变）
   });
 
   const handle = startRunLoop({
@@ -541,6 +549,19 @@ export function bootResidentRun(seed = "jianghu-overworld-0"): WorldSnapshot {
   });
 }
 
+/** E28：石牢副本入口 ID（主世界第二个「裂隙」逻辑入口；复用同一物理 ENTRANCE 实体，MVP 最简）。 */
+const STONE_PRISON_ENTRANCE_ID = 2;
+
+/**
+ * E28：入口 → biome 映射（MVP 最简方案：entranceId 区分副本主题，复用同一物理 ENTRANCE 实体）。
+ * - entranceId=2 → 石牢（biome 1：高密度近战 + 铁骨魁 BOSS + 暗金↑）；
+ * - 其余（含默认/playtest 的 entranceId=1）→ 普通副本（biome 0，golden 不变）。
+ * 客户端发 `dungeon.enter { entranceId: 2 }` 即进石牢；第二个可视化入口渲染为客户端 Phase-2。
+ */
+function biomeIdForEntrance(entranceId: number): number {
+  return entranceId === STONE_PRISON_ENTRANCE_ID ? BIOME_STONE_PRISON : BIOME_DEFAULT;
+}
+
 export interface EnterInstanceOpts {
   readonly biomeId?: number;
   /** 副本寿命（ms），缺省 DUNGEON_EXPIRE_MS=30min（C-Dgn-4）。测试可注入短寿命。 */
@@ -618,7 +639,8 @@ export function enterInstance(
   const serverTick = resident.handle.getTick();
   const partyTag = members[0].userId;
   const seed = computeInstanceSeed(serverTick, entranceId, partyTag).toString();
-  const biomeId = opts.biomeId ?? 0;
+  // E28：biome 由入口映射推导（entrance 2=石牢）；显式 opts.biomeId 优先（测试注入）。
+  const biomeId = opts.biomeId ?? biomeIdForEntrance(entranceId);
 
   // 2d. 确定性布局 + 副本规格（BOSS 置最深层，C-Dgn-3；刷怪密度 ×1.2，DUNGEON_SPAWN_DENSITY）。
   const spec = buildDungeonSpec(seed, biomeId);
@@ -636,6 +658,8 @@ export function enterInstance(
     lootTokens: 0, // 副本无占位漂浮 token（掉落仅来自敌人，C-Net-1 域干净）
     // E15：副本死亡复活点 = 进本出生点（entryTile，与进本落点一致，防复活卡墙/出副本坐标）。
     respawnPos: spec.entryTile,
+    // E28：透传 biome（石牢 BOSS 掉装暗金权重分派；普通副本 = 0，golden 不变）。
+    biomeId,
     // F1（P1）：副本拾取同样落背包（登录入库、游客忽略 C-Per-1）。
     onPickup: (seatId, loot) => handlePickup(instanceRoomId, seatId, loot),
     // E9：副本升级同样落库 + 推送（登录；游客忽略 C-Per-1）。
