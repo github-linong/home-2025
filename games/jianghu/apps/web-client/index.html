@@ -2785,7 +2785,7 @@ function drawPlayer(e, p) {
   const isIframe = !!(e.status & STATUS_IFRAME);   // E10：复活无敌帧
 
   ctx.save();
-  ctx.translate(s.x, s.y);
+  ctx.translate(p.x, p.y); // E35 修复：ctx 已在外层为世界变换，须用世界坐标
   // E10：倒地 → 旋转 90° 平躺（躺尸表现）。
   if (isDowned) ctx.rotate(Math.PI / 2);
   // E10：复活无敌帧 → 半透明闪烁（alpha 呼吸；IFRAME 位由服务端权威驱动，到期即停）。
@@ -2912,7 +2912,7 @@ function drawEnemy(e, p) {
   const winding = !!(e.status & STATUS_WINDUP);
 
   ctx.save();
-  ctx.translate(s.x, s.y);
+  ctx.translate(p.x, p.y); // E35 修复：ctx 已在外层为世界变换，须用世界坐标
 
   // E30：BOSS 常驻 RIFT 紫青异象 aura（脚下；恒定不脉动，与精英青环拉开层级）
   if (isBoss) drawBossAura(size / 2);
