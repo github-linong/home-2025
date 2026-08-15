@@ -231,7 +231,7 @@ const main = async () => {
   const pageErrors = [];
   const consoleErrors = [];
   try {
-    browser = await puppeteer.launch({ headless: HEADLESS, args: ["--no-sandbox", "--disable-setuid-sandbox"] });
+    browser = await puppeteer.launch({ headless: HEADLESS, args: ["--no-sandbox", "--disable-setuid-sandbox"], protocolTimeout: 300000 });
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 800 });
     page.on("pageerror", (e) => pageErrors.push(String(e)));
