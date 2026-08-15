@@ -84,6 +84,8 @@ import {
   TELEGRAPH_RADIUS, // E15：BOSS AOE 警示圈半径（px）= 1.5×TILE
   BOSS_AOE_INTERVAL_TICKS, // E15：BOSS phase2 AOE 预警间隔（tick）= 3s @12Hz
   BOSS_AOE_DAMAGE_MULT, // E15：BOSS AOE 伤害倍率（× 敌人攻击力）
+  RING_INNER_RATIO, // E35：环形 telegraph 内圈半径比例（中心安全区）
+  CONE_HALF_ANGLE, // E35：锥形 telegraph 半角（rad，120° 全角，绕后安全）
   xpForLevel, // E9：升级经验需求（XP_req = 50·L^1.5，单一来源公式）
   ENEMY_XP, // E9：击杀经验表（按 EnemyTier 索引）
   LEVEL_ATK_PER_LEVEL, // E9：每级 +1 基础攻击（str→atk MVP 映射）
@@ -1204,7 +1206,9 @@ export function createWorld(opts: CreateWorldOpts): World {
             kind: EntityKind.TELEGRAPH,
             x: e.x,
             y: e.y,
-            dir: 0,
+            // E35：锥形（shape=2，幽冢鬼母鬼啸扇形）telegraph 需朝向目标——dir 指向最近玩家；
+            // 其余形状（0 圆环 / 1 填充 / 3 线性）无方向性，dir=0（不改变既有字节，golden 稳）。
+            dir: (e.aoeShape ?? 1) === 2 ? dirToward(e.x, e.y, target.x, target.y) : 0,
             hp: 1,
             maxHp: 1,
             status: EntityStatus.ALIVE,
@@ -1325,7 +1329,25 @@ export function createWorld(opts: CreateWorldOpts): World {
             const p = actors.find((x) => x.id === actorId);
             if (!p || p.hp <= 0) continue;
             if (p.status & EntityStatus.IFRAME) continue;
-            if (Math.hypot(p.x - a.x, p.y - a.y) <= a.telegraph.radius) {
+            // E35：三形状结算几何（此前所有形状均圆形 dist<=radius，环形中心/锥形侧面被误命中）。
+            //   0=圆环（内圈安全）/ 1=AOE填充（圆形）/ 2=锥形（朝 dir 扇形，绕后安全）/ 3=线性（MVP 圆形近似）。
+            const dx = p.x - a.x;
+            const dy = p.y - a.y;
+            const dist = Math.hypot(dx, dy);
+            let hit = false;
+            if (a.telegraph.shape === 2) {
+              // 锥形：朝 dir 方向张角 CONE_HALF_ANGLE（半角）——玩家方向与 dir 夹角 ≤ 半角才命中。
+              const v = dirToVector(a.dir);
+              const cosA = dist > 0 ? Math.max(-1, Math.min(1, (dx * v.x + dy * v.y) / dist)) : 1;
+              hit = dist <= a.telegraph.radius && Math.acos(cosA) <= CONE_HALF_ANGLE;
+            } else if (a.telegraph.shape === 0) {
+              // 圆环：内圈（radius×RING_INNER_RATIO）安全，仅环带命中。
+              hit = dist <= a.telegraph.radius && dist > a.telegraph.radius * RING_INNER_RATIO;
+            } else {
+              // 1=AOE填充（默认巨魔/铁骨魁/灼烧）/ 3=线性（MVP 圆形近似）→ 圆形（与既有行为一致，golden 稳）。
+              hit = dist <= a.telegraph.radius;
+            }
+            if (hit) {
               const dmg = resolveDamage({
                 targetId: p.id,
                 amount: 0, // C11：忽略客户端 amount，服务端按 baseAmount 裁决

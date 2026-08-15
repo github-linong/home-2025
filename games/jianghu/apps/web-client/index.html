@@ -3756,11 +3756,14 @@ function drawTelegraph(e, p) {
     ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.fill();
     ctx.save(); ctx.clip(); drawTelegraphStripes(radius, 0.2); ctx.restore();
   } else {
-    // 0=圆环
+    // 0=圆环（E35：服务端真几何——内圈安全区，视觉画空心环带对齐 RING_INNER_RATIO=0.4）
+    const innerR = radius * 0.4;
     ctx.lineWidth = 3 + progress * 3;
-    ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
-    ctx.globalAlpha *= 0.5;
-    ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.arc(0, 0, innerR, 0, Math.PI * 2, true); // 反向内圆 → evenodd 空心环带
+    ctx.fill("evenodd");
+    ctx.stroke();
     ctx.save(); ctx.clip(); drawTelegraphStripes(radius, 0.14); ctx.restore();
   }
 

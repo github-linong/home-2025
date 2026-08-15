@@ -94,6 +94,16 @@ export const BOSS_AOE_INTERVAL_TICKS = 3 * TICK_RATE;
  */
 export const BOSS_AOE_DAMAGE_MULT = 1.5;
 
+/**
+ * E35：telegraph 三形状结算几何参数（quality-lead P1 修复——此前所有形状均圆形结算，
+ * 环形中心 / 锥形侧面被误命中，counterplay 缺失）。
+ * - RING_INNER_RATIO：环形（shape=0，熔岩巨像环形喷发）内圈半径比例；中心安全区 = radius × 0.4。
+ * - CONE_HALF_ANGLE：锥形（shape=2，幽冢鬼母鬼啸扇形）半角（rad）；60° 半角 = 120° 全角，绕后安全。
+ * 二者与客户端 drawTelegraph 的视觉（空心环 / 120° 扇形）对齐。
+ */
+export const RING_INNER_RATIO = 0.4;
+export const CONE_HALF_ANGLE = Math.PI / 3;
+
 // ─────────────────────────────────────────────────────────────
 // 客户端插值 / 预测缓冲
 // ─────────────────────────────────────────────────────────────
