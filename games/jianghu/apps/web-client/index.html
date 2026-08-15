@@ -3595,7 +3595,7 @@ function drawLoot(e, p) {
   const pulse = 0.62 + 0.28 * Math.sin(t * 3.2); // 轻微脉动（alpha 呼吸）
 
   ctx.save();
-  ctx.translate(s.x, s.y);
+  ctx.translate(p.x, p.y); // E35 修复：ctx 已为世界变换，须用世界坐标
 
   // C2 稀有度光柱（地面向上竖条，alpha 呼吸）
   const pillarH = 58 + pulse * 10;
@@ -3661,7 +3661,7 @@ function drawChest(e, p) {
   const gold = '#f2a03c'; // 金（rarity=2 色，宝箱主题色；暗金预告由开箱 toast 呈现）
 
   ctx.save();
-  ctx.translate(s.x, s.y);
+  ctx.translate(p.x, p.y); // E35 修复：ctx 已为世界变换，须用世界坐标
 
   // 金色光柱（增强：比普通掉落更高更宽）
   const pillarH = 80 + pulse * 14;
@@ -3729,7 +3729,7 @@ function drawEntrance(e, p) {
   const near = me && Math.hypot(me.pos.x - e.pos.x, me.pos.y - e.pos.y) <= ENTRANCE_ENTER_RADIUS;
 
   ctx.save();
-  ctx.translate(s.x, s.y);
+  ctx.translate(p.x, p.y); // E35 修复：ctx 已为世界变换，须用世界坐标
   // C3：旋转光晕增强（外发光径向渐变，呼吸）
   const glow = ctx.createRadialGradient(0, 0, 4, 0, 0, 42 + Math.sin(t * 1.8) * 6);
   glow.addColorStop(0, 'rgba(200,150,255,0.38)');
@@ -3778,7 +3778,7 @@ function drawTelegraph(e, p) {
   const danger = t.color === 1 ? '#5fd0e0' : '#e5484d';
   const ang = ((e.dir != null ? e.dir : 0) * Math.PI) / 4;
   ctx.save();
-  ctx.translate(s.x, s.y);
+  ctx.translate(p.x, p.y); // E35 修复：ctx 已为世界变换，须用世界坐标
   ctx.globalAlpha = 0.3 + progress * 0.45;
   ctx.fillStyle = danger;
   ctx.strokeStyle = danger;
