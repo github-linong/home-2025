@@ -218,6 +218,29 @@ const gacha = {
 const cards = buildCards();
 const levels = buildLevels();
 
+// ---------- 合并图鉴知识（A2，可选） ----------
+// gen-lore.mjs 生成的 lore.json 存在时，把 {fact, tip} 合并进每张卡，客户端经 config 云函数直接拿到。
+{
+  const lorePath = path.join(OUT_REF, 'lore.json');
+  if (fs.existsSync(lorePath)) {
+    const raw = JSON.parse(fs.readFileSync(lorePath, 'utf8'));
+    const map = raw && raw.cards ? raw.cards : raw;
+    if (map && typeof map === 'object') {
+      let merged = 0;
+      for (const c of cards) {
+        const v = map[c.id];
+        if (v && typeof v.fact === 'string') {
+          c.lore = { fact: v.fact, tip: typeof v.tip === 'string' ? v.tip : '' };
+          merged++;
+        }
+      }
+      console.log(`📖 lore 已合并：${merged}/${cards.length} 张卡`);
+    }
+  } else {
+    console.log('ℹ️ 未找到 config/lore.json，跳过 lore 合并（运行 node scripts/gen-lore.mjs）');
+  }
+}
+
 const out = {
   difficulty,
   probabilities,

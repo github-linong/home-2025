@@ -18,6 +18,7 @@ import { ad } from '../Core/Ad';
 import { PuzzleBoard } from './Puzzle/PuzzleBoard';
 import { predictStar } from './Puzzle/Scoring';
 import { Copy } from '../Core/Copy';
+import { showCardDetail } from './CollectionScreen';
 
 export interface PuzzleHandlers {
   level: any;
@@ -406,7 +407,7 @@ export function buildPuzzleScreen(parent: Node, h: PuzzleHandlers): void {
     let newCardId = '';
     let newCardRarity = 'N';
     if (refCardId && !hasCard(refCardId)) {
-      const catalog = (getDefaultConfig().cards) || [];
+      const catalog = (h.cfg && h.cfg.cards) || getDefaultConfig().cards || [];
       const cardDef = catalog.find((c: any) => c.id === refCardId);
       newCardRarity = cardDef ? cardDef.rarity : 'N';
       const isNew = ownCard(refCardId, 'level');
@@ -449,8 +450,9 @@ export function buildPuzzleScreen(parent: Node, h: PuzzleHandlers): void {
     starNode.setPosition(0, imgSize / 2 + 66);
 
     let cardOffset = 0;
+    let loreNode: Node | null = null;
     if (newCardId) {
-      cardOffset = 80;
+      cardOffset = 120;
       const sid = newCardId.split('_')[0];
       const card = addRarityCard(overlay, Theme.assetPath.seriesArt(sid, newCardId), 130, 130, {
         rarity: newCardRarity, owned: true,
@@ -460,6 +462,17 @@ export function buildPuzzleScreen(parent: Node, h: PuzzleHandlers): void {
         size: 26, bold: true, color: Theme.color.primary,
       });
       cardLabel.setPosition(0, -imgSize / 2 - 160);
+
+      // A2 图鉴知识：新卡 lore 一行，点击看完整详情
+      const catalog = (h.cfg && h.cfg.cards) || getDefaultConfig().cards || [];
+      const def = catalog.find((c: any) => c.id === newCardId);
+      if (def && def.lore && def.lore.fact) {
+        const fact = def.lore.fact.length > 14 ? `${def.lore.fact.slice(0, 14)}…` : def.lore.fact;
+        loreNode = addButton(overlay, `💡 ${fact}`, () => {
+          showCardDetail(overlay, W, H, def, true);
+        }, { w: W - 120, h: 56, color: Theme.color.bgDeep, textColor: Theme.color.text, size: 20 });
+        loreNode.setPosition(0, -imgSize / 2 - 205);
+      }
     }
 
     let nextLevel: any = null;

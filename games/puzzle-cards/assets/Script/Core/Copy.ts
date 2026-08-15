@@ -80,6 +80,13 @@ export const Copy = {
     seasonClosed: '全服赛季榜将于二期开放',
   },
 
+  lore: {
+    title: '小知识',
+    tip: '小提示',
+    locked: '集到这张卡，就能看到它的故事',
+    factOf: (name: string) => `${name} 的小知识`,
+  },
+
   common: {
     sure: '确定',
     cancel: '再想想',

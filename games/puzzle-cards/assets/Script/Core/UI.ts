@@ -6,9 +6,10 @@
 // 这里统一给面板/按钮/兜底图填充一张 1×1 白色 SpriteFrame（solidFrame），用 tint 着色。
 import {
   Node, Label, Sprite, UITransform, Color, Button, Widget, SpriteFrame,
-  ImageAsset, Texture2D, Rect, resources,
+  ImageAsset, Texture2D, Rect, resources, tween, Vec3, view, UIOpacity,
 } from 'cc';
 import { Theme } from './Theme';
+import { popIn } from './Fx';
 
 // 微信小游戏全局对象（仅在该平台存在；编辑器/浏览器预览下 undefined，走 document 分支）。
 declare const wx: any;
@@ -395,4 +396,153 @@ export function dimOverlay(parent: Node, w: number, h: number, alpha = 0.5): Nod
   parent.addChild(node);
   node.layer = parent.layer;
   return node;
+}
+
+/* ------------------------------------------------------------------ */
+/*  v2 设计系统组件（docs/redesign-v2.md §4.1）                          */
+/* ------------------------------------------------------------------ */
+
+export interface BadgeOpts { text?: string; size?: number; color?: string; }
+// 红点/角标（挂到目标节点上：new Badge 徽标，默认右上偏移）
+export function addBadge(target: Node, opts: BadgeOpts = {}): Node {
+  const { text = '', size = 22, color = '#FF6B6B' } = opts;
+  const badge = new Node('Badge');
+  const sprite = badge.addComponent(Sprite);
+  sprite.type = Sprite.Type.SIMPLE;
+  const sf = solidFrame();
+  if (sf) sprite.spriteFrame = sf;
+  sprite.color = hexColor(color);
+  const ut = sizeNode(badge, text ? size + 8 : 14, text ? size : 14);
+  if (text) {
+    const lab = badge.addComponent(Label);
+    lab.string = text;
+    lab.fontSize = 12;
+    lab.color = new Color(255, 255, 255, 255);
+    lab.horizontalAlign = Label.HorizontalAlign.CENTER;
+    lab.verticalAlign = Label.VerticalAlign.CENTER;
+    lab.isBold = true;
+  }
+  badge.setPosition(ut.width / 2, ut.height / 2);
+  target.addChild(badge);
+  badge.layer = target.layer;
+  return badge;
+}
+
+export interface RailItem {
+  key: string;
+  icon: string;            // emoji / 图标字符
+  label?: string;
+  onClick: () => void;
+  badge?: string | boolean; // 红点（true）或数字文本
+  color?: string;
+}
+// 右侧竖向功能条（v2 主页导航）：icon + 可选文字 + 红点
+export function addSideRail(parent: Node, items: RailItem[], opts: { w?: number; x?: number; iconSize?: number } = {}): void {
+  const { w = 104, x = 0, iconSize = 44 } = opts;
+  const H = view.getVisibleSize().height;
+  const SAFE = Theme.safeArea;
+  const itemH = 118;
+  const startY = H / 2 - SAFE.top - 40;
+  const n = items.length;
+  const totalH = n * itemH;
+  const y0 = Math.max(-H / 2 + SAFE.bottom + totalH / 2, startY - totalH / 2 - 20);
+  items.forEach((it, i) => {
+    const node = new Node(`Rail_${it.key}`);
+    const sprite = node.addComponent(Sprite);
+    sprite.type = Sprite.Type.SIMPLE;
+    const sf = solidFrame();
+    if (sf) sprite.spriteFrame = sf;
+    sprite.color = hexColor('#FFFFFF');
+    const op = node.addComponent(UIOpacity);
+    op.opacity = 40;
+    sizeNode(node, w - 16, 96);
+    node.setPosition(x + (w / 2 - 8), y0 - i * itemH);
+    parent.addChild(node);
+    node.layer = parent.layer;
+
+    const icon = addLabel(node, it.icon, { size: iconSize, color: it.color || Theme.color.text });
+    icon.setPosition(0, it.label ? 18 : 0);
+    const btn = node.addComponent(Button);
+    btn.transition = Button.Transition.SCALE;
+    node.on(Button.EventType.CLICK, it.onClick);
+
+    if (it.label) {
+      const lab = addLabel(node, it.label, { size: 18, color: Theme.color.textLight });
+      lab.setPosition(0, -26);
+    }
+    if (it.badge) {
+      const b = addBadge(node, typeof it.badge === 'string' ? { text: it.badge } : {});
+      b.setPosition(w / 2 - 22, 36);
+    }
+  });
+}
+
+export interface ProgressBarOpts { w?: number; h?: number; value?: number; color?: string; bgColor?: string; showText?: boolean; textColor?: string; }
+// 圆角进度条（渐变填充 + 可选百分比文本 + 数值滚动）
+export function addProgressBar(parent: Node, opts: ProgressBarOpts = {}): { node: Node; setValue: (v: number) => void; getValue: () => number } {
+  const { w = 300, h = 22, value = 0, color = Theme.color.primary, bgColor = Theme.color.bgDeep, showText = false, textColor = '#FFFFFF' } = opts;
+  const wrap = new Node('ProgressBar');
+  sizeNode(wrap, w, h + (showText ? 30 : 0));
+  parent.addChild(wrap);
+  wrap.layer = parent.layer;
+
+  const bg = new Node('BG');
+  const bgSp = bg.addComponent(Sprite);
+  const rf = roundedFrame();
+  if (rf) { bgSp.spriteFrame = rf; bgSp.type = Sprite.Type.SLICED; } else { const sf = solidFrame(); if (sf) bgSp.spriteFrame = sf; }
+  bgSp.color = hexColor(bgColor);
+  sizeNode(bg, w, h);
+  bg.setPosition(0, showText ? 15 : 0);
+  wrap.addChild(bg);
+  bg.layer = wrap.layer;
+
+  const fill = new Node('Fill');
+  const fillSp = fill.addComponent(Sprite);
+  if (rf) { fillSp.spriteFrame = rf; fillSp.type = Sprite.Type.SLICED; } else { const sf = solidFrame(); if (sf) fillSp.spriteFrame = sf; }
+  fillSp.color = hexColor(color);
+  const pad = Math.max(2, h * 0.12);
+  const fillW = Math.max(2, (w - pad * 2) * Math.max(0, Math.min(1, value)));
+  sizeNode(fill, fillW, h - pad * 2);
+  fill.setPosition(-(w / 2) + pad + fillW / 2, showText ? 15 : 0);
+  wrap.addChild(fill);
+  fill.layer = wrap.layer;
+
+  let cur = value;
+  let textNode: Node | null = null;
+  if (showText) {
+    textNode = addLabel(wrap, `${Math.round(cur * 100)}%`, { size: 20, color: textColor, bold: true });
+    textNode.setPosition(0, -h / 2 - 6);
+  }
+  const setValue = (v: number) => {
+    cur = Math.max(0, Math.min(1, v));
+    const fw = Math.max(2, (w - pad * 2) * cur);
+    tween(fill).to(0.3, { scale: new Vec3(1, 1, 1) }, {}).start();
+    sizeNode(fill, fw, h - pad * 2);
+    fill.setPosition(-(w / 2) + pad + fw / 2, showText ? 15 : 0);
+    if (textNode) {
+      const lab = textNode.getComponent(Label);
+      if (lab) lab.string = `${Math.round(cur * 100)}%`;
+    }
+  };
+  return { node: wrap, setValue, getValue: () => cur };
+}
+
+export interface PopupOpts { w?: number; h?: number; title?: string; onClose?: () => void; }
+// 统一弹窗容器（v2 §4.4）：遮罩 + 圆角面板 + 右上 X + 入场动效；返回 overlay，调用方往里加内容
+export function addPopup(parent: Node, W: number, H: number, opts: PopupOpts = {}): Node {
+  const { w = W - 80, h = Math.min(H - 120, 640), title = '', onClose } = opts;
+  const overlay = dimOverlay(parent, W, H, 0.65);
+  const panel = addPanel(overlay, w, h, Theme.color.bg);
+  panel.setPosition(0, 0);
+  if (title) {
+    const t = addLabel(panel, title, { size: 34, bold: true, color: Theme.color.primaryDark });
+    t.setPosition(0, h / 2 - 60);
+  }
+  const close = addButton(panel, '✕', () => {
+    overlay.destroy();
+    if (onClose) onClose();
+  }, { w: 64, h: 64, color: Theme.color.bgDeep, textColor: Theme.color.textLight, size: 28 });
+  close.setPosition(w / 2 - 54, h / 2 - 54);
+  popIn(panel);
+  return overlay;
 }

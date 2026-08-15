@@ -25,9 +25,14 @@ games/puzzle-cards/
 │   ├── functions/           # 云函数（每个目录 = 一个云函数）
 │   └── database/init.js     # 创建集合 + 索引（幂等）
 ├── config/                  # 数值表可读副本（与 cloud/model/config 同源）
-├── cocos/                   # Cocos Creator 3.x 工程（客户端）
-│   └── assets/Script/...    # 拼图核心逻辑（仅本地预判，权威以云端为准）
-├── scripts/gen-config.mjs  # 生成并校验全部数值表
+├── assets/                  # Cocos Creator 3.x 客户端（工程根即 Cocos 工程根）
+│   ├── Script/...           # 拼图核心逻辑（仅本地预判，权威以云端为准）
+│   ├── resources/textures/  # 美术资源（AI 生成流水线，见 textures/README.md）
+│   └── OpenDataContext/     # 好友排行榜开放数据域（sharedCanvas 双线程）
+├── docs/ai-integration.md   # AI 结合方案（内容层 + 开发层）
+├── scripts/
+│   ├── gen-config.mjs       # 生成并校验全部数值表
+│   └── gen-textures.mjs     # AI 美术生产流水线（DashScope 通义万相）
 └── test/                    # 核心算法单测（node --test）
 ```
 
@@ -45,10 +50,19 @@ games/puzzle-cards/
 # 1. 生成数值表（关卡/卡牌/概率/签到/任务/免费抽卡）
 node scripts/gen-config.mjs
 
-# 2. 跑核心算法单测
-node --test test/
+# 2. 跑核心算法单测（注：Node 24 需用 glob 形式，目录形式会误报）
+node --test "test/*.test.cjs"
 
-# 3. 微信开发者工具：导入 games/puzzle-cards/ 作为小游戏工程，
+# 3. 生成美术资源（73 张卡面 + UI 图已于 2026-08-11 全部生成；需重跑时用 --force）
+node scripts/gen-textures.mjs --dry-run   # 预览提示词
+node scripts/gen-textures.mjs --force     # 全量重新生成
+
+# 4. 生成图鉴知识卡（A2：--llm 需 DASHSCOPE_API_KEY；默认离线模板）
+node scripts/gen-lore.mjs --llm
+node scripts/gen-config.mjs               # 合并 lore 进 cards.json 后重跑一次
+node scripts/bundle-functions.mjs         # 上传云函数前同步 model 到 24 个函数
+
+# 5. 微信开发者工具：导入 games/puzzle-cards/ 作为小游戏工程，
 #    开通云开发，上传 cloud/functions/* 与 cloud/database/init.js，
 #    Cocos Creator 构建到 wechatgame 平台。
 ```
@@ -59,6 +73,7 @@ node --test test/
 
 - **难度**：10 档（4 / 9 / 16 / 25 / 36 / 49 / 64 / 81 / 100 / **144** 片，最大 12×12）
 - **关卡**：精确 **60 关**（5 章 × 12，对应 5 系列）
+- **卡牌**：**73 张** = 68 普通 + 5 隐藏（每系列 1 张隐藏；5 系列：花语集 / 萌宠志 / 食光记 / 山河卷 / 星辰谱）
 - **吸附距离**：**30px**
 - **赛季**：**30 天**，无通行证
 - **变现**：**纯 IAA**（激励 / 插屏 / Banner），无 IAP / 钻石 / 月卡 / 通行证 / 卡包购买；免费抽卡卡包概率独立到 `gacha` 配置，看广告免费抽取
@@ -71,6 +86,7 @@ node --test test/
 - 全程使用鼓励、正向文案；**禁用**「失败」「你输了」「闯关失败」等负面词。
 - 拼图未完成用「再试一次」「差一点点」「继续加油」；通关用「完成啦」「太棒了」「拼好啦」等。
 - 卡牌/收集用「集到新卡」「又解锁一张」；抽奖用「试试手气」「惊喜来袭」。
-- 所有弹窗与提示语集中在客户端 UI 文案处统一管理：`cocos/assets/Script/Core/Copy.ts`（已建，覆盖 app/home/level/result/gacha/rank/privacy/common），美术主题见 `cocos/assets/Script/Core/Theme.ts`（主色 `#FF9A6C`、调色板、资源约定）。
-- 美术资源清单与 AI 手绘暖色提示词：`cocos/assets/textures/README.md`；品牌占位 `cocos/assets/textures/brand/brand-mark.svg`。
+- 所有弹窗与提示语集中在客户端 UI 文案处统一管理：`assets/Script/Core/Copy.ts`（已建，覆盖 app/home/level/result/gacha/rank/privacy/common），美术主题见 `assets/Script/Core/Theme.ts`（主色 `#FF9A6C`、调色板、资源约定）。
+- 美术资源清单与 AI 手绘暖色提示词：`assets/resources/textures/README.md`；品牌占位 `assets/resources/textures/brand/brand-mark.svg`。
 - 上线前核对见 [LAUNCH-CHECKLIST.md](./LAUNCH-CHECKLIST.md)。
+- AI 结合方案（生图流水线 / 图鉴知识卡 / 每日挑战图 / 开发层工作流）：[docs/ai-integration.md](./docs/ai-integration.md)。

@@ -8,7 +8,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "玫瑰 · 普通",
-    "image": "images/cards/flower_001.png"
+    "image": "images/cards/flower_001.png",
+    "lore": {
+      "fact": "玫瑰的花瓣藏着秘密，每种颜色都代表不同的心意哦～",
+      "tip": "轻轻闻一闻，就能发现花儿的小温柔～"
+    }
   },
   {
     "id": "flower_002",
@@ -19,7 +23,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "郁金香 · 普通",
-    "image": "images/cards/flower_002.png"
+    "image": "images/cards/flower_002.png",
+    "lore": {
+      "fact": "郁金香像小杯子，盛着阳光和春天的笑声～",
+      "tip": "记得给它喝点水，它会开心地跳舞呢～"
+    }
   },
   {
     "id": "flower_003",
@@ -30,7 +38,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "百合 · 普通",
-    "image": "images/cards/flower_003.png"
+    "image": "images/cards/flower_003.png",
+    "lore": {
+      "fact": "百合花瓣层层叠叠，像是一朵朵小小的白云～",
+      "tip": "闭上眼睛，感受它带来的宁静气息吧～"
+    }
   },
   {
     "id": "flower_004",
@@ -41,7 +53,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "向日葵 · 普通",
-    "image": "images/cards/flower_004.png"
+    "image": "images/cards/flower_004.png",
+    "lore": {
+      "fact": "向日葵总是朝太阳转头，是大自然的追光小能手！",
+      "tip": "跟着它一起看太阳，心情也会亮起来～"
+    }
   },
   {
     "id": "flower_005",
@@ -52,7 +68,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "樱花 · 普通",
-    "image": "images/cards/flower_005.png"
+    "image": "images/cards/flower_005.png",
+    "lore": {
+      "fact": "樱花只开几天，却把整个春天都打扮得美美的～",
+      "tip": "快抓住这短暂的美丽，悄悄藏进心里～"
+    }
   },
   {
     "id": "flower_006",
@@ -63,7 +83,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "薰衣草 · 稀有",
-    "image": "images/cards/flower_006.png"
+    "image": "images/cards/flower_006.png",
+    "lore": {
+      "fact": "薰衣草的紫色小花能帮人安静下来，像温柔的晚风～",
+      "tip": "闻一闻，烦恼就悄悄溜走啦～"
+    }
   },
   {
     "id": "flower_007",
@@ -74,7 +98,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "牡丹 · 稀有",
-    "image": "images/cards/flower_007.png"
+    "image": "images/cards/flower_007.png",
+    "lore": {
+      "fact": "牡丹被称为花中之王，大大的花朵最会吸引小蜜蜂～",
+      "tip": "它可是花园里的小公主，要用心呵护哦～"
+    }
   },
   {
     "id": "flower_008",
@@ -85,7 +113,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "雏菊 · 稀有",
-    "image": "images/cards/flower_008.png"
+    "image": "images/cards/flower_008.png",
+    "lore": {
+      "fact": "雏菊像一张张笑脸，风吹过时会轻轻点头打招呼～",
+      "tip": "和它一起微笑，快乐就会飞起来～"
+    }
   },
   {
     "id": "flower_009",
@@ -96,7 +128,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "风信子 · 稀有",
-    "image": "images/cards/flower_009.png"
+    "image": "images/cards/flower_009.png",
+    "lore": {
+      "fact": "风信子的花序像一串铃铛，风一吹就叮咚作响～",
+      "tip": "听，那是春天在轻轻唱歌呢～"
+    }
   },
   {
     "id": "flower_010",
@@ -107,7 +143,11 @@
     "baseScore": 80,
     "hidden": false,
     "description": "茉莉 · 超稀有",
-    "image": "images/cards/flower_010.png"
+    "image": "images/cards/flower_010.png",
+    "lore": {
+      "fact": "茉莉花开时香气四溢，像月光洒在夜晚的花园里～",
+      "tip": "闭眼深呼吸，感受这份清甜的魔法～"
+    }
   },
   {
     "id": "flower_011",
@@ -118,7 +158,11 @@
     "baseScore": 80,
     "hidden": false,
     "description": "鸢尾 · 超稀有",
-    "image": "images/cards/flower_011.png"
+    "image": "images/cards/flower_011.png",
+    "lore": {
+      "fact": "鸢尾花的花瓣像蝴蝶翅膀，展开时美得像一幅画～",
+      "tip": "它正等着你来发现它的奇妙舞姿呢～"
+    }
   },
   {
     "id": "flower_012",
@@ -129,7 +173,11 @@
     "baseScore": 200,
     "hidden": false,
     "description": "芙蓉 · 传说",
-    "image": "images/cards/flower_012.png"
+    "image": "images/cards/flower_012.png",
+    "lore": {
+      "fact": "芙蓉花在夏夜里悄悄绽放，是月光下最优雅的客人～",
+      "tip": "静静欣赏它，就像听一场无声的音乐会～"
+    }
   },
   {
     "id": "flower_H01",
@@ -140,7 +188,11 @@
     "baseScore": 300,
     "hidden": true,
     "description": "隐藏卡，仅特殊条件获得",
-    "image": "images/cards/flower_H01.png"
+    "image": "images/cards/flower_H01.png",
+    "lore": {
+      "fact": "每朵花都藏着一个秘密，就像你心中独特的小故事。",
+      "tip": "轻轻摸摸花瓣，感受大自然的温柔心跳。"
+    }
   },
   {
     "id": "pet_001",
@@ -151,7 +203,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "柴犬 · 普通",
-    "image": "images/cards/pet_001.png"
+    "image": "images/cards/pet_001.png",
+    "lore": {
+      "fact": "柴犬爱笑又忠诚，是家里的开心果小太阳。",
+      "tip": "和柴犬一起散步，快乐会越走越多哦！"
+    }
   },
   {
     "id": "pet_002",
@@ -162,7 +218,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "布偶猫 · 普通",
-    "image": "images/cards/pet_002.png"
+    "image": "images/cards/pet_002.png",
+    "lore": {
+      "fact": "布偶猫性格温柔，像云朵一样软软地依偎着你。",
+      "tip": "轻声说话，它会用大眼睛回应你的温暖。"
+    }
   },
   {
     "id": "pet_003",
@@ -173,7 +233,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "柯基 · 普通",
-    "image": "images/cards/pet_003.png"
+    "image": "images/cards/pet_003.png",
+    "lore": {
+      "fact": "柯基短腿跑起来像小火车，可爱又有力气。",
+      "tip": "看它摇尾巴的样子，心情也会变亮呢！"
+    }
   },
   {
     "id": "pet_004",
@@ -184,7 +248,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "金毛 · 普通",
-    "image": "images/cards/pet_004.png"
+    "image": "images/cards/pet_004.png",
+    "lore": {
+      "fact": "金毛总是咧嘴笑，是朋友身边最可靠的小伙伴。",
+      "tip": "牵着它的手，每一步都是幸福的旅程。"
+    }
   },
   {
     "id": "pet_005",
@@ -195,7 +263,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "仓鼠 · 普通",
-    "image": "images/cards/pet_005.png"
+    "image": "images/cards/pet_005.png",
+    "lore": {
+      "fact": "仓鼠爱囤粮也爱玩耍，小小身体藏着大大乐趣。",
+      "tip": "给它一个小球，它会陪你转圈圈玩得开心！"
+    }
   },
   {
     "id": "pet_006",
@@ -206,7 +278,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "垂耳兔 · 普通",
-    "image": "images/cards/pet_006.png"
+    "image": "images/cards/pet_006.png",
+    "lore": {
+      "fact": "垂耳兔耳朵软软的，听觉灵敏，能听见风的声音。",
+      "tip": "安静靠近时，它会悄悄抬头看你一眼。"
+    }
   },
   {
     "id": "pet_007",
@@ -217,7 +293,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "鹦鹉 · 普通",
-    "image": "images/cards/pet_007.png"
+    "image": "images/cards/pet_007.png",
+    "lore": {
+      "fact": "鹦鹉会学人说话，还能用歌声传递快乐的心情。",
+      "tip": "对它说句“你好”，它会开心地重复一遍哦！"
+    }
   },
   {
     "id": "pet_008",
@@ -228,7 +308,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "刺猬 · 稀有",
-    "image": "images/cards/pet_008.png"
+    "image": "images/cards/pet_008.png",
+    "lore": {
+      "fact": "刺猬虽有小刺，但内心柔软，喜欢安静的小世界。",
+      "tip": "轻轻靠近，它会慢慢张开小爪子打招呼。"
+    }
   },
   {
     "id": "pet_009",
@@ -239,7 +323,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "龙猫 · 稀有",
-    "image": "images/cards/pet_009.png"
+    "image": "images/cards/pet_009.png",
+    "lore": {
+      "fact": "龙猫最爱吃橡果，还喜欢在月光下跳起小舞蹈。",
+      "tip": "夜晚别忘了给它留盏小灯，它会悄悄感谢你。"
+    }
   },
   {
     "id": "pet_010",
@@ -250,7 +338,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "橘猫 · 稀有",
-    "image": "images/cards/pet_010.png"
+    "image": "images/cards/pet_010.png",
+    "lore": {
+      "fact": "橘猫总爱晒太阳，懒洋洋的样子像一团暖暖的云。",
+      "tip": "它打呼噜时，记得轻轻盖上小毯子哦～"
+    }
   },
   {
     "id": "pet_011",
@@ -261,7 +353,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "萨摩耶 · 稀有",
-    "image": "images/cards/pet_011.png"
+    "image": "images/cards/pet_011.png",
+    "lore": {
+      "fact": "萨摩耶笑容灿烂，像雪地里奔跑的棉花糖精灵。",
+      "tip": "它一甩头，就会洒下一串阳光般的笑声！"
+    }
   },
   {
     "id": "pet_012",
@@ -272,7 +368,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "豚鼠 · 稀有",
-    "image": "images/cards/pet_012.png"
+    "image": "images/cards/pet_012.png",
+    "lore": {
+      "fact": "豚鼠爱用小爪子捧着食物，像在认真数星星一样可爱。",
+      "tip": "记得给它温柔的抚摸，它会开心地蹭蹭你哦~"
+    }
   },
   {
     "id": "pet_013",
@@ -283,7 +383,11 @@
     "baseScore": 80,
     "hidden": false,
     "description": "水獭 · 超稀有",
-    "image": "images/cards/pet_013.png"
+    "image": "images/cards/pet_013.png",
+    "lore": {
+      "fact": "水獭喜欢手牵手游泳，像一对小小水上舞伴呢。",
+      "tip": "和它一起玩水，快乐就像泡泡一样飞起来！"
+    }
   },
   {
     "id": "pet_014",
@@ -294,7 +398,11 @@
     "baseScore": 80,
     "hidden": false,
     "description": "狐狸 · 超稀有",
-    "image": "images/cards/pet_014.png"
+    "image": "images/cards/pet_014.png",
+    "lore": {
+      "fact": "狐狸尾巴一甩，就能卷起一阵悄悄话的风。",
+      "tip": "它最爱听你讲童话，快来和它分享故事吧！"
+    }
   },
   {
     "id": "pet_015",
@@ -305,7 +413,11 @@
     "baseScore": 80,
     "hidden": false,
     "description": "企鹅 · 超稀有",
-    "image": "images/cards/pet_015.png"
+    "image": "images/cards/pet_015.png",
+    "lore": {
+      "fact": "企鹅走路摇摇晃晃，像穿着小礼服跳舞的小绅士。",
+      "tip": "它们排队走时，像一群会走路的棉花糖呢～"
+    }
   },
   {
     "id": "pet_016",
@@ -316,7 +428,11 @@
     "baseScore": 200,
     "hidden": false,
     "description": "羊驼 · 传说",
-    "image": "images/cards/pet_016.png"
+    "image": "images/cards/pet_016.png",
+    "lore": {
+      "fact": "羊驼低头时，像在悄悄许愿，把阳光都藏进耳朵里。",
+      "tip": "轻轻靠近它，它会用眼神告诉你：你好呀！"
+    }
   },
   {
     "id": "pet_H01",
@@ -327,7 +443,11 @@
     "baseScore": 300,
     "hidden": true,
     "description": "隐藏卡，仅特殊条件获得",
-    "image": "images/cards/pet_H01.png"
+    "image": "images/cards/pet_H01.png",
+    "lore": {
+      "fact": "这只萌宠藏着星空的秘密，每眨一次眼都会闪出小光点。",
+      "tip": "闭上眼睛，它就在梦里等你来打招呼啦~"
+    }
   },
   {
     "id": "food_001",
@@ -338,7 +458,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "拉面 · 普通",
-    "image": "images/cards/food_001.png"
+    "image": "images/cards/food_001.png",
+    "lore": {
+      "fact": "拉面汤底咕嘟冒泡，像在唱一首暖暖的歌。",
+      "tip": "吹一吹热气，让香味慢慢飘到心里去～"
+    }
   },
   {
     "id": "food_002",
@@ -349,7 +473,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "寿司 · 普通",
-    "image": "images/cards/food_002.png"
+    "image": "images/cards/food_002.png",
+    "lore": {
+      "fact": "寿司卷一转，就像彩虹在盘子里跳起了舞蹈。",
+      "tip": "一口咬下，幸福就从舌尖开始旋转啦！"
+    }
   },
   {
     "id": "food_003",
@@ -360,7 +488,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "蛋糕 · 普通",
-    "image": "images/cards/food_003.png"
+    "image": "images/cards/food_003.png",
+    "lore": {
+      "fact": "蛋糕上的奶油像云朵一样软，轻轻一碰就笑出小窝窝。",
+      "tip": "分一块给朋友，快乐就会变成双倍甜哦～"
+    }
   },
   {
     "id": "food_004",
@@ -371,7 +503,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "奶茶 · 普通",
-    "image": "images/cards/food_004.png"
+    "image": "images/cards/food_004.png",
+    "lore": {
+      "fact": "奶茶里的珍珠蹦蹦跳跳，像在杯子里开派对。",
+      "tip": "吸一口，让甜蜜的魔法在嘴里跳舞吧！"
+    }
   },
   {
     "id": "food_005",
@@ -382,7 +518,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "火锅 · 普通",
-    "image": "images/cards/food_005.png"
+    "image": "images/cards/food_005.png",
+    "lore": {
+      "fact": "火锅咕嘟冒泡，像在邀请小朋友们来一场温暖聚会。",
+      "tip": "和家人一起涮菜，笑声比热气还高呢～"
+    }
   },
   {
     "id": "food_006",
@@ -393,7 +533,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "烧烤 · 普通",
-    "image": "images/cards/food_006.png"
+    "image": "images/cards/food_006.png",
+    "lore": {
+      "fact": "烧烤架上滋滋作响，是食物在悄悄说：“快尝我！”",
+      "tip": "烤得香喷喷的，每一口都是快乐的味道！"
+    }
   },
   {
     "id": "food_007",
@@ -404,7 +548,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "披萨 · 普通",
-    "image": "images/cards/food_007.png"
+    "image": "images/cards/food_007.png",
+    "lore": {
+      "fact": "披萨上的小番茄，其实是从意大利传来的美味小精灵哦～",
+      "tip": "和家人一起拼出最爱的披萨，分享快乐最甜！"
+    }
   },
   {
     "id": "food_008",
@@ -415,7 +563,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "冰淇淋 · 稀有",
-    "image": "images/cards/food_008.png"
+    "image": "images/cards/food_008.png",
+    "lore": {
+      "fact": "冰淇淋在夏天会悄悄变成彩虹色，因为阳光爱和它玩捉迷藏～",
+      "tip": "吃一口冰淇淋，让心情像云朵一样轻飘飘～"
+    }
   },
   {
     "id": "food_009",
@@ -426,7 +578,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "包子 · 稀有",
-    "image": "images/cards/food_009.png"
+    "image": "images/cards/food_009.png",
+    "lore": {
+      "fact": "包子肚子里藏着暖暖的香气，是面团和时间一起做的梦～",
+      "tip": "咬一口热腾腾的包子，幸福就在舌尖跳舞！"
+    }
   },
   {
     "id": "food_010",
@@ -437,7 +593,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "煎饼 · 稀有",
-    "image": "images/cards/food_010.png"
+    "image": "images/cards/food_010.png",
+    "lore": {
+      "fact": "煎饼摊上的金黄小圆饼，是锅铲和油花跳的欢快舞步～",
+      "tip": "用小手拼出煎饼，就像画一幅会吃的画～"
+    }
   },
   {
     "id": "food_011",
@@ -448,7 +608,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "牛排 · 稀有",
-    "image": "images/cards/food_011.png"
+    "image": "images/cards/food_011.png",
+    "lore": {
+      "fact": "牛排上的焦香，是火与肉悄悄说的秘密，真让人期待呀～",
+      "tip": "每一块牛排都藏着一份勇敢的味道，来试试吧！"
+    }
   },
   {
     "id": "food_012",
@@ -459,7 +623,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "甜甜圈 · 稀有",
-    "image": "images/cards/food_012.png"
+    "image": "images/cards/food_012.png",
+    "lore": {
+      "fact": "甜甜圈的洞洞里，住着一整个甜甜的清晨童话～",
+      "tip": "拼一个甜甜圈，把快乐一圈圈送给你！"
+    }
   },
   {
     "id": "food_013",
@@ -470,7 +638,11 @@
     "baseScore": 80,
     "hidden": false,
     "description": "咖喱 · 超稀有",
-    "image": "images/cards/food_013.png"
+    "image": "images/cards/food_013.png",
+    "lore": {
+      "fact": "咖喱的香味会飞，飘到每个角落，唤醒沉睡的味蕾～",
+      "tip": "闻一闻咖喱香，像是在和星星打招呼呢～"
+    }
   },
   {
     "id": "food_014",
@@ -481,7 +653,11 @@
     "baseScore": 80,
     "hidden": false,
     "description": "麻薯 · 超稀有",
-    "image": "images/cards/food_014.png"
+    "image": "images/cards/food_014.png",
+    "lore": {
+      "fact": "麻薯软软弹弹，像一颗会跳舞的小云朵，轻轻一碰就笑起来～",
+      "tip": "捏一捏麻薯，感受它带来的小小温暖～"
+    }
   },
   {
     "id": "food_015",
@@ -492,7 +668,11 @@
     "baseScore": 80,
     "hidden": false,
     "description": "可丽饼 · 超稀有",
-    "image": "images/cards/food_015.png"
+    "image": "images/cards/food_015.png",
+    "lore": {
+      "fact": "可丽饼卷着甜蜜故事，在铁板上跳起温柔的旋转舞～",
+      "tip": "拼一张可丽饼，把美好都裹进心里吧～"
+    }
   },
   {
     "id": "food_016",
@@ -503,7 +683,11 @@
     "baseScore": 200,
     "hidden": false,
     "description": "关东煮 · 传说",
-    "image": "images/cards/food_016.png"
+    "image": "images/cards/food_016.png",
+    "lore": {
+      "fact": "关东煮的汤底，是冬日里慢慢熬出来的暖暖星光～",
+      "tip": "喝一口热汤，让身体也暖暖地笑着～"
+    }
   },
   {
     "id": "food_H01",
@@ -514,7 +698,11 @@
     "baseScore": 300,
     "hidden": true,
     "description": "隐藏卡，仅特殊条件获得",
-    "image": "images/cards/food_H01.png"
+    "image": "images/cards/food_H01.png",
+    "lore": {
+      "fact": "食光记·秘藏着一道神秘美食，只有最细心的小朋友能发现～",
+      "tip": "打开它，就像翻开一页发光的童话书！"
+    }
   },
   {
     "id": "landscape_001",
@@ -525,7 +713,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "长城 · 普通",
-    "image": "images/cards/landscape_001.png"
+    "image": "images/cards/landscape_001.png",
+    "lore": {
+      "fact": "长城像一条巨龙趴在山脊上，守护着千年的笑容和故事～",
+      "tip": "拼出长城，你就是小小守护者啦！"
+    }
   },
   {
     "id": "landscape_002",
@@ -536,7 +728,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "西湖 · 普通",
-    "image": "images/cards/landscape_002.png"
+    "image": "images/cards/landscape_002.png",
+    "lore": {
+      "fact": "西湖的湖水像一面镜子，倒映着青山和古塔，美得像一幅会动的画。",
+      "tip": "拼图时记得找找那座雷峰塔哦，它在等你发现呢！"
+    }
   },
   {
     "id": "landscape_003",
@@ -547,7 +743,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "黄山 · 普通",
-    "image": "images/cards/landscape_003.png"
+    "image": "images/cards/landscape_003.png",
+    "lore": {
+      "fact": "黄山的奇松怪石像小精灵，每一块石头都有自己的故事要讲。",
+      "tip": "快找找那棵迎客松，它正朝你挥手呢！"
+    }
   },
   {
     "id": "landscape_004",
@@ -558,7 +758,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "故宫 · 普通",
-    "image": "images/cards/landscape_004.png"
+    "image": "images/cards/landscape_004.png",
+    "lore": {
+      "fact": "故宫有9999间房，像迷宫一样藏着历史的秘密。",
+      "tip": "拼图时别忘了红墙金瓦的宫殿，它们在笑着等你！"
+    }
   },
   {
     "id": "landscape_005",
@@ -569,7 +773,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "漓江 · 稀有",
-    "image": "images/cards/landscape_005.png"
+    "image": "images/cards/landscape_005.png",
+    "lore": {
+      "fact": "漓江的山水像水墨画，船儿划过，留下一条条温柔的波纹。",
+      "tip": "看看那座像骆驼的山，它正悄悄跟着你走呢！"
+    }
   },
   {
     "id": "landscape_006",
@@ -580,7 +788,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "张家界 · 稀有",
-    "image": "images/cards/landscape_006.png"
+    "image": "images/cards/landscape_006.png",
+    "lore": {
+      "fact": "张家界的石柱高耸入云，像从大地长出来的天然楼梯。",
+      "tip": "找找那些像竹笋一样的山峰，它们在等你点亮！"
+    }
   },
   {
     "id": "landscape_007",
@@ -591,7 +803,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "鼓浪屿 · 稀有",
-    "image": "images/cards/landscape_007.png"
+    "image": "images/cards/landscape_007.png",
+    "lore": {
+      "fact": "鼓浪屿的石头小路会唱歌，每一步都像踩在风铃上。",
+      "tip": "听，海浪在轻声哼歌，快来和它一起跳舞吧！"
+    }
   },
   {
     "id": "landscape_008",
@@ -602,7 +818,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "洱海 · 稀有",
-    "image": "images/cards/landscape_008.png"
+    "image": "images/cards/landscape_008.png",
+    "lore": {
+      "fact": "洱海的湖水像蓝宝石，阳光一照，整片湖都在闪闪发亮。",
+      "tip": "快把小船拼到湖中央，它正等着带你去冒险呢！"
+    }
   },
   {
     "id": "landscape_009",
@@ -613,7 +833,11 @@
     "baseScore": 80,
     "hidden": false,
     "description": "泰山 · 超稀有",
-    "image": "images/cards/landscape_009.png"
+    "image": "images/cards/landscape_009.png",
+    "lore": {
+      "fact": "泰山是古人登顶看日出的地方，山顶的云海像翻滚的棉花糖。",
+      "tip": "拼好山顶的亭子，就能看见最美的第一缕光啦！"
+    }
   },
   {
     "id": "landscape_010",
@@ -624,7 +848,11 @@
     "baseScore": 80,
     "hidden": false,
     "description": "九寨沟 · 超稀有",
-    "image": "images/cards/landscape_010.png"
+    "image": "images/cards/landscape_010.png",
+    "lore": {
+      "fact": "九寨沟的湖水颜色神奇，像打翻了彩虹调色盘。",
+      "tip": "快把蓝色的湖水拼出来，它正笑眯眯地等你呢！"
+    }
   },
   {
     "id": "landscape_011",
@@ -635,7 +863,11 @@
     "baseScore": 80,
     "hidden": false,
     "description": "布达拉宫 · 超稀有",
-    "image": "images/cards/landscape_011.png"
+    "image": "images/cards/landscape_011.png",
+    "lore": {
+      "fact": "布达拉宫像一座金色的城堡，建在高原上，守护着千年故事。",
+      "tip": "找找那扇金色大门，它正悄悄为你打开呢！"
+    }
   },
   {
     "id": "landscape_012",
@@ -646,7 +878,11 @@
     "baseScore": 200,
     "hidden": false,
     "description": "壶口瀑布 · 传说",
-    "image": "images/cards/landscape_012.png"
+    "image": "images/cards/landscape_012.png",
+    "lore": {
+      "fact": "壶口瀑布的水声像千军万马奔腾，震得人心也跟着跳动。",
+      "tip": "拼出飞溅的水花，感受它的快乐节奏吧！"
+    }
   },
   {
     "id": "landscape_H01",
@@ -657,7 +893,11 @@
     "baseScore": 300,
     "hidden": true,
     "description": "隐藏卡，仅特殊条件获得",
-    "image": "images/cards/landscape_H01.png"
+    "image": "images/cards/landscape_H01.png",
+    "lore": {
+      "fact": "山河卷·秘里藏着最神秘的风景，只有最细心的小朋友才能发现。",
+      "tip": "闭上眼睛想一想，它就在你心里悄悄发光哦！"
+    }
   },
   {
     "id": "star_001",
@@ -668,7 +908,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "白羊 · 普通",
-    "image": "images/cards/star_001.png"
+    "image": "images/cards/star_001.png",
+    "lore": {
+      "fact": "白羊座像小太阳，总爱冲在最前面，勇敢又热情！",
+      "tip": "别怕试一试，你的勇气最闪亮！"
+    }
   },
   {
     "id": "star_002",
@@ -679,7 +923,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "金牛 · 普通",
-    "image": "images/cards/star_002.png"
+    "image": "images/cards/star_002.png",
+    "lore": {
+      "fact": "金牛座喜欢慢慢欣赏美，就像静静看一朵花开。",
+      "tip": "耐心一点，好东西值得等待哦～"
+    }
   },
   {
     "id": "star_003",
@@ -690,7 +938,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "双子 · 普通",
-    "image": "images/cards/star_003.png"
+    "image": "images/cards/star_003.png",
+    "lore": {
+      "fact": "双子座好奇心满满，总想问‘为什么’呢～",
+      "tip": "多问问，世界会变得更有趣！"
+    }
   },
   {
     "id": "star_004",
@@ -701,7 +953,11 @@
     "baseScore": 10,
     "hidden": false,
     "description": "巨蟹 · 普通",
-    "image": "images/cards/star_004.png"
+    "image": "images/cards/star_004.png",
+    "lore": {
+      "fact": "巨蟹座像温暖的小港湾，最爱照顾朋友啦～",
+      "tip": "你的心意，大家都感受得到！"
+    }
   },
   {
     "id": "star_005",
@@ -712,7 +968,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "狮子 · 稀有",
-    "image": "images/cards/star_005.png"
+    "image": "images/cards/star_005.png",
+    "lore": {
+      "fact": "狮子座是天生的主角，笑起来像阳光一样灿烂！",
+      "tip": "自信地发光吧，你很特别！"
+    }
   },
   {
     "id": "star_006",
@@ -723,7 +983,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "处女 · 稀有",
-    "image": "images/cards/star_006.png"
+    "image": "images/cards/star_006.png",
+    "lore": {
+      "fact": "处女座细心又认真，连小纸片都叠得整整齐齐～",
+      "tip": "你的专注，让每件事都更棒！"
+    }
   },
   {
     "id": "star_007",
@@ -734,7 +998,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "天秤 · 稀有",
-    "image": "images/cards/star_007.png"
+    "image": "images/cards/star_007.png",
+    "lore": {
+      "fact": "天秤座最爱公平，总是帮大家找到平衡点～",
+      "tip": "有你在，气氛更和谐呢～"
+    }
   },
   {
     "id": "star_008",
@@ -745,7 +1013,11 @@
     "baseScore": 30,
     "hidden": false,
     "description": "天蝎 · 稀有",
-    "image": "images/cards/star_008.png"
+    "image": "images/cards/star_008.png",
+    "lore": {
+      "fact": "天蝎座心思细腻，像夜空中的小星星，默默守护着光。",
+      "tip": "你的温柔，藏在细节里～"
+    }
   },
   {
     "id": "star_009",
@@ -756,7 +1028,11 @@
     "baseScore": 80,
     "hidden": false,
     "description": "射手 · 超稀有",
-    "image": "images/cards/star_009.png"
+    "image": "images/cards/star_009.png",
+    "lore": {
+      "fact": "射手座爱冒险，总想着去远方看看新风景～",
+      "tip": "勇敢出发，世界等你探索！"
+    }
   },
   {
     "id": "star_010",
@@ -767,7 +1043,11 @@
     "baseScore": 80,
     "hidden": false,
     "description": "摩羯 · 超稀有",
-    "image": "images/cards/star_010.png"
+    "image": "images/cards/star_010.png",
+    "lore": {
+      "fact": "摩羯座目标明确，像小树苗努力向上长～",
+      "tip": "一步步来，你会越来越强！"
+    }
   },
   {
     "id": "star_011",
@@ -778,7 +1058,11 @@
     "baseScore": 80,
     "hidden": false,
     "description": "水瓶 · 超稀有",
-    "image": "images/cards/star_011.png"
+    "image": "images/cards/star_011.png",
+    "lore": {
+      "fact": "水瓶座脑洞大开，总能想到别人想不到的好点子～",
+      "tip": "你的奇思妙想真了不起！"
+    }
   },
   {
     "id": "star_012",
@@ -789,7 +1073,11 @@
     "baseScore": 200,
     "hidden": false,
     "description": "双鱼 · 传说",
-    "image": "images/cards/star_012.png"
+    "image": "images/cards/star_012.png",
+    "lore": {
+      "fact": "双鱼座像梦里的小精灵，总带着温柔的幻想～",
+      "tip": "保持想象，心就飞得更高！"
+    }
   },
   {
     "id": "star_H01",
@@ -800,6 +1088,10 @@
     "baseScore": 300,
     "hidden": true,
     "description": "隐藏卡，仅特殊条件获得",
-    "image": "images/cards/star_H01.png"
+    "image": "images/cards/star_H01.png",
+    "lore": {
+      "fact": "每颗星星都藏着一个秘密，只要用心观察，就能发现它们闪烁的奇妙故事。",
+      "tip": "像小星星一样闪闪发光，勇敢去探索吧！"
+    }
   }
 ]

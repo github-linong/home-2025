@@ -84,3 +84,11 @@
   - Cocos Creator 构建：用 Cocos Creator 打开 `cocos/` → 新建/指定启动场景 → 在 `Canvas` 根节点挂 `Script/Game/Main.ts` 组件（代码已 `ensureCanvas` 兜底，但需一个含 Main 的场景才能构建）→ 构建发布为「微信小游戏」。`game.js` 由构建过程生成，无需手写。
   - 引擎/后端迁移（Phaser + Express/MySQL）按决策文档二期评估。
   - 提审清单见 [LAUNCH-CHECKLIST.md](./LAUNCH-CHECKLIST.md)。
+
+## 七、现状修正（2026-08-14，扫盘后对账）
+
+> 本文档为决策历史记录，以下修正仅纠正与当前工程不符的表述，不改变决策结论。
+
+1. **目录结构**：工程根即 Cocos 工程根（`assets/` 位于 `games/puzzle-cards/assets/`），**不存在 `cocos/` 子目录**；上文所有 `cocos/assets/...` 路径实际为 `assets/...`。
+2. **卡牌数量**：`config/cards.json` 实际为 **73 张 = 68 普通 + 5 隐藏**（上文「65 卡面」为旧值；`gen-config.mjs` 断言普通卡 68、隐藏卡 5）。
+3. **美术资源**：`assets/resources/textures/` 尚未生成（AI 生产流水线见 `scripts/gen-textures.mjs` 与 `docs/ai-integration.md`）；上文「美术资源清单已建」指清单设计，非资源本体。

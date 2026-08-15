@@ -341,7 +341,7 @@
 // ============================================================================
 
 const params = new URLSearchParams(location.search);
-const SERVER = (params.get('server') || (location.hostname === 'localhost' ? 'ws://localhost:3011' : `wss://${location.host}/ws/jianghu`)).replace(/\/+$/, '');
+const SERVER = (params.get('server') || (location.hostname === 'localhost' ? 'ws://localhost:3011' : `wss://${location.host}`)).replace(/\/+$/, '');
 const DEV_USER = params.get('devUserId') || 'dev';
 const DEBUG = params.get('debug') === '1';
 

@@ -46,6 +46,28 @@ export const Theme = {
   // 视觉参数（Cocos Widget / UIOpacity / Graphics 圆角用）
   radius: { card: 24, button: 28, panel: 32 },
   shadow: { offsetY: 6, blur: 16, color: 'rgba(242,119,74,0.18)' },
+
+  // ---------- v2 设计系统扩展（docs/redesign-v2.md §4；水彩风格定稿后调整色值，结构不变） ----------
+  // 安全区（设计分辨率 720×1280 空间）：顶部胶囊/状态栏、底部 home 条
+  safeArea: { top: 88, bottom: 68, capsule: { w: 90, h: 34 } },
+
+  // 屏幕渐变背景（每屏一组，水彩风格定稿后微调）
+  gradient: {
+    home: ['#FFF7F1', '#FFE9DD'],
+    levelSelect: ['#FFF7F1', '#FFE9DD'],
+    puzzle: ['#FFF7F1', '#FFE9DD'],
+    collection: ['#FFF7F1', '#FFE9DD'],
+    gacha: ['#FFF7F1', '#FFE0CE'],
+  },
+
+  // 系列主题色（关卡页签/图鉴底色/装饰联动）
+  series: {
+    flower: { primary: '#FFB3C7', gradient: ['#FFF0F5', '#FFD9E4'], decor: '🌸' },
+    pet: { primary: '#FFC97B', gradient: ['#FFF6E9', '#FFE3B8'], decor: '🐾' },
+    food: { primary: '#FF9A6C', gradient: ['#FFF3EC', '#FFDCC9'], decor: '🍡' },
+    landscape: { primary: '#8FD3C7', gradient: ['#EFFAF7', '#D3F0EA'], decor: '🏔' },
+    star: { primary: '#A8B8F0', gradient: ['#F2F4FF', '#DCE3FB'], decor: '✨' },
+  },
 };
 
 export default Theme;

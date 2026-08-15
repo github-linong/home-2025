@@ -8,9 +8,12 @@ import { addLabel, addButton, addPanel, addRarityCard, sizeNode, stretch, dimOve
 import { ad } from '../Core/Ad';
 import { performFreeDraw, freeDrawLeft, canFreeDrawToday, GachaResult } from '../Core/LocalGacha';
 import { getTotalCards } from '../Core/LocalProfile';
+import { getDefaultConfig } from '../Core/Config';
+import { showCardDetail } from './CollectionScreen';
 
 export interface GachaHandlers {
   onBack: () => void;
+  cfg?: any;
 }
 
 export function buildGachaScreen(parent: Node, h: GachaHandlers): void {
@@ -36,14 +39,14 @@ export function buildGachaScreen(parent: Node, h: GachaHandlers): void {
   tip2.setPosition(0, H / 2 - 190);
 
   // 抽卡主按钮（下沉到中下部，避免悬空；竖屏 H 自适应）
-  const drawBtn = addButton(parent, Copy.gacha.watchAd, () => doDraw(parent, W, H, tip, tip2), { w: 340, h: 96, color: Theme.color.accent, size: 32 });
+  const drawBtn = addButton(parent, Copy.gacha.watchAd, () => doDraw(parent, W, H, tip, tip2, h.cfg), { w: 340, h: 96, color: Theme.color.accent, size: 32 });
   drawBtn.setPosition(0, -H / 2 + 36 + 200);
 }
 
-async function doDraw(parent: Node, W: number, H: number, tipLabel: Node, tip2Label: Node): Promise<void> {
+async function doDraw(parent: Node, W: number, H: number, tipLabel: Node, tip2Label: Node, cfg: any): Promise<void> {
   if (!canFreeDrawToday()) {
     refreshTip(tipLabel);
-    showResult(parent, W, H, [], Copy.gacha.freeDone);
+    showResult(parent, W, H, [], Copy.gacha.freeDone, cfg);
     return;
   }
   // 1) 看激励视频（看完才给抽，IAA 诚信）；编辑器/无广告环境直接放行，保证可玩。
@@ -61,7 +64,7 @@ async function doDraw(parent: Node, W: number, H: number, tipLabel: Node, tip2La
     const lab = tip2Label.getComponent(Label);
     if (lab) lab.string = `已收集 ${getTotalCards()} 张`;
   }
-  showResult(parent, W, H, res.results, res.results.length ? Copy.gacha.surprise : Copy.gacha.freeDone);
+  showResult(parent, W, H, res.results, res.results.length ? Copy.gacha.surprise : Copy.gacha.freeDone, cfg);
 }
 
 function refreshTip(tipLabel: Node): void {
@@ -69,7 +72,7 @@ function refreshTip(tipLabel: Node): void {
   if (lab) lab.string = freeDrawLeft() > 0 ? Copy.gacha.freeLeft(freeDrawLeft()) : Copy.gacha.freeDone;
 }
 
-function showResult(parent: Node, W: number, H: number, results: GachaResult[], headline: string): void {
+function showResult(parent: Node, W: number, H: number, results: GachaResult[], headline: string, cfg: any): void {
   const overlay = dimOverlay(parent, W, H, 0.5);
   const panelH = Math.min(H - 80, 600);
   const panel = addPanel(overlay, W - 80, panelH, Theme.color.bg);
@@ -96,6 +99,20 @@ function showResult(parent: Node, W: number, H: number, results: GachaResult[], 
       const tag = addLabel(card, r.isNew ? Copy.gacha.gotCard : Copy.gacha.gotDup, { size: 18, color: '#FFFFFF', bold: true });
       tag.setPosition(0, -cell / 2 + 18);
     });
+
+    // A2 图鉴知识：第一张新卡下方给 lore 提示，点击卡片可看完整详情
+    const firstNew = results.find((r) => r.isNew && r.cardId);
+    if (firstNew && firstNew.cardId) {
+      const catalog = (cfg && cfg.cards) || getDefaultConfig().cards || [];
+      const def = catalog.find((c: any) => c.id === firstNew.cardId);
+      if (def && def.lore && def.lore.fact) {
+        const fact = def.lore.fact.length > 16 ? `${def.lore.fact.slice(0, 16)}…` : def.lore.fact;
+        const loreBtn = addButton(panel, `💡 ${fact}`, () => {
+          showCardDetail(overlay, W, H, def, true);
+        }, { w: W - 180, h: 64, color: Theme.color.bgDeep, textColor: Theme.color.text, size: 22 });
+        loreBtn.setPosition(0, -panelH / 2 + 150);
+      }
+    }
   }
 
   const ok = addButton(panel, Copy.common.ok, () => overlay.destroy(), { w: 280, h: 76 });

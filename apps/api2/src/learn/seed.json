@@ -2794,6 +2794,126 @@
           "zh": "体现；使具体化",
           "hint": "represent concretely",
           "sort_order": 465
+        },
+        {
+          "en": "milestone",
+          "zh": "里程碑",
+          "hint": "a major stage or achievement",
+          "sort_order": 466
+        },
+        {
+          "en": "capacity",
+          "zh": "能力；容量",
+          "hint": "ability or maximum amount",
+          "sort_order": 467
+        },
+        {
+          "en": "supervise",
+          "zh": "监督；管理",
+          "hint": "watch over and direct work",
+          "sort_order": 468
+        },
+        {
+          "en": "nominal",
+          "zh": "名义上的；象征性的",
+          "hint": "in name only; tiny",
+          "sort_order": 469
+        },
+        {
+          "en": "balcony",
+          "zh": "阳台",
+          "hint": "outdoor platform on a building",
+          "sort_order": 470
+        },
+        {
+          "en": "blossom",
+          "zh": "开花；兴旺",
+          "hint": "flower; thrive and develop",
+          "sort_order": 471
+        },
+        {
+          "en": "vogue",
+          "zh": "流行；时尚",
+          "hint": "current fashion or trend",
+          "sort_order": 472
+        },
+        {
+          "en": "obscure",
+          "zh": "模糊的；鲜为人知的",
+          "hint": "unclear; not well known",
+          "sort_order": 473
+        },
+        {
+          "en": "simultaneous",
+          "zh": "同时的；同步的",
+          "hint": "happening at the same time",
+          "sort_order": 474
+        },
+        {
+          "en": "tactful",
+          "zh": "圆通的；得体的",
+          "hint": "sensitive and diplomatic in speech",
+          "sort_order": 475
+        },
+        {
+          "en": "workload",
+          "zh": "工作量；工作负担",
+          "hint": "the amount of work assigned",
+          "sort_order": 476
+        },
+        {
+          "en": "retrieve",
+          "zh": "取回；检索",
+          "hint": "get something back or find it",
+          "sort_order": 477
+        },
+        {
+          "en": "venture",
+          "zh": "风险投资；冒险（做）",
+          "hint": "a risky business or dare to do",
+          "sort_order": 478
+        },
+        {
+          "en": "rigorous",
+          "zh": "严格的；严密的",
+          "hint": "strict and thorough",
+          "sort_order": 479
+        },
+        {
+          "en": "mindful",
+          "zh": "留心的；正念的",
+          "hint": "aware and paying attention",
+          "sort_order": 480
+        },
+        {
+          "en": "nurture",
+          "zh": "养育；培养；滋养",
+          "hint": "care for and help grow",
+          "sort_order": 481
+        },
+        {
+          "en": "bloom",
+          "zh": "开花；繁荣；花期",
+          "hint": "flower or reach full beauty",
+          "sort_order": 482
+        },
+        {
+          "en": "punctual",
+          "zh": "准时的；守时的",
+          "hint": "arriving exactly on time",
+          "sort_order": 483
+        },
+        {
+          "en": "settle",
+          "zh": "解决；安顿；定居",
+          "hint": "resolve or make a home",
+          "sort_order": 484
+        },
+        {
+          "en": "modest",
+          "zh": "谦虚的；适度的",
+          "hint": "humble or moderate in size",
+          "sort_order": 485
         }
       ]
     }
@@ -6046,6 +6166,146 @@
       "zh": "体现；使具体化",
       "pos": "v.",
       "example": "The statue embodies the values of courage and freedom."
+    },
+    {
+      "lemma": "milestone",
+      "phonetic": "/ˈmaɪlstəʊn/",
+      "zh": "里程碑；阶段性重大成就",
+      "pos": "n.",
+      "example": "Launching our first product was a major milestone for the team."
+    },
+    {
+      "lemma": "capacity",
+      "phonetic": "/kəˈpæsəti/",
+      "zh": "能力；容量；产能",
+      "pos": "n.",
+      "example": "The server has reached its maximum capacity during peak hours."
+    },
+    {
+      "lemma": "supervise",
+      "phonetic": "/ˈsuːpəvaɪz/",
+      "zh": "监督；管理；指导",
+      "pos": "v.",
+      "example": "She was asked to supervise the new interns this summer."
+    },
+    {
+      "lemma": "nominal",
+      "phonetic": "/ˈnɒmɪnl/",
+      "zh": "名义上的；象征性的（数额极小）",
+      "pos": "adj.",
+      "example": "They charged a nominal fee just to cover the printing costs."
+    },
+    {
+      "lemma": "balcony",
+      "phonetic": "/ˈbælkəni/",
+      "zh": "阳台",
+      "pos": "n.",
+      "example": "We had breakfast on the balcony and watched the city wake up."
+    },
+    {
+      "lemma": "blossom",
+      "phonetic": "/ˈblɒsəm/",
+      "zh": "花（尤指果树花）；开花；兴旺发展",
+      "pos": "n./v.",
+      "example": "The cherry trees blossom every spring in the park."
+    },
+    {
+      "lemma": "vogue",
+      "phonetic": "/vəʊɡ/",
+      "zh": "流行；时尚；时髦的",
+      "pos": "n./adj.",
+      "example": "Minimalist design is very much in vogue this year."
+    },
+    {
+      "lemma": "obscure",
+      "phonetic": "/əbˈskjʊər/",
+      "zh": "模糊不清的；鲜为人知的",
+      "pos": "adj./v.",
+      "example": "The details of the contract are obscure and need clarification."
+    },
+    {
+      "lemma": "simultaneous",
+      "phonetic": "/ˌsaɪmlˈteɪniəs/",
+      "zh": "同时发生的；同步的",
+      "pos": "adj.",
+      "example": "The app supports simultaneous logins on multiple devices."
+    },
+    {
+      "lemma": "tactful",
+      "phonetic": "/ˈtæktfl/",
+      "zh": "圆通的；得体的；说话有技巧的",
+      "pos": "adj.",
+      "example": "A tactful response can defuse a tense conversation."
+    },
+    {
+      "lemma": "workload",
+      "phonetic": "/ˈwɜːrkloʊd/",
+      "zh": "工作量；工作负担",
+      "pos": "n.",
+      "example": "The team's workload has doubled since the last hire left."
+    },
+    {
+      "lemma": "retrieve",
+      "phonetic": "/rɪˈtriːv/",
+      "zh": "取回；检索",
+      "pos": "v.",
+      "example": "I need to retrieve the file from the shared drive."
+    },
+    {
+      "lemma": "venture",
+      "phonetic": "/ˈventʃər/",
+      "zh": "风险投资；冒险（做）",
+      "pos": "n./v.",
+      "example": "The startup secured funding from a top venture capital firm."
+    },
+    {
+      "lemma": "rigorous",
+      "phonetic": "/ˈrɪɡərəs/",
+      "zh": "严格的；严密的",
+      "pos": "adj.",
+      "example": "We run every release through rigorous testing before it ships."
+    },
+    {
+      "lemma": "mindful",
+      "phonetic": "/ˈmaɪndfl/",
+      "zh": "留心的；正念的",
+      "pos": "adj.",
+      "example": "Try to be mindful of how much time you spend on your phone."
+    },
+    {
+      "lemma": "nurture",
+      "phonetic": "/ˈnɜːrtʃər/",
+      "zh": "养育；培养；滋养",
+      "pos": "v./n.",
+      "example": "She nurtures her plants every morning like they're her children."
+    },
+    {
+      "lemma": "bloom",
+      "phonetic": "/bluːm/",
+      "zh": "开花；繁荣；花期",
+      "pos": "v./n.",
+      "example": "The cherry trees bloom in early April here."
+    },
+    {
+      "lemma": "punctual",
+      "phonetic": "/ˈpʌŋktʃuəl/",
+      "zh": "准时的；守时的",
+      "pos": "adj.",
+      "example": "He's always punctual for the Monday stand-up."
+    },
+    {
+      "lemma": "settle",
+      "phonetic": "/ˈsetl/",
+      "zh": "解决；安顿；定居",
+      "pos": "v.",
+      "example": "Let's settle this debate and move on to the next topic."
+    },
+    {
+      "lemma": "modest",
+      "phonetic": "/ˈmɑːdɪst/",
+      "zh": "谦虚的；适度的",
+      "pos": "adj.",
+      "example": "She made a modest profit in her first year of business."
     }
   ],
   "passages": [

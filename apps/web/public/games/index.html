@@ -26,52 +26,80 @@
     font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
   a { color: inherit; text-decoration: none; }
   .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
-  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 36px; flex-wrap: wrap; gap: 12px; }
-  header h1 { font-size: 26px; letter-spacing: 2px; color: var(--gold); font-weight: 900;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+  header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
+  header h1 { font-size: 28px; letter-spacing: 2px; color: var(--gold); font-weight: 900;
+    text-shadow: 0 2px 12px rgba(245, 212, 136, 0.12); margin-bottom: 6px; }
   header .sub { color: var(--text-2); font-size: 13px; letter-spacing: 1px; }
-  header .live { display: flex; gap: 16px; align-items: center; font-size: 12px; color: var(--text-1); }
-  header .live .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green);
-    box-shadow: 0 0 8px var(--green); animation: pulse 1.6s ease-in-out infinite; display: inline-block; margin-right: 6px; }
-  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(.85)} }
+  header .live { display: flex; gap: 14px; align-items: center; font-size: 12px; color: var(--text-1);
+    background: var(--bg-1); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; }
+  header .live .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 8px var(--green); animation: pulse 1.6s ease-in-out infinite; display: inline-block; margin-right: 5px; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.55;transform:scale(.8)} }
 
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px; }
-  .card { background: var(--bg-1); border: 1px solid var(--line); border-radius: 12px;
-    overflow: hidden; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
-    display: flex; flex-direction: column; }
-  .card:hover { transform: translateY(-3px); border-color: var(--ember-dim);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 16px rgba(245,162,58,0.15); }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+  .card { background: var(--bg-1); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    display: flex; flex-direction: column; animation: fadeUp 0.6s ease both; }
+  .card:nth-child(2) { animation-delay: 0.1s; }
+  .card:hover { transform: translateY(-4px); border-color: rgba(245, 162, 58, 0.45);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.45), 0 0 24px rgba(245,162,58,0.12); }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
   .card .cover { position: relative; aspect-ratio: 16/9; overflow: hidden; }
-  .card .cover img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s; }
-  .card:hover .cover img { transform: scale(1.04); }
-  .card .cover .tag { position: absolute; top: 10px; left: 10px; padding: 3px 9px;
-    background: rgba(0,0,0,0.65); color: var(--gold); font-size: 11px; font-weight: 700;
-    border-radius: 4px; letter-spacing: 1px; }
-  .card .cover .badge { position: absolute; top: 10px; right: 10px; padding: 3px 9px;
-    background: rgba(0,0,0,0.65); color: var(--green); font-size: 11px; font-weight: 700;
-    border-radius: 4px; }
-  .card .cover .badge.offline { color: var(--red); }
-  .card .body { padding: 18px 20px 20px; flex: 1; display: flex; flex-direction: column; }
-  .card h2 { font-size: 20px; color: var(--gold); margin-bottom: 4px; letter-spacing: 1px; }
-  .card .meta { color: var(--text-2); font-size: 12px; margin-bottom: 10px; }
-  .card p { color: var(--text-1); font-size: 13px; line-height: 1.7; margin-bottom: 14px; flex: 1; }
-  .card .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-  .card .tag-pill { padding: 2px 8px; background: var(--bg-2); color: var(--text-1);
-    font-size: 11px; border-radius: 10px; border: 1px solid var(--line); }
-  .card .actions { display: flex; gap: 8px; }
-  .card .btn { padding: 8px 16px; background: var(--ember); color: #1a0e08;
-    font-size: 13px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer;
-    transition: background 0.15s; }
-  .card .btn:hover { background: var(--gold); }
-  .card .btn.ghost { background: transparent; color: var(--text-1); border: 1px solid var(--line); }
-  .card .btn.ghost:hover { color: var(--gold); border-color: var(--gold); }
+  .card .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(10,12,18,0.25) 0%, rgba(10,12,18,0) 40%, rgba(10,12,18,0.15) 100%);
+    pointer-events: none;
+  }
+  .card .cover img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s ease; }
+  .card:hover .cover img { transform: scale(1.05); }
+  .card .cover .tag { position: absolute; top: 12px; left: 12px; padding: 4px 10px;
+    background: rgba(10, 12, 18, 0.75); color: var(--gold); font-size: 11px; font-weight: 700;
+    border-radius: 6px; letter-spacing: 1px; backdrop-filter: blur(4px); border: 1px solid rgba(245, 212, 136, 0.15); z-index: 1; }
+  .card .cover .badge { position: absolute; top: 12px; right: 12px; padding: 4px 10px;
+    background: rgba(10, 12, 18, 0.75); color: var(--green); font-size: 11px; font-weight: 700;
+    border-radius: 6px; backdrop-filter: blur(4px); border: 1px solid rgba(95, 208, 138, 0.15); z-index: 1; }
+  .card .cover .badge.offline { color: var(--red); border-color: rgba(255, 85, 85, 0.15); }
 
-  .notice { background: var(--bg-1); border: 1px solid var(--line); border-radius: 8px;
-    padding: 12px 16px; margin-top: 24px; color: var(--text-1); font-size: 12px; line-height: 1.7; }
+  .card .body { padding: 22px 24px 24px; flex: 1; display: flex; flex-direction: column; }
+  .card h2 { font-size: 20px; color: var(--gold); margin-bottom: 6px; letter-spacing: 1px; }
+  .card .meta { color: var(--text-2); font-size: 12px; margin-bottom: 12px; }
+  .card p { color: var(--text-1); font-size: 13px; line-height: 1.75; margin-bottom: 16px; flex: 1; }
+  .card .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .card .tag-pill { padding: 3px 10px; background: var(--bg-2); color: var(--text-1);
+    font-size: 11px; border-radius: 20px; border: 1px solid var(--line); transition: border-color 0.2s, color 0.2s; }
+  .card:hover .tag-pill { border-color: rgba(245, 162, 58, 0.25); }
+  .card .actions { display: flex; gap: 10px; align-items: center; }
+  .card .btn { padding: 9px 18px; background: var(--ember); color: #1a0e08;
+    font-size: 13px; font-weight: 700; border: none; border-radius: 7px; cursor: pointer;
+    transition: background 0.2s, transform 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+  .card .btn:hover { background: var(--gold); transform: translateY(-1px); }
+  .card .btn.ghost { background: transparent; color: var(--text-1); border: 1px solid var(--line); }
+  .card .btn.ghost:hover { color: var(--gold); border-color: var(--gold); background: rgba(245, 212, 136, 0.05); }
+
+  @media (min-width: 860px) {
+    .card { flex-direction: row; min-height: 260px; }
+    .card .cover { width: 44%; aspect-ratio: auto; min-height: 260px; }
+    .card .body { width: 56%; padding: 26px 28px 28px; justify-content: center; }
+    .card .actions { margin-top: 4px; }
+  }
+
+  @media (max-width: 520px) {
+    header { align-items: flex-start; }
+    header .live { flex-wrap: wrap; border-radius: 10px; }
+    .card .body { padding: 18px 20px 20px; }
+    .card h2 { font-size: 18px; }
+    .card .actions { flex-wrap: wrap; }
+    .card .btn { flex: 1; justify-content: center; }
+  }
+
+  .notice { background: var(--bg-1); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 18px; margin-top: 24px; color: var(--text-1); font-size: 12px; line-height: 1.7; }
   .notice b { color: var(--gold); }
+  .notice code { background: var(--bg-2); padding: 1px 5px; border-radius: 4px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
   footer { margin-top: 48px; text-align: center; color: var(--text-2); font-size: 12px; }
-  footer a { color: var(--gold-dim); }
+  footer a { color: var(--gold-dim); transition: color 0.2s; }
   footer a:hover { color: var(--gold); }
 </style>
 </head>
@@ -108,7 +136,7 @@
         </div>
         <div class="actions">
           <span class="btn">立即开玩 →</span>
-          <a class="btn ghost" href="/demos/jianghu/" target="_blank" rel="noreferrer" onclick="event.stopPropagation()">详情</a>
+          <span class="btn ghost" onclick="event.preventDefault(); event.stopPropagation(); window.open('/demos/jianghu/', '_blank')">详情</span>
         </div>
       </div>
     </a>
@@ -131,7 +159,7 @@
         </div>
         <div class="actions">
           <span class="btn">立即开玩 →</span>
-          <a class="btn ghost" href="/demos/dungeon-online/" target="_blank" rel="noreferrer" onclick="event.stopPropagation()">详情</a>
+          <span class="btn ghost" onclick="event.preventDefault(); event.stopPropagation(); window.open('/demos/dungeon-online/', '_blank')">详情</span>
         </div>
       </div>
     </a>

@@ -160,7 +160,7 @@ export class Main extends Component {
         buildCollectionScreen(this.screenNode!, { cfg: this.cfg, onBack: () => this.showScreen('home') });
         break;
       case 'gacha':
-        buildGachaScreen(this.screenNode!, { onBack: () => this.showScreen('home') });
+        buildGachaScreen(this.screenNode!, { onBack: () => this.showScreen('home'), cfg: this.cfg });
         break;
     }
   }

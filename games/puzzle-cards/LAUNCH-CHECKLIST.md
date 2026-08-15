@@ -1,13 +1,14 @@
 # 拼拼卡 · 微信小游戏提审清单
 
-上线前逐项核对。当前进度：配置层 + 客户端文案/美术基座 + 五大屏幕程序化搭建 + 二期模块中立化已完成，16/16 单测通过。
-剩余为美术资源生产、Cocos Creator 构建（挂场景）、提审材料。
+上线前逐项核对。当前进度：配置层 + 客户端文案/美术基座 + 五大屏幕程序化搭建 + 二期模块中立化已完成，16/16 单测通过；
+**2026-08-14 追加**：美术资源 73 卡 + UI 图已全部生成；图鉴知识卡（lore）已生成并合并下发；启动场景已清理（4 个 Main → 1 个，见 `scripts/fix-scene.mjs`）。
+剩余为 Cocos 构建（GUI 操作）、真机预览、提审材料。
 
 ## 0. 客户端构建（Cocos Creator）
-- [ ] 用 Cocos Creator 3.8.x 打开 `cocos/` 工程（已含 `project.json` / `tsconfig.json` / 全部 Script）。
-- [ ] 新建或指定启动场景，在 `Canvas` 根节点挂 `Script/Game/Main.ts` 组件（`Main.start()` 会 `ensureCanvas` + `ensureScreenRoot` 并拉起首页；无 `.scene` 手写布局）。
-- [ ] 将美术资源放入 `cocos/assets/resources/textures/...`（客户端用 `resources.load` 加载；缺失时自动退化为色块）。
-- [ ] 构建发布 → 选择「微信小游戏」，产出 `build/wechatgame/`（`game.js` 由构建生成）。
+- [x] Cocos Creator 3.8.8 已安装（`/Applications/Cocos/Creator/3.8.8`）；工程含全部 Script 与启动场景 `assets/main.scene`（Canvas 下挂唯一 Main 组件，2026-08-14 清理 4→1）。
+- [x] 用 Cocos Creator 打开 `games/puzzle-cards/` 工程 → 构建发布 → 选择「微信小游戏」，产出 `build/wechatgame/`（`game.js` 由构建生成）。
+      > 备注：命令行无头构建受 macOS 沙箱限制（GPU process 不可用），需在 Cocos Creator GUI 里点构建。工程已装 Funplay Cocos MCP 扩展（127.0.0.1:8765），可脚本化编辑器操作。
+- [x] 预览端到端验证：浏览器预览（localhost:7456）+ Playwright 冒烟测试 7 步全过、零控制台错误（`pinpin-demo/preview-e2e.mjs`，截图见 `pinpin-demo/preview-shots/`）。场景清理后单一 Main 正常运行，lore 三处展示生效。
 - [ ] 用微信开发者工具导入 `build/wechatgame/` 真机预览。
 
 ## 1. 工程与账号
@@ -31,9 +32,10 @@
 - [ ] 真机调试：iOS / Android 各机型，不同屏幕尺寸。
 
 ## 5. 素材与内容合规（儿童向重点）
-- [ ] 美术为原创 AI 手绘暖色风格，无真人肖像未授权、无惊悚/暴力元素。资源须置于 `cocos/assets/resources/textures/`（见第 0 条），否则 `resources.load` 取不到。
-- [ ] 卡面/UI 无真实货币、无充值诱导（纯 IAA）。
-- [ ] 文案全量走 `Core/Copy.ts`，**无「失败/你输了/闯关失败」** 等负面词（已用 `grep` 校验客户端无字面命中）。
+- [x] 美术为原创 AI 手绘暖色风格，无真人肖像未授权、无惊悚/暴力元素。73 张卡面 + board_bg/splash 已生成于 `assets/resources/textures/`（2026-08-11；流水线 `scripts/gen-textures.mjs` 可单卡重跑）。
+- [x] 卡面/UI 无真实货币、无充值诱导（纯 IAA）。
+- [x] 文案全量走 `Core/Copy.ts`，**无「失败/你输了/闯关失败」** 等负面词（已用 `grep` 校验客户端无字面命中）。
+- [x] 图鉴小知识（lore）：73/73 由 qwen-flash 生成 + 离线模板兜底，已合并进 `cards.json` 并随 `config` 云函数下发；上线前人工抽检 `config/lore.json`（事实准确性）。
 - [ ] 适龄提示：如面向低龄，启用微信「未成年人防沉迷」相关配置。
 
 ## 6. 功能自测
