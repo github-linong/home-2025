@@ -13,6 +13,7 @@
 > E29 新增（纯客户端 · 音频 P0 补全）：按 `art/audio-direction.md` P0 落地 —— **三总线结构**（`sfxBus 0.6` / `musicBus 0.3` / `ambienceBus 0.14`，统一挂 master 总闸）+ **7 条新音效**：`telegraph`（1s sawtooth 上行 + tremolo 加速脉冲，挂预警出现）、`ambient_wind`（环境风噪循环，探索态常驻）、`chest_open`（E20 宝箱开启专属音）、`enchant_success`（E19 强化成功）、`disassemble`（E22 分解）、`portal_hum`（入口漩涡嗡鸣循环，近距离开关）、`footstep`（移动脚步，250ms 节流）。循环音走 `LOOPS` 注册表（随游戏状态/距离启停）；所有合成沿用 WebAudio 原语，零外部资源；`window.__game.sfx.sounds` 暴露全量音效名（E2E 断言）。服务端零改动。
 > E30 新增（纯客户端 · 美术 P0 补强）：按 `art/asset-audit.md` P0 清单落地（纯 `draw*` 改动，零资产）——**①精英蓝怪化**（`drawShadowAssassin` 暗紫 → 钢蓝 `#5F8FB0` tint + 常驻青环 `#5FD0E0` + 王冠图标）**②BOSS 重做**（`drawTroll` 体量 52→92px 多部件：巨块身躯+弯曲双角+双肩甲+双巨拳+脊柱骨刺+下肢+妖纹符文；`drawBossAura` 常驻 RIFT 紫 `#7B5CC4`+青 `#3FB6B0` 漩涡/裂痕/粒子；`drawBossIcon` 头顶妖纹独眼图标；阶段色后置 P2）**③阵营色 P1-P4**（`factionColor(ownerId)` 哈希 → `#4CB5F5/#9B7BE8/#E86FB0/#6FD68A`，敌人统一敌对红；落地 描边外圈/名牌/血条底 三处）**④telegraph 三重编码**（形状图标 ⚠/十字/扇形箭头 + 45° 白色斜纹 + 形状多样化 圆环/AOE/锥形/线性，色盲友好）。`window.__game.rendered` 增 `elite_blue`/`boss_aura` 渲染标志（E2E 加分断言）。服务端零改动。
 > E34 新增（客户端内容视觉同步 · 服务端 E34 配合）：**①3 新 BOSS 程序化渲染**——`铁骨魁`（ironbone=1）钢铁巨魔（铁灰金属 + 铆钉 + 裂地重锤，对应 96px telegraph）/ `幽冢鬼母`（ghostmother=2）幽灵女妖（半透明青白 + 漂浮下摆 + 鬼爪，对应 120px 锥形鬼啸扇形）/ `熔岩巨像`（magmacolossus=3）岩浆巨像（红黑 + 熔岩裂纹发光 + 环形喷发），按服务端下发 `EntityState.enemyTypeId`（ChangeBit bit13）分派，默认巨魔不带该字段 → playtest golden `c378602b` 字节级不变；**②副本色调**——进本 `dungeon.enter.ok` / 重连 `session.reconnect.ok` 下发 `biomeId`（0=普通 / 1=石牢 / 2=荒冢 / 3=熔窟），客户端叠加全屏 tint + vignette（石牢灰蓝冷调 / 荒冢绿灰阴森 / 熔窟红橙暖调），主世界 biome 0 无叠加、渲染字节不变；**③E2E 钩子**——`window.__game.rendered.boss_variant`（troll/ironbone/ghostmother/magmacolossus）+ `window.__game.biomeId`。
+> E36 新增（纯客户端 · 副本入口选择）：此前 `enterDungeon` 硬编码 `entranceId:1`，玩家只能进默认副本——**E28/E31/E33 的石牢/荒冢/熔窟实际玩不到**。现补：靠近裂隙入口按 `F` 弹出**副本选择面板**（普通裂隙 / 石牢 / 荒冢 / 熔窟 4 选项），选后发 `dungeon.enter { entranceId: 1/2/3/4 }`；熔窟需 `Lv.3`（未达标按钮灰显 + 点击 toast「等级不足：熔窟需 Lv.3」，服务端 `LEVEL_TOO_LOW` 权威拒绝）；入口 10s 冷却（`ENTRANCE_COOLDOWN`）期间重复进本会 toast「入口冷却中」。服务端零改动（复用 E28/E31/E33 已落地的 `biomeIdForEntrance` + 等级门槛）。
 
 ---
 
@@ -70,7 +71,7 @@ http://localhost:8080/index.html
 | **装备**（E7） | 背包物品点「装备」按钮 | 发 `character.equip {itemId}` → 物品从背包移入对应槽（武器/护甲/饰品）；服务端回推 `character.inventory`（含 `equipped`）；**攻击/生命/暴击立即提升**（服务端权威 `setPlayerEquipped` → world maxHp/attrs 即时生效） |
 | **卸下**（E7） | 点击装备栏已穿槽位 | 发 `character.unequip {slot}` → 物品回背包；背包满则拒绝（BAG_FULL） |
 | **属性面板**（E7） | 背包面板顶部 | 攻击 / 生命 / 暴击（来自快照 `EntityState.attrs`，服务端装备后回填：`atk = 10+装备atk`、`maxHp = 100+装备maxHp`、`crit = 暴击率%`） |
-| 进副本 | 走到裂隙入口附近 → `F` 或「进副本」按钮 | 发 `dungeon.enter`；服务端校验主世界 + 入口 10s 冷却（`tryEnterEntrance`） |
+| 进副本 | 走到裂隙入口附近 → `F` 或「进副本」按钮 → 弹**副本选择面板**（普通/石牢/荒冢/熔窟）选一个 | 发 `dungeon.enter { entranceId }`；服务端校验主世界 + 入口 10s 冷却 + 熔窟 Lv.3 门槛 |
 | 出本 | 副本内按 `F` 或「出本」按钮 | 发 `dungeon.exit`，回主世界安全区 |
 | 缩放 | 滚轮 | **C3 相机锁定跟随本地玩家**（预测位置 → 按键即时动），缩放区间 0.45×~2.5×；**拖拽不再平移相机**（仅抑制点击动作），相机 clamp 到世界 40×30 格内（不露出世界外空白）。双击重置 follow 标志 |
 | 小地图 | 右上角 | **E26 按 kind 区分形状/颜色**：玩家金点 / 队友暖橙点 / 敌人小红点 / **BOSS 大红菱形（呼吸）** / **宝箱金方块（脉动）** / **入口紫色漩涡** / **地面掉落按稀有度 白·蓝·金·暗金 小点** + 视野框（世界 40×30 格**等比映射**，副本同比例） |

@@ -927,6 +927,43 @@ const main = async () => {
     }
     await page.screenshot({ path: path.join(OUT_DIR, "03-after-exit.png") });
 
+    // ── E36 副本入口选择（进 3 个新 biome；验证 biomeId + BOSS enemyTypeId 快照权威）──
+    // 玩家已回主世界（F1 出本）。每进一个 biome 前 walk 到入口（E16 服务端坐标校验 ≤72px），
+    // 再 debug 进对应 entranceId。熔窟需 Lv.3（E2E 玩家 Lv1）→ 断言 LEVEL_TOO_LOW 拒绝。
+    if (okEnter) {
+      const ENTR_TARGET = "(() => { const s = window.__game.lastSnapshot; const e = s.entities.find(x => x.kind === 5); return e ? { x: e.pos.x, y: e.pos.y } : null; })()";
+      // 石牢（entranceId=2 → biome 1，铁骨魁 enemyTypeId=1）
+      await walkToward(page, ENTR_TARGET, 40, 40);
+      await page.evaluate(() => window.__game.debugEnterDungeon(2));
+      const stoneOk = await waitFor(page, "window.__game.state === 'dungeon' && window.__game.biomeId === 1", 6000, "enter stone-prison");
+      const stoneBoss = stoneOk ? await waitFor(page, "window.__game.lastSnapshot && window.__game.lastSnapshot.entities.some(e => e.kind === 2 && e.enemyTypeId === 1)", 8000, "ironbone in snapshot") : false;
+      record("E36-1 石牢副本(biomeId=1+铁骨魁BOSS)", stoneOk && stoneBoss, stoneOk ? `biome=${await page.evaluate(() => window.__game.biomeId)} boss=${stoneBoss ? "ironbone(1)" : "未下发"}` : "SKIPPED");
+      await page.evaluate(() => window.__game.debugExitDungeon());
+      await waitFor(page, "window.__game.state === 'overworld'", 6000, "exit stone-prison");
+      await sleep(11000); // E36：等入口 10s 冷却过（C-Dgn-4 防刷本）
+      // 荒冢（entranceId=3 → biome 2，幽冢鬼母 enemyTypeId=2）
+      await walkToward(page, ENTR_TARGET, 40, 40);
+      await page.evaluate(() => window.__game.debugEnterDungeon(3));
+      const barrowOk = await waitFor(page, "window.__game.state === 'dungeon' && window.__game.biomeId === 2", 6000, "enter barrow");
+      const barrowBoss = barrowOk ? await waitFor(page, "window.__game.lastSnapshot && window.__game.lastSnapshot.entities.some(e => e.kind === 2 && e.enemyTypeId === 2)", 8000, "ghostmother in snapshot") : false;
+      record("E36-2 荒冢副本(biomeId=2+幽冢鬼母BOSS)", barrowOk && barrowBoss, barrowOk ? `biome=${await page.evaluate(() => window.__game.biomeId)} boss=${barrowBoss ? "ghostmother(2)" : "未下发"}` : "SKIPPED");
+      await page.evaluate(() => window.__game.debugExitDungeon());
+      await waitFor(page, "window.__game.state === 'overworld'", 6000, "exit barrow");
+      await sleep(11000); // E36：等入口 10s 冷却过（C-Dgn-4 防刷本）
+      // 熔窟（entranceId=4 → biome 3，Lv.3 门槛）→ Lv1 应被 LEVEL_TOO_LOW 拒
+      await walkToward(page, ENTR_TARGET, 40, 40);
+      const errsBefore = await page.evaluate(() => window.__game.errors.length);
+      await page.evaluate(() => window.__game.debugEnterDungeon(4));
+      await sleep(1200);
+      const moltenRejected = await page.evaluate((n) => window.__game.errors.slice(n).some(e => e.includes('LEVEL_TOO_LOW')), errsBefore);
+      const moltenBiome = await page.evaluate(() => window.__game.biomeId);
+      record("E36-3 熔窟等级门槛(Lv1拒LEVEL_TOO_LOW)", moltenRejected && moltenBiome === 0, `rejected=${moltenRejected} biome=${moltenBiome}（应 0=主世界）`);
+    } else {
+      record("E36-1 石牢副本", false, "SKIPPED（未进副本）");
+      record("E36-2 荒冢副本", false, "SKIPPED（未进副本）");
+      record("E36-3 熔窟等级门槛", false, "SKIPPED（未进副本）");
+    }
+
     // ── G. 断线自动重连（CDP 模拟网络中断 → 服务端 ping 超时断开 → 恢复后 session.reconnect）──
     let recOk = false;
     let recDetail = "";

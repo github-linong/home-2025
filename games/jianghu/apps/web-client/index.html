@@ -69,6 +69,24 @@
   #login-close:hover { color: #fff; border-color: #f44; }
   #loginpanel .hint { font-size: 11px; color: #7a8699; margin-top: 8px; line-height: 1.5; }
 
+  /* ── E36：副本选择面板 ── */
+  #dungeonpanel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 260px; z-index: 36;
+    display: none; padding: 14px; border-radius: 10px; background: rgba(18,22,30,.96); border: 1px solid #4a5568;
+    box-shadow: 0 8px 40px rgba(0,0,0,.6); }
+  #dungeonpanel.open { display: block; }
+  #dungeonpanel h3 { margin-bottom: 10px; font-size: 15px; color: #f2a03c; }
+  #dungeon-close { position: absolute; right: 8px; top: 8px; cursor: pointer; border: 1px solid #4a5568; background: transparent;
+    color: #aab; border-radius: 6px; padding: 1px 8px; font-size: 12px; }
+  #dungeon-close:hover { color: #fff; border-color: #f44; }
+  #dungeonpanel .dbtn { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%;
+    margin-bottom: 7px; padding: 8px 11px; text-align: left; border: 1px solid #4a5568; background: rgba(40,48,64,.9);
+    color: #e8e4d8; border-radius: 6px; cursor: pointer; }
+  #dungeonpanel .dbtn:hover { border-color: #f2a03c; color: #f2a03c; }
+  #dungeonpanel .dbtn .dname { font-size: 13px; font-weight: 600; }
+  #dungeonpanel .dbtn .dsub { font-size: 11px; color: #7a8699; }
+  #dungeonpanel .dbtn.locked { opacity: .45; cursor: not-allowed; }
+  #dungeonpanel .dbtn.locked:hover { border-color: #4a5568; color: #e8e4d8; }
+
   /* ── 底部技能栏 ── */
   #actionbar { position: absolute; left: 12px; bottom: 12px; z-index: 10; display: flex; gap: 8px; align-items: flex-end; }
   .abtn { width: 58px; height: 58px; border-radius: 8px; border: 1px solid #4a5568; background: rgba(18,22,30,.92);
@@ -311,6 +329,16 @@
     <button class="lbtn" id="btn-login-register">注册</button>
   </div>
   <div class="hint">游客可直接关闭面板游玩（拾取/装备不保存）。注册需 api2 配置邀请码。</div>
+</div>
+
+<!-- E36：副本选择面板（靠近裂隙入口按 F 弹出；4 个副本，熔窟需 Lv.3 门槛） -->
+<div id="dungeonpanel">
+  <button id="dungeon-close" title="关闭">✕</button>
+  <h3>选择副本</h3>
+  <button class="dbtn" data-entrance="1"><span class="dname">普通裂隙</span><span class="dsub">基础 · 无门槛</span></button>
+  <button class="dbtn" data-entrance="2"><span class="dname">石牢</span><span class="dsub">高密度近战 · 铁骨魁</span></button>
+  <button class="dbtn" data-entrance="3"><span class="dname">荒冢</span><span class="dsub">幽灵精英 · 幽冢鬼母</span></button>
+  <button class="dbtn locked" data-entrance="4"><span class="dname">熔窟</span><span class="dsub">火系 · 熔岩巨像 · Lv.3</span></button>
 </div>
 
 <div id="help">
@@ -2150,6 +2178,18 @@ dungeonBtn.addEventListener('click', toggleDungeon);
 invBtn.addEventListener('click', toggleInventory);
 document.getElementById('inv-close').addEventListener('click', closeInventory);
 
+// ── E36：副本选择面板（按钮选副本 → enterDungeon(entranceId) + 关面板）──
+document.getElementById('dungeon-close').addEventListener('click', () => {
+  document.getElementById('dungeonpanel').classList.remove('open');
+});
+for (const btn of document.querySelectorAll('#dungeonpanel .dbtn')) {
+  btn.addEventListener('click', () => {
+    if (btn.classList.contains('locked')) { toast('等级不足：熔窟需 Lv.3', true); return; }
+    document.getElementById('dungeonpanel').classList.remove('open');
+    enterDungeon(Number(btn.dataset.entrance));
+  });
+}
+
 // ── E12：音效 HUD（静音按钮 🔊/🔇 + 音量滑块；默认开启，localStorage 记忆）──
 (function initSfxHud() {
   try {
@@ -2259,9 +2299,9 @@ for (const slotEl of document.querySelectorAll('.equip-slot')) {
   });
 }
 
-// 进副本 / 出本
-function enterDungeon() {
-  sendJson({ type: 'dungeon.enter', requestId: 'enter', payload: { entranceId: 1 } });
+// 进副本（entranceId：1=普通裂隙 2=石牢 3=荒冢 4=熔窟）/ 出本
+function enterDungeon(entranceId) {
+  sendJson({ type: 'dungeon.enter', requestId: 'enter', payload: { entranceId: entranceId || 1 } });
 }
 function exitDungeon() {
   sendJson({ type: 'dungeon.exit', requestId: 'exit' });
@@ -2270,12 +2310,23 @@ function toggleDungeon() {
   if (downed) return; // E10：倒地不可进出副本
   if (state === 'dungeon') { exitDungeon(); return; }
   if (state !== 'overworld') return;
-  if (DEBUG) { enterDungeon(); return; }
+  if (DEBUG) { enterDungeon(1); return; }
   const me = localEntityId != null && lastSnapshot ? lastSnapshot.entities.find((e) => e.id === localEntityId) : null;
   const ent = lastSnapshot ? lastSnapshot.entities.find((e) => e.kind === KIND.ENTRANCE) : null;
   const ep = ent ? ent.pos : ENTRANCE_POS;
-  if (me && Math.hypot(me.pos.x - ep.x, me.pos.y - ep.y) <= ENTRANCE_ENTER_RADIUS) enterDungeon();
+  if (me && Math.hypot(me.pos.x - ep.x, me.pos.y - ep.y) <= ENTRANCE_ENTER_RADIUS) openDungeonPanel();
   else toast('请先靠近裂隙入口');
+}
+
+// E36：副本选择面板（靠近入口按 F 弹出；熔窟需 Lv.3 门槛）
+function openDungeonPanel() {
+  const lv = (levelInfo && levelInfo.level) || 1;
+  const moltenBtn = document.querySelector('#dungeonpanel .dbtn[data-entrance="4"]');
+  if (moltenBtn) {
+    if (lv >= 3) { moltenBtn.classList.remove('locked'); moltenBtn.title = ''; }
+    else { moltenBtn.classList.add('locked'); moltenBtn.title = '需 Lv.3'; }
+  }
+  document.getElementById('dungeonpanel').classList.add('open');
 }
 
 // ============================================================================
