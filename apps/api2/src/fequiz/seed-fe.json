@@ -38,6 +38,16 @@
     { "category": "http", "slug": "http_cache", "difficulty": "hard", "title": "面试官：说说 HTTP 缓存机制",
       "body": "HTTP 缓存分为强缓存与协商缓存。\n\n## 强缓存\n通过 Cache-Control（max-age）与 Expires 控制，命中则直接使用本地缓存，不发请求。\n\n## 协商缓存\n缓存过期后向服务器校验：\n- Last-Modified / If-Modified-Since（时间维度）。\n- ETag / If-None-Match（内容哈希，更精确）。\n服务器返回 304 则复用缓存，否则返回 200 与新资源。\n\n优先级：Cache-Control > Expires；ETag 比 Last-Modified 更可靠。" },
     { "category": "http", "slug": "https", "difficulty": "hard", "title": "面试官：HTTPS 是如何保证安全的",
-      "body": "HTTPS = HTTP + TLS/SSL，通过三种机制保证安全：\n\n- 加密：使用对称加密（如 AES）加密传输内容，性能高。\n- 密钥协商：通过非对称加密（RSA/ECDHE）安全地协商对称密钥，防止被窃听。\n- 身份认证：通过 CA 签发的数字证书验证服务器身份，防止中间人伪造。\n\n完整握手：客户端 → 服务端证书 → 验证 CA → 协商密钥 → 加密通信。" }
+      "body": "HTTPS = HTTP + TLS/SSL，通过三种机制保证安全：\n\n- 加密：使用对称加密（如 AES）加密传输内容，性能高。\n- 密钥协商：通过非对称加密（RSA/ECDHE）安全地协商对称密钥，防止被窃听。\n- 身份认证：通过 CA 签发的数字证书验证服务器身份，防止中间人伪造。\n\n完整握手：客户端 → 服务端证书 → 验证 CA → 协商密钥 → 加密通信。" },
+    { "category": "css", "slug": "position_z_index", "difficulty": "medium", "title": "面试官：谈谈 position: relative 与 absolute 的区别，以及 z-index 的层叠规则",
+      "body": "## 一、relative 与 absolute\n- relative：元素仍占据原文档流位置，可通过 top/right/bottom/left 相对自身原位置偏移，常作为绝对定位子元素的定位父级。\n- absolute：脱离文档流，相对最近的已定位祖先（position 非 static）定位；若无已定位祖先，则相对初始包含块（一般为 html）。\n\n## 二、z-index 规则\n- z-index 只对已定位元素（relative/absolute/fixed/sticky）生效。\n- 只有 z-index 非 auto 的定位元素（或 opacity<1、transform、filter 等）才会创建层叠上下文。\n- 子元素的 z-index 只在所属层叠上下文内比较，无法跨父级突围。\n\n## 三、常见误区\n若两个子元素分别位于两个都设置了 z-index 的父级内，则它们的 z-index 无法直接比较大小，实际层级由父级 z-index 决定。" },
+    { "category": "css", "slug": "center_float_300", "difficulty": "medium", "title": "面试官：如何使一个宽 300、高 300 的浮动容器水平且垂直居中",
+      "body": "## 一、flex\n父容器：display:flex; justify-content:center; align-items:center。\n\n## 二、grid\n父容器：display:grid; place-items:center。\n\n## 三、绝对定位 + transform\n子容器：position:absolute; top:50%; left:50%; transform:translate(-50%,-50%)。\n\n## 四、绝对定位 + margin:auto\n子容器：position:absolute; top:0; right:0; bottom:0; left:0; margin:auto。\n\n注意：若子容器带 float:left，则 float 元素本身无法用 margin:auto 居中，通常需取消 float 或外层用 flex/grid 包裹。" },
+    { "category": "javascript", "slug": "var_settimeout_output", "difficulty": "medium", "title": "面试官：下面代码的输出是什么（var + setTimeout）",
+      "body": "代码：for(var i=1;i<=3;i++){ setTimeout(function(){ console.log(i); }, 0); }\n\n输出：4 4 4（分三行）。\n\n原因：var 声明的 i 只有函数级作用域且存在变量提升，整个循环共享同一个 i；setTimeout 回调是宏任务，在循环结束后才执行，此时 i 已变为 4。\n\n修复：用 let 声明（块级作用域），或用 IIFE 形成闭包捕获每次循环的值。" },
+    { "category": "javascript", "slug": "typeof_types", "difficulty": "easy", "title": "面试官：JavaScript 中 typeof 的返回值有哪些",
+      "body": "typeof 可能返回的字符串：undefined、boolean、number、bigint、string、symbol、function、object。\n\n注意：\n- typeof null 返回 object（历史遗留 bug）。\n- typeof [] 返回 object，判断数组用 Array.isArray。\n- typeof function(){} 返回 function。" },
+    { "category": "javascript", "slug": "array_dedupe", "difficulty": "medium", "title": "面试官：如何去掉数组中的重复元素",
+      "body": "## 一、Set（推荐）\n[...new Set(arr)] 或 Array.from(new Set(arr))，时间复杂度 O(n)。\n\n## 二、filter + indexOf\narr.filter(function(item, index){ return arr.indexOf(item) === index; })，时间复杂度 O(n^2)。\n\n## 三、reduce + Map\n用 Map 或对象记录已见元素，时间复杂度 O(n)。\n\n## 四、排序后相邻去重\n先排序再比较相邻元素，会改变原数组顺序，时间复杂度 O(n log n)。" }
   ]
 }
