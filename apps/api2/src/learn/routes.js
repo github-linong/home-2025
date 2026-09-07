@@ -40,7 +40,7 @@ export function createLearnRouter() {
     const ipa = JSON.parse(readFileSync(join(__dirname, "seed-ipa.json"), "utf8"));
     SEED = {
       decks: [...(base.decks || []), ...(tech.decks || []), ...(exam.decks || [])],
-      words: [...(base.words || []), ...(tech.words || [])],
+      words: [...(base.words || []), ...(tech.words || []), ...(exam.words || [])],
       passages: [...(base.passages || []), ...(tech.passages || [])],
       ipa,
     };
