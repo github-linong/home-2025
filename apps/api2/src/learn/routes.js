@@ -36,9 +36,10 @@ export function createLearnRouter() {
   try {
     const base = JSON.parse(readFileSync(join(__dirname, "seed.json"), "utf8"));
     const tech = JSON.parse(readFileSync(join(__dirname, "seed-tech.json"), "utf8"));
+    const exam = JSON.parse(readFileSync(join(__dirname, "seed-exam.json"), "utf8"));
     const ipa = JSON.parse(readFileSync(join(__dirname, "seed-ipa.json"), "utf8"));
     SEED = {
-      decks: [...(base.decks || []), ...(tech.decks || [])],
+      decks: [...(base.decks || []), ...(tech.decks || []), ...(exam.decks || [])],
       words: [...(base.words || []), ...(tech.words || [])],
       passages: [...(base.passages || []), ...(tech.passages || [])],
       ipa,

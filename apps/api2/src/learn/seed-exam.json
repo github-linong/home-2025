@@ -1,0 +1,1948 @@
+{
+  "decks": [
+    {
+      "slug": "cet4",
+      "title": "四级词库 · CET-4",
+      "description": "大学英语四级高频核心词汇，覆盖常见学术与生活用语。",
+      "cards": [
+        {
+          "en": "abandon",
+          "zh": "放弃；抛弃",
+          "hint": "give up completely",
+          "sort_order": 1
+        },
+        {
+          "en": "absorb",
+          "zh": "吸收；理解",
+          "hint": "take in or soak up",
+          "sort_order": 2
+        },
+        {
+          "en": "academic",
+          "zh": "学术的；学业的",
+          "hint": "related to study and learning",
+          "sort_order": 3
+        },
+        {
+          "en": "access",
+          "zh": "通道；获取",
+          "hint": "the way to reach or use something",
+          "sort_order": 4
+        },
+        {
+          "en": "accommodate",
+          "zh": "容纳；适应",
+          "hint": "provide space or adapt to something",
+          "sort_order": 5
+        },
+        {
+          "en": "accompany",
+          "zh": "陪伴；伴随",
+          "hint": "go together with",
+          "sort_order": 6
+        },
+        {
+          "en": "accomplish",
+          "zh": "完成；实现",
+          "hint": "complete successfully",
+          "sort_order": 7
+        },
+        {
+          "en": "accumulate",
+          "zh": "积累；积聚",
+          "hint": "gather over time",
+          "sort_order": 8
+        },
+        {
+          "en": "accurate",
+          "zh": "准确的",
+          "hint": "correct and exact",
+          "sort_order": 9
+        },
+        {
+          "en": "acquire",
+          "zh": "获得；习得",
+          "hint": "gain or learn",
+          "sort_order": 10
+        },
+        {
+          "en": "adapt",
+          "zh": "适应；改编",
+          "hint": "change to fit new conditions",
+          "sort_order": 11
+        },
+        {
+          "en": "adequate",
+          "zh": "足够的；适当的",
+          "hint": "enough for the need",
+          "sort_order": 12
+        },
+        {
+          "en": "adjust",
+          "zh": "调整；调节",
+          "hint": "change slightly to fit",
+          "sort_order": 13
+        },
+        {
+          "en": "advocate",
+          "zh": "提倡；拥护",
+          "hint": "support publicly",
+          "sort_order": 14
+        },
+        {
+          "en": "alternative",
+          "zh": "替代的；另一种选择",
+          "hint": "another option or choice",
+          "sort_order": 15
+        },
+        {
+          "en": "analyze",
+          "zh": "分析",
+          "hint": "examine in detail",
+          "sort_order": 16
+        },
+        {
+          "en": "anticipate",
+          "zh": "预期；预料",
+          "hint": "expect beforehand",
+          "sort_order": 17
+        },
+        {
+          "en": "apparent",
+          "zh": "显然的；表面上的",
+          "hint": "clearly visible or obvious",
+          "sort_order": 18
+        },
+        {
+          "en": "approach",
+          "zh": "方法；接近",
+          "hint": "a way to deal with something",
+          "sort_order": 19
+        },
+        {
+          "en": "appropriate",
+          "zh": "适当的",
+          "hint": "suitable or proper",
+          "sort_order": 20
+        },
+        {
+          "en": "approve",
+          "zh": "批准；赞成",
+          "hint": "officially agree to",
+          "sort_order": 21
+        },
+        {
+          "en": "arise",
+          "zh": "出现；产生",
+          "hint": "come up or happen",
+          "sort_order": 22
+        },
+        {
+          "en": "assume",
+          "zh": "假设；承担",
+          "hint": "suppose without proof",
+          "sort_order": 23
+        },
+        {
+          "en": "attitude",
+          "zh": "态度",
+          "hint": "a settled way of thinking",
+          "sort_order": 24
+        },
+        {
+          "en": "available",
+          "zh": "可用的；可得到的",
+          "hint": "ready to use or obtain",
+          "sort_order": 25
+        },
+        {
+          "en": "aware",
+          "zh": "意识到的",
+          "hint": "knowing about something",
+          "sort_order": 26
+        },
+        {
+          "en": "benefit",
+          "zh": "好处；受益",
+          "hint": "a helpful or good result",
+          "sort_order": 27
+        },
+        {
+          "en": "budget",
+          "zh": "预算",
+          "hint": "a plan for spending money",
+          "sort_order": 28
+        },
+        {
+          "en": "capable",
+          "zh": "有能力的",
+          "hint": "able to do something",
+          "sort_order": 29
+        },
+        {
+          "en": "challenge",
+          "zh": "挑战",
+          "hint": "a difficult task or test",
+          "sort_order": 30
+        },
+        {
+          "en": "circumstance",
+          "zh": "情况；环境",
+          "hint": "a condition or situation",
+          "sort_order": 31
+        },
+        {
+          "en": "comment",
+          "zh": "评论；意见",
+          "hint": "a remark or opinion",
+          "sort_order": 32
+        },
+        {
+          "en": "commit",
+          "zh": "承诺；犯(错)",
+          "hint": "promise or dedicate",
+          "sort_order": 33
+        },
+        {
+          "en": "community",
+          "zh": "社区；群体",
+          "hint": "a group of people living together",
+          "sort_order": 34
+        },
+        {
+          "en": "compete",
+          "zh": "竞争",
+          "hint": "try to win against others",
+          "sort_order": 35
+        },
+        {
+          "en": "complex",
+          "zh": "复杂的",
+          "hint": "made of many connected parts",
+          "sort_order": 36
+        },
+        {
+          "en": "concept",
+          "zh": "概念",
+          "hint": "an abstract idea",
+          "sort_order": 37
+        },
+        {
+          "en": "conclude",
+          "zh": "得出结论；结束",
+          "hint": "reach a decision or end",
+          "sort_order": 38
+        },
+        {
+          "en": "conduct",
+          "zh": "进行；引导",
+          "hint": "carry out an activity",
+          "sort_order": 39
+        },
+        {
+          "en": "confirm",
+          "zh": "确认；证实",
+          "hint": "verify as true",
+          "sort_order": 40
+        },
+        {
+          "en": "consequence",
+          "zh": "后果；结果",
+          "hint": "a result or effect",
+          "sort_order": 41
+        },
+        {
+          "en": "considerable",
+          "zh": "相当大的；可观的",
+          "hint": "fairly large in amount",
+          "sort_order": 42
+        },
+        {
+          "en": "consist",
+          "zh": "组成；在于",
+          "hint": "be made up of",
+          "sort_order": 43
+        },
+        {
+          "en": "constant",
+          "zh": "持续的；不变的",
+          "hint": "unchanging or continuous",
+          "sort_order": 44
+        },
+        {
+          "en": "construct",
+          "zh": "建造；构建",
+          "hint": "build or put together",
+          "sort_order": 45
+        },
+        {
+          "en": "consume",
+          "zh": "消耗；消费",
+          "hint": "use up resources",
+          "sort_order": 46
+        },
+        {
+          "en": "contribute",
+          "zh": "贡献；促成",
+          "hint": "give or help bring about",
+          "sort_order": 47
+        },
+        {
+          "en": "convince",
+          "zh": "说服",
+          "hint": "make someone believe",
+          "sort_order": 48
+        },
+        {
+          "en": "crucial",
+          "zh": "关键的；至关重要的",
+          "hint": "extremely important",
+          "sort_order": 49
+        },
+        {
+          "en": "culture",
+          "zh": "文化",
+          "hint": "shared customs and beliefs",
+          "sort_order": 50
+        },
+        {
+          "en": "decline",
+          "zh": "下降；拒绝",
+          "hint": "decrease or politely refuse",
+          "sort_order": 51
+        },
+        {
+          "en": "define",
+          "zh": "定义；界定",
+          "hint": "state the exact meaning",
+          "sort_order": 52
+        },
+        {
+          "en": "demonstrate",
+          "zh": "证明；示范",
+          "hint": "show clearly with evidence",
+          "sort_order": 53
+        },
+        {
+          "en": "derive",
+          "zh": "源于；获得",
+          "hint": "come from a source",
+          "sort_order": 54
+        },
+        {
+          "en": "determine",
+          "zh": "决定；确定",
+          "hint": "decide or find out",
+          "sort_order": 55
+        },
+        {
+          "en": "device",
+          "zh": "设备；装置",
+          "hint": "a tool or machine",
+          "sort_order": 56
+        },
+        {
+          "en": "distinct",
+          "zh": "明显的；不同的",
+          "hint": "clearly different or separate",
+          "sort_order": 57
+        },
+        {
+          "en": "distribute",
+          "zh": "分发；分配",
+          "hint": "give out to several people",
+          "sort_order": 58
+        },
+        {
+          "en": "economic",
+          "zh": "经济的",
+          "hint": "related to money and trade",
+          "sort_order": 59
+        },
+        {
+          "en": "efficient",
+          "zh": "高效的",
+          "hint": "productive with little waste",
+          "sort_order": 60
+        },
+        {
+          "en": "eliminate",
+          "zh": "消除；淘汰",
+          "hint": "remove completely",
+          "sort_order": 61
+        },
+        {
+          "en": "emphasize",
+          "zh": "强调",
+          "hint": "give special importance to",
+          "sort_order": 62
+        },
+        {
+          "en": "enable",
+          "zh": "使能够",
+          "hint": "make something possible",
+          "sort_order": 63
+        },
+        {
+          "en": "encounter",
+          "zh": "遭遇；遇到",
+          "hint": "meet unexpectedly",
+          "sort_order": 64
+        },
+        {
+          "en": "enhance",
+          "zh": "提高；增强",
+          "hint": "improve the quality of",
+          "sort_order": 65
+        },
+        {
+          "en": "establish",
+          "zh": "建立；确立",
+          "hint": "set up or create",
+          "sort_order": 66
+        },
+        {
+          "en": "estimate",
+          "zh": "估计",
+          "hint": "roughly calculate",
+          "sort_order": 67
+        },
+        {
+          "en": "evaluate",
+          "zh": "评估",
+          "hint": "judge the value of",
+          "sort_order": 68
+        },
+        {
+          "en": "evident",
+          "zh": "明显的",
+          "hint": "clear and plain to see",
+          "sort_order": 69
+        },
+        {
+          "en": "expand",
+          "zh": "扩大；扩展",
+          "hint": "become larger in size or scope",
+          "sort_order": 70
+        },
+        {
+          "en": "expose",
+          "zh": "暴露；接触",
+          "hint": "reveal or uncover",
+          "sort_order": 71
+        },
+        {
+          "en": "factor",
+          "zh": "因素",
+          "hint": "one element contributing to a result",
+          "sort_order": 72
+        },
+        {
+          "en": "feature",
+          "zh": "特征；特色",
+          "hint": "a distinctive part or attribute",
+          "sort_order": 73
+        },
+        {
+          "en": "finance",
+          "zh": "金融；资金",
+          "hint": "the management of money",
+          "sort_order": 74
+        },
+        {
+          "en": "focus",
+          "zh": "专注；焦点",
+          "hint": "concentrate on something",
+          "sort_order": 75
+        },
+        {
+          "en": "function",
+          "zh": "功能；作用",
+          "hint": "the purpose of something",
+          "sort_order": 76
+        },
+        {
+          "en": "generate",
+          "zh": "产生；生成",
+          "hint": "produce or create",
+          "sort_order": 77
+        },
+        {
+          "en": "global",
+          "zh": "全球的",
+          "hint": "worldwide in scope",
+          "sort_order": 78
+        },
+        {
+          "en": "identify",
+          "zh": "识别；确认",
+          "hint": "recognize or establish",
+          "sort_order": 79
+        },
+        {
+          "en": "illustrate",
+          "zh": "说明；举例",
+          "hint": "explain with examples",
+          "sort_order": 80
+        },
+        {
+          "en": "imply",
+          "zh": "暗示；意味着",
+          "hint": "suggest without stating directly",
+          "sort_order": 81
+        },
+        {
+          "en": "indicate",
+          "zh": "表明；指示",
+          "hint": "point out or show",
+          "sort_order": 82
+        },
+        {
+          "en": "individual",
+          "zh": "个人；个体的",
+          "hint": "a single person",
+          "sort_order": 83
+        },
+        {
+          "en": "inevitable",
+          "zh": "不可避免的",
+          "hint": "certain to happen",
+          "sort_order": 84
+        },
+        {
+          "en": "influence",
+          "zh": "影响",
+          "hint": "the power to affect",
+          "sort_order": 85
+        },
+        {
+          "en": "inform",
+          "zh": "通知；告知",
+          "hint": "tell or give information",
+          "sort_order": 86
+        },
+        {
+          "en": "initial",
+          "zh": "最初的",
+          "hint": "happening at the beginning",
+          "sort_order": 87
+        },
+        {
+          "en": "innovation",
+          "zh": "创新",
+          "hint": "a new idea or method",
+          "sort_order": 88
+        },
+        {
+          "en": "insist",
+          "zh": "坚持",
+          "hint": "demand firmly",
+          "sort_order": 89
+        },
+        {
+          "en": "instance",
+          "zh": "例子；实例",
+          "hint": "an example or case",
+          "sort_order": 90
+        },
+        {
+          "en": "integrate",
+          "zh": "整合；融合",
+          "hint": "combine into a whole",
+          "sort_order": 91
+        },
+        {
+          "en": "interact",
+          "zh": "互动；交流",
+          "hint": "act with others",
+          "sort_order": 92
+        },
+        {
+          "en": "interpret",
+          "zh": "解释；口译",
+          "hint": "explain meaning",
+          "sort_order": 93
+        },
+        {
+          "en": "invest",
+          "zh": "投资；投入",
+          "hint": "put money or effort into",
+          "sort_order": 94
+        },
+        {
+          "en": "involve",
+          "zh": "涉及；包含",
+          "hint": "include or require",
+          "sort_order": 95
+        },
+        {
+          "en": "issue",
+          "zh": "问题；议题",
+          "hint": "an important topic or problem",
+          "sort_order": 96
+        },
+        {
+          "en": "maintain",
+          "zh": "维持；维护",
+          "hint": "keep in good condition",
+          "sort_order": 97
+        },
+        {
+          "en": "major",
+          "zh": "主要的",
+          "hint": "important or serious",
+          "sort_order": 98
+        },
+        {
+          "en": "method",
+          "zh": "方法",
+          "hint": "a way of doing something",
+          "sort_order": 99
+        },
+        {
+          "en": "minor",
+          "zh": "较小的；次要的",
+          "hint": "small or less important",
+          "sort_order": 100
+        },
+        {
+          "en": "occur",
+          "zh": "发生；出现",
+          "hint": "happen or take place",
+          "sort_order": 101
+        },
+        {
+          "en": "opportunity",
+          "zh": "机会",
+          "hint": "a favorable chance",
+          "sort_order": 102
+        },
+        {
+          "en": "participate",
+          "zh": "参与",
+          "hint": "take part in",
+          "sort_order": 103
+        },
+        {
+          "en": "perceive",
+          "zh": "感知；察觉",
+          "hint": "become aware of",
+          "sort_order": 104
+        },
+        {
+          "en": "potential",
+          "zh": "潜力；潜在的",
+          "hint": "possible or capable of developing",
+          "sort_order": 105
+        },
+        {
+          "en": "predict",
+          "zh": "预测",
+          "hint": "say what will happen",
+          "sort_order": 106
+        },
+        {
+          "en": "primary",
+          "zh": "主要的；首要的",
+          "hint": "first or most important",
+          "sort_order": 107
+        },
+        {
+          "en": "principle",
+          "zh": "原则；原理",
+          "hint": "a fundamental rule",
+          "sort_order": 108
+        },
+        {
+          "en": "process",
+          "zh": "过程；处理",
+          "hint": "a series of steps",
+          "sort_order": 109
+        },
+        {
+          "en": "promote",
+          "zh": "促进；提升",
+          "hint": "encourage or advance",
+          "sort_order": 110
+        },
+        {
+          "en": "range",
+          "zh": "范围；一系列",
+          "hint": "a variety or span",
+          "sort_order": 111
+        },
+        {
+          "en": "reaction",
+          "zh": "反应",
+          "hint": "a response to something",
+          "sort_order": 112
+        },
+        {
+          "en": "recover",
+          "zh": "恢复；找回",
+          "hint": "return to a normal state",
+          "sort_order": 113
+        },
+        {
+          "en": "reduce",
+          "zh": "减少；降低",
+          "hint": "make smaller or less",
+          "sort_order": 114
+        },
+        {
+          "en": "refer",
+          "zh": "提及；参考",
+          "hint": "mention or consult",
+          "sort_order": 115
+        },
+        {
+          "en": "reflect",
+          "zh": "反映；反思",
+          "hint": "show or think deeply",
+          "sort_order": 116
+        },
+        {
+          "en": "regulate",
+          "zh": "管理；调节",
+          "hint": "control by rules",
+          "sort_order": 117
+        },
+        {
+          "en": "relevant",
+          "zh": "相关的",
+          "hint": "closely connected",
+          "sort_order": 118
+        },
+        {
+          "en": "rely",
+          "zh": "依赖；依靠",
+          "hint": "depend on",
+          "sort_order": 119
+        },
+        {
+          "en": "require",
+          "zh": "要求；需要",
+          "hint": "need or demand",
+          "sort_order": 120
+        },
+        {
+          "en": "respond",
+          "zh": "回应",
+          "hint": "answer or react",
+          "sort_order": 121
+        },
+        {
+          "en": "significant",
+          "zh": "重要的；显著的",
+          "hint": "important or notable",
+          "sort_order": 122
+        },
+        {
+          "en": "source",
+          "zh": "来源；源头",
+          "hint": "where something comes from",
+          "sort_order": 123
+        },
+        {
+          "en": "specific",
+          "zh": "具体的；特定的",
+          "hint": "clear and exact",
+          "sort_order": 124
+        },
+        {
+          "en": "strategy",
+          "zh": "策略",
+          "hint": "a plan of action",
+          "sort_order": 125
+        },
+        {
+          "en": "structure",
+          "zh": "结构；构造",
+          "hint": "the way parts are arranged",
+          "sort_order": 126
+        },
+        {
+          "en": "sufficient",
+          "zh": "足够的",
+          "hint": "enough",
+          "sort_order": 127
+        },
+        {
+          "en": "survey",
+          "zh": "调查；测量",
+          "hint": "a study or questionnaire",
+          "sort_order": 128
+        },
+        {
+          "en": "sustain",
+          "zh": "维持；支撑",
+          "hint": "keep going over time",
+          "sort_order": 129
+        },
+        {
+          "en": "theory",
+          "zh": "理论",
+          "hint": "an explanation based on ideas",
+          "sort_order": 130
+        },
+        {
+          "en": "transfer",
+          "zh": "转移；调动",
+          "hint": "move from one place to another",
+          "sort_order": 131
+        },
+        {
+          "en": "transform",
+          "zh": "转变；改造",
+          "hint": "change completely",
+          "sort_order": 132
+        },
+        {
+          "en": "ultimate",
+          "zh": "最终的；根本的",
+          "hint": "last or most important",
+          "sort_order": 133
+        },
+        {
+          "en": "unique",
+          "zh": "独特的",
+          "hint": "one of a kind",
+          "sort_order": 134
+        },
+        {
+          "en": "vary",
+          "zh": "变化；不同",
+          "hint": "differ or change",
+          "sort_order": 135
+        }
+      ]
+    },
+    {
+      "slug": "cet6",
+      "title": "六级词库 · CET-6",
+      "description": "大学英语六级进阶词汇，偏学术抽象与论证表达。",
+      "cards": [
+        {
+          "en": "abstract",
+          "zh": "抽象的",
+          "hint": "existing as an idea, not physical",
+          "sort_order": 1
+        },
+        {
+          "en": "abundant",
+          "zh": "丰富的；充裕的",
+          "hint": "existing in large amounts",
+          "sort_order": 2
+        },
+        {
+          "en": "acknowledge",
+          "zh": "承认；致谢",
+          "hint": "admit or recognize",
+          "sort_order": 3
+        },
+        {
+          "en": "acute",
+          "zh": "敏锐的；严重的",
+          "hint": "sharp or severe",
+          "sort_order": 4
+        },
+        {
+          "en": "alleviate",
+          "zh": "缓解；减轻",
+          "hint": "make less severe",
+          "sort_order": 5
+        },
+        {
+          "en": "ambiguous",
+          "zh": "模棱两可的",
+          "hint": "open to more than one meaning",
+          "sort_order": 6
+        },
+        {
+          "en": "amend",
+          "zh": "修正；修改",
+          "hint": "change to improve",
+          "sort_order": 7
+        },
+        {
+          "en": "arbitrary",
+          "zh": "任意的；武断的",
+          "hint": "based on random choice",
+          "sort_order": 8
+        },
+        {
+          "en": "articulate",
+          "zh": "清楚表达；口齿清晰的",
+          "hint": "express clearly",
+          "sort_order": 9
+        },
+        {
+          "en": "assess",
+          "zh": "评估",
+          "hint": "evaluate or judge",
+          "sort_order": 10
+        },
+        {
+          "en": "attribute",
+          "zh": "归因于；属性",
+          "hint": "regard as caused by",
+          "sort_order": 11
+        },
+        {
+          "en": "authentic",
+          "zh": "真实的；可靠的",
+          "hint": "genuine and real",
+          "sort_order": 12
+        },
+        {
+          "en": "barrier",
+          "zh": "障碍；屏障",
+          "hint": "something that blocks",
+          "sort_order": 13
+        },
+        {
+          "en": "bias",
+          "zh": "偏见",
+          "hint": "an unfair preference",
+          "sort_order": 14
+        },
+        {
+          "en": "capacity",
+          "zh": "容量；能力",
+          "hint": "the ability or maximum amount",
+          "sort_order": 15
+        },
+        {
+          "en": "cease",
+          "zh": "停止；终止",
+          "hint": "stop or come to an end",
+          "sort_order": 16
+        },
+        {
+          "en": "coherent",
+          "zh": "连贯的；条理清楚的",
+          "hint": "logical and consistent",
+          "sort_order": 17
+        },
+        {
+          "en": "collaborate",
+          "zh": "合作",
+          "hint": "work together",
+          "sort_order": 18
+        },
+        {
+          "en": "comprehensive",
+          "zh": "全面的",
+          "hint": "covering everything",
+          "sort_order": 19
+        },
+        {
+          "en": "compromise",
+          "zh": "妥协；折中",
+          "hint": "settle by mutual concession",
+          "sort_order": 20
+        },
+        {
+          "en": "conceive",
+          "zh": "构想；设想",
+          "hint": "form an idea",
+          "sort_order": 21
+        },
+        {
+          "en": "conflict",
+          "zh": "冲突；矛盾",
+          "hint": "a serious disagreement",
+          "sort_order": 22
+        },
+        {
+          "en": "confront",
+          "zh": "面对；对抗",
+          "hint": "face a problem directly",
+          "sort_order": 23
+        },
+        {
+          "en": "constraint",
+          "zh": "约束；限制",
+          "hint": "a limitation or restriction",
+          "sort_order": 24
+        },
+        {
+          "en": "controversial",
+          "zh": "有争议的",
+          "hint": "causing disagreement",
+          "sort_order": 25
+        },
+        {
+          "en": "coordinate",
+          "zh": "协调；配合",
+          "hint": "organize activities together",
+          "sort_order": 26
+        },
+        {
+          "en": "criteria",
+          "zh": "标准（criterion 的复数）",
+          "hint": "standards for judgment",
+          "sort_order": 27
+        },
+        {
+          "en": "deduce",
+          "zh": "推断",
+          "hint": "reach a conclusion by reasoning",
+          "sort_order": 28
+        },
+        {
+          "en": "deficit",
+          "zh": "赤字；短缺",
+          "hint": "an amount by which something is short",
+          "sort_order": 29
+        },
+        {
+          "en": "deliberate",
+          "zh": "故意的；深思熟虑的",
+          "hint": "done on purpose",
+          "sort_order": 30
+        },
+        {
+          "en": "delicate",
+          "zh": "精致的；脆弱的",
+          "hint": "easily damaged or fine",
+          "sort_order": 31
+        },
+        {
+          "en": "deteriorate",
+          "zh": "恶化",
+          "hint": "become worse",
+          "sort_order": 32
+        },
+        {
+          "en": "dilemma",
+          "zh": "困境",
+          "hint": "a hard choice between options",
+          "sort_order": 33
+        },
+        {
+          "en": "dimension",
+          "zh": "维度；尺寸",
+          "hint": "a measurable extent",
+          "sort_order": 34
+        },
+        {
+          "en": "diminish",
+          "zh": "减少；削弱",
+          "hint": "make or become less",
+          "sort_order": 35
+        },
+        {
+          "en": "discriminate",
+          "zh": "歧视；区分",
+          "hint": "treat unfairly or distinguish",
+          "sort_order": 36
+        },
+        {
+          "en": "dispute",
+          "zh": "争论；纠纷",
+          "hint": "a disagreement or debate",
+          "sort_order": 37
+        },
+        {
+          "en": "diverse",
+          "zh": "多样的",
+          "hint": "showing variety",
+          "sort_order": 38
+        },
+        {
+          "en": "dominate",
+          "zh": "主导；支配",
+          "hint": "have control over",
+          "sort_order": 39
+        },
+        {
+          "en": "elaborate",
+          "zh": "详尽说明；精心的",
+          "hint": "explain in detail",
+          "sort_order": 40
+        },
+        {
+          "en": "eligible",
+          "zh": "合格的",
+          "hint": "qualified or entitled",
+          "sort_order": 41
+        },
+        {
+          "en": "emerge",
+          "zh": "出现；浮现",
+          "hint": "come into view",
+          "sort_order": 42
+        },
+        {
+          "en": "emphasis",
+          "zh": "强调",
+          "hint": "special importance",
+          "sort_order": 43
+        },
+        {
+          "en": "empirical",
+          "zh": "实证的",
+          "hint": "based on observation or experiment",
+          "sort_order": 44
+        },
+        {
+          "en": "enforce",
+          "zh": "执行；强制",
+          "hint": "make people obey a rule",
+          "sort_order": 45
+        },
+        {
+          "en": "entity",
+          "zh": "实体",
+          "hint": "something that exists separately",
+          "sort_order": 46
+        },
+        {
+          "en": "equivalent",
+          "zh": "等同的；等价物",
+          "hint": "equal in value or meaning",
+          "sort_order": 47
+        },
+        {
+          "en": "evolve",
+          "zh": "进化；演变",
+          "hint": "develop gradually",
+          "sort_order": 48
+        },
+        {
+          "en": "exceed",
+          "zh": "超过",
+          "hint": "go beyond a limit",
+          "sort_order": 49
+        },
+        {
+          "en": "exclude",
+          "zh": "排除",
+          "hint": "leave out",
+          "sort_order": 50
+        },
+        {
+          "en": "explicit",
+          "zh": "明确的；直白的",
+          "hint": "stated clearly and directly",
+          "sort_order": 51
+        },
+        {
+          "en": "exploit",
+          "zh": "利用；开发",
+          "hint": "make full use of",
+          "sort_order": 52
+        },
+        {
+          "en": "facilitate",
+          "zh": "促进；使便利",
+          "hint": "make easier",
+          "sort_order": 53
+        },
+        {
+          "en": "feasible",
+          "zh": "可行的",
+          "hint": "possible to do",
+          "sort_order": 54
+        },
+        {
+          "en": "fluctuate",
+          "zh": "波动",
+          "hint": "rise and fall irregularly",
+          "sort_order": 55
+        },
+        {
+          "en": "fundamental",
+          "zh": "基本的；根本的",
+          "hint": "forming the base of something",
+          "sort_order": 56
+        },
+        {
+          "en": "hypothesis",
+          "zh": "假设",
+          "hint": "a proposed explanation",
+          "sort_order": 57
+        },
+        {
+          "en": "impose",
+          "zh": "强加；征收",
+          "hint": "force something on someone",
+          "sort_order": 58
+        },
+        {
+          "en": "incentive",
+          "zh": "激励；刺激",
+          "hint": "something that motivates",
+          "sort_order": 59
+        },
+        {
+          "en": "incorporate",
+          "zh": "合并；纳入",
+          "hint": "include as part of a whole",
+          "sort_order": 60
+        },
+        {
+          "en": "insight",
+          "zh": "洞察力",
+          "hint": "deep understanding",
+          "sort_order": 61
+        },
+        {
+          "en": "intervene",
+          "zh": "干预；介入",
+          "hint": "step in to change a situation",
+          "sort_order": 62
+        },
+        {
+          "en": "intricate",
+          "zh": "错综复杂的",
+          "hint": "very complicated or detailed",
+          "sort_order": 63
+        },
+        {
+          "en": "justify",
+          "zh": "证明…正当",
+          "hint": "show to be right or reasonable",
+          "sort_order": 64
+        },
+        {
+          "en": "manipulate",
+          "zh": "操纵；操作",
+          "hint": "control cleverly or unfairly",
+          "sort_order": 65
+        }
+      ]
+    },
+    {
+      "slug": "tem8",
+      "title": "八级词库 · TEM-8",
+      "description": "英语专业八级高阶词汇，偏文学、学术与书面语。",
+      "cards": [
+        {
+          "en": "aberration",
+          "zh": "偏差；失常",
+          "hint": "a departure from what is normal",
+          "sort_order": 1
+        },
+        {
+          "en": "abstruse",
+          "zh": "深奥难懂的",
+          "hint": "hard to understand",
+          "sort_order": 2
+        },
+        {
+          "en": "acquiesce",
+          "zh": "默许；勉强同意",
+          "hint": "accept reluctantly",
+          "sort_order": 3
+        },
+        {
+          "en": "adamant",
+          "zh": "坚定不移的",
+          "hint": "refusing to change one's mind",
+          "sort_order": 4
+        },
+        {
+          "en": "aesthetic",
+          "zh": "美学的；审美的",
+          "hint": "concerned with beauty",
+          "sort_order": 5
+        },
+        {
+          "en": "ambivalent",
+          "zh": "矛盾的；纠结的",
+          "hint": "having mixed feelings",
+          "sort_order": 6
+        },
+        {
+          "en": "ameliorate",
+          "zh": "改善；改良",
+          "hint": "make better",
+          "sort_order": 7
+        },
+        {
+          "en": "anomaly",
+          "zh": "异常；反常",
+          "hint": "something that deviates from the norm",
+          "sort_order": 8
+        },
+        {
+          "en": "archaic",
+          "zh": "古老的；过时的",
+          "hint": "very old or outdated",
+          "sort_order": 9
+        },
+        {
+          "en": "assiduous",
+          "zh": "勤奋的；刻苦的",
+          "hint": "showing great care and effort",
+          "sort_order": 10
+        },
+        {
+          "en": "austere",
+          "zh": "朴素的；严峻的",
+          "hint": "plain or strict",
+          "sort_order": 11
+        },
+        {
+          "en": "benevolent",
+          "zh": "仁慈的；慈善的",
+          "hint": "kind and helpful",
+          "sort_order": 12
+        },
+        {
+          "en": "capricious",
+          "zh": "反复无常的",
+          "hint": "given to sudden changes of mood",
+          "sort_order": 13
+        },
+        {
+          "en": "cognizant",
+          "zh": "认知到的；意识到的",
+          "hint": "aware of something",
+          "sort_order": 14
+        },
+        {
+          "en": "commensurate",
+          "zh": "相称的；相当的",
+          "hint": "in proportion to",
+          "sort_order": 15
+        },
+        {
+          "en": "complacent",
+          "zh": "自满的",
+          "hint": "too satisfied with oneself",
+          "sort_order": 16
+        },
+        {
+          "en": "convoluted",
+          "zh": "错综复杂的",
+          "hint": "extremely complex and hard to follow",
+          "sort_order": 17
+        },
+        {
+          "en": "corroborate",
+          "zh": "证实；确证",
+          "hint": "confirm with evidence",
+          "sort_order": 18
+        },
+        {
+          "en": "culpable",
+          "zh": "有罪的；应受责备的",
+          "hint": "deserving blame",
+          "sort_order": 19
+        },
+        {
+          "en": "deleterious",
+          "zh": "有害的",
+          "hint": "causing harm",
+          "sort_order": 20
+        },
+        {
+          "en": "didactic",
+          "zh": "说教的；教导的",
+          "hint": "intended to teach",
+          "sort_order": 21
+        },
+        {
+          "en": "disparate",
+          "zh": "截然不同的",
+          "hint": "fundamentally different",
+          "sort_order": 22
+        },
+        {
+          "en": "eclectic",
+          "zh": "兼收并蓄的",
+          "hint": "drawing from many sources",
+          "sort_order": 23
+        },
+        {
+          "en": "elusive",
+          "zh": "难以捉摸的",
+          "hint": "hard to find or define",
+          "sort_order": 24
+        },
+        {
+          "en": "ephemeral",
+          "zh": "短暂的；转瞬即逝的",
+          "hint": "lasting a very short time",
+          "sort_order": 25
+        },
+        {
+          "en": "erudite",
+          "zh": "博学的",
+          "hint": "having great knowledge",
+          "sort_order": 26
+        },
+        {
+          "en": "esoteric",
+          "zh": "深奥的；少数人懂的",
+          "hint": "understood by only a few",
+          "sort_order": 27
+        },
+        {
+          "en": "exacerbate",
+          "zh": "使恶化",
+          "hint": "make worse",
+          "sort_order": 28
+        },
+        {
+          "en": "expedite",
+          "zh": "加快；促进",
+          "hint": "speed up a process",
+          "sort_order": 29
+        },
+        {
+          "en": "facetious",
+          "zh": "开玩笑的；不正经的",
+          "hint": "treating serious issues lightly",
+          "sort_order": 30
+        },
+        {
+          "en": "fastidious",
+          "zh": "挑剔的；讲究的",
+          "hint": "very attentive to detail",
+          "sort_order": 31
+        },
+        {
+          "en": "fortuitous",
+          "zh": "偶然的；幸运的",
+          "hint": "happening by chance",
+          "sort_order": 32
+        },
+        {
+          "en": "gregarious",
+          "zh": "爱社交的",
+          "hint": "enjoying company of others",
+          "sort_order": 33
+        },
+        {
+          "en": "idiosyncrasy",
+          "zh": "特质；癖好",
+          "hint": "a distinctive personal trait",
+          "sort_order": 34
+        },
+        {
+          "en": "immutable",
+          "zh": "不变的",
+          "hint": "unable to change",
+          "sort_order": 35
+        },
+        {
+          "en": "impetus",
+          "zh": "动力；推动",
+          "hint": "the force that drives something",
+          "sort_order": 36
+        },
+        {
+          "en": "incongruous",
+          "zh": "不协调的",
+          "hint": "out of place or inconsistent",
+          "sort_order": 37
+        },
+        {
+          "en": "indefatigable",
+          "zh": "不知疲倦的",
+          "hint": "never giving up",
+          "sort_order": 38
+        },
+        {
+          "en": "indigenous",
+          "zh": "本土的；土著的",
+          "hint": "native to a place",
+          "sort_order": 39
+        },
+        {
+          "en": "insidious",
+          "zh": "隐伏的；阴险的",
+          "hint": "proceeding harmfully but subtly",
+          "sort_order": 40
+        },
+        {
+          "en": "intransigent",
+          "zh": "不妥协的",
+          "hint": "refusing to compromise",
+          "sort_order": 41
+        },
+        {
+          "en": "laconic",
+          "zh": "简洁的；惜字如金的",
+          "hint": "using very few words",
+          "sort_order": 42
+        },
+        {
+          "en": "magnanimous",
+          "zh": "宽宏大量的",
+          "hint": "generous in forgiving",
+          "sort_order": 43
+        },
+        {
+          "en": "meticulous",
+          "zh": "一丝不苟的",
+          "hint": "showing great attention to detail",
+          "sort_order": 44
+        },
+        {
+          "en": "nascent",
+          "zh": "初生的；萌芽的",
+          "hint": "just beginning to develop",
+          "sort_order": 45
+        },
+        {
+          "en": "obfuscate",
+          "zh": "使模糊；混淆",
+          "hint": "make unclear or confusing",
+          "sort_order": 46
+        },
+        {
+          "en": "obstinate",
+          "zh": "固执的；顽固的",
+          "hint": "stubbornly refusing to change",
+          "sort_order": 47
+        },
+        {
+          "en": "ostentatious",
+          "zh": "炫耀的；招摇的",
+          "hint": "designed to attract notice",
+          "sort_order": 48
+        },
+        {
+          "en": "paucity",
+          "zh": "缺乏；不足",
+          "hint": "scarcity or shortage",
+          "sort_order": 49
+        },
+        {
+          "en": "perfunctory",
+          "zh": "敷衍的",
+          "hint": "done with minimal effort",
+          "sort_order": 50
+        },
+        {
+          "en": "pragmatic",
+          "zh": "务实的",
+          "hint": "dealing with things practically",
+          "sort_order": 51
+        },
+        {
+          "en": "prolific",
+          "zh": "多产的",
+          "hint": "producing much work",
+          "sort_order": 52
+        },
+        {
+          "en": "quintessential",
+          "zh": "典型的；精髓的",
+          "hint": "representing the most perfect example",
+          "sort_order": 53
+        },
+        {
+          "en": "recalcitrant",
+          "zh": "顽抗的；不服管的",
+          "hint": "resisting authority",
+          "sort_order": 54
+        },
+        {
+          "en": "sagacious",
+          "zh": "睿智的",
+          "hint": "having keen judgment",
+          "sort_order": 55
+        },
+        {
+          "en": "superfluous",
+          "zh": "多余的",
+          "hint": "more than is needed",
+          "sort_order": 56
+        },
+        {
+          "en": "taciturn",
+          "zh": "沉默寡言的",
+          "hint": "saying very little",
+          "sort_order": 57
+        },
+        {
+          "en": "ubiquitous",
+          "zh": "无处不在的",
+          "hint": "present everywhere",
+          "sort_order": 58
+        },
+        {
+          "en": "voracious",
+          "zh": "贪吃的；渴求的",
+          "hint": "having a huge appetite",
+          "sort_order": 59
+        }
+      ]
+    },
+    {
+      "slug": "ielts",
+      "title": "雅思词库 · IELTS",
+      "description": "雅思考试核心词汇，覆盖环境、社会、健康、教育等话题。",
+      "cards": [
+        {
+          "en": "adolescent",
+          "zh": "青少年",
+          "hint": "a young person developing into an adult",
+          "sort_order": 1
+        },
+        {
+          "en": "agriculture",
+          "zh": "农业",
+          "hint": "the practice of farming",
+          "sort_order": 2
+        },
+        {
+          "en": "allocate",
+          "zh": "分配；划拨",
+          "hint": "distribute for a purpose",
+          "sort_order": 3
+        },
+        {
+          "en": "amenity",
+          "zh": "便利设施",
+          "hint": "a useful feature or facility",
+          "sort_order": 4
+        },
+        {
+          "en": "analyst",
+          "zh": "分析员",
+          "hint": "a person who examines data",
+          "sort_order": 5
+        },
+        {
+          "en": "anonymous",
+          "zh": "匿名的",
+          "hint": "without a known name",
+          "sort_order": 6
+        },
+        {
+          "en": "architecture",
+          "zh": "建筑（学）",
+          "hint": "the design of buildings",
+          "sort_order": 7
+        },
+        {
+          "en": "artefact",
+          "zh": "人工制品；文物",
+          "hint": "a human-made object of historical interest",
+          "sort_order": 8
+        },
+        {
+          "en": "asset",
+          "zh": "资产；优势",
+          "hint": "a valuable thing or quality",
+          "sort_order": 9
+        },
+        {
+          "en": "assessment",
+          "zh": "评估",
+          "hint": "an evaluation of ability or quality",
+          "sort_order": 10
+        },
+        {
+          "en": "biodiversity",
+          "zh": "生物多样性",
+          "hint": "the variety of life",
+          "sort_order": 11
+        },
+        {
+          "en": "chronic",
+          "zh": "慢性的；长期的",
+          "hint": "persisting for a long time",
+          "sort_order": 12
+        },
+        {
+          "en": "cohort",
+          "zh": "同批人；群体",
+          "hint": "a group with a shared characteristic",
+          "sort_order": 13
+        },
+        {
+          "en": "collaboration",
+          "zh": "协作",
+          "hint": "working together",
+          "sort_order": 14
+        },
+        {
+          "en": "compensate",
+          "zh": "补偿",
+          "hint": "make up for loss or harm",
+          "sort_order": 15
+        },
+        {
+          "en": "consensus",
+          "zh": "共识",
+          "hint": "general agreement",
+          "sort_order": 16
+        },
+        {
+          "en": "contemporary",
+          "zh": "当代的",
+          "hint": "belonging to the present time",
+          "sort_order": 17
+        },
+        {
+          "en": "contamination",
+          "zh": "污染",
+          "hint": "the presence of harmful substances",
+          "sort_order": 18
+        },
+        {
+          "en": "curriculum",
+          "zh": "课程",
+          "hint": "the subjects taught",
+          "sort_order": 19
+        },
+        {
+          "en": "deforestation",
+          "zh": "森林砍伐",
+          "hint": "the clearing of forests",
+          "sort_order": 20
+        },
+        {
+          "en": "demographic",
+          "zh": "人口统计的",
+          "hint": "relating to population structure",
+          "sort_order": 21
+        },
+        {
+          "en": "depletion",
+          "zh": "枯竭；耗尽",
+          "hint": "reduction in amount",
+          "sort_order": 22
+        },
+        {
+          "en": "diagnose",
+          "zh": "诊断",
+          "hint": "identify an illness or problem",
+          "sort_order": 23
+        },
+        {
+          "en": "drought",
+          "zh": "干旱",
+          "hint": "a long period without rain",
+          "sort_order": 24
+        },
+        {
+          "en": "ecosystem",
+          "zh": "生态系统",
+          "hint": "a community of living things and their environment",
+          "sort_order": 25
+        },
+        {
+          "en": "emigration",
+          "zh": "移居国外",
+          "hint": "leaving one's country to live elsewhere",
+          "sort_order": 26
+        },
+        {
+          "en": "entrepreneur",
+          "zh": "企业家",
+          "hint": "a person who starts businesses",
+          "sort_order": 27
+        },
+        {
+          "en": "erosion",
+          "zh": "侵蚀",
+          "hint": "the gradual wearing away",
+          "sort_order": 28
+        },
+        {
+          "en": "expenditure",
+          "zh": "支出；花费",
+          "hint": "the amount of money spent",
+          "sort_order": 29
+        },
+        {
+          "en": "expertise",
+          "zh": "专长",
+          "hint": "special skill or knowledge",
+          "sort_order": 30
+        },
+        {
+          "en": "fossil",
+          "zh": "化石",
+          "hint": "the preserved remains of ancient life",
+          "sort_order": 31
+        },
+        {
+          "en": "gender",
+          "zh": "性别",
+          "hint": "the social category of male or female",
+          "sort_order": 32
+        },
+        {
+          "en": "globalization",
+          "zh": "全球化",
+          "hint": "the process of worldwide integration",
+          "sort_order": 33
+        },
+        {
+          "en": "habitat",
+          "zh": "栖息地",
+          "hint": "the natural home of an organism",
+          "sort_order": 34
+        },
+        {
+          "en": "hierarchy",
+          "zh": "等级制度",
+          "hint": "a system of ranking",
+          "sort_order": 35
+        },
+        {
+          "en": "immigrant",
+          "zh": "移民（迁入者）",
+          "hint": "a person who moves into a country",
+          "sort_order": 36
+        },
+        {
+          "en": "infrastructure",
+          "zh": "基础设施",
+          "hint": "basic physical systems of a society",
+          "sort_order": 37
+        },
+        {
+          "en": "legislation",
+          "zh": "立法；法规",
+          "hint": "laws considered collectively",
+          "sort_order": 38
+        },
+        {
+          "en": "literacy",
+          "zh": "读写能力",
+          "hint": "the ability to read and write",
+          "sort_order": 39
+        },
+        {
+          "en": "migration",
+          "zh": "迁移；迁徙",
+          "hint": "movement from one place to another",
+          "sort_order": 40
+        },
+        {
+          "en": "momentum",
+          "zh": "势头；动力",
+          "hint": "the force gained by movement",
+          "sort_order": 41
+        },
+        {
+          "en": "municipal",
+          "zh": "市政的",
+          "hint": "relating to a city or town",
+          "sort_order": 42
+        },
+        {
+          "en": "nutrition",
+          "zh": "营养",
+          "hint": "the process of taking in food for health",
+          "sort_order": 43
+        },
+        {
+          "en": "obesity",
+          "zh": "肥胖",
+          "hint": "the condition of being very overweight",
+          "sort_order": 44
+        },
+        {
+          "en": "pollution",
+          "zh": "污染",
+          "hint": "harmful contamination of the environment",
+          "sort_order": 45
+        },
+        {
+          "en": "poverty",
+          "zh": "贫困",
+          "hint": "the state of being very poor",
+          "sort_order": 46
+        },
+        {
+          "en": "precaution",
+          "zh": "预防措施",
+          "hint": "an action taken to prevent harm",
+          "sort_order": 47
+        },
+        {
+          "en": "productivity",
+          "zh": "生产力",
+          "hint": "the rate of producing goods",
+          "sort_order": 48
+        },
+        {
+          "en": "prosperity",
+          "zh": "繁荣",
+          "hint": "the state of being successful and wealthy",
+          "sort_order": 49
+        },
+        {
+          "en": "rehabilitate",
+          "zh": "康复；修复",
+          "hint": "restore to a good condition",
+          "sort_order": 50
+        },
+        {
+          "en": "renewable",
+          "zh": "可再生的",
+          "hint": "able to be replenished",
+          "sort_order": 51
+        },
+        {
+          "en": "sanitation",
+          "zh": "卫生；环卫",
+          "hint": "conditions for public health",
+          "sort_order": 52
+        },
+        {
+          "en": "scarcity",
+          "zh": "稀缺",
+          "hint": "insufficient supply",
+          "sort_order": 53
+        },
+        {
+          "en": "sustainable",
+          "zh": "可持续的",
+          "hint": "able to be maintained over time",
+          "sort_order": 54
+        },
+        {
+          "en": "symptom",
+          "zh": "症状",
+          "hint": "a sign of illness",
+          "sort_order": 55
+        },
+        {
+          "en": "tariff",
+          "zh": "关税",
+          "hint": "a tax on imports or exports",
+          "sort_order": 56
+        },
+        {
+          "en": "urbanization",
+          "zh": "城市化",
+          "hint": "the growth of cities",
+          "sort_order": 57
+        },
+        {
+          "en": "vaccine",
+          "zh": "疫苗",
+          "hint": "a substance that prevents disease",
+          "sort_order": 58
+        },
+        {
+          "en": "welfare",
+          "zh": "福利",
+          "hint": "the health and happiness of people",
+          "sort_order": 59
+        },
+        {
+          "en": "yield",
+          "zh": "产量；屈服",
+          "hint": "produce or give way",
+          "sort_order": 60
+        }
+      ]
+    }
+  ],
+  "words": [],
+  "passages": []
+}
