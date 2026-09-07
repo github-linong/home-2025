@@ -1,53 +1,848 @@
 {
   "categories": [
-    { "slug": "javascript", "title": "JavaScript", "description": "JavaScript 核心：闭包、原型、事件循环、this 指向等", "order": 1 },
-    { "slug": "es6", "title": "es6", "description": "ES6+ 新特性与语法（Promise、解构、模块等）", "order": 2 },
-    { "slug": "typescript", "title": "TypeScript", "description": "TypeScript 类型系统与进阶", "order": 3 },
-    { "slug": "vue", "title": "Vue", "description": "Vue 2.x 框架面试题", "order": 4 },
-    { "slug": "react", "title": "React", "description": "React 框架与生态", "order": 5 },
-    { "slug": "css", "title": "css", "description": "CSS 样式与布局", "order": 6 },
-    { "slug": "http", "title": "http", "description": "HTTP/HTTPS 网络协议", "order": 7 }
+    {
+      "slug": "javascript",
+      "title": "JavaScript",
+      "description": "JavaScript 核心：闭包、原型、事件循环、this 指向等",
+      "order": 1
+    },
+    {
+      "slug": "es6",
+      "title": "es6",
+      "description": "ES6+ 新特性与语法（Promise、解构、模块等）",
+      "order": 2
+    },
+    {
+      "slug": "typescript",
+      "title": "TypeScript",
+      "description": "TypeScript 类型系统与进阶",
+      "order": 3
+    },
+    {
+      "slug": "vue",
+      "title": "Vue",
+      "description": "Vue 2.x 框架面试题",
+      "order": 4
+    },
+    {
+      "slug": "react",
+      "title": "React",
+      "description": "React 框架与生态",
+      "order": 5
+    },
+    {
+      "slug": "css",
+      "title": "css",
+      "description": "CSS 样式与布局",
+      "order": 6
+    },
+    {
+      "slug": "http",
+      "title": "http",
+      "description": "HTTP/HTTPS 网络协议",
+      "order": 7
+    },
+    {
+      "slug": "engineering",
+      "title": "前端工程化",
+      "description": "构建工具、Git、npm、组件库、架构与开发规范",
+      "order": 8
+    },
+    {
+      "slug": "nodejs",
+      "title": "Node.js",
+      "description": "Node.js 服务端与工具链开发",
+      "order": 9
+    },
+    {
+      "slug": "microfrontend",
+      "title": "微前端",
+      "description": "微前端架构与实现方案",
+      "order": 10
+    },
+    {
+      "slug": "visualization",
+      "title": "可视化",
+      "description": "ECharts 与数据可视化方案",
+      "order": 11
+    },
+    {
+      "slug": "applet",
+      "title": "小程序",
+      "description": "小程序、内嵌 H5、大屏、后台系统开发",
+      "order": 12
+    }
   ],
   "questions": [
-    { "category": "javascript", "slug": "closure", "difficulty": "hard", "title": "面试官：说说你对闭包的理解？闭包使用场景",
-      "body": "## 一、是什么\n闭包是指有权访问另一个函数作用域中变量的函数。创建闭包的常见方式是在一个函数内部创建另一个函数，内部函数可以访问外部函数的变量。\n\n## 二、使用场景\n- 创建私有变量：通过闭包模拟私有方法，防止外部直接访问。\n- 延长变量生命周期：变量在函数执行完后仍被引用，不会被回收。\n- 柯里化函数与模块模式：利用闭包保存参数与状态。\n\n## 三、注意事项\n闭包会占用更多内存，因为变量常驻内存，使用后若不及时释放可能造成内存泄漏，需注意及时解除引用。" },
-    { "category": "javascript", "slug": "event_loop", "difficulty": "hard", "title": "面试官：说说你对事件循环（Event Loop）的理解",
-      "body": "## 一、是什么\nJavaScript 是单线程语言，事件循环是其处理异步任务的机制。\n\n## 二、执行流程\n1. 执行同步代码（宏任务），遇到微任务加入微任务队列，遇到宏任务（如 setTimeout、I/O）加入宏任务队列。\n2. 当前宏任务执行完毕后，清空微任务队列（微任务优先于下一个宏任务）。\n3. 浏览器渲染（requestAnimationFrame 等），然后取出下一个宏任务执行，如此循环。\n\n## 三、顺序示例\n同步代码 → 微任务（Promise.then、queueMicrotask、async/await 后续）→ 宏任务（setTimeout、setInterval、I/O）。" },
-    { "category": "javascript", "slug": "this", "difficulty": "medium", "title": "面试官：说说 this 的指向规则",
-      "body": "this 的指向取决于函数的调用方式：\n- 普通函数调用：this 指向全局对象（严格模式下为 undefined）。\n- 方法调用：指向调用该方法的对象。\n- 构造函数（new）：指向新创建的实例。\n- 箭头函数：不绑定 this，继承外层词法作用域的 this。\n- call/apply/bind：显式指定 this。\n\n注意：在严格模式下，普通函数中的 this 为 undefined。" },
-    { "category": "es6", "slug": "promise_vs_async", "difficulty": "medium", "title": "面试官：说说 Promise 与 async/await 的区别",
-      "body": "## 一、语法层面\n- Promise 是 ES6 引入的异步方案，通过 then/catch 链式调用。\n- async/await 是 ES2017 的语法糖，基于 Promise，用同步写法写异步代码，可读性更好。\n\n## 二、错误处理\n- Promise 通过 .catch 捕获。\n- async/await 通过 try/catch 捕获。\n\n## 三、本质\nasync 函数返回 Promise，await 只能在 async 函数中使用，await 会阻塞后续代码直到 Promise 落定。" },
-    { "category": "es6", "slug": "let_const_var", "difficulty": "easy", "title": "面试官：说说 let、const、var 的区别",
-      "body": "- var：函数作用域，存在变量提升，可重复声明，全局声明挂在 window 上。\n- let：块级作用域，不存在提升的“暂存死区”，不可重复声明。\n- const：与 let 相同作用域规则，声明后必须初始化，且绑定不可重新赋值（对象内部属性可修改）。" },
-    { "category": "typescript", "slug": "interface_vs_type", "difficulty": "medium", "title": "面试官：说说 interface 与 type 的区别",
-      "body": "## 一、相同点\n都可以描述对象类型与函数类型。\n\n## 二、不同点\n- interface 支持声明合并（同名自动合并），更偏向面向对象。\n- type 可定义联合类型、交叉类型、元组、字面量类型等类型别名，更灵活。\n- interface 可以被 class implements / extends；type 不能。\n- 一般描述对象/类的结构优先用 interface，组合复杂类型用 type。" },
-    { "category": "typescript", "slug": "generic", "difficulty": "hard", "title": "面试官：说说 TypeScript 泛型的作用与使用场景",
-      "body": "泛型允许在定义函数、接口或类时不预先指定具体类型，而在使用时再指定，用于创建可复用的类型安全组件。\n\n使用场景：\n- 通用工具函数（如数组 first/last）。\n- 类型安全的集合与映射（如 Promise<T>）。\n- 约束泛型参数（extends 约束），实现 keyof 组合的键值映射。\n\n示例：function identity<T>(arg: T): T { return arg; }" },
-    { "category": "vue", "slug": "vue2_reactive", "difficulty": "hard", "title": "面试官：说说 Vue 2 的响应式原理",
-      "body": "Vue 2 通过 Object.defineProperty 对 data 的每个属性进行 getter/setter 劫持，在 getter 中收集依赖（Dep + Watcher），在 setter 中触发依赖更新，进而驱动视图更新。\n\n局限：\n- 无法监听对象新增/删除属性（需 Vue.set / Vue.delete）。\n- 无法直接监听数组下标变化与 length 变化，需要重写数组方法。\n\nVue 3 改用 Proxy，可完整监听对象与数组的增删改。" },
-    { "category": "vue", "slug": "vue_lifecycle", "difficulty": "easy", "title": "面试官：Vue 的生命周期有哪些",
-      "body": "Vue 2 生命周期钩子：\n- 创建：beforeCreate、created。\n- 挂载：beforeMount、mounted。\n- 更新：beforeUpdate、updated。\n- 销毁：beforeDestroy、destroyed。\n- 还有 keep-alive 的 activated / deactivated。\n\ncreated 中可请求数据，mounted 中可操作 DOM。" },
-    { "category": "react", "slug": "virtual_dom", "difficulty": "hard", "title": "面试官：说说 React 中虚拟 DOM 与 diff 算法",
-      "body": "虚拟 DOM 是用 JS 对象描述真实 DOM 结构。数据变化时，React 先重新生成虚拟 DOM，与上一次的虚拟 DOM 做 diff，计算出最小更新集合，再批量更新真实 DOM，避免频繁操作真实 DOM 带来的性能开销。\n\ndiff 优化策略：\n- 同层比较，不跨层级移动节点。\n- 通过 key 识别可复用节点，key 应稳定唯一。\n- 仅对比 type 相同的组件。" },
-    { "category": "react", "slug": "hooks_diff", "difficulty": "medium", "title": "面试官：说说 useEffect 与 useLayoutEffect 的区别",
-      "body": "- useEffect：异步执行，在浏览器完成绘制后执行，适合大部分副作用（请求、订阅、日志）。\n- useLayoutEffect：同步执行，在 DOM 变更后、浏览器绘制前执行，适合需要读取/修改布局的场景（如测量 DOM、避免闪烁）。\n- 使用 useLayoutEffect 会阻塞渲染，应谨慎使用，服务端渲染时会有警告。" },
-    { "category": "css", "slug": "box_model", "difficulty": "easy", "title": "面试官：说说你对 CSS 盒模型的理解",
-      "body": "CSS 盒模型由 content、padding、border、margin 组成。\n\n两种模式：\n- 标准盒模型（content-box）：宽高只包含 content，padding/border 向外扩展。\n- 怪异盒模型（border-box）：宽高包含 content + padding + border。\n\n通过 box-sizing 切换，一般推荐全局使用 border-box，方便布局计算。" },
-    { "category": "css", "slug": "center", "difficulty": "medium", "title": "面试官：如何实现元素水平垂直居中",
-      "body": "常见方案：\n- flex：父容器 display:flex; justify-content:center; align-items:center。\n- grid：place-items:center。\n- 绝对定位 + transform：position:absolute; top/left:50%; transform:translate(-50%,-50%)。\n- 绝对定位 + margin:auto（需已知尺寸或使用 auto 对子元素）。\n- 文本/行内元素：text-align:center + line-height。" },
-    { "category": "http", "slug": "http_cache", "difficulty": "hard", "title": "面试官：说说 HTTP 缓存机制",
-      "body": "HTTP 缓存分为强缓存与协商缓存。\n\n## 强缓存\n通过 Cache-Control（max-age）与 Expires 控制，命中则直接使用本地缓存，不发请求。\n\n## 协商缓存\n缓存过期后向服务器校验：\n- Last-Modified / If-Modified-Since（时间维度）。\n- ETag / If-None-Match（内容哈希，更精确）。\n服务器返回 304 则复用缓存，否则返回 200 与新资源。\n\n优先级：Cache-Control > Expires；ETag 比 Last-Modified 更可靠。" },
-    { "category": "http", "slug": "https", "difficulty": "hard", "title": "面试官：HTTPS 是如何保证安全的",
-      "body": "HTTPS = HTTP + TLS/SSL，通过三种机制保证安全：\n\n- 加密：使用对称加密（如 AES）加密传输内容，性能高。\n- 密钥协商：通过非对称加密（RSA/ECDHE）安全地协商对称密钥，防止被窃听。\n- 身份认证：通过 CA 签发的数字证书验证服务器身份，防止中间人伪造。\n\n完整握手：客户端 → 服务端证书 → 验证 CA → 协商密钥 → 加密通信。" },
-    { "category": "css", "slug": "position_z_index", "difficulty": "medium", "title": "面试官：谈谈 position: relative 与 absolute 的区别，以及 z-index 的层叠规则",
-      "body": "## 一、relative 与 absolute\n- relative：元素仍占据原文档流位置，可通过 top/right/bottom/left 相对自身原位置偏移，常作为绝对定位子元素的定位父级。\n- absolute：脱离文档流，相对最近的已定位祖先（position 非 static）定位；若无已定位祖先，则相对初始包含块（一般为 html）。\n\n## 二、z-index 规则\n- z-index 只对已定位元素（relative/absolute/fixed/sticky）生效。\n- 只有 z-index 非 auto 的定位元素（或 opacity<1、transform、filter 等）才会创建层叠上下文。\n- 子元素的 z-index 只在所属层叠上下文内比较，无法跨父级突围。\n\n## 三、常见误区\n若两个子元素分别位于两个都设置了 z-index 的父级内，则它们的 z-index 无法直接比较大小，实际层级由父级 z-index 决定。" },
-    { "category": "css", "slug": "center_float_300", "difficulty": "medium", "title": "面试官：如何使一个宽 300、高 300 的浮动容器水平且垂直居中",
-      "body": "## 一、flex\n父容器：display:flex; justify-content:center; align-items:center。\n\n## 二、grid\n父容器：display:grid; place-items:center。\n\n## 三、绝对定位 + transform\n子容器：position:absolute; top:50%; left:50%; transform:translate(-50%,-50%)。\n\n## 四、绝对定位 + margin:auto\n子容器：position:absolute; top:0; right:0; bottom:0; left:0; margin:auto。\n\n注意：若子容器带 float:left，则 float 元素本身无法用 margin:auto 居中，通常需取消 float 或外层用 flex/grid 包裹。" },
-    { "category": "javascript", "slug": "var_settimeout_output", "difficulty": "medium", "title": "面试官：下面代码的输出是什么（var + setTimeout）",
-      "body": "代码：for(var i=1;i<=3;i++){ setTimeout(function(){ console.log(i); }, 0); }\n\n输出：4 4 4（分三行）。\n\n原因：var 声明的 i 只有函数级作用域且存在变量提升，整个循环共享同一个 i；setTimeout 回调是宏任务，在循环结束后才执行，此时 i 已变为 4。\n\n修复：用 let 声明（块级作用域），或用 IIFE 形成闭包捕获每次循环的值。" },
-    { "category": "javascript", "slug": "typeof_types", "difficulty": "easy", "title": "面试官：JavaScript 中 typeof 的返回值有哪些",
-      "body": "typeof 可能返回的字符串：undefined、boolean、number、bigint、string、symbol、function、object。\n\n注意：\n- typeof null 返回 object（历史遗留 bug）。\n- typeof [] 返回 object，判断数组用 Array.isArray。\n- typeof function(){} 返回 function。" },
-    { "category": "javascript", "slug": "array_dedupe", "difficulty": "medium", "title": "面试官：如何去掉数组中的重复元素",
-      "body": "## 一、Set（推荐）\n[...new Set(arr)] 或 Array.from(new Set(arr))，时间复杂度 O(n)。\n\n## 二、filter + indexOf\narr.filter(function(item, index){ return arr.indexOf(item) === index; })，时间复杂度 O(n^2)。\n\n## 三、reduce + Map\n用 Map 或对象记录已见元素，时间复杂度 O(n)。\n\n## 四、排序后相邻去重\n先排序再比较相邻元素，会改变原数组顺序，时间复杂度 O(n log n)。" }
+    {
+      "category": "javascript",
+      "slug": "closure",
+      "difficulty": "hard",
+      "title": "面试官：说说你对闭包的理解？闭包使用场景",
+      "body": "## 一、是什么\n闭包是指有权访问另一个函数作用域中变量的函数。创建闭包的常见方式是在一个函数内部创建另一个函数，内部函数可以访问外部函数的变量。\n\n## 二、使用场景\n- 创建私有变量：通过闭包模拟私有方法，防止外部直接访问。\n- 延长变量生命周期：变量在函数执行完后仍被引用，不会被回收。\n- 柯里化函数与模块模式：利用闭包保存参数与状态。\n\n## 三、注意事项\n闭包会占用更多内存，因为变量常驻内存，使用后若不及时释放可能造成内存泄漏，需注意及时解除引用。"
+    },
+    {
+      "category": "javascript",
+      "slug": "event_loop",
+      "difficulty": "hard",
+      "title": "面试官：说说你对事件循环（Event Loop）的理解",
+      "body": "## 一、是什么\nJavaScript 是单线程语言，事件循环是其处理异步任务的机制。\n\n## 二、执行流程\n1. 执行同步代码（宏任务），遇到微任务加入微任务队列，遇到宏任务（如 setTimeout、I/O）加入宏任务队列。\n2. 当前宏任务执行完毕后，清空微任务队列（微任务优先于下一个宏任务）。\n3. 浏览器渲染（requestAnimationFrame 等），然后取出下一个宏任务执行，如此循环。\n\n## 三、顺序示例\n同步代码 → 微任务（Promise.then、queueMicrotask、async/await 后续）→ 宏任务（setTimeout、setInterval、I/O）。"
+    },
+    {
+      "category": "javascript",
+      "slug": "this",
+      "difficulty": "medium",
+      "title": "面试官：说说 this 的指向规则",
+      "body": "this 的指向取决于函数的调用方式：\n- 普通函数调用：this 指向全局对象（严格模式下为 undefined）。\n- 方法调用：指向调用该方法的对象。\n- 构造函数（new）：指向新创建的实例。\n- 箭头函数：不绑定 this，继承外层词法作用域的 this。\n- call/apply/bind：显式指定 this。\n\n注意：在严格模式下，普通函数中的 this 为 undefined。"
+    },
+    {
+      "category": "es6",
+      "slug": "promise_vs_async",
+      "difficulty": "medium",
+      "title": "面试官：说说 Promise 与 async/await 的区别",
+      "body": "## 一、语法层面\n- Promise 是 ES6 引入的异步方案，通过 then/catch 链式调用。\n- async/await 是 ES2017 的语法糖，基于 Promise，用同步写法写异步代码，可读性更好。\n\n## 二、错误处理\n- Promise 通过 .catch 捕获。\n- async/await 通过 try/catch 捕获。\n\n## 三、本质\nasync 函数返回 Promise，await 只能在 async 函数中使用，await 会阻塞后续代码直到 Promise 落定。"
+    },
+    {
+      "category": "es6",
+      "slug": "let_const_var",
+      "difficulty": "easy",
+      "title": "面试官：说说 let、const、var 的区别",
+      "body": "- var：函数作用域，存在变量提升，可重复声明，全局声明挂在 window 上。\n- let：块级作用域，不存在提升的“暂存死区”，不可重复声明。\n- const：与 let 相同作用域规则，声明后必须初始化，且绑定不可重新赋值（对象内部属性可修改）。"
+    },
+    {
+      "category": "typescript",
+      "slug": "interface_vs_type",
+      "difficulty": "medium",
+      "title": "面试官：说说 interface 与 type 的区别",
+      "body": "## 一、相同点\n都可以描述对象类型与函数类型。\n\n## 二、不同点\n- interface 支持声明合并（同名自动合并），更偏向面向对象。\n- type 可定义联合类型、交叉类型、元组、字面量类型等类型别名，更灵活。\n- interface 可以被 class implements / extends；type 不能。\n- 一般描述对象/类的结构优先用 interface，组合复杂类型用 type。"
+    },
+    {
+      "category": "typescript",
+      "slug": "generic",
+      "difficulty": "hard",
+      "title": "面试官：说说 TypeScript 泛型的作用与使用场景",
+      "body": "泛型允许在定义函数、接口或类时不预先指定具体类型，而在使用时再指定，用于创建可复用的类型安全组件。\n\n使用场景：\n- 通用工具函数（如数组 first/last）。\n- 类型安全的集合与映射（如 Promise<T>）。\n- 约束泛型参数（extends 约束），实现 keyof 组合的键值映射。\n\n示例：function identity<T>(arg: T): T { return arg; }"
+    },
+    {
+      "category": "vue",
+      "slug": "vue2_reactive",
+      "difficulty": "hard",
+      "title": "面试官：说说 Vue 2 的响应式原理",
+      "body": "Vue 2 通过 Object.defineProperty 对 data 的每个属性进行 getter/setter 劫持，在 getter 中收集依赖（Dep + Watcher），在 setter 中触发依赖更新，进而驱动视图更新。\n\n局限：\n- 无法监听对象新增/删除属性（需 Vue.set / Vue.delete）。\n- 无法直接监听数组下标变化与 length 变化，需要重写数组方法。\n\nVue 3 改用 Proxy，可完整监听对象与数组的增删改。"
+    },
+    {
+      "category": "vue",
+      "slug": "vue_lifecycle",
+      "difficulty": "easy",
+      "title": "面试官：Vue 的生命周期有哪些",
+      "body": "Vue 2 生命周期钩子：\n- 创建：beforeCreate、created。\n- 挂载：beforeMount、mounted。\n- 更新：beforeUpdate、updated。\n- 销毁：beforeDestroy、destroyed。\n- 还有 keep-alive 的 activated / deactivated。\n\ncreated 中可请求数据，mounted 中可操作 DOM。"
+    },
+    {
+      "category": "react",
+      "slug": "virtual_dom",
+      "difficulty": "hard",
+      "title": "面试官：说说 React 中虚拟 DOM 与 diff 算法",
+      "body": "虚拟 DOM 是用 JS 对象描述真实 DOM 结构。数据变化时，React 先重新生成虚拟 DOM，与上一次的虚拟 DOM 做 diff，计算出最小更新集合，再批量更新真实 DOM，避免频繁操作真实 DOM 带来的性能开销。\n\ndiff 优化策略：\n- 同层比较，不跨层级移动节点。\n- 通过 key 识别可复用节点，key 应稳定唯一。\n- 仅对比 type 相同的组件。"
+    },
+    {
+      "category": "react",
+      "slug": "hooks_diff",
+      "difficulty": "medium",
+      "title": "面试官：说说 useEffect 与 useLayoutEffect 的区别",
+      "body": "- useEffect：异步执行，在浏览器完成绘制后执行，适合大部分副作用（请求、订阅、日志）。\n- useLayoutEffect：同步执行，在 DOM 变更后、浏览器绘制前执行，适合需要读取/修改布局的场景（如测量 DOM、避免闪烁）。\n- 使用 useLayoutEffect 会阻塞渲染，应谨慎使用，服务端渲染时会有警告。"
+    },
+    {
+      "category": "css",
+      "slug": "box_model",
+      "difficulty": "easy",
+      "title": "面试官：说说你对 CSS 盒模型的理解",
+      "body": "CSS 盒模型由 content、padding、border、margin 组成。\n\n两种模式：\n- 标准盒模型（content-box）：宽高只包含 content，padding/border 向外扩展。\n- 怪异盒模型（border-box）：宽高包含 content + padding + border。\n\n通过 box-sizing 切换，一般推荐全局使用 border-box，方便布局计算。"
+    },
+    {
+      "category": "css",
+      "slug": "center",
+      "difficulty": "medium",
+      "title": "面试官：如何实现元素水平垂直居中",
+      "body": "常见方案：\n- flex：父容器 display:flex; justify-content:center; align-items:center。\n- grid：place-items:center。\n- 绝对定位 + transform：position:absolute; top/left:50%; transform:translate(-50%,-50%)。\n- 绝对定位 + margin:auto（需已知尺寸或使用 auto 对子元素）。\n- 文本/行内元素：text-align:center + line-height。"
+    },
+    {
+      "category": "http",
+      "slug": "http_cache",
+      "difficulty": "hard",
+      "title": "面试官：说说 HTTP 缓存机制",
+      "body": "HTTP 缓存分为强缓存与协商缓存。\n\n## 强缓存\n通过 Cache-Control（max-age）与 Expires 控制，命中则直接使用本地缓存，不发请求。\n\n## 协商缓存\n缓存过期后向服务器校验：\n- Last-Modified / If-Modified-Since（时间维度）。\n- ETag / If-None-Match（内容哈希，更精确）。\n服务器返回 304 则复用缓存，否则返回 200 与新资源。\n\n优先级：Cache-Control > Expires；ETag 比 Last-Modified 更可靠。"
+    },
+    {
+      "category": "http",
+      "slug": "https",
+      "difficulty": "hard",
+      "title": "面试官：HTTPS 是如何保证安全的",
+      "body": "HTTPS = HTTP + TLS/SSL，通过三种机制保证安全：\n\n- 加密：使用对称加密（如 AES）加密传输内容，性能高。\n- 密钥协商：通过非对称加密（RSA/ECDHE）安全地协商对称密钥，防止被窃听。\n- 身份认证：通过 CA 签发的数字证书验证服务器身份，防止中间人伪造。\n\n完整握手：客户端 → 服务端证书 → 验证 CA → 协商密钥 → 加密通信。"
+    },
+    {
+      "category": "css",
+      "slug": "position_z_index",
+      "difficulty": "medium",
+      "title": "面试官：谈谈 position: relative 与 absolute 的区别，以及 z-index 的层叠规则",
+      "body": "## 一、relative 与 absolute\n- relative：元素仍占据原文档流位置，可通过 top/right/bottom/left 相对自身原位置偏移，常作为绝对定位子元素的定位父级。\n- absolute：脱离文档流，相对最近的已定位祖先（position 非 static）定位；若无已定位祖先，则相对初始包含块（一般为 html）。\n\n## 二、z-index 规则\n- z-index 只对已定位元素（relative/absolute/fixed/sticky）生效。\n- 只有 z-index 非 auto 的定位元素（或 opacity<1、transform、filter 等）才会创建层叠上下文。\n- 子元素的 z-index 只在所属层叠上下文内比较，无法跨父级突围。\n\n## 三、常见误区\n若两个子元素分别位于两个都设置了 z-index 的父级内，则它们的 z-index 无法直接比较大小，实际层级由父级 z-index 决定。"
+    },
+    {
+      "category": "css",
+      "slug": "center_float_300",
+      "difficulty": "medium",
+      "title": "面试官：如何使一个宽 300、高 300 的浮动容器水平且垂直居中",
+      "body": "## 一、flex\n父容器：display:flex; justify-content:center; align-items:center。\n\n## 二、grid\n父容器：display:grid; place-items:center。\n\n## 三、绝对定位 + transform\n子容器：position:absolute; top:50%; left:50%; transform:translate(-50%,-50%)。\n\n## 四、绝对定位 + margin:auto\n子容器：position:absolute; top:0; right:0; bottom:0; left:0; margin:auto。\n\n注意：若子容器带 float:left，则 float 元素本身无法用 margin:auto 居中，通常需取消 float 或外层用 flex/grid 包裹。"
+    },
+    {
+      "category": "javascript",
+      "slug": "var_settimeout_output",
+      "difficulty": "medium",
+      "title": "面试官：下面代码的输出是什么（var + setTimeout）",
+      "body": "代码：for(var i=1;i<=3;i++){ setTimeout(function(){ console.log(i); }, 0); }\n\n输出：4 4 4（分三行）。\n\n原因：var 声明的 i 只有函数级作用域且存在变量提升，整个循环共享同一个 i；setTimeout 回调是宏任务，在循环结束后才执行，此时 i 已变为 4。\n\n修复：用 let 声明（块级作用域），或用 IIFE 形成闭包捕获每次循环的值。"
+    },
+    {
+      "category": "javascript",
+      "slug": "typeof_types",
+      "difficulty": "easy",
+      "title": "面试官：JavaScript 中 typeof 的返回值有哪些",
+      "body": "typeof 可能返回的字符串：undefined、boolean、number、bigint、string、symbol、function、object。\n\n注意：\n- typeof null 返回 object（历史遗留 bug）。\n- typeof [] 返回 object，判断数组用 Array.isArray。\n- typeof function(){} 返回 function。"
+    },
+    {
+      "category": "javascript",
+      "slug": "array_dedupe",
+      "difficulty": "medium",
+      "title": "面试官：如何去掉数组中的重复元素",
+      "body": "## 一、Set（推荐）\n[...new Set(arr)] 或 Array.from(new Set(arr))，时间复杂度 O(n)。\n\n## 二、filter + indexOf\narr.filter(function(item, index){ return arr.indexOf(item) === index; })，时间复杂度 O(n^2)。\n\n## 三、reduce + Map\n用 Map 或对象记录已见元素，时间复杂度 O(n)。\n\n## 四、排序后相邻去重\n先排序再比较相邻元素，会改变原数组顺序，时间复杂度 O(n log n)。"
+    },
+    {
+      "category": "css",
+      "slug": "design_redesign_key_points",
+      "difficulty": "medium",
+      "title": "面试官：按设计稿实现高还原度页面，你会关注哪些关键点",
+      "body": "## 一、视觉还原\n- 尺寸/间距：使用设计稿标注的 px 或 rem，注意 1px 边框、圆角、阴影。\n- 字体：字号、字重、行高、字间距、字体族。\n- 颜色：使用设计系统变量，避免硬编码。\n\n## 二、布局与交互\n- Flex/Grid 精准布局，注意对齐与等分。\n- 动效还原：过渡、缓动曲线、交互动画的时序。\n\n## 三、验收工具\n- 像素眼对比：用设计稿 overlay 工具或浏览器插件。\n- 多端走查：真机、不同 DPR、不同浏览器。"
+    },
+    {
+      "category": "css",
+      "slug": "h5_mobile_adaptation",
+      "difficulty": "medium",
+      "title": "面试官：H5 移动端适配有哪些常见方案",
+      "body": "## 一、viewport 方案\n设置 meta viewport，配合 rem/vw 实现等比缩放。\n\n## 二、rem 方案\n以设计稿宽度（如 750px）为基准，根元素 font-size = 屏幕宽 / 10，元素尺寸用 rem。\n\n## 三、vw/vh 方案\n直接使用视口单位，1vw = 1% 视口宽。\n\n## 四、flexible 库\nlib-flexible 动态设置 viewport 缩放与根字体。\n\n## 五、安全区适配\n刘海屏使用 env(safe-area-inset-*) 适配底部横条与顶部凹槽。"
+    },
+    {
+      "category": "applet",
+      "slug": "miniapp_vs_h5_diff",
+      "difficulty": "medium",
+      "title": "面试官：小程序开发与 H5 开发有哪些主要差异",
+      "body": "## 一、运行环境\n小程序运行在 App 提供的 JSBridge 容器中，H5 运行在浏览器 WebView。\n\n## 二、API 与能力\n小程序可调用原生能力（扫码、定位、支付、通讯录），H5 受浏览器权限限制。\n\n## 三、组件与样式\n小程序使用内置组件和 rpx 单位；H5 使用标准 HTML 标签和 rem/vw。\n\n## 四、包体积\n小程序对包大小有严格限制（主包/分包），需做按需加载与图片资源优化。\n\n## 五、路由\n小程序页面栈由框架管理，H5 使用浏览器 history。"
+    },
+    {
+      "category": "javascript",
+      "slug": "high_interaction_page_perf",
+      "difficulty": "hard",
+      "title": "面试官：高交互页面（如动画、拖拽、复杂列表）如何保证流畅度",
+      "body": "## 一、减少重排重绘\n- 使用 transform/opacity 做动画，触发 GPU 合成层。\n- 避免频繁读写 offset/scroll/client，用 requestAnimationFrame 批量更新。\n\n## 二、虚拟列表\n长列表用虚拟滚动（react-window/vue-virtual-scroller），只渲染可视区。\n\n## 三、事件优化\n拖拽等高频事件用 throttle/debounce，或 pointer events + RAF。\n\n## 四、性能监控\n- Chrome Performance/DevTools 分析长任务。\n- 关注 FPS、INP、CLS 等指标。\n\n## 五、代码层面\n避免内存泄漏，及时清理定时器、事件监听、闭包引用。"
+    },
+    {
+      "category": "css",
+      "slug": "pc_responsive_layout",
+      "difficulty": "medium",
+      "title": "面试官：PC 端产品如何做响应式或自适应布局",
+      "body": "## 一、断点设计\n按屏幕宽度设置断点（如 1280/1440/1920），不同区间调整布局。\n\n## 二、弹性布局\n使用 CSS Grid / Flex 实现内容伸缩，避免固定死宽度。\n\n## 三、媒体查询\n在关键断点调整列数、间距、字号、隐藏/显示元素。\n\n## 四、最大宽度容器\n主体内容区设置 max-width + 居中，大屏幕上保持可读性。\n\n## 五、高清屏适配\n使用矢量图标、2x/3x 图、SVG，保证 DPR 变化时清晰。"
+    },
+    {
+      "category": "react",
+      "slug": "react_component_design_principles",
+      "difficulty": "medium",
+      "title": "面试官：React 组件设计应遵循哪些原则",
+      "body": "## 一、单一职责\n每个组件只做一件事，复杂功能拆分为多个小组件。\n\n## 二、props 最小化\n只暴露必要 props，避免过度配置；提供合理的默认值。\n\n## 三、受控与非受控\n关键状态优先受控，内部 UI 状态可非受控。\n\n## 四、可组合性\n使用 children/render props/复合组件模式，提高复用。\n\n## 五、性能\n避免不必要的重渲染：React.memo、useMemo、useCallback 按需使用。"
+    },
+    {
+      "category": "vue",
+      "slug": "vue_component_props_emit",
+      "difficulty": "medium",
+      "title": "面试官：Vue 组件如何设计 props 与事件，保证可维护性",
+      "body": "## 一、props 设计\n- 类型/默认值/校验：使用对象形式声明 type/default/required/validator。\n- 避免传递大对象：按功能拆分为多个独立 props。\n\n## 二、事件设计\n- 使用 defineEmits 显式声明事件。\n- 事件名使用 kebab-case，参数语义清晰。\n\n## 三、v-model\n一个组件支持多个 v-model，通过 modelValue 命名区分。\n\n## 四、插槽\n提供默认插槽/具名插槽/作用域插槽，让父组件可定制。\n\n## 五、文档\n复杂组件配合 JSDoc 或 Storybook 说明使用方式。"
+    },
+    {
+      "category": "react",
+      "slug": "reusable_ui_component_lib",
+      "difficulty": "hard",
+      "title": "面试官：如何设计一套可复用的 UI 组件库",
+      "body": "## 一、设计系统\n统一颜色、字体、间距、圆角、阴影等 Design Token。\n\n## 二、组件拆分\n按原子设计：Foundation → Button/Input → Form/Table → Page Templates。\n\n## 三、API 一致性\n- 命名规范、props 命名一致。\n- 受控/非受控、禁用/加载态统一。\n\n## 四、样式方案\nCSS Modules / CSS-in-JS / 变量注入，支持主题切换与按需引入。\n\n## 五、工程化\nMonorepo 管理、类型定义、单元测试、文档站点、版本发布（语义化版本 + CHANGELOG）。"
+    },
+    {
+      "category": "javascript",
+      "slug": "component_granularity_tradeoff",
+      "difficulty": "medium",
+      "title": "面试官：组件粒度如何划分，如何平衡复用与复杂度",
+      "body": "## 一、过细的问题\n组件过多会导致 props drilling、维护成本上升、可读性下降。\n\n## 二、过粗的问题\n一个组件职责过多，复用困难、测试困难、重渲染范围大。\n\n## 三、划分原则\n- 单一职责：一个组件只负责一块 UI 或逻辑。\n- 变化频率：按业务变化频率拆分，稳定部分下沉为通用组件。\n\n## 四、组合优于继承\n通过组合、插槽、高阶组件扩展能力。\n\n## 五、实践\n先满足当前需求，重复出现 2-3 次后再抽象为通用组件，避免过度设计。"
+    },
+    {
+      "category": "engineering",
+      "slug": "utility_lib_package",
+      "difficulty": "medium",
+      "title": "面试官：如何封装并发布一个通用工具函数库",
+      "body": "## 一、功能边界\n聚焦一类问题（如日期、表单校验、请求封装），避免大杂烩。\n\n## 二、Tree-shaking\n提供 ESM/CJS 多格式，避免副作用，支持按需引入。\n\n## 三、类型与文档\n提供 TypeScript 类型声明，写 README 与示例。\n\n## 四、测试\n单元测试覆盖核心路径（Jest/Vitest）。\n\n## 五、发布\n- npm publish 前用 npmignore/exports 字段控制发布内容。\n- 语义化版本，配合 GitHub Actions 自动发布。"
+    },
+    {
+      "category": "javascript",
+      "slug": "frontend_backend_debug_flow",
+      "difficulty": "medium",
+      "title": "面试官：前后端联调时遇到接口问题，你的排查流程是什么",
+      "body": "## 一、确认契约\n对比接口文档（Swagger/YApi），确认 URL、Method、参数、返回结构。\n\n## 二、抓包定位\n用浏览器 DevTools Network 或 Charles/Whistle 抓包，看请求与响应。\n\n## 三、边界与异常\n测试空值、超大值、特殊字符、越权等边界场景。\n\n## 四、Mock 先行\n后端未就绪时先用 Mock 数据联调，避免阻塞前端。\n\n## 五、沟通协作\n问题定位后给出最小复现步骤，与后端对齐修复方案。"
+    },
+    {
+      "category": "http",
+      "slug": "restful_api_frontend",
+      "difficulty": "medium",
+      "title": "面试官：如何理解 RESTful API，前端调用时应注意什么",
+      "body": "## 一、REST 核心\n资源（URI）+ HTTP 方法（GET/POST/PUT/DELETE）+ 状态码。\n\n## 二、状态码\n2xx 成功、4xx 客户端错误、5xx 服务端错误；前端需分类处理。\n\n## 三、幂等性\nGET/PUT/DELETE 幂等，POST 不幂等；重复提交需做防抖或幂等键。\n\n## 四、错误处理\n统一封装请求层，处理超时、网络错误、鉴权失败、业务错误码。\n\n## 五、版本控制\nURI 或 Header 中带版本号，平滑升级。"
+    },
+    {
+      "category": "react",
+      "slug": "react_state_management_choices",
+      "difficulty": "hard",
+      "title": "面试官：React 项目里如何选择状态管理方案",
+      "body": "## 一、局部状态\nuseState/useReducer 足够时不用引入全局库。\n\n## 二、跨组件状态\nContext + useReducer 适合低频更新、层级不深。\n\n## 三、全局状态\n- Zustand：轻量、 hooks 友好。\n- Redux Toolkit：大型应用、严格单向数据流、调试工具强。\n- Jotai/Recoil：原子化状态，适合派生状态多。\n\n## 四、服务端状态\n用 React Query/SWR 管理，缓存、去重、刷新策略内置。\n\n## 五、选型原则\n按团队熟悉度、项目规模、调试需求选择，避免为管理而管理。"
+    },
+    {
+      "category": "vue",
+      "slug": "vue_pinia_vs_vuex",
+      "difficulty": "medium",
+      "title": "面试官：Vue 中 Pinia 与 Vuex 有什么区别，如何选型",
+      "body": "## 一、API 差异\nPinia 使用 Composition API 风格，Vuex 使用 mutations/actions。\n\n## 二、TypeScript\nPinia 类型推断更自然，Vuex 需复杂类型封装。\n\n## 三、模块化\nPinia 每个 store 天然独立模块，无需命名空间。\n\n## 四、体积\nPinia 更轻量，Vue 3 官方推荐。\n\n## 五、选型\nVue 3 新项目优先 Pinia；维护老 Vue 2 项目可继续 Vuex，或渐进迁移。"
+    },
+    {
+      "category": "javascript",
+      "slug": "frontend_business_logic_layering",
+      "difficulty": "hard",
+      "title": "面试官：前端如何做业务逻辑分层，避免页面组件过于臃肿",
+      "body": "## 一、分层思路\nUI 层（组件）→ 业务逻辑层（hooks/services）→ 数据层（API）。\n\n## 二、自定义 Hooks\n把数据获取、状态聚合、业务计算抽到 hooks 中，组件只负责渲染。\n\n## 三、Service 层\n封装 API 调用、数据转换、错误处理，组件通过 service 函数交互。\n\n## 四、领域模型\n对复杂业务建立实体/值对象，避免裸对象到处传递。\n\n## 五、收益\n提升可测试性、复用性，降低页面组件认知负担。"
+    },
+    {
+      "category": "engineering",
+      "slug": "first_screen_loading_optimization",
+      "difficulty": "hard",
+      "title": "面试官：前端首屏加载优化有哪些手段",
+      "body": "## 一、资源体积\n- 代码分割（Code Splitting）、Tree Shaking、压缩、Gzip/Brotli。\n- 图片 WebP/AVIF、懒加载、雪碧图、SVG。\n\n## 二、请求策略\n- 路由懒加载、组件按需加载、预加载关键资源。\n- HTTP/2、CDN、缓存策略。\n\n## 三、渲染路径\n- SSR/SSG 减少首屏空白。\n- 关键 CSS 内联、非关键 CSS 异步加载。\n\n## 四、指标监控\n- FCP、LCP、TTI、CLS、TBT，用 Performance API 或 Lighthouse。\n\n## 五、运行时优化\n- 减少主线程长任务，异步执行非关键逻辑。"
+    },
+    {
+      "category": "engineering",
+      "slug": "frontend_performance_metrics",
+      "difficulty": "medium",
+      "title": "面试官：常见的前端性能指标有哪些，分别代表什么",
+      "body": "## 一、FCP（First Contentful Paint）\n首次内容绘制，用户第一次看到内容。\n\n## 二、LCP（Largest Contentful Paint）\n最大内容绘制，衡量首屏主要内容加载速度。\n\n## 三、INP（Interaction to Next Paint）\n交互到下一次绘制，衡量交互响应性。\n\n## 四、CLS（Cumulative Layout Shift）\n累积布局偏移，衡量视觉稳定性。\n\n## 五、TTFB（Time to First Byte）\n首字节时间，反映服务端响应与网络延迟。"
+    },
+    {
+      "category": "css",
+      "slug": "browser_compatibility_handling",
+      "difficulty": "medium",
+      "title": "面试官：前端如何做浏览器兼容性处理",
+      "body": "## 一、目标浏览器\n根据用户占比确定兼容矩阵（如 Chrome/Firefox/Safari/Edge 最近两版 + IE11 与否）。\n\n## 二、CSS 兼容\n- Autoprefixer 自动加前缀。\n- 使用 @supports 做特性检测，CSS 变量做降级。\n\n## 三、JS 兼容\n- Babel 转译 ES6+。\n- Polyfill 按需加载（core-js）。\n\n## 四、测试\n- 浏览器真机/BrowserStack。\n- 视觉回归测试（Percy/Chromatic）。\n\n## 五、优雅降级\n核心功能必须可用，高级体验可渐进增强。"
+    },
+    {
+      "category": "css",
+      "slug": "responsive_image_resource",
+      "difficulty": "medium",
+      "title": "面试官：响应式页面中图片与资源如何适配不同设备",
+      "body": "## 一、srcset/sizes\n用 srcset 提供多倍图，sizes 告诉浏览器视口尺寸。\n\n## 二、picture 标签\n按条件加载 WebP/AVIF 或不同裁切图。\n\n## 三、CSS 背景图\n使用 image-set 或媒体查询切换背景图。\n\n## 四、懒加载\n配合 loading=lazy 或 IntersectionObserver 延迟加载非首屏图片。\n\n## 五、DPR 适配\n根据 devicePixelRatio 选择 1x/2x/3x 资源，平衡清晰度与体积。"
+    },
+    {
+      "category": "javascript",
+      "slug": "long_list_performance",
+      "difficulty": "hard",
+      "title": "面试官：长列表渲染性能差，你会如何优化",
+      "body": "## 一、虚拟滚动\n只渲染可视区 + 缓冲区的 DOM，如 react-window/vue-virtual-scroller。\n\n## 二、分页/无限滚动\n减少一次性渲染数量，配合骨架屏提升感知性能。\n\n## 三、DOM 复用\n使用 DocumentFragment 或对象池减少创建销毁开销。\n\n## 四、减少重渲染\nReact 中使用 memo/useMemo/useCallback；Vue 中用 v-once 或优化响应式粒度。\n\n## 五、图片/视频懒加载\n非可视区资源不加载，滚动到附近再加载。"
+    },
+    {
+      "category": "engineering",
+      "slug": "frontend_requirement_review",
+      "difficulty": "medium",
+      "title": "面试官：需求评审时，前端应该重点关注哪些方面",
+      "body": "## 一、交互细节\n- 状态变化、Loading/错误/空态、动画、手势。\n- 弹窗/抽屉/Toast 的层级与关闭策略。\n\n## 二、数据与接口\n- 字段含义、数据量、分页、排序、筛选。\n- 接口是否满足 UI 渲染需要。\n\n## 三、技术可行性\n- 多端一致性、兼容性、性能风险。\n- 是否依赖第三方能力或原生能力。\n\n## 四、异常与边界\n网络失败、超时、权限不足、数据为空、超长文本。\n\n## 五、埋点与验收\n需要哪些埋点，验收标准是否清晰。"
+    },
+    {
+      "category": "engineering",
+      "slug": "technical_solution_design",
+      "difficulty": "hard",
+      "title": "面试官：接到一个复杂需求，你会如何设计前端技术方案",
+      "body": "## 一、需求拆解\n拆成功能点、页面、组件、接口、状态，明确输入输出。\n\n## 二、技术选型\n- 框架/库/状态管理/路由/构建工具。\n- 是否引入新依赖，评估维护成本。\n\n## 三、架构设计\n- 目录结构、模块划分、公共组件与工具。\n- 数据流、错误处理、权限控制。\n\n## 四、风险与兜底\n- 性能瓶颈、兼容性、安全、可测试性。\n- 降级方案、灰度计划、回滚策略。\n\n## 五、排期与验收\n任务拆分、人日评估、里程碑、CR 与自测清单。"
+    },
+    {
+      "category": "engineering",
+      "slug": "frontend_code_standard",
+      "difficulty": "medium",
+      "title": "面试官：团队里如何落地前端代码规范",
+      "body": "## 一、规范制定\n- ESLint/Prettier/Stylelint 规则集。\n- 命名、目录、组件、提交信息规范。\n\n## 二、工具固化\n- husky + lint-staged 提交前自动校验。\n- CI 流水线阻断不合规代码。\n\n## 三、代码审查\nPR 必须 Code Review，重点关注可读性、边界、测试。\n\n## 四、文档与培训\n写《前端开发规范》文档，新人入职培训。\n\n## 五、渐进式推进\n老项目逐步修复，新项目严格执行，避免一次性大改引发冲突。"
+    },
+    {
+      "category": "engineering",
+      "slug": "frontend_documentation",
+      "difficulty": "easy",
+      "title": "面试官：前端项目应该维护哪些文档",
+      "body": "## 一、项目说明\nREADME：项目简介、启动命令、目录结构、环境变量。\n\n## 二、开发规范\n代码规范、Git 工作流、命名约定、提交规范。\n\n## 三、组件文档\n组件库使用说明、Props/Events/Slots、示例。\n\n## 四、API 文档\n接口调用方式、Mock 方案、错误码。\n\n## 五、部署与运维\n部署流程、监控告警、常见问题排查。"
+    },
+    {
+      "category": "engineering",
+      "slug": "component_api_review_checklist",
+      "difficulty": "medium",
+      "title": "面试官：评审一个组件的 API 设计时，你会关注哪些点",
+      "body": "## 一、命名\nProps/Events/Slots 命名是否语义清晰、符合团队约定。\n\n## 二、一致性\n与现有组件 API 风格是否一致（如 value/v-model、onChange/onSelect）。\n\n## 三、可扩展性\n是否预留自定义点（class/style/slot/render props）。\n\n## 四、边界处理\n空值、超长、loading、禁用、错误态是否考虑。\n\n## 五、类型与文档\nTypeScript 类型是否完整，文档/示例是否充分。"
+    },
+    {
+      "category": "engineering",
+      "slug": "online_bug_investigation",
+      "difficulty": "medium",
+      "title": "面试官：线上出现前端 bug，你的排查与修复流程是什么",
+      "body": "## 一、收集信息\n- 用户反馈、报错截图、复现路径、浏览器版本。\n- 查看监控/埋点/Sentry 日志。\n\n## 二、定位复现\n在相同环境（浏览器/网络/账号）复现，必要时远程协助用户。\n\n## 三、根因分析\n用 DevTools 断点、source map 还原源码，分析数据流。\n\n## 四、修复验证\n本地修复 → 自测 → 补充测试用例 → 提交 CR。\n\n## 五、上线回滚\n按影响面选择热修复/常规发版；重大问题立即回滚。"
+    },
+    {
+      "category": "engineering",
+      "slug": "frontend_monitoring",
+      "difficulty": "medium",
+      "title": "面试官：前端如何做监控与埋点，保障线上稳定性",
+      "body": "## 一、错误监控\n捕获 JS Error、Promise Rejection、资源加载失败、接口异常，上报 Sentry/Fundebug。\n\n## 二、性能监控\n采集 FCP/LCP/INP/CLS，长任务、首屏时间，建立性能看板。\n\n## 三、业务埋点\n页面曝光、按钮点击、转化漏斗，用无埋点或代码埋点。\n\n## 四、用户反馈\n集成反馈入口、录屏回放（如 rrweb）辅助复现。\n\n## 五、告警与处理\n设定阈值告警，建立 on-call 流程，P0 问题快速响应。"
+    },
+    {
+      "category": "engineering",
+      "slug": "canary_rollback",
+      "difficulty": "hard",
+      "title": "面试官：前端灰度发布与回滚方案一般怎么做",
+      "body": "## 一、灰度策略\n按用户 ID、地区、设备、业务线等维度逐步放量（如 1% → 10% → 50% → 100%）。\n\n## 二、静态资源灰度\n- CDN 保留多个版本，按灰度用户加载不同 URL。\n- 使用 feature flag 控制新功能开关。\n\n## 三、接口兼容\n新版本与旧版本接口兼容，或配合后端 AB。\n\n## 四、监控\n灰度阶段重点观察错误率、性能指标、业务指标。\n\n## 五、回滚\n- 一键切回旧版本（CDN 回源或配置中心切换）。\n- 数据层兼容，避免回滚后数据异常。"
+    },
+    {
+      "category": "engineering",
+      "slug": "frontend_testing_strategy",
+      "difficulty": "medium",
+      "title": "面试官：前端项目里单元测试和 E2E 测试分别解决什么问题",
+      "body": "## 一、单元测试\n- 测工具函数、组件渲染、hooks、状态转换。\n- 工具：Jest/Vitest + React Testing Library/Vue Test Utils。\n\n## 二、E2E 测试\n- 模拟真实用户操作，验证完整业务流程。\n- 工具：Playwright/Cypress。\n\n## 三、分工\n单元测试保证代码逻辑正确；E2E 保证用户路径可用。\n\n## 四、成本\n单元测试快、稳定；E2E 慢、脆弱，覆盖核心链路即可。\n\n## 五、CI 集成\n每次 PR 自动跑测试，覆盖率阈值门禁。"
+    },
+    {
+      "category": "javascript",
+      "slug": "reproduce_intermittent_bug",
+      "difficulty": "medium",
+      "title": "面试官：遇到偶现 bug，你如何复现和定位",
+      "body": "## 一、收集线索\n- 用户环境（浏览器、系统、网络、账号）、操作路径、时间。\n- 日志、截图、录屏、埋点。\n\n## 二、扩大样本\n查看监控平台是否有同类错误聚合，找出共同特征。\n\n## 三、模拟环境\n用慢网、低性能设备、特定浏览器版本复现。\n\n## 四、加日志\n在可疑代码路径插入临时日志，灰度给用户后回收。\n\n## 五、代码审查\n重点检查异步竞态、闭包、事件监听、缓存、第三方 SDK 回调。"
+    },
+    {
+      "category": "javascript",
+      "slug": "html5_new_features",
+      "difficulty": "easy",
+      "title": "面试官：HTML5 有哪些常用新特性",
+      "body": "## 一、语义化标签\nheader、nav、main、article、section、aside、footer 等。\n\n## 二、多媒体\nvideo、audio 标签，支持原生播放控制。\n\n## 三、表单增强\n新类型：date、email、number、range；新属性：placeholder、required、pattern。\n\n## 四、Canvas/SVG\n2D 绘图与矢量图形能力。\n\n## 五、存储与离线\nlocalStorage、sessionStorage、IndexedDB、Application Cache / Service Worker。"
+    },
+    {
+      "category": "css",
+      "slug": "css3_features_jd",
+      "difficulty": "medium",
+      "title": "面试官：CSS3 有哪些常用新特性及使用场景",
+      "body": "## 一、布局\nFlexbox、Grid 实现一维/二维布局。\n\n## 二、动画\ntransition、animation、@keyframes，适合做交互反馈。\n\n## 三、选择器\n:nth-child、:not、:is、:where、属性选择器增强。\n\n## 四、视觉效果\nbox-shadow、border-radius、linear-gradient、backdrop-filter。\n\n## 五、响应式与变量\n媒体查询 @media、CSS 变量 var(--*) 实现主题与组件化。"
+    },
+    {
+      "category": "es6",
+      "slug": "es6_common_features",
+      "difficulty": "easy",
+      "title": "面试官：ES6+ 中你常用的特性有哪些",
+      "body": "## 一、声明\nlet/const、块级作用域、暂时性死区。\n\n## 二、函数\n箭头函数、默认参数、剩余参数、模板字符串。\n\n## 三、解构与展开\n对象/数组解构、...展开运算符。\n\n## 四、异步\nPromise、async/await、for await。\n\n## 五、模块与类\nimport/export、class、Map/Set、Proxy/Reflect。"
+    },
+    {
+      "category": "javascript",
+      "slug": "browser_rendering_pipeline",
+      "difficulty": "hard",
+      "title": "面试官：从输入 URL 到页面显示，浏览器做了哪些事",
+      "body": "## 一、导航\nDNS 解析 → TCP/TLS 连接 → 发送 HTTP 请求 → 接收响应。\n\n## 二、解析\nHTML → DOM 树，CSS → CSSOM 树，两者合并为 Render Tree。\n\n## 三、布局\n计算元素几何位置（Layout/Reflow）。\n\n## 四、绘制\n分层、光栅化、合成（Composite），最终显示到屏幕。\n\n## 五、JavaScript\n下载/解析/执行 JS 会阻塞 DOM 解析，可用 defer/async 优化。"
+    },
+    {
+      "category": "http",
+      "slug": "http_tcp_basics",
+      "difficulty": "medium",
+      "title": "面试官：说说 HTTP 与 TCP 的基础关系，以及一次请求的过程",
+      "body": "## 一、分层\nHTTP 是应用层协议，TCP 是传输层协议。HTTP 报文通过 TCP 传输。\n\n## 二、连接建立\nTCP 三次握手 → TLS 握手（HTTPS）→ HTTP 请求/响应。\n\n## 三、特点\nHTTP 无状态，依靠 Cookie/Session/Token 维持状态；TCP 可靠、面向连接。\n\n## 四、版本差异\nHTTP/1.1 串行/管线化；HTTP/2 多路复用、头部压缩；HTTP/3 基于 QUIC。\n\n## 五、断开\nTCP 四次挥手，HTTP Keep-Alive 可复用连接。"
+    },
+    {
+      "category": "react",
+      "slug": "react_vdom_diff",
+      "difficulty": "hard",
+      "title": "面试官：React 虚拟 DOM 与 diff 算法是怎么工作的",
+      "body": "## 一、虚拟 DOM\n用 JS 对象描述真实 DOM 结构，数据变化时生成新虚拟 DOM。\n\n## 二、diff 策略\n- 同层比较，不跨层级。\n- 通过 type 和 key 判断节点是否可复用。\n\n## 三、key 作用\n帮助 React 识别哪些元素变化/新增/删除，避免不必要的销毁重建。\n\n## 四、Fiber\nReact 16 后使用 Fiber 架构，将渲染工作拆分为可中断单元，支持并发特性。\n\n## 五、优化\n- 类组件 PureComponent / 函数组件 React.memo。\n- 避免在 render 中创建新对象/函数。"
+    },
+    {
+      "category": "vue",
+      "slug": "vue_reactivity_principle",
+      "difficulty": "hard",
+      "title": "面试官：Vue 2 和 Vue 3 的响应式原理有什么区别",
+      "body": "## 一、Vue 2\nObject.defineProperty 劫持对象属性 getter/setter，数组通过重写方法监听。\n\n## 二、Vue 2 局限\n无法检测对象新增/删除属性、数组下标和 length 变化。\n\n## 三、Vue 3\n使用 Proxy 代理整个对象，可监听增删改、数组索引变化。\n\n## 四、性能\nVue 3 响应式初始化更快，内存占用更小，支持更好的类型推断。\n\n## 五、编译优化\nVue 3 编译器做静态提升、PatchFlag 标记动态节点，减少 diff 开销。"
+    },
+    {
+      "category": "react",
+      "slug": "next_ssr_ssg_isr",
+      "difficulty": "hard",
+      "title": "面试官：Next.js 中 SSR、SSG、ISR 分别是什么，如何选型",
+      "body": "## 一、SSR\n每次请求服务端渲染，适合个性化、实时数据页面。\n\n## 二、SSG\n构建时生成静态 HTML，访问最快，适合内容型页面。\n\n## 三、ISR\n增量静态再生，首次访问后后台异步更新，兼顾静态性能与数据新鲜度。\n\n## 四、CSR\n客户端渲染，首屏慢但交互后体验好，适合后台管理系统。\n\n## 五、选型\n内容页 SSG/ISR，用户 dashboard SSR，强交互后台 CSR。"
+    },
+    {
+      "category": "vue",
+      "slug": "nuxt_ssr_routing",
+      "difficulty": "hard",
+      "title": "面试官：Nuxt.js 的服务端渲染和路由机制是怎样的",
+      "body": "## 一、SSR 流程\n服务端获取 asyncData/setup 数据 → 渲染 HTML → 客户端接管（hydration）。\n\n## 二、自动路由\npages/ 目录下的 Vue 文件自动生成路由配置。\n\n## 三、约定式路由\n支持动态路由 [id]、嵌套路由、中间件、布局。\n\n## 四、数据获取\nuseAsyncData / useFetch 在服务端预取数据。\n\n## 五、渲染模式\n可配置 SSR/SSG/CSR，Nuxt 3 引入 Nitro 引擎，支持边缘部署。"
+    },
+    {
+      "category": "engineering",
+      "slug": "state_management_selection",
+      "difficulty": "medium",
+      "title": "面试官：状态管理库 Redux / Pinia / MobX / Zustand 如何选型",
+      "body": "## 一、Redux\n严格单向数据流、生态成熟、调试工具强，适合大型团队。\n\n## 二、Pinia\nVue 官方推荐，TypeScript 友好，API 简洁。\n\n## 三、MobX\n响应式、面向对象，适合复杂状态关系。\n\n## 四、Zustand\n轻量、hooks 友好，适合中小型 React 项目。\n\n## 五、选型\n看团队栈：Vue 用 Pinia；React 小型用 Zustand，大型/强调试用 Redux Toolkit。"
+    },
+    {
+      "category": "engineering",
+      "slug": "webpack_core_concepts",
+      "difficulty": "hard",
+      "title": "面试官：Webpack 的核心概念与常用优化手段有哪些",
+      "body": "## 一、核心概念\nEntry、Output、Loader、Plugin、Module、Chunk、Bundle。\n\n## 二、Loader\n处理非 JS 资源：babel-loader、css-loader、ts-loader、file-loader。\n\n## 三、Plugin\n扩展构建流程：HtmlWebpackPlugin、SplitChunksPlugin、DefinePlugin。\n\n## 四、优化\n- Code Splitting、Tree Shaking、懒加载。\n- SplitChunks 提取公共模块。\n- 使用 cache、thread-loader 加速构建。\n\n## 五、体积优化\n压缩 JS/CSS、Gzip/Brotli、图片优化、移除 console。"
+    },
+    {
+      "category": "engineering",
+      "slug": "vite_vs_webpack",
+      "difficulty": "medium",
+      "title": "面试官：Vite 与 Webpack 的主要区别是什么",
+      "body": "## 一、开发模式\nWebpack 先打包再启动；Vite 使用原生 ESM，按请求编译，启动快。\n\n## 二、构建模式\nVite 生产环境用 Rollup 打包；Webpack 自研打包。\n\n## 三、配置复杂度\nVite 零配置体验更好，Webpack 配置更灵活但复杂。\n\n## 四、HMR\nVite HMR 基于 ESM，更新更快；Webpack HMR 需更复杂处理。\n\n## 五、选型\n新项目/快速启动选 Vite；需要复杂自定义或老项目维护用 Webpack。"
+    },
+    {
+      "category": "engineering",
+      "slug": "git_workflow",
+      "difficulty": "medium",
+      "title": "面试官：团队 Git 工作流一般怎么设计",
+      "body": "## 一、分支模型\nGit Flow（feature/develop/release/master/hotfix）或 GitHub Flow / Trunk Based。\n\n## 二、提交规范\n使用 Conventional Commits（feat/fix/chore/docs 等），配合 changelog 自动生成。\n\n## 三、合并策略\n- Merge：保留完整历史。\n- Squash：保持主分支整洁。\n- Rebase：线性历史，适合个人分支。\n\n## 四、Code Review\nPR/MR 必须经过 Review，CI 通过后方可合并。\n\n## 五、保护分支\nmain/master 分支禁止直接 push，必须走 PR。"
+    },
+    {
+      "category": "engineering",
+      "slug": "npm_dependency_versions",
+      "difficulty": "medium",
+      "title": "面试官：npm 依赖版本管理与 lockfile 的作用是什么",
+      "body": "## 一、语义化版本\nmajor.minor.patch，^ 允许小版本/补丁，~ 只允许补丁。\n\n## 二、lockfile\npackage-lock.json / yarn.lock / pnpm-lock.yaml 锁定实际安装的精确版本和依赖树。\n\n## 三、作用\n保证团队、CI、生产环境安装一致的依赖，避免「我电脑可以跑」。\n\n## 四、更新策略\n- 小版本补丁：自动更新。\n- 大版本升级：人工 review，跑回归测试。\n\n## 五、安全\n使用 npm audit / Dependabot 扫描漏洞，及时升级。"
+    },
+    {
+      "category": "engineering",
+      "slug": "monorepo_tools",
+      "difficulty": "medium",
+      "title": "面试官：前端 Monorepo 有哪些常用方案，如何选型",
+      "body": "## 一、方案\n- pnpm workspace：轻量，依赖共享效率高。\n- Nx：适合大型项目，缓存、任务编排强。\n- Turborepo：Vercel 出品，远程缓存、管道可视化。\n- Lerna：传统方案，现多与其他工具结合。\n\n## 二、选型\n小项目 pnpm workspace 足够；大项目/多团队用 Nx/Turborepo。\n\n## 三、注意\n统一构建配置、版本管理、发布流程，避免包间循环依赖。"
+    },
+    {
+      "category": "css",
+      "slug": "cross_platform_adaptation",
+      "difficulty": "medium",
+      "title": "面试官：前端跨端适配有哪些常见方案",
+      "body": "## 一、响应式布局\nFlex/Grid + 媒体查询适配不同屏幕。\n\n## 二、多端框架\n- 小程序：Taro/Uni-app 一套代码编译到多端。\n- 移动端：React Native/Flutter。\n- 桌面端：Electron/Tauri。\n\n## 三、条件编译/平台判断\n根据 UA、运行时环境加载不同组件或样式。\n\n## 四、设计系统统一\nDesign Token 保证各端视觉一致性。\n\n## 五、测试覆盖\n真机、模拟器、浏览器多版本回归。"
+    },
+    {
+      "category": "javascript",
+      "slug": "frontend_security_risks",
+      "difficulty": "medium",
+      "title": "面试官：前端常见安全风险有哪些，如何防范",
+      "body": "## 一、XSS\n跨站脚本攻击：对用户输入做转义，使用 CSP，避免 innerHTML 插入不可信内容。\n\n## 二、CSRF\n跨站请求伪造：使用 Token/CORS/SameSite Cookie。\n\n## 三、点击劫持\n使用 X-Frame-Options / frame-ancestors CSP。\n\n## 四、敏感信息泄露\n不在前端写死密钥，接口返回最小权限数据。\n\n## 五、HTTPS\n全站 HTTPS，防止中间人攻击。"
+    },
+    {
+      "category": "javascript",
+      "slug": "frontend_accessibility",
+      "difficulty": "medium",
+      "title": "面试官：前端可访问性（a11y）应关注哪些方面",
+      "body": "## 一、语义化\n使用正确 HTML 标签（button vs div）、ARIA 属性补充语义。\n\n## 二、键盘导航\nTab 顺序合理，焦点可见，支持 Enter/Space 操作。\n\n## 三、屏幕阅读器\n图片加 alt、表单加 label、动态内容用 aria-live。\n\n## 四、颜色对比\n文字与背景对比度符合 WCAG 标准。\n\n## 五、可访问性测试\nLighthouse、axe、键盘-only 走查、屏幕阅读器实测。"
+    },
+    {
+      "category": "engineering",
+      "slug": "frontend_performance_general",
+      "difficulty": "medium",
+      "title": "面试官：前端性能优化可以从哪些层面入手",
+      "body": "## 一、网络层\n减少请求数、压缩、CDN、HTTP/2、缓存、DNS 预解析。\n\n## 二、资源层\n代码分割、Tree Shaking、图片优化、字体优化、懒加载。\n\n## 三、渲染层\n减少重排重绘、使用 requestAnimationFrame、虚拟列表、SSR/SSG。\n\n## 四、运行时\n避免内存泄漏、长任务拆分、Web Worker 处理计算。\n\n## 五、指标驱动\n以 FCP/LCP/INP/CLS 等指标衡量优化效果。"
+    },
+    {
+      "category": "css",
+      "slug": "mobile_compatibility_issues",
+      "difficulty": "medium",
+      "title": "面试官：移动端 H5 常见兼容性问题有哪些",
+      "body": "## 一、键盘弹起\n输入框聚焦时页面被键盘顶起、fixed 元素错位，需监听 resize/visualViewport。\n\n## 二、1px 边框\n高清屏上 1px 可能过粗，用伪元素 + transform scale 或 viewport 缩放。\n\n## 三、300ms 延迟\n早期移动端点击延迟，可用 FastClick 或 viewport width=device-width 消除。\n\n## 四、滚动穿透\n弹窗滚动影响底层页面，需处理 touchmove 或 overscroll-behavior。\n\n## 五、不同浏览器内核\niOS Safari、Chrome Android、微信内置浏览器差异，需真机测试。"
+    },
+    {
+      "category": "engineering",
+      "slug": "code_readability",
+      "difficulty": "easy",
+      "title": "面试官：如何写出可读性好的代码",
+      "body": "## 一、命名\n变量/函数/文件名语义清晰，避免缩写。\n\n## 二、函数设计\n单一职责，控制长度，参数不超过 3-4 个。\n\n## 三、注释\n解释「为什么」而非「做什么」，复杂逻辑加注释。\n\n## 四、格式\n统一缩进、空行、引号，使用 Prettier 自动格式化。\n\n## 五、结构\n按功能组织文件，避免过深的嵌套和回调地狱。"
+    },
+    {
+      "category": "engineering",
+      "slug": "complex_problem_troubleshooting",
+      "difficulty": "medium",
+      "title": "面试官：面对一个复杂的前端问题，你的排查思路是什么",
+      "body": "## 一、明确现象\n复现步骤、错误信息、影响范围、发生环境。\n\n## 二、缩小范围\n注释法、二分法定位最小复现代码。\n\n## 三、分层分析\n从 UI → 组件 → 状态 → 网络 → 服务端逐层排查。\n\n## 四、工具辅助\nDevTools、source map、日志、监控、Postman/Charles。\n\n## 五、验证假设\n修改一处验证一个假设，记录过程，避免盲目改代码。"
+    },
+    {
+      "category": "engineering",
+      "slug": "technical_communication",
+      "difficulty": "easy",
+      "title": "面试官：如何与产品、后端、测试有效沟通技术方案",
+      "body": "## 一、用对方能懂的语言\n对产品和少说技术细节，对后端明确接口契约，对测试说明边界场景。\n\n## 二、提前对齐\n需求评审阶段抛出技术风险，避免开发后期返工。\n\n## 三、书面留痕\n接口文档、会议纪要、技术方案 PRD 减少口头歧义。\n\n## 四、换位思考\n理解对方目标和约束，寻求共赢而非对立。\n\n## 五、及时反馈\n进度、风险、阻塞点同步给相关方。"
+    },
+    {
+      "category": "engineering",
+      "slug": "code_review_focus",
+      "difficulty": "medium",
+      "title": "面试官：你在 Code Review 时最关注哪些方面",
+      "body": "## 一、正确性\n逻辑是否符合需求，边界条件是否处理。\n\n## 二、可读性\n命名、注释、函数长度、结构是否清晰。\n\n## 三、性能\n是否有明显性能陷阱（重复计算、内存泄漏、大量 DOM 操作）。\n\n## 四、安全\nXSS、CSRF、敏感信息、输入校验。\n\n## 五、可维护性\n是否引入不必要的复杂度，是否有测试覆盖。"
+    },
+    {
+      "category": "engineering",
+      "slug": "online_quality_ownership",
+      "difficulty": "easy",
+      "title": "面试官：如何理解前端工程师对线上质量的责任",
+      "body": "## 一、自测充分\n开发阶段覆盖主路径、边界、异常，避免裸代码提测。\n\n## 二、代码质量\n写可维护代码，积极参与 Code Review。\n\n## 三、监控响应\n上线后关注错误监控、性能指标、用户反馈。\n\n## 四、快速修复\n线上问题优先定位，必要时热修复或回滚。\n\n## 五、持续改进\n复盘 bug 根因，沉淀规范与工具，防止重复踩坑。"
+    },
+    {
+      "category": "typescript",
+      "slug": "typescript_benefits",
+      "difficulty": "easy",
+      "title": "面试官：TypeScript 相比 JavaScript 有哪些优势",
+      "body": "## 一、静态类型\n编译期发现类型错误，减少运行时 bug。\n\n## 二、IDE 体验\n更好的代码提示、跳转、重构。\n\n## 三、可读性\n类型即文档，函数入参返回值一目了然。\n\n## 四、工程化\n便于大型项目维护、多人协作、API 约束。\n\n## 五、渐进式\n可从 JS 渐进迁移，允许 any 逐步收紧。"
+    },
+    {
+      "category": "typescript",
+      "slug": "ts_interface_vs_type",
+      "difficulty": "medium",
+      "title": "面试官：TypeScript 中 interface 和 type 有什么区别",
+      "body": "## 一、相同点\n都能描述对象结构、函数签名。\n\n## 二、声明合并\ninterface 同名会自动合并，type 不能。\n\n## 三、类型组合\ntype 支持联合、交叉、条件类型、映射类型，更灵活。\n\n## 四、实现/扩展\ninterface 可被 class implements 和 extends。\n\n## 五、实践\n描述对象结构优先 interface，组合复杂类型用 type。"
+    },
+    {
+      "category": "typescript",
+      "slug": "ts_generics",
+      "difficulty": "medium",
+      "title": "面试官：TypeScript 泛型的使用场景有哪些",
+      "body": "## 一、通用函数\n如 identity<T>(arg: T): T，保持输入输出类型一致。\n\n## 二、集合类型\nArray<T>、Promise<T>、Map<K, V>。\n\n## 三、约束\n<T extends { id: string }> 限制泛型必须含 id。\n\n## 四、工具类型\nPartial<T>、Pick<T, K>、ReturnType<T> 等内置工具类型基于泛型。\n\n## 五、避免 any\n用泛型代替 any，保留类型安全。"
+    },
+    {
+      "category": "typescript",
+      "slug": "ts_type_narrowing_assertion",
+      "difficulty": "medium",
+      "title": "面试官：TypeScript 中类型收窄与类型断言有什么区别",
+      "body": "## 一、类型收窄\n通过 typeof、instanceof、in、字面量判断、自定义 type guard 缩小类型范围，类型安全。\n\n## 二、类型断言\n用 as 或尖括号手动告诉编译器类型，如 (res as User).name。\n\n## 三、区别\n收窄是编译器自动推导；断言是开发者强制指定，可能出错。\n\n## 四、使用场景\n收窄用于条件分支；断言用于第三方库返回或 DOM 查询。\n\n## 五、非空断言\n! 用于确信值不为 null/undefined，但应谨慎使用。"
+    },
+    {
+      "category": "typescript",
+      "slug": "ts_conditional_mapped",
+      "difficulty": "hard",
+      "title": "面试官：TypeScript 条件类型与映射类型怎么用",
+      "body": "## 一、条件类型\nT extends U ? X : Y，根据类型关系选择分支，如 Exclude、Extract。\n\n## 二、映射类型\n{ [K in keyof T]: V }，遍历对象键生成新类型，如 Partial、Readonly。\n\n## 三、组合\n结合条件与映射可实现高级工具类型。\n\n## 四、infer\n在 extends 子句中推断类型，如 ReturnType 用 infer R 提取函数返回值。\n\n## 五、使用建议\n复杂类型体操适可而止，优先保证可读性。"
+    },
+    {
+      "category": "nodejs",
+      "slug": "nodejs_event_loop",
+      "difficulty": "hard",
+      "title": "面试官：Node.js 的事件循环与浏览器有什么不同",
+      "body": "## 一、阶段\nNode.js 事件循环分 timers/pending callbacks/idle prepare/check/close callbacks/poll 阶段。\n\n## 二、微任务\nprocess.nextTick 优先级高于 Promise.then，在阶段间执行。\n\n## 三、I/O 回调\n文件、网络等异步 I/O 在 poll 阶段处理。\n\n## 四、setImmediate vs setTimeout\ncheck 阶段执行 setImmediate；setTimeout 在 timers 阶段，具体顺序取决于当前循环状态。\n\n## 五、与浏览器差异\n浏览器有 UI 渲染步骤，Node 没有；Node 有 nextTick 和独立 I/O 处理。"
+    },
+    {
+      "category": "nodejs",
+      "slug": "commonjs_vs_esm",
+      "difficulty": "medium",
+      "title": "面试官：CommonJS 与 ES Module 有什么区别",
+      "body": "## 一、语法\nCJS 用 require/module.exports；ESM 用 import/export。\n\n## 二、加载时机\nCJS 运行时同步加载；ESM 静态解析，支持 Tree Shaking。\n\n## 三、this 指向\nCJS 模块顶层 this 指向 module.exports；ESM 顶层 this 为 undefined。\n\n## 四、循环依赖\nCJS 已部分支持但易出陷阱；ESM 通过静态分析处理更规范。\n\n## 五、Node.js 使用\n.cjs / .mjs / package.json type 字段控制模块类型。"
+    },
+    {
+      "category": "nodejs",
+      "slug": "express_koa_middleware",
+      "difficulty": "medium",
+      "title": "面试官：Express 与 Koa 的中间件机制有什么区别",
+      "body": "## 一、Express\n回调式中间件，基于函数参数 (req, res, next)，错误处理用四参函数。\n\n## 二、Koa\n基于 async/await 和洋葱模型，通过 ctx 封装请求响应，next() 前后可插入逻辑。\n\n## 三、洋葱模型\n请求先进入外层中间件，再向内执行，返回时反向经过各层。\n\n## 四、错误处理\nKoa 用 try/catch + app.on('error')，更自然。\n\n## 五、选型\nExpress 生态成熟；Koa 更现代、更适合异步流程控制。"
+    },
+    {
+      "category": "nodejs",
+      "slug": "nodejs_buffer_stream",
+      "difficulty": "medium",
+      "title": "面试官：Node.js 中 Buffer 和 Stream 的作用是什么",
+      "body": "## 一、Buffer\n用于处理二进制数据，是 Uint8Array 的子类，适合小数据块。\n\n## 二、Stream\n流式处理数据，分 Readable/Writable/Duplex/Transform。\n\n## 三、优势\nStream 按需读取，内存占用低，适合大文件、网络传输。\n\n## 四、背压\nWritable 处理慢时通过 drain 事件反压，防止内存暴涨。\n\n## 五、场景\n文件读写、HTTP 请求响应、音视频处理、压缩解压。"
+    },
+    {
+      "category": "nodejs",
+      "slug": "why_frontend_needs_nodejs",
+      "difficulty": "easy",
+      "title": "面试官：前端工程师为什么要了解 Node.js",
+      "body": "## 一、工程化工具\nWebpack/Vite/Babel/ESLint 都运行在 Node 上，理解 Node 有助于排查构建问题。\n\n## 二、SSR/SSG\nNext.js/Nuxt.js/Nest.js 等服务端渲染框架基于 Node。\n\n## 三、BFF 层\n前端可编写 Node 中间层聚合接口、鉴权、转发。\n\n## 四、脚本工具\n写自动化脚本、爬虫、CLI 工具提升效率。\n\n## 五、全栈能力\n小团队或独立项目可前后端一体化开发。"
+    },
+    {
+      "category": "microfrontend",
+      "slug": "microfrontend_why",
+      "difficulty": "medium",
+      "title": "面试官：微前端主要解决什么问题",
+      "body": "## 一、巨石应用拆分\n将大型前端应用按业务域拆分为独立子应用，降低复杂度。\n\n## 二、技术栈无关\n不同子应用可用不同框架/版本渐进升级。\n\n## 三、独立部署\n各团队可独立开发、测试、发布，互不阻塞。\n\n## 四、遗留系统平滑迁移\n老项目逐步改造，而非一次性重写。\n\n## 五、成本\n带来额外的集成复杂度、通信成本、性能开销，需谨慎评估。"
+    },
+    {
+      "category": "microfrontend",
+      "slug": "microfrontend_qiankun_mf",
+      "difficulty": "hard",
+      "title": "面试官：qiankun 与 Module Federation 在微前端中如何选型",
+      "body": "## 一、qiankun\n基于 single-spa，运行时通过 HTML Entry/JS Entry 加载子应用，支持多技术栈。\n\n## 二、Module Federation\nWebpack 5 特性，构建时共享模块，运行时联邦加载，适合同构技术栈。\n\n## 三、隔离\nqiankun 提供 JS 沙箱、样式隔离；MF 无内置沙箱，需自行处理冲突。\n\n## 四、部署\nqiankun 子应用可独立部署；MF 通常共仓或强依赖构建产物。\n\n## 五、选型\n异构/独立部署选 qiankun；同构 Webpack 项目、组件级共享选 MF。"
+    },
+    {
+      "category": "microfrontend",
+      "slug": "microfrontend_style_isolation",
+      "difficulty": "medium",
+      "title": "面试官：微前端中如何避免子应用样式冲突",
+      "body": "## 一、CSS Modules / Scoped\n子应用使用 scoped 样式，避免全局污染。\n\n## 二、BEM 命名\n统一命名空间前缀。\n\n## 三、Shadow DOM\n子应用挂载到 Shadow Root，天然样式隔离（但有兼容性/事件问题）。\n\n## 四、乾坤沙箱\n运行时给子应用 CSS 选择器加前缀，卸载时移除样式标签。\n\n## 五、公共样式约定\n全局样式（如 reset、主题变量）由主应用统一提供，子应用继承。"
+    },
+    {
+      "category": "microfrontend",
+      "slug": "microfrontend_route_communication",
+      "difficulty": "medium",
+      "title": "面试官：微前端中路由与通信一般如何处理",
+      "body": "## 一、路由\n主应用路由控制子应用激活，子应用内部路由独立；URL 通常用 prefix 区分。\n\n## 二、路由同步\n主应用监听子应用路由变化，子应用导出路由实例供主应用控制。\n\n## 三、通信方式\n- 发布订阅：EventBus。\n- 全局状态：Redux/Zustand/Pinia 共享。\n- URL/Storage：简单场景。\n\n## 四、耦合控制\n优先通过 URL 传参，减少子应用间直接依赖。\n\n## 五、框架支持\nqiankun initGlobalState、Module Federation 共享状态模块。"
+    },
+    {
+      "category": "microfrontend",
+      "slug": "microfrontend_shared_deps",
+      "difficulty": "hard",
+      "title": "面试官：微前端子应用如何共享公共依赖",
+      "body": "## 一、主应用挂载\nReact/Vue 等框架由主应用加载，子应用运行时从 window 读取。\n\n## 二、Module Federation\n构建时声明 shared 模块，运行时只加载一份。\n\n## 三、externals\n子应用构建时排除公共依赖，运行时依赖主应用注入。\n\n## 四、版本兼容\n共享依赖需约定版本范围，避免多个版本共存。\n\n## 五、取舍\n共享减少体积但增加耦合；独立打包则体积大但自治性强。"
+    },
+    {
+      "category": "visualization",
+      "slug": "echarts_architecture",
+      "difficulty": "medium",
+      "title": "面试官：ECharts 的架构是怎样的，渲染流程是什么",
+      "body": "## 一、架构\n基于 Canvas/SVG 的图表库，采用 MVVM 风格：option 描述图表，内部解析为组件树。\n\n## 二、渲染流程\noption → 数据预处理 → 系列计算 → 布局 → 坐标系 → 绘制 → 交互事件绑定。\n\n## 三、分层\n- 数据层：dataset、series data。\n- 组件层：grid、axis、legend、tooltip。\n- 渲染层：Canvas/SVG 渲染器。\n\n## 四、响应式\n监听容器尺寸变化，自动重绘。\n\n## 五、扩展\n通过 registerMap、registerTheme、自定义 series 扩展能力。"
+    },
+    {
+      "category": "visualization",
+      "slug": "echarts_large_data",
+      "difficulty": "hard",
+      "title": "面试官：ECharts 渲染大数据量图表时如何优化",
+      "body": "## 一、数据采样\n使用 sampling: 'lttb' 或 average 对大数据降采样。\n\n## 二、数据格式\n使用 TypedArray 或纯数组，避免对象数组。\n\n## 三、渐进式渲染\nlarge 模式 + largeThreshold 控制大数据路径绘制。\n\n## 四、Canvas 优先\n大数据用 Canvas 渲染器，SVG 更适合交互丰富的中小数据。\n\n## 五、分层/聚合\n后端预聚合、前端按缩放级别加载不同粒度数据。"
+    },
+    {
+      "category": "visualization",
+      "slug": "echarts_responsive",
+      "difficulty": "medium",
+      "title": "面试官：如何让 ECharts 图表在不同容器尺寸下自适应",
+      "body": "## 一、Resize\n监听 window resize，调用 myChart.resize()。\n\n## 二、ResizeObserver\n容器尺寸变化时使用 ResizeObserver 更精确。\n\n## 三、媒体查询\nECharts 内置 media 配置，按容器宽度切换 option。\n\n## 四、响应式单位\ngrid、legend 等位置使用百分比或相对值。\n\n## 五、防抖\nresize 事件防抖，避免频繁重绘。"
+    },
+    {
+      "category": "visualization",
+      "slug": "echarts_custom_series",
+      "difficulty": "hard",
+      "title": "面试官：如何在 ECharts 中实现自定义系列或自定义图形",
+      "body": "## 一、custom series\n使用 series.type='custom'，通过 renderItem 函数自定义每个数据项的图形。\n\n## 二、renderItem\n返回 rect/circle/path/group 等图形元素及样式。\n\n## 三、坐标映射\n使用 api.coord([x, y]) 将数据坐标转为画布坐标。\n\n## 四、交互\n自定义系列仍支持 emphasis、tooltip、事件监听。\n\n## 五、场景\n桑基图、树图、关系图、甘特图等特殊图表可用 custom 实现。"
+    },
+    {
+      "category": "visualization",
+      "slug": "canvas_vs_svg_viz",
+      "difficulty": "medium",
+      "title": "面试官：数据可视化中 Canvas 和 SVG 各有什么优劣",
+      "body": "## 一、Canvas\n位图渲染，适合大数据量、复杂动态图形；像素级控制强，但事件处理需自行计算。\n\n## 二、SVG\n矢量 DOM，每个图形都是 DOM 节点，适合交互多、图形少的场景；可直接绑定事件。\n\n## 三、性能\nCanvas 节点少、绘制快；SVG 节点多时渲染和事件性能下降。\n\n## 四、高清屏\nCanvas 需处理 devicePixelRatio；SVG 自动清晰。\n\n## 五、选型\n大数据/游戏化用 Canvas；报表/可交互图表用 SVG。"
+    },
+    {
+      "category": "applet",
+      "slug": "app_h5_native_bridge",
+      "difficulty": "medium",
+      "title": "面试官：APP 内嵌 H5 如何与原生端进行通信",
+      "body": "## 一、JSBridge\nNative 注入全局对象（如 window.Android / window.webkit.messageHandlers），H5 调用原生能力。\n\n## 二、Schema URL\nH5 通过 iframe/src 发起自定义 URL Scheme，原生拦截处理。\n\n## 三、回调机制\n调用时传入唯一 callbackId，原生通过 evaluateJavaScript 回调 H5。\n\n## 四、Promise 封装\n将 JSBridge 调用封装为 Promise，解决回调地狱。\n\n## 五、兼容处理\n不同端（iOS/Android/微信）提供统一 SDK 层，内部适配实现。"
+    },
+    {
+      "category": "visualization",
+      "slug": "big_screen_dashboard",
+      "difficulty": "hard",
+      "title": "面试官：大屏可视化项目开发有哪些技术要点",
+      "body": "## 一、自适应布局\n按设计稿比例（如 1920×1080）用 rem/vw 或 scale 缩放适配不同分辨率。\n\n## 二、性能\n图表多、动画多，需控制 DOM 数量、合理使用 requestAnimationFrame、Canvas 渲染。\n\n## 三、数据实时性\nWebSocket 推送 + 增量更新，避免全量刷新图表。\n\n## 四、稳定性\n长时间运行需防止内存泄漏，定时器/事件监听及时清理。\n\n## 五、视觉效果\n渐变、发光、动效、3D 地图等需与设计师对齐，避免过度炫技影响可读性。"
+    },
+    {
+      "category": "applet",
+      "slug": "admin_system_frontend",
+      "difficulty": "medium",
+      "title": "面试官：后台管理系统前端设计应关注什么",
+      "body": "## 一、权限\n菜单/按钮/数据权限控制，通常结合路由守卫和角色配置。\n\n## 二、表格与表单\n复杂表格支持筛选、排序、分页、导出；表单支持校验、联动、草稿。\n\n## 三、状态管理\n用户、权限、字典等全局状态统一管理。\n\n## 四、体验\n面包屑、Tab 页签、快捷键、暗黑模式、响应式布局。\n\n## 五、性能\n大数据表格虚拟滚动、路由懒加载、接口缓存。"
+    },
+    {
+      "category": "applet",
+      "slug": "miniapp_performance_optimization",
+      "difficulty": "hard",
+      "title": "面试官：小程序性能优化有哪些常见手段",
+      "body": "## 一、包体积\n压缩代码、图片转网络/CDN、分包加载、移除未使用依赖。\n\n## 二、启动优化\n减少首页同步请求，提前在 app.onLaunch 预取数据。\n\n## 三、setData\n避免频繁/大数据量 setData，合并更新，只传变化字段。\n\n## 四、列表渲染\n长列表使用 recycle-view 或自定义虚拟列表。\n\n## 五、页面层级\n控制页面栈深度，及时关闭不需要的页面，减少内存占用。"
+    },
+    {
+      "category": "applet",
+      "slug": "jsbridge_principle",
+      "difficulty": "medium",
+      "title": "面试官：JSBridge 的原理是什么，如何实现双向通信",
+      "body": "## 一、Native 调用 JS\n原生通过 WebView 的 evaluateJavaScript 执行 JS 代码。\n\n## 二、JS 调用 Native\n- Android：通过 addJavascriptInterface 注入对象。\n- iOS：通过 WKScriptMessageHandler 注册 handler。\n\n## 三、双向协议\n约定 action + params + callbackId 的 JSON 协议。\n\n## 四、回调注册\nH5 维护 callback map，原生调用 window.JSBridge.callback(id, result)。\n\n## 五、安全\n校验调用来源，白名单控制可调用的原生能力。"
+    },
+    {
+      "category": "engineering",
+      "slug": "frontend_architecture_dimensions",
+      "difficulty": "hard",
+      "title": "面试官：前端架构设计需要考虑哪些维度",
+      "body": "## 一、业务分层\nUI 层、业务逻辑层、数据层、基础设施层清晰分离。\n\n## 二、技术选型\n框架、状态管理、构建工具、UI 库、测试方案、部署方式。\n\n## 三、可维护性\n目录规范、编码规范、组件设计、文档、Code Review。\n\n## 四、性能与体验\n加载性能、运行时性能、交互体验、可访问性。\n\n## 五、工程效率\nCI/CD、自动化测试、监控告警、灰度发布、开发工具链。"
+    },
+    {
+      "category": "engineering",
+      "slug": "component_lib_engineering",
+      "difficulty": "hard",
+      "title": "面试官：从零建设一个组件库，工程化上要做哪些事",
+      "body": "## 一、项目结构\nMonorepo 管理组件、文档、主题、工具。\n\n## 二、构建输出\nESM/CJS/UMD 多格式，d.ts 类型声明，支持 Tree-shaking。\n\n## 三、样式方案\nCSS Modules / CSS-in-JS / 变量化，支持主题定制与按需引入。\n\n## 四、测试\n单元测试、视觉回归测试、无障碍测试。\n\n## 五、文档与发布\nStorybook/Dumi 文档站、CHANGELOG、语义化版本、私有 npm 或公开发布。"
+    },
+    {
+      "category": "engineering",
+      "slug": "frontend_engineering_system",
+      "difficulty": "medium",
+      "title": "面试官：前端工程化体系一般包括哪些内容",
+      "body": "## 一、标准化\nESLint/Prettier/Stylelint、Git 提交规范、目录结构规范。\n\n## 二、构建与打包\nWebpack/Vite/Rollup 配置，环境变量、代码分割、资源优化。\n\n## 三、CI/CD\n自动化安装、构建、测试、部署流水线。\n\n## 四、质量保障\n单元测试、E2E 测试、Code Review、性能/安全检查。\n\n## 五、监控与反馈\n错误监控、性能监控、用户反馈、持续迭代。"
+    },
+    {
+      "category": "engineering",
+      "slug": "driving_technical_solution",
+      "difficulty": "medium",
+      "title": "面试官：如何在团队中推动一个技术方案落地",
+      "body": "## 一、明确价值\n用数据说明方案解决的问题、带来的收益（性能、效率、稳定性）。\n\n## 二、小范围验证\n先在一个业务域试点，收集反馈，验证可行性。\n\n## 三、充分沟通\n提前与相关同学对齐，听取反对意见，调整方案。\n\n## 四、文档与培训\n写 RFC/技术文档，组织分享会，降低接入成本。\n\n## 五、渐进式推广\n从试点到全面推广，建立迁移计划与回滚方案。"
+    },
+    {
+      "category": "engineering",
+      "slug": "architecture_evolution_debt",
+      "difficulty": "hard",
+      "title": "面试官：面对前端技术债务，你如何推进架构演进",
+      "body": "## 一、盘点债务\n列出代码坏味道、重复代码、老旧依赖、性能瓶颈、无测试覆盖模块。\n\n## 二、优先级\n按影响面、风险、投入产出排序，优先解决阻塞业务的问题。\n\n## 三、制定计划\n分阶段重构，每次只改一块，保证可回滚。\n\n## 四、测试护航\n重构前补充测试，重构后跑全量用例。\n\n## 五、平衡业务\n技术债务治理与业务需求并行，避免长时间停业务重构。"
+    },
+    {
+      "category": "engineering",
+      "slug": "open_source_value",
+      "difficulty": "easy",
+      "title": "面试官：参与开源项目或写技术博客对前端工程师有什么帮助",
+      "body": "## 一、能力成长\n阅读优秀源码，学习设计思想、编码规范和工程实践。\n\n## 二、影响力\n建立个人技术品牌，增加职业机会。\n\n## 三、表达能力\n写博客或 issue 能锻炼把复杂问题讲清楚的能力。\n\n## 四、社区连接\n认识同行，获取反馈，拓宽技术视野。\n\n## 五、反哺工作\n学到的模式可直接应用到团队项目中。"
+    },
+    {
+      "category": "engineering",
+      "slug": "how_to_write_tech_blog",
+      "difficulty": "easy",
+      "title": "面试官：如何写好一篇技术博客",
+      "body": "## 一、明确目标读者\n是面向初学者还是资深工程师，决定深度与篇幅。\n\n## 二、问题导向\n从真实问题出发，给出背景、方案、对比、结论。\n\n## 三、结构清晰\n标题、目录、小标题、代码示例、总结。\n\n## 四、代码可运行\n提供最小可复现示例，避免只有理论。\n\n## 五、持续迭代\n根据读者反馈修正错误，补充新内容。"
+    },
+    {
+      "category": "engineering",
+      "slug": "open_source_maintenance",
+      "difficulty": "medium",
+      "title": "面试官：维护一个开源项目需要注意什么",
+      "body": "## 一、文档\nREADME、贡献指南、行为准则、API 文档、示例。\n\n## 二、 issue 管理\n及时回复，打标签，区分 bug/feature/question，设置模板。\n\n## 三、PR 审查\n代码质量、测试覆盖、文档更新、破坏性变更评估。\n\n## 四、版本管理\n语义化版本，CHANGELOG，迁移指南。\n\n## 五、社区运营\n尊重贡献者，建立核心维护者团队，避免一人维护 burnout。"
+    },
+    {
+      "category": "engineering",
+      "slug": "choose_open_source_to_contribute",
+      "difficulty": "easy",
+      "title": "面试官：如何选择适合贡献的开源项目",
+      "body": "## 一、兴趣相关\n选自己正在用或感兴趣的领域，保持动力。\n\n## 二、活跃度\n看最近提交、issue 回复速度、维护者数量。\n\n## 三、新手友好\n找 good-first-issue、help-wanted 标签，从文档/测试入手。\n\n## 四、影响力\n选行业主流项目，贡献经验更有含金量。\n\n## 五、从小开始\n先修 typo、补文档、答 issue，再逐步参与核心代码。"
+    },
+    {
+      "category": "engineering",
+      "slug": "tech_sharing_team_growth",
+      "difficulty": "easy",
+      "title": "面试官：技术分享如何促进团队成长",
+      "body": "## 一、知识沉淀\n把个人经验变成团队共享资产，避免信息孤岛。\n\n## 二、统一认知\n通过分享对齐技术选型、编码规范和最佳实践。\n\n## 三、发现问题\n准备分享过程中会暴露理解盲区，倒逼深入学习。\n\n## 四、提升表达\n锻炼结构化表达，促进跨团队协作。\n\n## 五、营造氛围\n定期技术分享会形成学习型团队文化。"
+    }
   ]
 }
