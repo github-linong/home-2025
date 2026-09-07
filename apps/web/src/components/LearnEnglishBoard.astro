@@ -137,6 +137,7 @@ const poolSize = DAILY_WORDS.length;
             <button type="button" class="lb-audio-btn" data-card-audio title="朗读 (A)" aria-label="朗读">🔊</button>
           </div>
           <p class="lb-word" data-card-text>—</p>
+          <p class="lb-phonetic" data-card-phonetic></p>
           <p class="lb-hint" data-card-hint></p>
           <div class="lb-face-foot">
             <span class="lb-meta" data-card-meta></span>
@@ -717,6 +718,13 @@ const poolSize = DAILY_WORDS.length;
     font-family: inherit;
     font-size: clamp(1.6rem, 5vw, 2.2rem);
   }
+  .learn-board .lb-phonetic {
+    margin: 0.35rem 0 0;
+    font-size: 1.05rem;
+    color: oklch(var(--bc) / 0.55);
+    min-height: 1.3em;
+    font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  }
   .learn-board .lb-hint {
     margin: 0.5rem 0 0;
     font-size: 0.85rem;
@@ -1094,6 +1102,7 @@ const poolSize = DAILY_WORDS.length;
     const progressFill = $<HTMLElement>("[data-progress-fill]")!;
     const flashcard = $<HTMLElement>("[data-flashcard]")!;
     const cardText = $<HTMLElement>("[data-card-text]")!;
+    const cardPhonetic = $<HTMLElement>("[data-card-phonetic]")!;
     const cardTextBack = $<HTMLElement>("[data-card-text-back]")!;
     const cardHint = $<HTMLElement>("[data-card-hint]")!;
     const cardHintBack = $<HTMLElement>("[data-card-hint-back]")!;
@@ -1205,6 +1214,7 @@ const poolSize = DAILY_WORDS.length;
       if (empty) {
         progressEl.hidden = true;
         cardText.textContent = filterUnknown.checked ? "本组已全部掌握 🎉" : "暂无词卡";
+        cardPhonetic.textContent = "";
         cardTextBack.textContent = "—";
         cardHint.textContent = filterUnknown.checked ? "可以取消「只练未掌握」或重置进度" : "";
         cardHintBack.textContent = "";
@@ -1217,6 +1227,7 @@ const poolSize = DAILY_WORDS.length;
       const prog = loadProgress()[key(card.id)];
       progressEl.hidden = false;
       cardText.textContent = card.en;
+      cardPhonetic.textContent = card.phonetic || "";
       cardTextBack.textContent = card.zh;
       cardHint.textContent = card.hint ? `提示:${card.hint}` : "";
       cardHintBack.textContent = card.hint ? `提示:${card.hint}` : "";

@@ -8,6 +8,7 @@ export type Card = {
   en: string;
   zh: string;
   hint: string | null;
+  phonetic?: string | null;
   sort_order: number;
 };
 
