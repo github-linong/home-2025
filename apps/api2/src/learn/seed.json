@@ -2914,6 +2914,126 @@
           "zh": "谦虚的；适度的",
           "hint": "humble or moderate in size",
           "sort_order": 485
+        },
+        {
+          "en": "upsell",
+          "zh": "追加销售",
+          "hint": "to persuade a customer to buy a more expensive or extra item",
+          "sort_order": 486
+        },
+        {
+          "en": "reallocate",
+          "zh": "重新分配",
+          "hint": "to assign resources or money to a different use",
+          "sort_order": 487
+        },
+        {
+          "en": "oversight",
+          "zh": "监督；疏忽",
+          "hint": "the act of supervising; also a mistake from not noticing",
+          "sort_order": 488
+        },
+        {
+          "en": "cadence",
+          "zh": "节奏；节拍",
+          "hint": "a regular rhythm or pace of work or communication",
+          "sort_order": 489
+        },
+        {
+          "en": "potluck",
+          "zh": "百乐餐聚餐",
+          "hint": "a meal where each guest brings a dish to share",
+          "sort_order": 490
+        },
+        {
+          "en": "garage",
+          "zh": "车库；修车厂",
+          "hint": "a building for parking or repairing vehicles",
+          "sort_order": 491
+        },
+        {
+          "en": "charger",
+          "zh": "充电器",
+          "hint": "a device that charges a battery",
+          "sort_order": 492
+        },
+        {
+          "en": "forefront",
+          "zh": "最前沿",
+          "hint": "the leading or most advanced position",
+          "sort_order": 493
+        },
+        {
+          "en": "reserve",
+          "zh": "保留；预订",
+          "hint": "to keep something for later use or a future booking",
+          "sort_order": 494
+        },
+        {
+          "en": "farewell",
+          "zh": "告别；欢送",
+          "hint": "an expression or act of saying goodbye",
+          "sort_order": 495
+        },
+        {
+          "en": "memo",
+          "zh": "备忘录",
+          "hint": "short internal note",
+          "sort_order": 496
+        },
+        {
+          "en": "layoff",
+          "zh": "裁员",
+          "hint": "being let go from a job",
+          "sort_order": 497
+        },
+        {
+          "en": "compliance",
+          "zh": "合规",
+          "hint": "following the rules",
+          "sort_order": 498
+        },
+        {
+          "en": "headcount",
+          "zh": "编制；人数",
+          "hint": "number of employees",
+          "sort_order": 499
+        },
+        {
+          "en": "pillow",
+          "zh": "枕头",
+          "hint": "thing you rest head on",
+          "sort_order": 500
+        },
+        {
+          "en": "closet",
+          "zh": "壁橱",
+          "hint": "small storage space",
+          "sort_order": 501
+        },
+        {
+          "en": "blanket",
+          "zh": "毯子",
+          "hint": "warm cover for bed",
+          "sort_order": 502
+        },
+        {
+          "en": "strive",
+          "zh": "努力",
+          "hint": "try very hard",
+          "sort_order": 503
+        },
+        {
+          "en": "ample",
+          "zh": "充足的",
+          "hint": "more than enough",
+          "sort_order": 504
+        },
+        {
+          "en": "glimpse",
+          "zh": "一瞥",
+          "hint": "brief look",
+          "sort_order": 505
         }
       ]
     }
@@ -6306,6 +6426,146 @@
       "zh": "谦虚的；适度的",
       "pos": "adj.",
       "example": "She made a modest profit in her first year of business."
+    },
+    {
+      "lemma": "upsell",
+      "phonetic": "/ˈʌpsel/",
+      "zh": "追加销售；向顾客推销更高价或附加产品",
+      "pos": "v./n.",
+      "example": "The agent tried to upsell me a premium support plan."
+    },
+    {
+      "lemma": "reallocate",
+      "phonetic": "/ˌriːˈæləkeɪt/",
+      "zh": "重新分配；调拨",
+      "pos": "v.",
+      "example": "We reallocated the budget to the higher-priority project."
+    },
+    {
+      "lemma": "oversight",
+      "phonetic": "/ˈoʊvərsaɪt/",
+      "zh": "监督；监管；疏忽",
+      "pos": "n.",
+      "example": "The committee provides oversight of the entire program."
+    },
+    {
+      "lemma": "cadence",
+      "phonetic": "/ˈkeɪdns/",
+      "zh": "节奏；工作节拍",
+      "pos": "n.",
+      "example": "We established a weekly cadence for team check-ins."
+    },
+    {
+      "lemma": "potluck",
+      "phonetic": "/ˈpɑːtlʌk/",
+      "zh": "百乐餐；聚餐（每人带一道菜）",
+      "pos": "n.",
+      "example": "We're having a potluck dinner this Friday — bring a dish!"
+    },
+    {
+      "lemma": "garage",
+      "phonetic": "/ɡəˈrɑːʒ/",
+      "zh": "车库；修车厂",
+      "pos": "n.",
+      "example": "I parked the car in the garage and walked to the door."
+    },
+    {
+      "lemma": "charger",
+      "phonetic": "/ˈtʃɑːrdʒər/",
+      "zh": "充电器",
+      "pos": "n.",
+      "example": "I forgot my phone charger at the hotel."
+    },
+    {
+      "lemma": "forefront",
+      "phonetic": "/ˈfɔːrfrʌnt/",
+      "zh": "最前沿；领先地位",
+      "pos": "n.",
+      "example": "Our team is at the forefront of AI research."
+    },
+    {
+      "lemma": "reserve",
+      "phonetic": "/rɪˈzɜːrv/",
+      "zh": "保留；预订；储备",
+      "pos": "v./n.",
+      "example": "I'd like to reserve a table for four at eight."
+    },
+    {
+      "lemma": "farewell",
+      "phonetic": "/ˌferˈwel/",
+      "zh": "告别；再见",
+      "pos": "n./int.",
+      "example": "We threw a farewell party for our colleague who is moving abroad."
+    },
+    {
+      "lemma": "memo",
+      "phonetic": "/ˈmemoʊ/",
+      "zh": "备忘录；内部便签",
+      "pos": "n.",
+      "example": "I'll send you a memo summarizing the meeting decisions."
+    },
+    {
+      "lemma": "layoff",
+      "phonetic": "/ˈleɪɔːf/",
+      "zh": "裁员；解雇",
+      "pos": "n.",
+      "example": "The company announced a layoff affecting 50 employees."
+    },
+    {
+      "lemma": "compliance",
+      "phonetic": "/kəmˈplaɪəns/",
+      "zh": "合规；遵守规定",
+      "pos": "n.",
+      "example": "The new tool helps us stay in regulatory compliance."
+    },
+    {
+      "lemma": "headcount",
+      "phonetic": "/ˈhedkaʊnt/",
+      "zh": "员工人数；编制",
+      "pos": "n.",
+      "example": "We've been given a headcount of five for the new team."
+    },
+    {
+      "lemma": "pillow",
+      "phonetic": "/ˈpɪloʊ/",
+      "zh": "枕头",
+      "pos": "n.",
+      "example": "I bought a new pillow for better sleep."
+    },
+    {
+      "lemma": "closet",
+      "phonetic": "/ˈklɑːzɪt/",
+      "zh": "壁橱；储物间",
+      "pos": "n.",
+      "example": "I keep my winter coats in the hall closet."
+    },
+    {
+      "lemma": "blanket",
+      "phonetic": "/ˈblæŋkɪt/",
+      "zh": "毯子；毛毯",
+      "pos": "n.",
+      "example": "She wrapped herself in a warm blanket on the couch."
+    },
+    {
+      "lemma": "strive",
+      "phonetic": "/straɪv/",
+      "zh": "努力；奋斗",
+      "pos": "v.",
+      "example": "We must strive to improve the user experience."
+    },
+    {
+      "lemma": "ample",
+      "phonetic": "/ˈæmpl/",
+      "zh": "充足的；宽敞的",
+      "pos": "adj.",
+      "example": "There is ample evidence to support the claim."
+    },
+    {
+      "lemma": "glimpse",
+      "phonetic": "/ɡlɪmps/",
+      "zh": "一瞥；瞥见",
+      "pos": "n./v.",
+      "example": "I caught a glimpse of the celebrity in the crowd."
     }
   ],
   "passages": [
