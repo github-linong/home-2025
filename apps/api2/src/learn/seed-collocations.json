@@ -1,0 +1,2314 @@
+{
+ "decks": [
+  {
+   "slug": "collocations-common",
+   "title": "高频固定搭配",
+   "description": "make / take / have / do / get 等最常用动词的固定搭配",
+   "cards": [
+    {
+     "en": "make a decision",
+     "zh": "做决定",
+     "hint": "make + 名词，不用 do · She made a decision about her career.",
+     "phonetic": "",
+     "sort_order": 1
+    },
+    {
+     "en": "make a mistake",
+     "zh": "犯错",
+     "hint": "固定搭配，不说 do a mistake · I made a mistake in the report.",
+     "phonetic": "",
+     "sort_order": 2
+    },
+    {
+     "en": "make progress",
+     "zh": "取得进步",
+     "hint": "不可数，不能说 make a progress · She is making good progress in English.",
+     "phonetic": "",
+     "sort_order": 3
+    },
+    {
+     "en": "make an effort",
+     "zh": "努力",
+     "hint": "effort 可数，用 an · You need to make more effort.",
+     "phonetic": "",
+     "sort_order": 4
+    },
+    {
+     "en": "make a difference",
+     "zh": "有影响；起作用",
+     "hint": "常说 make a big difference · Your help made a real difference.",
+     "phonetic": "",
+     "sort_order": 5
+    },
+    {
+     "en": "make sense",
+     "zh": "有道理",
+     "hint": "主语通常是 it / that · That makes sense to me.",
+     "phonetic": "",
+     "sort_order": 6
+    },
+    {
+     "en": "make money",
+     "zh": "赚钱",
+     "hint": "make + money 固定 · He makes money by selling software.",
+     "phonetic": "",
+     "sort_order": 7
+    },
+    {
+     "en": "make friends",
+     "zh": "交朋友",
+     "hint": "用复数 friends · She made friends quickly at school.",
+     "phonetic": "",
+     "sort_order": 8
+    },
+    {
+     "en": "make an appointment",
+     "zh": "预约",
+     "hint": "make an appointment with sb · I'd like to make an appointment with Dr. Li.",
+     "phonetic": "",
+     "sort_order": 9
+    },
+    {
+     "en": "make a plan",
+     "zh": "制定计划",
+     "hint": "make a plan for sth · We made a plan for the weekend.",
+     "phonetic": "",
+     "sort_order": 10
+    },
+    {
+     "en": "make a choice",
+     "zh": "做选择",
+     "hint": "make a choice between A and B · You have to make a choice.",
+     "phonetic": "",
+     "sort_order": 11
+    },
+    {
+     "en": "make a phone call",
+     "zh": "打电话",
+     "hint": "也可说 make a call · I need to make a phone call.",
+     "phonetic": "",
+     "sort_order": 12
+    },
+    {
+     "en": "make a reservation",
+     "zh": "预订",
+     "hint": "常用于餐厅、酒店 · I made a reservation for two.",
+     "phonetic": "",
+     "sort_order": 13
+    },
+    {
+     "en": "make a suggestion",
+     "zh": "提建议",
+     "hint": "make a suggestion · Can I make a suggestion?",
+     "phonetic": "",
+     "sort_order": 14
+    },
+    {
+     "en": "make sure",
+     "zh": "确保",
+     "hint": "后接 that 从句 · Make sure you lock the door.",
+     "phonetic": "",
+     "sort_order": 15
+    },
+    {
+     "en": "make an excuse",
+     "zh": "找借口",
+     "hint": "make an excuse for sth · Don't make excuses for being late.",
+     "phonetic": "",
+     "sort_order": 16
+    },
+    {
+     "en": "make a promise",
+     "zh": "许诺",
+     "hint": "keep / break a promise · He made a promise to his son.",
+     "phonetic": "",
+     "sort_order": 17
+    },
+    {
+     "en": "make a complaint",
+     "zh": "投诉",
+     "hint": "make a complaint about sth · She made a complaint about the service.",
+     "phonetic": "",
+     "sort_order": 18
+    },
+    {
+     "en": "make a contribution",
+     "zh": "做贡献",
+     "hint": "make a contribution to sth · Everyone made a contribution to the project.",
+     "phonetic": "",
+     "sort_order": 19
+    },
+    {
+     "en": "make arrangements",
+     "zh": "做安排",
+     "hint": "常用复数 arrangements · We made arrangements for the trip.",
+     "phonetic": "",
+     "sort_order": 20
+    },
+    {
+     "en": "make a discovery",
+     "zh": "有发现",
+     "hint": "make a discovery · Scientists made an important discovery.",
+     "phonetic": "",
+     "sort_order": 21
+    },
+    {
+     "en": "make a fortune",
+     "zh": "发大财",
+     "hint": "make a fortune · He made a fortune in real estate.",
+     "phonetic": "",
+     "sort_order": 22
+    },
+    {
+     "en": "make a habit of",
+     "zh": "养成…习惯",
+     "hint": "make a habit of doing · Make a habit of reading daily.",
+     "phonetic": "",
+     "sort_order": 23
+    },
+    {
+     "en": "make the bed",
+     "zh": "铺床",
+     "hint": "固定搭配 make the bed · Please make your bed.",
+     "phonetic": "",
+     "sort_order": 24
+    },
+    {
+     "en": "make breakfast",
+     "zh": "做早餐",
+     "hint": "make + 三餐（breakfast/lunch/dinner） · I make breakfast every morning.",
+     "phonetic": "",
+     "sort_order": 25
+    },
+    {
+     "en": "make a profit",
+     "zh": "盈利",
+     "hint": "反义 make a loss · The company made a big profit.",
+     "phonetic": "",
+     "sort_order": 26
+    },
+    {
+     "en": "make an offer",
+     "zh": "出价；提议",
+     "hint": "make an offer on sth · They made an offer on the house.",
+     "phonetic": "",
+     "sort_order": 27
+    },
+    {
+     "en": "make an announcement",
+     "zh": "宣布",
+     "hint": "make an announcement · The boss made an announcement this morning.",
+     "phonetic": "",
+     "sort_order": 28
+    },
+    {
+     "en": "take a break",
+     "zh": "休息一下",
+     "hint": "take a break from sth · Let's take a break for ten minutes.",
+     "phonetic": "",
+     "sort_order": 29
+    },
+    {
+     "en": "take a look",
+     "zh": "看一看",
+     "hint": "take a look at sth · Take a look at this report.",
+     "phonetic": "",
+     "sort_order": 30
+    },
+    {
+     "en": "take a seat",
+     "zh": "坐下",
+     "hint": "较正式的请坐用语 · Please take a seat.",
+     "phonetic": "",
+     "sort_order": 31
+    },
+    {
+     "en": "take a shower",
+     "zh": "洗澡",
+     "hint": "take / have a shower · I take a shower every morning.",
+     "phonetic": "",
+     "sort_order": 32
+    },
+    {
+     "en": "take a walk",
+     "zh": "散步",
+     "hint": "同义 go for a walk · Let's take a walk after dinner.",
+     "phonetic": "",
+     "sort_order": 33
+    },
+    {
+     "en": "take a photo",
+     "zh": "拍照",
+     "hint": "take a photo of sth · She took a photo of the sunset.",
+     "phonetic": "",
+     "sort_order": 34
+    },
+    {
+     "en": "take a risk",
+     "zh": "冒险",
+     "hint": "take a risk · Sometimes you have to take a risk.",
+     "phonetic": "",
+     "sort_order": 35
+    },
+    {
+     "en": "take a chance",
+     "zh": "碰运气",
+     "hint": "take a chance on sth · I'll take a chance and apply.",
+     "phonetic": "",
+     "sort_order": 36
+    },
+    {
+     "en": "take an exam",
+     "zh": "参加考试",
+     "hint": "take a test / exam · I'm taking an exam next week.",
+     "phonetic": "",
+     "sort_order": 37
+    },
+    {
+     "en": "take notes",
+     "zh": "记笔记",
+     "hint": "常用复数 notes · Please take notes during class.",
+     "phonetic": "",
+     "sort_order": 38
+    },
+    {
+     "en": "take a nap",
+     "zh": "小睡",
+     "hint": "take a nap · He took a nap after lunch.",
+     "phonetic": "",
+     "sort_order": 39
+    },
+    {
+     "en": "take care of",
+     "zh": "照顾",
+     "hint": "take care of sb / sth · She takes care of her little brother.",
+     "phonetic": "",
+     "sort_order": 40
+    },
+    {
+     "en": "take part in",
+     "zh": "参加",
+     "hint": "take part in an activity · We took part in the meeting.",
+     "phonetic": "",
+     "sort_order": 41
+    },
+    {
+     "en": "take place",
+     "zh": "发生",
+     "hint": "不及物，无被动语态 · The meeting will take place tomorrow.",
+     "phonetic": "",
+     "sort_order": 42
+    },
+    {
+     "en": "take advantage of",
+     "zh": "利用",
+     "hint": "take advantage of sth · Take advantage of this opportunity.",
+     "phonetic": "",
+     "sort_order": 43
+    },
+    {
+     "en": "take responsibility",
+     "zh": "承担责任",
+     "hint": "take responsibility for sth · He took responsibility for the mistake.",
+     "phonetic": "",
+     "sort_order": 44
+    },
+    {
+     "en": "take turns",
+     "zh": "轮流",
+     "hint": "take turns doing sth · We take turns washing the dishes.",
+     "phonetic": "",
+     "sort_order": 45
+    },
+    {
+     "en": "take action",
+     "zh": "采取行动",
+     "hint": "take action on sth · The government took action to stop it.",
+     "phonetic": "",
+     "sort_order": 46
+    },
+    {
+     "en": "take time",
+     "zh": "花时间",
+     "hint": "take time to do sth · Learning a language takes time.",
+     "phonetic": "",
+     "sort_order": 47
+    },
+    {
+     "en": "take measures",
+     "zh": "采取措施",
+     "hint": "take measures to do sth · They took measures to cut costs.",
+     "phonetic": "",
+     "sort_order": 48
+    },
+    {
+     "en": "take a step",
+     "zh": "迈出一步",
+     "hint": "take a step forward · We took a big step forward.",
+     "phonetic": "",
+     "sort_order": 49
+    },
+    {
+     "en": "take pride in",
+     "zh": "以…自豪",
+     "hint": "take pride in sth · She takes pride in her work.",
+     "phonetic": "",
+     "sort_order": 50
+    },
+    {
+     "en": "take medicine",
+     "zh": "吃药",
+     "hint": "take medicine · Remember to take your medicine.",
+     "phonetic": "",
+     "sort_order": 51
+    },
+    {
+     "en": "take effect",
+     "zh": "生效",
+     "hint": "take effect · The new law takes effect next month.",
+     "phonetic": "",
+     "sort_order": 52
+    },
+    {
+     "en": "have a meeting",
+     "zh": "开会",
+     "hint": "have / hold a meeting · We have a meeting at nine.",
+     "phonetic": "",
+     "sort_order": 53
+    },
+    {
+     "en": "have a party",
+     "zh": "开派对",
+     "hint": "have / throw a party · They're having a party on Saturday.",
+     "phonetic": "",
+     "sort_order": 54
+    },
+    {
+     "en": "have fun",
+     "zh": "玩得开心",
+     "hint": "have fun doing sth · The kids had fun at the park.",
+     "phonetic": "",
+     "sort_order": 55
+    },
+    {
+     "en": "have a good time",
+     "zh": "过得愉快",
+     "hint": "have a good time · Did you have a good time?",
+     "phonetic": "",
+     "sort_order": 56
+    },
+    {
+     "en": "have a chat",
+     "zh": "聊一聊",
+     "hint": "have a chat with sb · Let's have a chat over coffee.",
+     "phonetic": "",
+     "sort_order": 57
+    },
+    {
+     "en": "have a conversation",
+     "zh": "交谈",
+     "hint": "have a conversation with sb · We had a long conversation.",
+     "phonetic": "",
+     "sort_order": 58
+    },
+    {
+     "en": "have a look",
+     "zh": "看一下",
+     "hint": "have a look at sth · Have a look at this picture.",
+     "phonetic": "",
+     "sort_order": 59
+    },
+    {
+     "en": "have a rest",
+     "zh": "休息",
+     "hint": "have / take a rest · You should have a rest.",
+     "phonetic": "",
+     "sort_order": 60
+    },
+    {
+     "en": "have breakfast",
+     "zh": "吃早餐",
+     "hint": "have + 三餐 · I have breakfast at seven.",
+     "phonetic": "",
+     "sort_order": 61
+    },
+    {
+     "en": "have a drink",
+     "zh": "喝一杯",
+     "hint": "have a drink · Let's have a drink after work.",
+     "phonetic": "",
+     "sort_order": 62
+    },
+    {
+     "en": "have a cold",
+     "zh": "感冒",
+     "hint": "同义 catch a cold · I have a bad cold.",
+     "phonetic": "",
+     "sort_order": 63
+    },
+    {
+     "en": "have a headache",
+     "zh": "头疼",
+     "hint": "have a headache · She has a headache today.",
+     "phonetic": "",
+     "sort_order": 64
+    },
+    {
+     "en": "have a fever",
+     "zh": "发烧",
+     "hint": "have a fever · The baby has a fever.",
+     "phonetic": "",
+     "sort_order": 65
+    },
+    {
+     "en": "have an idea",
+     "zh": "有个主意",
+     "hint": "have an idea for sth · I have an idea for the project.",
+     "phonetic": "",
+     "sort_order": 66
+    },
+    {
+     "en": "have an opportunity",
+     "zh": "有机会",
+     "hint": "have an opportunity to do · We have an opportunity to learn.",
+     "phonetic": "",
+     "sort_order": 67
+    },
+    {
+     "en": "have a problem",
+     "zh": "有问题",
+     "hint": "have a problem with sth · I have a problem with my computer.",
+     "phonetic": "",
+     "sort_order": 68
+    },
+    {
+     "en": "have difficulty",
+     "zh": "有困难",
+     "hint": "have difficulty doing sth · He has difficulty sleeping.",
+     "phonetic": "",
+     "sort_order": 69
+    },
+    {
+     "en": "have an effect",
+     "zh": "有影响",
+     "hint": "have an effect on sth · The change had a big effect.",
+     "phonetic": "",
+     "sort_order": 70
+    },
+    {
+     "en": "have a question",
+     "zh": "有问题",
+     "hint": "have a question about sth · I have a question about the task.",
+     "phonetic": "",
+     "sort_order": 71
+    },
+    {
+     "en": "have a dream",
+     "zh": "做梦；有梦想",
+     "hint": "have a dream · She has a dream of becoming a doctor.",
+     "phonetic": "",
+     "sort_order": 72
+    },
+    {
+     "en": "have a bath",
+     "zh": "洗澡",
+     "hint": "have / take a bath · He had a hot bath.",
+     "phonetic": "",
+     "sort_order": 73
+    },
+    {
+     "en": "have access to",
+     "zh": "有权使用",
+     "hint": "have access to sth · Students have access to the library.",
+     "phonetic": "",
+     "sort_order": 74
+    },
+    {
+     "en": "have an advantage",
+     "zh": "有优势",
+     "hint": "have an advantage over sb · We have an advantage over them.",
+     "phonetic": "",
+     "sort_order": 75
+    },
+    {
+     "en": "have no idea",
+     "zh": "不知道",
+     "hint": "have no idea · I have no idea where he is.",
+     "phonetic": "",
+     "sort_order": 76
+    },
+    {
+     "en": "have a feeling",
+     "zh": "有预感",
+     "hint": "have a feeling that… · I have a feeling it will rain.",
+     "phonetic": "",
+     "sort_order": 77
+    },
+    {
+     "en": "have an influence",
+     "zh": "有影响",
+     "hint": "have an influence on sb · Parents have a big influence on kids.",
+     "phonetic": "",
+     "sort_order": 78
+    },
+    {
+     "en": "do homework",
+     "zh": "做作业",
+     "hint": "do homework（无冠词） · I do my homework after dinner.",
+     "phonetic": "",
+     "sort_order": 79
+    },
+    {
+     "en": "do housework",
+     "zh": "做家务",
+     "hint": "housework 不可数 · She does housework on weekends.",
+     "phonetic": "",
+     "sort_order": 80
+    },
+    {
+     "en": "do the dishes",
+     "zh": "洗碗",
+     "hint": "do / wash the dishes · I'll do the dishes tonight.",
+     "phonetic": "",
+     "sort_order": 81
+    },
+    {
+     "en": "do the laundry",
+     "zh": "洗衣服",
+     "hint": "do the laundry · He does the laundry on Sundays.",
+     "phonetic": "",
+     "sort_order": 82
+    },
+    {
+     "en": "do business",
+     "zh": "做生意",
+     "hint": "do business with sb · We do business with that company.",
+     "phonetic": "",
+     "sort_order": 83
+    },
+    {
+     "en": "do a favor",
+     "zh": "帮个忙",
+     "hint": "do sb a favor · Could you do me a favor?",
+     "phonetic": "",
+     "sort_order": 84
+    },
+    {
+     "en": "do one's best",
+     "zh": "尽力",
+     "hint": "do one's best to do · I'll do my best to help.",
+     "phonetic": "",
+     "sort_order": 85
+    },
+    {
+     "en": "do research",
+     "zh": "做研究",
+     "hint": "do research on sth · She's doing research on cancer.",
+     "phonetic": "",
+     "sort_order": 86
+    },
+    {
+     "en": "do a job",
+     "zh": "干一件活",
+     "hint": "do a good / great job · He did a great job on the project.",
+     "phonetic": "",
+     "sort_order": 87
+    },
+    {
+     "en": "do exercise",
+     "zh": "锻炼",
+     "hint": "do exercise · I do exercise every morning.",
+     "phonetic": "",
+     "sort_order": 88
+    },
+    {
+     "en": "do harm",
+     "zh": "有害",
+     "hint": "do harm to sth · Smoking does harm to your health.",
+     "phonetic": "",
+     "sort_order": 89
+    },
+    {
+     "en": "do damage",
+     "zh": "造成损害",
+     "hint": "do damage to sth · The storm did damage to the roof.",
+     "phonetic": "",
+     "sort_order": 90
+    },
+    {
+     "en": "do the shopping",
+     "zh": "购物",
+     "hint": "do the shopping · I do the shopping on Fridays.",
+     "phonetic": "",
+     "sort_order": 91
+    },
+    {
+     "en": "do the cooking",
+     "zh": "做饭",
+     "hint": "do the cooking · Who does the cooking in your home?",
+     "phonetic": "",
+     "sort_order": 92
+    },
+    {
+     "en": "get married",
+     "zh": "结婚",
+     "hint": "get married to sb · They got married last year.",
+     "phonetic": "",
+     "sort_order": 93
+    },
+    {
+     "en": "get divorced",
+     "zh": "离婚",
+     "hint": "get divorced · They got divorced after ten years.",
+     "phonetic": "",
+     "sort_order": 94
+    },
+    {
+     "en": "get dressed",
+     "zh": "穿衣服",
+     "hint": "get dressed · Hurry up and get dressed.",
+     "phonetic": "",
+     "sort_order": 95
+    },
+    {
+     "en": "get lost",
+     "zh": "迷路",
+     "hint": "get lost · I got lost in the city.",
+     "phonetic": "",
+     "sort_order": 96
+    },
+    {
+     "en": "get tired",
+     "zh": "累了",
+     "hint": "get + 形容词 = 变得… · I get tired easily these days.",
+     "phonetic": "",
+     "sort_order": 97
+    },
+    {
+     "en": "get ready",
+     "zh": "准备好",
+     "hint": "get ready for sth · Get ready for the meeting.",
+     "phonetic": "",
+     "sort_order": 98
+    },
+    {
+     "en": "get angry",
+     "zh": "生气",
+     "hint": "get angry with sb · Don't get angry with me.",
+     "phonetic": "",
+     "sort_order": 99
+    },
+    {
+     "en": "get a job",
+     "zh": "找到工作",
+     "hint": "get a job · She got a job at a bank.",
+     "phonetic": "",
+     "sort_order": 100
+    },
+    {
+     "en": "get a degree",
+     "zh": "获得学位",
+     "hint": "get a degree in sth · He got a degree in computer science.",
+     "phonetic": "",
+     "sort_order": 101
+    },
+    {
+     "en": "get a chance",
+     "zh": "得到机会",
+     "hint": "get a chance to do · I got a chance to travel.",
+     "phonetic": "",
+     "sort_order": 102
+    },
+    {
+     "en": "get in touch",
+     "zh": "取得联系",
+     "hint": "get in touch with sb · I'll get in touch with you later.",
+     "phonetic": "",
+     "sort_order": 103
+    },
+    {
+     "en": "get rid of",
+     "zh": "摆脱",
+     "hint": "get rid of sth · I want to get rid of these old clothes.",
+     "phonetic": "",
+     "sort_order": 104
+    },
+    {
+     "en": "get used to",
+     "zh": "习惯于",
+     "hint": "get used to doing sth · I got used to the cold weather.",
+     "phonetic": "",
+     "sort_order": 105
+    },
+    {
+     "en": "get along with",
+     "zh": "与…相处",
+     "hint": "get along with sb · She gets along with her coworkers.",
+     "phonetic": "",
+     "sort_order": 106
+    },
+    {
+     "en": "get involved",
+     "zh": "参与",
+     "hint": "get involved in sth · He got involved in the project.",
+     "phonetic": "",
+     "sort_order": 107
+    },
+    {
+     "en": "get to know",
+     "zh": "逐渐了解",
+     "hint": "get to know sb · I got to know my neighbors.",
+     "phonetic": "",
+     "sort_order": 108
+    },
+    {
+     "en": "get home",
+     "zh": "到家",
+     "hint": "get home（不加 to） · I got home at six.",
+     "phonetic": "",
+     "sort_order": 109
+    },
+    {
+     "en": "get better",
+     "zh": "好转",
+     "hint": "get better · The weather is getting better.",
+     "phonetic": "",
+     "sort_order": 110
+    },
+    {
+     "en": "get worse",
+     "zh": "恶化",
+     "hint": "get worse · His condition got worse.",
+     "phonetic": "",
+     "sort_order": 111
+    },
+    {
+     "en": "get a promotion",
+     "zh": "升职",
+     "hint": "get a promotion · She got a promotion last month.",
+     "phonetic": "",
+     "sort_order": 112
+    },
+    {
+     "en": "get a raise",
+     "zh": "加薪",
+     "hint": "get a raise · He got a raise this year.",
+     "phonetic": "",
+     "sort_order": 113
+    },
+    {
+     "en": "get the message",
+     "zh": "领会意思",
+     "hint": "get the message · I get the message now.",
+     "phonetic": "",
+     "sort_order": 114
+    },
+    {
+     "en": "get in trouble",
+     "zh": "陷入麻烦",
+     "hint": "get in / into trouble · He got in trouble at school.",
+     "phonetic": "",
+     "sort_order": 115
+    },
+    {
+     "en": "get out of",
+     "zh": "摆脱；离开",
+     "hint": "get out of sth · I want to get out of this meeting.",
+     "phonetic": "",
+     "sort_order": 116
+    },
+    {
+     "en": "get on",
+     "zh": "上车",
+     "hint": "get on（bus / train） · Get on the bus quickly.",
+     "phonetic": "",
+     "sort_order": 117
+    },
+    {
+     "en": "get off",
+     "zh": "下车",
+     "hint": "get off（bus / train） · I get off at the next stop.",
+     "phonetic": "",
+     "sort_order": 118
+    },
+    {
+     "en": "get up",
+     "zh": "起床",
+     "hint": "get up · I get up at six.",
+     "phonetic": "",
+     "sort_order": 119
+    },
+    {
+     "en": "get over",
+     "zh": "克服；恢复",
+     "hint": "get over sth · It took time to get over the illness.",
+     "phonetic": "",
+     "sort_order": 120
+    }
+   ]
+  },
+  {
+   "slug": "verb-preposition",
+   "title": "动词 + 介词搭配",
+   "description": "depend on / apply for / look forward to 等高频动词短语搭配",
+   "cards": [
+    {
+     "en": "depend on",
+     "zh": "依赖",
+     "hint": "depend on sth · The result depends on your effort.",
+     "phonetic": "",
+     "sort_order": 1
+    },
+    {
+     "en": "rely on",
+     "zh": "依靠",
+     "hint": "rely on sb / sth · You can rely on me.",
+     "phonetic": "",
+     "sort_order": 2
+    },
+    {
+     "en": "apply for",
+     "zh": "申请",
+     "hint": "apply for（job / visa） · She applied for a new job.",
+     "phonetic": "",
+     "sort_order": 3
+    },
+    {
+     "en": "apply to",
+     "zh": "适用于",
+     "hint": "apply to sb / sth · This rule applies to everyone.",
+     "phonetic": "",
+     "sort_order": 4
+    },
+    {
+     "en": "look at",
+     "zh": "看",
+     "hint": "look at sth · Look at the blackboard.",
+     "phonetic": "",
+     "sort_order": 5
+    },
+    {
+     "en": "look for",
+     "zh": "寻找",
+     "hint": "look for sth · I'm looking for my keys.",
+     "phonetic": "",
+     "sort_order": 6
+    },
+    {
+     "en": "look after",
+     "zh": "照顾",
+     "hint": "look after sb · She looks after her grandma.",
+     "phonetic": "",
+     "sort_order": 7
+    },
+    {
+     "en": "look forward to",
+     "zh": "期待",
+     "hint": "look forward to + doing · I look forward to seeing you.",
+     "phonetic": "",
+     "sort_order": 8
+    },
+    {
+     "en": "look into",
+     "zh": "调查",
+     "hint": "look into sth · We'll look into the problem.",
+     "phonetic": "",
+     "sort_order": 9
+    },
+    {
+     "en": "wait for",
+     "zh": "等待",
+     "hint": "wait for sb / sth · I'm waiting for the bus.",
+     "phonetic": "",
+     "sort_order": 10
+    },
+    {
+     "en": "listen to",
+     "zh": "听",
+     "hint": "listen to sth · I listen to music every day.",
+     "phonetic": "",
+     "sort_order": 11
+    },
+    {
+     "en": "talk about",
+     "zh": "谈论",
+     "hint": "talk about sth · They talked about the news.",
+     "phonetic": "",
+     "sort_order": 12
+    },
+    {
+     "en": "talk to",
+     "zh": "与…交谈",
+     "hint": "talk to / with sb · I need to talk to you.",
+     "phonetic": "",
+     "sort_order": 13
+    },
+    {
+     "en": "think about",
+     "zh": "考虑",
+     "hint": "think about sth · I'm thinking about the future.",
+     "phonetic": "",
+     "sort_order": 14
+    },
+    {
+     "en": "think of",
+     "zh": "想到",
+     "hint": "think of sth · I can't think of the answer.",
+     "phonetic": "",
+     "sort_order": 15
+    },
+    {
+     "en": "care about",
+     "zh": "关心",
+     "hint": "care about sb / sth · She cares about the environment.",
+     "phonetic": "",
+     "sort_order": 16
+    },
+    {
+     "en": "care for",
+     "zh": "照顾；喜欢",
+     "hint": "care for sb / sth · He cares for his plants.",
+     "phonetic": "",
+     "sort_order": 17
+    },
+    {
+     "en": "ask for",
+     "zh": "请求",
+     "hint": "ask for sth · She asked for help.",
+     "phonetic": "",
+     "sort_order": 18
+    },
+    {
+     "en": "ask about",
+     "zh": "询问",
+     "hint": "ask about sth · He asked about your health.",
+     "phonetic": "",
+     "sort_order": 19
+    },
+    {
+     "en": "agree with",
+     "zh": "同意（某人）",
+     "hint": "agree with sb · I agree with you.",
+     "phonetic": "",
+     "sort_order": 20
+    },
+    {
+     "en": "agree on",
+     "zh": "就…达成一致",
+     "hint": "agree on sth · We agreed on a plan.",
+     "phonetic": "",
+     "sort_order": 21
+    },
+    {
+     "en": "agree to",
+     "zh": "同意（某事）",
+     "hint": "agree to sth · They agreed to the proposal.",
+     "phonetic": "",
+     "sort_order": 22
+    },
+    {
+     "en": "apologize for",
+     "zh": "为…道歉",
+     "hint": "apologize for sth · He apologized for being late.",
+     "phonetic": "",
+     "sort_order": 23
+    },
+    {
+     "en": "arrive at",
+     "zh": "到达（小地点）",
+     "hint": "arrive at + 车站/机场等 · We arrived at the station.",
+     "phonetic": "",
+     "sort_order": 24
+    },
+    {
+     "en": "arrive in",
+     "zh": "到达（大地点）",
+     "hint": "arrive in + 城市/国家 · They arrived in Beijing.",
+     "phonetic": "",
+     "sort_order": 25
+    },
+    {
+     "en": "believe in",
+     "zh": "相信；信仰",
+     "hint": "believe in sth · I believe in hard work.",
+     "phonetic": "",
+     "sort_order": 26
+    },
+    {
+     "en": "belong to",
+     "zh": "属于",
+     "hint": "belong to sb（无被动） · This book belongs to me.",
+     "phonetic": "",
+     "sort_order": 27
+    },
+    {
+     "en": "complain about",
+     "zh": "抱怨",
+     "hint": "complain about sth · She complained about the noise.",
+     "phonetic": "",
+     "sort_order": 28
+    },
+    {
+     "en": "consist of",
+     "zh": "由…组成",
+     "hint": "consist of sth · The team consists of five people.",
+     "phonetic": "",
+     "sort_order": 29
+    },
+    {
+     "en": "concentrate on",
+     "zh": "专注于",
+     "hint": "concentrate on sth · Concentrate on your work.",
+     "phonetic": "",
+     "sort_order": 30
+    },
+    {
+     "en": "congratulate on",
+     "zh": "祝贺",
+     "hint": "congratulate sb on sth · I congratulated him on his success.",
+     "phonetic": "",
+     "sort_order": 31
+    },
+    {
+     "en": "deal with",
+     "zh": "处理",
+     "hint": "deal with sth · She deals with customer complaints.",
+     "phonetic": "",
+     "sort_order": 32
+    },
+    {
+     "en": "decide on",
+     "zh": "决定",
+     "hint": "decide on sth · We decided on a date.",
+     "phonetic": "",
+     "sort_order": 33
+    },
+    {
+     "en": "dream about",
+     "zh": "梦见；梦想",
+     "hint": "dream about / of sth · I dreamed about flying.",
+     "phonetic": "",
+     "sort_order": 34
+    },
+    {
+     "en": "explain to",
+     "zh": "向…解释",
+     "hint": "explain sth to sb · He explained the rules to us.",
+     "phonetic": "",
+     "sort_order": 35
+    },
+    {
+     "en": "focus on",
+     "zh": "聚焦",
+     "hint": "focus on sth · Focus on your goals.",
+     "phonetic": "",
+     "sort_order": 36
+    },
+    {
+     "en": "happen to",
+     "zh": "发生在…身上",
+     "hint": "happen to sb · Something happened to my phone.",
+     "phonetic": "",
+     "sort_order": 37
+    },
+    {
+     "en": "hear from",
+     "zh": "收到…来信",
+     "hint": "hear from sb · I haven't heard from him.",
+     "phonetic": "",
+     "sort_order": 38
+    },
+    {
+     "en": "hear of",
+     "zh": "听说",
+     "hint": "hear of sb / sth · Have you heard of this brand?",
+     "phonetic": "",
+     "sort_order": 39
+    },
+    {
+     "en": "insist on",
+     "zh": "坚持",
+     "hint": "insist on doing sth · She insisted on paying.",
+     "phonetic": "",
+     "sort_order": 40
+    },
+    {
+     "en": "laugh at",
+     "zh": "嘲笑",
+     "hint": "laugh at sb · Don't laugh at others.",
+     "phonetic": "",
+     "sort_order": 41
+    },
+    {
+     "en": "object to",
+     "zh": "反对",
+     "hint": "object to sth / doing · I object to the plan.",
+     "phonetic": "",
+     "sort_order": 42
+    },
+    {
+     "en": "participate in",
+     "zh": "参与",
+     "hint": "participate in sth · He participated in the contest.",
+     "phonetic": "",
+     "sort_order": 43
+    },
+    {
+     "en": "pay for",
+     "zh": "付款",
+     "hint": "pay for sth · I'll pay for dinner.",
+     "phonetic": "",
+     "sort_order": 44
+    },
+    {
+     "en": "pay attention to",
+     "zh": "注意",
+     "hint": "pay attention to sth · Pay attention to the details.",
+     "phonetic": "",
+     "sort_order": 45
+    },
+    {
+     "en": "prevent from",
+     "zh": "阻止",
+     "hint": "prevent sb from doing · The rain prevented us from going.",
+     "phonetic": "",
+     "sort_order": 46
+    },
+    {
+     "en": "protect from",
+     "zh": "保护…免受",
+     "hint": "protect sb from sth · Sunscreen protects your skin from the sun.",
+     "phonetic": "",
+     "sort_order": 47
+    },
+    {
+     "en": "provide with",
+     "zh": "提供",
+     "hint": "provide sb with sth · They provided us with food.",
+     "phonetic": "",
+     "sort_order": 48
+    },
+    {
+     "en": "recover from",
+     "zh": "康复",
+     "hint": "recover from sth · He recovered from his illness.",
+     "phonetic": "",
+     "sort_order": 49
+    },
+    {
+     "en": "refer to",
+     "zh": "提及；参考",
+     "hint": "refer to sth · The report refers to last year.",
+     "phonetic": "",
+     "sort_order": 50
+    },
+    {
+     "en": "remind of",
+     "zh": "使想起",
+     "hint": "remind sb of sth · You remind me of my sister.",
+     "phonetic": "",
+     "sort_order": 51
+    },
+    {
+     "en": "respond to",
+     "zh": "回应",
+     "hint": "respond to sth · She responded to my email.",
+     "phonetic": "",
+     "sort_order": 52
+    },
+    {
+     "en": "result in",
+     "zh": "导致",
+     "hint": "result in sth · The crash resulted in delays.",
+     "phonetic": "",
+     "sort_order": 53
+    },
+    {
+     "en": "result from",
+     "zh": "起因于",
+     "hint": "result from sth · The delay resulted from the rain.",
+     "phonetic": "",
+     "sort_order": 54
+    },
+    {
+     "en": "search for",
+     "zh": "搜索",
+     "hint": "search for sth · I'm searching for information.",
+     "phonetic": "",
+     "sort_order": 55
+    },
+    {
+     "en": "spend on",
+     "zh": "花费在",
+     "hint": "spend money / time on sth · She spends a lot on books.",
+     "phonetic": "",
+     "sort_order": 56
+    },
+    {
+     "en": "succeed in",
+     "zh": "成功做",
+     "hint": "succeed in doing sth · He succeeded in passing the exam.",
+     "phonetic": "",
+     "sort_order": 57
+    },
+    {
+     "en": "suffer from",
+     "zh": "遭受",
+     "hint": "suffer from sth · She suffers from headaches.",
+     "phonetic": "",
+     "sort_order": 58
+    },
+    {
+     "en": "thank for",
+     "zh": "感谢",
+     "hint": "thank sb for sth · Thank you for your help.",
+     "phonetic": "",
+     "sort_order": 59
+    },
+    {
+     "en": "worry about",
+     "zh": "担心",
+     "hint": "worry about sb / sth · Don't worry about the test.",
+     "phonetic": "",
+     "sort_order": 60
+    },
+    {
+     "en": "account for",
+     "zh": "解释；占",
+     "hint": "account for sth · This accounts for the difference.",
+     "phonetic": "",
+     "sort_order": 61
+    },
+    {
+     "en": "accuse of",
+     "zh": "指控",
+     "hint": "accuse sb of sth · They accused him of lying.",
+     "phonetic": "",
+     "sort_order": 62
+    },
+    {
+     "en": "aim at",
+     "zh": "瞄准；旨在",
+     "hint": "aim at sth · The campaign aims at young people.",
+     "phonetic": "",
+     "sort_order": 63
+    },
+    {
+     "en": "approve of",
+     "zh": "赞同",
+     "hint": "approve of sth · My parents approve of my plan.",
+     "phonetic": "",
+     "sort_order": 64
+    },
+    {
+     "en": "argue about",
+     "zh": "争论",
+     "hint": "argue about sth · They argued about money.",
+     "phonetic": "",
+     "sort_order": 65
+    },
+    {
+     "en": "argue with",
+     "zh": "与…争论",
+     "hint": "argue with sb · Don't argue with your boss.",
+     "phonetic": "",
+     "sort_order": 66
+    },
+    {
+     "en": "benefit from",
+     "zh": "受益于",
+     "hint": "benefit from sth · Students benefit from reading.",
+     "phonetic": "",
+     "sort_order": 67
+    },
+    {
+     "en": "blame for",
+     "zh": "责备",
+     "hint": "blame sb for sth · Don't blame me for the mistake.",
+     "phonetic": "",
+     "sort_order": 68
+    },
+    {
+     "en": "compare to",
+     "zh": "比作；比较",
+     "hint": "compare A to / with B · Life is often compared to a journey.",
+     "phonetic": "",
+     "sort_order": 69
+    },
+    {
+     "en": "compete with",
+     "zh": "与…竞争",
+     "hint": "compete with sb · We compete with other companies.",
+     "phonetic": "",
+     "sort_order": 70
+    },
+    {
+     "en": "contribute to",
+     "zh": "贡献；促成",
+     "hint": "contribute to sth · Exercise contributes to good health.",
+     "phonetic": "",
+     "sort_order": 71
+    },
+    {
+     "en": "cope with",
+     "zh": "应对",
+     "hint": "cope with sth · She copes with stress well.",
+     "phonetic": "",
+     "sort_order": 72
+    },
+    {
+     "en": "divide into",
+     "zh": "分成",
+     "hint": "divide sth into parts · Divide the class into groups.",
+     "phonetic": "",
+     "sort_order": 73
+    },
+    {
+     "en": "escape from",
+     "zh": "逃离",
+     "hint": "escape from sth · The bird escaped from the cage.",
+     "phonetic": "",
+     "sort_order": 74
+    },
+    {
+     "en": "graduate from",
+     "zh": "毕业于",
+     "hint": "graduate from + school · He graduated from university.",
+     "phonetic": "",
+     "sort_order": 75
+    },
+    {
+     "en": "invest in",
+     "zh": "投资",
+     "hint": "invest in sth · They invested in stocks.",
+     "phonetic": "",
+     "sort_order": 76
+    },
+    {
+     "en": "lead to",
+     "zh": "导致",
+     "hint": "lead to sth · Hard work leads to success.",
+     "phonetic": "",
+     "sort_order": 77
+    },
+    {
+     "en": "point at",
+     "zh": "指向",
+     "hint": "point at / to sth · Don't point at people.",
+     "phonetic": "",
+     "sort_order": 78
+    },
+    {
+     "en": "prepare for",
+     "zh": "准备",
+     "hint": "prepare for sth · I'm preparing for the interview.",
+     "phonetic": "",
+     "sort_order": 79
+    },
+    {
+     "en": "react to",
+     "zh": "对…反应",
+     "hint": "react to sth · How did she react to the news?",
+     "phonetic": "",
+     "sort_order": 80
+    },
+    {
+     "en": "relate to",
+     "zh": "与…相关",
+     "hint": "relate to sth · This question relates to history.",
+     "phonetic": "",
+     "sort_order": 81
+    },
+    {
+     "en": "specialize in",
+     "zh": "专攻",
+     "hint": "specialize in sth · He specializes in AI.",
+     "phonetic": "",
+     "sort_order": 82
+    },
+    {
+     "en": "subscribe to",
+     "zh": "订阅",
+     "hint": "subscribe to sth · I subscribe to that channel.",
+     "phonetic": "",
+     "sort_order": 83
+    },
+    {
+     "en": "adapt to",
+     "zh": "适应",
+     "hint": "adapt to sth · It takes time to adapt to a new job.",
+     "phonetic": "",
+     "sort_order": 84
+    },
+    {
+     "en": "add to",
+     "zh": "增加",
+     "hint": "add to sth · This adds to our cost.",
+     "phonetic": "",
+     "sort_order": 85
+    },
+    {
+     "en": "adjust to",
+     "zh": "调整适应",
+     "hint": "adjust to sth · I'm adjusting to the new schedule.",
+     "phonetic": "",
+     "sort_order": 86
+    },
+    {
+     "en": "devote to",
+     "zh": "致力于",
+     "hint": "devote oneself to sth · She devoted herself to teaching.",
+     "phonetic": "",
+     "sort_order": 87
+    },
+    {
+     "en": "attribute to",
+     "zh": "归因于",
+     "hint": "attribute sth to sth · He attributed his success to luck.",
+     "phonetic": "",
+     "sort_order": 88
+    },
+    {
+     "en": "resort to",
+     "zh": "诉诸",
+     "hint": "resort to sth · Don't resort to violence.",
+     "phonetic": "",
+     "sort_order": 89
+    },
+    {
+     "en": "get rid of",
+     "zh": "摆脱",
+     "hint": "get rid of sth · I got rid of my old clothes.",
+     "phonetic": "",
+     "sort_order": 90
+    },
+    {
+     "en": "get along with",
+     "zh": "与…相处",
+     "hint": "get along with sb · He gets along with his teammates.",
+     "phonetic": "",
+     "sort_order": 91
+    },
+    {
+     "en": "get used to",
+     "zh": "习惯于",
+     "hint": "get used to doing · I got used to the new routine.",
+     "phonetic": "",
+     "sort_order": 92
+    },
+    {
+     "en": "catch up with",
+     "zh": "赶上",
+     "hint": "catch up with sb · I need to catch up with my work.",
+     "phonetic": "",
+     "sort_order": 93
+    },
+    {
+     "en": "keep up with",
+     "zh": "跟上",
+     "hint": "keep up with sth · It's hard to keep up with the news.",
+     "phonetic": "",
+     "sort_order": 94
+    },
+    {
+     "en": "put up with",
+     "zh": "忍受",
+     "hint": "put up with sth · I can't put up with the noise.",
+     "phonetic": "",
+     "sort_order": 95
+    },
+    {
+     "en": "come up with",
+     "zh": "想出",
+     "hint": "come up with an idea · She came up with a good idea.",
+     "phonetic": "",
+     "sort_order": 96
+    },
+    {
+     "en": "run out of",
+     "zh": "用完",
+     "hint": "run out of sth · We ran out of coffee.",
+     "phonetic": "",
+     "sort_order": 97
+    },
+    {
+     "en": "give up",
+     "zh": "放弃",
+     "hint": "give up sth / doing · Don't give up your dream.",
+     "phonetic": "",
+     "sort_order": 98
+    },
+    {
+     "en": "carry out",
+     "zh": "执行",
+     "hint": "carry out a plan · They carried out the plan.",
+     "phonetic": "",
+     "sort_order": 99
+    },
+    {
+     "en": "find out",
+     "zh": "查明",
+     "hint": "find out sth · I need to find out the truth.",
+     "phonetic": "",
+     "sort_order": 100
+    },
+    {
+     "en": "point out",
+     "zh": "指出",
+     "hint": "point out sth · He pointed out the mistake.",
+     "phonetic": "",
+     "sort_order": 101
+    },
+    {
+     "en": "turn out",
+     "zh": "结果是",
+     "hint": "turn out to be · It turned out to be a lie.",
+     "phonetic": "",
+     "sort_order": 102
+    },
+    {
+     "en": "set up",
+     "zh": "建立",
+     "hint": "set up sth · They set up a new company.",
+     "phonetic": "",
+     "sort_order": 103
+    },
+    {
+     "en": "give in",
+     "zh": "屈服",
+     "hint": "give in to sth · Don't give in to pressure.",
+     "phonetic": "",
+     "sort_order": 104
+    },
+    {
+     "en": "break down",
+     "zh": "出故障；分解",
+     "hint": "break down · My car broke down on the way.",
+     "phonetic": "",
+     "sort_order": 105
+    },
+    {
+     "en": "break up",
+     "zh": "分手；结束",
+     "hint": "break up with sb · They broke up last month.",
+     "phonetic": "",
+     "sort_order": 106
+    },
+    {
+     "en": "call off",
+     "zh": "取消",
+     "hint": "call off sth · The game was called off.",
+     "phonetic": "",
+     "sort_order": 107
+    },
+    {
+     "en": "turn down",
+     "zh": "拒绝",
+     "hint": "turn down an offer · She turned down the job offer.",
+     "phonetic": "",
+     "sort_order": 108
+    },
+    {
+     "en": "look up",
+     "zh": "查阅",
+     "hint": "look up a word · I looked up the word in the dictionary.",
+     "phonetic": "",
+     "sort_order": 109
+    }
+   ]
+  },
+  {
+   "slug": "adjective-noun",
+   "title": "形容词 + 名词强搭配",
+   "description": "strong coffee / heavy rain 等英语母语者惯用的形容词名词组合",
+   "cards": [
+    {
+     "en": "strong coffee",
+     "zh": "浓咖啡",
+     "hint": "浓用 strong，不用 thick · He drinks strong coffee.",
+     "phonetic": "",
+     "sort_order": 1
+    },
+    {
+     "en": "weak coffee",
+     "zh": "淡咖啡",
+     "hint": "淡用 weak · I prefer weak coffee.",
+     "phonetic": "",
+     "sort_order": 2
+    },
+    {
+     "en": "heavy rain",
+     "zh": "大雨",
+     "hint": "大用 heavy，不用 big · Heavy rain is expected tonight.",
+     "phonetic": "",
+     "sort_order": 3
+    },
+    {
+     "en": "heavy traffic",
+     "zh": "交通拥堵",
+     "hint": "heavy traffic · We were stuck in heavy traffic.",
+     "phonetic": "",
+     "sort_order": 4
+    },
+    {
+     "en": "heavy smoker",
+     "zh": "老烟枪",
+     "hint": "烟瘾大用 heavy · He is a heavy smoker.",
+     "phonetic": "",
+     "sort_order": 5
+    },
+    {
+     "en": "light rain",
+     "zh": "小雨",
+     "hint": "小用 light · Light rain fell all day.",
+     "phonetic": "",
+     "sort_order": 6
+    },
+    {
+     "en": "strong wind",
+     "zh": "大风",
+     "hint": "大用 strong · Strong wind blew the tree down.",
+     "phonetic": "",
+     "sort_order": 7
+    },
+    {
+     "en": "high temperature",
+     "zh": "高温",
+     "hint": "high / low temperature · The high temperature broke records.",
+     "phonetic": "",
+     "sort_order": 8
+    },
+    {
+     "en": "high quality",
+     "zh": "高质量",
+     "hint": "high quality · We offer high quality service.",
+     "phonetic": "",
+     "sort_order": 9
+    },
+    {
+     "en": "high price",
+     "zh": "高价",
+     "hint": "high price · He paid a high price for it.",
+     "phonetic": "",
+     "sort_order": 10
+    },
+    {
+     "en": "low price",
+     "zh": "低价",
+     "hint": "low price · The store sells at low prices.",
+     "phonetic": "",
+     "sort_order": 11
+    },
+    {
+     "en": "big decision",
+     "zh": "重大决定",
+     "hint": "make a big decision · Buying a house is a big decision.",
+     "phonetic": "",
+     "sort_order": 12
+    },
+    {
+     "en": "major problem",
+     "zh": "重大问题",
+     "hint": "major problem · We face a major problem.",
+     "phonetic": "",
+     "sort_order": 13
+    },
+    {
+     "en": "serious problem",
+     "zh": "严重问题",
+     "hint": "serious problem · Pollution is a serious problem.",
+     "phonetic": "",
+     "sort_order": 14
+    },
+    {
+     "en": "deep sleep",
+     "zh": "深度睡眠",
+     "hint": "deep sleep · The baby is in deep sleep.",
+     "phonetic": "",
+     "sort_order": 15
+    },
+    {
+     "en": "deep breath",
+     "zh": "深呼吸",
+     "hint": "take a deep breath · Take a deep breath and relax.",
+     "phonetic": "",
+     "sort_order": 16
+    },
+    {
+     "en": "fast food",
+     "zh": "快餐",
+     "hint": "fast food · Too much fast food is unhealthy.",
+     "phonetic": "",
+     "sort_order": 17
+    },
+    {
+     "en": "quick decision",
+     "zh": "快速决定",
+     "hint": "make a quick decision · He made a quick decision.",
+     "phonetic": "",
+     "sort_order": 18
+    },
+    {
+     "en": "bright future",
+     "zh": "光明未来",
+     "hint": "bright future · She has a bright future.",
+     "phonetic": "",
+     "sort_order": 19
+    },
+    {
+     "en": "bright color",
+     "zh": "鲜艳颜色",
+     "hint": "bright color · The room is painted in bright colors.",
+     "phonetic": "",
+     "sort_order": 20
+    },
+    {
+     "en": "wide range",
+     "zh": "广泛范围",
+     "hint": "a wide range of · The store has a wide range of goods.",
+     "phonetic": "",
+     "sort_order": 21
+    },
+    {
+     "en": "broad agreement",
+     "zh": "广泛共识",
+     "hint": "broad agreement · There is broad agreement on this.",
+     "phonetic": "",
+     "sort_order": 22
+    },
+    {
+     "en": "rich experience",
+     "zh": "丰富经验",
+     "hint": "rich experience · He has rich experience in teaching.",
+     "phonetic": "",
+     "sort_order": 23
+    },
+    {
+     "en": "rich history",
+     "zh": "悠久历史",
+     "hint": "rich history · The city has a rich history.",
+     "phonetic": "",
+     "sort_order": 24
+    },
+    {
+     "en": "sharp increase",
+     "zh": "急剧增长",
+     "hint": "sharp increase · There was a sharp increase in sales.",
+     "phonetic": "",
+     "sort_order": 25
+    },
+    {
+     "en": "sharp contrast",
+     "zh": "鲜明对比",
+     "hint": "sharp contrast · There's a sharp contrast between them.",
+     "phonetic": "",
+     "sort_order": 26
+    },
+    {
+     "en": "dramatic change",
+     "zh": "剧变",
+     "hint": "dramatic change · The industry saw dramatic changes.",
+     "phonetic": "",
+     "sort_order": 27
+    },
+    {
+     "en": "significant difference",
+     "zh": "显著差异",
+     "hint": "significant difference · There's no significant difference.",
+     "phonetic": "",
+     "sort_order": 28
+    },
+    {
+     "en": "slight difference",
+     "zh": "细微差异",
+     "hint": "slight difference · There's a slight difference in color.",
+     "phonetic": "",
+     "sort_order": 29
+    },
+    {
+     "en": "brief introduction",
+     "zh": "简短介绍",
+     "hint": "brief introduction · Let me give a brief introduction.",
+     "phonetic": "",
+     "sort_order": 30
+    },
+    {
+     "en": "brief moment",
+     "zh": "短暂时刻",
+     "hint": "for a brief moment · He paused for a brief moment.",
+     "phonetic": "",
+     "sort_order": 31
+    },
+    {
+     "en": "huge success",
+     "zh": "巨大成功",
+     "hint": "huge success · The movie was a huge success.",
+     "phonetic": "",
+     "sort_order": 32
+    },
+    {
+     "en": "complete failure",
+     "zh": "彻底失败",
+     "hint": "complete failure · The plan was a complete failure.",
+     "phonetic": "",
+     "sort_order": 33
+    },
+    {
+     "en": "total cost",
+     "zh": "总成本",
+     "hint": "total cost · The total cost is 100 yuan.",
+     "phonetic": "",
+     "sort_order": 34
+    },
+    {
+     "en": "final decision",
+     "zh": "最终决定",
+     "hint": "make a final decision · Have you made a final decision?",
+     "phonetic": "",
+     "sort_order": 35
+    },
+    {
+     "en": "initial stage",
+     "zh": "初始阶段",
+     "hint": "at the initial stage · We're at the initial stage.",
+     "phonetic": "",
+     "sort_order": 36
+    },
+    {
+     "en": "common sense",
+     "zh": "常识",
+     "hint": "common sense · It's just common sense.",
+     "phonetic": "",
+     "sort_order": 37
+    },
+    {
+     "en": "common mistake",
+     "zh": "常见错误",
+     "hint": "a common mistake · This is a common mistake.",
+     "phonetic": "",
+     "sort_order": 38
+    },
+    {
+     "en": "key role",
+     "zh": "关键作用",
+     "hint": "play a key role in · Teachers play a key role.",
+     "phonetic": "",
+     "sort_order": 39
+    },
+    {
+     "en": "key factor",
+     "zh": "关键因素",
+     "hint": "key factor · Price is a key factor.",
+     "phonetic": "",
+     "sort_order": 40
+    },
+    {
+     "en": "main reason",
+     "zh": "主要原因",
+     "hint": "main reason · That's the main reason.",
+     "phonetic": "",
+     "sort_order": 41
+    },
+    {
+     "en": "primary goal",
+     "zh": "首要目标",
+     "hint": "primary goal · Our primary goal is growth.",
+     "phonetic": "",
+     "sort_order": 42
+    },
+    {
+     "en": "urgent need",
+     "zh": "迫切需求",
+     "hint": "urgent need for · There's an urgent need for change.",
+     "phonetic": "",
+     "sort_order": 43
+    },
+    {
+     "en": "pressing issue",
+     "zh": "紧迫问题",
+     "hint": "pressing issue · Climate change is a pressing issue.",
+     "phonetic": "",
+     "sort_order": 44
+    },
+    {
+     "en": "golden opportunity",
+     "zh": "黄金机会",
+     "hint": "golden opportunity · Don't miss this golden opportunity.",
+     "phonetic": "",
+     "sort_order": 45
+    },
+    {
+     "en": "golden rule",
+     "zh": "黄金法则",
+     "hint": "golden rule · The golden rule is to be honest.",
+     "phonetic": "",
+     "sort_order": 46
+    },
+    {
+     "en": "hard work",
+     "zh": "努力工作",
+     "hint": "hard work · Success comes from hard work.",
+     "phonetic": "",
+     "sort_order": 47
+    },
+    {
+     "en": "heavy workload",
+     "zh": "繁重工作量",
+     "hint": "heavy workload · She has a heavy workload.",
+     "phonetic": "",
+     "sort_order": 48
+    },
+    {
+     "en": "tight schedule",
+     "zh": "紧凑日程",
+     "hint": "tight schedule · I have a tight schedule today.",
+     "phonetic": "",
+     "sort_order": 49
+    },
+    {
+     "en": "strict rules",
+     "zh": "严格规则",
+     "hint": "strict rules · The school has strict rules.",
+     "phonetic": "",
+     "sort_order": 50
+    },
+    {
+     "en": "close friend",
+     "zh": "亲密朋友",
+     "hint": "close friend · She's a close friend of mine.",
+     "phonetic": "",
+     "sort_order": 51
+    },
+    {
+     "en": "close attention",
+     "zh": "密切关注",
+     "hint": "pay close attention to · Pay close attention to the instructions.",
+     "phonetic": "",
+     "sort_order": 52
+    },
+    {
+     "en": "direct impact",
+     "zh": "直接影响",
+     "hint": "direct impact on · The change had a direct impact.",
+     "phonetic": "",
+     "sort_order": 53
+    },
+    {
+     "en": "negative impact",
+     "zh": "负面影响",
+     "hint": "negative impact on · Stress has a negative impact.",
+     "phonetic": "",
+     "sort_order": 54
+    },
+    {
+     "en": "positive attitude",
+     "zh": "积极态度",
+     "hint": "positive attitude · Keep a positive attitude.",
+     "phonetic": "",
+     "sort_order": 55
+    },
+    {
+     "en": "strong opinion",
+     "zh": "强烈意见",
+     "hint": "strong opinion on · He has strong opinions on politics.",
+     "phonetic": "",
+     "sort_order": 56
+    },
+    {
+     "en": "strong evidence",
+     "zh": "有力证据",
+     "hint": "strong evidence for · There is strong evidence for it.",
+     "phonetic": "",
+     "sort_order": 57
+    },
+    {
+     "en": "strong argument",
+     "zh": "有力论据",
+     "hint": "strong argument · She made a strong argument.",
+     "phonetic": "",
+     "sort_order": 58
+    },
+    {
+     "en": "clear evidence",
+     "zh": "明确证据",
+     "hint": "clear evidence · We need clear evidence.",
+     "phonetic": "",
+     "sort_order": 59
+    },
+    {
+     "en": "clear answer",
+     "zh": "明确答案",
+     "hint": "clear answer · I need a clear answer.",
+     "phonetic": "",
+     "sort_order": 60
+    },
+    {
+     "en": "vague idea",
+     "zh": "模糊想法",
+     "hint": "vague idea · I only have a vague idea.",
+     "phonetic": "",
+     "sort_order": 61
+    },
+    {
+     "en": "bitter cold",
+     "zh": "严寒",
+     "hint": "bitter cold · The bitter cold kept us inside.",
+     "phonetic": "",
+     "sort_order": 62
+    },
+    {
+     "en": "scorching heat",
+     "zh": "酷热",
+     "hint": "scorching heat · We walked in the scorching heat.",
+     "phonetic": "",
+     "sort_order": 63
+    },
+    {
+     "en": "loud noise",
+     "zh": "巨大噪音",
+     "hint": "loud noise · There was a loud noise outside.",
+     "phonetic": "",
+     "sort_order": 64
+    },
+    {
+     "en": "bright light",
+     "zh": "明亮的光",
+     "hint": "bright light · The bright light hurt my eyes.",
+     "phonetic": "",
+     "sort_order": 65
+    },
+    {
+     "en": "dim light",
+     "zh": "昏暗的光",
+     "hint": "dim light · I read in dim light.",
+     "phonetic": "",
+     "sort_order": 66
+    },
+    {
+     "en": "sharp pain",
+     "zh": "剧痛",
+     "hint": "sharp pain · I felt a sharp pain in my back.",
+     "phonetic": "",
+     "sort_order": 67
+    },
+    {
+     "en": "mild weather",
+     "zh": "温和天气",
+     "hint": "mild weather · We have mild weather in spring.",
+     "phonetic": "",
+     "sort_order": 68
+    },
+    {
+     "en": "severe weather",
+     "zh": "恶劣天气",
+     "hint": "severe weather · Severe weather delayed flights.",
+     "phonetic": "",
+     "sort_order": 69
+    },
+    {
+     "en": "severe damage",
+     "zh": "严重损害",
+     "hint": "severe damage · The storm caused severe damage.",
+     "phonetic": "",
+     "sort_order": 70
+    },
+    {
+     "en": "minor injury",
+     "zh": "轻伤",
+     "hint": "minor injury · He escaped with minor injuries.",
+     "phonetic": "",
+     "sort_order": 71
+    },
+    {
+     "en": "major event",
+     "zh": "重大事件",
+     "hint": "major event · The Olympics is a major event.",
+     "phonetic": "",
+     "sort_order": 72
+    },
+    {
+     "en": "senior manager",
+     "zh": "高级经理",
+     "hint": "senior manager · She is a senior manager.",
+     "phonetic": "",
+     "sort_order": 73
+    },
+    {
+     "en": "junior staff",
+     "zh": "初级员工",
+     "hint": "junior staff · Junior staff need training.",
+     "phonetic": "",
+     "sort_order": 74
+    },
+    {
+     "en": "valuable advice",
+     "zh": "宝贵建议",
+     "hint": "valuable advice（不可数） · Thanks for your valuable advice.",
+     "phonetic": "",
+     "sort_order": 75
+    },
+    {
+     "en": "useful information",
+     "zh": "有用信息",
+     "hint": "useful information（不可数） · The book has useful information.",
+     "phonetic": "",
+     "sort_order": 76
+    },
+    {
+     "en": "reliable source",
+     "zh": "可靠来源",
+     "hint": "reliable source · Get news from reliable sources.",
+     "phonetic": "",
+     "sort_order": 77
+    },
+    {
+     "en": "solid foundation",
+     "zh": "坚实基础",
+     "hint": "solid foundation · He built a solid foundation in math.",
+     "phonetic": "",
+     "sort_order": 78
+    },
+    {
+     "en": "firm decision",
+     "zh": "坚定决定",
+     "hint": "firm decision · She made a firm decision.",
+     "phonetic": "",
+     "sort_order": 79
+    },
+    {
+     "en": "steady progress",
+     "zh": "稳步进展",
+     "hint": "make steady progress · The team makes steady progress.",
+     "phonetic": "",
+     "sort_order": 80
+    },
+    {
+     "en": "rapid growth",
+     "zh": "快速增长",
+     "hint": "rapid growth · The company saw rapid growth.",
+     "phonetic": "",
+     "sort_order": 81
+    },
+    {
+     "en": "gradual improvement",
+     "zh": "逐步改善",
+     "hint": "gradual improvement · There's gradual improvement.",
+     "phonetic": "",
+     "sort_order": 82
+    },
+    {
+     "en": "considerable amount",
+     "zh": "相当数量",
+     "hint": "a considerable amount of · It cost a considerable amount.",
+     "phonetic": "",
+     "sort_order": 83
+    },
+    {
+     "en": "vast majority",
+     "zh": "绝大多数",
+     "hint": "the vast majority · The vast majority agreed.",
+     "phonetic": "",
+     "sort_order": 84
+    },
+    {
+     "en": "overwhelming majority",
+     "zh": "压倒性多数",
+     "hint": "overwhelming majority · An overwhelming majority voted yes.",
+     "phonetic": "",
+     "sort_order": 85
+    },
+    {
+     "en": "unanimous decision",
+     "zh": "一致决定",
+     "hint": "unanimous decision · The board made a unanimous decision.",
+     "phonetic": "",
+     "sort_order": 86
+    },
+    {
+     "en": "mutual respect",
+     "zh": "相互尊重",
+     "hint": "mutual respect · A good team has mutual respect.",
+     "phonetic": "",
+     "sort_order": 87
+    },
+    {
+     "en": "mutual benefit",
+     "zh": "互利",
+     "hint": "for mutual benefit · We cooperate for mutual benefit.",
+     "phonetic": "",
+     "sort_order": 88
+    },
+    {
+     "en": "strong desire",
+     "zh": "强烈愿望",
+     "hint": "strong desire to do · She has a strong desire to learn.",
+     "phonetic": "",
+     "sort_order": 89
+    },
+    {
+     "en": "deep understanding",
+     "zh": "深刻理解",
+     "hint": "deep understanding of · He has a deep understanding of history.",
+     "phonetic": "",
+     "sort_order": 90
+    },
+    {
+     "en": "thorough investigation",
+     "zh": "彻底调查",
+     "hint": "thorough investigation · Police made a thorough investigation.",
+     "phonetic": "",
+     "sort_order": 91
+    },
+    {
+     "en": "careful consideration",
+     "zh": "仔细考虑",
+     "hint": "give sth careful consideration · Give it careful consideration.",
+     "phonetic": "",
+     "sort_order": 92
+    },
+    {
+     "en": "fair treatment",
+     "zh": "公平对待",
+     "hint": "fair treatment · Everyone deserves fair treatment.",
+     "phonetic": "",
+     "sort_order": 93
+    },
+    {
+     "en": "equal opportunity",
+     "zh": "平等机会",
+     "hint": "equal opportunity · We believe in equal opportunity.",
+     "phonetic": "",
+     "sort_order": 94
+    },
+    {
+     "en": "free access",
+     "zh": "自由访问",
+     "hint": "free access to · Members have free access to the gym.",
+     "phonetic": "",
+     "sort_order": 95
+    },
+    {
+     "en": "heavy burden",
+     "zh": "沉重负担",
+     "hint": "heavy burden · Debt is a heavy burden.",
+     "phonetic": "",
+     "sort_order": 96
+    },
+    {
+     "en": "tough question",
+     "zh": "棘手问题",
+     "hint": "tough question · That's a tough question.",
+     "phonetic": "",
+     "sort_order": 97
+    },
+    {
+     "en": "tough decision",
+     "zh": "艰难决定",
+     "hint": "tough decision · It was a tough decision.",
+     "phonetic": "",
+     "sort_order": 98
+    }
+   ]
+  }
+ ]
+}
