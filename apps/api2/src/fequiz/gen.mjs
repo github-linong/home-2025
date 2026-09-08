@@ -55,9 +55,13 @@ export function normalizeVariant(qtype, obj) {
     case "fill": {
       const stem = s(obj.stem);
       const blanks = Array.isArray(obj.blanks)
-        ? obj.blanks.map((b) => ({
-            answers: Array.isArray(b?.answers) ? b.answers.map(s).filter(Boolean) : [],
-          }))
+        ? obj.blanks.map((b) => {
+            // 兼容 LLM 把 blanks 写成 [["a","b"],["c"]] 的形式（数组的数组）。
+            if (Array.isArray(b)) return { answers: b.map(s).filter(Boolean) };
+            return {
+              answers: Array.isArray(b?.answers) ? b.answers.map(s).filter(Boolean) : [],
+            };
+          })
         : [];
       if (!stem || blanks.length === 0 || blanks.some((b) => b.answers.length === 0)) return null;
       return { stem, blanks, explanation: s(obj.explanation) };

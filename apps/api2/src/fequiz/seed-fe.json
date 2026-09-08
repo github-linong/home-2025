@@ -198,7 +198,7 @@
       "slug": "var_settimeout_output",
       "difficulty": "medium",
       "title": "面试官：下面代码的输出是什么（var + setTimeout）",
-      "body": "代码：for(var i=1;i<=3;i++){ setTimeout(function(){ console.log(i); }, 0); }\n\n输出：4 4 4（分三行）。\n\n原因：var 声明的 i 只有函数级作用域且存在变量提升，整个循环共享同一个 i；setTimeout 回调是宏任务，在循环结束后才执行，此时 i 已变为 4。\n\n修复：用 let 声明（块级作用域），或用 IIFE 形成闭包捕获每次循环的值。"
+      "body": "```js\nfor(var i=1;i<=3;i++){ setTimeout(function(){ console.log(i); }, 0); }\n```\n\n输出：4 4 4（分三行）。\n\n原因：var 声明的 i 只有函数级作用域且存在变量提升，整个循环共享同一个 i；setTimeout 回调是宏任务，在循环结束后才执行，此时 i 已变为 4。\n\n修复：用 let 声明（块级作用域），或用 IIFE 形成闭包捕获每次循环的值。"
     },
     {
       "category": "javascript",
