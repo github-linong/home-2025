@@ -66,8 +66,10 @@ overview-*.md
 data-analysis-viz-knowledge-graph.html
 artifacts/
 docs/
-# 游戏工程设计文档需要跟踪（docs/ 豁免）
+# 设计稿豁免（暂停 / 重启设计稿需要被跟踪，未来回看）
 !games/puzzle-cards/docs/
+# docs/ideas/ 设计稿通过 `git add -f docs/ideas/` 显式提交（绕过 docs/ 父目录 ignore，negation rule 对父目录 ignore 无效）
+# 重启时若想持续跟踪，把 docs/ 改成 docs/* 然后加 !docs/ideas/** 即可。
 frontend/
 .qoder/
 games/jianghu/data/

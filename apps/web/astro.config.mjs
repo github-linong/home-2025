@@ -59,11 +59,8 @@ export default defineConfig({
           target: 'http://127.0.0.1:3002',
           changeOrigin: true,
         },
-        // Game & chat (poker/wander/chat) + AI chat demo.
-        // Default: proxy straight to the PRODUCTION server so local dev only
-        // needs `astro dev` running — no local poker/wander/chat/api2 needed.
-        // Set LOCAL_BACKEND=1 to proxy back to the local services instead
-        // (poker :3003, wander :3004, chat :3005, api2 :3002).
+        // Game & chat (poker/wander/chat). Set LOCAL_BACKEND=1 to redirect
+        // to local services (poker :3003, wander :3004, chat :3005, api2 :3002).
         ...(process.env.LOCAL_BACKEND === '1'
           ? {
               '/api/demo': { target: 'http://127.0.0.1:3002', changeOrigin: true, ws: true },
@@ -71,8 +68,6 @@ export default defineConfig({
               '/ws/poker': { target: 'ws://127.0.0.1:3003', ws: true, changeOrigin: true },
               '/ws/wander': { target: 'ws://127.0.0.1:3004', ws: true, changeOrigin: true },
               '/ws/chat': { target: 'ws://127.0.0.1:3005', ws: true, changeOrigin: true },
-              '/ws/jianghu': { target: 'ws://127.0.0.1:3011', ws: true, changeOrigin: true },
-              '/ws/dungeon': { target: 'ws://127.0.0.1:3010', ws: true, changeOrigin: true },
             }
           : {
               '/api/demo': { target: 'https://www.lilnong.top', changeOrigin: true, ws: true, agent: proxyAgent },
@@ -80,8 +75,6 @@ export default defineConfig({
               '/ws/poker': { target: 'https://www.lilnong.top', ws: true, changeOrigin: true, agent: proxyAgent },
               '/ws/wander': { target: 'https://www.lilnong.top', ws: true, changeOrigin: true, agent: proxyAgent },
               '/ws/chat': { target: 'https://www.lilnong.top', ws: true, changeOrigin: true, agent: proxyAgent },
-              '/ws/jianghu': { target: 'https://www.lilnong.top', ws: true, changeOrigin: true, agent: proxyAgent },
-              '/ws/dungeon': { target: 'https://www.lilnong.top', ws: true, changeOrigin: true, agent: proxyAgent },
             }),
         // Legacy API (api)
         '/api': {
