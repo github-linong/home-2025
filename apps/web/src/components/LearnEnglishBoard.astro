@@ -6,13 +6,12 @@
  * indexes) even when api2 is down; the other three panels need `/api/learn/*`.
  * Progress lives in localStorage.
  */
-import { DAILY_WORDS, SCENE_LABEL } from "../data/daily-words";
+import { SCENE_LABEL } from "../data/daily-words";
 import { pickDailyWords, cycleInfo, localDayKey } from "../lib/learn/daily";
 
 const dayKey = localDayKey();
 const dailyWords = pickDailyWords(dayKey);
 const { day, totalDays } = cycleInfo(dayKey);
-const poolSize = DAILY_WORDS.length;
 ---
 
 <div class="learn-board not-prose" data-learn-english>
@@ -23,22 +22,17 @@ const poolSize = DAILY_WORDS.length;
       <h1 class="lb-title">学英语 <span class="lb-title-en">Vocabulary Notebook</span></h1>
       <p class="lb-sub">每日 5 词 · 闪卡 · 国际音标 · 短文查词 — 进度保存在本机浏览器</p>
     </div>
-    <div class="lb-stats" data-stats hidden>
-      <div class="lb-stat lb-stat-good"><b data-stat-known>0</b><span>已掌握</span></div>
-      <div class="lb-stat lb-stat-warn"><b data-stat-due>0</b><span>待加强</span></div>
-      <div class="lb-stat"><b data-stat-total>0</b><span>本组词卡</span></div>
-    </div>
   </header>
 
   <!-- ── Tabs ─────────────────────────────────────────────── -->
   <nav class="lb-tabs" role="tablist" aria-label="学习模块">
-    <button type="button" role="tab" class="lb-tab is-active" data-learn-tab="daily" aria-selected="true">☕ 每日 5 词</button>
-    <button type="button" role="tab" class="lb-tab" data-learn-tab="flashcards" aria-selected="false">🃏 单词闪卡</button>
-    <button type="button" role="tab" class="lb-tab" data-learn-tab="ipa" aria-selected="false">🔤 国际音标</button>
-    <button type="button" role="tab" class="lb-tab" data-learn-tab="reading" aria-selected="false">📖 阅读查词</button>
+    <button type="button" role="tab" class="lb-tab is-active" data-learn-tab="daily" aria-selected="true">每日 5 词</button>
+    <button type="button" role="tab" class="lb-tab" data-learn-tab="flashcards" aria-selected="false">单词闪卡</button>
+    <button type="button" role="tab" class="lb-tab" data-learn-tab="ipa" aria-selected="false">国际音标</button>
+    <button type="button" role="tab" class="lb-tab" data-learn-tab="reading" aria-selected="false">阅读查词</button>
   </nav>
 
-  <p class="lb-status" data-learn-status role="status">今日 5 词 · 第 {day} / {totalDays} 天</p>
+  <p class="lb-status" data-learn-status role="status" hidden></p>
 
   <!-- Boot error card with retry -->
   <div class="lb-error" data-learn-error hidden>
@@ -47,12 +41,12 @@ const poolSize = DAILY_WORDS.length;
   </div>
 
   <!-- ── Daily words (static, server-rendered) ────────────── -->
-  <section data-learn-panel="daily" class="lb-panel" data-summary={`今日 5 词 · 第 ${day} / ${totalDays} 天`}>
+  <section data-learn-panel="daily" class="lb-panel">
     <div class="lb-daily-head">
       <div>
         <p class="lb-daily-date">
           <time datetime={dayKey}>{dayKey}</time>
-          <span class="lb-daily-cycle">每日词库 {poolSize} 词</span>
+          <span>第 {day} / {totalDays} 天</span>
         </p>
         <p class="lb-daily-tagline">今日精选：生活与职场高频词，读音、例句、记忆提示一次看完。</p>
       </div>
@@ -116,7 +110,8 @@ const poolSize = DAILY_WORDS.length;
     <div class="lb-progress" data-progress hidden>
       <div class="lb-progress-meta">
         <span data-card-count>0 / 0</span>
-        <span>已掌握 <b data-known-count>0</b></span>
+        <span data-loaded-count hidden></span>
+        <span>已掌握 <b data-known-count>0</b> · 待加强 <b data-due-count>0</b></span>
       </div>
       <div class="lb-progress-track"><div class="lb-progress-fill" data-progress-fill></div></div>
     </div>
@@ -144,7 +139,7 @@ const poolSize = DAILY_WORDS.length;
             <span class="lb-flip-hint">↻ 点击翻面</span>
           </div>
         </div>
-        <div class="lb-face lb-back">
+        <div class="lb-face lb-back" aria-hidden="true" inert>
           <div class="lb-face-head"><span class="lb-face-label lb-face-label-zh">中文</span></div>
           <p class="lb-word lb-word-zh" data-card-text-back>—</p>
           <p class="lb-hint" data-card-hint-back></p>
@@ -164,7 +159,7 @@ const poolSize = DAILY_WORDS.length;
     </div>
 
     <p class="lb-kbd-hints" aria-hidden="true">
-      <kbd>←</kbd><kbd>→</kbd> 切换 · <kbd>空格</kbd> 翻转 · <kbd>J</kbd> 认识 · <kbd>K</kbd> 不认识 · <kbd>A</kbd> 朗读 · <kbd>S</kbd> 打乱
+      <kbd>←</kbd><kbd>→</kbd> 切换 · <kbd>空格</kbd> 翻转 · <kbd>J</kbd>/<kbd>1</kbd> 认识 · <kbd>K</kbd>/<kbd>2</kbd> 不认识 · <kbd>A</kbd> 朗读 · <kbd>S</kbd> 打乱
     </p>
   </section>
 
@@ -300,35 +295,6 @@ const poolSize = DAILY_WORDS.length;
     font-size: 0.85rem;
     color: oklch(var(--bc) / 0.6);
   }
-  .learn-board .lb-stats {
-    display: flex;
-    gap: 0.6rem;
-    position: relative;
-    z-index: 1;
-  }
-  .learn-board .lb-stat {
-    min-width: 4.6rem;
-    padding: 0.5rem 0.8rem;
-    border: 1px solid oklch(var(--b3));
-    border-radius: 10px;
-    background: var(--lb-paper);
-    text-align: center;
-    box-shadow: 0 1px 3px oklch(0% 0 0 / 0.05);
-  }
-  .learn-board .lb-stat b {
-    display: block;
-    font-family: var(--lb-serif);
-    font-size: 1.45rem;
-    line-height: 1.1;
-    font-variant-numeric: tabular-nums;
-    color: var(--lb-ink);
-  }
-  .learn-board .lb-stat span {
-    font-size: 0.68rem;
-    color: oklch(var(--bc) / 0.55);
-  }
-  .learn-board .lb-stat-good b { color: var(--lb-good); }
-  .learn-board .lb-stat-warn b { color: var(--lb-warn); }
 
   /* ── Tabs ── */
   .learn-board .lb-tabs {
@@ -376,9 +342,9 @@ const poolSize = DAILY_WORDS.length;
     font-size: 0.95rem;
     color: var(--lb-ink);
   }
-  .learn-board .lb-daily-cycle {
+  .learn-board .lb-daily-date span {
     font-family: inherit;
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     color: oklch(var(--bc) / 0.5);
   }
   .learn-board .lb-daily-tagline {
@@ -1086,7 +1052,6 @@ const poolSize = DAILY_WORDS.length;
     const errorEl = $<HTMLElement>("[data-learn-error]")!;
     const errorMsg = $<HTMLElement>("[data-error-msg]")!;
     const retryBtn = $<HTMLButtonElement>("[data-retry]")!;
-    const statsEl = $<HTMLElement>("[data-stats]")!;
     const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-learn-tab]"));
     const panels = Array.from(root.querySelectorAll<HTMLElement>("[data-learn-panel]"));
     const dailyPanel = $<HTMLElement>('[data-learn-panel="daily"]');
@@ -1098,9 +1063,13 @@ const poolSize = DAILY_WORDS.length;
     const resetDeckBtn = $<HTMLButtonElement>("[data-reset-deck]")!;
     const progressEl = $<HTMLElement>("[data-progress]")!;
     const cardCountEl = $<HTMLElement>("[data-card-count]")!;
+    const loadedCountEl = $<HTMLElement>("[data-loaded-count]")!;
     const knownCountEl = $<HTMLElement>("[data-known-count]")!;
+    const dueCountEl = $<HTMLElement>("[data-due-count]")!;
     const progressFill = $<HTMLElement>("[data-progress-fill]")!;
     const flashcard = $<HTMLElement>("[data-flashcard]")!;
+    const frontFace = $<HTMLElement>(".lb-front")!;
+    const backFace = $<HTMLElement>(".lb-back")!;
     const cardText = $<HTMLElement>("[data-card-text]")!;
     const cardPhonetic = $<HTMLElement>("[data-card-phonetic]")!;
     const cardTextBack = $<HTMLElement>("[data-card-text-back]")!;
@@ -1125,15 +1094,19 @@ const poolSize = DAILY_WORDS.length;
     // ── State ──
     let ipaGroups: IpaGroup[] = [];
 
+    const PAGE_SIZE = 200;
     let cards: Card[] = [];
     let queue: Card[] = [];
     let index = 0;
     let currentDeckSlug = "";
     let deckLoadGeneration = 0;
+    let totalCards = 0;
+    let loadedPage = 1;
+    let hasMore = false;
+    let loadingMore = false;
 
     let wordByLemma = new Map<string, Word>();
     let currentPassageSlug = "";
-    let currentPassageTitle = "";
     let selectedLemma: string | null = null;
 
     let activePanel = "daily";
@@ -1147,6 +1120,7 @@ const poolSize = DAILY_WORDS.length;
     function setStatus(msg: string, isError = false, panel?: string) {
       if (panel && panel !== activePanel) return;
       statusEl.textContent = msg;
+      statusEl.hidden = !msg;
       statusEl.classList.toggle("is-error", isError);
     }
 
@@ -1165,14 +1139,6 @@ const poolSize = DAILY_WORDS.length;
     }
 
     // ── Tabs ──
-    /** Status line shown when a panel becomes active, so it never looks stale. */
-    function panelStatus(name: string) {
-      if (name === "daily") return dailyPanel?.dataset.summary || "今日 5 词";
-      if (name === "flashcards") return cards.length ? `${cards.length} 张词卡` : "正在加载词卡组…";
-      if (name === "reading") return currentPassageTitle || "选择一篇短文开始阅读";
-      return "点击音标查看发音要点";
-    }
-
     function switchTab(name: string) {
       activePanel = name;
       audio.cancel();
@@ -1184,7 +1150,7 @@ const poolSize = DAILY_WORDS.length;
       panels.forEach((p) => {
         p.hidden = p.dataset.learnPanel !== name;
       });
-      setStatus(panelStatus(name));
+      setStatus("");
     }
 
     // ── Flashcards ──
@@ -1206,25 +1172,26 @@ const poolSize = DAILY_WORDS.length;
 
     function renderCard() {
       audio.cancel();
-      flashcard.classList.remove("is-flipped");
+      setFlipped(false);
       const empty = queue.length === 0;
       cardActions.style.visibility = empty ? "hidden" : "";
       cardRate.style.visibility = empty ? "hidden" : "";
 
       if (empty) {
         progressEl.hidden = true;
+        loadedCountEl.hidden = true;
         cardText.textContent = filterUnknown.checked ? "本组已全部掌握 🎉" : "暂无词卡";
         cardPhonetic.textContent = "";
         cardTextBack.textContent = "—";
         cardHint.textContent = filterUnknown.checked ? "可以取消「只练未掌握」或重置进度" : "";
         cardHintBack.textContent = "";
         cardMeta.textContent = "";
-        updateStats();
         return;
       }
 
       const card = queue[index];
       const prog = loadProgress()[key(card.id)];
+      const known = knownCount();
       progressEl.hidden = false;
       cardText.textContent = card.en;
       cardPhonetic.textContent = card.phonetic || "";
@@ -1235,28 +1202,35 @@ const poolSize = DAILY_WORDS.length;
         prog ? ` · ${prog === "know" ? "已掌握" : "待加强"}` : ""
       }`;
       cardCountEl.textContent = `${index + 1} / ${queue.length}`;
-      knownCountEl.textContent = String(knownCount());
-      progressFill.style.width = `${((index + 1) / queue.length) * 100}%`;
-      updateStats();
+      const partial = totalCards > queue.length;
+      loadedCountEl.hidden = !partial;
+      if (partial) loadedCountEl.textContent = `已加载 ${queue.length} / ${totalCards}`;
+      knownCountEl.textContent = String(known);
+      dueCountEl.textContent = String(queue.length - known);
+      progressFill.style.width = `${queue.length ? (known / queue.length) * 100 : 0}%`;
     }
 
-    function updateStats() {
-      statsEl.hidden = cards.length === 0;
-      const known = knownCount();
-      (root.querySelector("[data-stat-known]") as HTMLElement).textContent = String(known);
-      (root.querySelector("[data-stat-due]") as HTMLElement).textContent = String(cards.length - known);
-      (root.querySelector("[data-stat-total]") as HTMLElement).textContent = String(cards.length);
+    function setFlipped(flipped: boolean) {
+      flashcard.classList.toggle("is-flipped", flipped);
+      frontFace.toggleAttribute("aria-hidden", flipped);
+      if (flipped) frontFace.setAttribute("inert", "");
+      else frontFace.removeAttribute("inert");
+      backFace.toggleAttribute("aria-hidden", !flipped);
+      if (!flipped) backFace.setAttribute("inert", "");
+      else backFace.removeAttribute("inert");
+      flashcard.setAttribute("aria-label", flipped ? "已翻到中文释义，点击或按空格翻回英文" : "点击或按空格查看中文释义");
     }
 
     function flipCard() {
       if (!queue.length) return;
-      flashcard.classList.toggle("is-flipped");
+      setFlipped(!flashcard.classList.contains("is-flipped"));
     }
 
     function go(delta: number) {
       if (!queue.length) return;
       index = (index + delta + queue.length) % queue.length;
       renderCard();
+      maybeLoadMore();
     }
 
     function markCard(state: "know" | "unknown") {
@@ -1281,6 +1255,17 @@ const poolSize = DAILY_WORDS.length;
         renderCard();
       }
       setStatus(state === "know" ? `已标记「认识」:${card.en}` : `已标记「不认识」:${card.en}`);
+      maybeLoadMore();
+    }
+
+    function maybeLoadMore() {
+      if (hasMore && !loadingMore && index >= queue.length - 1) {
+        loadingMore = true;
+        setStatus("正在加载更多词卡…", false, "flashcards");
+        void loadDeck(currentDeckSlug, loadedPage + 1).finally(() => {
+          loadingMore = false;
+        });
+      }
     }
 
     function shuffleQueue() {
@@ -1290,28 +1275,36 @@ const poolSize = DAILY_WORDS.length;
       }
       index = 0;
       renderCard();
-      setStatus("已打乱顺序");
+      setStatus(hasMore ? "已打乱已加载的词卡" : "已打乱顺序");
     }
 
-    async function loadDeck(slug: string) {
+    async function loadDeck(slug: string, page = 1) {
+      const isFirstPage = page === 1;
       const generation = ++deckLoadGeneration;
       audio.cancel();
       currentDeckSlug = slug;
-      cards = [];
-      queue = [];
-      index = 0;
-      flashcard.classList.add("is-loading");
+      if (isFirstPage) {
+        cards = [];
+        queue = [];
+        index = 0;
+        loadedPage = 1;
+        hasMore = false;
+        totalCards = 0;
+        flashcard.classList.add("is-loading");
+      }
       renderCard();
-      setStatus("正在加载词卡组…", false, "flashcards");
+      if (isFirstPage) setStatus("正在加载词卡组…", false, "flashcards");
 
-      const data = await learnApi.deckCards(slug);
+      const data = await learnApi.deckCards(slug, page, PAGE_SIZE);
       if (generation !== deckLoadGeneration || slug !== currentDeckSlug) return;
 
-      cards = data.cards;
-      index = 0;
+      cards = isFirstPage ? data.cards : [...cards, ...data.cards];
+      totalCards = data.total;
+      loadedPage = page;
+      hasMore = data.hasMore;
       flashcard.classList.remove("is-loading");
       rebuildQueue();
-      setStatus(`${data.deck.title} · ${cards.length} 张词卡`, false, "flashcards");
+      setStatus("", false, "flashcards");
     }
 
     // ── IPA ──
@@ -1453,9 +1446,7 @@ const poolSize = DAILY_WORDS.length;
       const data = await learnApi.passage(slug);
       wordByLemma = new Map(data.words.map((w) => [w.lemma, w]));
       renderPassage(data.passage.body);
-      const level = data.passage.level ? ` · ${data.passage.level}` : "";
-      currentPassageTitle = `${data.passage.title}${level}`;
-      setStatus(currentPassageTitle, false, "reading");
+      setStatus("", false, "reading");
     }
 
     function audioButton(word: string) {

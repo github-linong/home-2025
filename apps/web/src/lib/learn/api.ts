@@ -1,6 +1,6 @@
 /** Thin client for the api2 `/api/learn/*` endpoints. */
 
-import type { Card, Deck, IpaGroup, Passage, PassageMeta, Word } from "./types";
+import type { Deck, DeckCardsPage, IpaGroup, Passage, PassageMeta, Word } from "./types";
 
 async function apiJson<T>(path: string): Promise<T> {
   const res = await fetch(path, { credentials: "same-origin" });
@@ -22,9 +22,9 @@ async function apiJson<T>(path: string): Promise<T> {
 export const learnApi = {
   decks: () => apiJson<{ decks: Deck[] }>("/api/learn/decks").then((d) => d.decks),
 
-  deckCards: (slug: string) =>
-    apiJson<{ deck: Deck; cards: Card[] }>(
-      `/api/learn/decks/${encodeURIComponent(slug)}/cards`,
+  deckCards: (slug: string, page = 1, pageSize = 200) =>
+    apiJson<DeckCardsPage>(
+      `/api/learn/decks/${encodeURIComponent(slug)}/cards?page=${page}&pageSize=${pageSize}`,
     ),
 
   passages: () =>

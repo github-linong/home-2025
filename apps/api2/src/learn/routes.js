@@ -130,7 +130,21 @@ export function createLearnRouter() {
         return res.status(404).json({ ok: false, error: "deck_not_found" });
       }
       const { cards, ...meta } = deck;
-      res.json({ ok: true, deck: meta, cards });
+      // 分页：大词库(如 cet4 4540 卡)避免一次返回 ~600KB JSON。
+      const total = cards.length;
+      const pageSize = Math.min(500, Math.max(1, parseInt(String(req.query.pageSize ?? "200"), 10) || 200));
+      const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10) || 1);
+      const start = (page - 1) * pageSize;
+      const pageCards = cards.slice(start, start + pageSize);
+      res.json({
+        ok: true,
+        deck: meta,
+        cards: pageCards,
+        total,
+        page,
+        pageSize,
+        hasMore: start + pageCards.length < total,
+      });
     } catch (err) {
       console.error("[api2] GET /api/learn/decks/:slug/cards failed:", err);
       res.status(500).json({ ok: false, error: "cards_error" });

@@ -20,6 +20,16 @@ export type Deck = {
   card_count?: number;
 };
 
+/** Paginated cards response from `/api/learn/decks/:slug/cards`. */
+export type DeckCardsPage = {
+  deck: Deck;
+  cards: Card[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+};
+
 export type PassageMeta = {
   id: number;
   slug: string;
